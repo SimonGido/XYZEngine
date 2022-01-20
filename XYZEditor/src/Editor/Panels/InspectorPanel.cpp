@@ -157,22 +157,17 @@ namespace XYZ {
 				{
 					if (ImGui::BeginMenu("Script Component"))
 					{
-						//auto scripts = std::move(AssetManager::FindAssetsByType(AssetType::Script));
-						//for (auto& script : scripts)
-						//{
-						//	if (ImGui::MenuItem(script->FileName.c_str()))
-						//	{
-						//		m_SelectedEntity.EmplaceComponent<ScriptComponent>(
-						//			script->FileName
-						//			);
-						//
-						//		m_EditablesInUse.push_back(&m_ScriptComponentInspector);
-						//		m_ScriptComponentInspector.SetSceneEntity(m_SelectedEntity);
-						//		ScriptEngine::InitScriptEntity(m_SelectedEntity);
-						//		ScriptEngine::InstantiateEntityClass(m_SelectedEntity);
-						//		ImGui::CloseCurrentPopup();
-						//	}
-						//}
+						for (const auto& name : ScriptEngine::GetEntityClasses())
+						{
+							if (ImGui::MenuItem(name.c_str()))
+							{
+								m_SelectedEntity.EmplaceComponent<ScriptComponent>(name);
+							
+								m_EditablesInUse.push_back(&m_ScriptComponentInspector);
+								m_ScriptComponentInspector.SetSceneEntity(m_SelectedEntity);
+								ImGui::CloseCurrentPopup();
+							}
+						}
 						ImGui::EndMenu();
 					}
 				}

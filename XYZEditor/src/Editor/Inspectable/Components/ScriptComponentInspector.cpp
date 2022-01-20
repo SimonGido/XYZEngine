@@ -14,7 +14,7 @@ namespace XYZ {
 	bool ScriptComponentInspector::OnEditorRender()
 	{
 		return EditorHelper::DrawComponent<ScriptComponent>("Script", m_Context, [&](auto& component) {
-			for (const PublicField& field : component.GetFields())
+			//for (const PublicField& field : component.GetFields())
 			{
 				/*
 				EditorHelper::BeginColumns(field.GetName().c_str(), 2, 200.0f);

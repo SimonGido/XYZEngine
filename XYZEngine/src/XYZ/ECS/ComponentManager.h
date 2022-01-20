@@ -15,6 +15,7 @@ namespace XYZ {
 		ComponentManager(ComponentManager&& other) noexcept;
 		~ComponentManager();
 
+		ComponentManager& operator=(const ComponentManager& other) noexcept;
 		ComponentManager& operator=(ComponentManager&& other) noexcept;
 
 		void EntityDestroyed(Entity entity);	

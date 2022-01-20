@@ -219,7 +219,6 @@ namespace XYZ {
 		return Entity();
 	}
 
-	struct EntityScriptClass;
 	struct ScriptComponent 
 	{
 		std::string ModuleName;
@@ -229,13 +228,6 @@ namespace XYZ {
 		ScriptComponent(const std::string & moduleName)
 			: ModuleName(moduleName) {}
 
-		const std::vector<PublicField>& GetFields() const { return Fields; }
-
-	private:
-		EntityScriptClass*		 ScriptClass = nullptr;
-		std::vector<PublicField> Fields;
-
-		friend class ScriptEngine;
 	};
 
 

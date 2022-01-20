@@ -12,6 +12,7 @@ namespace XYZ {
 		ECSManager(const ECSManager& other);
 		ECSManager(ECSManager&& other) noexcept;
 
+		ECSManager& operator=(const ECSManager& other);
 		ECSManager& operator=(ECSManager&& other) noexcept;
 		
 		Entity CopyEntity(Entity entity);

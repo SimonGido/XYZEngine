@@ -43,29 +43,20 @@ namespace XYZ {
 		MonoMethod* OnCreateMethod = nullptr;
 		MonoMethod* OnDestroyMethod = nullptr;
 		MonoMethod* OnUpdateMethod = nullptr;
-		uint32_t	Handle = 0;
 
 		void InitClassMethods(MonoImage* image)
 		{
-			Constructor = GetMethod(image, FullName + ":.ctor(uint)");
+			Constructor = GetMethod(s_CoreAssemblyImage, "XYZ.Entity:.ctor(uint)");
 			OnCreateMethod = GetMethod(image, FullName + ":OnCreate()");
 			OnDestroyMethod = GetMethod(image, FullName + ":OnDestroy()");
 			OnUpdateMethod = GetMethod(image, FullName + ":OnUpdate(single)");
 		}
-		MonoObject* GetInstance()
-		{
-			XYZ_ASSERT(Handle, "Entity has not been instantiated!");
-			return mono_gchandle_get_target(Handle);
-		}
 	};
 
 
-	using  EntityClassMap = std::unordered_map<uint32_t, std::unordered_map<std::string, EntityScriptClass>>;
-	static EntityClassMap s_EntityClassMap;
+	
 
-
-
-	MonoAssembly* LoadAssemblyFromFile(const char* filepath)
+	static MonoAssembly* LoadAssemblyFromFile(const char* filepath)
 	{
 		if (filepath == NULL)
 		{
@@ -115,7 +106,10 @@ namespace XYZ {
 		return assemb;
 	}
 
-
+	static void DestroyInstance(uint32_t handle)
+	{
+		mono_gchandle_free(handle);
+	}
 
 	static MonoAssembly* LoadAssembly(const std::string& path)
 	{
@@ -192,25 +186,115 @@ namespace XYZ {
 		return result;
 	}
 
+	static std::vector<MonoClass*> GetAssemblyClasses(MonoImage* image)
+	{
+		std::vector<MonoClass*> class_vec;
+
+		const MonoTableInfo* table_info = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+
+		int rows = mono_table_info_get_rows(table_info);
+
+		/* For each row, get some of its values */
+		for (int i = 0; i < rows; i++)
+		{
+			MonoClass* _class = nullptr;
+			uint32_t cols[MONO_TYPEDEF_SIZE];
+			mono_metadata_decode_row(table_info, i, cols, MONO_TYPEDEF_SIZE);
+			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+			const char* name_space = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+			_class = mono_class_from_name(image, name_space, name);
+			class_vec.push_back(_class);
+		}
+		return class_vec;
+	}
+
+	static std::vector<std::string> GetModules(MonoImage* image)
+	{
+		std::vector<std::string> class_vec;
+		const MonoTableInfo* table_info = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
+
+		int rows = mono_table_info_get_rows(table_info);
+
+		/* For each row, get some of its values */
+		for (int i = 0; i < rows; i++)
+		{
+			MonoClass* _class = nullptr;
+			uint32_t cols[MONO_TYPEDEF_SIZE];
+			mono_metadata_decode_row(table_info, i, cols, MONO_TYPEDEF_SIZE);
+			const char* name_space = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
+			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
+			
+			std::string moduleName(name_space);
+			moduleName += ".";
+			moduleName += name;
+
+			class_vec.push_back(moduleName);
+		}
+		return class_vec;
+	}
+
+	static PublicFieldType GetXYZFieldType(MonoType* monoType)
+	{
+		const int type = mono_type_get_type(monoType);
+		switch (type)
+		{
+		case MONO_TYPE_R4: return PublicFieldType::Float;
+		case MONO_TYPE_I4: return PublicFieldType::Int;
+		case MONO_TYPE_U4: return PublicFieldType::UnsignedInt;
+		case MONO_TYPE_STRING: return PublicFieldType::String;
+		case MONO_TYPE_VALUETYPE:
+		{
+			const char* name = mono_type_get_name(monoType);
+			if (strcmp(name, "XYZ.Vector2") == 0) return PublicFieldType::Vec2;
+			if (strcmp(name, "XYZ.Vector3") == 0) return PublicFieldType::Vec3;
+			if (strcmp(name, "XYZ.Vector4") == 0) return PublicFieldType::Vec4;
+		}
+		}
+		return PublicFieldType::None;
+	}
+	
+
+	static std::vector<std::string>							  s_EntityClasses;
+	static std::unordered_map<std::string, EntityScriptClass> s_EntityClassMap;
+	static SparseArray<ScriptEntityInstance>				  s_ScriptEntityInstances;
+
+	static MonoAssembly* s_AppAssembly = nullptr;
+	static MonoAssembly* s_CoreAssembly = nullptr;
+
+
+
+
+	MonoObject* ScriptEntityInstance::GetInstance()
+	{
+		XYZ_ASSERT(Handle, "Entity has not been instantiated!");
+		return mono_gchandle_get_target(Handle);
+	}
+
+	bool ScriptEntityInstance::IsRuntimeAvailable() const
+	{
+		return Handle != 0;
+	}
 
 	void ScriptEngine::Init(const std::string& assemblyPath)
 	{
 		s_AssemblyPath = assemblyPath;
 
 		InitMono();
-		LoadXYZRuntimeAssembly(s_AssemblyPath);
+		LoadRuntimeAssembly(s_AssemblyPath);
 	}
 
 	void ScriptEngine::Shutdown()
 	{
+		for (auto& it : s_ScriptEntityInstances)
+			DestroyInstance(it.Handle);
+
+		s_ScriptEntityInstances.Clear();
+		s_EntityClassMap.clear();
+
 		s_SceneContext.Reset();
 	}
 
-
-	static MonoAssembly* s_AppAssembly = nullptr;
-	static MonoAssembly* s_CoreAssembly = nullptr;
-
-	void ScriptEngine::LoadXYZRuntimeAssembly(const std::string& path)
+	void ScriptEngine::LoadRuntimeAssembly(const std::string& path)
 	{
 		MonoDomain* domain = nullptr;
 		bool cleanup = false;
@@ -239,18 +323,21 @@ namespace XYZ {
 
 		s_AppAssembly = appAssembly;
 		s_AppAssemblyImage = appAssemblyImage;
+		createModules();
 	}
 	void ScriptEngine::ReloadAssembly(const std::string& path)
 	{
-		LoadXYZRuntimeAssembly(path);
-		
 		Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 		XYZ_ASSERT(scene.Raw(), "No active scene!");
-
 		const ComponentStorage<ScriptComponent>& scriptStorage = scene->m_ECS.GetStorage<ScriptComponent>();
 		for (size_t i = 0; i < scriptStorage.Size(); ++i)
 		{
-			InitScriptEntity(SceneEntity{ scriptStorage.GetEntityAtIndex(i), scene.Raw() });
+			DestroyScriptEntityInstance({ scriptStorage.GetEntityAtIndex(i), scene.Raw() });
+		}
+		LoadRuntimeAssembly(path);
+		for (size_t i = 0; i < scriptStorage.Size(); ++i)
+		{
+			CreateScriptEntityInstance({ scriptStorage.GetEntityAtIndex(i), scene.Raw() });
 		}
 	}
 
@@ -262,25 +349,25 @@ namespace XYZ {
 	{
 		return s_SceneContext;
 	}
-	void ScriptEngine::OnCreateEntity(SceneEntity entity)
+	void ScriptEngine::OnCreateEntity(const SceneEntity& entity)
 	{
-		const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
-		if (scriptComponent.ScriptClass->OnCreateMethod)
-			CallMethod(scriptComponent.ScriptClass->GetInstance(), scriptComponent.ScriptClass->OnCreateMethod);
+		ScriptEntityInstance& instance = s_ScriptEntityInstances.GetData(entity);
+		if (instance.ScriptClass->OnCreateMethod)
+			CallMethod(instance.GetInstance(), instance.ScriptClass->OnCreateMethod);
 	}
-	void ScriptEngine::OnDestroyEntity(SceneEntity entity)
+	void ScriptEngine::OnDestroyEntity(const SceneEntity& entity)
 	{
-		const ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
-		if (scriptComponent.ScriptClass->OnDestroyMethod)
-			CallMethod(scriptComponent.ScriptClass->GetInstance(), scriptComponent.ScriptClass->OnDestroyMethod);
+		ScriptEntityInstance& instance = s_ScriptEntityInstances.GetData(entity);
+		if (instance.ScriptClass->OnDestroyMethod)
+			CallMethod(instance.GetInstance(), instance.ScriptClass->OnDestroyMethod);
 	}
-	void ScriptEngine::OnUpdateEntity(SceneEntity entity, Timestep ts)
+	void ScriptEngine::OnUpdateEntity(const SceneEntity& entity, Timestep ts)
 	{
-		const auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-		if (scriptComponent.ScriptClass->OnUpdateMethod)
+		ScriptEntityInstance& instance = s_ScriptEntityInstances.GetData(entity);
+		if (instance.ScriptClass->OnUpdateMethod)
 		{
 			void* args[] = { &ts };
-			CallMethod(scriptComponent.ScriptClass->GetInstance(), scriptComponent.ScriptClass->OnUpdateMethod, args);
+			CallMethod(instance.GetInstance(), instance.ScriptClass->OnUpdateMethod, args);
 		}
 	}
 
@@ -315,6 +402,23 @@ namespace XYZ {
 
 		return obj;
 	}
+	void ScriptEngine::CreateModule(const std::string& moduleName)
+	{
+		EntityScriptClass& scriptClass = s_EntityClassMap[moduleName];
+
+		if (moduleName.find('.') != std::string::npos)
+		{
+			scriptClass.NamespaceName = moduleName.substr(0, moduleName.find_last_of('.'));
+			scriptClass.ClassName = moduleName.substr(moduleName.find_last_of('.') + 1);
+		}
+		else
+		{
+			scriptClass.ClassName = moduleName;
+		}
+		scriptClass.FullName = moduleName;
+		scriptClass.Class = GetClass(s_AppAssemblyImage, scriptClass);
+		scriptClass.InitClassMethods(s_AppAssemblyImage);
+	}
 
 	bool ScriptEngine::ModuleExists(const std::string& moduleName)
 	{
@@ -333,58 +437,24 @@ namespace XYZ {
 		return monoClass != nullptr;
 	}
 
-	static PublicFieldType GetXYZFieldType(MonoType* monoType)
+	void ScriptEngine::CreateScriptEntityInstance(const SceneEntity& entity)
 	{
-		const int type = mono_type_get_type(monoType);
-		switch (type)
-		{
-		case MONO_TYPE_R4: return PublicFieldType::Float;
-		case MONO_TYPE_I4: return PublicFieldType::Int;
-		case MONO_TYPE_U4: return PublicFieldType::UnsignedInt;
-		case MONO_TYPE_STRING: return PublicFieldType::String;
-		case MONO_TYPE_VALUETYPE:
-		{
-			const char* name = mono_type_get_name(monoType);
-			if (strcmp(name, "XYZ.Vector2") == 0) return PublicFieldType::Vec2;
-			if (strcmp(name, "XYZ.Vector3") == 0) return PublicFieldType::Vec3;
-			if (strcmp(name, "XYZ.Vector4") == 0) return PublicFieldType::Vec4;
-		}
-		}
-		return PublicFieldType::None;
-	}
+		const auto& scriptComponent = entity.GetComponent<ScriptComponent>();
+		s_ScriptEntityInstances.Emplace(entity);
+		ScriptEntityInstance& instance = s_ScriptEntityInstances.GetData(entity);
+		instance.ScriptClass = &s_EntityClassMap[scriptComponent.ModuleName];
+		instance.Handle = Instantiate(*instance.ScriptClass);
+		
+		uint32_t id = entity.m_ID;
+		void* param[] = { &id };
+		CallMethod(instance.GetInstance(), instance.ScriptClass->Constructor, param);
 
-	void ScriptEngine::InitScriptEntity(SceneEntity entity)
-	{
-		Scene* scene = entity.m_Scene;
-		auto& scriptComponent = entity.GetComponent<ScriptComponent>();
-		if (scriptComponent.ModuleName.empty())
-			return;
+		instance.Fields.clear();
 
-		if (!ModuleExists(scriptComponent.ModuleName))
-		{
-			XYZ_CORE_ERROR("Entity references non-existent script module {0}", scriptComponent.ModuleName);
-			return;
-		}
-
-		EntityScriptClass& scriptClass = s_EntityClassMap[entity][scriptComponent.ModuleName];
-
-		if (scriptComponent.ModuleName.find('.') != std::string::npos)
-		{
-			scriptClass.NamespaceName = scriptComponent.ModuleName.substr(0, scriptComponent.ModuleName.find_last_of('.'));
-			scriptClass.ClassName = scriptComponent.ModuleName.substr(scriptComponent.ModuleName.find_last_of('.') + 1);
-		}
-		else
-		{
-			scriptClass.ClassName = scriptComponent.ModuleName;
-		}
-		scriptClass.FullName = scriptComponent.ModuleName;
-		scriptClass.Class = GetClass(s_AppAssemblyImage, scriptClass);
-		scriptClass.InitClassMethods(s_AppAssemblyImage);		
-
-		// Store public fields inside component
+		// Store public fields inside instance
 		MonoClassField* iter;
 		void* ptr = 0;
-		while ((iter = mono_class_get_fields(scriptClass.Class, &ptr)) != NULL)
+		while ((iter = mono_class_get_fields(instance.ScriptClass->Class, &ptr)) != NULL)
 		{
 			const char* name = mono_field_get_name(iter);
 			uint32_t flags = mono_field_get_flags(iter);
@@ -397,35 +467,56 @@ namespace XYZ {
 				continue;
 
 			// TODO: Attributes
-			MonoCustomAttrInfo* attr = mono_custom_attrs_from_field(scriptComponent.ScriptClass->Class, iter);
+			MonoCustomAttrInfo* attr = mono_custom_attrs_from_field(instance.ScriptClass->Class, iter);
 
 			PublicField field = { name, xyzFieldType };
-			field.m_Handle = scriptClass.Handle;
+			field.m_Handle = instance.Handle;
 			field.m_MonoClassField = iter;
 			field.StoreRuntimeValue();
-			scriptComponent.Fields.emplace_back(std::move(field));
+			instance.Fields.emplace_back(std::move(field));
 		}
 	}
 
-	void ScriptEngine::InstantiateEntityClass(SceneEntity entity)
+	void ScriptEngine::DestroyScriptEntityInstance(const SceneEntity& entity)
 	{
-		Scene* scene = entity.m_Scene;
-		ScriptComponent& scriptComponent = entity.GetComponent<ScriptComponent>();
-		scriptComponent.ScriptClass		 = &s_EntityClassMap[entity][scriptComponent.ModuleName];
+		DestroyInstance(s_ScriptEntityInstances.GetData(entity).Handle);
+		s_ScriptEntityInstances.Erase(entity);
+	}
 
-		XYZ_ASSERT(scriptComponent.ScriptClass, "");
-		scriptComponent.ScriptClass->Handle = Instantiate(*scriptComponent.ScriptClass);
-	
-		void* param[] = { &entity.m_ID };
-		CallMethod(scriptComponent.ScriptClass->GetInstance(), scriptComponent.ScriptClass->Constructor, param);
-
-		for (auto& field : scriptComponent.Fields)
+	void ScriptEngine::CopyPublicFieldsToRuntime(const SceneEntity& entity)
+	{
+		ScriptEntityInstance& instance = s_ScriptEntityInstances.GetData(entity);
+		for (auto& field : instance.Fields)
 			field.CopyStoredValueToRuntime();
 	}
+
+	
+
 
 	MonoDomain* ScriptEngine::GetMonoDomain()
 	{
 		return s_MonoDomain;
+	}
+
+	const SparseArray<ScriptEntityInstance>& ScriptEngine::GetScriptEntityInstances()
+	{
+		return s_ScriptEntityInstances;
+	}
+
+	const std::vector<std::string>& ScriptEngine::GetEntityClasses()
+	{
+		return s_EntityClasses;
+	}
+
+	void ScriptEngine::createModules()
+	{
+		s_EntityClasses = GetModules(s_AppAssemblyImage);
+		s_EntityClasses.erase(s_EntityClasses.begin()); //TODO: Weird module name at the beginning
+		for (const auto& mod : s_EntityClasses)
+		{
+			if (ModuleExists(mod))
+				CreateModule(mod);
+		}
 	}
 
 }

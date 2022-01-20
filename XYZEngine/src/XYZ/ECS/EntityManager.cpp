@@ -8,6 +8,7 @@ namespace XYZ {
 	{
 		// Invalid
 		m_Entities.Insert({});
+		m_Versions.Insert({});
 	}
 	EntityManager::EntityManager(const EntityManager& other)
 		:
@@ -22,6 +23,13 @@ namespace XYZ {
 		m_Versions(std::move(other.m_Versions)),
 		m_EntitiesInUse(other.m_EntitiesInUse)
 	{
+	}
+	EntityManager& EntityManager::operator=(const EntityManager& other)
+	{
+		m_Entities		= other.m_Entities;
+		m_Versions		= other.m_Versions;
+		m_EntitiesInUse = other.m_EntitiesInUse;
+		return *this;
 	}
 	EntityManager& EntityManager::operator=(EntityManager&& other) noexcept
 	{
@@ -38,7 +46,7 @@ namespace XYZ {
 		Entity entity = m_Entities.Insert({});
 		m_Entities[entity] = entity;
 
-		if (m_Versions.Valid(entity))
+		if (m_Versions.Range() > entity && m_Versions.Valid(entity))
 			m_Versions[entity]++;
 		else
 		{
@@ -69,6 +77,6 @@ namespace XYZ {
 	}
 	bool EntityManager::IsValid(Entity entity) const
 	{
-		return m_Entities.Valid(entity);
+		return m_Entities.Range() > entity && m_Entities.Valid(entity);
 	}
 }

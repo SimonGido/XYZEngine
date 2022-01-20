@@ -18,6 +18,7 @@ namespace XYZ {
 
 		void EditorLayer::OnAttach()
 		{
+			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
 			s_Data.Init();
 			m_Scene = Ref<Scene>::Create("TestScene");
 			m_Scene->SetViewportSize(
@@ -55,6 +56,9 @@ namespace XYZ {
 		void EditorLayer::OnDetach()
 		{
 			s_Data.Shutdown();
+			SceneSerializer serializer(m_Scene);
+			serializer.Serialize("Assets/Scenes/Scene.xyz");
+			ScriptEngine::Shutdown();
 		}
 		void EditorLayer::OnUpdate(Timestep ts)
 		{

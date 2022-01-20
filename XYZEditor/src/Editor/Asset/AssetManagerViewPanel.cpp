@@ -56,9 +56,8 @@ namespace XYZ {
 
 		void AssetManagerViewPanel::displayAllMetadata()
 		{
-			for (auto it : AssetManager::s_AssetMetadata)
+			for (const auto& [handle, metadata] : AssetManager::s_Registry)
 			{
-				auto& metadata = it.second;
 				std::string handle = metadata.Handle.ToString();
 				std::string filePath = metadata.FilePath.string();
 				std::string assetType = Utils::AssetTypeToString(metadata.Type);
@@ -92,9 +91,8 @@ namespace XYZ {
 
 		void AssetManagerViewPanel::displaySearchedMetadata(const std::string& searchString)
 		{
-			for (auto it : AssetManager::s_AssetMetadata)
+			for (const auto &[handle, metadata] : AssetManager::s_Registry)
 			{
-				auto& metadata = it.second;
 				std::string handle = metadata.Handle.ToString();
 				std::string filePath = metadata.FilePath.string();
 				std::string assetType = Utils::AssetTypeToString(metadata.Type);

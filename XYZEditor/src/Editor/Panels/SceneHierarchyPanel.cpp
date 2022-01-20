@@ -36,7 +36,7 @@ namespace XYZ {
             {
                 if (m_Context.Raw())
                 {                  
-                    drawEntityNode(SceneEntity(m_Context->m_SceneEntity, m_Context.Raw()));
+                    drawEntityNode(SceneEntity(m_Context->m_SceneEntity, m_Context.Raw()), true);
                     if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
                     {
                         m_Context->SetSelectedEntity(Entity());
@@ -65,13 +65,16 @@ namespace XYZ {
         }
     
 
-        void SceneHierarchyPanel::drawEntityNode(const SceneEntity& entity)
+        void SceneHierarchyPanel::drawEntityNode(const SceneEntity& entity, bool defaultOpen)
         {
             const auto* tag = &entity.GetComponent<SceneTagComponent>().Name;
             const auto* rel = &entity.GetComponent<Relationship>();
 
             ImGuiTreeNodeFlags flags = (m_Context->GetSelectedEntity() == entity ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
             flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+            if (defaultOpen)
+                flags |= ImGuiTreeNodeFlags_DefaultOpen;
+
             const bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag->c_str());
             dragAndDrop(entity);
             
@@ -101,7 +104,7 @@ namespace XYZ {
             if (opened)
             {
                 if (rel->GetFirstChild())
-                    drawEntityNode(SceneEntity(rel->GetFirstChild(), m_Context.Raw()));
+                    drawEntityNode(SceneEntity(rel->GetFirstChild(), m_Context.Raw()), false);
                 ImGui::TreePop();
             }
 
@@ -109,7 +112,7 @@ namespace XYZ {
             tag = &entity.GetComponent<SceneTagComponent>().Name;
             rel = &entity.GetComponent<Relationship>();
             if (rel->GetNextSibling())
-                drawEntityNode(SceneEntity(rel->GetNextSibling(), m_Context.Raw()));
+                drawEntityNode(SceneEntity(rel->GetNextSibling(), m_Context.Raw()), false);
 
             if (entityDeleted)
             {

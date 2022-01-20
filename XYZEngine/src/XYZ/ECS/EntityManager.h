@@ -13,6 +13,7 @@ namespace XYZ {
 		EntityManager(const EntityManager& other);
 		EntityManager(EntityManager&& other) noexcept;
 
+		EntityManager& operator=(const EntityManager& other);
 		EntityManager& operator=(EntityManager&& other) noexcept;
 
 		Entity CreateEntity();

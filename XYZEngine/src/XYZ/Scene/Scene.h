@@ -60,7 +60,7 @@ namespace XYZ {
         SceneEntity GetSceneEntity();
         SceneEntity GetSelectedEntity();
 
-        ECSManager& GetECS() { return m_ECS; }
+        ECSManager&       GetECS() { return m_ECS; }
         const ECSManager& GetECS() const { return m_ECS; }
         inline const std::vector<Entity>& GetEntities() const { return m_Entities; }
 

@@ -19,6 +19,14 @@ namespace XYZ {
 		m_OnDestruction(std::move(other.m_OnDestruction))
 	{
 	}
+	ECSManager& ECSManager::operator=(const ECSManager& other)
+	{
+		m_ComponentManager  = other.m_ComponentManager;
+		m_EntityManager		= other.m_EntityManager;
+		m_OnConstruction	= other.m_OnConstruction;
+		m_OnDestruction		= other.m_OnDestruction;
+		return *this;
+	}
 	ECSManager& ECSManager::operator=(ECSManager&& other) noexcept
 	{
 		m_ComponentManager = std::move(other.m_ComponentManager);

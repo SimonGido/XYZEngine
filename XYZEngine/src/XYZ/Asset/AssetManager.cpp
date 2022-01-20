@@ -11,9 +11,8 @@
 namespace XYZ
 {
 	MemoryPool												AssetManager::s_Pool = MemoryPool(1024 * 1024 * 10);
+	AssetRegistry											AssetManager::s_Registry;
 	std::unordered_map<AssetHandle, WeakRef<Asset>>			AssetManager::s_LoadedAssets;
-	std::unordered_map<AssetHandle, AssetMetadata>			AssetManager::s_AssetMetadata;
-	std::unordered_map<std::filesystem::path, AssetHandle>	AssetManager::s_AssetHandleMap;
 	std::shared_ptr<FileWatcher>							AssetManager::s_FileWatcher;
 	
 	static std::string s_Directory = "Assets";
@@ -35,7 +34,7 @@ namespace XYZ
 
 	void AssetManager::ReloadAsset(const std::filesystem::path& filepath)
 	{
-		const auto metadata = getMetadata(filepath);
+		const auto metadata = s_Registry.GetMetadata(filepath);
 		if (metadata)
 		{
 			Ref<Asset> asset = nullptr;
@@ -51,14 +50,14 @@ namespace XYZ
 
 	const AssetMetadata& AssetManager::GetMetadata(const AssetHandle& handle)
 	{
-		auto metadata = getMetadata(handle);
+		auto metadata = s_Registry.GetMetadata(handle);
 		XYZ_ASSERT(metadata, "Metadata does not exist");
 		return *metadata;
 	}
 
 	const AssetMetadata& AssetManager::GetMetadata(const std::filesystem::path& filepath)
 	{
-		auto metadata = getMetadata(filepath);
+		auto metadata = s_Registry.GetMetadata(filepath);
 		XYZ_ASSERT(metadata, "Metadata does not exist");
 		return *metadata;
 	}
@@ -70,27 +69,10 @@ namespace XYZ
 	
 	bool AssetManager::Exist(const AssetHandle& handle)
 	{
-		return getMetadata(handle) != nullptr;
+		return s_Registry.GetMetadata(handle) != nullptr;
 	}
 
-	AssetMetadata* AssetManager::getMetadata(const AssetHandle& handle)
-	{
-		auto it = s_AssetMetadata.find(handle);
-		if (it != s_AssetMetadata.end())
-			return &it->second;
 
-		return nullptr;
-	}
-
-	AssetMetadata* AssetManager::getMetadata(const std::filesystem::path& filepath)
-	{
-		auto it = s_AssetHandleMap.find(filepath);
-		if (it != s_AssetHandleMap.end())
-		{
-			return &s_AssetMetadata.find(it->second)->second;
-		}
-		return nullptr;
-	}
 
 	void AssetManager::loadAssetMetadata(const std::filesystem::path& filepath)
 	{
@@ -107,11 +89,11 @@ namespace XYZ
 		if (handle && filePath && type)
 		{
 			AssetHandle guid(handle.as<std::string>());
-			s_AssetHandleMap[filepath] = guid;
-			AssetMetadata& metadata = s_AssetMetadata[guid];
+			AssetMetadata metadata;
 			metadata.Handle = guid;
 			metadata.FilePath = filePath.as<std::string>();
 			metadata.Type = Utils::AssetTypeFromString(type.as<std::string>());
+			s_Registry.StoreMetadata(metadata);
 		}
 		else
 		{

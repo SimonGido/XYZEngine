@@ -1,0 +1,13 @@
+Scene: TestScene
+Entities:
+  - Entity: c9c7f31e-5839-4316-8459-483462cb74f4
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Depth: 1
+    ScriptComponent:
+      ModuleName: Example.Camera

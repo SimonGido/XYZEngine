@@ -13,18 +13,10 @@
 #include "AssetSerializer.h"
 #include "AssetImporter.h"
 #include "AssetFileListener.h"
+#include "AssetRegistry.h"
 #include "Asset.h"
 
-namespace std {
-	template <>
-	struct hash<std::filesystem::path>
-	{
-		std::size_t operator()(const std::filesystem::path& path) const
-		{
-			return hash_value(path);
-		}
-	};
-}
+
 
 namespace XYZ {
 
@@ -89,9 +81,6 @@ namespace XYZ {
 
 		static bool Exist(const AssetHandle& handle);
 	private:
-		static AssetMetadata* getMetadata(const GUID& handle);
-		static AssetMetadata* getMetadata(const std::filesystem::path& filepath);
-
 		static void loadAssetMetadata(const std::filesystem::path& filepath);
 		static void writeAssetMetadata(const AssetMetadata& metadata);
 
@@ -99,10 +88,8 @@ namespace XYZ {
 		static void reloadAsset(const AssetMetadata& metadata, Ref<Asset>& asset);
 	private:
 		static MemoryPool											  s_Pool;
-		static std::unordered_map<AssetHandle, WeakRef<Asset>>		  s_LoadedAssets;
-		static std::unordered_map<AssetHandle, AssetMetadata>		  s_AssetMetadata;
-		static std::unordered_map<std::filesystem::path, AssetHandle> s_AssetHandleMap;
-		
+		static AssetRegistry										  s_Registry;
+		static std::unordered_map<AssetHandle, WeakRef<Asset>>		  s_LoadedAssets;		
 		static std::shared_ptr<FileWatcher>							  s_FileWatcher;
 	private:
 		friend Editor::AssetBrowser;
@@ -120,8 +107,7 @@ namespace XYZ {
 
 		XYZ_ASSERT(!FileSystem::Exists(metadata.FilePath.string()), "File already exists");
 		
-		s_AssetMetadata[metadata.Handle] = metadata;
-		s_AssetHandleMap[metadata.FilePath] = metadata.Handle;
+		s_Registry.StoreMetadata(metadata);
 
 		Ref<T> asset = Utils::CreateRef<T>(std::forward<Args>(args)...);
 		asset->m_Handle = metadata.Handle;
@@ -139,7 +125,7 @@ namespace XYZ {
 		Ref<Asset> asset = nullptr;
 		if (!s_LoadedAssets[assetHandle].IsValid())
 		{
-			auto metadata = getMetadata(assetHandle);
+			auto metadata = s_Registry.GetMetadata(assetHandle);
 			bool loaded = AssetImporter::TryLoadData(*metadata, asset);
 			if (!loaded)
 				return nullptr;
@@ -155,8 +141,7 @@ namespace XYZ {
 	template<typename T>
 	inline Ref<T> AssetManager::GetAsset(const std::filesystem::path& filepath)
 	{
-		std::string metaDataPath = filepath.string() + ".meta";
-		auto& metadata = GetMetadata(std::filesystem::path(metaDataPath));
+		auto& metadata = GetMetadata(filepath);
 		return GetAsset<T>(metadata.Handle);
 	}
 }

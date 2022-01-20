@@ -15,7 +15,7 @@ namespace XYZ {
 			virtual void SetSceneContext(const Ref<Scene>& scene) override;
 
 		private:
-			void drawEntityNode(const SceneEntity& entity);
+			void drawEntityNode(const SceneEntity& entity, bool defaultOpen);
 			void dragAndDrop(const SceneEntity& entity);
 		private:
 			Ref<Scene>				    m_Context;

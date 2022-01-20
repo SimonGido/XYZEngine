@@ -83,11 +83,11 @@ namespace XYZ {
 		out << YAML::Key << "SpriteRenderer";
 		out << YAML::BeginMap; // SpriteRenderer
 
-		//out << YAML::Key << "MaterialAsset" << YAML::Value << val.Material->Handle;
-		//out << YAML::Key << "SubTextureAsset" << YAML::Value << val.SubTexture->Handle;
-		out << YAML::Key << "Color" << YAML::Value << val.Color;
-		out << YAML::Key << "SortLayer" << YAML::Value << val.SortLayer;
-		out << YAML::Key << "Visible" << YAML::Value << val.Visible;
+		out << YAML::Key << "Material"	<< YAML::Value << val.Material->GetHandle();
+		out << YAML::Key << "SubTexture"<< YAML::Value << val.SubTexture->GetHandle();
+		out << YAML::Key << "Color"		<< YAML::Value << val.Color;
+		out << YAML::Key << "SortLayer"	<< YAML::Value << val.SortLayer;
+		out << YAML::Key << "Visible"	<< YAML::Value << val.Visible;
 		out << YAML::EndMap; // SpriteRenderer
 	}
 	template <>
@@ -173,38 +173,38 @@ namespace XYZ {
 		out << YAML::BeginMap;
 
 		out << YAML::Key << "ModuleName" << val.ModuleName;
-		for (auto& field : val.GetFields())
-		{
-			out << YAML::Key << field.GetName();
-			if (field.GetType() == PublicFieldType::Float)
-			{
-				out << YAML::Value << field.GetStoredValue<float>();
-			}
-			else if (field.GetType() == PublicFieldType::Int)
-			{
-				out << YAML::Value << field.GetStoredValue<int32_t>();
-			}
-			else if (field.GetType() == PublicFieldType::UnsignedInt)
-			{
-				out << YAML::Value << field.GetStoredValue<uint32_t>();
-			}
-			else if (field.GetType() == PublicFieldType::String)
-			{
-				out << YAML::Value << std::string(field.GetStoredValue<char*>());
-			}
-			else if (field.GetType() == PublicFieldType::Vec2)
-			{
-				out << YAML::Value << field.GetStoredValue<glm::vec2>();
-			}
-			else if (field.GetType() == PublicFieldType::Vec3)
-			{
-				out << YAML::Value << field.GetStoredValue<glm::vec3>();
-			}
-			else if (field.GetType() == PublicFieldType::Vec4)
-			{
-				out << YAML::Value << field.GetStoredValue<glm::vec4>();
-			}
-		}
+		//for (auto& field : val.GetFields())
+		//{
+		//	out << YAML::Key << field.GetName();
+		//	if (field.GetType() == PublicFieldType::Float)
+		//	{
+		//		out << YAML::Value << field.GetStoredValue<float>();
+		//	}
+		//	else if (field.GetType() == PublicFieldType::Int)
+		//	{
+		//		out << YAML::Value << field.GetStoredValue<int32_t>();
+		//	}
+		//	else if (field.GetType() == PublicFieldType::UnsignedInt)
+		//	{
+		//		out << YAML::Value << field.GetStoredValue<uint32_t>();
+		//	}
+		//	else if (field.GetType() == PublicFieldType::String)
+		//	{
+		//		out << YAML::Value << std::string(field.GetStoredValue<char*>());
+		//	}
+		//	else if (field.GetType() == PublicFieldType::Vec2)
+		//	{
+		//		out << YAML::Value << field.GetStoredValue<glm::vec2>();
+		//	}
+		//	else if (field.GetType() == PublicFieldType::Vec3)
+		//	{
+		//		out << YAML::Value << field.GetStoredValue<glm::vec3>();
+		//	}
+		//	else if (field.GetType() == PublicFieldType::Vec4)
+		//	{
+		//		out << YAML::Value << field.GetStoredValue<glm::vec4>();
+		//	}
+		//}
 		out << YAML::EndMap; // Script Component
 	}
 
@@ -274,54 +274,62 @@ namespace XYZ {
 		entity.AddComponent(scriptComponent);
 
 		const auto& component = entity.GetComponent<ScriptComponent>();
-		for (auto& field : component.GetFields())
-		{
-			auto val = data[field.GetName()];
-			if (!val)
-				continue;
-			if (field.GetType() == PublicFieldType::Float)
-			{
-				field.SetStoredValue<float>(val.as<float>());
-			}
-			else if (field.GetType() == PublicFieldType::Int)
-			{
-				field.SetStoredValue<int32_t>(val.as<int32_t>());
-			}
-			else if (field.GetType() == PublicFieldType::UnsignedInt)
-			{
-				field.SetStoredValue<uint32_t>(val.as<uint32_t>());
-			}
-			else if (field.GetType() == PublicFieldType::String)
-			{
-				std::string str = val.as<std::string>();
-				field.SetStoredValue<const char*>(str.c_str());
-			}
-			else if (field.GetType() == PublicFieldType::Vec2)
-			{
-				field.SetStoredValue <glm::vec2>(val.as<glm::vec2>());
-			}
-			else if (field.GetType() == PublicFieldType::Vec3)
-			{
-				field.SetStoredValue <glm::vec3>(val.as<glm::vec3>());
-			}
-			else if (field.GetType() == PublicFieldType::Vec4)
-			{
-				field.SetStoredValue <glm::vec4>(val.as<glm::vec4>());
-			}
-		}
+		//for (auto& field : component.GetFields())
+		//{
+		//	auto val = data[field.GetName()];
+		//	if (!val)
+		//		continue;
+		//	if (field.GetType() == PublicFieldType::Float)
+		//	{
+		//		field.SetStoredValue<float>(val.as<float>());
+		//	}
+		//	else if (field.GetType() == PublicFieldType::Int)
+		//	{
+		//		field.SetStoredValue<int32_t>(val.as<int32_t>());
+		//	}
+		//	else if (field.GetType() == PublicFieldType::UnsignedInt)
+		//	{
+		//		field.SetStoredValue<uint32_t>(val.as<uint32_t>());
+		//	}
+		//	else if (field.GetType() == PublicFieldType::String)
+		//	{
+		//		std::string str = val.as<std::string>();
+		//		field.SetStoredValue<const char*>(str.c_str());
+		//	}
+		//	else if (field.GetType() == PublicFieldType::Vec2)
+		//	{
+		//		field.SetStoredValue <glm::vec2>(val.as<glm::vec2>());
+		//	}
+		//	else if (field.GetType() == PublicFieldType::Vec3)
+		//	{
+		//		field.SetStoredValue <glm::vec3>(val.as<glm::vec3>());
+		//	}
+		//	else if (field.GetType() == PublicFieldType::Vec4)
+		//	{
+		//		field.SetStoredValue <glm::vec4>(val.as<glm::vec4>());
+		//	}
+		//}
 	}
 
 	template <>
 	void SceneSerializer::deserialize<SpriteRenderer>(YAML::Node& data, SceneEntity entity)
 	{
-		const GUID materialHandle(data["MaterialAsset"].as<std::string>());
-		const GUID subTextureHandle(data["SubTextureAsset"].as<std::string>());
-		const glm::vec4 color		= data["Color"].as<glm::vec4>();
-		const uint16_t sortLayer  = data["SortLayer"].as<uint16_t>();
-		const bool visible	    = data["Visible"].as<bool>();
+		const GUID materialHandle(data["Material"].as<std::string>());
+		const GUID subTextureHandle(data["SubTexture"].as<std::string>());
+		const glm::vec4 color	 = data["Color"].as<glm::vec4>();
+		const uint16_t sortLayer = data["SortLayer"].as<uint16_t>();
+		const bool visible	     = data["Visible"].as<bool>();
 
-		const Ref<Material> material = AssetManager::GetAsset<Material>(materialHandle);
-		const Ref<SubTexture> subTexture = AssetManager::GetAsset<SubTexture>(subTextureHandle);
+		Ref<Material> material;
+		Ref<SubTexture> subTexture;
+		if (AssetManager::Exist(materialHandle))
+		{
+			material = AssetManager::GetAsset<Material>(materialHandle);
+		}
+		if (AssetManager::Exist(subTextureHandle))
+		{
+			subTexture = AssetManager::GetAsset<SubTexture>(subTextureHandle);
+		}
 
 		const SpriteRenderer spriteRenderer(
 			material,

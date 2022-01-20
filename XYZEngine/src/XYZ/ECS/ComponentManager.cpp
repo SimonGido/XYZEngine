@@ -40,6 +40,21 @@ namespace XYZ {
 	{
 		destroyStorages();
 	}
+	ComponentManager& ComponentManager::operator=(const ComponentManager& other) noexcept
+	{
+		destroyStorages();
+		size_t counter = 0;
+		m_Storages.resize(other.m_Storages.size());
+		for (const auto storage : other.m_Storages)
+		{
+			if (storage)
+			{
+				m_Storages[counter] = storage->Copy();
+			}
+			counter++;
+		}
+		return *this;
+	}
 	ComponentManager& ComponentManager::operator=(ComponentManager&& other) noexcept
 	{
 		destroyStorages();

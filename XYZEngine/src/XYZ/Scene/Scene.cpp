@@ -22,13 +22,25 @@
 
 
 namespace XYZ {
-
-	static std::vector<TransformComponent> s_EditTransforms;
+	static ECSManager s_ECSCopyEdit;
 
 	enum RenderSortFlags
 	{
 		MaterialFlag = 32
 	};
+
+	template <typename T>
+	void EraseFromVector(std::vector<T>& vec, const T& val)
+	{
+		for (auto it = vec.begin(); it != vec.end(); ++it)
+		{
+			if ((*it) == val)
+			{
+				vec.erase(it);
+				return;
+			}
+		}
+	}
 
 	Scene::Scene(const std::string& name)
 		:
@@ -99,27 +111,40 @@ namespace XYZ {
 
 	void Scene::DestroyEntity(SceneEntity entity)
 	{
-		Entity lastEntity = m_Entities.back();
+		Relationship::RemoveRelation(entity.m_ID, m_ECS);
 		if (entity.m_ID == m_SelectedEntity)
 			m_SelectedEntity = Entity();
-		
-		for (auto it = m_Entities.begin(); it != m_Entities.end(); ++it)
+
+		std::stack<Entity> entities;
+		auto& parentRel = m_ECS.GetComponent<Relationship>(entity.m_ID);
+		if (parentRel.FirstChild)
+			entities.push(parentRel.FirstChild);
+
+		while (!entities.empty())
 		{
-			if ((*it) == entity.m_ID)
-			{
-				*it = std::move(m_Entities.back());
-				m_Entities.pop_back();
-				break;
-			}
+			Entity tmpEntity = entities.top();
+			entities.pop();
+			if (tmpEntity == m_SelectedEntity)
+				m_SelectedEntity = Entity();
+
+			const auto& rel = m_ECS.GetComponent<Relationship>(tmpEntity);
+			if (rel.FirstChild)
+				entities.push(rel.FirstChild);
+			if (rel.NextSibling)
+				entities.push(rel.NextSibling);
+
+			m_ECS.DestroyEntity(tmpEntity);
+			EraseFromVector(m_Entities, tmpEntity);
 		}
-		Relationship::RemoveRelation(entity.m_ID, m_ECS);
-		m_ECS.DestroyEntity(Entity(entity.m_ID));
+
+		
+		EraseFromVector(m_Entities, entity.m_ID);
+		m_ECS.DestroyEntity(entity.m_ID);
 	}
 
 	void Scene::OnPlay()
 	{
-		s_EditTransforms.clear();
-		//s_EditTransforms.resize((size_t)m_ECS.GetHighestID() + 1);
+		s_ECSCopyEdit = m_ECS;
 		
 		// Find Camera
 		m_ECS.CreateStorage<CameraComponent>();
@@ -135,23 +160,16 @@ namespace XYZ {
 			m_State = SceneState::Edit;
 			return;
 		}
-		// Store original transform components and initialize physics
-		for (auto entityID : m_Entities)
-		{
-			SceneEntity entity(entityID, this);
-			const TransformComponent& transform = entity.GetComponent<TransformComponent>();
-			s_EditTransforms[entityID] = transform;
-		}
 
 		setupPhysics();
-	
+
 		// Copy stored values to runtime
 		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();
 		for (size_t i = 0; i < scriptStorage.Size(); ++i)
 		{
 			ScriptComponent& script = scriptStorage.GetComponentAtIndex(i);
 			SceneEntity entity(scriptStorage.GetEntityAtIndex(i), this);
-			ScriptEngine::InstantiateEntityClass(entity);
+			ScriptEngine::CopyPublicFieldsToRuntime(entity);
 			ScriptEngine::OnCreateEntity(entity);
 		}
 
@@ -164,11 +182,7 @@ namespace XYZ {
 
 	void Scene::OnStop()
 	{
-		for (auto entity : m_Entities)
-		{
-			SceneEntity ent(entity, this);
-			ent.GetComponent<TransformComponent>() = s_EditTransforms[(uint32_t)entity];
-		}
+		m_ECS = std::move(s_ECSCopyEdit);
 		{
 			ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
 			auto& rigidStorage = m_ECS.GetStorage<RigidBody2DComponent>();
@@ -407,11 +421,12 @@ namespace XYZ {
 
 	void Scene::onScriptComponentConstruct(Entity entity)
 	{
-		ScriptEngine::InitScriptEntity({ entity, this });
+		ScriptEngine::CreateScriptEntityInstance({ entity, this });
 	}
 
 	void Scene::onScriptComponentDestruct(Entity entity)
 	{
+		ScriptEngine::DestroyScriptEntityInstance({ entity, this });
 	}
 
 	void Scene::updateHierarchy()
