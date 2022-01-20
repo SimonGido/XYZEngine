@@ -1,6 +1,6 @@
 Scene: TestScene
 Entities:
-  - Entity: c9c7f31e-5839-4316-8459-483462cb74f4
+  - Entity: 19c0d72e-2566-4210-89ff-4142b4325702
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:

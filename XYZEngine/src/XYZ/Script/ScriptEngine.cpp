@@ -263,7 +263,6 @@ namespace XYZ {
 
 
 
-
 	MonoObject* ScriptEntityInstance::GetInstance()
 	{
 		XYZ_ASSERT(Handle, "Entity has not been instantiated!");
@@ -274,6 +273,7 @@ namespace XYZ {
 	{
 		return Handle != 0;
 	}
+
 
 	void ScriptEngine::Init(const std::string& assemblyPath)
 	{
@@ -496,6 +496,11 @@ namespace XYZ {
 	MonoDomain* ScriptEngine::GetMonoDomain()
 	{
 		return s_MonoDomain;
+	}
+
+	const std::vector<PublicField>& ScriptEngine::GetPublicFields(const SceneEntity& entity)
+	{
+		return s_ScriptEntityInstances.GetData(entity.ID()).Fields;
 	}
 
 	const SparseArray<ScriptEntityInstance>& ScriptEngine::GetScriptEntityInstances()

@@ -18,13 +18,13 @@ namespace XYZ {
 
 	struct ScriptEntityInstance
 	{
-		uint32_t				 Handle = 0;
-		Scene*					 SceneInstance = nullptr;
-		EntityScriptClass*	     ScriptClass = nullptr;
-		std::vector<PublicField> Fields;
-
 		MonoObject* GetInstance();
 		bool		IsRuntimeAvailable() const;
+
+		uint32_t				 Handle = 0;
+		Scene*					 SceneInstance = nullptr;
+		EntityScriptClass*		 ScriptClass = nullptr;
+		std::vector<PublicField> Fields;
 	};
 
 	class ScriptEngine
@@ -54,6 +54,7 @@ namespace XYZ {
 		
 		static MonoDomain* GetMonoDomain();
 
+		static const std::vector<PublicField>&			GetPublicFields(const SceneEntity& entity);
 		static const SparseArray<ScriptEntityInstance>& GetScriptEntityInstances();
 		static const std::vector<std::string>&			GetEntityClasses();
 	private:
