@@ -133,9 +133,11 @@ namespace XYZ {
 	}
 	void VulkanTexture2D::Lock()
 	{
+		m_Locked = true;
 	}
 	void VulkanTexture2D::Unlock()
 	{
+		m_Locked = false;
 	}
 	void VulkanTexture2D::GenerateMips()
 	{

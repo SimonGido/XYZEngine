@@ -106,7 +106,15 @@ namespace XYZ {
 			mono_add_internal_call("XYZ.Entity::HasComponent_Native",    HasComponent);
 			mono_add_internal_call("XYZ.Entity::CreateComponent_Native", EmplaceComponent);
 			mono_add_internal_call("XYZ.Entity::RemoveComponent_Native", RemoveComponent);
+			mono_add_internal_call("XYZ.Entity::Create_Native", Create);
 		}
-		
+
+		uint32_t SceneEntityNative::Create()
+		{
+			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+			XYZ_ASSERT(scene.Raw(), "No active scene!");
+
+			return scene->CreateEntity("", GUID()).ID();
+		}	
 	}
 }

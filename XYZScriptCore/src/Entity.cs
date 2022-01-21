@@ -30,6 +30,10 @@ namespace XYZ
             return HasComponent_Native(ID, typeof(T));
         }
 
+        public void RemoveComponent<T>() where T : Component, new ()
+        {
+            RemoveComponent_Native(ID, typeof(T));
+        }
         public T GetComponent<T>() where T : Component, new()
         {
             if (HasComponent<T>())
@@ -41,10 +45,19 @@ namespace XYZ
             return null;
         }
 
+        public static Entity Create()
+        {
+            return new Entity(Create_Native());
+        }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern void CreateComponent_Native(uint entityID, Type type);
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern bool HasComponent_Native(uint entityID, Type type);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern bool RemoveComponent_Native(uint entityID, Type type);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern uint Create_Native();
     }
 }

@@ -7,6 +7,7 @@ namespace XYZ {
 		{
 			static void Register();
 			
+			static uint32_t Create();
 		};
 	}
 }

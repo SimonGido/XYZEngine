@@ -46,6 +46,7 @@ namespace XYZ {
 		TextureProperties m_Properties;
 		Ref<Image2D>	  m_Image;
 		ImageFormat		  m_Format = ImageFormat::None;
+		std::atomic_bool  m_Locked = false;
 	};
 
 }

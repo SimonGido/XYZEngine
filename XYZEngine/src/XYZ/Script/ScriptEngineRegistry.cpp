@@ -12,6 +12,10 @@
 #include "Wrappers/Components/SpriteRendererWrappers.h"
 #include "Wrappers/Components/RigidBody2DWrapper.h"
 
+#include "Wrappers/Renderer/Texture2DWrapper.h"
+#include "Wrappers/Renderer/SubTextureWrapper.h"
+
+
 #include "Wrappers/SceneEntityNative.h"
 #include "Wrappers/InputNative.h"
 
@@ -21,11 +25,18 @@ namespace XYZ {
 
 	void ScriptEngineRegistry::RegisterAll()
 	{
-		// Transform component
+
 		Script::InputNative::Register();
+
+		// Components
 		Script::SceneEntityNative::Register();
 		Script::TransformComponentNative::Register();
 		Script::RigidBody2DNative::Register();
+		////////////////////////
+	
+		// Renderer
+		Script::Texture2DNative::Register();
+		Script::SubTextureNative::Register();
 		////////////////////////
 	}
 }

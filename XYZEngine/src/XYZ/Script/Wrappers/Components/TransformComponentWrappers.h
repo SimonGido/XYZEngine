@@ -1,13 +1,7 @@
 #pragma once
+#include "XYZ/Script/ScriptWrappers.h"
+
 #include <glm/glm.hpp>
-
-
-extern "C"
-{
-	typedef struct _MonoString MonoString;
-	typedef struct _MonoArray MonoArray;
-}
-
 
 
 namespace XYZ {
