@@ -22,12 +22,16 @@ namespace XYZ {
 		:
 		m_Blocks(std::move(other.m_Blocks)),
 		m_FreeChunks(std::move(other.m_FreeChunks)),
+		m_Allocations(std::move(other.m_Allocations)),
 		m_BlockInUse(other.m_BlockInUse),
 		m_BlockSize(other.m_BlockSize),
 		m_NumAllocations(other.m_NumAllocations),
 		m_MemoryUsed(other.m_MemoryUsed),
 		m_Dirty(other.m_Dirty)
 	{
+		other.m_NumAllocations = 0;
+		other.m_MemoryUsed = 0;
+		other.m_BlockInUse = 0;
 	}
 	MemoryPool::~MemoryPool()
 	{
@@ -52,11 +56,16 @@ namespace XYZ {
 	{
 		m_Blocks = std::move(other.m_Blocks);
 		m_FreeChunks = std::move(other.m_FreeChunks);
+		m_Allocations = std::move(other.m_Allocations);
 		m_BlockInUse = other.m_BlockInUse;
 		m_BlockSize = other.m_BlockSize;
 		m_NumAllocations = other.m_NumAllocations;
 		m_MemoryUsed = other.m_MemoryUsed;
 		m_Dirty = other.m_Dirty;
+
+		other.m_NumAllocations = 0;
+		other.m_MemoryUsed = 0;
+
 		return *this;
 	}
 
