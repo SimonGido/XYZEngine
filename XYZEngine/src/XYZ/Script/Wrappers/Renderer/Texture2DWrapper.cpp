@@ -7,15 +7,6 @@
 namespace XYZ {
 	namespace Script {
 
-		static std::string MonoStringToString(MonoString* str)
-		{
-			std::string out;
-			mono_unichar2* chl = mono_string_chars(str);
-			for (int i = 0; i < mono_string_length(str); i++)
-				out += chl[i];
-	
-			return out;
-		}
 
 		void Texture2DNative::Register()
 		{
@@ -31,7 +22,7 @@ namespace XYZ {
 		}
 		Ref<Texture2D>* Texture2DNative::Constructor_Path(MonoString* path)
 		{
-			Ref<Texture2D> texture = Texture2D::Create(MonoStringToString(path));
+			Ref<Texture2D> texture = Texture2D::Create(mono_string_to_utf8(path));
 			return new Ref<Texture2D>(texture);
 		}
 		void Texture2DNative::Destructor(Ref<Texture2D>* instance)

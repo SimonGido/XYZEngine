@@ -14,6 +14,8 @@
 
 #include "Wrappers/Renderer/Texture2DWrapper.h"
 #include "Wrappers/Renderer/SubTextureWrapper.h"
+#include "Wrappers/Renderer/MaterialWrapper.h"
+#include "Wrappers/Renderer/ShaderWrapper.h"
 
 
 #include "Wrappers/SceneEntityNative.h"
@@ -37,6 +39,8 @@ namespace XYZ {
 		// Renderer
 		Script::Texture2DNative::Register();
 		Script::SubTextureNative::Register();
+		Script::ShaderNative::Register();
+		Script::MaterialNative::Register();
 		////////////////////////
 	}
 }
