@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace XYZ
 {
-    public class SubTexture
+    public class SubTexture : UnmanagedResource
     {
         internal IntPtr   m_UnmanagedInstance;
 
@@ -19,6 +19,10 @@ namespace XYZ
         public SubTexture(Texture2D texture, ref Vector4 texCoords)
         {
             m_UnmanagedInstance = ConstructorTexCoords_Native(texture.m_UnmanagedInstance, ref texCoords);
+        }
+        public override void Destroy()
+        {
+            Destructor_Native(m_UnmanagedInstance);
         }
         public Texture2D GetTexture()
         {
@@ -31,8 +35,15 @@ namespace XYZ
             return result;
         }
 
+        internal SubTexture(IntPtr instance)
+        {
+            m_UnmanagedInstance = instance;
+        }
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern IntPtr Constructor_Native(IntPtr textureInstance);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern IntPtr Destructor_Native(IntPtr unmanagedInstance);
         
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern IntPtr ConstructorTexCoords_Native(IntPtr textureInstance, ref Vector4 texCoords);

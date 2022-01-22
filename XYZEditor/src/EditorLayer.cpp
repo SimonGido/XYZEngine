@@ -18,13 +18,16 @@ namespace XYZ {
 
 		void EditorLayer::OnAttach()
 		{
-			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
 			s_Data.Init();
 			m_Scene = Ref<Scene>::Create("TestScene");
 			m_Scene->SetViewportSize(
 				Application::Get().GetWindow().GetWidth(),
 				Application::Get().GetWindow().GetHeight()
 			);
+			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
+			ScriptEngine::SetSceneContext(m_Scene);
+
+
 			m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification());
 			m_CameraTexture = Texture2D::Create("Resources/Editor/Camera.png");
 			m_CommandBuffer = RenderCommandBuffer::Create(0, "Overlay");
@@ -63,7 +66,8 @@ namespace XYZ {
 		void EditorLayer::OnUpdate(Timestep ts)
 		{
 			m_EditorManager.OnUpdate(ts);
-			renderOverlay();
+			if (m_Scene->GetState() == SceneState::Edit)
+				renderOverlay();
 
 			if (m_SelectedEntity != m_Scene->GetSelectedEntity())
 			{

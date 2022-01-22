@@ -182,7 +182,6 @@ namespace XYZ {
 
 	void Scene::OnStop()
 	{
-		m_ECS = std::move(s_ECSCopyEdit);
 		{
 			ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
 			auto& rigidStorage = m_ECS.GetStorage<RigidBody2DComponent>();
@@ -206,6 +205,9 @@ namespace XYZ {
 
 		delete[]m_PhysicsEntityBuffer;
 		m_PhysicsEntityBuffer = nullptr;
+
+		m_ECS = std::move(s_ECSCopyEdit);
+		m_SelectedEntity = SceneEntity();
 	}
 
 	void Scene::OnUpdate(Timestep ts)

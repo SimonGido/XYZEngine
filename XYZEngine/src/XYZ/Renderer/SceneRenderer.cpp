@@ -109,7 +109,6 @@ namespace XYZ {
 	}
 	void SceneRenderer::BeginScene(const SceneRendererCamera& camera)
 	{
-		XYZ_ASSERT(!m_ActiveScene.Raw(), "No Scene set");
 		m_SceneCamera = camera;
 
 		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
@@ -122,7 +121,6 @@ namespace XYZ {
 	}
 	void SceneRenderer::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition)
 	{
-		XYZ_ASSERT(m_ActiveScene.Raw(), "No Scene set");
 
 		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
 		updateViewportSize();

@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Renderer/Material.h"
+#include "XYZ/Script/ScriptWrappers.h"
 
 namespace XYZ {
 	namespace Script {

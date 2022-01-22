@@ -158,25 +158,19 @@ namespace XYZ {
 	{
 		destroy();
 		
-		Ref<VulkanShader> instance = this;
-		instance->m_PipelineShaderStageCreateInfos.clear();
-		instance->m_DescriptorSets.clear();
-		instance->m_PushConstantRanges.clear();
-		instance->m_Buffers.clear();
+		m_PipelineShaderStageCreateInfos.clear();
+		m_DescriptorSets.clear();
+		m_PushConstantRanges.clear();
+		m_Buffers.clear();
 
-		instance->preProcess(Utils::ReadFile(instance->m_AssetPath));
+		preProcess(Utils::ReadFile(m_AssetPath));
 		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
-		instance->compileOrGetVulkanBinaries(shaderData, forceCompile);
-		instance->reflectAllStages(shaderData);
-
-		Renderer::Submit([instance, shaderData, forceCompile]() mutable {
-			
-			
-			instance->createProgram(shaderData);
-			instance->createDescriptorSetLayout();
-			instance->m_Compiled = true;
-			Renderer::OnShaderReload(instance->GetHash());
-		});		
+		compileOrGetVulkanBinaries(shaderData, forceCompile);
+		reflectAllStages(shaderData);
+		createProgram(shaderData);
+		createDescriptorSetLayout();
+		m_Compiled = true;
+		Renderer::OnShaderReload(GetHash());		
 	}
 
 	size_t VulkanShader::GetHash() const

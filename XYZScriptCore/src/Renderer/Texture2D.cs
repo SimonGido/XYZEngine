@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace XYZ
 {
-    public class Texture2D
+    public class Texture2D : UnmanagedResource
     {
         public Texture2D(uint width, uint height)
         {
@@ -16,9 +16,10 @@ namespace XYZ
         }
         public Texture2D(string path)
         {
-            m_UnmanagedInstance = ConstructorPath_Native(ref path);
+            m_UnmanagedInstance = ConstructorPath_Native(path);
         }
-        ~Texture2D()
+  
+        public override void Destroy()
         {
             Destructor_Native(m_UnmanagedInstance);
         }
@@ -32,13 +33,13 @@ namespace XYZ
         {
             m_UnmanagedInstance = instance;
         }
-
+      
         internal IntPtr m_UnmanagedInstance;
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern IntPtr Constructor_Native(uint width, uint height);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern IntPtr ConstructorPath_Native(ref string path);
+        internal static extern IntPtr ConstructorPath_Native(string path);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void Destructor_Native(IntPtr unmanagedInstance);
         [MethodImpl(MethodImplOptions.InternalCall)]
