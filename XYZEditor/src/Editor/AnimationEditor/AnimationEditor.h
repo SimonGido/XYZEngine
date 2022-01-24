@@ -1,12 +1,15 @@
 #pragma once
-#include "XYZ/Animation/Animation.h"
+#include "Editor/EditorPanel.h"
 #include "AnimationSequencer.h"
+
+#include "XYZ/Animation/Animation.h"
 #include "XYZ/Animation/Animator.h"
+
 
 namespace XYZ {
 	namespace Editor {
 
-		class AnimationEditor
+		class AnimationEditor : public EditorPanel
 		{
 		public:
 			struct ClassData
@@ -15,15 +18,14 @@ namespace XYZ {
 				std::vector<std::string> VariableNames;
 			};
 			using ClassMap = std::unordered_map<std::string, std::vector<ClassData>>;
+	
+			AnimationEditor(std::string name);
 
-		
-			AnimationEditor();
+			virtual void OnImGuiRender(bool& open) override;
+			virtual void OnUpdate(Timestep ts) override;
+			virtual void SetSceneContext(const Ref<Scene>& scene) override;
 
 			void SetContext(const Ref<Animator>& context);
-			void SetScene(const Ref<Scene>& scene);
-
-			void OnUpdate(Timestep ts);
-			void OnImGuiRender(bool& open);
 		private:
 			void propertySection();
 			void timelineSection();

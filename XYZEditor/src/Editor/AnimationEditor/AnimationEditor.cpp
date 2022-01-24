@@ -44,8 +44,9 @@ namespace XYZ {
 				}
 			}
 		}
-		AnimationEditor::AnimationEditor()
+		AnimationEditor::AnimationEditor(std::string name)
 			:
+			EditorPanel(std::move(name)),
 			m_SelectedEntry(-1),
 			m_FirstFrame(0),
 			m_CurrentFrame(0),
@@ -64,7 +65,7 @@ namespace XYZ {
 			m_Animation = m_Context->GetAnimation();
 			m_Animation->SetNumFrames(static_cast<uint32_t>(m_Sequencer.m_FrameMax));
 		}
-		void AnimationEditor::SetScene(const Ref<Scene>& scene)
+		void AnimationEditor::SetSceneContext(const Ref<Scene>& scene)
 		{
 			m_Scene = scene;
 		}
