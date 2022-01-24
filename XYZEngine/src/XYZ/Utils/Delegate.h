@@ -50,4 +50,91 @@ namespace XYZ {
 		const void* m_Data;
 	};
 
+
+	template <typename Ret, typename... Args>
+	class DelegateManager
+	{
+	public:
+		template <auto Callable>
+		void Add();
+
+		template <auto Callable>
+		void Remove();
+
+		template <auto Callable, typename Type>
+		void Add(Type* instance);
+
+		template <auto Callable, typename Type>
+		void Remove(Type* instance);
+
+		void Execute(Args&& ...args);
+
+	private:
+		template <typename T>
+		static void eraseFromVector(std::vector<T>& vec, const T& value);
+		
+	private:
+		std::vector<Delegate<Ret(Args...)>> m_Delegates;
+	};
+
+	template<typename Ret, typename ...Args>
+	template<auto Callable>
+	inline void DelegateManager<Ret, Args...>::Add()
+	{
+		Delegate<Ref(Args...)> deleg;
+		deleg.Connect<Callable>();
+		m_Delegates.push_back(deleg);
+	}
+
+	template<typename Ret, typename ...Args>
+	template<auto Callable>
+	inline void DelegateManager<Ret, Args...>::Remove()
+	{
+		Delegate<Ref(Args...)> deleg;
+		deleg.Connect<Callable>();
+		eraseFromVector(m_Delegates, deleg);
+	}
+
+	template<typename Ret, typename ...Args>
+	template<auto Callable, typename Type>
+	inline void DelegateManager<Ret, Args...>::Add(Type* instance)
+	{
+		Delegate<Ref(Args...)> deleg;
+		deleg.Connect<Callable>(instance);
+		m_Delegates.push_back(deleg);
+	}
+
+	template<typename Ret, typename ...Args>
+	template<auto Callable, typename Type>
+	inline void DelegateManager<Ret, Args...>::Remove(Type* instance)
+	{
+		Delegate<Ref(Args...)> deleg;
+		deleg.Connect<Callable>(instance);
+		eraseFromVector(m_Delegates, deleg);
+	}
+
+	template<typename Ret, typename ...Args>
+	inline void DelegateManager<Ret, Args...>::Execute(Args && ...args)
+	{
+		for (auto& deleg : m_Delegates)
+			deleg(std::forward<Args>(args)...);
+	}
+
+	template<typename Ret, typename ...Args>
+	template <typename T>
+	inline void DelegateManager<Ret, Args...>::eraseFromVector(std::vector<T>& vec, const T& value)
+	{
+		for (auto it = vec.begin(); it != vec.end();)
+		{
+			if ((*it) == value)
+			{
+				it = vec.erase(it);
+			}
+			else
+			{
+				it++;
+			}
+		}
+	}
+
 }

@@ -12,7 +12,6 @@
 
 #include "AssetSerializer.h"
 #include "AssetImporter.h"
-#include "AssetFileListener.h"
 #include "AssetRegistry.h"
 #include "Asset.h"
 
@@ -80,12 +79,21 @@ namespace XYZ {
 		static const MemoryPool&    GetMemoryPool() { return s_Pool; }
 
 		static bool Exist(const AssetHandle& handle);
+
+
+		static std::shared_ptr<FileWatcher> GetFileWatcher() { return s_FileWatcher; }
 	private:
 		static void loadAssetMetadata(const std::filesystem::path& filepath);
 		static void writeAssetMetadata(const AssetMetadata& metadata);
 
 		static void processDirectory(const std::filesystem::path& path);
 		static void reloadAsset(const AssetMetadata& metadata, Ref<Asset>& asset);
+
+
+		static void onFileChange(const std::wstring& path);
+		static void onFileAdded(const std::wstring& path);
+		static void onFileRemoved(const std::wstring& path);
+		static void onFileRenamed(const std::wstring& path);
 	private:
 		static MemoryPool											  s_Pool;
 		static AssetRegistry										  s_Registry;

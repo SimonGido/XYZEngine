@@ -10,10 +10,12 @@ namespace XYZ {
 
 		EditorLayer::EditorLayer()
 		{
+			s_Data.Init();
 		}
 
 		EditorLayer::~EditorLayer()
 		{
+			s_Data.Shutdown();
 		}
 
 		void EditorLayer::OnAttach()
@@ -58,10 +60,10 @@ namespace XYZ {
 
 		void EditorLayer::OnDetach()
 		{
-			s_Data.Shutdown();
 			SceneSerializer serializer(m_Scene);
 			serializer.Serialize("Assets/Scenes/Scene.xyz");
 			ScriptEngine::Shutdown();
+			m_EditorManager.Clear();
 		}
 		void EditorLayer::OnUpdate(Timestep ts)
 		{

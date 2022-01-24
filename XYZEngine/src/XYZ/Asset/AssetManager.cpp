@@ -23,7 +23,11 @@ namespace XYZ
 		processDirectory(s_Directory);
 		std::wstring wdir = std::wstring(s_Directory.begin(), s_Directory.end());
 		s_FileWatcher = std::make_shared<FileWatcher>(wdir);
-		s_FileWatcher->AddListener<AssetFileListener>();
+		
+		s_FileWatcher->AddOnFileChange<&onFileChange>();
+		s_FileWatcher->AddOnFileAdded<&onFileAdded>();
+		s_FileWatcher->AddOnFileRemoved<&onFileRemoved>();
+		s_FileWatcher->AddOnFileRenamed<&onFileRenamed>();
 		s_FileWatcher->Start();
 	}
 	void AssetManager::Shutdown()
@@ -71,7 +75,6 @@ namespace XYZ
 	{
 		return s_Registry.GetMetadata(handle) != nullptr;
 	}
-
 
 
 	void AssetManager::loadAssetMetadata(const std::filesystem::path& filepath)
@@ -131,5 +134,21 @@ namespace XYZ
 	void AssetManager::reloadAsset(const AssetMetadata& metadata, Ref<Asset>& asset)
 	{
 		AssetImporter::TryLoadData(metadata, asset);
+	}
+	void AssetManager::onFileChange(const std::wstring& path)
+	{
+		std::string strPath(path.begin(), path.end());
+		std::replace(strPath.begin(), strPath.end(), '\\', '/');
+		if (strPath.find(".meta") == std::string::npos)
+			AssetManager::ReloadAsset("Assets/" + strPath + ".meta");
+	}
+	void AssetManager::onFileAdded(const std::wstring& path)
+	{
+	}
+	void AssetManager::onFileRemoved(const std::wstring& path)
+	{
+	}
+	void AssetManager::onFileRenamed(const std::wstring& path)
+	{
 	}
 }

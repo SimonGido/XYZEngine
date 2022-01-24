@@ -36,6 +36,19 @@ namespace XYZ {
 
 			m_IconSize = ImVec2(50.0f, 50.0f);
 			m_ArrowSize = ImVec2(25.0f, 25.0f);		
+
+			AssetManager::GetFileWatcher()->AddOnFileChange<&AssetBrowser::onFileChange>(this);
+			AssetManager::GetFileWatcher()->AddOnFileAdded<&AssetBrowser::onFileAdded>(this);
+			AssetManager::GetFileWatcher()->AddOnFileRemoved<&AssetBrowser::onFileRemoved>(this);
+			AssetManager::GetFileWatcher()->AddOnFileRenamed<&AssetBrowser::onFileRenamed>(this);
+		}
+
+		AssetBrowser::~AssetBrowser()
+		{
+			AssetManager::GetFileWatcher()->RemoveOnFileChange<&AssetBrowser::onFileChange>(this);
+			AssetManager::GetFileWatcher()->RemoveOnFileAdded<&AssetBrowser::onFileAdded>(this);
+			AssetManager::GetFileWatcher()->RemoveOnFileRemoved<&AssetBrowser::onFileRemoved>(this);
+			AssetManager::GetFileWatcher()->RemoveOnFileRenamed<&AssetBrowser::onFileRenamed>(this);
 		}
 	
 		void AssetBrowser::OnImGuiRender(bool& open)
@@ -43,6 +56,7 @@ namespace XYZ {
 			XYZ_PROFILE_FUNC("AssetBrowser::OnImGuiRender");
 			if (ImGui::Begin("Asset Browser", &open))
 			{
+				std::scoped_lock lock(m_DirectoryTreeMutex);
 				renderTopPanel();
 
 				UI::SplitterV(&m_SplitterWidth, "##DirectoryTree", "##CurrentDirectory",
@@ -327,6 +341,34 @@ namespace XYZ {
 					}
 				}
 			}
+		}
+		void AssetBrowser::onFileChange(const std::wstring& filePath)
+		{
+			XYZ_PROFILE_FUNC("AssetBrowser::onFileChange");
+			//TODO: It is quite inefficient to rebuild whole tree
+			std::scoped_lock lock(m_DirectoryTreeMutex);
+			m_DirectoryTree = DirectoryTree(s_AssetPath);
+		}
+		void AssetBrowser::onFileAdded(const std::wstring& filePath)
+		{
+			XYZ_PROFILE_FUNC("AssetBrowser::onFileAdded");
+			//TODO: It is quite inefficient to rebuild whole tree
+			std::scoped_lock lock(m_DirectoryTreeMutex);
+			m_DirectoryTree.Rebuild(s_AssetPath);
+		}
+		void AssetBrowser::onFileRemoved(const std::wstring& filePath)
+		{
+			XYZ_PROFILE_FUNC("AssetBrowser::onFileRemoved");
+			//TODO: It is quite inefficient to rebuild whole tree
+			std::scoped_lock lock(m_DirectoryTreeMutex);
+			m_DirectoryTree = DirectoryTree(s_AssetPath);
+		}
+		void AssetBrowser::onFileRenamed(const std::wstring& filePath)
+		{
+			XYZ_PROFILE_FUNC("AssetBrowser::onFileRenamed");
+			//TODO: It is quite inefficient to rebuild whole tree
+			std::scoped_lock lock(m_DirectoryTreeMutex);
+			m_DirectoryTree = DirectoryTree(s_AssetPath);
 		}
 	}
 }

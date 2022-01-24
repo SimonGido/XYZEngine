@@ -9,6 +9,7 @@ namespace XYZ {
 			void OnImGuiRender();
 			void OnUpdate(Timestep ts);
 			bool OnEvent(Event& e);
+			void Clear();
 
 			void SetSceneContext(const Ref<Scene>& scene);
 		

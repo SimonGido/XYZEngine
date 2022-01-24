@@ -40,6 +40,10 @@ namespace XYZ {
 			}
 			return false;
 		}
+		void EditorManager::Clear()
+		{
+			m_EditorPanels.clear();
+		}
 		void EditorManager::SetSceneContext(const Ref<Scene>& scene)
 		{
 			m_Scene = scene;

@@ -36,6 +36,8 @@ namespace XYZ {
 		{
 			m_Name = m_Path.filename().string();
 		}
+
+
 		void DirectoryNode::SetPath(const std::filesystem::path& path)
 		{
 			m_Path = path;
@@ -51,6 +53,24 @@ namespace XYZ {
 				preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
 				m_TexCoords[0], m_TexCoords[1]);
 		}
+		const DirectoryNode* DirectoryTree::findNode(const std::filesystem::path& path, const DirectoryNode& node) const
+		{
+			std::stack<const DirectoryNode*> nodes;
+			nodes.push(&node);
+			while (!nodes.empty())
+			{
+				const DirectoryNode* tmp = nodes.top();
+				nodes.pop();
+				if (tmp->GetPath() == path)
+					return tmp;
+
+				for (const auto& child : *tmp)
+					nodes.push(&child);
+			}
+			return nullptr;
+		}
+
+		
 		DirectoryTree::DirectoryTree(const std::filesystem::path& path)
 			:
 			m_Root(path, {}, nullptr, 0)
@@ -58,6 +78,15 @@ namespace XYZ {
 			m_CurrentNode = &m_Root;
 			processDirectory(m_Root.m_Nodes, path, 1);
 		}
+		void DirectoryTree::Rebuild(const std::filesystem::path& path)
+		{
+			m_Root = DirectoryNode(path, {}, nullptr, 0);
+			m_CurrentNode = &m_Root;
+			processDirectory(m_Root.m_Nodes, path, 1);
+			m_UndoDirectories.clear();
+			m_RedoDirectories.clear();
+		}
+
 		void DirectoryTree::SetCurrentNode(const DirectoryNode& node)
 		{
 			m_UndoDirectories.push_back(m_CurrentNode);
@@ -113,21 +142,6 @@ namespace XYZ {
 				}
 			}
 		}
-		const DirectoryNode* DirectoryTree::findNode(const std::filesystem::path& path, const DirectoryNode& node) const
-		{
-			std::stack<const DirectoryNode*> nodes;
-			nodes.push(&node);
-			while (!nodes.empty())
-			{
-				const DirectoryNode* tmp = nodes.top();
-				nodes.pop();
-				if (tmp->GetPath() == path)
-					return tmp;
-
-				for (const auto& child : *tmp)
-					nodes.push(&child);
-			}
-			return nullptr;
-		}
+		
 	}
 }

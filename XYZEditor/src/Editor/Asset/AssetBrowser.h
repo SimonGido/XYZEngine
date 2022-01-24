@@ -16,6 +16,7 @@ namespace XYZ {
 		{
 		public:
 			AssetBrowser(std::string name);
+			~AssetBrowser() override;
 
 			virtual void OnImGuiRender(bool& open) override;
 
@@ -36,12 +37,18 @@ namespace XYZ {
 			void	 processCurrentDirectory();
 			void	 processDirectoryTree(const DirectoryNode& parentNode);
 
+
+			void	 onFileChange(const std::wstring& filePath);
+			void	 onFileAdded(const std::wstring& filePath);
+			void	 onFileRemoved(const std::wstring& filePath);
+			void	 onFileRenamed(const std::wstring& filePath);
 		private:
 			std::filesystem::path m_SelectedFile;
 			std::filesystem::path m_RightClickedFile;
 			std::filesystem::path m_BaseDirectory;
 			
 			DirectoryTree		  m_DirectoryTree;
+			std::mutex			  m_DirectoryTreeMutex;
 
 			std::unordered_map<std::string, uint32_t> m_FileTypeExtensions;
 		private:

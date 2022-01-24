@@ -61,6 +61,8 @@ namespace XYZ {
 
 
 			DirectoryTree(const std::filesystem::path& path);
+			
+			void Rebuild(const std::filesystem::path& path);
 
 			void SetCurrentNode(const DirectoryNode& node);
 			void SetCurrentNode(const std::filesystem::path& path);

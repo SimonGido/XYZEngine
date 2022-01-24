@@ -12,9 +12,8 @@ namespace XYZ {
 	FileWatcher::~FileWatcher()
 	{
 		Stop();
-		for (auto listener : m_Listeners)
-			delete listener;
 	}
+
 	void FileWatcher::Start()
 	{
 		m_Running = true;
@@ -31,22 +30,26 @@ namespace XYZ {
 	}
 	void FileWatcher::onFileChange(const std::wstring& fileName)
 	{
-		for (const auto listener : m_Listeners)
-			listener->OnFileChange(fileName);
+		std::scoped_lock lock(m_CallbacksMutex);
+		for (auto& callable : m_OnFileChange)
+			callable(fileName);
 	}
 	void FileWatcher::onFileAdded(const std::wstring& fileName)
 	{
-		for (const auto listener : m_Listeners)
-			listener->OnFileAdded(fileName);
+		std::scoped_lock lock(m_CallbacksMutex);
+		for (auto& callable : m_OnFileAdded)
+			callable(fileName);
 	}
 	void FileWatcher::onFileRemoved(const std::wstring& fileName)
 	{
-		for (const auto listener : m_Listeners)
-			listener->OnFileRemoved(fileName);
+		std::scoped_lock lock(m_CallbacksMutex);
+		for (auto& callable : m_OnFileRemoved)
+			callable(fileName);
 	}
 	void FileWatcher::onFileRenamed(const std::wstring& fileName)
 	{
-		for (const auto listener : m_Listeners)
-			listener->OnFileRenamed(fileName);
+		std::scoped_lock lock(m_CallbacksMutex);
+		for (auto& callable : m_OnFileRenamed)
+			callable(fileName);
 	}
 }

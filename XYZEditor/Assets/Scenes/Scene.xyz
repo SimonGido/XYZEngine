@@ -1,17 +1,3 @@
 Scene: TestScene
 Entities:
-  - Entity: 8ac77d51-41c4-4227-9bf2-8f51f9c3fe11
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRenderer:
-      Material: 211ed35b-c2df-49c3-85c8-fd0cbb201641
-      SubTexture: e0d6c7ce-7e89-4ba9-88bc-bd5ef3fd6500
-      Color: [1, 1, 1, 1]
-      SortLayer: 0
-      Visible: true
-    Relationship:
-      Depth: 1
+  []

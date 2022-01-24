@@ -54,10 +54,10 @@ namespace XYZ {
 
 			auto fullPath = watcher->m_Directory + L"/" + filename;
 			while (true)
-			{
+			{		
 				switch (buffer[0].Action)
 				{
-				case FILE_ACTION_MODIFIED:
+				case FILE_ACTION_MODIFIED:			
 					watcher->onFileChange(filename);
 					break;
 				case FILE_ACTION_ADDED:

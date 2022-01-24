@@ -17,10 +17,12 @@ namespace XYZ {
 			Color[IconClickColor] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 			Color[DisabledColor]  = glm::vec4(0.5f, 0.5f, 0.5f, 0.3f);
 		}
+
 		void EditorData::Shutdown()
 		{
 			IconsTexture.Reset();
 			IconsSpriteSheet.Reset();
 		}
+	
 	}
 }
