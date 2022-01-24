@@ -13,7 +13,7 @@
 #include "Editor/Panels/SceneHierarchyPanel.h"
 #include "Editor/Asset/AssetManagerViewPanel.h"
 #include "Editor/Asset/AssetBrowser.h"
-
+#include "Editor/Script/ScriptPanel.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>

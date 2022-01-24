@@ -347,7 +347,7 @@ namespace XYZ {
 			XYZ_PROFILE_FUNC("AssetBrowser::onFileChange");
 			//TODO: It is quite inefficient to rebuild whole tree
 			std::scoped_lock lock(m_DirectoryTreeMutex);
-			m_DirectoryTree = DirectoryTree(s_AssetPath);
+			m_DirectoryTree.Rebuild(s_AssetPath);
 		}
 		void AssetBrowser::onFileAdded(const std::wstring& filePath)
 		{
@@ -361,14 +361,14 @@ namespace XYZ {
 			XYZ_PROFILE_FUNC("AssetBrowser::onFileRemoved");
 			//TODO: It is quite inefficient to rebuild whole tree
 			std::scoped_lock lock(m_DirectoryTreeMutex);
-			m_DirectoryTree = DirectoryTree(s_AssetPath);
+			m_DirectoryTree.Rebuild(s_AssetPath);
 		}
 		void AssetBrowser::onFileRenamed(const std::wstring& filePath)
 		{
 			XYZ_PROFILE_FUNC("AssetBrowser::onFileRenamed");
 			//TODO: It is quite inefficient to rebuild whole tree
 			std::scoped_lock lock(m_DirectoryTreeMutex);
-			m_DirectoryTree = DirectoryTree(s_AssetPath);
+			m_DirectoryTree.Rebuild(s_AssetPath);
 		}
 	}
 }

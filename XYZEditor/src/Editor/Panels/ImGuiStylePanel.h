@@ -8,7 +8,7 @@ namespace XYZ {
 		{
 		public:
 			ImGuiStylePanel(std::string name);
-			~ImGuiStylePanel();
+			~ImGuiStylePanel() override;
 
 			virtual void OnImGuiRender(bool& open) override;
 

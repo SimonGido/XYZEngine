@@ -10,6 +10,7 @@ namespace XYZ {
 		{
 		public:
 			EditorPanel(std::string name);
+			virtual ~EditorPanel() = default;
 
 			virtual void OnImGuiRender(bool& open) = 0;
 			virtual void OnUpdate(Timestep ts) {};

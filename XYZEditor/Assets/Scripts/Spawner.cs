@@ -28,7 +28,7 @@ namespace Example
             SpriteRenderer renderer = entity.CreateComponent<SpriteRenderer>();
             renderer.Material = material;
             renderer.Sprite = subTexture;
-            renderer.Color = new Vector4(1.0f, 0.0f, 1.0f, 1.0f);
+            renderer.Color = new Vector4(0.0f, 0.0f, 1.0f, 1.0f);
         }
 
         public void OnDestroy()
