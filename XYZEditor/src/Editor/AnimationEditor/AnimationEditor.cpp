@@ -34,14 +34,20 @@ namespace XYZ {
 			m_PropertySectionWidth(300.0f),
 			m_TimelineSectionWidth(300.0f)
 		{
-			m_Sequencer.m_FrameMin = 0;
-			m_Sequencer.m_FrameMax = 60;
+			for (const auto name : ReflectedClasses::sc_ClassNames)
+				m_SequencerItemTypes.push_back(std::string(name));
 		}
 		void AnimationEditor::SetContext(const Ref<Animator>& context)
 		{
 			m_Context = context;
 			m_Animation = m_Context->GetAnimation();
-			m_Animation->SetNumFrames(static_cast<uint32_t>(m_Sequencer.m_FrameMax));
+			createSequencers();
+			int frameMax = 0;
+			for (const auto& seq : m_Sequencers)
+			{
+				frameMax = std::max(frameMax, seq.FrameMax);
+			}
+			//m_Animation->SetNumFrames(static_cast<uint32_t>(m_Sequencer.m_FrameMax));
 		}
 		void AnimationEditor::SetSceneContext(const Ref<Scene>& scene)
 		{
@@ -86,6 +92,17 @@ namespace XYZ {
 			}
 			ImGui::End();
 		}
+		void AnimationEditor::createSequencers()
+		{
+			m_Sequencers.clear();
+			
+			std::vector<Entity> tree = m_SelectedEntity.GetComponent<Relationship>().GetTree(*m_SelectedEntity.GetECS());
+			for (auto entity : tree)
+			{
+				SceneEntity ent(entity, m_SelectedEntity.GetScene());
+				m_Sequencers.emplace_back(ent.GetComponent<SceneTagComponent>().Name, m_SequencerItemTypes);
+			}
+		}
 		void AnimationEditor::propertySection()
 		{
 			if (ImGui::BeginChild("##PropertySection", ImVec2(m_PropertySectionWidth, 0)))
@@ -126,170 +143,173 @@ namespace XYZ {
 		}
 		void AnimationEditor::timelineSection()
 		{
-			if (ImGui::BeginChild("##TimelineSection", ImVec2(m_TimelineSectionWidth, 0)))
+			for (auto& seq : m_Sequencers)
 			{
-				int currentFrame = m_CurrentFrame;
-
-				ImGui::PushItemWidth(130);
-				Helper::IntControl("Frame Min", "##Frame Min", m_Sequencer.m_FrameMin);
-
-				ImGui::SameLine();
-				Helper::IntControl("Frame Max", "##Frame Max", m_Sequencer.m_FrameMax);
-			
-				m_Animation->SetNumFrames(static_cast<uint32_t>(m_Sequencer.m_FrameMax));
-
-				ImGui::SameLine();
-				if (Helper::IntControl("Frame", "##Frame", currentFrame))
+				if (ImGui::BeginChild("##TimelineSection", ImVec2(m_TimelineSectionWidth, 0)))
 				{
+					int currentFrame = m_CurrentFrame;
+
+					ImGui::PushItemWidth(130);
+					Helper::IntControl("Frame Min", "##Frame Min", m_Sequencer.FrameMin);
+
+					ImGui::SameLine();
+					Helper::IntControl("Frame Max", "##Frame Max", m_Sequencer.FrameMax);
+
+					m_Animation->SetNumFrames(static_cast<uint32_t>(m_Sequencer.FrameMax));
+
+					ImGui::SameLine();
+					if (Helper::IntControl("Frame", "##Frame", currentFrame))
+					{
+						m_CurrentFrame = std::max(currentFrame, 0);
+						m_Animation->SetCurrentFrame(m_CurrentFrame);
+					}
+					ImGui::SameLine();
+					int fps = static_cast<int>(m_Animation->GetFrequency());
+					if (Helper::IntControl("FPS", "##FPS", fps))
+					{
+						m_Animation->SetFrequency(static_cast<uint32_t>(fps));
+					}
+
+
+					ImGui::PopItemWidth();
+					const int sequenceOptions = ImSequencer::SEQUENCER_EDIT_STARTEND;
+
+					ImSequencer::Sequencer(&m_Sequencer, &currentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, sequenceOptions);
 					m_CurrentFrame = std::max(currentFrame, 0);
-					m_Animation->SetCurrentFrame(m_CurrentFrame);
 				}
-				ImGui::SameLine();
-				int fps = static_cast<int>(m_Animation->GetFrequency());
-				if (Helper::IntControl("FPS", "##FPS", fps))
-				{
-					m_Animation->SetFrequency(static_cast<uint32_t>(fps));
-				}
-
-
-				ImGui::PopItemWidth();
-				const int sequenceOptions = ImSequencer::SEQUENCER_EDIT_STARTEND;
-				
-				ImSequencer::Sequencer(&m_Sequencer, &currentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, sequenceOptions);
-				m_CurrentFrame = std::max(currentFrame, 0);
+				ImGui::EndChild();
 			}
-			ImGui::EndChild();
 		}
 		void AnimationEditor::handleEditKeyEndFrames()
 		{
-			auto& selection = m_Sequencer.GetSelection();
-			if (selection.ItemIndex != -1)
-			{
-				const auto& item = m_Sequencer.GetItem(selection.ItemIndex);
-				const char* itemTypeName = m_Sequencer.GetItemTypeName(item.Type);
-				for (const auto& p : selection.Points)
-				{
-					const auto& line = m_Sequencer.GetLine(selection.ItemIndex, p.curveIndex);
-					uint32_t endFrame = static_cast<uint32_t>(line.Points[p.pointIndex].x);
-
-					m_ClassMap.Execute(itemTypeName, line.Name, [&](auto classIndex, auto variableIndex) {
-
-						auto reflClass = ReflectedClasses::Get<classIndex.value>();
-						Entity entity = m_SelectedEntity.ID();
-						if (!item.Path.empty())
-						{
-							const auto& relation = m_SelectedEntity.GetComponent<Relationship>();
-							entity = relation.FindByName(*m_SelectedEntity.GetECS(), item.Path);
-						}
-							
-						//auto& val = reflClass.Get<variableIndex.value>(item.Entity.GetComponentFromReflection(reflClass));
-						//auto prop = getProperty(reflClass, val, item.Path, reflClass.sc_VariableNames[variableIndex.value]);
-						//if (prop)
-						//	prop->SetKeyFrame(endFrame, p.pointIndex);
-					});
-				}
-			}
+			//auto& selection = m_Sequencer.GetSelection();
+			//if (selection.ItemIndex != -1)
+			//{
+			//	const auto& item = m_Sequencer.GetItem(selection.ItemIndex);
+			//	const char* itemTypeName = m_Sequencer.GetItemTypeName(item.Type);
+			//	for (const auto& p : selection.Points)
+			//	{
+			//		const auto& line = m_Sequencer.GetLine(selection.ItemIndex, p.curveIndex);
+			//		uint32_t endFrame = static_cast<uint32_t>(line.Points[p.pointIndex].x);
+			//
+			//		m_ClassMap.Execute(itemTypeName, line.Name, [&](auto classIndex, auto variableIndex) {
+			//
+			//			auto reflClass = ReflectedClasses::Get<classIndex.value>();
+			//			Entity entity = m_SelectedEntity.ID();
+			//			if (!item.Path.empty())
+			//			{
+			//				const auto& relation = m_SelectedEntity.GetComponent<Relationship>();
+			//				entity = relation.FindByName(*m_SelectedEntity.GetECS(), item.Path);
+			//			}
+			//				
+			//			//auto& val = reflClass.Get<variableIndex.value>(item.Entity.GetComponentFromReflection(reflClass));
+			//			//auto prop = getProperty(reflClass, val, item.Path, reflClass.sc_VariableNames[variableIndex.value]);
+			//			//if (prop)
+			//			//	prop->SetKeyFrame(endFrame, p.pointIndex);
+			//		});
+			//	}
+			//}
 		}
 	
 		void AnimationEditor::handleEditKeyValues()
 		{
-			if (m_SelectedEntry != -1)
-			{
-				const int itemType = m_Sequencer.GetItemItemType(m_SelectedEntry);
-				const char* itemTypeName = m_Sequencer.GetItemTypeName(itemType);
-				if (const auto line = m_Sequencer.GetSelectedLine(m_SelectedEntry))
-				{
-					size_t classIndex, variableIndex;
-					//if (getClassAndVariableFromNames(itemTypeName, line->Name.c_str(), classIndex, variableIndex))
-					//{
-					//	Reflect::For([&](auto j) {
-					//		if (j.value == classIndex)
-					//		{
-					//			auto reflClass = ReflectedClasses::Get<j.value>();
-					//			Reflect::For([&](auto i) {
-					//				if (i.value == variableIndex)
-					//				{
-					//					//auto& val = reflClass.Get<i.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
-					//					//editKeyValue(reflClass, m_SelectedEntity, m_CurrentFrame, val, reflClass.GetVariables()[i.value]);
-					//				}
-					//			}, std::make_index_sequence<reflClass.sc_NumVariables>());
-					//		}
-					//	}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
-					//}
-				}
-			}
+			//if (m_SelectedEntry != -1)
+			//{
+			//	const int itemType = m_Sequencer.GetItemItemType(m_SelectedEntry);
+			//	const char* itemTypeName = m_Sequencer.GetItemTypeName(itemType);
+			//	if (const auto line = m_Sequencer.GetSelectedLine(m_SelectedEntry))
+			//	{
+			//		size_t classIndex, variableIndex;
+			//		//if (getClassAndVariableFromNames(itemTypeName, line->Name.c_str(), classIndex, variableIndex))
+			//		//{
+			//		//	Reflect::For([&](auto j) {
+			//		//		if (j.value == classIndex)
+			//		//		{
+			//		//			auto reflClass = ReflectedClasses::Get<j.value>();
+			//		//			Reflect::For([&](auto i) {
+			//		//				if (i.value == variableIndex)
+			//		//				{
+			//		//					//auto& val = reflClass.Get<i.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
+			//		//					//editKeyValue(reflClass, m_SelectedEntity, m_CurrentFrame, val, reflClass.GetVariables()[i.value]);
+			//		//				}
+			//		//			}, std::make_index_sequence<reflClass.sc_NumVariables>());
+			//		//		}
+			//		//	}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+			//		//}
+			//	}
+			//}
 		}
 		void AnimationEditor::handleAddKey()
 		{
-			if (m_SelectedEntry != -1)
-			{
-				const int itemType = m_Sequencer.GetItemItemType(m_SelectedEntry);
-				const char* itemTypeName = m_Sequencer.GetItemTypeName(itemType);
-				if (const auto line = m_Sequencer.GetSelectedLine(m_SelectedEntry))
-				{
-					m_Sequencer.AddKey(m_SelectedEntry, m_CurrentFrame);
-					size_t classIndex, variableIndex;
-					//if (getClassAndVariableFromNames(itemTypeName, line->Name.c_str(), classIndex, variableIndex))
-					//{
-					//	Reflect::For([&](auto j) {
-					//		if (j.value == classIndex)
-					//		{
-					//			auto reflClass = ReflectedClasses::Get<j.value>();
-					//			Reflect::For([&](auto i) {
-					//				if (i.value == variableIndex)
-					//				{
-					//					//auto& val = reflClass.Get<i.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
-					//					//addKeyToProperty(reflClass, m_SelectedEntity, m_CurrentFrame, val, reflClass.GetVariables()[i.value]);
-					//				}
-					//			}, std::make_index_sequence<reflClass.sc_NumVariables>());
-					//		}
-					//	}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
-					//}
-					m_Sequencer.ClearSelection();
-				}
-			}
+			//if (m_SelectedEntry != -1)
+			//{
+			//	const int itemType = m_Sequencer.GetItemItemType(m_SelectedEntry);
+			//	const char* itemTypeName = m_Sequencer.GetItemTypeName(itemType);
+			//	if (const auto line = m_Sequencer.GetSelectedLine(m_SelectedEntry))
+			//	{
+			//		m_Sequencer.AddKey(m_SelectedEntry, m_CurrentFrame);
+			//		size_t classIndex, variableIndex;
+			//		//if (getClassAndVariableFromNames(itemTypeName, line->Name.c_str(), classIndex, variableIndex))
+			//		//{
+			//		//	Reflect::For([&](auto j) {
+			//		//		if (j.value == classIndex)
+			//		//		{
+			//		//			auto reflClass = ReflectedClasses::Get<j.value>();
+			//		//			Reflect::For([&](auto i) {
+			//		//				if (i.value == variableIndex)
+			//		//				{
+			//		//					//auto& val = reflClass.Get<i.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
+			//		//					//addKeyToProperty(reflClass, m_SelectedEntity, m_CurrentFrame, val, reflClass.GetVariables()[i.value]);
+			//		//				}
+			//		//			}, std::make_index_sequence<reflClass.sc_NumVariables>());
+			//		//		}
+			//		//	}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+			//		//}
+			//		m_Sequencer.ClearSelection();
+			//	}
+			//}
 		}
 
 		void AnimationEditor::keySelectionActions()
 		{
 			if (m_OpenSelectionActions)
 			{
-				ImGui::OpenPopup("KeyActions");
-				if (ImGui::BeginPopup("KeyActions"))
-				{
-					if (ImGui::MenuItem("Copy Keys"))
-					{
-						m_Sequencer.Copy();
-						ImGui::CloseCurrentPopup();
-						m_OpenSelectionActions = false;
-					}
-
-					const bool copied = !m_Sequencer.GetCopy().Points.empty();
-					if (!copied)
-					{
-						ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-						ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-					}
-					if (ImGui::MenuItem("Paste Keys"))
-					{
-						ImGui::CloseCurrentPopup();
-						m_OpenSelectionActions = false;
-					}
-
-					if (!copied)
-					{
-						ImGui::PopItemFlag();
-						ImGui::PopStyleVar();
-					}
-
-					if (ImGui::MenuItem("Delete Keys"))
-					{
-						m_Sequencer.DeleteSelectedPoints();
-						ImGui::CloseCurrentPopup();
-						m_OpenSelectionActions = false;
-					}
-					ImGui::EndPopup();					
-				}
+				//ImGui::OpenPopup("KeyActions");
+				//if (ImGui::BeginPopup("KeyActions"))
+				//{
+				//	if (ImGui::MenuItem("Copy Keys"))
+				//	{
+				//		m_Sequencer.Copy();
+				//		ImGui::CloseCurrentPopup();
+				//		m_OpenSelectionActions = false;
+				//	}
+				//
+				//	const bool copied = !m_Sequencer.GetCopy().Points.empty();
+				//	if (!copied)
+				//	{
+				//		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+				//		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+				//	}
+				//	if (ImGui::MenuItem("Paste Keys"))
+				//	{
+				//		ImGui::CloseCurrentPopup();
+				//		m_OpenSelectionActions = false;
+				//	}
+				//
+				//	if (!copied)
+				//	{
+				//		ImGui::PopItemFlag();
+				//		ImGui::PopStyleVar();
+				//	}
+				//
+				//	if (ImGui::MenuItem("Delete Keys"))
+				//	{
+				//		m_Sequencer.DeleteSelectedPoints();
+				//		ImGui::CloseCurrentPopup();
+				//		m_OpenSelectionActions = false;
+				//	}
+				//	ImGui::EndPopup();					
+				//}
 				
 			}
 		}

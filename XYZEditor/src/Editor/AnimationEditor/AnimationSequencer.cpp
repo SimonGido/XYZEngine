@@ -6,10 +6,12 @@
 namespace XYZ {
 	namespace Editor {
 		
-		AnimationSequencer::AnimationSequencer()
+		AnimationSequencer::AnimationSequencer(std::string name, std::vector<std::string> itemTypes)
 			:
-			m_FrameMin(0), 
-			m_FrameMax(0)
+			FrameMin(0),
+			FrameMax(0),
+			m_SequencerItemTypes(std::move(itemTypes)),
+			m_Name(std::move(name))
 		{
 		}
 		int AnimationSequencer::GetItemTypeCount() const
@@ -25,14 +27,9 @@ namespace XYZ {
 			static char tmps[512];
 			auto& item = m_Items[index];
 			auto& seqItemType = m_SequencerItemTypes[item.Type];
-			if (!item.Path.empty())
-			{
-				snprintf(tmps, 512, "%s:%s", item.Path.c_str(), seqItemType.c_str());
-			}
-			else
-			{
-				snprintf(tmps, 512, "%s", seqItemType.c_str());
-			}
+	
+			snprintf(tmps, 512, "%s", seqItemType.c_str());
+
 			return tmps;
 		}
 		void AnimationSequencer::Get(int index, int** start, int** end, int* type, unsigned int* color)
@@ -41,9 +38,9 @@ namespace XYZ {
 			if (color)
 				*color = 0xFFAA8080; // same color for everyone, return color based on type
 			if (start)
-				*start = &m_FrameMin; // This should be item.m_FrameStart, but we do not need it
+				*start = &FrameMin; // This should be item.m_FrameStart, but we do not need it
 			if (end)
-				*end = &m_FrameMax; // This should be item.m_FrameEnd, but we do not need it
+				*end = &FrameMax; // This should be item.m_FrameEnd, but we do not need it
 			if (type)
 				*type = item.Type;
 		}
@@ -77,8 +74,8 @@ namespace XYZ {
 			draw_list->PushClipRect(legendClippingRect.Min, legendClippingRect.Max, true);
 			
 			auto& item = m_Items[index];		
-			item.LineEdit.GetMax() = ImVec2(float(m_FrameMax), 1.f);
-			item.LineEdit.GetMin() = ImVec2(float(m_FrameMin), 0.f);
+			item.LineEdit.GetMax() = ImVec2(float(FrameMax), 1.f);
+			item.LineEdit.GetMin() = ImVec2(float(FrameMin), 0.f);
 			int i = 0;
 	
 			for (auto& line : item.LineEdit.GetLines())
@@ -105,32 +102,25 @@ namespace XYZ {
 			draw_list->PushClipRect(clippingRect.Min, clippingRect.Max, true);
 			auto& item = m_Items[index];
 			
-			item.LineEdit.GetMax() = ImVec2(float(m_FrameMax), 1.f);
-			item.LineEdit.GetMin() = ImVec2(float(m_FrameMin), 0.f);
+			item.LineEdit.GetMax() = ImVec2(float(FrameMax), 1.f);
+			item.LineEdit.GetMin() = ImVec2(float(FrameMin), 0.f);
 			for (auto& line : item.LineEdit.GetLines())
 			{
 				for (auto& point : line.Points)
 				{
-					const float r = (point.x - m_FrameMin) / float(m_FrameMax - m_FrameMin);
+					const float r = (point.x - FrameMin) / float(FrameMax - FrameMin);
 					const float x = ImLerp(rc.Min.x, rc.Max.x, r);
 					draw_list->AddLine(ImVec2(x, rc.Min.y + 6), ImVec2(x, rc.Max.y - 4), 0xAA000000, 4.f);
 				}
 			}
 			draw_list->PopClipRect();
 		}
-		void AnimationSequencer::AddItemType(const std::string& name)
-		{
-			m_SequencerItemTypes.push_back(name);
-		}
-		void AnimationSequencer::AddItem(int type, const std::string& path)
-		{
-			m_Items.push_back(SequenceItem{ type, false, path, 100, {} });
-		}
-		void AnimationSequencer::AddLine(int type, const std::string& path, const std::string& lineName, uint32_t color)
+
+		void AnimationSequencer::AddLine(int type, const std::string& lineName, uint32_t color)
 		{
 			for (auto& item : m_Items)
 			{
-				if (item.Type == type && item.Path == path)
+				if (item.Type == type)
 				{
 					item.LineEdit.AddLine(lineName, color);
 					return;
@@ -160,24 +150,7 @@ namespace XYZ {
 			}
 			m_Selection.Points.clear();
 		}
-		bool AnimationSequencer::ItemTypeExists(std::string_view name) const
-		{
-			for (const auto& itemType : m_SequencerItemTypes)
-			{
-				if (itemType == name)
-					return true;
-			}
-			return false;
-		}
-		bool AnimationSequencer::ItemExists(int type, const std::string& path) const
-		{
-			for (const auto& item : m_Items)
-			{
-				if (item.Type == type && item.Path == path)
-					return true;
-			}
-			return false;
-		}
+	
 		int AnimationSequencer::GetItemTypeIndex(std::string_view name) const
 		{
 			int counter = 0;
@@ -194,7 +167,7 @@ namespace XYZ {
 			int counter = 0;
 			for (const auto& item : m_Items)
 			{
-				if (item.Type == type && item.Path == path)
+				if (item.Type == type)
 					return counter;
 				counter++;
 			}

@@ -20,6 +20,7 @@ namespace XYZ {
 
 			void SetContext(const Ref<Animator>& context);
 		private:
+			void createSequencers();
 			void propertySection();
 			void timelineSection();
 			
@@ -50,8 +51,9 @@ namespace XYZ {
 			Ref<Scene>		   m_Scene;
 			SceneEntity		   m_SelectedEntity;
 
-			AnimationClassMap  m_ClassMap;
-			AnimationSequencer m_Sequencer;
+			AnimationClassMap				m_ClassMap;
+			std::vector<AnimationSequencer> m_Sequencers;
+			std::vector<std::string>		m_SequencerItemTypes;
 
 			int				   m_SelectedEntry;
 			int				   m_FirstFrame;
@@ -90,8 +92,6 @@ namespace XYZ {
 		inline void AnimationEditor::addReflectedProperty(Reflection<ComponentType> refl, const T& val, const std::string& entityName, const std::string& valName)
 		{
 			m_Animation->AddProperty<ComponentType, T, valIndex>(entityName, valName);
-			if (!m_Sequencer.ItemTypeExists(refl.sc_ClassName))
-				m_Sequencer.AddItemType(refl.sc_ClassName);
 
 			const int itemTypeIndex = m_Sequencer.GetItemTypeIndex(refl.sc_ClassName);
 			if (!m_Sequencer.ItemExists(itemTypeIndex, entityName))

@@ -21,13 +21,14 @@ namespace XYZ {
             {
                 int               Type;
                 bool              Expanded;
-                std::string       Path;
                 size_t            Height;
                 SequenceLineEdit  LineEdit;
             };
-            AnimationSequencer();
-            virtual int         GetFrameMin() const override { return m_FrameMin; }
-            virtual int         GetFrameMax() const override { return m_FrameMax; }
+
+            AnimationSequencer(std::string name, std::vector<std::string> itemTypes);
+
+            virtual int         GetFrameMin() const override { return FrameMin; }
+            virtual int         GetFrameMax() const override { return FrameMax; }
             virtual int         GetItemCount() const  override { return static_cast<int>(m_Items.size()); }
             virtual int         GetItemTypeCount() const override;
             virtual const char* GetItemTypeName(int typeIndex) const override;
@@ -42,33 +43,32 @@ namespace XYZ {
             virtual void        CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& legendRect, const ImRect& clippingRect, const ImRect& legendClippingRect) override;
             virtual void        CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect) override;            
             
-            void                AddItemType(const std::string& name);                  
-            void                AddItem(int type, const std::string& path);
-            void                AddLine(int type, const std::string& path, const std::string& lineName, uint32_t color = 0xFF0000FF);
+            void                AddLine(int type, const std::string& lineName, uint32_t color = 0xFF0000FF);
             void                AddKey(int itemIndex, int key);
             void                DeleteSelectedPoints();
-            void                ClearSelection() { m_Selection.Points.clear(); }
+            
+            void                ClearSelection()      { m_Selection.Points.clear(); }
+            void                ClearItems()          { m_Items.clear(); }
             const Selection&    GetSelection()  const { return m_Selection; }
             const Selection&    GetCopy()       const { return m_Copy; }
+          
             
-            bool                ItemTypeExists(std::string_view name) const;
-            bool                ItemExists(int type, const std::string& path) const;
-
             int                           GetItemTypeIndex(std::string_view name) const;
             int                           GetItemIndex(int type, const std::string& path) const;
             int                           GetItemItemType(int itemIndex) const;
             const SequenceLineEdit::Line* GetSelectedLine(int itemIndex = -1) const;
             const SequenceLineEdit::Line& GetLine(int itemIndex, size_t curveIndex) const;
             const SequenceItem&           GetItem(int itemIndex) const { return m_Items[itemIndex]; }
-        
+            const std::string             GetName() const { return m_Name; }
+                
         public:           
-            int m_FrameMin;
-            int m_FrameMax;
+            int FrameMin;
+            int FrameMax;
 
         private:
             std::vector<std::string>  m_SequencerItemTypes;
             std::vector<SequenceItem> m_Items;
-
+            std::string               m_Name;
 
             Selection m_Selection;
             Selection m_Copy;
