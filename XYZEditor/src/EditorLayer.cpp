@@ -50,6 +50,14 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::AssetManagerViewPanel>("AssetManagerViewPanel");
 			m_EditorManager.RegisterPanel<Editor::AssetBrowser>("AssetBrowser");
 			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
+			m_EditorManager.RegisterPanel<Editor::AnimationEditor>("AnimationEditor");
+
+			SceneEntity newEntity = m_Scene->CreateEntity("Havko", GUID());
+			Ref<Animator> animator = Ref<Animator>::Create();
+			Ref<Animation> animation = Ref<Animation>::Create();
+			animator->SetAnimation(animation);
+			animator->SetSceneEntity(newEntity);
+			m_EditorManager.GetPanel<Editor::AnimationEditor>("AnimationEditor")->SetContext(animator);
 
 			Ref<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
 			scenePanel->SetSceneRenderer(m_SceneRenderer);

@@ -3,6 +3,8 @@
 
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Core/Input.h"
+#include "XYZ/ImGui/ImGui.h"
+
 #include "Editor/EditorHelper.h"
 
 #include <imgui.h>
@@ -31,8 +33,7 @@ namespace XYZ {
 			m_Expanded(true),
 			m_Playing(false),
 			m_OpenSelectionActions(false),
-			m_PropertySectionWidth(300.0f),
-			m_TimelineSectionWidth(300.0f)
+			m_SplitterWidth(300.0f)
 		{
 			for (const auto name : ReflectedClasses::sc_ClassNames)
 				m_SequencerItemTypes.push_back(std::string(name));
@@ -41,6 +42,11 @@ namespace XYZ {
 		{
 			m_Context = context;
 			m_Animation = m_Context->GetAnimation();
+			// TODO: Temporary
+			m_SelectedEntity = m_Context->GetSceneEntity();
+			////////////////////
+
+			m_ClassMap.BuildMap(m_SelectedEntity);
 			createSequencers();
 			int frameMax = 0;
 			for (const auto& seq : m_Sequencers)
@@ -76,13 +82,15 @@ namespace XYZ {
 					if (m_SelectedEntity.IsValid())
 					{
 						const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-						m_TimelineSectionWidth = viewportPanelSize.x - m_PropertySectionWidth - 5.0f;
 
-						EditorHelper::DrawSplitter(false, 5.0f, &m_PropertySectionWidth, &m_TimelineSectionWidth, 50.0f, 50.0f);
 						keySelectionActions();
-						propertySection();
+						UI::SplitterV(&m_SplitterWidth, "##PropertySection", "##TimelineSection",
+							[&]() { propertySection(); },
+							[&]() { timelineSection(); });
+						
+						
 						ImGui::SameLine();
-						timelineSection();
+						
 						if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 						{
 							m_OpenSelectionActions = true;
@@ -105,79 +113,71 @@ namespace XYZ {
 		}
 		void AnimationEditor::propertySection()
 		{
-			if (ImGui::BeginChild("##PropertySection", ImVec2(m_PropertySectionWidth, 0)))
+			if (ImGui::Button("Play"))
 			{
-				if (ImGui::Button("Play"))
-				{
-					m_Playing = !m_Playing;
-				}
-				ImGui::SameLine();
-				if (ImGui::Button("Add Key"))
-				{
-					handleAddKey();
-				}
-				ImGui::SameLine();
-
-
-				if (ImGui::Button("Add Property"))
-					ImGui::OpenPopup("AddProperty");
-
-				if (ImGui::BeginPopup("AddProperty"))
-				{
-					std::string selectedEntity, selectedClass, selectedVariable;
-					if (m_ClassMap.OnImGuiRender(selectedEntity, selectedClass, selectedVariable))
-					{
-						m_ClassMap.Execute(selectedClass, selectedVariable, [&](auto classIndex, auto variableIndex) 
-						{
-							auto reflClass = ReflectedClasses::Get<classIndex.value>();
-							auto& val = reflClass.Get<variableIndex.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
-							addReflectedProperty<variableIndex.value>(reflClass, val, selectedEntity, selectedVariable);
-							m_Context->UpdateAnimationEntities();
-						});
-					}
-					ImGui::EndPopup();
-				}
-				handleEditKeyValues();
+				m_Playing = !m_Playing;
 			}
-			ImGui::EndChild();
+			ImGui::SameLine();
+			if (ImGui::Button("Add Key"))
+			{
+				handleAddKey();
+			}
+			ImGui::SameLine();
+
+
+			if (ImGui::Button("Add Property"))
+				ImGui::OpenPopup("AddProperty");
+
+			if (ImGui::BeginPopup("AddProperty"))
+			{
+				std::string selectedEntity, selectedClass, selectedVariable;
+				if (m_ClassMap.OnImGuiRender(selectedEntity, selectedClass, selectedVariable))
+				{
+					m_ClassMap.Execute(selectedClass, selectedVariable, [&](auto classIndex, auto variableIndex) 
+					{
+						auto reflClass = ReflectedClasses::Get<classIndex.value>();
+						auto& val = reflClass.Get<variableIndex.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
+						addReflectedProperty<variableIndex.value>(reflClass, val, selectedEntity, selectedVariable);
+						m_Context->UpdateAnimationEntities();
+					});
+				}
+				ImGui::EndPopup();
+			}
+			handleEditKeyValues();
 		}
 		void AnimationEditor::timelineSection()
 		{
+			ImGui::PushItemWidth(130);
+			Helper::IntControl("Frame Min", "##Frame Min", m_FrameMin);
+
+			ImGui::SameLine();
+			Helper::IntControl("Frame Max", "##Frame Max", m_FrameMax);
+
+			m_Animation->SetNumFrames(static_cast<uint32_t>(m_FrameMax));
+			int currentFrame = m_CurrentFrame;
+
+			ImGui::SameLine();
+			if (Helper::IntControl("Frame", "##Frame", currentFrame))
+			{
+				m_CurrentFrame = std::max(currentFrame, 0);
+				m_Animation->SetCurrentFrame(m_CurrentFrame);
+			}
+			ImGui::SameLine();
+			int fps = static_cast<int>(m_Animation->GetFrequency());
+			if (Helper::IntControl("FPS", "##FPS", fps))
+			{
+				m_Animation->SetFrequency(static_cast<uint32_t>(fps));
+			}
+
+
+			ImGui::PopItemWidth();
 			for (auto& seq : m_Sequencers)
 			{
-				if (ImGui::BeginChild("##TimelineSection", ImVec2(m_TimelineSectionWidth, 0)))
-				{
-					int currentFrame = m_CurrentFrame;
+				int currentFrame = m_CurrentFrame;		
+				const int sequenceOptions = ImSequencer::SEQUENCER_EDIT_STARTEND;
 
-					ImGui::PushItemWidth(130);
-					Helper::IntControl("Frame Min", "##Frame Min", m_Sequencer.FrameMin);
-
-					ImGui::SameLine();
-					Helper::IntControl("Frame Max", "##Frame Max", m_Sequencer.FrameMax);
-
-					m_Animation->SetNumFrames(static_cast<uint32_t>(m_Sequencer.FrameMax));
-
-					ImGui::SameLine();
-					if (Helper::IntControl("Frame", "##Frame", currentFrame))
-					{
-						m_CurrentFrame = std::max(currentFrame, 0);
-						m_Animation->SetCurrentFrame(m_CurrentFrame);
-					}
-					ImGui::SameLine();
-					int fps = static_cast<int>(m_Animation->GetFrequency());
-					if (Helper::IntControl("FPS", "##FPS", fps))
-					{
-						m_Animation->SetFrequency(static_cast<uint32_t>(fps));
-					}
-
-
-					ImGui::PopItemWidth();
-					const int sequenceOptions = ImSequencer::SEQUENCER_EDIT_STARTEND;
-
-					ImSequencer::Sequencer(&m_Sequencer, &currentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, sequenceOptions);
-					m_CurrentFrame = std::max(currentFrame, 0);
-				}
-				ImGui::EndChild();
+				ImSequencer::Sequencer(&seq, &currentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, sequenceOptions);
+				m_CurrentFrame = std::max(currentFrame, 0);
 			}
 		}
 		void AnimationEditor::handleEditKeyEndFrames()

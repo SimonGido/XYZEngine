@@ -61,8 +61,9 @@ namespace XYZ {
 			bool			   m_Expanded;
 			bool			   m_Playing;
 			bool			   m_OpenSelectionActions;
-			float			   m_PropertySectionWidth;
-			float			   m_TimelineSectionWidth;
+			float			   m_SplitterWidth;
+			int				   m_FrameMin = 0;
+			int				   m_FrameMax = 60;
 		};
 
 		template<typename ComponentType, typename T>
@@ -91,13 +92,13 @@ namespace XYZ {
 		template<uint16_t valIndex, typename ComponentType, typename T>
 		inline void AnimationEditor::addReflectedProperty(Reflection<ComponentType> refl, const T& val, const std::string& entityName, const std::string& valName)
 		{
-			m_Animation->AddProperty<ComponentType, T, valIndex>(entityName, valName);
-
-			const int itemTypeIndex = m_Sequencer.GetItemTypeIndex(refl.sc_ClassName);
-			if (!m_Sequencer.ItemExists(itemTypeIndex, entityName))
-				m_Sequencer.AddItem(itemTypeIndex, entityName);
-
-			m_Sequencer.AddLine(itemTypeIndex, entityName, valName);
+			//m_Animation->AddProperty<ComponentType, T, valIndex>(entityName, valName);
+			//
+			//const int itemTypeIndex = m_Sequencer.GetItemTypeIndex(refl.sc_ClassName);
+			//if (!m_Sequencer.ItemExists(itemTypeIndex, entityName))
+			//	m_Sequencer.AddItem(itemTypeIndex, entityName);
+			//
+			//m_Sequencer.AddLine(itemTypeIndex, entityName, valName);
 		}
 		template<typename ComponentType, typename T>
 		inline void AnimationEditor::addKeyToProperty(Reflection<ComponentType> refl, const std::string& path, uint32_t frame, const T& val, const std::string& valName)

@@ -59,16 +59,17 @@ namespace XYZ {
 		inline void AnimationClassMap::addToClassData(Reflection<T> refl, const SceneEntity& entity)
 		{
 			const std::string& entityName = entity.GetComponent<SceneTagComponent>().Name;
-			auto& data = m_ClassData[entityName];
-
+			std::vector<std::string> variables;
 			if (entity.HasComponent<T>())
 			{
-				data.push_back({ refl.sc_ClassName });
-				auto& variables = data.back().VariableNames;
-
 				const char* className = refl.sc_ClassName;
 				for (const auto variable : refl.sc_VariableNames)
 					variables.push_back(std::string(variable));
+			}
+			if (!variables.empty())
+			{
+				auto& data = m_ClassData[entityName];
+				data.push_back({ refl.sc_ClassName, std::move(variables) });
 			}
 		}
 	}

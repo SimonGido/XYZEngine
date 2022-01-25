@@ -1,3 +1,11 @@
 Scene: TestScene
 Entities:
-  []
+  - Entity: 4db6e355-70f1-430c-a2d1-3a2bfa7f8def
+    SceneTagComponent:
+      Name: Havko
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Depth: 1

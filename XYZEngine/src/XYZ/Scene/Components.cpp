@@ -63,14 +63,15 @@ namespace XYZ {
 	Entity Relationship::FindByName(const ECSManager& ecs, std::string_view name) const
 	{
 		std::stack<Entity> temp;
-		temp.push(FirstChild);
+		if (FirstChild)
+			temp.push(FirstChild);
 		while (!temp.empty())
 		{
 			Entity entity = temp.top();
 			temp.pop();
 
 			if (ecs.GetComponent<SceneTagComponent>(entity).Name == name)
-					return entity;
+				return entity;
 
 			const auto& relationship = ecs.GetComponent<Relationship>(entity);
 			if (relationship.NextSibling)
@@ -85,7 +86,8 @@ namespace XYZ {
 	{
 		std::vector<Entity> result;
 		std::stack<Entity> temp;
-		temp.push(FirstChild);
+		if (FirstChild)
+			temp.push(FirstChild);
 		while (!temp.empty())
 		{
 			const Entity entity = temp.top();

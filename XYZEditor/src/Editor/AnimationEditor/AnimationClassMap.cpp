@@ -23,7 +23,7 @@ namespace XYZ {
 				const std::vector<Entity> tree = entity.GetComponent<Relationship>().GetTree(*entity.GetECS());
 				Reflect::For([&](auto j) {
 					auto reflClass = ReflectedClasses::Get<j.value>();
-					
+					addToClassData(reflClass, entity);
 					for (const Entity node : tree)
 					{
 						addToClassData(reflClass, { node, entity.GetScene() });
