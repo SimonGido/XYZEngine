@@ -1,10 +1,10 @@
 #pragma once
 #include "Editor/EditorPanel.h"
 #include "AnimationSequencer.h"
+#include "AnimationClassMap.h"
 
 #include "XYZ/Animation/Animation.h"
 #include "XYZ/Animation/Animator.h"
-
 
 namespace XYZ {
 	namespace Editor {
@@ -12,13 +12,6 @@ namespace XYZ {
 		class AnimationEditor : public EditorPanel
 		{
 		public:
-			struct ClassData
-			{
-				std::string				 ClassName;
-				std::vector<std::string> VariableNames;
-			};
-			using ClassMap = std::unordered_map<std::string, std::vector<ClassData>>;
-	
 			AnimationEditor(std::string name);
 
 			virtual void OnImGuiRender(bool& open) override;
@@ -34,8 +27,7 @@ namespace XYZ {
 			void handleEditKeyValues();
 			void handleAddKey();
 			void keySelectionActions();
-			void buildClassMap(SceneEntity entity);
-
+	
 			template <typename ComponentType, typename T>
 			void editKeyValue(Reflection<ComponentType> refl, const std::string& path, uint32_t frame, const T& val, const std::string& valName);
 
@@ -43,7 +35,7 @@ namespace XYZ {
 			bool editKeyValueSpecialized(uint32_t frame, T& value, const std::string& valName);
 
 			template <uint16_t valIndex, typename ComponentType, typename T>
-			void addReflectedProperty(Reflection<ComponentType> refl, const std::string & path, const T& val, const std::string& valName);
+			void addReflectedProperty(Reflection<ComponentType> refl, const T& val, const std::string& entityName, const std::string& valName);
 
 			template <typename ComponentType, typename T>
 			void addKeyToProperty(Reflection<ComponentType> refl, const std::string& path, uint32_t frame, const T& val, const std::string& valName);
@@ -51,18 +43,16 @@ namespace XYZ {
 			template <typename ComponentType, typename T>
 			Property<T>* getProperty(Reflection<ComponentType> refl, const T& val, const std::string& path, const std::string& valName);
 
-			bool getClassVariableAndPath(std::string& path, size_t& classIndex, size_t& variableIndex);
-			
-			static bool getClassAndVariableFromNames(std::string_view className, std::string_view variableName, size_t& classIndex, size_t& variableIndex);
+
 		private:
 			Ref<Animator>	   m_Context;
 			Ref<Animation>	   m_Animation;
 			Ref<Scene>		   m_Scene;
 			SceneEntity		   m_SelectedEntity;
 
-			
+			AnimationClassMap  m_ClassMap;
 			AnimationSequencer m_Sequencer;
-			ClassMap		   m_ClassMap;
+
 			int				   m_SelectedEntry;
 			int				   m_FirstFrame;
 			uint32_t		   m_CurrentFrame;
@@ -97,17 +87,17 @@ namespace XYZ {
 		}
 
 		template<uint16_t valIndex, typename ComponentType, typename T>
-		inline void AnimationEditor::addReflectedProperty(Reflection<ComponentType> refl, const std::string& path, const T& val, const std::string& valName)
+		inline void AnimationEditor::addReflectedProperty(Reflection<ComponentType> refl, const T& val, const std::string& entityName, const std::string& valName)
 		{
-			m_Animation->AddProperty<ComponentType, T, valIndex>(path, valName);
+			m_Animation->AddProperty<ComponentType, T, valIndex>(entityName, valName);
 			if (!m_Sequencer.ItemTypeExists(refl.sc_ClassName))
 				m_Sequencer.AddItemType(refl.sc_ClassName);
 
 			const int itemTypeIndex = m_Sequencer.GetItemTypeIndex(refl.sc_ClassName);
-			if (!m_Sequencer.ItemExists(itemTypeIndex, path))
-				m_Sequencer.AddItem(itemTypeIndex, path);
+			if (!m_Sequencer.ItemExists(itemTypeIndex, entityName))
+				m_Sequencer.AddItem(itemTypeIndex, entityName);
 
-			m_Sequencer.AddLine(itemTypeIndex, path, valName);
+			m_Sequencer.AddLine(itemTypeIndex, entityName, valName);
 		}
 		template<typename ComponentType, typename T>
 		inline void AnimationEditor::addKeyToProperty(Reflection<ComponentType> refl, const std::string& path, uint32_t frame, const T& val, const std::string& valName)

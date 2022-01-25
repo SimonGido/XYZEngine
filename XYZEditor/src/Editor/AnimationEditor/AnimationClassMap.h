@@ -18,11 +18,12 @@ namespace XYZ {
 
 			
 
-			void BuildMap(const SceneEntity& entity);
+			void BuildMap(SceneEntity& entity);
 			void Erase(const_iterator iter);
+			bool OnImGuiRender(std::string& selectedEntity, std::string& selectedClass, std::string& selectedVariable);
 			
 			template <typename F>
-			void Execute(F func);
+			void Execute(std::string_view selectedClass, std::string_view selectedVariable, F func);
 
 			iterator	    begin()		   { return m_ClassData.begin(); }
 			iterator	    end()          { return m_ClassData.end(); }
@@ -38,15 +39,19 @@ namespace XYZ {
 		};
 
 		template<typename F>
-		inline void AnimationClassMap::Execute(F func)
+		inline void AnimationClassMap::Execute(std::string_view selectedClass, std::string_view selectedVariable, F func)
 		{
 			Reflect::For<ReflectedClasses::sc_NumClasses>([&](auto j) 
 			{
-				auto reflClass = ReflectedClasses::Get<j.value>();
-				Reflect::For<reflClass.sc_NumVariables>([&](auto i) 
+				if (selectedClass == ReflectedClasses::sc_ClassNames[j.value])
 				{
-					func(j, i);
-				});
+					auto reflClass = ReflectedClasses::Get<j.value>();
+					Reflect::For<reflClass.sc_NumVariables>([&](auto i)
+					{
+						if (selectedVariable == reflClass.sc_VariableNames[i.value])
+							func(j, i);
+					});
+				}
 			});
 		}
 
@@ -63,7 +68,7 @@ namespace XYZ {
 
 				const char* className = refl.sc_ClassName;
 				for (const auto variable : refl.sc_VariableNames)
-					variables.push_back(variable);
+					variables.push_back(std::string(variable));
 			}
 		}
 	}

@@ -15,7 +15,7 @@ namespace XYZ {
 			}
 		}
 
-		void AnimationClassMap::BuildMap(const SceneEntity& entity)
+		void AnimationClassMap::BuildMap(SceneEntity& entity)
 		{
 			m_ClassData.clear();
 			if (entity)
@@ -23,7 +23,7 @@ namespace XYZ {
 				const std::vector<Entity> tree = entity.GetComponent<Relationship>().GetTree(*entity.GetECS());
 				Reflect::For([&](auto j) {
 					auto reflClass = ReflectedClasses::Get<j.value>();
-					Helper::AddToClassMap(reflClass, entity, m_Animation, m_ClassMap);
+					
 					for (const Entity node : tree)
 					{
 						addToClassData(reflClass, { node, entity.GetScene() });
@@ -35,6 +35,45 @@ namespace XYZ {
 		void AnimationClassMap::Erase(const_iterator iter)
 		{
 			m_ClassData.erase(iter);
+		}
+		bool AnimationClassMap::OnImGuiRender(std::string& selectedEntity, std::string& selectedClass, std::string& selectedVariable)
+		{
+			for (auto& [entityName, classDataVec] : m_ClassData)
+			{
+				if (ImGui::BeginMenu(entityName.c_str()))
+				{
+					for (auto classIt = classDataVec.begin(); classIt != classDataVec.end(); ++classIt)
+					{
+						if (ImGui::BeginMenu(classIt->ClassName.c_str()))
+						{
+							auto& variables = classIt->VariableNames;
+							for (auto it = variables.begin(); it != variables.end(); ++it)
+							{
+								if (ImGui::MenuItem(it->c_str()))
+								{
+									selectedEntity = entityName;
+									selectedClass = classIt->ClassName;
+									selectedVariable = *it;
+								
+									
+									variables.erase(it);
+									if (variables.empty())
+										classDataVec.erase(classIt);
+									if (classDataVec.empty())
+										m_ClassData.erase(entityName);
+
+									ImGui::EndMenu();
+									ImGui::EndMenu();
+									return true;
+								}
+							}
+							ImGui::EndMenu();
+						}
+					}
+					ImGui::EndMenu();
+				}
+			}
+			return false;
 		}
 	}
 }
