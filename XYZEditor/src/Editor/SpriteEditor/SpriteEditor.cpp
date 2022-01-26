@@ -90,7 +90,7 @@ namespace XYZ {
 					const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 					m_ViewSectionWidth = viewportPanelSize.x - m_ToolSectionWidth - 5.0f;
 
-					EditorHelper::DrawSplitter(false, 5.0f, &m_ToolSectionWidth, &m_ViewSectionWidth, 50.0f, 50.0f);
+					//EditorHelper::DrawSplitter(false, 5.0f, &m_ToolSectionWidth, &m_ViewSectionWidth, 50.0f, 50.0f);
 					
 					
 					tools();

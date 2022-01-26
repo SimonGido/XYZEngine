@@ -9,19 +9,23 @@
 
 
 namespace XYZ {
+	namespace Editor {
+		bool EditorButton(const char* stringID, const glm::vec2& size, uint32_t index);
+	}
+
+
 	class EditorHelper
 	{
 	public:
 		template<typename T, typename UIFunction>
 		static bool DrawComponent(const std::string& name, SceneEntity entity, UIFunction uiFunction);
+		
 		template<typename T, typename UIFunction>
 		static bool DrawNodeControl(const std::string& name, T& val, UIFunction uiFunction, bool& enabled);
+		
 		template<typename T, typename UIFunction, typename ConstructFunc>
 		static void DrawContainerControl(const std::string& name, T& container, UIFunction uiFunction, ConstructFunc constructFunc);
 
-		
-		static void DrawSplitter(bool splitHorizontally, float thickness, float* size0, float* size1, float minSize0, float minSize1);
-	
 		static void PushDisabled();
 		static void PopDisabled();
 	};

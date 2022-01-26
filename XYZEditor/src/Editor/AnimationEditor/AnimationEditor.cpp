@@ -4,13 +4,15 @@
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Core/Input.h"
 #include "XYZ/ImGui/ImGui.h"
+#include "XYZ/Asset/AssetSerializer.h"
 
 #include "Editor/EditorHelper.h"
+#include "EditorLayer.h"
+
 
 #include <imgui.h>
 #include <ImSequencer.h>
 
-#include "XYZ/Asset/AssetSerializer.h"
 
 namespace XYZ {
 	namespace Editor {
@@ -27,6 +29,7 @@ namespace XYZ {
 		AnimationEditor::AnimationEditor(std::string name)
 			:
 			EditorPanel(std::move(name)),
+			m_ButtonSize(25.0f),
 			m_SelectedEntry(-1),
 			m_FirstFrame(0),
 			m_CurrentFrame(0),
@@ -106,10 +109,16 @@ namespace XYZ {
 		}
 		void AnimationEditor::propertySection()
 		{
-			if (ImGui::Button("Play"))
+			if (EditorButton("Play", m_ButtonSize, PlayButton))
 			{
-				m_Playing = !m_Playing;
+				m_Playing = true;
 			}
+			ImGui::SameLine();
+			if (EditorButton("Stop", m_ButtonSize, StopButton))
+			{
+				m_Playing = false;
+			}
+	
 			ImGui::SameLine();
 			if (ImGui::Button("Add Key"))
 			{

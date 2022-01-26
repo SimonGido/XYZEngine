@@ -47,6 +47,10 @@ namespace XYZ {
 
 
 		private:
+
+			enum { PlayButton = 8, StopButton = 11 };
+			glm::vec2 m_ButtonSize;
+
 			Ref<Animator>	   m_Context;
 			Ref<Animation>	   m_Animation;
 			Ref<Scene>		   m_Scene;

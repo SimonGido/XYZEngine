@@ -11,6 +11,7 @@
 #include "XYZ/ImGui/ImGui.h"
 
 #include "Editor/Event/EditorEvents.h"
+#include "Editor/EditorHelper.h"
 #include "EditorLayer.h"
 
 #include <imgui.h>
@@ -252,22 +253,14 @@ namespace XYZ {
 
 		bool ScenePanel::playBar()
 		{
-			const auto& preferences = EditorLayer::GetData();
 			bool handled = false;
-			const UV& playButtonTexCoords = preferences.IconsSpriteSheet->GetTexCoords(PlayButton);
-			const UV& stopButtonTexCoords = preferences.IconsSpriteSheet->GetTexCoords(StopButton);
-
 			const float toolbarWidth = 4.0f + 2.0f * m_ButtonSize.x;
 			const float toolbarPositionX = (ImGui::GetWindowContentRegionWidth() - toolbarWidth) / 2.0f;
 			
 			UI::Toolbar(glm::vec2(toolbarPositionX, 8.0f), glm::vec2(4.0f, 0.0f), false,
 				[&]() {
 				UI::ScopedItemFlags flags(ImGuiItemFlags_Disabled, m_Context->GetState() == SceneState::Play);
-				if (UI::ImageButtonTransparent("Play", preferences.IconsTexture->GetImage(),m_ButtonSize, 
-					preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
-					playButtonTexCoords[0],
-					playButtonTexCoords[1]
-				))
+				if (EditorButton("Play", m_ButtonSize, PlayButton))
 				{
 					m_Context->SetState(SceneState::Play);
 					m_Context->OnPlay();
@@ -276,11 +269,7 @@ namespace XYZ {
 			},
 				[&]() {
 				UI::ScopedItemFlags flags(ImGuiItemFlags_Disabled, m_Context->GetState() == SceneState::Edit);
-				if (UI::ImageButtonTransparent("Stop", preferences.IconsTexture->GetImage(),m_ButtonSize, 
-					preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
-					stopButtonTexCoords[0],
-					stopButtonTexCoords[1]
-				))
+				if (EditorButton("Stop", m_ButtonSize, StopButton))
 				{
 					m_Context->SetState(SceneState::Edit);
 					m_Context->OnStop();
@@ -292,46 +281,32 @@ namespace XYZ {
 
 		bool ScenePanel::toolsBar()
 		{
-			const auto& preferences = EditorLayer::GetData();
 			bool handled = false;
-			const UV& cursorTexCoords = preferences.IconsSpriteSheet->GetTexCoords(CursorButton);
-			const UV& moveTexCoords   = preferences.IconsSpriteSheet->GetTexCoords(MoveButton);
-			const UV& rotateTexCoords = preferences.IconsSpriteSheet->GetTexCoords(RotateButton);
-			const UV& scaleTexCoords  = preferences.IconsSpriteSheet->GetTexCoords(ScaleButton);
-			
 	
 			UI::Toolbar(glm::vec2(8.0f, 8.0f), glm::vec2(0.0f, 0.0f), false,
 				[&]() {
-					if (UI::ImageButtonTransparent("##Cursor", preferences.IconsTexture->GetImage(), m_ButtonSize,
-						preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
-						cursorTexCoords[0], cursorTexCoords[1]))
+					if (EditorButton("##Cursor", m_ButtonSize, CursorButton))
 					{
 						m_GizmoType = sc_InvalidGizmoType;
 						handled = true;
 					}
 				},
 				[&]() {
-					if (UI::ImageButtonTransparent("##Move", preferences.IconsTexture->GetImage(), m_ButtonSize,
-						preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
-						moveTexCoords[0], moveTexCoords[1]))
+					if (EditorButton("##Move", m_ButtonSize, MoveButton))
 					{
 						m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 						handled = true;
 					}
 				},
 				[&]() {
-					if (UI::ImageButtonTransparent("##Rotate", preferences.IconsTexture->GetImage(), m_ButtonSize,
-						preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
-						rotateTexCoords[0], rotateTexCoords[1]))
+					if (EditorButton("##Rotate", m_ButtonSize, RotateButton))
 					{
 						m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 						handled = true;
 					}
 				},
 				[&]() {
-					if (UI::ImageButtonTransparent("##Scale", preferences.IconsTexture->GetImage(), m_ButtonSize,
-						preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
-						scaleTexCoords[0], scaleTexCoords[1]))
+					if (EditorButton("##Scale", m_ButtonSize, ScaleButton))
 					{
 						m_GizmoType = ImGuizmo::OPERATION::SCALE;
 						handled = true;

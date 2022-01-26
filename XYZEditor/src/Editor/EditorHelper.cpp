@@ -3,39 +3,22 @@
 
 #include "XYZ/ImGui/ImGui.h"
 
+#include "EditorLayer.h"
+
+
 namespace XYZ {
-	
-	void EditorHelper::DrawSplitter(bool splitHorizontally, float thickness, float* size0, float* size1, float minSize0, float minSize1)
-	{
-		const ImVec2 backup_pos = ImGui::GetCursorPos();
-		if (splitHorizontally)
-			ImGui::SetCursorPosY(backup_pos.y + *size0);
-		else
-			ImGui::SetCursorPosX(backup_pos.x + *size0);
-
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));          // We don't draw while active/pressed because as we move the panes the splitter button will be 1 frame late
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.6f, 0.6f, 0.6f, 0.10f));
-		ImGui::Button("##Splitter", ImVec2(!splitHorizontally ? thickness : -1.0f, splitHorizontally ? thickness : -1.0f));
-		ImGui::PopStyleColor(3);
-
-		ImGui::SetItemAllowOverlap(); // This is to allow having other buttons OVER our splitter. 
-
-		if (ImGui::IsItemActive())
+	namespace Editor {
+		bool EditorButton(const char* stringID, const glm::vec2& size, uint32_t index)
 		{
-			float mouse_delta = splitHorizontally ? ImGui::GetIO().MouseDelta.y : ImGui::GetIO().MouseDelta.x;
+			const auto& preferences = EditorLayer::GetData();
+			const UV& buttonTexCoords = preferences.IconsSpriteSheet->GetTexCoords(index);
 
-			// Minimum pane size
-			if (mouse_delta < minSize0 - *size0)
-				mouse_delta = minSize0 - *size0;
-			if (mouse_delta > *size1 - minSize1)
-				mouse_delta = *size1 - minSize1;
-
-			// Apply resize
-			*size0 += mouse_delta;
-			*size1 -= mouse_delta;
+			return UI::ImageButtonTransparent(stringID, preferences.IconsTexture->GetImage(), size,
+				preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
+				buttonTexCoords[0],
+				buttonTexCoords[1]);
 		}
-		ImGui::SetCursorPos(backup_pos);
+
 	}
 	void EditorHelper::PushDisabled()
 	{
