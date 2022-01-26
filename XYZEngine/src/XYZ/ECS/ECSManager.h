@@ -69,33 +69,6 @@ namespace XYZ {
 		Entity FindEntity(const T& component) const;
 		
 		
-		
-		template <typename ComponentType, auto Callable>
-		void AddOnConstruction();
-
-		template <typename ComponentType, auto Callable, typename Type>
-		void AddOnConstruction(Type* instance);
-
-		template <typename ComponentType, auto Callable>
-		void RemoveOnConstruction();
-
-		template <typename ComponentType, auto Callable, typename Type>
-		void RemoveOnConstruction(Type* instance);
-
-
-
-		template <typename ComponentType, auto Callable>
-		void AddOnDestruction();
-
-		template <typename ComponentType, auto Callable, typename Type>
-		void AddOnDestruction(Type* instance);
-
-		template <typename ComponentType, auto Callable>
-		void RemoveOnDestruction();
-
-		template <typename ComponentType, auto Callable, typename Type>
-		void RemoveOnDestruction(Type* instance);
-
 
 		template <auto Callable>
 		void AddOnConstruction();
@@ -122,7 +95,6 @@ namespace XYZ {
 
 		template <auto Callable, typename Type>
 		void RemoveOnDestruction(Type* instance);
-
 
 
 		uint32_t GetEntityVersion(Entity entity) const { return m_EntityManager.GetVersion(entity); }
@@ -133,9 +105,6 @@ namespace XYZ {
 	private:
 		void executeOnConstruction(Entity entity);
 		void executeOnDestruction(Entity entity);
-
-		template <typename T>
-		void eraseFromVector(std::vector<T>& vec, const T& value);
 
 	private:
 		ComponentManager m_ComponentManager;
@@ -247,56 +216,6 @@ namespace XYZ {
 		return Entity();
 	}
 
-	template<typename ComponentType, auto Callable>
-	inline void ECSManager::AddOnConstruction()
-	{
-		GetStorage<ComponentType>().AddOnConstruction<Callable>();
-	}
-
-	template<typename ComponentType, auto Callable, typename Type>
-	inline void ECSManager::AddOnConstruction(Type* instance)
-	{
-		GetStorage<ComponentType>().AddOnConstruction<Callable>(instance);
-	}
-
-	template<typename ComponentType, auto Callable>
-	inline void ECSManager::RemoveOnConstruction()
-	{
-		GetStorage<ComponentType>().RemoveOnConstruction<Callable>();
-	}
-
-	template<typename ComponentType, auto Callable, typename Type>
-	inline void ECSManager::RemoveOnConstruction(Type* instance)
-	{
-		GetStorage<ComponentType>().RemoveOnConstruction<Callable>(instance);
-	}
-
-	template<typename ComponentType, auto Callable>
-	inline void ECSManager::AddOnDestruction()
-	{
-		GetStorage<ComponentType>().AddOnDestruction<Callable>();
-	}
-
-	template<typename ComponentType, auto Callable, typename Type>
-	inline void ECSManager::AddOnDestruction(Type* instance)
-	{
-		GetStorage<ComponentType>().AddOnDestruction<Callable>(instance);
-	}
-
-	template<typename ComponentType, auto Callable>
-	inline void ECSManager::RemoveOnDestruction()
-	{
-		GetStorage<ComponentType>().RemoveOnDestruction<Callable>();
-	}
-
-	template<typename ComponentType, auto Callable, typename Type>
-	inline void ECSManager::RemoveOnDestruction(Type* instance)
-	{
-		GetStorage<ComponentType>().RemoveOnDestruction<Callable>(instance);
-	}
-
-
-
 	template<auto Callable>
 	inline void ECSManager::AddOnConstruction()
 	{
@@ -318,7 +237,7 @@ namespace XYZ {
 	{
 		Delegate<void(Entity)> deleg;
 		deleg.Connect<Callable>();
-		eraseFromVector(m_OnConstruction, deleg);
+		std::remove(m_OnConstruction.begin(), m_OnConstruction.end(), deleg);
 	}
 
 	template<auto Callable, typename Type>
@@ -326,7 +245,7 @@ namespace XYZ {
 	{
 		Delegate<void(Entity)> deleg;
 		deleg.Connect<Callable>(instance);
-		eraseFromVector(m_OnConstruction, deleg);
+		std::remove(m_OnConstruction.begin(), m_OnConstruction.end(), deleg);
 	}
 
 	template<auto Callable>
@@ -350,7 +269,7 @@ namespace XYZ {
 	{
 		Delegate<void(Entity)> deleg;
 		deleg.Connect<Callable>();
-		eraseFromVector(m_OnDestruction, deleg);
+		std::remove(m_OnDestruction.begin(), m_OnDestruction.end(), deleg);
 	}
 
 	template<auto Callable, typename Type>
@@ -358,21 +277,6 @@ namespace XYZ {
 	{
 		Delegate<void(Entity)> deleg;
 		deleg.Connect<Callable>(instance);
-		eraseFromVector(m_OnDestruction, deleg);
-	}
-	template<typename T>
-	inline void ECSManager::eraseFromVector(std::vector<T>& vec, const T& value)
-	{
-		for (auto it = vec.begin(); it != vec.end();)
-		{
-			if ((*it) == value)
-			{
-				it = vec.erase(it);
-			}
-			else
-			{
-				it++;
-			}
-		}
+		std::remove(m_OnDestruction.begin(), m_OnDestruction.end(), deleg);
 	}
 }

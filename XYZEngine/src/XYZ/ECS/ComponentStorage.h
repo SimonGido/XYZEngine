@@ -57,10 +57,6 @@ namespace XYZ {
 		template <auto Callable, typename Type>
 		void RemoveOnDestruction(Type* instance);
 	
-	private:
-		template <typename T>
-		void eraseFromVector(std::vector<T>& vec, const T& value);
-
 	protected:
 		std::vector<Delegate<void(Entity)>> m_OnConstruction;
 		std::vector<Delegate<void(Entity)>> m_OnDestruction;
@@ -287,7 +283,7 @@ namespace XYZ {
 	{
 		Delegate<void(Entity)> deleg;
 		deleg.Connect<Callable>();
-		eraseFromVector(m_OnConstruction, deleg);
+		std::remove(m_OnConstruction.begin(), m_OnConstruction.end(), deleg);
 	}
 
 	template<auto Callable, typename Type>
@@ -295,7 +291,7 @@ namespace XYZ {
 	{
 		Delegate<void(Entity)> deleg;
 		deleg.Connect<Callable>(instance);
-		eraseFromVector(m_OnConstruction, deleg);
+		std::remove(m_OnConstruction.begin(), m_OnConstruction.end(), deleg);
 	}
 
 	template<auto Callable>
@@ -319,7 +315,7 @@ namespace XYZ {
 	{
 		Delegate<void(Entity)> deleg;
 		deleg.Connect<Callable>();
-		eraseFromVector(m_OnDestruction, deleg);
+		std::remove(m_OnDestruction.begin(), m_OnDestruction.end(), deleg);
 	}
 
 	template<auto Callable, typename Type>
@@ -327,23 +323,6 @@ namespace XYZ {
 	{
 		Delegate<void(Entity)> deleg;
 		deleg.Connect<Callable>(instance);
-		eraseFromVector(m_OnDestruction, deleg);
+		std::remove(m_OnDestruction.begin(), m_OnDestruction.end(), deleg);
 	}
-
-	template<typename T>
-	inline void IComponentStorage::eraseFromVector(std::vector<T>& vec, const T& value)
-	{
-		for (auto it = vec.begin(); it != vec.end();)
-		{
-			if ((*it) == value)
-			{
-				it = vec.erase(it);
-			}
-			else
-			{
-				it++;
-			}
-		}
-	}
-
 }

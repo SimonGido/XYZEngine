@@ -62,14 +62,14 @@ namespace XYZ {
 		ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
 		physicsWorld->SetContactListener(&m_ContactListener);
 
-		m_ECS.AddOnConstruction<ScriptComponent, &Scene::onScriptComponentConstruct>(this);
-		m_ECS.AddOnDestruction<ScriptComponent, &Scene::onScriptComponentDestruct>(this);
+		m_ECS.GetStorage<ScriptComponent>().AddOnConstruction<&Scene::onScriptComponentConstruct>(this);
+		m_ECS.GetStorage<ScriptComponent>().AddOnDestruction<&Scene::onScriptComponentDestruct>(this);
 	}
 
 	Scene::~Scene()
 	{
-		m_ECS.RemoveOnConstruction<ScriptComponent, &Scene::onScriptComponentConstruct>(this);
-		m_ECS.RemoveOnDestruction<ScriptComponent, &Scene::onScriptComponentDestruct>(this);
+		m_ECS.GetStorage<ScriptComponent>().RemoveOnConstruction<&Scene::onScriptComponentConstruct>(this);
+		m_ECS.GetStorage<ScriptComponent>().RemoveOnDestruction<&Scene::onScriptComponentDestruct>(this);
 	}
 
 	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
