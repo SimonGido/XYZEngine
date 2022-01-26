@@ -3,6 +3,9 @@
 
 #include "XYZ/ImGui/ImGui.h"
 
+#include "XYZ/Scene/Components.h"
+
+
 namespace XYZ {
 	namespace Editor {
 		namespace Helper {
@@ -17,16 +20,20 @@ namespace XYZ {
 
 		void AnimationClassMap::BuildMap(SceneEntity& entity)
 		{
+			XYZ_ASSERT(entity.HasComponent<AnimatorComponent>(), "");
+			const AnimatorComponent& animator = entity.GetComponent<AnimatorComponent>();
+			Ref<Animation> animation = animator.Animator->GetAnimation();
+
 			m_ClassData.clear();
 			if (entity)
 			{
 				const std::vector<Entity> tree = entity.GetComponent<Relationship>().GetTree(*entity.GetECS());
 				Reflect::For([&](auto j) {
 					auto reflClass = ReflectedClasses::Get<j.value>();
-					addToClassData(reflClass, entity);
+					addToClassData(reflClass, entity, animation);
 					for (const Entity node : tree)
 					{
-						addToClassData(reflClass, { node, entity.GetScene() });
+						addToClassData(reflClass, { node, entity.GetScene() }, animation);
 					}
 
 				}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());

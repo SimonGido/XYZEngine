@@ -31,7 +31,7 @@ namespace XYZ {
 		void SetNumFrames(uint32_t numFrames) { m_NumFrames = numFrames; }
 		void SetRepeat(bool repeat)			  { m_Repeat = repeat; }
 
-		bool PropertyHasVariable(const char* componentName, const char* varName, const std::string& path) const;
+		bool HasProperty(std::string_view componentName, std::string_view varName, const std::string& path) const;
 
 		inline uint32_t	GetNumFrames()    const { return m_NumFrames; }
 		inline uint32_t	GetCurrentFrame() const { return m_CurrentFrame; }
@@ -72,7 +72,7 @@ namespace XYZ {
 		static T*   findInContainer(std::vector<T>& container, const std::string& path, const std::string& valueName, const std::string& componentName);
 
 		template <typename T>
-		static bool propertyHasVariable(const std::vector<Property<T>>& container, const char* className, const char* varName, const std::string& path);
+		static bool propertyContainerHasVariable(const std::vector<Property<T>>& container, std::string_view className, std::string_view varName, const std::string& path);
 			
 		void		clearProperties();
 	private:
@@ -163,7 +163,7 @@ namespace XYZ {
 		return nullptr;
 	}
 	template <typename T>
-	bool Animation::propertyHasVariable(const std::vector<Property<T>>& container, const char* className, const char* varName, const std::string& path)
+	bool Animation::propertyContainerHasVariable(const std::vector<Property<T>>& container, std::string_view className, std::string_view varName, const std::string& path)
 	{
 		for (const auto& it : container)
 		{

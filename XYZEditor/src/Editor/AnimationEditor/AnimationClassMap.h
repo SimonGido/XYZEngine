@@ -1,6 +1,7 @@
 #pragma once
 #include "XYZ/Scene/SceneEntity.h"
 
+#include "XYZ/Animation/Animator.h"
 
 namespace XYZ {
 	namespace Editor {
@@ -32,7 +33,7 @@ namespace XYZ {
 
 		private:
 			template <typename T>
-			void addToClassData(Reflection<T> refl, const SceneEntity& entity);
+			void addToClassData(Reflection<T> refl, const SceneEntity& entity, const Ref<Animation>& animation);
 
 		private:
 			std::unordered_map<std::string, std::vector<ClassData>> m_ClassData;
@@ -56,7 +57,7 @@ namespace XYZ {
 		}
 
 		template<typename T>
-		inline void AnimationClassMap::addToClassData(Reflection<T> refl, const SceneEntity& entity)
+		inline void AnimationClassMap::addToClassData(Reflection<T> refl, const SceneEntity& entity, const Ref<Animation>& animation)
 		{
 			const std::string& entityName = entity.GetComponent<SceneTagComponent>().Name;
 			std::vector<std::string> variables;
@@ -64,7 +65,10 @@ namespace XYZ {
 			{
 				const char* className = refl.sc_ClassName;
 				for (const auto variable : refl.sc_VariableNames)
-					variables.push_back(std::string(variable));
+				{
+					if (!animation->HasProperty(className, variable, entityName))
+						variables.push_back(std::string(variable));
+				}
 			}
 			if (!variables.empty())
 			{

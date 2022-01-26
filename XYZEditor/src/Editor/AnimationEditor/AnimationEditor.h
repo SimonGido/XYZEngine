@@ -20,6 +20,7 @@ namespace XYZ {
 
 			void SetContext(const Ref<Animator>& context);
 		private:
+			void onEntitySelected();
 			void createSequencers();
 			void propertySection();
 			void timelineSection();
@@ -49,7 +50,7 @@ namespace XYZ {
 			Ref<Animator>	   m_Context;
 			Ref<Animation>	   m_Animation;
 			Ref<Scene>		   m_Scene;
-			SceneEntity		   m_SelectedEntity;
+			SceneEntity		   m_AnimatorEntity;
 
 			AnimationClassMap				m_ClassMap;
 			std::vector<AnimationSequencer> m_Sequencers;
@@ -69,24 +70,24 @@ namespace XYZ {
 		template<typename ComponentType, typename T>
 		inline void AnimationEditor::editKeyValue(Reflection<ComponentType> refl, const std::string& path, uint32_t frame, const T& val, const std::string& valName)
 		{
-			auto prop = m_Context->GetProperty<ComponentType, T>(path, valName);
-			if (prop && !prop->Empty())
-			{
-				T value = prop->GetValue(frame);
-				if (editKeyValueSpecialized(frame, value, valName))
-				{
-					if (prop->HasKeyAtFrame(frame))
-					{
-						size_t key = prop->FindKey(frame);
-						prop->SetKeyValue(value, key);
-					}
-					else
-					{
-						prop->AddKeyFrame({ value, frame });
-						m_Sequencer.AddKey(m_SelectedEntry, frame);
-					}
-				}
-			}
+			//auto prop = m_Context->GetProperty<ComponentType, T>(path, valName);
+			//if (prop && !prop->Empty())
+			//{
+			//	T value = prop->GetValue(frame);
+			//	if (editKeyValueSpecialized(frame, value, valName))
+			//	{
+			//		if (prop->HasKeyAtFrame(frame))
+			//		{
+			//			size_t key = prop->FindKey(frame);
+			//			prop->SetKeyValue(value, key);
+			//		}
+			//		else
+			//		{
+			//			prop->AddKeyFrame({ value, frame });
+			//			m_Sequencer.AddKey(m_SelectedEntry, frame);
+			//		}
+			//	}
+			//}
 		}
 
 		template<uint16_t valIndex, typename ComponentType, typename T>

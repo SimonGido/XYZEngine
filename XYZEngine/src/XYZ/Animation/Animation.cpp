@@ -65,17 +65,17 @@ namespace XYZ {
 		setPropertiesKey(m_CurrentFrame);
 	}
 
-	bool Animation::PropertyHasVariable(const char* componentName, const char* varName, const std::string& path) const
+	bool Animation::HasProperty(std::string_view componentName, std::string_view varName, const std::string& path) const
 	{
-		if (propertyHasVariable(m_Vec4Properties, componentName, varName, path))
+		if (propertyContainerHasVariable(m_Vec4Properties, componentName, varName, path))
 			return true;
-		if (propertyHasVariable(m_Vec3Properties, componentName, varName, path))
+		if (propertyContainerHasVariable(m_Vec3Properties, componentName, varName, path))
 			return true;
-		if (propertyHasVariable(m_Vec2Properties, componentName, varName, path))
+		if (propertyContainerHasVariable(m_Vec2Properties, componentName, varName, path))
 			return true;
-		if (propertyHasVariable(m_FloatProperties, componentName, varName, path))
+		if (propertyContainerHasVariable(m_FloatProperties, componentName, varName, path))
 			return true;
-		if (propertyHasVariable(m_PointerProperties, componentName, varName, path))
+		if (propertyContainerHasVariable(m_PointerProperties, componentName, varName, path))
 			return true;
 		return false;
 	}

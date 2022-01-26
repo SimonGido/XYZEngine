@@ -42,18 +42,7 @@ namespace XYZ {
 		{
 			m_Context = context;
 			m_Animation = m_Context->GetAnimation();
-			// TODO: Temporary
-			m_SelectedEntity = m_Context->GetSceneEntity();
-			////////////////////
-
-			m_ClassMap.BuildMap(m_SelectedEntity);
-			createSequencers();
-			int frameMax = 0;
-			for (const auto& seq : m_Sequencers)
-			{
-				frameMax = std::max(frameMax, seq.FrameMax);
-			}
-			//m_Animation->SetNumFrames(static_cast<uint32_t>(m_Sequencer.m_FrameMax));
+			onEntitySelected();
 		}
 		void AnimationEditor::SetSceneContext(const Ref<Scene>& scene)
 		{
@@ -74,12 +63,10 @@ namespace XYZ {
 			{
 				if (m_Context.Raw() && m_Scene.Raw())
 				{
-					if (m_SelectedEntity != m_Context->GetSceneEntity())
-					{
-						m_SelectedEntity = m_Context->GetSceneEntity();
-						m_ClassMap.BuildMap(m_SelectedEntity);
-					}
-					if (m_SelectedEntity.IsValid())
+					if (m_AnimatorEntity != m_Context->GetSceneEntity())
+						onEntitySelected();
+
+					if (m_AnimatorEntity.IsValid())
 					{
 						const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 
@@ -100,14 +87,20 @@ namespace XYZ {
 			}
 			ImGui::End();
 		}
+		void AnimationEditor::onEntitySelected()
+		{
+			m_AnimatorEntity = m_Context->GetSceneEntity();
+			createSequencers();
+			m_ClassMap.BuildMap(m_AnimatorEntity);
+		}
 		void AnimationEditor::createSequencers()
 		{
 			m_Sequencers.clear();
 			
-			std::vector<Entity> tree = m_SelectedEntity.GetComponent<Relationship>().GetTree(*m_SelectedEntity.GetECS());
+			std::vector<Entity> tree = m_AnimatorEntity.GetComponent<Relationship>().GetTree(*m_AnimatorEntity.GetECS());
 			for (auto entity : tree)
 			{
-				SceneEntity ent(entity, m_SelectedEntity.GetScene());
+				SceneEntity ent(entity, m_AnimatorEntity.GetScene());
 				m_Sequencers.emplace_back(ent.GetComponent<SceneTagComponent>().Name, m_SequencerItemTypes);
 			}
 		}
@@ -136,7 +129,7 @@ namespace XYZ {
 					m_ClassMap.Execute(selectedClass, selectedVariable, [&](auto classIndex, auto variableIndex) 
 					{
 						auto reflClass = ReflectedClasses::Get<classIndex.value>();
-						auto& val = reflClass.Get<variableIndex.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
+						auto& val = reflClass.Get<variableIndex.value>(m_AnimatorEntity.GetComponentFromReflection(reflClass));
 						addReflectedProperty<variableIndex.value>(reflClass, val, selectedEntity, selectedVariable);
 						m_Context->UpdateAnimationEntities();
 					});
