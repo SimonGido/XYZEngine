@@ -53,7 +53,7 @@ namespace XYZ {
 		size_t AnimationSequencer::GetCustomHeight(int index)
 		{
 			const auto& item = m_Items[index];
-			return item.Expanded ? item.Height : 0;
+			return item.Expanded ? item.LineHeight * (item.LineEdit.GetLines().size() + 1) : 0;
 		}
 
 		void AnimationSequencer::DoubleClick(int index)
@@ -76,12 +76,13 @@ namespace XYZ {
 			auto& item = m_Items[index];		
 			item.LineEdit.GetMax() = ImVec2(float(FrameMax), 1.f);
 			item.LineEdit.GetMin() = ImVec2(float(FrameMin), 0.f);
+			
 			int i = 0;
-	
+
 			for (auto& line : item.LineEdit.GetLines())
 			{
-				ImVec2 pta(legendRect.Min.x + 30, legendRect.Min.y + i * 14.f);
-				ImVec2 ptb(legendRect.Max.x, legendRect.Min.y + (i + 1) * 14.f);
+				ImVec2 pta(legendRect.Min.x + 30, legendRect.Min.y + i * item.LineHeight);
+				ImVec2 ptb(legendRect.Max.x, legendRect.Min.y + (i + 1) * item.LineHeight);
 				
 				draw_list->AddText(pta, line.Selected ? 0xFFFFFFFF : 0x80FFFFFF, line.Name.c_str());
 				if (ImRect(pta, ptb).Contains(ImGui::GetMousePos()) && ImGui::IsMouseClicked(0))
@@ -114,6 +115,11 @@ namespace XYZ {
 				}
 			}
 			draw_list->PopClipRect();
+		}
+
+		void AnimationSequencer::AddItem(int type)
+		{
+			m_Items.push_back({ type, false, 25 });
 		}
 
 		void AnimationSequencer::AddLine(int type, const std::string& lineName, uint32_t color)
@@ -151,6 +157,16 @@ namespace XYZ {
 			m_Selection.Points.clear();
 		}
 	
+		bool AnimationSequencer::ItemExists(int type) const
+		{
+			for (const auto& item : m_Items)
+			{
+				if (item.Type == type)
+					return true;
+			}
+			return false;
+		}
+
 		int AnimationSequencer::GetItemTypeIndex(std::string_view name) const
 		{
 			int counter = 0;
@@ -162,7 +178,7 @@ namespace XYZ {
 			}
 			return -1;
 		}
-		int AnimationSequencer::GetItemIndex(int type, const std::string& path) const
+		int AnimationSequencer::GetItemIndex(int type) const
 		{
 			int counter = 0;
 			for (const auto& item : m_Items)

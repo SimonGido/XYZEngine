@@ -1,6 +1,6 @@
 Scene: TestScene
 Entities:
-  - Entity: 4db6e355-70f1-430c-a2d1-3a2bfa7f8def
+  - Entity: 386cf375-3f75-43d6-a8e1-d6f430e3268d
     SceneTagComponent:
       Name: Havko
     TransformComponent:

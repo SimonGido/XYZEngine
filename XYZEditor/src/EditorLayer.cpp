@@ -55,6 +55,8 @@ namespace XYZ {
 			SceneEntity newEntity = m_Scene->CreateEntity("Havko", GUID());
 			Ref<Animator> animator = Ref<Animator>::Create();
 			Ref<Animation> animation = Ref<Animation>::Create();
+			auto& animatorComp = newEntity.EmplaceComponent<AnimatorComponent>();
+			animatorComp.Animator = animator;
 			animator->SetAnimation(animation);
 			animator->SetSceneEntity(newEntity);
 			m_EditorManager.GetPanel<Editor::AnimationEditor>("AnimationEditor")->SetContext(animator);

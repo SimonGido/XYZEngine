@@ -21,7 +21,7 @@ namespace XYZ {
             {
                 int               Type;
                 bool              Expanded;
-                size_t            Height;
+                size_t            LineHeight;
                 SequenceLineEdit  LineEdit;
             };
 
@@ -43,6 +43,7 @@ namespace XYZ {
             virtual void        CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& legendRect, const ImRect& clippingRect, const ImRect& legendClippingRect) override;
             virtual void        CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect) override;            
             
+            void                AddItem(int type);
             void                AddLine(int type, const std::string& lineName, uint32_t color = 0xFF0000FF);
             void                AddKey(int itemIndex, int key);
             void                DeleteSelectedPoints();
@@ -52,9 +53,9 @@ namespace XYZ {
             const Selection&    GetSelection()  const { return m_Selection; }
             const Selection&    GetCopy()       const { return m_Copy; }
           
-            
+            bool                          ItemExists(int type) const;
             int                           GetItemTypeIndex(std::string_view name) const;
-            int                           GetItemIndex(int type, const std::string& path) const;
+            int                           GetItemIndex(int type) const;
             int                           GetItemItemType(int itemIndex) const;
             const SequenceLineEdit::Line* GetSelectedLine(int itemIndex = -1) const;
             const SequenceLineEdit::Line& GetLine(int itemIndex, size_t curveIndex) const;

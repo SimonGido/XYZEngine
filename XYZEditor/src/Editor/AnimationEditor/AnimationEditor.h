@@ -37,7 +37,7 @@ namespace XYZ {
 			bool editKeyValueSpecialized(uint32_t frame, T& value, const std::string& valName);
 
 			template <uint16_t valIndex, typename ComponentType, typename T>
-			void addReflectedProperty(Reflection<ComponentType> refl, const T& val, const std::string& entityName, const std::string& valName);
+			void addReflectedProperty(Reflection<ComponentType> refl, const T& val, const std::string& path, const std::string& valName);
 
 			template <typename ComponentType, typename T>
 			void addKeyToProperty(Reflection<ComponentType> refl, const std::string& path, uint32_t frame, const T& val, const std::string& valName);
@@ -45,7 +45,7 @@ namespace XYZ {
 			template <typename ComponentType, typename T>
 			Property<T>* getProperty(Reflection<ComponentType> refl, const T& val, const std::string& path, const std::string& valName);
 
-
+			AnimationSequencer* findSequencer(const std::string& path);
 		private:
 
 			enum { PlayButton = 8, StopButton = 11 };
@@ -60,15 +60,15 @@ namespace XYZ {
 			std::vector<AnimationSequencer> m_Sequencers;
 			std::vector<std::string>		m_SequencerItemTypes;
 
-			int				   m_SelectedEntry;
-			int				   m_FirstFrame;
-			uint32_t		   m_CurrentFrame;
-			bool			   m_Expanded;
-			bool			   m_Playing;
-			bool			   m_OpenSelectionActions;
-			float			   m_SplitterWidth;
-			int				   m_FrameMin = 0;
-			int				   m_FrameMax = 60;
+			int			m_SelectedEntry;
+			int			m_FirstFrame;
+			int			m_CurrentFrame;
+			bool		m_Expanded;
+			bool		m_Playing;
+			bool		m_OpenSelectionActions;
+			float		m_SplitterWidth;
+			int			m_FrameMin = 0;
+			int			m_FrameMax = 30;
 		};
 
 		template<typename ComponentType, typename T>
@@ -95,15 +95,15 @@ namespace XYZ {
 		}
 
 		template<uint16_t valIndex, typename ComponentType, typename T>
-		inline void AnimationEditor::addReflectedProperty(Reflection<ComponentType> refl, const T& val, const std::string& entityName, const std::string& valName)
+		inline void AnimationEditor::addReflectedProperty(Reflection<ComponentType> refl, const T& val, const std::string& path, const std::string& valName)
 		{
-			//m_Animation->AddProperty<ComponentType, T, valIndex>(entityName, valName);
-			//
-			//const int itemTypeIndex = m_Sequencer.GetItemTypeIndex(refl.sc_ClassName);
-			//if (!m_Sequencer.ItemExists(itemTypeIndex, entityName))
-			//	m_Sequencer.AddItem(itemTypeIndex, entityName);
-			//
-			//m_Sequencer.AddLine(itemTypeIndex, entityName, valName);
+			m_Animation->AddProperty<ComponentType, T, valIndex>(path, valName);
+			AnimationSequencer* seq = findSequencer(path);
+			const int itemTypeIndex = seq->GetItemTypeIndex(refl.sc_ClassName);
+			if (!seq->ItemExists(itemTypeIndex))
+				seq->AddItem(itemTypeIndex);
+
+			seq->AddLine(itemTypeIndex, valName);
 		}
 		template<typename ComponentType, typename T>
 		inline void AnimationEditor::addKeyToProperty(Reflection<ComponentType> refl, const std::string& path, uint32_t frame, const T& val, const std::string& valName)

@@ -17,15 +17,6 @@
 namespace XYZ {
 	namespace Editor {
 
-		namespace Helper {
-			template <typename ...Args>
-			static bool IntControl(const char* text, const char* id, int32_t& value, Args&& ...args)
-			{
-				ImGui::Text(text, std::forward<Args>(args)...);
-				ImGui::SameLine();
-				return ImGui::InputInt(id, &value);
-			}
-		}
 		AnimationEditor::AnimationEditor(std::string name)
 			:
 			EditorPanel(std::move(name)),
@@ -57,6 +48,8 @@ namespace XYZ {
 			{
 				m_Animation->Update(ts);
 				m_CurrentFrame = static_cast<int>(m_Animation->GetCurrentFrame());
+			
+				handleEditKeyValues();
 			}
 		}
 
@@ -78,9 +71,6 @@ namespace XYZ {
 							[&]() { propertySection(); },
 							[&]() { timelineSection(); });
 						
-						
-						ImGui::SameLine();
-						
 						if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 						{
 							m_OpenSelectionActions = true;
@@ -99,6 +89,8 @@ namespace XYZ {
 		void AnimationEditor::createSequencers()
 		{
 			m_Sequencers.clear();
+			
+			m_Sequencers.emplace_back(m_AnimatorEntity.GetComponent<SceneTagComponent>().Name, m_SequencerItemTypes);
 			
 			std::vector<Entity> tree = m_AnimatorEntity.GetComponent<Relationship>().GetTree(*m_AnimatorEntity.GetECS());
 			for (auto entity : tree)
@@ -120,11 +112,7 @@ namespace XYZ {
 			}
 	
 			ImGui::SameLine();
-			if (ImGui::Button("Add Key"))
-			{
-				handleAddKey();
-			}
-			ImGui::SameLine();
+			
 
 
 			if (ImGui::Button("Add Property"))
@@ -145,34 +133,53 @@ namespace XYZ {
 				}
 				ImGui::EndPopup();
 			}
-			handleEditKeyValues();
+
+
+			if (ImGui::BeginTable("##ControlTable", 2, ImGuiTableFlags_SizingFixedSame))
+			{			
+				UI::TableRow("FrameMax",
+					[]() { ImGui::Text("Frame Max"); },
+					[&]() 
+					{
+						if (ImGui::DragInt("##Frame Max", &m_FrameMax, 0.5f, m_FrameMin, INT_MAX, "%d"))
+							m_Animation->SetNumFrames(m_FrameMax);
+					});
+
+				UI::TableRow("FrameMin",
+					[]() { ImGui::Text("Frame Min"); },
+					[&]()
+					{
+						if (ImGui::DragInt("##Frame Min", &m_FrameMin, 0.5f, 0, m_FrameMax, "%d"))
+							m_FrameMin = std::max(m_FrameMin, 0);
+					});
+
+				UI::TableRow("Frame",
+					[]() { ImGui::Text("Frame"); },
+					[&]()
+					{
+						if (ImGui::DragInt("##Frame", &m_CurrentFrame, 0.5f, m_FrameMin, m_FrameMax, "%d"))
+							m_Animation->SetCurrentFrame(m_CurrentFrame);
+					});
+				UI::TableRow("FrameMin",
+					[]() { ImGui::Text("Frame Min"); },
+					[&]()
+					{
+						int fps = static_cast<int>(m_Animation->GetFrequency());
+						if (ImGui::DragInt("##FPS", &fps, 0.5f, 0, 0, "%d"))
+							m_Animation->SetFrequency(static_cast<uint32_t>(fps));
+					});
+
+				
+				ImGui::EndTable();
+			}
 		}
 		void AnimationEditor::timelineSection()
 		{
-			ImGui::PushItemWidth(130);
-			Helper::IntControl("Frame Min", "##Frame Min", m_FrameMin);
-
-			ImGui::SameLine();
-			Helper::IntControl("Frame Max", "##Frame Max", m_FrameMax);
-
-			m_Animation->SetNumFrames(static_cast<uint32_t>(m_FrameMax));
-			int currentFrame = m_CurrentFrame;
-
-			ImGui::SameLine();
-			if (Helper::IntControl("Frame", "##Frame", currentFrame))
+			if (ImGui::Button("Add Key"))
 			{
-				m_CurrentFrame = std::max(currentFrame, 0);
-				m_Animation->SetCurrentFrame(m_CurrentFrame);
+				handleAddKey();
 			}
-			ImGui::SameLine();
-			int fps = static_cast<int>(m_Animation->GetFrequency());
-			if (Helper::IntControl("FPS", "##FPS", fps))
-			{
-				m_Animation->SetFrequency(static_cast<uint32_t>(fps));
-			}
-
-
-			ImGui::PopItemWidth();
+		
 			for (auto& seq : m_Sequencers)
 			{
 				int currentFrame = m_CurrentFrame;		
@@ -314,6 +321,17 @@ namespace XYZ {
 				//}
 				
 			}
+		}
+
+		AnimationSequencer* AnimationEditor::findSequencer(const std::string& path)
+		{
+			for (auto& seq : m_Sequencers)
+			{
+				if (seq.GetName() == path)
+					return &seq;
+			}
+			XYZ_ASSERT(false, "");
+			return nullptr;
 		}
 
 		template <>
