@@ -26,7 +26,6 @@ namespace XYZ {
 			m_CurrentFrame(0),
 			m_Expanded(true),
 			m_Playing(false),
-			m_OpenSelectionActions(false),
 			m_SplitterWidth(300.0f)
 		{
 			for (const auto name : ReflectedClasses::sc_ClassNames)
@@ -61,7 +60,7 @@ namespace XYZ {
 				{
 					if (m_AnimatorEntity != m_Context->GetSceneEntity())
 						onEntitySelected();
-
+					setSequencersBoundaries();
 					if (m_AnimatorEntity.IsValid())
 					{
 						const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
@@ -70,11 +69,6 @@ namespace XYZ {
 						UI::SplitterV(&m_SplitterWidth, "##PropertySection", "##TimelineSection",
 							[&]() { propertySection(); },
 							[&]() { timelineSection(); });
-						
-						if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-						{
-							m_OpenSelectionActions = true;
-						}
 					}
 				}
 			}
@@ -99,25 +93,47 @@ namespace XYZ {
 				m_Sequencers.emplace_back(ent.GetComponent<SceneTagComponent>().Name, m_SequencerItemTypes);
 			}
 		}
+		void AnimationEditor::setSequencersBoundaries()
+		{
+			for (auto& seq : m_Sequencers)
+			{
+				seq.FrameMin = m_FrameMin;
+				seq.FrameMax = m_FrameMax;
+			}
+		}
 		void AnimationEditor::propertySection()
 		{
-			if (EditorButton("Play", m_ButtonSize, PlayButton))
+			UI::ScopedStyleStack style(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
+			if (EditorButton("Beginning", m_ButtonSize, ED::MediaBeginningIcon))
 			{
-				m_Playing = true;
+
 			}
 			ImGui::SameLine();
-			if (EditorButton("Stop", m_ButtonSize, StopButton))
+			if (EditorButton("PrevKeyFrame", m_ButtonSize, ED::MediaNextIcon, true))
 			{
-				m_Playing = false;
+
 			}
-	
+			ImGui::SameLine();			
+			if (EditorButton("Play", m_ButtonSize, ED::MediaPlayIcon))
+			{
+				m_Playing = !m_Playing;
+			}
 			ImGui::SameLine();
-			
+			if (EditorButton("NextKeyFrame", m_ButtonSize, ED::MediaNextIcon))
+			{
+
+			}
+			ImGui::SameLine();
+			if (EditorButton("End", m_ButtonSize, ED::MediaBeginningIcon, true))
+			{
+
+			}
 
 
-			if (ImGui::Button("Add Property"))
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			{
 				ImGui::OpenPopup("AddProperty");
-
+			}
 			if (ImGui::BeginPopup("AddProperty"))
 			{
 				std::string selectedEntity, selectedClass, selectedVariable;
@@ -160,8 +176,8 @@ namespace XYZ {
 						if (ImGui::DragInt("##Frame", &m_CurrentFrame, 0.5f, m_FrameMin, m_FrameMax, "%d"))
 							m_Animation->SetCurrentFrame(m_CurrentFrame);
 					});
-				UI::TableRow("FrameMin",
-					[]() { ImGui::Text("Frame Min"); },
+				UI::TableRow("FPS",
+					[]() { ImGui::Text("FPS"); },
 					[&]()
 					{
 						int fps = static_cast<int>(m_Animation->GetFrequency());
@@ -281,7 +297,7 @@ namespace XYZ {
 
 		void AnimationEditor::keySelectionActions()
 		{
-			if (m_OpenSelectionActions)
+			
 			{
 				//ImGui::OpenPopup("KeyActions");
 				//if (ImGui::BeginPopup("KeyActions"))

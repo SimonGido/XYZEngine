@@ -7,7 +7,7 @@ namespace XYZ {
 		void EditorData::Init()
 		{
 			IconsTexture	 = Texture2D::Create("Resources/Editor/icons.png");
-			IconsSpriteSheet = Ref<SpriteSheet>::Create(IconsTexture, 4, 4);
+			IconsSpriteSheet = Ref<SpriteSheet>::Create(IconsTexture, 8, 8);
 			
 			
 			Color[BoundingBox]    = glm::vec4(1.0f);

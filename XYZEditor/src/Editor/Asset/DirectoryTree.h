@@ -42,24 +42,6 @@ namespace XYZ {
 		class DirectoryTree
 		{
 		public:
-			enum FileType
-			{
-				Animation = 4,
-				Scene,
-				Jpg,
-				Png,
-				Arrow,
-				Mesh,
-				Texture,
-				SubTexture,
-				Folder,
-				Shader,
-				Material,
-				Script,
-				NumTypes
-			};
-
-
 			DirectoryTree(const std::filesystem::path& path);
 			
 			void Rebuild(const std::filesystem::path& path);

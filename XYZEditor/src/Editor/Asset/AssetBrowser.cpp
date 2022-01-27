@@ -32,8 +32,6 @@ namespace XYZ {
 			m_DirectoryTree(s_AssetPath),
 			m_SplitterWidth(200.0f)
 		{
-			registerFileTypeExtensions();
-
 			m_IconSize = ImVec2(50.0f, 50.0f);
 			m_ArrowSize = ImVec2(25.0f, 25.0f);		
 
@@ -128,18 +126,7 @@ namespace XYZ {
 			}
 			return Ref<Asset>();
 		}
-		void AssetBrowser::registerFileTypeExtensions()
-		{
-			m_FileTypeExtensions["xyz"]    = FileType::Scene;
-			m_FileTypeExtensions["tex"]    = FileType::Texture;
-			m_FileTypeExtensions["subtex"] = FileType::SubTexture;
-			m_FileTypeExtensions["mat"]    = FileType::Material;
-			m_FileTypeExtensions["shader"] = FileType::Shader;
-			m_FileTypeExtensions["cs"]	   = FileType::Script;
-			m_FileTypeExtensions["anim"]   = FileType::Animation;
-			m_FileTypeExtensions["png"]    = FileType::Png;
-			m_FileTypeExtensions["jpg"]    = FileType::Jpg;
-		}
+
 		void AssetBrowser::createAsset() const
 		{
 			const std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPath().string();
@@ -207,13 +194,6 @@ namespace XYZ {
 			}
 		}
 	
-		uint32_t AssetBrowser::extensionToTexCoordsIndex(const std::string& extension) const
-		{		
-			auto it = m_FileTypeExtensions.find(extension);
-			if (it != m_FileTypeExtensions.end())
-				return it->second;
-			return FileType::NumTypes;
-		}
 		void AssetBrowser::dragAndDrop(const std::filesystem::path& path) const
 		{
 			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
@@ -236,7 +216,7 @@ namespace XYZ {
 			const ImVec4 backArrowColor = backArrowAvailable ? preferences.Color[ED::IconColor] : preferences.Color[ED::DisabledColor];
 			const ImVec4 frontArrowColor = frontArrowAvailable ? preferences.Color[ED::IconColor] : preferences.Color[ED::DisabledColor];
 
-			const UV& rightArrowTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(Arrow);
+			const UV& rightArrowTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::ArrowIcon);
 			UV leftArrowTexCoords = rightArrowTexCoords;
 			std::swap(leftArrowTexCoords[0].x, leftArrowTexCoords[1].x);
 
@@ -316,7 +296,7 @@ namespace XYZ {
 		void AssetBrowser::processDirectoryTree(const DirectoryNode& parentNode)
 		{
 			const auto& preferences = EditorLayer::GetData();
-			const UV& folderTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(Folder);
+			const UV& folderTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::FolderIcon);
 
 			const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
 				

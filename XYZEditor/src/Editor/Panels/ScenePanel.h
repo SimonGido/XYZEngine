@@ -50,8 +50,7 @@ namespace XYZ {
 			glm::vec2				    m_ViewportSize;
 			std::array<glm::vec2, 2>	m_ViewportBounds{};
 
-			enum { MoveButton = 0, RotateButton, ScaleButton, CursorButton, PlayButton = 8, StopButton = 11};
-				
+	
 			glm::vec2 m_ButtonSize;
 
 			bool m_ViewportFocused;

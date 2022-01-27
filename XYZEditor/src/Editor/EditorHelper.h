@@ -10,7 +10,7 @@
 
 namespace XYZ {
 	namespace Editor {
-		bool EditorButton(const char* stringID, const glm::vec2& size, uint32_t index);
+		bool EditorButton(const char* stringID, const glm::vec2& size, uint32_t index, bool swapX = false);
 	}
 
 

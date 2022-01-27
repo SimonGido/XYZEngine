@@ -7,24 +7,24 @@ namespace XYZ {
 	namespace Editor {
 
 		
-		static std::unordered_map<std::string, DirectoryTree::FileType> s_FileTypeExtensions = {
-				{"xyz",		DirectoryTree::FileType::Scene},
-				{"tex",		DirectoryTree::FileType::Texture},
-				{"subtex",	DirectoryTree::FileType::SubTexture},
-				{"mat",		DirectoryTree::FileType::Material},
-				{"shader",	DirectoryTree::FileType::Shader},
-				{"cs",		DirectoryTree::FileType::Script},
-				{"anim",	DirectoryTree::FileType::Animation},
-				{"png",		DirectoryTree::FileType::Png},
-				{"jpg",		DirectoryTree::FileType::Jpg}
+		static std::unordered_map<std::string, ED::Sprites> s_FileTypeExtensions = {
+				{"xyz",		ED::SceneIcon},
+				{"tex",		ED::TextureIcon},
+				{"subtex",	ED::TextureIcon},
+				{"mat",		ED::MaterialIcon},
+				{"shader",	ED::ShaderIcon},
+				{"cs",		ED::ScriptIcon},
+				{"anim",	ED::AnimationIcon},
+				{"png",		ED::PngIcon},
+				{"jpg",		ED::JpgIcon}
 		};
 
-		static DirectoryTree::FileType ExtensionToFileType(const std::string& extension)
+		static ED::Sprites ExtensionToFileType(const std::string& extension)
 		{
 			auto it = s_FileTypeExtensions.find(extension);
 			if (it != s_FileTypeExtensions.end())
 				return it->second;
-			return DirectoryTree::FileType::NumTypes;
+			return ED::NumIcons;
 		}
 
 		DirectoryNode::DirectoryNode(std::filesystem::path path, const UV& texCoords, const Ref<Texture2D>& texture, const uint32_t depth)
@@ -121,20 +121,20 @@ namespace XYZ {
 			{
 				if (it.is_directory())
 				{
-					const UV& folderTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(Folder);
+					const UV& folderTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::FolderIcon);
 					nodes.emplace_back(it.path(), folderTexCoords, EditorLayer::GetData().IconsTexture, depth);		
 					processDirectory(nodes.back().m_Nodes, it.path(), depth + 1);
 				}
 				else
 				{
-					FileType type = ExtensionToFileType(Utils::GetExtension(it.path().filename().string()));
-					if (type == FileType::Texture)
+					ED::Sprites type = ExtensionToFileType(Utils::GetExtension(it.path().filename().string()));
+					if (type == ED::TextureIcon)
 					{
 						const UV textureCoords = { glm::vec2(0.0f), glm::vec2(1.0f) };
 						Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(it.path());
 						nodes.emplace_back(it.path(), textureCoords, texture, depth);
 					}
-					else if (type != FileType::NumTypes) // Unknown file
+					else if (type != ED::NumIcons) // Unknown file
 					{
 						const UV& fileTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(type);
 						nodes.emplace_back(it.path(), fileTexCoords, EditorLayer::GetData().IconsTexture, depth);

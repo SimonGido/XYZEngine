@@ -13,7 +13,31 @@ namespace XYZ {
 
 			Ref<Texture2D>   IconsTexture;
 			Ref<SpriteSheet> IconsSpriteSheet;
-
+			
+			enum Sprites
+			{
+				MoveIcon = 32,
+				RotateIcon,
+				ScaleIcon,
+				CursorIcon,
+				MediaPlayIcon,
+				AnimationIcon = MediaPlayIcon + 3 + 1,
+				SceneIcon,
+				JpgIcon,
+				PngIcon,
+				MediaNextIcon,
+				ArrowIcon = MediaNextIcon + 3 + 1,
+				MeshIcon,
+				TextureIcon,
+				StopIcon,
+				MediaBeginningIcon,
+				FolderIcon = MediaBeginningIcon + 3 + 1,
+				ShaderIcon,
+				MaterialIcon,
+				ScriptIcon,
+				MediaPauseIcon,
+				NumIcons
+			};
 			enum Colors
 			{
 				BoundingBox,

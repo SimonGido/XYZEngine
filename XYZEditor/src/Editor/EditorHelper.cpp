@@ -8,11 +8,19 @@
 
 namespace XYZ {
 	namespace Editor {
-		bool EditorButton(const char* stringID, const glm::vec2& size, uint32_t index)
+		bool EditorButton(const char* stringID, const glm::vec2& size, uint32_t index, bool swapX)
 		{
 			const auto& preferences = EditorLayer::GetData();
 			const UV& buttonTexCoords = preferences.IconsSpriteSheet->GetTexCoords(index);
-
+			if (swapX)
+			{
+				UV swapped = buttonTexCoords;
+				std::swap(swapped[0].x, swapped[1].x);
+				return UI::ImageButtonTransparent(stringID, preferences.IconsTexture->GetImage(), size,
+					preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
+					swapped[0],
+					swapped[1]);
+			}
 			return UI::ImageButtonTransparent(stringID, preferences.IconsTexture->GetImage(), size,
 				preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
 				buttonTexCoords[0],

@@ -25,13 +25,10 @@ namespace XYZ {
 			Ref<Asset> GetSelectedAsset() const;
 
 		private:
-			void     registerFileTypeExtensions();
 			void     createAsset() const;
 			void     rightClickMenu() const;
 			void     dragAndDrop(const std::filesystem::path& path) const;
 
-			uint32_t extensionToTexCoordsIndex(const std::string& extension) const;
-	
 
 			void	 renderTopPanel();
 			void	 processCurrentDirectory();
@@ -49,27 +46,7 @@ namespace XYZ {
 			
 			DirectoryTree		  m_DirectoryTree;
 			std::mutex			  m_DirectoryTreeMutex;
-
-			std::unordered_map<std::string, uint32_t> m_FileTypeExtensions;
-		private:
-			// Style
-			enum FileType
-			{
-				Animation = 4,
-				Scene,
-				Jpg,
-				Png,
-				Arrow,
-				Mesh,
-				Texture,
-				SubTexture,
-				Folder,
-				Shader,
-				Material,
-				Script,
-				NumTypes
-			};
-			
+		private:		
 			glm::vec2 m_IconSize;
 			glm::vec2 m_ArrowSize;
 

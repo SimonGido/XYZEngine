@@ -22,6 +22,7 @@ namespace XYZ {
 		private:
 			void onEntitySelected();
 			void createSequencers();
+			void setSequencersBoundaries();
 			void propertySection();
 			void timelineSection();
 			
@@ -47,8 +48,6 @@ namespace XYZ {
 
 			AnimationSequencer* findSequencer(const std::string& path);
 		private:
-
-			enum { PlayButton = 8, StopButton = 11 };
 			glm::vec2 m_ButtonSize;
 
 			Ref<Animator>	   m_Context;
@@ -65,7 +64,6 @@ namespace XYZ {
 			int			m_CurrentFrame;
 			bool		m_Expanded;
 			bool		m_Playing;
-			bool		m_OpenSelectionActions;
 			float		m_SplitterWidth;
 			int			m_FrameMin = 0;
 			int			m_FrameMax = 30;
