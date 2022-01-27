@@ -74,8 +74,8 @@ namespace XYZ {
 			draw_list->PushClipRect(legendClippingRect.Min, legendClippingRect.Max, true);
 			
 			auto& item = m_Items[index];		
-			item.LineEdit.GetMax() = ImVec2(float(FrameMax), 1.f);
-			item.LineEdit.GetMin() = ImVec2(float(FrameMin), 0.f);
+			item.LineEdit.GetMax() = ImVec2(float(FrameMax), 1.0f);
+			item.LineEdit.GetMin() = ImVec2(float(FrameMin), 0.0f);
 			
 			int i = 0;
 
