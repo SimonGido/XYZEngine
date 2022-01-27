@@ -91,19 +91,15 @@ namespace XYZ {
 		while (!temp.empty())
 		{
 			const Entity entity = temp.top();
+			result.push_back(entity);
 			temp.pop();
 			
 			const auto& relationship = ecs.GetComponent<Relationship>(entity);
 			if (relationship.NextSibling)
-			{
 				temp.push(relationship.NextSibling);
-				result.push_back(relationship.NextSibling);
-			}
+			
 			if (relationship.FirstChild)
-			{
 				temp.push(relationship.FirstChild);
-				result.push_back(relationship.FirstChild);
-			}
 		}
 		return result;
 	}

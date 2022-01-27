@@ -29,7 +29,7 @@ namespace XYZ {
 			m_SplitterWidth(300.0f)
 		{
 			for (const auto name : ReflectedClasses::sc_ClassNames)
-				m_SequencerItemTypes.push_back(std::string(name));
+				m_Sequencer.AddItemType(std::string(name));
 		}
 		void AnimationEditor::SetContext(const Ref<Animator>& context)
 		{
@@ -60,7 +60,10 @@ namespace XYZ {
 				{
 					if (m_AnimatorEntity != m_Context->GetSceneEntity())
 						onEntitySelected();
-					setSequencersBoundaries();
+					
+					m_Sequencer.FrameMin = m_FrameMin;
+					m_Sequencer.FrameMax = m_FrameMax;
+
 					if (m_AnimatorEntity.IsValid())
 					{
 						const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
@@ -77,54 +80,33 @@ namespace XYZ {
 		void AnimationEditor::onEntitySelected()
 		{
 			m_AnimatorEntity = m_Context->GetSceneEntity();
-			createSequencers();
 			m_ClassMap.BuildMap(m_AnimatorEntity);
 		}
-		void AnimationEditor::createSequencers()
-		{
-			m_Sequencers.clear();
-			
-			m_Sequencers.emplace_back(m_AnimatorEntity.GetComponent<SceneTagComponent>().Name, m_SequencerItemTypes);
-			
-			std::vector<Entity> tree = m_AnimatorEntity.GetComponent<Relationship>().GetTree(*m_AnimatorEntity.GetECS());
-			for (auto entity : tree)
-			{
-				SceneEntity ent(entity, m_AnimatorEntity.GetScene());
-				m_Sequencers.emplace_back(ent.GetComponent<SceneTagComponent>().Name, m_SequencerItemTypes);
-			}
-		}
-		void AnimationEditor::setSequencersBoundaries()
-		{
-			for (auto& seq : m_Sequencers)
-			{
-				seq.FrameMin = m_FrameMin;
-				seq.FrameMax = m_FrameMax;
-			}
-		}
+
 		void AnimationEditor::propertySection()
 		{
 			UI::ScopedStyleStack style(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
-			if (EditorButton("Beginning", m_ButtonSize, ED::MediaBeginningIcon))
+			if (ButtonTransparent("Beginning", m_ButtonSize, ED::MediaBeginningIcon))
 			{
 
 			}
 			ImGui::SameLine();
-			if (EditorButton("PrevKeyFrame", m_ButtonSize, ED::MediaNextIcon, true))
+			if (ButtonTransparent("PrevKeyFrame", m_ButtonSize, ED::MediaNextIcon, true))
 			{
 
 			}
 			ImGui::SameLine();			
-			if (EditorButton("Play", m_ButtonSize, ED::MediaPlayIcon))
+			if (ButtonTransparent("Play", m_ButtonSize, ED::MediaPlayIcon))
 			{
 				m_Playing = !m_Playing;
 			}
 			ImGui::SameLine();
-			if (EditorButton("NextKeyFrame", m_ButtonSize, ED::MediaNextIcon))
+			if (ButtonTransparent("NextKeyFrame", m_ButtonSize, ED::MediaNextIcon))
 			{
 
 			}
 			ImGui::SameLine();
-			if (EditorButton("End", m_ButtonSize, ED::MediaBeginningIcon, true))
+			if (ButtonTransparent("End", m_ButtonSize, ED::MediaBeginningIcon, true))
 			{
 
 			}
@@ -195,15 +177,9 @@ namespace XYZ {
 			{
 				handleAddKey();
 			}
-		
-			for (auto& seq : m_Sequencers)
-			{
-				int currentFrame = m_CurrentFrame;		
-				const int sequenceOptions = ImSequencer::SEQUENCER_EDIT_STARTEND;
 
-				ImSequencer::Sequencer(&seq, &currentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, sequenceOptions);
-				m_CurrentFrame = std::max(currentFrame, 0);
-			}
+			const int sequenceOptions = ImSequencer::SEQUENCER_EDIT_STARTEND;
+			ImSequencer::Sequencer(&m_Sequencer, &m_CurrentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, sequenceOptions);
 		}
 		void AnimationEditor::handleEditKeyEndFrames()
 		{
@@ -337,17 +313,6 @@ namespace XYZ {
 				//}
 				
 			}
-		}
-
-		AnimationSequencer* AnimationEditor::findSequencer(const std::string& path)
-		{
-			for (auto& seq : m_Sequencers)
-			{
-				if (seq.GetName() == path)
-					return &seq;
-			}
-			XYZ_ASSERT(false, "");
-			return nullptr;
 		}
 
 		template <>

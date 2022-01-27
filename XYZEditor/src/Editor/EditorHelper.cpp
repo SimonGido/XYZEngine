@@ -8,7 +8,9 @@
 
 namespace XYZ {
 	namespace Editor {
-		bool EditorButton(const char* stringID, const glm::vec2& size, uint32_t index, bool swapX)
+
+
+		bool ButtonTransparent(const char* stringID, const glm::vec2& size, uint32_t index, bool swapX)
 		{
 			const auto& preferences = EditorLayer::GetData();
 			const UV& buttonTexCoords = preferences.IconsSpriteSheet->GetTexCoords(index);
@@ -23,6 +25,26 @@ namespace XYZ {
 			}
 			return UI::ImageButtonTransparent(stringID, preferences.IconsTexture->GetImage(), size,
 				preferences.Color[ED::IconHoverColor], preferences.Color[ED::IconClickColor], preferences.Color[ED::IconColor],
+				buttonTexCoords[0],
+				buttonTexCoords[1]);	
+		}
+
+		bool Button(const char* stringID, const glm::vec2& size, uint32_t index, bool swapX)
+		{
+			const auto& preferences = EditorLayer::GetData();
+			const UV& buttonTexCoords = preferences.IconsSpriteSheet->GetTexCoords(index);
+			if (swapX)
+			{
+				UV swapped = buttonTexCoords;
+				std::swap(swapped[0].x, swapped[1].x);
+				return UI::ImageButton(stringID, preferences.IconsTexture->GetImage(), size, 0,
+					ImVec4(0.1f, 0.1f, 0.1f, 1.0f),
+					preferences.Color[ED::IconColor],
+					swapped[0],
+					swapped[1]);
+			}
+			return UI::ImageButton(stringID, preferences.IconsTexture->GetImage(), size, 0, ImVec4(0.1f, 0.1f, 0.1f, 1.0f),
+				preferences.Color[ED::IconColor],
 				buttonTexCoords[0],
 				buttonTexCoords[1]);
 		}

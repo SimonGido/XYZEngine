@@ -25,7 +25,7 @@ namespace XYZ {
                 SequenceLineEdit  LineEdit;
             };
 
-            AnimationSequencer(std::string name, std::vector<std::string> itemTypes);
+            AnimationSequencer();
 
             virtual int         GetFrameMin() const override { return FrameMin; }
             virtual int         GetFrameMax() const override { return FrameMax; }
@@ -43,6 +43,7 @@ namespace XYZ {
             virtual void        CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& legendRect, const ImRect& clippingRect, const ImRect& legendClippingRect) override;
             virtual void        CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect) override;            
             
+            void                AddItemType(const std::string& type);
             void                AddItem(int type);
             void                AddLine(int type, const std::string& lineName, uint32_t color = 0xFF0000FF);
             void                AddKey(int itemIndex, int key);
@@ -60,7 +61,7 @@ namespace XYZ {
             const SequenceLineEdit::Line* GetSelectedLine(int itemIndex = -1) const;
             const SequenceLineEdit::Line& GetLine(int itemIndex, size_t curveIndex) const;
             const SequenceItem&           GetItem(int itemIndex) const { return m_Items[itemIndex]; }
-            const std::string             GetName() const { return m_Name; }
+
                 
         public:           
             int FrameMin;
@@ -69,7 +70,6 @@ namespace XYZ {
         private:
             std::vector<std::string>  m_SequencerItemTypes;
             std::vector<SequenceItem> m_Items;
-            std::string               m_Name;
 
             Selection m_Selection;
             Selection m_Copy;

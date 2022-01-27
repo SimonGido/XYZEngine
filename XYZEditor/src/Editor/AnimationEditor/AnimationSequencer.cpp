@@ -6,12 +6,10 @@
 namespace XYZ {
 	namespace Editor {
 		
-		AnimationSequencer::AnimationSequencer(std::string name, std::vector<std::string> itemTypes)
+		AnimationSequencer::AnimationSequencer()
 			:
 			FrameMin(0),
-			FrameMax(0),
-			m_SequencerItemTypes(std::move(itemTypes)),
-			m_Name(std::move(name))
+			FrameMax(0)
 		{
 		}
 		int AnimationSequencer::GetItemTypeCount() const
@@ -116,7 +114,10 @@ namespace XYZ {
 			}
 			draw_list->PopClipRect();
 		}
-
+		void AnimationSequencer::AddItemType(const std::string& type)
+		{
+			m_SequencerItemTypes.push_back(type);
+		}
 		void AnimationSequencer::AddItem(int type)
 		{
 			m_Items.push_back({ type, false, 25 });

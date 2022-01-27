@@ -131,7 +131,7 @@ namespace XYZ {
 					return;
 				ImGui::Image(textureID, size, uv0, uv1);
 			}
-			static bool VulkanImageButton(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, int framePadding, const ImVec4& tintColor, const ImVec2& uv0, const ImVec2& uv1)
+			static bool VulkanImageButton(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, int framePadding, const ImVec4& bgColor, const ImVec4& tintColor, const ImVec2& uv0, const ImVec2& uv1)
 			{
 				const ImTextureID textureID = Utils::GetTextureID(image);
 				if (textureID == nullptr)
@@ -143,7 +143,7 @@ namespace XYZ {
 					const ImGuiID strID = ImGui::GetID(stringID);
 					id = id ^ strID;
 				}
-				return ImGui::ImageButtonEx(id, textureID, size, uv0, uv1, ImVec2{ (float)framePadding, (float)framePadding }, tintColor, tintColor);
+				return ImGui::ImageButtonEx(id, textureID, size, uv0, uv1, ImVec2{ (float)framePadding, (float)framePadding }, bgColor, tintColor);
 
 			}
 			static bool VulkanImageButtonTransparent(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, const ImVec4& hoverColor, const ImVec4& clickColor, const ImVec4& tintColor, const ImVec2& uv0, const ImVec2& uv1)
@@ -191,11 +191,11 @@ namespace XYZ {
 			}
 		}
 
-		bool ImageButton(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, int framePadding, const ImVec4& tintColor, const ImVec2& uv0, const ImVec2& uv1)
+		bool ImageButton(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, int framePadding, const ImVec4& bgColor, const ImVec4& tintColor, const ImVec2& uv0, const ImVec2& uv1)
 		{
 			if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)
 			{
-				return Vulkan::VulkanImageButton(stringID, image, size, framePadding, tintColor, uv0, uv1);
+				return Vulkan::VulkanImageButton(stringID, image, size, framePadding, bgColor, tintColor, uv0, uv1);
 			}
 			return false;
 		}

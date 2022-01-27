@@ -21,8 +21,6 @@ namespace XYZ {
 			void SetContext(const Ref<Animator>& context);
 		private:
 			void onEntitySelected();
-			void createSequencers();
-			void setSequencersBoundaries();
 			void propertySection();
 			void timelineSection();
 			
@@ -46,7 +44,6 @@ namespace XYZ {
 			template <typename ComponentType, typename T>
 			Property<T>* getProperty(Reflection<ComponentType> refl, const T& val, const std::string& path, const std::string& valName);
 
-			AnimationSequencer* findSequencer(const std::string& path);
 		private:
 			glm::vec2 m_ButtonSize;
 
@@ -55,9 +52,8 @@ namespace XYZ {
 			Ref<Scene>		   m_Scene;
 			SceneEntity		   m_AnimatorEntity;
 
-			AnimationClassMap				m_ClassMap;
-			std::vector<AnimationSequencer> m_Sequencers;
-			std::vector<std::string>		m_SequencerItemTypes;
+			AnimationClassMap		 m_ClassMap;
+			AnimationSequencer		 m_Sequencer;
 
 			int			m_SelectedEntry;
 			int			m_FirstFrame;
@@ -96,12 +92,11 @@ namespace XYZ {
 		inline void AnimationEditor::addReflectedProperty(Reflection<ComponentType> refl, const T& val, const std::string& path, const std::string& valName)
 		{
 			m_Animation->AddProperty<ComponentType, T, valIndex>(path, valName);
-			AnimationSequencer* seq = findSequencer(path);
-			const int itemTypeIndex = seq->GetItemTypeIndex(refl.sc_ClassName);
-			if (!seq->ItemExists(itemTypeIndex))
-				seq->AddItem(itemTypeIndex);
+			const int itemTypeIndex = m_Sequencer.GetItemTypeIndex(refl.sc_ClassName);
+			if (!m_Sequencer.ItemExists(itemTypeIndex))
+				 m_Sequencer.AddItem(itemTypeIndex);
 
-			seq->AddLine(itemTypeIndex, valName);
+			m_Sequencer.AddLine(itemTypeIndex, valName);
 		}
 		template<typename ComponentType, typename T>
 		inline void AnimationEditor::addKeyToProperty(Reflection<ComponentType> refl, const std::string& path, uint32_t frame, const T& val, const std::string& valName)

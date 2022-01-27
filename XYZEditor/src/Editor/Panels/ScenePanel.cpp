@@ -260,7 +260,7 @@ namespace XYZ {
 			UI::Toolbar(glm::vec2(toolbarPositionX, 8.0f), glm::vec2(4.0f, 0.0f), false,
 				[&]() {
 				UI::ScopedItemFlags flags(ImGuiItemFlags_Disabled, m_Context->GetState() == SceneState::Play);
-				if (EditorButton("Play", m_ButtonSize, ED::ArrowIcon))
+				if (ButtonTransparent("Play", m_ButtonSize, ED::ArrowIcon))
 				{
 					m_Context->SetState(SceneState::Play);
 					m_Context->OnPlay();
@@ -269,7 +269,7 @@ namespace XYZ {
 			},
 				[&]() {
 				UI::ScopedItemFlags flags(ImGuiItemFlags_Disabled, m_Context->GetState() == SceneState::Edit);
-				if (EditorButton("Stop", m_ButtonSize, ED::StopIcon))
+				if (ButtonTransparent("Stop", m_ButtonSize, ED::StopIcon))
 				{
 					m_Context->SetState(SceneState::Edit);
 					m_Context->OnStop();
@@ -285,28 +285,28 @@ namespace XYZ {
 	
 			UI::Toolbar(glm::vec2(8.0f, 8.0f), glm::vec2(0.0f, 0.0f), false,
 				[&]() {
-					if (EditorButton("##Cursor", m_ButtonSize, ED::CursorIcon))
+					if (ButtonTransparent("##Cursor", m_ButtonSize, ED::CursorIcon))
 					{
 						m_GizmoType = sc_InvalidGizmoType;
 						handled = true;
 					}
 				},
 				[&]() {
-					if (EditorButton("##Move", m_ButtonSize, ED::MoveIcon))
+					if (ButtonTransparent("##Move", m_ButtonSize, ED::MoveIcon))
 					{
 						m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 						handled = true;
 					}
 				},
 				[&]() {
-					if (EditorButton("##Rotate", m_ButtonSize, ED::RotateIcon))
+					if (ButtonTransparent("##Rotate", m_ButtonSize, ED::RotateIcon))
 					{
 						m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 						handled = true;
 					}
 				},
 				[&]() {
-					if (EditorButton("##Scale", m_ButtonSize, ED::ScaleIcon))
+					if (ButtonTransparent("##Scale", m_ButtonSize, ED::ScaleIcon))
 					{
 						m_GizmoType = ImGuizmo::OPERATION::SCALE;
 						handled = true;
