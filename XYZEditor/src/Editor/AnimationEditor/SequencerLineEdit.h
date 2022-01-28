@@ -33,7 +33,7 @@ namespace XYZ {
             virtual unsigned int           GetBackgroundColor() { return 0; }
             virtual ImCurveEdit::CurveType GetCurveType(size_t curveIndex) const override { return ImCurveEdit::CurveDiscrete; }
             
-            void                           AddLine(const std::string& name, uint32_t color = 0xFF0000FF);
+            void                           AddLine(std::string_view, uint32_t color = 0xFF0000FF);
             void                           SetSelected(size_t curveIndex);
             void                           Deselect();
             void                           DeletePoint(size_t curveIndex, int pointIndex);

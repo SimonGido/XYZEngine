@@ -6,6 +6,7 @@
 #include "XYZ/ImGui/ImGui.h"
 #include "XYZ/Asset/AssetSerializer.h"
 
+
 #include "Editor/EditorHelper.h"
 #include "EditorLayer.h"
 
@@ -16,6 +17,47 @@
 
 namespace XYZ {
 	namespace Editor {
+
+		static bool EditValue(glm::vec4& value)
+		{
+			bool result = false;
+			if (ImGui::InputFloat("X", &value.x))
+				result = true;
+			if (ImGui::InputFloat("Y", &value.y))
+				result = true;
+			if (ImGui::InputFloat("Z", &value.z))
+				result = true;
+			if (ImGui::InputFloat("W", &value.w))
+				result = true;
+			return result;
+		}
+		static bool EditValue(glm::vec3& value)
+		{
+			bool result = false;
+			if (ImGui::InputFloat("X", &value.x))
+				result = true;
+			if (ImGui::InputFloat("Y", &value.y))
+				result = true;
+			if (ImGui::InputFloat("Z", &value.z))
+				result = true;
+			return result;
+		}
+		static bool EditValue(glm::vec2& value)
+		{
+			bool result = false;
+			if (ImGui::InputFloat("X", &value.x))
+				result = true;
+			if (ImGui::InputFloat("Y", &value.y))
+				result = true;
+			return result;
+		}
+
+		static bool EditValue(float& value)
+		{
+			if (ImGui::InputFloat("Value", &value))
+				return true;
+			return false;
+		}
 
 		AnimationEditor::AnimationEditor(std::string name)
 			:
@@ -28,14 +70,13 @@ namespace XYZ {
 			m_Playing(false),
 			m_SplitterWidth(300.0f)
 		{
-			for (const auto name : ReflectedClasses::sc_ClassNames)
-				m_Sequencer.AddItemType(std::string(name));
 		}
 		void AnimationEditor::SetContext(const Ref<Animator>& context)
 		{
 			m_Context = context;
 			m_Animation = m_Context->GetAnimation();
-			onEntitySelected();
+			m_AnimSelectedEntity = m_Context->GetSceneEntity();
+			m_ClassMap.BuildMap(m_AnimSelectedEntity);
 		}
 		void AnimationEditor::SetSceneContext(const Ref<Scene>& scene)
 		{
@@ -58,13 +99,10 @@ namespace XYZ {
 			{
 				if (m_Context.Raw() && m_Scene.Raw())
 				{
-					if (m_AnimatorEntity != m_Context->GetSceneEntity())
-						onEntitySelected();
-					
 					m_Sequencer.FrameMin = m_FrameMin;
 					m_Sequencer.FrameMax = m_FrameMax;
 
-					if (m_AnimatorEntity.IsValid())
+					if (m_AnimSelectedEntity.IsValid())
 					{
 						const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 
@@ -77,10 +115,109 @@ namespace XYZ {
 			}
 			ImGui::End();
 		}
+
+		void AnimationEditor::drawEntityTree(const SceneEntity& entity)
+		{
+			const auto& tag = entity.GetComponent<SceneTagComponent>().Name;
+			const auto& rel = entity.GetComponent<Relationship>();
+
+			ImGuiTreeNodeFlags flags = (m_AnimSelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+			flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+
+			const bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+			if (ImGui::IsItemClicked())
+			{
+				if (m_AnimSelectedEntity != entity)
+				{
+					m_AnimSelectedEntity = entity;
+					onEntitySelected();
+				}
+			}
+
+			if (opened)
+			{
+				drawEntityTreeProperties(entity);
+				if (rel.GetFirstChild())
+					drawEntityTree(SceneEntity(rel.GetFirstChild(), m_Scene.Raw()));
+
+				ImGui::TreePop();
+			}
+
+			if (rel.GetNextSibling())
+				drawEntityTree(SceneEntity(rel.GetNextSibling(), m_Scene.Raw()));
+		}
+
+		void AnimationEditor::drawEntityTreeProperties(const SceneEntity& entity)
+		{
+			uint32_t currentFrame = static_cast<uint32_t>(m_CurrentFrame);
+			auto drawProperties = [&](auto& props) {
+				for (auto& prop : props)
+				{
+					if (prop.GetPath() == entity.GetComponent<SceneTagComponent>().Name)
+					{			
+						bool open = ImGui::TreeNodeEx(prop.GetValueName().c_str(), 0, prop.GetValueName().c_str());
+						if (ImGui::IsItemClicked())
+						{
+							if (m_AnimSelectedEntity != entity)
+							{
+								m_AnimSelectedEntity = entity;
+								onEntitySelected();
+							}
+						}
+						if (open)
+						{
+							auto val = prop.GetValue(currentFrame);
+							if (EditValue(val))
+							{
+								if (prop.HasKeyAtFrame(currentFrame))
+								{
+									size_t key = prop.FindKey(currentFrame);
+									prop.SetKeyValue(val, key);
+								}
+								else
+								{
+									const int itemIndex = m_Sequencer.GetItemIndex(prop.GetComponentName());
+									prop.AddKeyFrame({ val, currentFrame });
+									m_Sequencer.AddKey(itemIndex, currentFrame);
+								}
+						
+							}
+							ImGui::TreePop();
+						}
+					}
+				}
+			};
+
+			drawProperties(m_Animation->GetProperties<glm::vec4>());
+			drawProperties(m_Animation->GetProperties<glm::vec3>());
+			drawProperties(m_Animation->GetProperties<glm::vec2>());
+			drawProperties(m_Animation->GetProperties<float>());
+			//drawProperties(m_Animation->GetProperties<void*>());
+		}
+
 		void AnimationEditor::onEntitySelected()
 		{
-			m_AnimatorEntity = m_Context->GetSceneEntity();
-			m_ClassMap.BuildMap(m_AnimatorEntity);
+			auto addToSequencer = [&](const auto& props) {
+				for (const auto& prop : props)
+				{
+					if (prop.GetPath() == m_AnimSelectedEntity.GetComponent<SceneTagComponent>().Name)
+					{
+						if (!m_Sequencer.ItemExists(prop.GetComponentName()))
+							m_Sequencer.AddItem(prop.GetComponentName());
+						
+						const int itemIndex = m_Sequencer.GetItemIndex(prop.GetComponentName());
+						m_Sequencer.AddLine(prop.GetComponentName(), prop.GetValueName());
+						for (const auto& keyFrame : prop.GetKeyFrames())
+							m_Sequencer.AddKey(itemIndex, static_cast<int>(keyFrame.Frame));
+					}
+				}
+			};
+			m_Sequencer.ClearItems();
+			addToSequencer(m_Animation->GetProperties<glm::vec4>());
+			addToSequencer(m_Animation->GetProperties<glm::vec3>());
+			addToSequencer(m_Animation->GetProperties<glm::vec2>());
+			addToSequencer(m_Animation->GetProperties<float>());
+			addToSequencer(m_Animation->GetProperties<void*>());
 		}
 
 		void AnimationEditor::propertySection()
@@ -124,7 +261,7 @@ namespace XYZ {
 					m_ClassMap.Execute(selectedClass, selectedVariable, [&](auto classIndex, auto variableIndex) 
 					{
 						auto reflClass = ReflectedClasses::Get<classIndex.value>();
-						auto& val = reflClass.Get<variableIndex.value>(m_AnimatorEntity.GetComponentFromReflection(reflClass));
+						auto& val = reflClass.Get<variableIndex.value>(m_AnimSelectedEntity.GetComponentFromReflection(reflClass));
 						addReflectedProperty<variableIndex.value>(reflClass, val, selectedEntity, selectedVariable);
 						m_Context->UpdateAnimationEntities();
 					});
@@ -170,6 +307,7 @@ namespace XYZ {
 				
 				ImGui::EndTable();
 			}
+			drawEntityTree(m_Context->GetSceneEntity());
 		}
 		void AnimationEditor::timelineSection()
 		{

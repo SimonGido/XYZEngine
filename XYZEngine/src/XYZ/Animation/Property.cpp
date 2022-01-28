@@ -3,151 +3,18 @@
 
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Material.h"
+
 #include "XYZ/Debug/Profiler.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/compatibility.hpp>
 
 namespace XYZ {
 
-	template<>
-	void* Property<void*>::GetValue(uint32_t frame) const
-	{
-		XYZ_PROFILE_FUNC("Property<void*>::GetValue");
-		const size_t current = FindKey(frame);
-		return m_Keys[current].Value;
-	}
-	template<>
-	bool Property<bool>::GetValue(uint32_t frame) const
-	{
-		XYZ_PROFILE_FUNC("Property<bool>::GetValue");
-		const size_t current = FindKey(frame);
-		return m_Keys[current].Value;
-	}
-	template<>
-	uint32_t Property<uint32_t>::GetValue(uint32_t frame) const
-	{
-		XYZ_PROFILE_FUNC("Property<uint32_t>::GetValue");
-		const size_t current = FindKey(frame);
-		const size_t next = current + 1;
-		const auto& currKey = m_Keys[current];
-		if (next >= m_Keys.size() || currKey.Frame == frame)
-			return currKey.Value;
-
-		const auto& nextKey = m_Keys[current + 1];
-		const uint32_t length = nextKey.Frame - currKey.Frame;
-		const uint32_t passed = frame - currKey.Frame;
-
-		return currKey.Value + (nextKey.Value - currKey.Value) * (float)passed / (float)length;
-	}
-
-	template<>
-	float Property<float>::GetValue(uint32_t frame) const
-	{
-		XYZ_PROFILE_FUNC("Property<float>::GetValue");
-		const size_t current = FindKey(frame);
-		const size_t next = current + 1;
-		const auto& currKey = m_Keys[current];
-		if (next >= m_Keys.size() || currKey.Frame == frame)
-			return currKey.Value;
-
-		const auto& nextKey = m_Keys[current + 1];
-		const uint32_t length = nextKey.Frame - currKey.Frame;
-		const uint32_t passed = frame - currKey.Frame;
-
-		return glm::lerp(currKey.Value, nextKey.Value, (float)passed / (float)length);
-	}
-
-	template<>
-	glm::vec2 Property<glm::vec2>::GetValue(uint32_t frame) const
-	{
-		XYZ_PROFILE_FUNC("Property<glm::vec2>::GetValue");
-		const size_t current = FindKey(frame);
-		const size_t next = current + 1;
-		const auto& currKey = m_Keys[current];
-		if (next >= m_Keys.size() || currKey.Frame == frame)
-			return currKey.Value;
-
-		const auto& nextKey = m_Keys[current + 1];
-		const uint32_t length = nextKey.Frame - currKey.Frame;
-		const uint32_t passed = frame - currKey.Frame;
-
-		return glm::lerp(currKey.Value, nextKey.Value, (float)passed / (float)length);
-	}
-
-	template<>
-	glm::vec3 Property<glm::vec3>::GetValue(uint32_t frame) const
-	{
-		XYZ_PROFILE_FUNC("Property<glm::vec3>::GetValue");
-		const size_t current = FindKey(frame);
-		const size_t next    = current + 1;
-		const auto& currKey = m_Keys[current];
-		if (next >= m_Keys.size() || currKey.Frame == frame)
-			return currKey.Value;
-
-		const auto& nextKey = m_Keys[current + 1];
-		const uint32_t length = nextKey.Frame - currKey.Frame;
-		const uint32_t passed = frame - currKey.Frame;
-
-		return glm::lerp(currKey.Value, nextKey.Value, (float)passed / (float)length);
-	}
-
-	template<>
-	glm::vec4 Property<glm::vec4>::GetValue(uint32_t frame) const
-	{
-		XYZ_PROFILE_FUNC("Property<glm::vec4>::GetValue");
-		const size_t current = FindKey(frame);
-		const size_t next = current + 1;
-		const auto& currKey = m_Keys[current];
-		if (next >= m_Keys.size() || currKey.Frame == frame)
-			return currKey.Value;
-
-		const auto& nextKey = m_Keys[current + 1];
-		const uint32_t length = nextKey.Frame - currKey.Frame;
-		const uint32_t passed = frame - currKey.Frame;
-
-		return glm::lerp(currKey.Value, nextKey.Value, (float)passed / (float)length);
-	}
-	template<>
-	glm::mat4 Property<glm::mat4>::GetValue(uint32_t frame) const
-	{
-		XYZ_PROFILE_FUNC("Property<glm::mat4>::GetValue");
-		const size_t current = FindKey(frame);
-		const size_t next = current + 1;
-		const auto& currKey = m_Keys[current];
-		if (next >= m_Keys.size() || currKey.Frame == frame)
-			return currKey.Value;
-
-		const auto& nextKey = m_Keys[current + 1];
-		uint32_t length = nextKey.Frame - currKey.Frame;
-		uint32_t passed = frame - currKey.Frame;
-
-		return currKey.Value;
-	}
-	template<>
-	Ref<SubTexture> Property<Ref<SubTexture>>::GetValue(uint32_t frame) const
-	{
-		XYZ_PROFILE_FUNC("Property<Ref<SubTexture>>::GetValue");
-		const size_t current = FindKey(frame);
-		const KeyFrame<Ref<SubTexture>>& next = m_Keys[current + 1];
-		return next.Value;
-	}
-
-	template<>
-	Ref<Material> Property<Ref<Material>>::GetValue(uint32_t frame) const
-	{
-		XYZ_PROFILE_FUNC("Property<Ref<Material>>::GetValue");
-		const size_t current = FindKey(frame);
-		const KeyFrame<Ref<Material>>& next = m_Keys[current + 1];
-		return next.Value;
-	}
 
 	template <>
 	bool Property<void*>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<void*>::Update");
-		m_SetPropertyCallback(m_Entity, &m_Value);
+		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
@@ -166,7 +33,7 @@ namespace XYZ {
 	bool Property<uint32_t>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<uint32_t>::Update");
-		m_SetPropertyCallback(m_Entity, &m_Value);
+		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
@@ -186,7 +53,7 @@ namespace XYZ {
 	bool Property<float>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<float>::Update");
-		m_SetPropertyCallback(m_Entity, &m_Value);
+		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
@@ -207,7 +74,7 @@ namespace XYZ {
 	bool Property<glm::vec2>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<glm::vec2>::Update");
-		m_SetPropertyCallback(m_Entity, &m_Value);
+		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
@@ -227,7 +94,7 @@ namespace XYZ {
 	bool Property<glm::vec3>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<glm::vec3>::Update");
-		m_SetPropertyCallback(m_Entity, &m_Value);
+		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
@@ -248,7 +115,7 @@ namespace XYZ {
 	bool Property<glm::vec4>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<glm::vec4>::Update");
-		m_SetPropertyCallback(m_Entity, &m_Value);
+		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
@@ -268,7 +135,7 @@ namespace XYZ {
 	bool Property<Ref<SubTexture>>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<Ref<SubTexture>>::Update");
-		m_SetPropertyCallback(m_Entity, &m_Value);
+		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
@@ -286,7 +153,7 @@ namespace XYZ {
 	bool Property<Ref<Material>>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<Ref<Material>>::Update");
-		m_SetPropertyCallback(m_Entity, &m_Value);
+		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
@@ -304,7 +171,7 @@ namespace XYZ {
 	bool Property<glm::mat4>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<glm::mat4>::Update");
-		m_SetPropertyCallback(m_Entity, &m_Value);
+		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			return false;
@@ -314,7 +181,7 @@ namespace XYZ {
 	bool Property<bool>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<bool>::Update");
-		m_SetPropertyCallback(m_Entity, &m_Value);
+		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			return false;

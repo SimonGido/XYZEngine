@@ -15,13 +15,14 @@ namespace XYZ {
 		virtual ~Animation() override;
 
 		template <typename ComponentType, typename ValueType, uint16_t valIndex>
-		void AddProperty(const std::string& path, const std::string& valueName);
+		void AddProperty(std::string_view path);
 
-		template <typename ComponentType, typename ValueType>
-		void RemoveProperty(const std::string& path, const std::string& valueName);
+		template <typename ValueType>
+		void RemoveProperty(std::string_view path, std::string_view componentName, std::string_view valueName);
 
-		template <typename ComponentType, typename ValueType>
-		Property<ValueType>* GetProperty(const std::string& path, const std::string& valueName);
+		template <typename ValueType>
+		Property<ValueType>* GetProperty(std::string_view path, std::string_view componentName, std::string_view valueName);
+
 
 		void Update(Timestep ts);
 		void UpdateLength();
@@ -31,7 +32,7 @@ namespace XYZ {
 		void SetNumFrames(uint32_t numFrames) { m_NumFrames = numFrames; }
 		void SetRepeat(bool repeat)			  { m_Repeat = repeat; }
 
-		bool HasProperty(std::string_view componentName, std::string_view varName, const std::string& path) const;
+		bool HasProperty(std::string_view componentName, std::string_view varName, std::string_view path) const;
 
 		inline uint32_t	GetNumFrames()    const { return m_NumFrames; }
 		inline uint32_t	GetCurrentFrame() const { return m_CurrentFrame; }
@@ -39,11 +40,10 @@ namespace XYZ {
 		inline float	GetFrameLength()  const { return m_FrameLength; }
 		inline bool		GetRepeat()	      const { return m_Repeat; }
 
-		const std::vector<Property<glm::vec4>>& GetVec4Properties()    const { return m_Vec4Properties;};
-		const std::vector<Property<glm::vec3>>& GetVec3Properties()    const { return m_Vec3Properties;};
-		const std::vector<Property<glm::vec2>>& GetVec2Properties()    const { return m_Vec2Properties;};
-		const std::vector<Property<float>>    & GetFloatProperties()   const { return m_FloatProperties;};
-		const std::vector<Property<void*>>	  & GetPointerProperties() const { return m_PointerProperties;};
+
+		template <typename T>
+		constexpr std::vector<Property<T>>& GetProperties();
+	
 
 		static AssetType GetStaticType() { return AssetType::Animation; }
 
@@ -53,26 +53,20 @@ namespace XYZ {
 		void setPropertiesKey(uint32_t frame);
 		void resetProperties();
 
-		template <typename ValueType>
-		void	    addPropertySpecialized(const Property<ValueType>& prop);
-		
-		template <typename ValueType>
-		void	    removePropertySpecialized(const std::string& path, const std::string& valueName, const std::string& componentName);
-		
+		template <typename T>
+		constexpr std::vector<Property<T>>* getProperties();
+
 		template <typename T>
 		void		setPropertySceneEntity(std::vector<Property<T>>& container);
 
 		template <typename T>
-		Property<T>* getPropertySpecialized(const std::string& path, const std::string& valueName, const std::string& componentName);
-		
-		template <typename T>
-		static void	removeFromContainer(std::vector<T>& container, const std::string& path, const std::string& valueName, const std::string& componentName);
+		static void	removeFromContainer(std::vector<T>& container, std::string_view path, std::string_view valueName, std::string_view componentName);
 
 		template <typename T>
-		static T*   findInContainer(std::vector<T>& container, const std::string& path, const std::string& valueName, const std::string& componentName);
+		static T*   findInContainer(std::vector<T>& container, std::string_view path, std::string_view valueName, std::string_view componentName);
 
 		template <typename T>
-		static bool propertyContainerHasVariable(const std::vector<Property<T>>& container, std::string_view className, std::string_view varName, const std::string& path);
+		static bool propertyContainerHasVariable(const std::vector<Property<T>>& container, std::string_view className, std::string_view varName, std::string_view path);
 			
 		void		clearProperties();
 	private:
@@ -97,27 +91,66 @@ namespace XYZ {
 	
 
 	template<typename ComponentType, typename ValueType, uint16_t valIndex>
-	inline void Animation::AddProperty(const std::string& path, const std::string& valueName)
+	inline void Animation::AddProperty(std::string_view path)
 	{
-		SetPropertyRefFn<ValueType> callback = [](SceneEntity ent, ValueType** ref) {
-			if (ent.IsValid() && ent.HasComponent<ComponentType>())
-				*ref = &Reflection<ComponentType>::Get<valIndex>(ent.GetComponent<ComponentType>());
-			else
-				*ref = nullptr;
-		};
-		addPropertySpecialized<ValueType>(Property<ValueType>(callback, path, valueName, Reflection<ComponentType>::sc_ClassName, valIndex, Component<ComponentType>::ID()));		
+		Property<ValueType> prop = Property<ValueType>(std::string(path));
+		prop.Init<ComponentType, valIndex>();
+		
+		auto props = getProperties<ValueType>();
+		if (props)
+			props->push_back(prop);
 	}
 
-	template<typename ComponentType, typename ValueType>
-	inline void Animation::RemoveProperty(const std::string& path, const std::string& valueName)
+	template<typename ValueType>
+	inline void Animation::RemoveProperty(std::string_view path, std::string_view componentName, std::string_view valueName)
 	{
-		removePropertySpecialized<ValueType>(path, valueName, Reflection<ComponentType>::sc_ClassName);
+		auto props = getProperties<ValueType>();
+		if (props)
+			removeFromContainer(*props, path, valueName, Reflection<ComponentType>::sc_ClassName);
 	}
 
-	template <typename ComponentType, typename ValueType>
-	inline Property<ValueType>* Animation::GetProperty(const std::string& path, const std::string& valueName)
+	template <typename ValueType>
+	inline Property<ValueType>* Animation::GetProperty(std::string_view path, std::string_view componentName, std::string_view valueName)
 	{
-		return getPropertySpecialized<ValueType>(path, valueName, Reflection<ComponentType>::sc_ClassName);
+		Property<ValueType*> result = nullptr;
+		auto props = getProperties<ValueType>();
+		if (props)
+			result = findInContainer(props, path, valueName, Reflection<ComponentType>::sc_ClassName);
+
+		return result;
+	}
+
+
+	template<typename T>
+	inline constexpr std::vector<Property<T>>& Animation::GetProperties()
+	{
+		if constexpr (std::is_same_v<T, glm::vec4>)
+			return m_Vec4Properties;
+		else if constexpr (std::is_same_v<T, glm::vec3>)
+			return m_Vec3Properties;
+		else if constexpr (std::is_same_v<T, glm::vec2>)
+			return m_Vec2Properties;
+		else if constexpr (std::is_same_v<T, float>)
+			return m_FloatProperties;
+		else if constexpr (std::is_same_v<T, void*>)
+			return m_PointerProperties;
+	}
+
+	template<typename T>
+	inline constexpr std::vector<Property<T>>* Animation::getProperties()
+	{
+		if constexpr (std::is_same_v<T, glm::vec4>)
+			return &m_Vec4Properties;
+		else if constexpr (std::is_same_v<T, glm::vec3>)
+			return &m_Vec3Properties;
+		else if constexpr (std::is_same_v<T, glm::vec2>)
+			return &m_Vec2Properties;
+		else if constexpr (std::is_same_v<T, float>)
+			return &m_FloatProperties;
+		else if constexpr (std::is_same_v<T, void*>)
+			return &m_PointerProperties;
+		else
+			return nullptr;
 	}
 
 	template<typename T>
@@ -137,7 +170,7 @@ namespace XYZ {
 	}
 
 	template<typename T>
-	void Animation::removeFromContainer(std::vector<T>& container, const std::string& path, const std::string& valueName, const std::string& componentName)
+	void Animation::removeFromContainer(std::vector<T>& container, std::string_view path, std::string_view valueName, std::string_view componentName)
 	{
 		for (size_t i = 0; i < container.size(); ++i)
 		{
@@ -150,7 +183,7 @@ namespace XYZ {
 		}
 	}
 	template<typename T>
-	T* Animation::findInContainer(std::vector<T>& container, const std::string& path, const std::string& valueName, const std::string& componentName)
+	T* Animation::findInContainer(std::vector<T>& container, std::string_view path, std::string_view valueName, std::string_view componentName)
 	{
 		for (size_t i = 0; i < container.size(); ++i)
 		{
@@ -163,7 +196,7 @@ namespace XYZ {
 		return nullptr;
 	}
 	template <typename T>
-	bool Animation::propertyContainerHasVariable(const std::vector<Property<T>>& container, std::string_view className, std::string_view varName, const std::string& path)
+	bool Animation::propertyContainerHasVariable(const std::vector<Property<T>>& container, std::string_view className, std::string_view varName, std::string_view path)
 	{
 		for (const auto& it : container)
 		{

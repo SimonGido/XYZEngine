@@ -14,19 +14,18 @@ namespace XYZ {
 		}
 		int AnimationSequencer::GetItemTypeCount() const
 		{
-			return static_cast<int>(m_SequencerItemTypes.size());
+			return static_cast<int>(m_Items.size());
 		}
 		const char* AnimationSequencer::GetItemTypeName(int typeIndex) const
 		{
-			return m_SequencerItemTypes[typeIndex].c_str();
+			return m_Items[typeIndex].Name.c_str();
 		}
 		const char* AnimationSequencer::GetItemLabel(int index) const
 		{
 			static char tmps[512];
 			auto& item = m_Items[index];
-			auto& seqItemType = m_SequencerItemTypes[item.Type];
 	
-			snprintf(tmps, 512, "%s", seqItemType.c_str());
+			snprintf(tmps, 512, "%s", item.Name.c_str());
 
 			return tmps;
 		}
@@ -40,7 +39,7 @@ namespace XYZ {
 			if (end)
 				*end = &FrameMax; // This should be item.m_FrameEnd, but we do not need it
 			if (type)
-				*type = item.Type;
+				*type = index;
 		}
 
 		void AnimationSequencer::Copy()
@@ -66,22 +65,22 @@ namespace XYZ {
 			m_Items[index].Expanded = !m_Items[index].Expanded;
 		}
 
-
 		void AnimationSequencer::CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& legendRect, const ImRect& clippingRect, const ImRect& legendClippingRect)
 		{
-			draw_list->PushClipRect(legendClippingRect.Min, legendClippingRect.Max, true);
-			
 			auto& item = m_Items[index];		
+			ImVec2 clippingMax = { legendClippingRect.Max.x, legendClippingRect.Max.y + item.LineHeight };
+			draw_list->PushClipRect(legendClippingRect.Min, clippingMax, true);
+			
 			item.LineEdit.GetMax() = ImVec2(float(FrameMax), 1.0f);
 			item.LineEdit.GetMin() = ImVec2(float(FrameMin), 0.0f);
 			
 			int i = 0;
-
 			for (auto& line : item.LineEdit.GetLines())
 			{
-				ImVec2 pta(legendRect.Min.x + 30, legendRect.Min.y + i * item.LineHeight);
-				ImVec2 ptb(legendRect.Max.x, legendRect.Min.y + (i + 1) * item.LineHeight);
 				
+				ImVec2 pta(legendRect.Min.x + 30, legendRect.Min.y + (i) * item.LineHeight);
+				ImVec2 ptb(legendRect.Max.x, legendRect.Min.y + (i + 1) * item.LineHeight);
+
 				draw_list->AddText(pta, line.Selected ? 0xFFFFFFFF : 0x80FFFFFF, line.Name.c_str());
 				if (ImRect(pta, ptb).Contains(ImGui::GetMousePos()) && ImGui::IsMouseClicked(0))
 					item.LineEdit.SetSelected(i);
@@ -109,25 +108,22 @@ namespace XYZ {
 				{
 					const float r = (point.x - FrameMin) / float(FrameMax - FrameMin);
 					const float x = ImLerp(rc.Min.x, rc.Max.x, r);
-					draw_list->AddLine(ImVec2(x, rc.Min.y + 6), ImVec2(x, rc.Max.y - 4), 0xAA000000, 4.f);
+					draw_list->AddLine(ImVec2(x, rc.Min.y), ImVec2(x, rc.Max.y), 0xAA000000, 4.f);
 				}
 			}
 			draw_list->PopClipRect();
 		}
-		void AnimationSequencer::AddItemType(const std::string& type)
+
+		void AnimationSequencer::AddItem(std::string_view name)
 		{
-			m_SequencerItemTypes.push_back(type);
-		}
-		void AnimationSequencer::AddItem(int type)
-		{
-			m_Items.push_back({ type, false, 25 });
+			m_Items.push_back({ std::string(name), 25, {}, false });
 		}
 
-		void AnimationSequencer::AddLine(int type, const std::string& lineName, uint32_t color)
+		void AnimationSequencer::AddLine(std::string_view name, std::string_view lineName, uint32_t color)
 		{
 			for (auto& item : m_Items)
 			{
-				if (item.Type == type)
+				if (item.Name == name)
 				{
 					item.LineEdit.AddLine(lineName, color);
 					return;
@@ -139,10 +135,7 @@ namespace XYZ {
 			auto& lineEdit = m_Items[itemIndex].LineEdit;
 			size_t curveIndex = 0;
 			
-			if (lineEdit.GetSelectedIndex(curveIndex))
-			{
-				lineEdit.AddPoint(curveIndex, { static_cast<float>(key), 0.0f });
-			}
+			lineEdit.AddPoint(curveIndex, { static_cast<float>(key), 0.0f });
 		}
 		void AnimationSequencer::DeleteSelectedPoints()
 		{
@@ -158,42 +151,29 @@ namespace XYZ {
 			m_Selection.Points.clear();
 		}
 	
-		bool AnimationSequencer::ItemExists(int type) const
+		bool AnimationSequencer::ItemExists(std::string_view name) const
 		{
 			for (const auto& item : m_Items)
 			{
-				if (item.Type == type)
+				if (item.Name == name)
 					return true;
 			}
 			return false;
 		}
 
-		int AnimationSequencer::GetItemTypeIndex(std::string_view name) const
-		{
-			int counter = 0;
-			for (const auto& itemType : m_SequencerItemTypes)
-			{
-				if (itemType == name)
-					return counter;
-				counter++;
-			}
-			return -1;
-		}
-		int AnimationSequencer::GetItemIndex(int type) const
+
+		int AnimationSequencer::GetItemIndex(std::string_view name) const
 		{
 			int counter = 0;
 			for (const auto& item : m_Items)
 			{
-				if (item.Type == type)
+				if (item.Name == name)
 					return counter;
 				counter++;
 			}
 			return -1;
 		}
-		int AnimationSequencer::GetItemItemType(int itemIndex) const
-		{
-			return m_Items[itemIndex].Type;
-		}
+
 		const SequenceLineEdit::Line* AnimationSequencer::GetSelectedLine(int itemIndex) const
 		{
 			if (itemIndex != -1)

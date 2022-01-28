@@ -27,7 +27,7 @@ namespace XYZ {
             }
             return pointIndex;
         }
-        void SequenceLineEdit::AddLine(const std::string& name, uint32_t color)
+        void SequenceLineEdit::AddLine(std::string_view  name, uint32_t color)
         {
             size_t index = m_Lines.size();
             m_Lines.push_back({});

@@ -19,10 +19,10 @@ namespace XYZ {
             };
             struct SequenceItem
             {
-                int               Type;
-                bool              Expanded;
+                std::string       Name;
                 size_t            LineHeight;
                 SequenceLineEdit  LineEdit;
+                bool              Expanded;
             };
 
             AnimationSequencer();
@@ -43,9 +43,8 @@ namespace XYZ {
             virtual void        CustomDraw(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& legendRect, const ImRect& clippingRect, const ImRect& legendClippingRect) override;
             virtual void        CustomDrawCompact(int index, ImDrawList* draw_list, const ImRect& rc, const ImRect& clippingRect) override;            
             
-            void                AddItemType(const std::string& type);
-            void                AddItem(int type);
-            void                AddLine(int type, const std::string& lineName, uint32_t color = 0xFF0000FF);
+            void                AddItem(std::string_view name);
+            void                AddLine(std::string_view name, std::string_view lineName, uint32_t color = 0xFF0000FF);
             void                AddKey(int itemIndex, int key);
             void                DeleteSelectedPoints();
             
@@ -54,10 +53,9 @@ namespace XYZ {
             const Selection&    GetSelection()  const { return m_Selection; }
             const Selection&    GetCopy()       const { return m_Copy; }
           
-            bool                          ItemExists(int type) const;
-            int                           GetItemTypeIndex(std::string_view name) const;
-            int                           GetItemIndex(int type) const;
-            int                           GetItemItemType(int itemIndex) const;
+            bool                          ItemExists(std::string_view name) const;
+            int                           GetItemIndex(std::string_view name) const;
+
             const SequenceLineEdit::Line* GetSelectedLine(int itemIndex = -1) const;
             const SequenceLineEdit::Line& GetLine(int itemIndex, size_t curveIndex) const;
             const SequenceItem&           GetItem(int itemIndex) const { return m_Items[itemIndex]; }
@@ -68,7 +66,6 @@ namespace XYZ {
             int FrameMax;
 
         private:
-            std::vector<std::string>  m_SequencerItemTypes;
             std::vector<SequenceItem> m_Items;
 
             Selection m_Selection;

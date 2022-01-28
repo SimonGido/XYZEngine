@@ -1,6 +1,11 @@
 #pragma once
 #include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Utils/Delegate.h"
 
+
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/compatibility.hpp>
 
 namespace XYZ {
 
@@ -33,20 +38,10 @@ namespace XYZ {
 	};
 
 	template <typename T>
-	using SetPropertyRefFn = void(*)(SceneEntity entity, T** ref);
-	
-	template <typename T>
 	class Property : public IProperty
 	{
 	public:	
-		Property(
-			const SetPropertyRefFn<T>& callback, 
-			const std::string& path, 
-			const std::string& valueName, 
-			const std::string& componentName, 
-			const uint16_t valueIndex,
-			uint16_t componentID
-		);
+		Property(const std::string& path);
 		virtual ~Property() override;
 
 		Property(const Property<T>& other);
@@ -59,6 +54,9 @@ namespace XYZ {
 		virtual void SetSceneEntity(const SceneEntity& entity) override;
 		virtual void Reset() override { m_CurrentKey = 0; }
 			 
+		template <typename ComponentType, uint16_t valIndex>
+		void Init();
+
 		bool AddKeyFrame(const KeyFrame<T>& key);
 		void RemoveKeyFrame(uint32_t frame);
 		void SetKeyFrame(uint32_t Frame, size_t index);
@@ -67,51 +65,46 @@ namespace XYZ {
 		
 		bool							Empty()						  const;
 		bool							HasKeyAtFrame(uint32_t frame) const;
-		uint32_t						Length()					  const;
-		size_t							FindKey(uint32_t frame)		  const;
-	    const SceneEntity&				GetSceneEntity()   const { return m_Entity; }
-		const std::string&			    GetPath()		   const { return m_Path; }
-		const std::string&				GetValueName()     const { return m_ValueName; }
-		const std::string&				GetComponentName() const { return m_ComponentName; }	
-		const std::vector<KeyFrame<T>>& GetKeyFrames()     const { return m_Keys; }
-	private:
-		bool   isKeyInRange() const { return m_CurrentKey + 1 < m_Keys.size(); }
 
+		uint32_t						Length()					  const;
+		int64_t							FindKey(uint32_t frame)		  const;
+
+	    const SceneEntity&				GetSceneEntity()			  const { return m_Entity; }
+		const std::string&			    GetPath()					  const { return m_Path; }
+		const std::string&				GetValueName()				  const { return m_ValueName; }
+		const std::string&				GetComponentName()			  const { return m_ComponentName; }	
+		const std::vector<KeyFrame<T>>& GetKeyFrames()				  const { return m_Keys; }
 	private:
-		T*						 m_Value;
-		SceneEntity				 m_Entity;
-		std::string				 m_Path;
-		std::string				 m_ValueName;
-		std::string				 m_ComponentName;
-		uint16_t				 m_ValueIndex;
-		uint16_t				 m_ComponentID;
-		SetPropertyRefFn<T>		 m_SetPropertyCallback;
+		bool isKeyInRange() const { return m_CurrentKey + 1 < m_Keys.size(); }
+
+		template <typename ComponentType, uint16_t valIndex>
+		static T* getReference(SceneEntity& entity);
+	
+	private:
+		T*								   m_Value;
+		SceneEntity						   m_Entity;
 		
-		std::vector<KeyFrame<T>> m_Keys;
-		size_t					 m_CurrentKey = 0;
+		std::string						   m_Path;
+		std::string						   m_ValueName;
+		std::string						   m_ComponentName;
+	
+		std::vector<KeyFrame<T>>		   m_Keys;
+
+
+		Delegate<T*(SceneEntity& entity)>  m_GetPropertyReference;	
+		uint16_t						   m_ValueIndex  = UINT16_MAX;
+		uint16_t						   m_ComponentID = UINT16_MAX;
+		size_t							   m_CurrentKey  = MAXSIZE_T;
 	};
 
-	
 	template<typename T>
-	inline Property<T>::Property(
-		const SetPropertyRefFn<T>& callback, 
-		const std::string& path, 
-		const std::string& valueName, 
-		const std::string& componentName,
-		const uint16_t valueIndex,
-		uint16_t componentID
-	)
+	inline Property<T>::Property(const std::string& path)
 		:
 		m_Value(nullptr),
-		m_Path(path),
-		m_ValueName(valueName),
-		m_ComponentName(componentName),
-		m_ValueIndex(valueIndex),
-		m_ComponentID(componentID),
-		m_SetPropertyCallback(callback)
+		m_Path(path)
 	{
-		
 	}
+
 	template<typename T>
 	inline Property<T>::~Property()
 	{
@@ -126,7 +119,7 @@ namespace XYZ {
 		m_ComponentName(other.m_ComponentName),
 		m_ValueIndex(other.m_ValueIndex),
 		m_ComponentID(other.m_ComponentID),
-		m_SetPropertyCallback(other.m_SetPropertyCallback),
+		m_GetPropertyReference(other.m_GetPropertyReference),
 		m_Keys(other.m_Keys),
 		m_CurrentKey(other.m_CurrentKey)
 	{
@@ -141,7 +134,7 @@ namespace XYZ {
 		m_ComponentName(std::move(other.m_ComponentName)),
 		m_ValueIndex(other.m_ValueIndex),
 		m_ComponentID(other.m_ComponentID),
-		m_SetPropertyCallback(std::move(other.m_SetPropertyCallback)),
+		m_GetPropertyReference(std::move(other.m_GetPropertyReference)),
 		m_Keys(std::move(other.m_Keys)),
 		m_CurrentKey(other.m_CurrentKey)
 	{
@@ -156,7 +149,7 @@ namespace XYZ {
 		m_ComponentName		  = other.m_ComponentName;
 		m_ValueIndex		  = other.m_ValueIndex;
 		m_ComponentID		  = other.m_ComponentID;
-		m_SetPropertyCallback = other.m_SetPropertyCallback;
+		m_GetPropertyReference = other.m_GetPropertyReference;
 		m_Keys				  = other.m_Keys;
 		m_CurrentKey		  = other.m_CurrentKey;
 		return *this;
@@ -164,16 +157,16 @@ namespace XYZ {
 	template<typename T>
 	inline Property<T>& Property<T>::operator=(Property<T>&& other) noexcept
 	{
-		m_Value				  = other.m_Value;
-		m_Entity			  = std::move(other.m_Entity);
-		m_Path				  = std::move(other.m_Path);
-		m_ValueName			  = std::move(other.m_ValueName);
-		m_ComponentName		  = std::move(other.m_ComponentName);
-		m_ValueIndex		  = other.m_ValueIndex;
-		m_ComponentID		  = other.m_ComponentID;
-		m_SetPropertyCallback = std::move(other.m_SetPropertyCallback);
-		m_Keys				  = std::move(other.m_Keys);
-		m_CurrentKey		  = other.m_CurrentKey;
+		m_Value				   = other.m_Value;
+		m_Entity			   = std::move(other.m_Entity);
+		m_Path				   = std::move(other.m_Path);
+		m_ValueName			   = std::move(other.m_ValueName);
+		m_ComponentName		   = std::move(other.m_ComponentName);
+		m_ValueIndex		   = other.m_ValueIndex;
+		m_ComponentID		   = other.m_ComponentID;
+		m_GetPropertyReference = std::move(other.m_GetPropertyReference);
+		m_Keys				   = std::move(other.m_Keys);
+		m_CurrentKey		   = other.m_CurrentKey;
 		return *this;
 	}
 
@@ -262,21 +255,77 @@ namespace XYZ {
 		return m_Keys.back().Frame;
 	}
 	template<typename T>
-	inline size_t Property<T>::FindKey(uint32_t frame) const
+	inline int64_t Property<T>::FindKey(uint32_t frame) const
 	{
-		for (size_t i = 0; i < m_Keys.size() - 1; ++i)
-		{
-			const auto& key  = m_Keys[i];
-			const auto& next = m_Keys[i + 1];
-			if (frame >= key.Frame && frame <= next.Frame)
-			{
-				if (frame == next.Frame)
-					return i + 1;
-				return i;
-			}
-		}
 		if (!m_Keys.empty())
+		{
+			for (size_t i = 0; i < m_Keys.size() - 1; ++i)
+			{
+				const auto& key = m_Keys[i];
+				const auto& next = m_Keys[i + 1];
+				if (frame >= key.Frame && frame < next.Frame)
+					return i;
+			}
 			return m_Keys.size() - 1;
-		return 0;
+		}
+		return -1;
 	}
+
+	template<typename T>
+	inline T Property<T>::GetValue(uint32_t frame) const
+	{
+		const int64_t current = FindKey(frame);
+		if (current == -1)
+			return T();
+
+		const int64_t next = current + 1;
+		if (next == m_Keys.size())
+			return m_Keys[current].Value;
+
+		const auto& currKey = m_Keys[current];
+		const auto& nextKey = m_Keys[next];
+
+		if constexpr (
+			   std::is_same_v<T, glm::mat4>
+			|| std::is_same_v<T, glm::vec4>
+			|| std::is_same_v<T, glm::vec3>
+			|| std::is_same_v<T, glm::vec2>
+			|| std::is_same_v<T, float>)
+		{
+			const uint32_t length = nextKey.Frame - currKey.Frame;
+			const uint32_t passed = frame - currKey.Frame;
+			return glm::lerp(currKey.Value, nextKey.Value, (float)passed / (float)length);
+		}
+		else if constexpr (std::is_integral_v<T>)
+		{
+			const uint32_t length = nextKey.Frame - currKey.Frame;
+			const uint32_t passed = frame - currKey.Frame;
+			return currKey.Value + (nextKey.Value - currKey.Value) * (float)passed / (float)length;
+		}
+		else
+		{
+			return currKey.Value;
+		}
+	}
+	
+	template<typename T>
+	template<typename ComponentType, uint16_t valIndex>
+	inline void Property<T>::Init()
+	{
+		m_GetPropertyReference.Connect<Property<T>::getReference<ComponentType, valIndex>>();
+		m_ValueIndex = valIndex;
+		m_ComponentID = Component<ComponentType>::ID();
+		m_ComponentName = Reflection<ComponentType>::sc_ClassName;
+		m_ValueName = std::string(Reflection<ComponentType>::sc_VariableNames[valIndex]);
+	}
+
+	template<typename T>
+	template<typename ComponentType, uint16_t valIndex>
+	inline T* Property<T>::getReference(SceneEntity& entity)
+	{
+		if (entity.IsValid() && entity.HasComponent<ComponentType>())
+			return &Reflection<ComponentType>::Get<valIndex>(entity.GetComponent<ComponentType>());
+		return nullptr;
+	}
+
 }
