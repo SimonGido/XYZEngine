@@ -305,30 +305,24 @@ namespace ImGui {
     bool ImGuiNeoMultiSelector::HandleKeyFrameEdit(uint32_t* keyframes, uint32_t keyframeCount, ImGuiID timelineID)
     {
         if (!ImGui::IsSequencerHovered()
-         || !StateMachine.IsInState(ImGuiNeoSelectorStateID_EditingSelection))
+            || !StateMachine.IsInState(ImGuiNeoSelectorStateID_EditingSelection))
             return false;
 
         bool handled = false;
         const int32_t diffFrame = static_cast<int32_t>(CurrentEditFrame) - static_cast<int32_t>(LastEditFrame);
 
         const auto& currentLineSelection = KeyFrameSelection[timelineID];
-        for (const auto keyFrameIndex : currentLineSelection)
+        if (IsMouseDragging(ImGuiMouseButton_Left, 0.0f))
         {
-            for (uint32_t i = 0; i < keyframeCount; ++i)
+            for (const auto keyFrameIndex : currentLineSelection)
             {
-                if (keyFrameIndex == i)
-                {
-                    if (IsMouseDragging(ImGuiMouseButton_Left, 0.0f))
-                    {
-                        keyframes[keyFrameIndex] += diffFrame;
-                    }
-                    handled = true;
-                    break;
-                }
+                keyframes[keyFrameIndex] += diffFrame;
             }
+            handled = true;
         }
         return handled;
     }
+   
     bool ImGuiNeoMultiSelector::AttemptToAddToSelection(uint32_t keyIndex, const ImRect& keyBB, ImGuiID timelineID)
     {
         if (StateMachine.IsInState(ImGuiNeoSelectorStateID_MultiSelecting))

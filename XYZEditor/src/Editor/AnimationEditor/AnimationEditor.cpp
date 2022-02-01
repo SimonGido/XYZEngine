@@ -14,9 +14,27 @@
 
 #include <imgui.h>
 
+#include <numeric>
+#include <algorithm>
+
 namespace XYZ {
 	namespace Editor {
+		template <typename T, typename Container>
+		std::vector<size_t> SortIndexes(const Container& v) {
 
+			// initialize original index locations
+			std::vector<size_t> idx(v.size());
+			std::iota(idx.begin(), idx.end(), 0);
+
+			// sort indexes based on comparing values in v
+			// using std::stable_sort instead of std::sort
+			// to avoid unnecessary index re-orderings
+			// when v contains elements of equal values 
+			std::stable_sort(idx.begin(), idx.end(),
+				[&v](size_t i1, size_t i2) {return v[i1] < v[i2]; });
+
+			return idx;
+		}
 		static bool EditValue(glm::vec4& value)
 		{
 			bool result = false;
@@ -357,16 +375,6 @@ namespace XYZ {
 			std::vector<uint32_t>& keyFrames, ImVector<uint32_t>& selectionIndices
 		)
 		{
-			//TODO: this does not work, you must remap selectionIndices on its keyFrames
-			// Sort indices based on key frame they are referencing
-			std::sort(selectionIndices.begin(), selectionIndices.end(), [&](uint32_t indexA, uint32_t indexB) {
-				return keyFrames[indexA] < keyFrames[indexB];
-			});
-
-			// Sort keyframes
-			std::sort(keyFrames.begin(), keyFrames.end());
-
-
 			SceneEntity entity = m_Context->GetSceneEntity();
 			Entity childID = entity.GetComponent<Relationship>().FindByName(*entity.GetECS(), path);
 			if (childID)
@@ -379,6 +387,13 @@ namespace XYZ {
 
 				auto property = getProperty(val, path, componentName, valueName);
 				property->SetFrames(keyFrames.data(), keyFrames.size());
+				
+				// Sort keyframes
+				// TODO: dumb solution
+				auto indices = SortIndexes<uint32_t>(keyFrames);
+				for (uint32_t& selectionIndex : selectionIndices)
+					selectionIndex = indices[selectionIndex];
+				std::sort(keyFrames.begin(), keyFrames.end());
 			};
 
 			execFor(path, componentName, valueName, func);
