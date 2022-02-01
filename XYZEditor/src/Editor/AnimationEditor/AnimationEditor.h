@@ -1,10 +1,12 @@
 #pragma once
 #include "Editor/EditorPanel.h"
-#include "AnimationSequencer.h"
 #include "AnimationClassMap.h"
+#include "EntityPropertyMap.h"
 
 #include "XYZ/Animation/Animation.h"
 #include "XYZ/Animation/Animator.h"
+
+#include <imgui.h>
 
 namespace XYZ {
 	namespace Editor {
@@ -29,13 +31,13 @@ namespace XYZ {
 			void propertySection();
 			void timelineSection();
 			
-			void handleEditKeyEndFrames();
+			void handleEditKeyFrames(std::string_view path, std::string_view componentName, std::string_view valueName, 
+				std::vector<uint32_t>& keyFrames, ImVector<uint32_t>& selectionIndices
+			);
 			void handleEditKeyValues();
-			void handleAddKey();
+			void handleAddKey(std::string_view path, std::string_view componentName, std::string_view valueName);
 			void keySelectionActions();
 	
-			template <typename ComponentType, typename T>
-			void editKeyValue(Reflection<ComponentType> refl, const std::string& path, uint32_t frame, const T& val, const std::string& valName);
 
 			template <typename T>
 			bool editKeyValueSpecialized(uint32_t frame, T& value, const std::string& valName);
@@ -43,11 +45,15 @@ namespace XYZ {
 			template <uint16_t valIndex, typename ComponentType, typename T>
 			void addReflectedProperty(Reflection<ComponentType> refl, const T& val, const std::string& path, const std::string& valName);
 
-			template <typename ComponentType, typename T>
-			void addKeyToProperty(Reflection<ComponentType> refl, const std::string& path, uint32_t frame, const T& val, const std::string& valName);
+			template <typename T>
+			void addKeyToProperty(std::string_view path, std::string_view componentName, std::string_view valName, uint32_t frame, const T& val);
 
-			template <typename ComponentType, typename T>
-			Property<T>* getProperty(Reflection<ComponentType> refl, const T& val, const std::string& path, const std::string& valName);
+			template <typename T>
+			Property<T>* getProperty(const T& val, std::string_view path, std::string_view componentName, std::string_view valName);
+
+
+			template <typename Func>
+			void execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func);
 
 		private:
 			glm::vec2 m_ButtonSize;
@@ -58,63 +64,57 @@ namespace XYZ {
 			SceneEntity		   m_AnimSelectedEntity;
 
 			AnimationClassMap  m_ClassMap;
-			AnimationSequencer m_Sequencer;
+			EntityPropertyMap  m_EntityPropertyMap;
 
-			int			m_SelectedEntry;
-			int			m_FirstFrame;
-			int			m_CurrentFrame;
-			bool		m_Expanded;
 			bool		m_Playing;
 			float		m_SplitterWidth;
-			int			m_FrameMin = 0;
-			int			m_FrameMax = 30;
+
+			uint32_t	m_CurrentFrame = 0;
+			uint32_t	m_FrameMin = 0;
+			uint32_t	m_FrameMax = 30;
+			uint32_t	m_OffsetFrame = 0;
+			float		m_Zoom = 1.0f;
+
 		};
 
-		template<typename ComponentType, typename T>
-		inline void AnimationEditor::editKeyValue(Reflection<ComponentType> refl, const std::string& path, uint32_t frame, const T& val, const std::string& valName)
-		{
-			//auto prop = m_Context->GetProperty<ComponentType, T>(path, valName);
-			//if (prop && !prop->Empty())
-			//{
-			//	T value = prop->GetValue(frame);
-			//	if (editKeyValueSpecialized(frame, value, valName))
-			//	{
-			//		if (prop->HasKeyAtFrame(frame))
-			//		{
-			//			size_t key = prop->FindKey(frame);
-			//			prop->SetKeyValue(value, key);
-			//		}
-			//		else
-			//		{
-			//			prop->AddKeyFrame({ value, frame });
-			//			m_Sequencer.AddKey(m_SelectedEntry, frame);
-			//		}
-			//	}
-			//}
-		}
+
 
 		template<uint16_t valIndex, typename ComponentType, typename T>
 		inline void AnimationEditor::addReflectedProperty(Reflection<ComponentType> refl, const T& val, const std::string& path, const std::string& valName)
 		{
 			m_Animation->AddProperty<ComponentType, T, valIndex>(path);
-			if (!m_Sequencer.ItemExists(refl.sc_ClassName))
-				 m_Sequencer.AddItem(refl.sc_ClassName);
-
-			m_Sequencer.AddLine(refl.sc_ClassName, valName);
 		}
-		template<typename ComponentType, typename T>
-		inline void AnimationEditor::addKeyToProperty(Reflection<ComponentType> refl, const std::string& path, uint32_t frame, const T& val, const std::string& valName)
+		template<typename T>
+		inline void AnimationEditor::addKeyToProperty(std::string_view path, std::string_view componentName, std::string_view valName, uint32_t frame, const T& val)
 		{
-			auto prop = m_Animation->GetProperty<ComponentType, T>(path, valName);
+			auto prop = m_Animation->GetProperty<T>(path, componentName, valName);
 			if (prop)
 			{
 				prop->AddKeyFrame({ val, frame });
 			}
 		}
-		template<typename ComponentType, typename T>
-		inline Property<T>* AnimationEditor::getProperty(Reflection<ComponentType> refl, const T& val, const std::string& path, const std::string& valName)
+
+		template<typename T>
+		inline Property<T>* AnimationEditor::getProperty(const T& val, std::string_view path, std::string_view componentName, std::string_view valName)
 		{
-			return m_Animation->GetProperty<ComponentType, T>(path, valName);
+			return m_Animation->GetProperty<T>(path, componentName, valName);
+		}
+
+		template<typename Func>
+		inline void AnimationEditor::execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func)
+		{
+			Reflect::For([&](auto j) {
+				if (ReflectedClasses::sc_ClassNames[j.value] == componentName)
+				{
+					auto reflClass = ReflectedClasses::Get<j.value>();
+					Reflect::For([&](auto i) {
+						if (reflClass.sc_VariableNames[i.value] == valName)
+						{
+							func(j, i);
+						}
+					}, std::make_index_sequence<reflClass.sc_NumVariables>());
+				}
+			}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
 		}
 	}
 }

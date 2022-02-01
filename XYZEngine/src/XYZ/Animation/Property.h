@@ -35,6 +35,14 @@ namespace XYZ {
 		virtual void SetCurrentKey(uint32_t frame) = 0;
 		virtual void SetSceneEntity(const SceneEntity& entity) = 0;
 		virtual void Reset() = 0;
+		virtual void RemoveKeyFrame(uint32_t frame) = 0;
+		virtual void SetKeyFrame(uint32_t frame, size_t index) = 0;
+		virtual void SetFrames(uint32_t* frames, size_t count) = 0;
+
+		virtual const SceneEntity& GetSceneEntity()	  const = 0;
+		virtual const std::string& GetPath()		  const = 0;
+		virtual const std::string& GetValueName()	  const = 0;
+		virtual const std::string& GetComponentName() const = 0;
 	};
 
 	template <typename T>
@@ -53,27 +61,31 @@ namespace XYZ {
 		virtual void SetCurrentKey(uint32_t frame) override;
 		virtual void SetSceneEntity(const SceneEntity& entity) override;
 		virtual void Reset() override { m_CurrentKey = 0; }
-			 
+		virtual void RemoveKeyFrame(uint32_t frame) override;
+		virtual void SetKeyFrame(uint32_t frame, size_t index) override;
+		virtual void SetFrames(uint32_t* frames, size_t count) override;
+
+		virtual const SceneEntity& GetSceneEntity()		  const override { return m_Entity; }
+		virtual const std::string& GetPath()			  const override { return m_Path; }
+		virtual const std::string& GetValueName()		  const override { return m_ValueName; }
+		virtual const std::string& GetComponentName()	  const override { return m_ComponentName; }
+		
+
+
 		template <typename ComponentType, uint16_t valIndex>
 		void Init();
 
 		bool AddKeyFrame(const KeyFrame<T>& key);
-		void RemoveKeyFrame(uint32_t frame);
-		void SetKeyFrame(uint32_t Frame, size_t index);
 		void SetKeyValue(const T& value, size_t index);
 		T    GetValue(uint32_t frame) const;
-		
+	
+
 		bool							Empty()						  const;
 		bool							HasKeyAtFrame(uint32_t frame) const;
 
 		uint32_t						Length()					  const;
 		int64_t							FindKey(uint32_t frame)		  const;
-
-	    const SceneEntity&				GetSceneEntity()			  const { return m_Entity; }
-		const std::string&			    GetPath()					  const { return m_Path; }
-		const std::string&				GetValueName()				  const { return m_ValueName; }
-		const std::string&				GetComponentName()			  const { return m_ComponentName; }	
-		const std::vector<KeyFrame<T>>& GetKeyFrames()				  const { return m_Keys; }
+		const std::vector<KeyFrame<T>>& GetKeyFrames()				  const{ return m_Keys; }	
 	private:
 		bool isKeyInRange() const { return m_CurrentKey + 1 < m_Keys.size(); }
 
@@ -218,12 +230,19 @@ namespace XYZ {
 	}
 
 	template<typename T>
-	inline void Property<T>::SetKeyFrame(uint32_t Frame, size_t index)
+	inline void Property<T>::SetKeyFrame(uint32_t frame, size_t index)
 	{
-		m_Keys[index].Frame = Frame;
+		m_Keys[index].Frame = frame;
 		std::sort(m_Keys.begin(), m_Keys.end());
 	}
-
+	template<typename T>
+	inline void Property<T>::SetFrames(uint32_t* frames, size_t count)
+	{
+		XYZ_ASSERT(count == m_Keys.size(), "");
+		for (size_t i = 0; i < count; ++i)
+			m_Keys[i].Frame = frames[i];
+		std::sort(m_Keys.begin(), m_Keys.end());
+	}
 	template<typename T>
 	inline void Property<T>::SetKeyValue(const T& value, size_t index)
 	{

@@ -9,7 +9,7 @@
 #include "XYZ/ImGui/ImGuiStyleSerializer.h"
 
 #include <imgui.h>
-
+#include "NeoSequencer/imgui_neo_sequencer.h"
 
 namespace XYZ {
 
@@ -53,6 +53,10 @@ namespace XYZ {
 		{
 			for (uint32_t i = 0; i < ImGuiCol_COUNT; ++i)
 				colors[i] = UI::Utils::ConvertToLinear(colors[i]);
+
+			auto& neoStyle = ImGui::GetNeoSequencerStyle();
+			for (uint32_t i = 0; i < ImGuiNeoSequencerCol_COUNT; ++i)
+				neoStyle.Colors[i] = UI::Utils::ConvertToLinear(neoStyle.Colors[i]);
 		}
 	}
 	

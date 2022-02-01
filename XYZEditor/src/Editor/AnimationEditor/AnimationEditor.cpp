@@ -10,10 +10,9 @@
 #include "Editor/EditorHelper.h"
 #include "EditorLayer.h"
 
+#include "XYZ/ImGui/NeoSequencer/imgui_neo_sequencer.h"
 
 #include <imgui.h>
-#include <ImSequencer.h>
-
 
 namespace XYZ {
 	namespace Editor {
@@ -63,10 +62,7 @@ namespace XYZ {
 			:
 			EditorPanel(std::move(name)),
 			m_ButtonSize(25.0f),
-			m_SelectedEntry(-1),
-			m_FirstFrame(0),
 			m_CurrentFrame(0),
-			m_Expanded(true),
 			m_Playing(false),
 			m_SplitterWidth(300.0f)
 		{
@@ -99,9 +95,6 @@ namespace XYZ {
 			{
 				if (m_Context.Raw() && m_Scene.Raw())
 				{
-					m_Sequencer.FrameMin = m_FrameMin;
-					m_Sequencer.FrameMax = m_FrameMax;
-
 					if (m_AnimSelectedEntity.IsValid())
 					{
 						const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
@@ -175,10 +168,8 @@ namespace XYZ {
 									prop.SetKeyValue(val, key);
 								}
 								else
-								{
-									const int itemIndex = m_Sequencer.GetItemIndex(prop.GetComponentName());
+								{									
 									prop.AddKeyFrame({ val, currentFrame });
-									m_Sequencer.AddKey(itemIndex, currentFrame);
 								}
 						
 							}
@@ -197,27 +188,27 @@ namespace XYZ {
 
 		void AnimationEditor::onEntitySelected()
 		{
-			auto addToSequencer = [&](const auto& props) {
-				for (const auto& prop : props)
-				{
-					if (prop.GetPath() == m_AnimSelectedEntity.GetComponent<SceneTagComponent>().Name)
-					{
-						if (!m_Sequencer.ItemExists(prop.GetComponentName()))
-							m_Sequencer.AddItem(prop.GetComponentName());
-						
-						const int itemIndex = m_Sequencer.GetItemIndex(prop.GetComponentName());
-						m_Sequencer.AddLine(prop.GetComponentName(), prop.GetValueName());
-						for (const auto& keyFrame : prop.GetKeyFrames())
-							m_Sequencer.AddKey(itemIndex, static_cast<int>(keyFrame.Frame));
-					}
-				}
-			};
-			m_Sequencer.ClearItems();
-			addToSequencer(m_Animation->GetProperties<glm::vec4>());
-			addToSequencer(m_Animation->GetProperties<glm::vec3>());
-			addToSequencer(m_Animation->GetProperties<glm::vec2>());
-			addToSequencer(m_Animation->GetProperties<float>());
-			addToSequencer(m_Animation->GetProperties<void*>());
+			//auto addToSequencer = [&](const auto& props) {
+			//	for (const auto& prop : props)
+			//	{
+			//		if (prop.GetPath() == m_AnimSelectedEntity.GetComponent<SceneTagComponent>().Name)
+			//		{
+			//			if (!m_Sequencer.ItemExists(prop.GetComponentName()))
+			//				m_Sequencer.AddItem(prop.GetComponentName());
+			//			
+			//			const int itemIndex = m_Sequencer.GetItemIndex(prop.GetComponentName());
+			//			m_Sequencer.AddLine(prop.GetComponentName(), prop.GetValueName());
+			//			for (const auto& keyFrame : prop.GetKeyFrames())
+			//				m_Sequencer.AddKey(itemIndex, static_cast<int>(keyFrame.Frame));
+			//		}
+			//	}
+			//};
+			//
+			//addToSequencer(m_Animation->GetProperties<glm::vec4>());
+			//addToSequencer(m_Animation->GetProperties<glm::vec3>());
+			//addToSequencer(m_Animation->GetProperties<glm::vec2>());
+			//addToSequencer(m_Animation->GetProperties<float>());
+			//addToSequencer(m_Animation->GetProperties<void*>());
 		}
 
 		void AnimationEditor::propertySection()
@@ -264,6 +255,7 @@ namespace XYZ {
 						auto& val = reflClass.Get<variableIndex.value>(m_AnimSelectedEntity.GetComponentFromReflection(reflClass));
 						addReflectedProperty<variableIndex.value>(reflClass, val, selectedEntity, selectedVariable);
 						m_Context->UpdateAnimationEntities();
+						m_EntityPropertyMap.BuildMap(m_Animation);
 					});
 				}
 				ImGui::EndPopup();
@@ -276,7 +268,7 @@ namespace XYZ {
 					[]() { ImGui::Text("Frame Max"); },
 					[&]() 
 					{
-						if (ImGui::DragInt("##Frame Max", &m_FrameMax, 0.5f, m_FrameMin, INT_MAX, "%d"))
+						if (ImGui::DragInt("##Frame Max", (int*)&m_FrameMax, 0.5f, m_FrameMin, INT_MAX, "%d"))
 							m_Animation->SetNumFrames(m_FrameMax);
 					});
 
@@ -284,15 +276,14 @@ namespace XYZ {
 					[]() { ImGui::Text("Frame Min"); },
 					[&]()
 					{
-						if (ImGui::DragInt("##Frame Min", &m_FrameMin, 0.5f, 0, m_FrameMax, "%d"))
-							m_FrameMin = std::max(m_FrameMin, 0);
+					ImGui::DragInt("##Frame Min", (int*)&m_FrameMin, 0.5f, 0, m_FrameMax, "%d");
 					});
 
 				UI::TableRow("Frame",
 					[]() { ImGui::Text("Frame"); },
 					[&]()
 					{
-						if (ImGui::DragInt("##Frame", &m_CurrentFrame, 0.5f, m_FrameMin, m_FrameMax, "%d"))
+						if (ImGui::DragInt("##Frame", (int*)&m_CurrentFrame, 0.5f, m_FrameMin, m_FrameMax, "%d"))
 							m_Animation->SetCurrentFrame(m_CurrentFrame);
 					});
 				UI::TableRow("FPS",
@@ -311,43 +302,86 @@ namespace XYZ {
 		}
 		void AnimationEditor::timelineSection()
 		{
-			if (ImGui::Button("Add Key"))
-			{
-				handleAddKey();
+			
+			
+			ImGui::BeginNeo();
+			std::string selectedEntity, selectedComponent, selectedValue;
+			if (ImGui::BeginNeoSequencer("AnimationNeoSequencer", &m_CurrentFrame, &m_FrameMin, &m_FrameMax, &m_OffsetFrame, &m_Zoom))
+			{ 
+				for (auto& [entityName, componentData] : m_EntityPropertyMap)
+				{
+					ImGui::PushID(entityName.c_str());
+					if (ImGui::BeginNeoGroup(entityName.c_str()))
+					{
+						for (auto& [componentName, propertyData] : componentData)
+						{
+							if (ImGui::BeginNeoGroup(componentName.c_str()))
+							{
+								for (auto& [prop, keyFrames] : propertyData)
+								{
+									if (ImGui::BeginNeoTimeline(prop->GetValueName().c_str(), keyFrames.data(), keyFrames.size()))
+									{
+										if (ImGui::IsEditingSelection())
+										{
+											auto& selection = ImGui::GetCurrentTimelineSelection();
+											handleEditKeyFrames(entityName, componentName, prop->GetValueName(), keyFrames, selection);
+										}
+										if (ImGui::IsCurrentTimelineSelected())
+										{
+											selectedEntity = entityName;
+											selectedComponent = componentName;
+											selectedValue = prop->GetValueName();
+										}
+										ImGui::EndNeoTimeLine();
+									}
+								}
+								ImGui::EndNeoGroup();
+							}
+						}
+						ImGui::EndNeoGroup();
+					}
+					ImGui::PopID();
+				}
+				ImGui::EndNeoSequencer();
 			}
 
-			const int sequenceOptions = ImSequencer::SEQUENCER_EDIT_STARTEND;
-			ImSequencer::Sequencer(&m_Sequencer, &m_CurrentFrame, &m_Expanded, &m_SelectedEntry, &m_FirstFrame, sequenceOptions);
+			ImGui::EndNeo();
+
+
+			if (ImGui::Button("Add Key") && !selectedEntity.empty())
+			{
+				handleAddKey(selectedEntity, selectedComponent, selectedValue);
+			}
 		}
-		void AnimationEditor::handleEditKeyEndFrames()
+		void AnimationEditor::handleEditKeyFrames(std::string_view path, std::string_view componentName, std::string_view valueName, 
+			std::vector<uint32_t>& keyFrames, ImVector<uint32_t>& selectionIndices
+		)
 		{
-			//auto& selection = m_Sequencer.GetSelection();
-			//if (selection.ItemIndex != -1)
-			//{
-			//	const auto& item = m_Sequencer.GetItem(selection.ItemIndex);
-			//	const char* itemTypeName = m_Sequencer.GetItemTypeName(item.Type);
-			//	for (const auto& p : selection.Points)
-			//	{
-			//		const auto& line = m_Sequencer.GetLine(selection.ItemIndex, p.curveIndex);
-			//		uint32_t endFrame = static_cast<uint32_t>(line.Points[p.pointIndex].x);
-			//
-			//		m_ClassMap.Execute(itemTypeName, line.Name, [&](auto classIndex, auto variableIndex) {
-			//
-			//			auto reflClass = ReflectedClasses::Get<classIndex.value>();
-			//			Entity entity = m_SelectedEntity.ID();
-			//			if (!item.Path.empty())
-			//			{
-			//				const auto& relation = m_SelectedEntity.GetComponent<Relationship>();
-			//				entity = relation.FindByName(*m_SelectedEntity.GetECS(), item.Path);
-			//			}
-			//				
-			//			//auto& val = reflClass.Get<variableIndex.value>(item.Entity.GetComponentFromReflection(reflClass));
-			//			//auto prop = getProperty(reflClass, val, item.Path, reflClass.sc_VariableNames[variableIndex.value]);
-			//			//if (prop)
-			//			//	prop->SetKeyFrame(endFrame, p.pointIndex);
-			//		});
-			//	}
-			//}
+			//TODO: this does not work, you must remap selectionIndices on its keyFrames
+			// Sort indices based on key frame they are referencing
+			std::sort(selectionIndices.begin(), selectionIndices.end(), [&](uint32_t indexA, uint32_t indexB) {
+				return keyFrames[indexA] < keyFrames[indexB];
+			});
+
+			// Sort keyframes
+			std::sort(keyFrames.begin(), keyFrames.end());
+
+
+			SceneEntity entity = m_Context->GetSceneEntity();
+			Entity childID = entity.GetComponent<Relationship>().FindByName(*entity.GetECS(), path);
+			if (childID)
+				entity = SceneEntity(childID, entity.GetScene());
+
+			auto func = [&](auto classIndex, auto valueIndex)
+			{
+				auto reflClass = ReflectedClasses::Get<classIndex.value>();
+				auto& val = reflClass.Get<valueIndex.value>(entity.GetComponentFromReflection(reflClass));
+
+				auto property = getProperty(val, path, componentName, valueName);
+				property->SetFrames(keyFrames.data(), keyFrames.size());
+			};
+
+			execFor(path, componentName, valueName, func);
 		}
 	
 		void AnimationEditor::handleEditKeyValues()
@@ -378,36 +412,25 @@ namespace XYZ {
 			//	}
 			//}
 		}
-		void AnimationEditor::handleAddKey()
+		
+		void AnimationEditor::handleAddKey(std::string_view path, std::string_view componentName, std::string_view valueName)
 		{
-			//if (m_SelectedEntry != -1)
-			//{
-			//	const int itemType = m_Sequencer.GetItemItemType(m_SelectedEntry);
-			//	const char* itemTypeName = m_Sequencer.GetItemTypeName(itemType);
-			//	if (const auto line = m_Sequencer.GetSelectedLine(m_SelectedEntry))
-			//	{
-			//		m_Sequencer.AddKey(m_SelectedEntry, m_CurrentFrame);
-			//		size_t classIndex, variableIndex;
-			//		//if (getClassAndVariableFromNames(itemTypeName, line->Name.c_str(), classIndex, variableIndex))
-			//		//{
-			//		//	Reflect::For([&](auto j) {
-			//		//		if (j.value == classIndex)
-			//		//		{
-			//		//			auto reflClass = ReflectedClasses::Get<j.value>();
-			//		//			Reflect::For([&](auto i) {
-			//		//				if (i.value == variableIndex)
-			//		//				{
-			//		//					//auto& val = reflClass.Get<i.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
-			//		//					//addKeyToProperty(reflClass, m_SelectedEntity, m_CurrentFrame, val, reflClass.GetVariables()[i.value]);
-			//		//				}
-			//		//			}, std::make_index_sequence<reflClass.sc_NumVariables>());
-			//		//		}
-			//		//	}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
-			//		//}
-			//		m_Sequencer.ClearSelection();
-			//	}
-			//}
+			SceneEntity entity = m_Context->GetSceneEntity();
+			Entity childID = entity.GetComponent<Relationship>().FindByName(*entity.GetECS(), path);
+			if (childID)
+				entity = SceneEntity(childID, entity.GetScene());
+
+			auto func = [&](auto classIndex, auto valueIndex) 
+			{
+				auto reflClass = ReflectedClasses::Get<classIndex.value>();
+				auto& val = reflClass.Get<valueIndex.value>(entity.GetComponentFromReflection(reflClass));
+				addKeyToProperty(path, componentName, valueName, m_CurrentFrame, val);
+				m_EntityPropertyMap.BuildMap(m_Animation);
+			};
+
+			execFor(path, componentName, valueName, func);
 		}
+
 
 		void AnimationEditor::keySelectionActions()
 		{

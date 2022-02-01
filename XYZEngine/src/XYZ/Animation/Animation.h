@@ -106,16 +106,16 @@ namespace XYZ {
 	{
 		auto props = getProperties<ValueType>();
 		if (props)
-			removeFromContainer(*props, path, valueName, Reflection<ComponentType>::sc_ClassName);
+			removeFromContainer(*props, path, valueName, componentName);
 	}
 
 	template <typename ValueType>
 	inline Property<ValueType>* Animation::GetProperty(std::string_view path, std::string_view componentName, std::string_view valueName)
 	{
-		Property<ValueType*> result = nullptr;
+		Property<ValueType>* result = nullptr;
 		auto props = getProperties<ValueType>();
 		if (props)
-			result = findInContainer(props, path, valueName, Reflection<ComponentType>::sc_ClassName);
+			result = findInContainer(*props, path, valueName, componentName);
 
 		return result;
 	}
