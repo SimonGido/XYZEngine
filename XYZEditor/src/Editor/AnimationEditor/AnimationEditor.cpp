@@ -19,7 +19,18 @@
 
 namespace XYZ {
 	namespace Editor {
-
+		template <typename T>
+		bool CompareKeyFrames(const std::vector<KeyFrame<T>>& keyFrames, const std::vector<ImNeoKeyFrame>& neoKeyFrames)
+		{
+			if (keyFrames.size() != neoKeyFrames.size())
+				return false;
+			for (size_t i = 0; i < keyFrames.size(); ++i)
+			{
+				if (keyFrames[i].Frame != neoKeyFrames[i].Frame)
+					return false;
+			}
+			return true;
+		}
 		static bool EditValue(glm::vec4& value)
 		{
 			bool result = false;
@@ -168,7 +179,7 @@ namespace XYZ {
 								if (prop.HasKeyAtFrame(currentFrame))
 								{
 									size_t key = prop.FindKey(currentFrame);
-									prop.SetKeyValue(val, key);
+									prop.Keys[key].Value = val;
 								}
 								else
 								{									
@@ -303,6 +314,9 @@ namespace XYZ {
 			}
 			drawEntityTree(m_Context->GetSceneEntity());
 		}
+
+		
+
 		void AnimationEditor::timelineSection()
 		{		
 			ImGui::BeginNeo();
@@ -324,19 +338,7 @@ namespace XYZ {
 									{
 										if (ImGui::IsEditingSelection())
 										{
-											SceneEntity entity = m_Context->GetSceneEntity();
-											Entity childID = entity.GetComponent<Relationship>().FindByName(*entity.GetECS(), entityName);
-											if (childID)
-												entity = SceneEntity(childID, entity.GetScene());
-											auto func = [&](auto classIndex, auto valueIndex)
-											{
-												auto reflClass = ReflectedClasses::Get<classIndex.value>();
-												auto& val = reflClass.Get<valueIndex.value>(entity.GetComponentFromReflection(reflClass));
-												auto property = getProperty(val, entityName, componentName, prop->GetValueName());
-												XYZ_ASSERT(std::is_sorted(property->GetKeyFrames().begin(), property->GetKeyFrames().end()),"");
-											};
-
-											execFor(entityName, componentName, prop->GetValueName(), func);
+											XYZ_ASSERT(checkFramesValid(entityName, componentName, prop->GetValueName(), keyFrames), "");
 										}
 										if (ImGui::IsCurrentTimelineSelected())
 										{
@@ -368,31 +370,7 @@ namespace XYZ {
 
 		void AnimationEditor::handleEditKeyValues()
 		{
-			//if (m_SelectedEntry != -1)
-			//{
-			//	const int itemType = m_Sequencer.GetItemItemType(m_SelectedEntry);
-			//	const char* itemTypeName = m_Sequencer.GetItemTypeName(itemType);
-			//	if (const auto line = m_Sequencer.GetSelectedLine(m_SelectedEntry))
-			//	{
-			//		size_t classIndex, variableIndex;
-			//		//if (getClassAndVariableFromNames(itemTypeName, line->Name.c_str(), classIndex, variableIndex))
-			//		//{
-			//		//	Reflect::For([&](auto j) {
-			//		//		if (j.value == classIndex)
-			//		//		{
-			//		//			auto reflClass = ReflectedClasses::Get<j.value>();
-			//		//			Reflect::For([&](auto i) {
-			//		//				if (i.value == variableIndex)
-			//		//				{
-			//		//					//auto& val = reflClass.Get<i.value>(m_SelectedEntity.GetComponentFromReflection(reflClass));
-			//		//					//editKeyValue(reflClass, m_SelectedEntity, m_CurrentFrame, val, reflClass.GetVariables()[i.value]);
-			//		//				}
-			//		//			}, std::make_index_sequence<reflClass.sc_NumVariables>());
-			//		//		}
-			//		//	}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
-			//		//}
-			//	}
-			//}
+	
 		}
 		
 		void AnimationEditor::handleAddKey(std::string_view path, std::string_view componentName, std::string_view valueName)
@@ -416,46 +394,26 @@ namespace XYZ {
 
 		void AnimationEditor::keySelectionActions()
 		{
-			
+	
+		}
+
+		bool AnimationEditor::checkFramesValid(std::string_view path, std::string_view componentName, std::string_view valueName, const std::vector<ImNeoKeyFrame>& neoKeyFrames)
+		{
+			bool result = true;
+			SceneEntity entity = m_Context->GetSceneEntity();
+			Entity childID = entity.GetComponent<Relationship>().FindByName(*entity.GetECS(), path);
+			if (childID)
+				entity = SceneEntity(childID, entity.GetScene());
+			auto func = [&](auto classIndex, auto valueIndex)
 			{
-				//ImGui::OpenPopup("KeyActions");
-				//if (ImGui::BeginPopup("KeyActions"))
-				//{
-				//	if (ImGui::MenuItem("Copy Keys"))
-				//	{
-				//		m_Sequencer.Copy();
-				//		ImGui::CloseCurrentPopup();
-				//		m_OpenSelectionActions = false;
-				//	}
-				//
-				//	const bool copied = !m_Sequencer.GetCopy().Points.empty();
-				//	if (!copied)
-				//	{
-				//		ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-				//		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-				//	}
-				//	if (ImGui::MenuItem("Paste Keys"))
-				//	{
-				//		ImGui::CloseCurrentPopup();
-				//		m_OpenSelectionActions = false;
-				//	}
-				//
-				//	if (!copied)
-				//	{
-				//		ImGui::PopItemFlag();
-				//		ImGui::PopStyleVar();
-				//	}
-				//
-				//	if (ImGui::MenuItem("Delete Keys"))
-				//	{
-				//		m_Sequencer.DeleteSelectedPoints();
-				//		ImGui::CloseCurrentPopup();
-				//		m_OpenSelectionActions = false;
-				//	}
-				//	ImGui::EndPopup();					
-				//}
-				
-			}
+				auto reflClass = ReflectedClasses::Get<classIndex.value>();
+				auto& val = reflClass.Get<valueIndex.value>(entity.GetComponentFromReflection(reflClass));
+				auto property = getProperty(val, path, componentName, valueName);
+				result &= std::is_sorted(property->Keys.begin(), property->Keys.end());
+				result &= CompareKeyFrames(property->Keys, neoKeyFrames);
+			};
+			execFor(path, componentName, valueName, func);
+			return result;
 		}
 
 		template <>

@@ -23,6 +23,7 @@ namespace XYZ {
 		template <typename ValueType>
 		Property<ValueType>* GetProperty(std::string_view path, std::string_view componentName, std::string_view valueName);
 
+		
 
 		void Update(Timestep ts);
 		void UpdateLength();

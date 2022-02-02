@@ -34,8 +34,8 @@ namespace XYZ {
 			void handleEditKeyValues();
 			void handleAddKey(std::string_view path, std::string_view componentName, std::string_view valueName);
 			void keySelectionActions();
-	
 			
+			bool checkFramesValid(std::string_view path, std::string_view componentName, std::string_view valueName, const std::vector<ImNeoKeyFrame>& neoKeyFrames);
 
 			template <typename T>
 			bool editKeyValueSpecialized(uint32_t frame, T& value, const std::string& valName);
@@ -52,6 +52,9 @@ namespace XYZ {
 
 			template <typename Func>
 			void execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func);
+
+			template <typename Func>
+			void execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func) const;
 
 		private:
 			glm::vec2 m_ButtonSize;
@@ -98,8 +101,25 @@ namespace XYZ {
 			return m_Animation->GetProperty<T>(path, componentName, valName);
 		}
 
+
 		template<typename Func>
 		inline void AnimationEditor::execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func)
+		{
+			Reflect::For([&](auto j) {
+				if (ReflectedClasses::sc_ClassNames[j.value] == componentName)
+				{
+					auto reflClass = ReflectedClasses::Get<j.value>();
+					Reflect::For([&](auto i) {
+						if (reflClass.sc_VariableNames[i.value] == valName)
+						{
+							func(j, i);
+						}
+					}, std::make_index_sequence<reflClass.sc_NumVariables>());
+				}
+			}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+		}
+		template<typename Func>
+		inline void AnimationEditor::execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func) const
 		{
 			Reflect::For([&](auto j) {
 				if (ReflectedClasses::sc_ClassNames[j.value] == componentName)

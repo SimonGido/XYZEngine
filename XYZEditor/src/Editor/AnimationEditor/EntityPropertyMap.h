@@ -52,7 +52,7 @@ namespace XYZ {
 				componentData.push_back({ &prop, {}, &keyChangeFunc<T> });
 				auto& keyFrames = componentData.back().KeyFrames;
 
-				for (auto& keyFrame : prop.GetKeyFrames())
+				for (auto& keyFrame : prop.Keys)
 				{
 					keyFrames.push_back({ keyFrame.Frame, &keyFrame });
 				}

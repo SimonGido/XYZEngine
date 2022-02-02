@@ -18,8 +18,8 @@ namespace XYZ {
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
-			const KeyFrame<void*>& curr = m_Keys[current];
-			const KeyFrame<void*>& next = m_Keys[current + 1];
+			const KeyFrame<void*>& curr = Keys[current];
+			const KeyFrame<void*>& next = Keys[current + 1];
 
 			*m_Value = curr.Value;
 			if (frame >= next.Frame)
@@ -37,8 +37,8 @@ namespace XYZ {
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
-			const KeyFrame<uint32_t>& curr = m_Keys[current];
-			const KeyFrame<uint32_t>& next = m_Keys[current + 1];
+			const KeyFrame<uint32_t>& curr = Keys[current];
+			const KeyFrame<uint32_t>& next = Keys[current + 1];
 			const uint32_t length = next.Frame - curr.Frame;
 			const uint32_t passed = frame - curr.Frame;
 
@@ -57,8 +57,8 @@ namespace XYZ {
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
-			const KeyFrame<float>& curr = m_Keys[current];
-			const KeyFrame<float>& next = m_Keys[current + 1];
+			const KeyFrame<float>& curr = Keys[current];
+			const KeyFrame<float>& next = Keys[current + 1];
 			const uint32_t length = next.Frame - curr.Frame;
 			const uint32_t passed = frame - curr.Frame;
 
@@ -78,8 +78,8 @@ namespace XYZ {
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
-			const KeyFrame<glm::vec2>& curr = m_Keys[current];
-			const KeyFrame<glm::vec2>& next = m_Keys[current + 1];
+			const KeyFrame<glm::vec2>& curr = Keys[current];
+			const KeyFrame<glm::vec2>& next = Keys[current + 1];
 			const uint32_t length = next.Frame - curr.Frame;
 			const uint32_t passed = frame - curr.Frame;
 
@@ -98,8 +98,8 @@ namespace XYZ {
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
-			const KeyFrame<glm::vec3>& curr = m_Keys[current];
-			const KeyFrame<glm::vec3>& next = m_Keys[current + 1];
+			const KeyFrame<glm::vec3>& curr = Keys[current];
+			const KeyFrame<glm::vec3>& next = Keys[current + 1];
 
 			const uint32_t length = next.Frame - curr.Frame;
 			const uint32_t passed = frame - curr.Frame;
@@ -119,8 +119,8 @@ namespace XYZ {
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
-			const KeyFrame<glm::vec4>& curr = m_Keys[current];
-			const KeyFrame<glm::vec4>& next = m_Keys[current + 1];
+			const KeyFrame<glm::vec4>& curr = Keys[current];
+			const KeyFrame<glm::vec4>& next = Keys[current + 1];
 			const uint32_t length = next.Frame - curr.Frame;
 			const uint32_t passed = frame - curr.Frame;
 
@@ -139,10 +139,10 @@ namespace XYZ {
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
-			const KeyFrame<Ref<SubTexture>>& curr = m_Keys[current];
+			const KeyFrame<Ref<SubTexture>>& curr = Keys[current];
 			if (frame >= curr.Frame)
 			{
-				*m_Value = m_Keys[current + 1].Value;
+				*m_Value = Keys[current + 1].Value;
 				current++;
 			}
 			return false;
@@ -157,10 +157,10 @@ namespace XYZ {
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
 			size_t& current = m_CurrentKey;
-			const KeyFrame<Ref<Material>>& curr = m_Keys[current];
+			const KeyFrame<Ref<Material>>& curr = Keys[current];
 			if (frame >= curr.Frame)
 			{
-				*m_Value = m_Keys[current + 1].Value;
+				*m_Value = Keys[current + 1].Value;
 				current++;
 			}
 			return false;

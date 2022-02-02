@@ -76,18 +76,18 @@ namespace XYZ {
 		void Init();
 
 		bool AddKeyFrame(const KeyFrame<T>& key);
-		void SetKeyValue(const T& value, size_t index);
 		T    GetValue(uint32_t frame) const;
 	
+			 
+		uint32_t Length()					   const;
+		int64_t	 FindKey(uint32_t frame)	   const;
+		bool	 HasKeyAtFrame(uint32_t frame) const;
 
-		bool							Empty()						  const;
-		bool							HasKeyAtFrame(uint32_t frame) const;
 
-		uint32_t						Length()					  const;
-		int64_t							FindKey(uint32_t frame)		  const;
-		std::vector<KeyFrame<T>>&	    GetKeyFrames()				  { return m_Keys; }	
+		std::vector<KeyFrame<T>>		Keys;
+
 	private:
-		bool isKeyInRange() const { return m_CurrentKey + 1 < m_Keys.size(); }
+		bool isKeyInRange() const { return m_CurrentKey + 1 < Keys.size(); }
 
 		template <typename ComponentType, uint16_t valIndex>
 		static T* getReference(SceneEntity& entity);
@@ -100,7 +100,7 @@ namespace XYZ {
 		std::string						   m_ValueName;
 		std::string						   m_ComponentName;
 	
-		std::vector<KeyFrame<T>>		   m_Keys;
+		
 
 
 		Delegate<T*(SceneEntity& entity)>  m_GetPropertyReference;	
@@ -132,7 +132,7 @@ namespace XYZ {
 		m_ValueIndex(other.m_ValueIndex),
 		m_ComponentID(other.m_ComponentID),
 		m_GetPropertyReference(other.m_GetPropertyReference),
-		m_Keys(other.m_Keys),
+		Keys(other.Keys),
 		m_CurrentKey(other.m_CurrentKey)
 	{
 	}
@@ -147,7 +147,7 @@ namespace XYZ {
 		m_ValueIndex(other.m_ValueIndex),
 		m_ComponentID(other.m_ComponentID),
 		m_GetPropertyReference(std::move(other.m_GetPropertyReference)),
-		m_Keys(std::move(other.m_Keys)),
+		Keys(std::move(other.Keys)),
 		m_CurrentKey(other.m_CurrentKey)
 	{
 	}
@@ -162,7 +162,7 @@ namespace XYZ {
 		m_ValueIndex		  = other.m_ValueIndex;
 		m_ComponentID		  = other.m_ComponentID;
 		m_GetPropertyReference = other.m_GetPropertyReference;
-		m_Keys				  = other.m_Keys;
+		Keys				  = other.Keys;
 		m_CurrentKey		  = other.m_CurrentKey;
 		return *this;
 	}
@@ -177,7 +177,7 @@ namespace XYZ {
 		m_ValueIndex		   = other.m_ValueIndex;
 		m_ComponentID		   = other.m_ComponentID;
 		m_GetPropertyReference = std::move(other.m_GetPropertyReference);
-		m_Keys				   = std::move(other.m_Keys);
+		Keys				   = std::move(other.Keys);
 		m_CurrentKey		   = other.m_CurrentKey;
 		return *this;
 	}
@@ -185,7 +185,7 @@ namespace XYZ {
 	template<typename T>
 	inline void Property<T>::SetCurrentKey(uint32_t frame)
 	{
-		if (m_Keys.empty())
+		if (Keys.empty())
 		{
 			m_CurrentKey = 0;
 			return;
@@ -202,24 +202,24 @@ namespace XYZ {
 	template<typename T>
 	inline bool Property<T>::AddKeyFrame(const KeyFrame<T>& key)
 	{
-		for (const auto& k : m_Keys)
+		for (const auto& k : Keys)
 		{
 			if (k.Frame == key.Frame)
 				return false;
 		}
-		m_Keys.push_back(key);
-		std::sort(m_Keys.begin(), m_Keys.end());
+		Keys.push_back(key);
+		std::sort(Keys.begin(), Keys.end());
 		return true;
 	}
 
 	template<typename T>
 	inline void Property<T>::RemoveKeyFrame(uint32_t frame)
 	{
-		for (auto it = m_Keys.begin(); it != m_Keys.end();)
+		for (auto it = Keys.begin(); it != Keys.end();)
 		{
 			if (it->Frame == frame)
 			{
-				it = m_Keys.erase(it);
+				it = Keys.erase(it);
 				return;
 			}
 			else
@@ -232,33 +232,22 @@ namespace XYZ {
 	template<typename T>
 	inline void Property<T>::SetKeyFrame(uint32_t frame, size_t index)
 	{
-		m_Keys[index].Frame = frame;
-		std::sort(m_Keys.begin(), m_Keys.end());
+		Keys[index].Frame = frame;
+		std::sort(Keys.begin(), Keys.end());
 	}
 	template<typename T>
 	inline void Property<T>::SetFrames(uint32_t* frames, size_t count)
 	{
-		XYZ_ASSERT(count == m_Keys.size(), "");
+		XYZ_ASSERT(count == Keys.size(), "");
 		for (size_t i = 0; i < count; ++i)
-			m_Keys[i].Frame = frames[i];
-		std::sort(m_Keys.begin(), m_Keys.end());
-	}
-	template<typename T>
-	inline void Property<T>::SetKeyValue(const T& value, size_t index)
-	{
-		m_Keys[index].Value = value;
-	}
-
-	template<typename T>
-	inline bool Property<T>::Empty() const
-	{
-		return m_Keys.empty();
+			Keys[i].Frame = frames[i];
+		std::sort(Keys.begin(), Keys.end());
 	}
 
 	template<typename T>
 	inline bool Property<T>::HasKeyAtFrame(uint32_t frame) const
 	{
-		for (const auto& key : m_Keys)
+		for (const auto& key : Keys)
 		{
 			if (key.Frame == frame)
 				return true;
@@ -269,23 +258,23 @@ namespace XYZ {
 	template<typename T>
 	inline uint32_t Property<T>::Length() const
 	{
-		if (m_Keys.empty())
+		if (Keys.empty())
 			return 0;
-		return m_Keys.back().Frame;
+		return Keys.back().Frame;
 	}
 	template<typename T>
 	inline int64_t Property<T>::FindKey(uint32_t frame) const
 	{
-		if (!m_Keys.empty())
+		if (!Keys.empty())
 		{
-			for (size_t i = 0; i < m_Keys.size() - 1; ++i)
+			for (size_t i = 0; i < Keys.size() - 1; ++i)
 			{
-				const auto& key = m_Keys[i];
-				const auto& next = m_Keys[i + 1];
+				const auto& key = Keys[i];
+				const auto& next = Keys[i + 1];
 				if (frame >= key.Frame && frame < next.Frame)
 					return i;
 			}
-			return m_Keys.size() - 1;
+			return Keys.size() - 1;
 		}
 		return -1;
 	}
@@ -298,11 +287,11 @@ namespace XYZ {
 			return T();
 
 		const int64_t next = current + 1;
-		if (next == m_Keys.size())
-			return m_Keys[current].Value;
+		if (next == Keys.size())
+			return Keys[current].Value;
 
-		const auto& currKey = m_Keys[current];
-		const auto& nextKey = m_Keys[next];
+		const auto& currKey = Keys[current];
+		const auto& nextKey = Keys[next];
 
 		if constexpr (
 			   std::is_same_v<T, glm::mat4>
