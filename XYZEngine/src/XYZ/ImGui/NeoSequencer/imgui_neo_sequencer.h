@@ -65,6 +65,27 @@ struct ImGuiNeoSequencerStyle
     ImGuiNeoSequencerStyle();
 };
 
+struct ImNeoKeyFrame
+{
+    uint32_t Frame;
+    void* UserData;
+
+    bool operator<(const ImNeoKeyFrame& other) const
+    {
+        return Frame < other.Frame;
+    }
+    bool operator >(const ImNeoKeyFrame& other) const
+    {
+        return Frame > other.Frame;
+    }
+};
+
+/* 
+    Key is nullptr if resort happend
+    OrigKey and SwapKey are nullptr if only key frame change happend
+*/
+using ImNeoKeyChangeFn = void(*)(const ImNeoKeyFrame* key, const ImNeoKeyFrame* origKey, const ImNeoKeyFrame* swapKey);
+
 
 namespace ImGui {
     IMGUI_API const ImVec4&           GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol idx);
@@ -95,7 +116,7 @@ namespace ImGui {
     IMGUI_API bool BeginNeoGroup(const char* label, bool* open = nullptr);
     IMGUI_API void EndNeoGroup();
 
-    IMGUI_API bool BeginNeoTimeline(const char* label,uint32_t *keyframes, uint32_t keyframeCount, bool * open = nullptr, ImGuiNeoTimelineFlags flags = ImGuiNeoTimelineFlags_None);
+    IMGUI_API bool BeginNeoTimeline(const char* label, ImNeoKeyFrame *keyframes, uint32_t keyframeCount, ImNeoKeyChangeFn func, bool * open = nullptr, ImGuiNeoTimelineFlags flags = ImGuiNeoTimelineFlags_None);
     IMGUI_API void EndNeoTimeLine(); //Call only when BeginNeoTimeline() returns true!!
 
     IMGUI_API bool NeoBeginCreateKeyframe(uint32_t * frame);

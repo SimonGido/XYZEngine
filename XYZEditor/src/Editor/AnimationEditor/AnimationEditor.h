@@ -31,13 +31,11 @@ namespace XYZ {
 			void propertySection();
 			void timelineSection();
 			
-			void handleEditKeyFrames(std::string_view path, std::string_view componentName, std::string_view valueName, 
-				std::vector<uint32_t>& keyFrames, ImVector<uint32_t>& selectionIndices
-			);
 			void handleEditKeyValues();
 			void handleAddKey(std::string_view path, std::string_view componentName, std::string_view valueName);
 			void keySelectionActions();
 	
+			
 
 			template <typename T>
 			bool editKeyValueSpecialized(uint32_t frame, T& value, const std::string& valName);

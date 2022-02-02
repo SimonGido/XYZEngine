@@ -19,22 +19,7 @@
 
 namespace XYZ {
 	namespace Editor {
-		template <typename T, typename Container>
-		std::vector<size_t> SortIndexes(const Container& v) {
 
-			// initialize original index locations
-			std::vector<size_t> idx(v.size());
-			std::iota(idx.begin(), idx.end(), 0);
-
-			// sort indexes based on comparing values in v
-			// using std::stable_sort instead of std::sort
-			// to avoid unnecessary index re-orderings
-			// when v contains elements of equal values 
-			std::stable_sort(idx.begin(), idx.end(),
-				[&v](size_t i1, size_t i2) {return v[i1] < v[i2]; });
-
-			return idx;
-		}
 		static bool EditValue(glm::vec4& value)
 		{
 			bool result = false;
@@ -319,9 +304,7 @@ namespace XYZ {
 			drawEntityTree(m_Context->GetSceneEntity());
 		}
 		void AnimationEditor::timelineSection()
-		{
-			
-			
+		{		
 			ImGui::BeginNeo();
 			std::string selectedEntity, selectedComponent, selectedValue;
 			if (ImGui::BeginNeoSequencer("AnimationNeoSequencer", &m_CurrentFrame, &m_FrameMin, &m_FrameMax, &m_OffsetFrame, &m_Zoom))
@@ -335,14 +318,25 @@ namespace XYZ {
 						{
 							if (ImGui::BeginNeoGroup(componentName.c_str()))
 							{
-								for (auto& [prop, keyFrames] : propertyData)
+								for (auto& [prop, keyFrames, keyChangeFn] : propertyData)
 								{
-									if (ImGui::BeginNeoTimeline(prop->GetValueName().c_str(), keyFrames.data(), keyFrames.size()))
+									if (ImGui::BeginNeoTimeline(prop->GetValueName().c_str(), keyFrames.data(), keyFrames.size(), keyChangeFn))
 									{
 										if (ImGui::IsEditingSelection())
 										{
-											auto& selection = ImGui::GetCurrentTimelineSelection();
-											handleEditKeyFrames(entityName, componentName, prop->GetValueName(), keyFrames, selection);
+											SceneEntity entity = m_Context->GetSceneEntity();
+											Entity childID = entity.GetComponent<Relationship>().FindByName(*entity.GetECS(), entityName);
+											if (childID)
+												entity = SceneEntity(childID, entity.GetScene());
+											auto func = [&](auto classIndex, auto valueIndex)
+											{
+												auto reflClass = ReflectedClasses::Get<classIndex.value>();
+												auto& val = reflClass.Get<valueIndex.value>(entity.GetComponentFromReflection(reflClass));
+												auto property = getProperty(val, entityName, componentName, prop->GetValueName());
+												XYZ_ASSERT(std::is_sorted(property->GetKeyFrames().begin(), property->GetKeyFrames().end()),"");
+											};
+
+											execFor(entityName, componentName, prop->GetValueName(), func);
 										}
 										if (ImGui::IsCurrentTimelineSelected())
 										{
@@ -371,34 +365,7 @@ namespace XYZ {
 				handleAddKey(selectedEntity, selectedComponent, selectedValue);
 			}
 		}
-		void AnimationEditor::handleEditKeyFrames(std::string_view path, std::string_view componentName, std::string_view valueName, 
-			std::vector<uint32_t>& keyFrames, ImVector<uint32_t>& selectionIndices
-		)
-		{
-			SceneEntity entity = m_Context->GetSceneEntity();
-			Entity childID = entity.GetComponent<Relationship>().FindByName(*entity.GetECS(), path);
-			if (childID)
-				entity = SceneEntity(childID, entity.GetScene());
 
-			auto func = [&](auto classIndex, auto valueIndex)
-			{
-				auto reflClass = ReflectedClasses::Get<classIndex.value>();
-				auto& val = reflClass.Get<valueIndex.value>(entity.GetComponentFromReflection(reflClass));
-
-				auto property = getProperty(val, path, componentName, valueName);
-				property->SetFrames(keyFrames.data(), keyFrames.size());
-				
-				// Sort keyframes
-				// TODO: dumb solution
-				auto indices = SortIndexes<uint32_t>(keyFrames);
-				for (uint32_t& selectionIndex : selectionIndices)
-					selectionIndex = indices[selectionIndex];
-				std::sort(keyFrames.begin(), keyFrames.end());
-			};
-
-			execFor(path, componentName, valueName, func);
-		}
-	
 		void AnimationEditor::handleEditKeyValues()
 		{
 			//if (m_SelectedEntry != -1)

@@ -50,6 +50,9 @@ namespace ImGui {
         ImGuiNeoSelectorStateID_COUNT
     };
 
+   
+
+    
     using ImSelectionMap = std::unordered_map<ImGuiID, ImVector<uint32_t>>;
     typedef int ImGuiNeoSelectorStateID;
 
@@ -71,26 +74,30 @@ namespace ImGui {
         ImNeoSelectorState* CurrentState = nullptr;
     };
 
+
     struct ImGuiNeoSequencerInternalData;
     struct ImGuiNeoMultiSelector
     {
         ImGuiNeoMultiSelector();
 
-        ImNeoSelectorStateMachine StateMachine;
+        ImNeoSelectorStateMachine StateMachine;             
         ImSelectionMap            KeyFrameSelection;        // Frames in multiselection
         ImRect                    MultiSelectingRect;       // Selecting rectangle
         ImRect                    SelectedRect;             // Rectangle created from selected keyframes
-
+        uint32_t                  SelectedRectMinFrame;     // Min frame in selected rect
+        uint32_t                  SelectedRectMaxFrame;     // Max frame in selected rect
         uint32_t                  LastEditFrame = 0;        // Frame on which editing was last frame
         uint32_t                  CurrentEditFrame = 0;     // Current frame editing
-
-        bool SetSingleKeySelection(uint32_t keyindex, ImGuiID timelineID, const ImRect& bb);
+        int32_t                   DiffFrame = 0;            // Diff current and last frame ( used for moving keys )
+        bool                      DiffOutOfBounds = false;  // == SelectedRectMinFrame + DiffFrame < 0
+  
+        bool SetSingleKeySelection(uint32_t keyframe, uint32_t keyindex, ImGuiID timelineID, const ImRect& bb);
 
         bool IsKeyFrameSelected(uint32_t keyIndex, ImGuiID timelineID) const;
 
-        bool HandleKeyFrameEdit(uint32_t* keyframes, uint32_t keyframeCount, ImGuiID timelineID);
+        bool HandleKeyFrameEdit(ImNeoKeyFrame* keyframes, uint32_t keyframeCount, ImGuiID timelineID, ImNeoKeyChangeFn func);
 
-        bool AttemptToAddToSelection(uint32_t keyIndex, const ImRect& keyBB, ImGuiID timelineID);
+        bool AttemptToAddToSelection(uint32_t keyframe, uint32_t keyIndex, const ImRect& keyBB, ImGuiID timelineID);
 
         bool HandleMultiSelection(const ImGuiNeoSequencerInternalData& context);
 
@@ -98,6 +105,21 @@ namespace ImGui {
         
         bool IsMultiSelecting() const;
         bool IsEditingSelection() const;
+        bool IsEditReady() const;
+        bool IsSelectionEmpty() const;
+
+    private:
+        // Store default values of Selected Rect/MinFrame/MaxFrame
+        void resetSelected();
+
+        // Check if min/max values are stored in Selected Rect/MinFrame/MaxFrame
+        void updateSelected(const ImRect& keyBB, uint32_t keyframe);
+
+        // Add diff to Selected Rect/MinFrame/MaxFrame
+        void updateSelectedEdit(const int32_t diff, float frameWidth);
+
+        // Updates LastEditFrame, CurrentEditDrame and DiffOutOfBounds
+        void updateDiffFrame(const ImGuiNeoSequencerInternalData& context);
     };
 
     struct ImGuiNeoSequencerInternalData
@@ -150,7 +172,18 @@ namespace ImGui {
     ImRect          GetCurrentFrameBB(uint32_t frame, const ImGuiNeoSequencerInternalData& context, const ImGuiNeoSequencerStyle& style);
     uint32_t        GetCurrentMouseFrame(const ImGuiNeoSequencerInternalData& context);
 
+    // TODO: use non recursive algorithm
+    template <typename T>
+    bool IsSorted(T arr[], uint32_t n)
+    {
+        if (n == 1 || n == 0)
+            return true;
 
+        if (arr[n - 1] < arr[n - 2])
+            return false;
+
+        return IsSorted(arr, n - 1);
+    }
 }
 
 #endif //IMGUI_NEO_INTERNAL_H

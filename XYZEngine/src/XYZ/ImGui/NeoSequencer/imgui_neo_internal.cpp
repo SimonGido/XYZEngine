@@ -10,7 +10,7 @@
 
 namespace ImGui {
     template <typename T, typename Comp>
-    static bool pushUnique(ImVector<T>& vec, const T& val, Comp comp)
+    static bool PushUnique(ImVector<T>& vec, const T& val, Comp comp)
     {
         for (const auto& it : vec)
         {
@@ -20,7 +20,31 @@ namespace ImGui {
         vec.push_back(val);
         return true;
     }
-    static std::pair<ImVec2, ImVec2> getCurrentFrameLine(const ImRect& pointerBB, float timelineHeight) 
+   
+    static void ResortElement(ImNeoKeyFrame* arr, uint32_t count, uint32_t& index, ImNeoKeyChangeFn func)
+    {
+        // Keyframes must be already sorted, it resort only one element
+        uint32_t rightIndex = index + 1;
+        while (rightIndex < count && arr[rightIndex] < arr[index])
+        {
+            std::swap(arr[rightIndex].Frame, arr[index].Frame);
+            func(nullptr, &arr[rightIndex], &arr[index]);
+            index = rightIndex;
+            rightIndex++;
+        }
+
+        uint32_t leftIndex = index - 1;
+        while (leftIndex < count && arr[leftIndex] > arr[index])
+        {
+            std::swap(arr[leftIndex].Frame, arr[index].Frame);
+            func(nullptr, &arr[leftIndex], &arr[index]);
+            index = leftIndex;
+            leftIndex--;
+        }
+        IM_ASSERT(IsSorted(arr, count));
+    }
+
+    static std::pair<ImVec2, ImVec2> GetCurrentFrameLine(const ImRect& pointerBB, float timelineHeight) 
     {
         const auto center = ImVec2{ pointerBB.Min.x, pointerBB.Max.y } + ImVec2{ pointerBB.GetSize().x / 2.0f, 0 };
 
@@ -195,6 +219,7 @@ namespace ImGui {
 
         const auto frameViewVal = (float)context.StartFrame + (clamped * (float)viewSize);
 
+
         const auto finalFrame = (uint32_t)round(frameViewVal) + context.OffsetFrame;
         return finalFrame;
     }
@@ -204,7 +229,7 @@ namespace ImGui {
                                                float timelineHeight, float lineWidth, ImDrawList *drawList) {
         if(!drawList) drawList = ImGui::GetWindowDrawList();
 
-        const auto [p0, p1] = getCurrentFrameLine(pointerBB, timelineHeight);
+        const auto [p0, p1] = GetCurrentFrameLine(pointerBB, timelineHeight);
 
         drawList->AddLine(p0, p1, ColorConvertFloat4ToU32(color), lineWidth);
 
@@ -250,6 +275,7 @@ namespace ImGui {
     }
     ImGuiNeoMultiSelector::ImGuiNeoMultiSelector()
     {
+        resetSelected();
         auto& states = StateMachine.States;
         for (int i = 0; i < ImGuiNeoSelectorStateID_COUNT; ++i)
             states[i].ID = i;
@@ -274,19 +300,19 @@ namespace ImGui {
         // Editing Selection -> Edit Ready
         states[ImGuiNeoSelectorStateID_EditingSelection].AllowedTransitions.SetBit(ImGuiNeoSelectorStateID_EditReady);
     }
-    bool ImGuiNeoMultiSelector::SetSingleKeySelection(uint32_t keyindex, ImGuiID timelineID, const ImRect& bb)
+    bool ImGuiNeoMultiSelector::SetSingleKeySelection(uint32_t keyframe, uint32_t keyindex, ImGuiID timelineID, const ImRect& bb)
     {
         if (StateMachine.Transition(ImGuiNeoSelectorStateID_EditReady))
         {
             KeyFrameSelection.clear();
             KeyFrameSelection[timelineID].push_back(keyindex);
              // Context selection rect is only single point
-            SelectedRect = bb;
-            
+            updateSelected(bb, keyframe);
             return true;
         }
         return false;
     }
+
     bool ImGuiNeoMultiSelector::IsKeyFrameSelected(uint32_t keyIndex, ImGuiID timelineID) const
     {
         const auto currentLineSelection = KeyFrameSelection.find(timelineID);
@@ -302,28 +328,31 @@ namespace ImGui {
 
         return false;
     }
-    bool ImGuiNeoMultiSelector::HandleKeyFrameEdit(uint32_t* keyframes, uint32_t keyframeCount, ImGuiID timelineID)
+
+  
+    bool ImGuiNeoMultiSelector::HandleKeyFrameEdit(ImNeoKeyFrame* keyframes, uint32_t keyframeCount, ImGuiID timelineID, ImNeoKeyChangeFn func)
     {
-        if (!ImGui::IsSequencerHovered()
-            || !StateMachine.IsInState(ImGuiNeoSelectorStateID_EditingSelection))
+        if (!StateMachine.IsInState(ImGuiNeoSelectorStateID_EditingSelection) || DiffOutOfBounds)
             return false;
 
         bool handled = false;
-        const int32_t diffFrame = static_cast<int32_t>(CurrentEditFrame) - static_cast<int32_t>(LastEditFrame);
+        auto& selection = KeyFrameSelection[timelineID];
 
-        const auto& currentLineSelection = KeyFrameSelection[timelineID];
         if (IsMouseDragging(ImGuiMouseButton_Left, 0.0f))
         {
-            for (const auto keyFrameIndex : currentLineSelection)
-            {
-                keyframes[keyFrameIndex] += diffFrame;
+            for (uint32_t& keyframeIndex : selection)
+            {          
+                keyframes[keyframeIndex].Frame += DiffFrame;
+                func(&keyframes[keyframeIndex], nullptr, nullptr);
+                // Keep frames sorted
+                ResortElement(keyframes, keyframeCount, keyframeIndex, func);      
             }
             handled = true;
         }
         return handled;
     }
    
-    bool ImGuiNeoMultiSelector::AttemptToAddToSelection(uint32_t keyIndex, const ImRect& keyBB, ImGuiID timelineID)
+    bool ImGuiNeoMultiSelector::AttemptToAddToSelection(uint32_t keyframe, uint32_t keyIndex, const ImRect& keyBB, ImGuiID timelineID)
     {
         if (StateMachine.IsInState(ImGuiNeoSelectorStateID_MultiSelecting))
         {
@@ -332,7 +361,7 @@ namespace ImGui {
             auto& currentLineSelection = KeyFrameSelection[timelineID];
             if (MultiSelectingRect.Overlaps(keyBB))
             {
-                added = pushUnique(
+                added = PushUnique(
                     currentLineSelection, keyIndex,
                     [](const uint32_t a, const uint32_t b) {
                     return a == b;
@@ -346,17 +375,12 @@ namespace ImGui {
             // This is quite inefficient / but comparing integers is no big deal
             if (currentLineSelection.contains(keyIndex))
             {
-                SelectedRect.Min.x = std::min(keyBB.Min.x, SelectedRect.Min.x);
-                SelectedRect.Min.y = std::min(keyBB.Min.y, SelectedRect.Min.y);
-
-                SelectedRect.Max.x = std::max(keyBB.Max.x, SelectedRect.Max.x);
-                SelectedRect.Max.y = std::max(keyBB.Max.y, SelectedRect.Max.y);
+                updateSelected(keyBB, keyframe);
             }
             if (removed)
             {
-                const float bigNumber = 999999.9f;
-                SelectedRect.Min = { bigNumber, bigNumber };
-                SelectedRect.Max = { -bigNumber, -bigNumber };
+                // Reset selected and rebuild from key frames new Selected Rect/MinFrame/MaxFrame
+                resetSelected();
             }
             return added;
         }
@@ -371,12 +395,11 @@ namespace ImGui {
             {
                 if (StateMachine.Transition(ImGuiNeoSelectorStateID_StartSelect))
                 {
+                    // We started selecting so initialize MultiSelectingRect
                     MultiSelectingRect.Min = ImGui::GetMousePos();
                     MultiSelectingRect.Max = MultiSelectingRect.Min;
 
-                    const float bigNumber = 999999.9f;
-                    SelectedRect.Min = ImVec2(bigNumber, bigNumber);
-                    SelectedRect.Max = ImVec2(-bigNumber, -bigNumber);
+                    resetSelected();             
                     return true;
                 }
             }
@@ -385,7 +408,10 @@ namespace ImGui {
 
             if (IsMouseDragging(ImGuiMouseButton_Left, dragTreshold))
             {
+                // We are dragging mouse so try to transit to multi selecting
                 StateMachine.Transition(ImGuiNeoSelectorStateID_MultiSelecting);
+
+                // We are in multi selecting state, so update multi select rect
                 if (StateMachine.IsInState(ImGuiNeoSelectorStateID_MultiSelecting))
                 {
                     MultiSelectingRect.Max = ImGui::GetMousePos();
@@ -393,10 +419,11 @@ namespace ImGui {
                 }
             }
         }
+
         if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
         {
             // If selection is not empty, we are ready to edit
-            if (!KeyFrameSelection.empty())
+            if (!IsSelectionEmpty())
                 return StateMachine.Transition(ImGuiNeoSelectorStateID_EditReady);
             else
                 StateMachine.Transition(ImGuiNeoSelectorStateID_None);
@@ -405,53 +432,54 @@ namespace ImGui {
     }
 
     bool ImGuiNeoMultiSelector::HandleEditSelection(const ImGuiNeoSequencerInternalData& context)
-    {
-        if (IsSequencerHovered())
-        {
-            const float dragTreshold = 0.0f;
-            if (IsSequencerClicked(ImGuiMouseButton_Left))
-            {
-                // We are ready to start editing
-                if (StateMachine.Transition(ImGuiNeoSelectorStateID_StartEditing))
-                {              
-                    // Check if we clicked on selected rect
-                    if (SelectedRect.Contains(GetMousePos()))
-                    {
-                        CurrentEditFrame = GetCurrentMouseFrame(context);
-                        LastEditFrame = CurrentEditFrame;
-                        return true;
-                    }
-                    // We did not click on selected rect, so perform transition to none
-                    else
-                    {
-                        KeyFrameSelection.clear();
-                        StateMachine.Transition(ImGuiNeoSelectorStateID_None);
-                    }
-                }
-            }
-            else if (IsMouseDragging(ImGuiMouseButton_Left, dragTreshold))
-            {
-                // Try to transit to editing selection state;
-                StateMachine.Transition(ImGuiNeoSelectorStateID_EditingSelection);
-               
-                // We are in editing state and dragging update frames and selected rectangle
-                if (StateMachine.IsInState(ImGuiNeoSelectorStateID_EditingSelection))
+    {       
+        const float dragTreshold = 0.0f;
+        if (IsSequencerHovered() && IsSequencerClicked(ImGuiMouseButton_Left))
+        {       
+            // We are ready to start editing
+            if (StateMachine.Transition(ImGuiNeoSelectorStateID_StartEditing))
+            {              
+                // Check if we clicked on selected rect
+                if (SelectedRect.Contains(GetMousePos()))
                 {
-                    LastEditFrame = CurrentEditFrame;
                     CurrentEditFrame = GetCurrentMouseFrame(context);
-                    const int32_t diff = CurrentEditFrame - LastEditFrame;
-                    const float frameWidth = GetPerFrameWidth(context);
-                    SelectedRect.Min.x += diff * frameWidth;
-                    SelectedRect.Max.x += diff * frameWidth;
+                    LastEditFrame = CurrentEditFrame;
                     return true;
                 }
-            }
-            // Sequencer is hovered but mouse is released so transit to edit ready
-            else if (IsMouseReleased(ImGuiMouseButton_Left))
-            {
-                StateMachine.Transition(ImGuiNeoSelectorStateID_EditReady);
+                // We did not click on selected rect, so perform transition to none
+                else
+                {
+                    KeyFrameSelection.clear();
+                    StateMachine.Transition(ImGuiNeoSelectorStateID_None);
+                }
             }
         }
+        
+        if (IsMouseDragging(ImGuiMouseButton_Left, dragTreshold))
+        {
+            // Try to transit to editing selection state;
+            StateMachine.Transition(ImGuiNeoSelectorStateID_EditingSelection);
+
+            // We are in editing state and dragging update frames and selected rectangle
+            if (StateMachine.IsInState(ImGuiNeoSelectorStateID_EditingSelection))
+            {
+                updateDiffFrame(context);
+                const float frameWidth = GetPerFrameWidth(context);
+                // Check boundaries
+                if (!DiffOutOfBounds)
+                {
+                    updateSelectedEdit(DiffFrame, frameWidth);
+                }
+                return true;
+            }
+        }
+
+        // Mouse is released so transit to edit ready
+        if (IsMouseReleased(ImGuiMouseButton_Left))
+        {
+            StateMachine.Transition(ImGuiNeoSelectorStateID_EditReady);
+        }
+     
         return false;
     }
     bool ImGuiNeoMultiSelector::IsMultiSelecting() const
@@ -461,5 +489,64 @@ namespace ImGui {
     bool ImGuiNeoMultiSelector::IsEditingSelection() const
     {
         return StateMachine.IsInState(ImGuiNeoSelectorStateID_EditingSelection);
+    }
+    bool ImGuiNeoMultiSelector::IsEditReady() const
+    {
+        return StateMachine.IsInState(ImGuiNeoSelectorStateID_EditReady);
+    }
+    bool ImGuiNeoMultiSelector::IsSelectionEmpty() const
+    {
+        for (const auto& [timelineID, selection] : KeyFrameSelection)
+        {
+            if (!selection.empty())
+                return false;
+        }
+        return true;
+    }
+    void ImGuiNeoMultiSelector::resetSelected()
+    {
+        constexpr float bigFloat = std::numeric_limits<float>::max();
+        constexpr uint32_t bigUint = std::numeric_limits<uint32_t>::max();
+
+        SelectedRect.Min = { bigFloat, bigFloat };
+        SelectedRect.Max = { -bigFloat, -bigFloat };
+        SelectedRectMinFrame = bigUint;
+        SelectedRectMaxFrame = 0;
+    }
+    void ImGuiNeoMultiSelector::updateSelected(const ImRect& keyBB, uint32_t keyframe)
+    {
+        SelectedRect.Min.x = std::min(keyBB.Min.x, SelectedRect.Min.x);
+        SelectedRect.Min.y = std::min(keyBB.Min.y, SelectedRect.Min.y);
+
+        SelectedRect.Max.x = std::max(keyBB.Max.x, SelectedRect.Max.x);
+        SelectedRect.Max.y = std::max(keyBB.Max.y, SelectedRect.Max.y);
+
+        SelectedRectMinFrame = std::min(keyframe, SelectedRectMinFrame);
+        SelectedRectMaxFrame = std::max(keyframe, SelectedRectMaxFrame);
+    }
+    void ImGuiNeoMultiSelector::updateSelectedEdit(const int32_t diff, float frameWidth)
+    {
+        SelectedRect.Min.x += diff * frameWidth;
+        SelectedRect.Max.x += diff * frameWidth;
+        SelectedRectMinFrame += diff;
+        SelectedRectMaxFrame += diff;
+    }
+    void ImGuiNeoMultiSelector::updateDiffFrame(const ImGuiNeoSequencerInternalData& context)
+    {
+        LastEditFrame = CurrentEditFrame;
+        CurrentEditFrame = GetCurrentMouseFrame(context);
+        DiffFrame = CurrentEditFrame - LastEditFrame;
+        DiffOutOfBounds = false;
+        for (const auto& [timelineID, selection] : KeyFrameSelection)
+        {
+            if (!selection.empty())
+            {
+                if (static_cast<int32_t>(SelectedRectMinFrame) + DiffFrame < 0)
+                {
+                    DiffOutOfBounds = true;
+                    return;
+                }
+            }
+        }
     }
 }

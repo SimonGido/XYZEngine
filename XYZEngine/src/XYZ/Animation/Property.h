@@ -85,7 +85,7 @@ namespace XYZ {
 
 		uint32_t						Length()					  const;
 		int64_t							FindKey(uint32_t frame)		  const;
-		const std::vector<KeyFrame<T>>& GetKeyFrames()				  const{ return m_Keys; }	
+		std::vector<KeyFrame<T>>&	    GetKeyFrames()				  { return m_Keys; }	
 	private:
 		bool isKeyInRange() const { return m_CurrentKey + 1 < m_Keys.size(); }
 

@@ -126,11 +126,11 @@ namespace ImGui {
         // Single click selection
         if (IsItemClicked(ImGuiMouseButton_Left))
         {
-            context.Selector.SetSingleKeySelection(index, frameData.CurrentTimeline, bb);
+            context.Selector.SetSingleKeySelection(*frame, index, frameData.CurrentTimeline, bb);
         }
         else
         {
-            context.Selector.AttemptToAddToSelection(index, bb, frameData.CurrentTimeline);
+            context.Selector.AttemptToAddToSelection(*frame, index, bb, frameData.CurrentTimeline);
         }
 
         if (IsItemHovered())
@@ -370,7 +370,10 @@ namespace ImGui {
         
         if (context.Selector.IsMultiSelecting())
             RenderSelection(style.Colors[ImGuiNeoSequencerCol_MultiSelectColor], context.Selector.MultiSelectingRect);
- 
+        
+        if (context.Selector.IsEditingSelection() || context.Selector.IsEditReady())
+            RenderSelection(style.Colors[ImGuiNeoSequencerCol_MultiSelectColor], context.Selector.SelectedRect);
+
         context.TopBarSize = ImVec2(context.Size.x, style.TopBarHeight);
 
         if (context.TopBarSize.y <= 0.0f)
@@ -412,7 +415,7 @@ namespace ImGui {
 
     IMGUI_API bool BeginNeoGroup(const char *label, bool *open)
     {
-        return BeginNeoTimeline(label, nullptr, 0, open, ImGuiNeoTimelineFlags_Group);
+        return BeginNeoTimeline(label, nullptr, 0, nullptr, open, ImGuiNeoTimelineFlags_Group);
     }
 
     IMGUI_API void EndNeoGroup() 
@@ -422,9 +425,10 @@ namespace ImGui {
 
    
 
-    bool BeginNeoTimeline(const char *label, uint32_t *keyframes, uint32_t keyframeCount, bool *open, ImGuiNeoTimelineFlags flags) {
+    bool BeginNeoTimeline(const char *label, ImNeoKeyFrame *keyframes, uint32_t keyframeCount, ImNeoKeyChangeFn func, bool *open, ImGuiNeoTimelineFlags flags) {
         IM_ASSERT(frameData.InSequencer && "Not in active sequencer!");
-       
+        IM_ASSERT(IsSorted(keyframes, keyframeCount) && "Key frames are not sorted"); // This assert might cause performance issues in debug mode
+
         const bool closable = open != nullptr;
         auto &context = sequencerData[frameData.CurrentSequencer];
         const auto &imStyle = GetStyle();
@@ -481,10 +485,10 @@ namespace ImGui {
         
             for (uint32_t i = 0; i < keyframeCount; i++) 
             {
-                bool keyframeRes = processKeyframe(&keyframes[i], i); // Draw keyframe and add to selection
+                bool keyframeRes = processKeyframe(&keyframes[i].Frame, i); // Draw keyframe and add to selection
             }     
         }
-        context.Selector.HandleKeyFrameEdit(keyframes, keyframeCount, frameData.CurrentTimeline);
+        context.Selector.HandleKeyFrameEdit(keyframes, keyframeCount, frameData.CurrentTimeline, func);
 
 
         context.ValuesCursor.x += imStyle.FramePadding.x + (float) frameData.CurrentTimelineDepth * style.DepthItemSpacing;

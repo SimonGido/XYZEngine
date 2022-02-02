@@ -1,6 +1,6 @@
 Scene: TestScene
 Entities:
-  - Entity: ff23ce1d-d5b0-4243-b10a-156f3557d7b6
+  - Entity: 51feae55-1d34-4944-83bc-9ff0200b28e0
     SceneTagComponent:
       Name: Havko
     TransformComponent:
@@ -8,9 +8,9 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      FirstChild: 7e98f405-34f8-47aa-ac9d-d239f4527179
+      FirstChild: cedd08ab-cc10-457f-a1d1-bc162191d0ea
       Depth: 1
-  - Entity: 7e98f405-34f8-47aa-ac9d-d239f4527179
+  - Entity: cedd08ab-cc10-457f-a1d1-bc162191d0ea
     SceneTagComponent:
       Name: Child
     TransformComponent:
@@ -18,5 +18,5 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: ff23ce1d-d5b0-4243-b10a-156f3557d7b6
+      Parent: 51feae55-1d34-4944-83bc-9ff0200b28e0
       Depth: 2
