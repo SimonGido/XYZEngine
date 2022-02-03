@@ -35,9 +35,7 @@ namespace XYZ {
 		virtual void SetCurrentKey(uint32_t frame) = 0;
 		virtual void SetSceneEntity(const SceneEntity& entity) = 0;
 		virtual void Reset() = 0;
-		virtual void RemoveKeyFrame(uint32_t frame) = 0;
-		virtual void SetKeyFrame(uint32_t frame, size_t index) = 0;
-		virtual void SetFrames(uint32_t* frames, size_t count) = 0;
+
 
 		virtual const SceneEntity& GetSceneEntity()	  const = 0;
 		virtual const std::string& GetPath()		  const = 0;
@@ -61,10 +59,7 @@ namespace XYZ {
 		virtual void SetCurrentKey(uint32_t frame) override;
 		virtual void SetSceneEntity(const SceneEntity& entity) override;
 		virtual void Reset() override { m_CurrentKey = 0; }
-		virtual void RemoveKeyFrame(uint32_t frame) override;
-		virtual void SetKeyFrame(uint32_t frame, size_t index) override;
-		virtual void SetFrames(uint32_t* frames, size_t count) override;
-
+	
 		virtual const SceneEntity& GetSceneEntity()		  const override { return m_Entity; }
 		virtual const std::string& GetPath()			  const override { return m_Path; }
 		virtual const std::string& GetValueName()		  const override { return m_ValueName; }
@@ -212,37 +207,6 @@ namespace XYZ {
 		return true;
 	}
 
-	template<typename T>
-	inline void Property<T>::RemoveKeyFrame(uint32_t frame)
-	{
-		for (auto it = Keys.begin(); it != Keys.end();)
-		{
-			if (it->Frame == frame)
-			{
-				it = Keys.erase(it);
-				return;
-			}
-			else
-			{
-				it++;
-			}
-		}
-	}
-
-	template<typename T>
-	inline void Property<T>::SetKeyFrame(uint32_t frame, size_t index)
-	{
-		Keys[index].Frame = frame;
-		std::sort(Keys.begin(), Keys.end());
-	}
-	template<typename T>
-	inline void Property<T>::SetFrames(uint32_t* frames, size_t count)
-	{
-		XYZ_ASSERT(count == Keys.size(), "");
-		for (size_t i = 0; i < count; ++i)
-			Keys[i].Frame = frames[i];
-		std::sort(Keys.begin(), Keys.end());
-	}
 
 	template<typename T>
 	inline bool Property<T>::HasKeyAtFrame(uint32_t frame) const

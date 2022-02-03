@@ -267,11 +267,12 @@ namespace ImGui {
         return style;
     }
 
-    ImVector<uint32_t>& GetCurrentTimelineSelection()
+    const ImVector<uint32_t>& GetCurrentTimelineSelection()
     {
         auto& context = sequencerData[frameData.CurrentSequencer];
         return context.Selector.KeyFrameSelection[frameData.CurrentTimeline];
     }
+
 
     bool IsMultiselecting()
     {
@@ -295,6 +296,13 @@ namespace ImGui {
     {
         auto& context = sequencerData[frameData.CurrentSequencer];
         return context.KeyFramesEdited;
+    }
+
+    IMGUI_API void ClearSelection()
+    {
+        auto& context = sequencerData[frameData.CurrentSequencer];
+        context.Selector.KeyFrameSelection.clear();
+        context.Selector.StateMachine.ForceTransition(ImGuiNeoSelectorStateID_None);
     }
 
     IMGUI_API ImGuiID GetCurrentTimelineID()
@@ -393,24 +401,33 @@ namespace ImGui {
         return true;
     }
 
-    void EndNeoSequencer() 
+    void EndNeoSequencer()
     {
         IM_ASSERT(frameData.InSequencer && "Called end sequencer when BegframeData.InSequencer didnt return true or wasn't called at all!");
         IM_ASSERT(sequencerData.count(frameData.CurrentSequencer) != 0 && "Ended sequencer has no context!");
 
-        auto &context = sequencerData[frameData.CurrentSequencer];
-        auto &imStyle = GetStyle();
+        auto& context = sequencerData[frameData.CurrentSequencer];
+        auto& imStyle = GetStyle();
         renderCurrentFrame(context);
 
         frameData.InSequencer = false;
 
-        const ImVec2 min = {0, 0};
+        const ImVec2 min = { 0, 0 };
         context.Size.y = context.FilledHeight;
         const auto max = context.Size;
 
 
-        ItemSize({min, max});       
+        ItemSize({ min, max });
         PopID();
+
+        if (frameData.HoveredSequencer == frameData.CurrentSequencer)
+            frameData.HoveredSequencer = 0;
+
+        for (auto& id : frameData.ClickedSequencer)
+        {
+            if (id == frameData.CurrentSequencer)
+                id = 0;
+        }
     }
 
     IMGUI_API bool BeginNeoGroup(const char *label, bool *open)
@@ -613,16 +630,6 @@ namespace ImGui {
     bool IsSequencerClicked(ImGuiMouseButton button)
     {
         return frameData.CurrentSequencer == frameData.ClickedSequencer[button];
-    }
-    void BeginNeo()
-    {
-        frameData.HoveredSequencer = 0;
-        for (auto& id : frameData.ClickedSequencer)
-            id = 0;
-    }
-    void EndNeo()
-    {
-        
     }
 }
 

@@ -68,6 +68,7 @@ namespace ImGui {
         ImNeoSelectorStateMachine();
 
         bool Transition(ImGuiNeoSelectorStateID stateID);
+        void ForceTransition(ImGuiNeoSelectorStateID stateID);
         bool IsInState(ImGuiNeoSelectorStateID stateID) const;
 
         ImNeoSelectorState  States[ImGuiNeoSelectorStateID_COUNT];

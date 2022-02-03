@@ -28,7 +28,9 @@ namespace ImGui {
         while (rightIndex < count && arr[rightIndex] < arr[index])
         {
             std::swap(arr[rightIndex].Frame, arr[index].Frame);
-            func(nullptr, &arr[rightIndex], &arr[index]);
+            func(&arr[rightIndex]);
+            func(&arr[index]);
+
             index = rightIndex;
             rightIndex++;
         }
@@ -37,7 +39,9 @@ namespace ImGui {
         while (leftIndex < count && arr[leftIndex] > arr[index])
         {
             std::swap(arr[leftIndex].Frame, arr[index].Frame);
-            func(nullptr, &arr[leftIndex], &arr[index]);
+            func(&arr[leftIndex]);
+            func(&arr[index]);
+
             index = leftIndex;
             leftIndex--;
         }
@@ -269,6 +273,10 @@ namespace ImGui {
         }
         return false;
     }
+    void ImNeoSelectorStateMachine::ForceTransition(ImGuiNeoSelectorStateID stateID)
+    {
+        CurrentState = &States[stateID];
+    }
     bool ImNeoSelectorStateMachine::IsInState(ImGuiNeoSelectorStateID stateID) const
     {
         return CurrentState->ID == stateID;
@@ -343,7 +351,7 @@ namespace ImGui {
             for (uint32_t& keyframeIndex : selection)
             {          
                 keyframes[keyframeIndex].Frame += DiffFrame;
-                func(&keyframes[keyframeIndex], nullptr, nullptr);
+                func(&keyframes[keyframeIndex]);
                 // Keep frames sorted
                 ResortElement(keyframes, keyframeCount, keyframeIndex, func);      
             }

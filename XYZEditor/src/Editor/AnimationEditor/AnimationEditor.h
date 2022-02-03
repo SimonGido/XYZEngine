@@ -33,7 +33,9 @@ namespace XYZ {
 			
 			void handleEditKeyValues();
 			void handleAddKey(std::string_view path, std::string_view componentName, std::string_view valueName);
-			void keySelectionActions();
+			void handleRemoveKeys(std::string_view path, std::string_view componentName, std::string_view valueName, 
+				std::vector<ImNeoKeyFrame>& keyFrames, const ImVector<uint32_t>& selection
+			);
 			
 			bool checkFramesValid(std::string_view path, std::string_view componentName, std::string_view valueName, const std::vector<ImNeoKeyFrame>& neoKeyFrames);
 
@@ -50,12 +52,14 @@ namespace XYZ {
 			Property<T>* getProperty(const T& val, std::string_view path, std::string_view componentName, std::string_view valName);
 
 
-			template <typename Func>
-			void execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func);
+			template <typename Func, typename ...Args>
+			void execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func, Args&& ...args);
 
-			template <typename Func>
-			void execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func) const;
+			template <typename Func, typename ...Args>
+			void execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func, Args&& ...args) const;
 
+
+			SceneEntity findEntity(std::string_view path) const;
 		private:
 			glm::vec2 m_ButtonSize;
 
@@ -66,6 +70,7 @@ namespace XYZ {
 
 			AnimationClassMap  m_ClassMap;
 			EntityPropertyMap  m_EntityPropertyMap;
+			bool			   m_RebuildEntityMap = false;
 
 			bool		m_Playing;
 			float		m_SplitterWidth;
@@ -101,9 +106,8 @@ namespace XYZ {
 			return m_Animation->GetProperty<T>(path, componentName, valName);
 		}
 
-
-		template<typename Func>
-		inline void AnimationEditor::execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func)
+		template<typename Func, typename ...Args>
+		inline void AnimationEditor::execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func, Args && ...args)
 		{
 			Reflect::For([&](auto j) {
 				if (ReflectedClasses::sc_ClassNames[j.value] == componentName)
@@ -112,14 +116,15 @@ namespace XYZ {
 					Reflect::For([&](auto i) {
 						if (reflClass.sc_VariableNames[i.value] == valName)
 						{
-							func(j, i);
+							func(j, i, std::forward<Args>(args)...);
 						}
 					}, std::make_index_sequence<reflClass.sc_NumVariables>());
 				}
 			}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
 		}
-		template<typename Func>
-		inline void AnimationEditor::execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func) const
+
+		template<typename Func, typename ...Args>
+		inline void AnimationEditor::execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func, Args && ...args) const
 		{
 			Reflect::For([&](auto j) {
 				if (ReflectedClasses::sc_ClassNames[j.value] == componentName)
@@ -128,7 +133,7 @@ namespace XYZ {
 					Reflect::For([&](auto i) {
 						if (reflClass.sc_VariableNames[i.value] == valName)
 						{
-							func(j, i);
+							func(j, i, std::forward<Args>(args)... );
 						}
 					}, std::make_index_sequence<reflClass.sc_NumVariables>());
 				}

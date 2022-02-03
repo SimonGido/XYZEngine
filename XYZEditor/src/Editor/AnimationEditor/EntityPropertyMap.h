@@ -34,7 +34,7 @@ namespace XYZ {
 
 
 			template <typename T>
-			static void keyChangeFunc(const ImNeoKeyFrame* key, const ImNeoKeyFrame* origKey, const ImNeoKeyFrame* swapKey);
+			static void keyChangeFunc(const ImNeoKeyFrame* key);
 
 		private:
 			// Entity Name -> Component Name -> Properties
@@ -59,23 +59,10 @@ namespace XYZ {
 			}
 		}
 		template<typename T>
-		inline void EntityPropertyMap::keyChangeFunc(const ImNeoKeyFrame* key, const ImNeoKeyFrame* origKey, const ImNeoKeyFrame* swapKey)
+		inline void EntityPropertyMap::keyChangeFunc(const ImNeoKeyFrame* key)
 		{
-			// TODO: This is not the most elegant way to do this;
-			const bool resortHappend = origKey && swapKey;
-			if (resortHappend) // Resort happend, so it is necesary to swap two keys
-			{
-				KeyFrame<T>* userOrigKey = static_cast<KeyFrame<T>*>(origKey->UserData);
-				KeyFrame<T>* userSwapKey = static_cast<KeyFrame<T>*>(swapKey->UserData);
-				userOrigKey->Frame = swapKey->Frame;
-				userSwapKey->Frame = origKey->Frame;
-				std::swap(*userOrigKey, *userSwapKey);
-			}
-			else // The key was modified
-			{
-				KeyFrame<T>* userKey = static_cast<KeyFrame<T>*>(key->UserData);
-				userKey->Frame = key->Frame;
-			}
+			KeyFrame<T>* userKey = static_cast<KeyFrame<T>*>(key->UserData);
+			userKey->Frame = key->Frame;
 		}
 	}
 }

@@ -14,6 +14,8 @@ namespace XYZ {
 	bool Property<void*>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<void*>::Update");
+		XYZ_ASSERT(std::is_sorted(Keys.begin(), Keys.end()), "Key frames are not sorted");
+
 		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
@@ -33,6 +35,8 @@ namespace XYZ {
 	bool Property<uint32_t>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<uint32_t>::Update");
+		XYZ_ASSERT(std::is_sorted(Keys.begin(), Keys.end()), "Key frames are not sorted");
+
 		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
@@ -53,6 +57,8 @@ namespace XYZ {
 	bool Property<float>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<float>::Update");
+		XYZ_ASSERT(std::is_sorted(Keys.begin(), Keys.end()), "Key frames are not sorted");
+
 		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
@@ -74,6 +80,8 @@ namespace XYZ {
 	bool Property<glm::vec2>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<glm::vec2>::Update");
+		XYZ_ASSERT(std::is_sorted(Keys.begin(), Keys.end()), "Key frames are not sorted");
+
 		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
@@ -94,6 +102,8 @@ namespace XYZ {
 	bool Property<glm::vec3>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<glm::vec3>::Update");
+		XYZ_ASSERT(std::is_sorted(Keys.begin(), Keys.end()), "Key frames are not sorted");
+
 		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
@@ -115,6 +125,8 @@ namespace XYZ {
 	bool Property<glm::vec4>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<glm::vec4>::Update");
+		XYZ_ASSERT(std::is_sorted(Keys.begin(), Keys.end()), "Key frames are not sorted");
+
 		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
@@ -135,6 +147,8 @@ namespace XYZ {
 	bool Property<Ref<SubTexture>>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<Ref<SubTexture>>::Update");
+		XYZ_ASSERT(std::is_sorted(Keys.begin(), Keys.end()), "Key frames are not sorted");
+
 		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
@@ -153,6 +167,8 @@ namespace XYZ {
 	bool Property<Ref<Material>>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<Ref<Material>>::Update");
+		XYZ_ASSERT(std::is_sorted(Keys.begin(), Keys.end()), "Key frames are not sorted");
+
 		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
@@ -171,6 +187,7 @@ namespace XYZ {
 	bool Property<glm::mat4>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<glm::mat4>::Update");
+		XYZ_ASSERT(std::is_sorted(Keys.begin(), Keys.end()), "Key frames are not sorted");
 		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{
@@ -181,6 +198,7 @@ namespace XYZ {
 	bool Property<bool>::Update(uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<bool>::Update");
+		XYZ_ASSERT(std::is_sorted(Keys.begin(), Keys.end()), "Key frames are not sorted");
 		m_Value = m_GetPropertyReference(m_Entity);
 		if (isKeyInRange() && frame <= Length() && m_Value != nullptr)
 		{

@@ -84,18 +84,19 @@ struct ImNeoKeyFrame
     Key is nullptr if resort happend
     OrigKey and SwapKey are nullptr if only key frame change happend
 */
-using ImNeoKeyChangeFn = void(*)(const ImNeoKeyFrame* key, const ImNeoKeyFrame* origKey, const ImNeoKeyFrame* swapKey);
+using ImNeoKeyChangeFn = void(*)(const ImNeoKeyFrame* key);
 
 
 namespace ImGui {
-    IMGUI_API const ImVec4&           GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol idx);
-    IMGUI_API ImGuiNeoSequencerStyle& GetNeoSequencerStyle();
-    IMGUI_API ImVector<uint32_t>&     GetCurrentTimelineSelection();
+    IMGUI_API const ImVec4&             GetStyleNeoSequencerColorVec4(ImGuiNeoSequencerCol idx);
+    IMGUI_API ImGuiNeoSequencerStyle&   GetNeoSequencerStyle();
+    IMGUI_API const ImVector<uint32_t>& GetCurrentTimelineSelection();
    
     IMGUI_API bool                    IsMultiselecting();
     IMGUI_API bool                    IsEditingSelection();
     IMGUI_API bool                    IsCurrentTimelineSelected();
     IMGUI_API bool                    KeyFramesEdited();
+    IMGUI_API void                    ClearSelection();
 
     IMGUI_API ImGuiID                 GetCurrentTimelineID();
     IMGUI_API ImGuiID                 GetSelectedTimelineID();
@@ -107,8 +108,7 @@ namespace ImGui {
     IMGUI_API bool IsSequencerHovered();
     IMGUI_API bool IsSequencerClicked(ImGuiMouseButton button);
 
-    IMGUI_API void BeginNeo();
-    IMGUI_API void EndNeo();
+
 
     IMGUI_API bool BeginNeoSequencer(const char* id, uint32_t * frame, uint32_t * startFrame, uint32_t * endFrame, uint32_t* offsetFrame, float *zoom, const ImVec2& size = ImVec2(0, 0), ImGuiNeoSequencerFlags flags = ImGuiNeoSequencerFlags_None);
     IMGUI_API void EndNeoSequencer(); //Call only when BeginNeoSequencer() returns true!!

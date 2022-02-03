@@ -113,7 +113,6 @@ namespace XYZ {
 					{
 						const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 
-						keySelectionActions();
 						UI::SplitterV(&m_SplitterWidth, "##PropertySection", "##TimelineSection",
 							[&]() { propertySection(); },
 							[&]() { timelineSection(); });
@@ -319,10 +318,10 @@ namespace XYZ {
 
 		void AnimationEditor::timelineSection()
 		{		
-			ImGui::BeginNeo();
 			std::string selectedEntity, selectedComponent, selectedValue;
 			if (ImGui::BeginNeoSequencer("AnimationNeoSequencer", &m_CurrentFrame, &m_FrameMin, &m_FrameMax, &m_OffsetFrame, &m_Zoom))
 			{ 
+				bool deleted = false;
 				for (auto& [entityName, componentData] : m_EntityPropertyMap)
 				{
 					ImGui::PushID(entityName.c_str());
@@ -340,7 +339,14 @@ namespace XYZ {
 										{
 											XYZ_ASSERT(checkFramesValid(entityName, componentName, prop->GetValueName(), keyFrames), "");
 										}
-										if (ImGui::IsCurrentTimelineSelected())
+										else if (Input::IsKeyPressed(KeyCode::KEY_DELETE))
+										{
+											auto& selection = ImGui::GetCurrentTimelineSelection();
+											// Note: pointer passed to BeginNeoTimeline is no longer valid
+											handleRemoveKeys(entityName, componentName, prop->GetValueName(), keyFrames, selection);
+											deleted = true;
+										}
+										else if (ImGui::IsCurrentTimelineSelected())
 										{
 											selectedEntity = entityName;
 											selectedComponent = componentName;
@@ -356,15 +362,21 @@ namespace XYZ {
 					}
 					ImGui::PopID();
 				}
+				if (deleted)
+					ImGui::ClearSelection();
+
 				ImGui::EndNeoSequencer();
 			}
 
-			ImGui::EndNeo();
-
-
+	
 			if (ImGui::Button("Add Key") && !selectedEntity.empty())
 			{
 				handleAddKey(selectedEntity, selectedComponent, selectedValue);
+			}
+			if (m_RebuildEntityMap)
+			{
+				m_RebuildEntityMap = false;
+				m_EntityPropertyMap.BuildMap(m_Animation);
 			}
 		}
 
@@ -375,11 +387,7 @@ namespace XYZ {
 		
 		void AnimationEditor::handleAddKey(std::string_view path, std::string_view componentName, std::string_view valueName)
 		{
-			SceneEntity entity = m_Context->GetSceneEntity();
-			Entity childID = entity.GetComponent<Relationship>().FindByName(*entity.GetECS(), path);
-			if (childID)
-				entity = SceneEntity(childID, entity.GetScene());
-
+			SceneEntity entity = findEntity(path);
 			auto func = [&](auto classIndex, auto valueIndex) 
 			{
 				auto reflClass = ReflectedClasses::Get<classIndex.value>();
@@ -391,19 +399,30 @@ namespace XYZ {
 			execFor(path, componentName, valueName, func);
 		}
 
-
-		void AnimationEditor::keySelectionActions()
+		void AnimationEditor::handleRemoveKeys(std::string_view path, std::string_view componentName, std::string_view valueName, 
+			std::vector<ImNeoKeyFrame>& keyFrames, const ImVector<uint32_t>& selection)
 		{
-	
+			SceneEntity entity = findEntity(path);
+			auto func = [&](auto classIndex, auto valueIndex, uint32_t keyIndex)
+			{
+				auto reflClass = ReflectedClasses::Get<classIndex.value>();
+				auto& val = reflClass.Get<valueIndex.value>(entity.GetComponentFromReflection(reflClass));
+				auto property = getProperty(val, path, componentName, valueName);
+				auto& keys = property->Keys;
+				keys.erase(keys.begin() + static_cast<size_t>(keyIndex));
+			};
+
+			for (int32_t i = selection.size() - 1; i >= 0; --i)
+			{
+				execFor(path, componentName, valueName, func, selection[i]);
+			}
+			m_RebuildEntityMap = true;
 		}
 
 		bool AnimationEditor::checkFramesValid(std::string_view path, std::string_view componentName, std::string_view valueName, const std::vector<ImNeoKeyFrame>& neoKeyFrames)
 		{
 			bool result = true;
-			SceneEntity entity = m_Context->GetSceneEntity();
-			Entity childID = entity.GetComponent<Relationship>().FindByName(*entity.GetECS(), path);
-			if (childID)
-				entity = SceneEntity(childID, entity.GetScene());
+			SceneEntity entity = findEntity(path);
 			auto func = [&](auto classIndex, auto valueIndex)
 			{
 				auto reflClass = ReflectedClasses::Get<classIndex.value>();
@@ -416,10 +435,18 @@ namespace XYZ {
 			return result;
 		}
 
+		SceneEntity AnimationEditor::findEntity(std::string_view path) const
+		{
+			SceneEntity entity = m_Context->GetSceneEntity();
+			Entity childID = entity.GetComponent<Relationship>().FindByName(*entity.GetECS(), path);
+			if (childID)
+				entity = SceneEntity(childID, entity.GetScene());
+			return entity;
+		}
+
 		template <>
 		bool AnimationEditor::editKeyValueSpecialized<glm::mat4>(uint32_t frame, glm::mat4& value, const std::string& valName)
 		{
-
 			return false;
 		}
 		template <>
