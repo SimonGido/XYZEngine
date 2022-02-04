@@ -98,10 +98,10 @@ namespace XYZ {
 			m_Animation = m_Context->GetAnimation();
 			m_FrameMax = m_Animation->GetNumFrames();
 
-			m_ContextSelectedEntity = m_Context->GetSceneEntity();
-			m_ClassMap.BuildMap(m_ContextSelectedEntity);
+			SceneEntity contextEntity = m_Context->GetSceneEntity();
+			m_ClassMap.BuildMap(contextEntity);
 
-			auto ecs = m_ContextSelectedEntity.GetECS();
+			auto ecs = contextEntity.GetECS();
 			if (ecs)
 			{
 				ecs->AddOnConstruction<&AnimationEditor::onEntityChanged>(this);
@@ -129,14 +129,11 @@ namespace XYZ {
 			{
 				if (m_Context.Raw() && m_Scene.Raw())
 				{
-					if (m_ContextSelectedEntity.IsValid())
-					{
-						const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+					const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 
-						UI::SplitterV(&m_SplitterWidth, "##PropertySection", "##TimelineSection",
-							[&]() { propertySection(); },
-							[&]() { timelineSection(); });
-					}
+					UI::SplitterV(&m_SplitterWidth, "##PropertySection", "##TimelineSection",
+						[&]() { propertySection(); },
+						[&]() { timelineSection(); });
 				}
 			}
 			ImGui::End();
@@ -147,18 +144,8 @@ namespace XYZ {
 			const auto& tag = entity.GetComponent<SceneTagComponent>().Name;
 			const auto& rel = entity.GetComponent<Relationship>();
 
-			ImGuiTreeNodeFlags flags = (m_ContextSelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-			flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-
+			const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
 			const bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
-			if (ImGui::IsItemClicked())
-			{
-				if (m_ContextSelectedEntity != entity)
-				{
-					m_ContextSelectedEntity = entity;
-					onEntitySelected();
-				}
-			}
 
 			if (opened)
 			{
@@ -182,14 +169,6 @@ namespace XYZ {
 					if (prop.GetPath() == entity.GetComponent<SceneTagComponent>().Name)
 					{			
 						bool open = ImGui::TreeNodeEx(prop.GetValueName().c_str(), 0, prop.GetValueName().c_str());
-						if (ImGui::IsItemClicked())
-						{
-							if (m_ContextSelectedEntity != entity)
-							{
-								m_ContextSelectedEntity = entity;
-								onEntitySelected();
-							}
-						}
 						if (open)
 						{
 							auto val = prop.GetValue(currentFrame);
@@ -203,6 +182,7 @@ namespace XYZ {
 								else
 								{									
 									prop.AddKeyFrame({ val, currentFrame });
+									m_EntityPropertyMap.BuildMap(m_Animation);
 								}
 						
 							}
@@ -231,40 +211,16 @@ namespace XYZ {
 			}
 		}
 
-		void AnimationEditor::onEntitySelected()
-		{
-			//auto addToSequencer = [&](const auto& props) {
-			//	for (const auto& prop : props)
-			//	{
-			//		if (prop.GetPath() == m_ContextSelectedEntity.GetComponent<SceneTagComponent>().Name)
-			//		{
-			//			if (!m_Sequencer.ItemExists(prop.GetComponentName()))
-			//				m_Sequencer.AddItem(prop.GetComponentName());
-			//			
-			//			const int itemIndex = m_Sequencer.GetItemIndex(prop.GetComponentName());
-			//			m_Sequencer.AddLine(prop.GetComponentName(), prop.GetValueName());
-			//			for (const auto& keyFrame : prop.GetKeyFrames())
-			//				m_Sequencer.AddKey(itemIndex, static_cast<int>(keyFrame.Frame));
-			//		}
-			//	}
-			//};
-			//
-			//addToSequencer(m_Animation->GetProperties<glm::vec4>());
-			//addToSequencer(m_Animation->GetProperties<glm::vec3>());
-			//addToSequencer(m_Animation->GetProperties<glm::vec2>());
-			//addToSequencer(m_Animation->GetProperties<float>());
-			//addToSequencer(m_Animation->GetProperties<void*>());
-		}
-
 		void AnimationEditor::propertySection()
 		{
-			UI::ScopedStyleStack style(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 0.0f));
-			if (ButtonTransparent("Beginning", m_ButtonSize, ED::MediaBeginningIcon))
+			UI::ScopedStyleStack style(ImGuiStyleVar_ItemSpacing, ImVec2(1.0f, 0.0f));
+
+			if (ButtonTransparent("Beginning", m_ButtonSize + glm::vec2(10.0f, 0.0f), ED::MediaBeginningIcon))
 			{
 
 			}
 			ImGui::SameLine();
-			if (ButtonTransparent("PrevKeyFrame", m_ButtonSize, ED::MediaNextIcon, true))
+			if (ButtonTransparent("PrevKeyFrame", m_ButtonSize , ED::MediaNextIcon, true))
 			{
 
 			}
@@ -280,7 +236,7 @@ namespace XYZ {
 
 			}
 			ImGui::SameLine();
-			if (ButtonTransparent("End", m_ButtonSize, ED::MediaBeginningIcon, true))
+			if (ButtonTransparent("End", m_ButtonSize + glm::vec2(10.0f, 0.0f), ED::MediaBeginningIcon, true))
 			{
 
 			}
@@ -298,7 +254,7 @@ namespace XYZ {
 					m_ClassMap.Execute(selectedClass, selectedVariable, [&](auto classIndex, auto variableIndex) 
 					{
 						auto reflClass = ReflectedClasses::Get<classIndex.value>();
-						auto& val = reflClass.Get<variableIndex.value>(m_ContextSelectedEntity.GetComponentFromReflection(reflClass));
+						auto& val = reflClass.Get<variableIndex.value>(findEntity(selectedEntity).GetComponentFromReflection(reflClass));
 						addReflectedProperty<variableIndex.value>(reflClass, val, selectedEntity, selectedVariable);
 						m_Context->UpdateAnimationEntities();
 						m_EntityPropertyMap.BuildMap(m_Animation);

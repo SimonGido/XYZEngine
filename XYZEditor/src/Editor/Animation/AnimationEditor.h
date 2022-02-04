@@ -28,7 +28,6 @@ namespace XYZ {
 
 
 			void onEntityChanged(ECSManager& ecs, Entity entity);
-			void onEntitySelected();
 			void propertySection();
 			void timelineSection();
 			
@@ -68,11 +67,8 @@ namespace XYZ {
 			Ref<Animation>	   m_Animation;
 			Ref<Scene>		   m_Scene;
 
-			SceneEntity		   m_ContextSelectedEntity;
-
 			AnimationClassMap    m_ClassMap;
 			EntityPropertyMap    m_EntityPropertyMap;
-			std::vector<uint8_t> m_Open;
 
 			bool		m_Playing;
 			float		m_SplitterWidth;

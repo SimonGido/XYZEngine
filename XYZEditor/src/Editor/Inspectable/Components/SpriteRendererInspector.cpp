@@ -33,7 +33,7 @@ namespace XYZ {
 				UI::TableRow("Color",
 					[]() { ImGui::Text("Color"); },
 					[&]() { UI::ScopedTableColumnAutoWidth scoped(4, lineHeight);
-							UI::Vec4Control({ "R", "G", "B", "A"}, component.Color); }
+							UI::Vec4Control({ "R", "G", "B", "A"}, component.Color, 1.0f); }
 				);
 
 				//UI::Utils::SetPathBuffer(component.Material->FileName);
