@@ -241,7 +241,6 @@ namespace XYZ {
 
 			}
 
-
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 			{
 				ImGui::OpenPopup("AddProperty");
