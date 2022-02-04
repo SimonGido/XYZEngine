@@ -101,7 +101,7 @@ namespace XYZ {
 		Delegate<T*(SceneEntity& entity)>  m_GetPropertyReference;	
 		uint16_t						   m_ValueIndex  = UINT16_MAX;
 		uint16_t						   m_ComponentID = UINT16_MAX;
-		size_t							   m_CurrentKey  = MAXSIZE_T;
+		size_t							   m_CurrentKey  = MAXSIZE_T - 1;
 	};
 
 	template<typename T>

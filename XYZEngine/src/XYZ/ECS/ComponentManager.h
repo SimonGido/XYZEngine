@@ -7,6 +7,7 @@
 
 namespace XYZ {
 
+	class ECSManager;
 	class ComponentManager
 	{
 	public:
@@ -36,10 +37,10 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		void CreateStorage() const
+		void CreateStorage(ECSManager& ecs) const
 		{
 			registerComponentType<T>();
-			createStorage<T>();
+			createStorage<T>(ecs);
 		}	
 
 		template <typename T>
@@ -66,14 +67,12 @@ namespace XYZ {
 		template <typename T>
 		ComponentStorage<T>& GetStorage()
 		{
-			CreateStorage<T>();
 			return *static_cast<ComponentStorage<T>*>(m_Storages[static_cast<size_t>(Component<T>::ID())]);
 		}
 
 		template <typename T>
 		const ComponentStorage<T>& GetStorage() const
 		{
-			CreateStorage<T>();
 			return *static_cast<ComponentStorage<T>*>(m_Storages[static_cast<size_t>(Component<T>::ID())]);
 		}
 
@@ -102,7 +101,7 @@ namespace XYZ {
 		static uint16_t GetNextComponentID() { return s_NextComponentTypeID; }
 	private:
 		template <typename T>
-		void createStorage() const
+		void createStorage(ECSManager& ecs) const
 		{
 			const size_t oldSize = m_Storages.size();
 			const size_t id = (size_t)Component<T>::ID();
@@ -116,7 +115,7 @@ namespace XYZ {
 			for (size_t i = oldSize; i < m_Storages.size(); ++i)
 				m_Storages[i] = nullptr;		
 			
-			m_Storages[id] = new ComponentStorage<T>();
+			m_Storages[id] = new ComponentStorage<T>(ecs);
 		}
 
 		template <typename T>

@@ -421,12 +421,12 @@ namespace XYZ {
 		return { m_SelectedEntity, this };
 	}
 
-	void Scene::onScriptComponentConstruct(Entity entity)
+	void Scene::onScriptComponentConstruct(ECSManager& ecs, Entity entity)
 	{
 		ScriptEngine::CreateScriptEntityInstance({ entity, this });
 	}
 
-	void Scene::onScriptComponentDestruct(Entity entity)
+	void Scene::onScriptComponentDestruct(ECSManager& ecs, Entity entity)
 	{
 		ScriptEngine::DestroyScriptEntityInstance({ entity, this });
 	}

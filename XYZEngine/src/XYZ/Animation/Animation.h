@@ -26,6 +26,7 @@ namespace XYZ {
 		
 
 		void Update(Timestep ts);
+		void Reset();
 		void UpdateLength();
 		
 		void SetFrequency(uint32_t framesPerSecond);
@@ -96,7 +97,8 @@ namespace XYZ {
 	{
 		Property<ValueType> prop = Property<ValueType>(std::string(path));
 		prop.Init<ComponentType, valIndex>();
-		
+		prop.SetSceneEntity(m_Entity);
+
 		auto props = getProperties<ValueType>();
 		if (props)
 			props->push_back(prop);

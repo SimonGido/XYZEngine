@@ -8,7 +8,7 @@ namespace XYZ {
 	class ECSManager
 	{
 	public:
-		ECSManager() = default;
+		ECSManager();
 		ECSManager(const ECSManager& other);
 		ECSManager(ECSManager&& other) noexcept;
 
@@ -107,12 +107,14 @@ namespace XYZ {
 		void executeOnDestruction(Entity entity);
 
 	private:
-		ComponentManager m_ComponentManager;
-		EntityManager	 m_EntityManager;
+		ComponentManager	m_ComponentManager;
+		EntityManager		m_EntityManager;
+
+		// Little hack to allow us pass mutable reference to CreateStorage in const functions
+		mutable ECSManager* m_This;
 		
-		
-		std::vector<Delegate<void(Entity)>> m_OnConstruction;
-		std::vector<Delegate<void(Entity)>> m_OnDestruction;
+		std::vector<Delegate<void(ECSManager&, Entity)>> m_OnConstruction;
+		std::vector<Delegate<void(ECSManager&, Entity)>> m_OnDestruction;
 
 		friend class ECSSerializer;
 	};
@@ -122,7 +124,8 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 		XYZ_ASSERT(!HasComponent<T>(entity), "Entity already contains component");
-
+		
+		m_ComponentManager.CreateStorage<T>(*m_This);
 		auto& result = m_ComponentManager.EmplaceComponent<T>(entity, std::forward<Args>(args)...);
 		executeOnConstruction(entity);
 		return result;
@@ -134,6 +137,7 @@ namespace XYZ {
 		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
 		XYZ_ASSERT(!HasComponent<T>(entity), "Entity already contains component");
 
+		m_ComponentManager.CreateStorage<T>(*m_This);
 		auto& result = m_ComponentManager.AddComponent<T>(entity, component);
 		executeOnConstruction(entity);
 		return result;
@@ -169,22 +173,24 @@ namespace XYZ {
 	template<typename T>
 	inline bool ECSManager::HasComponent(Entity entity) const
 	{
-		XYZ_ASSERT(IsValid(entity), "Entity is invalid");
+		XYZ_ASSERT(IsValid(entity), "Entity is invalid");	
 		return GetStorage<T>().HasEntity(entity);
 	}
 	template<typename ...Args>
 	inline void ECSManager::CreateStorage()
 	{
-		(m_ComponentManager.CreateStorage<Args>(), ...);
+		(m_ComponentManager.CreateStorage<Args>(*m_This), ...);
 	}
 	template<typename T>
 	inline ComponentStorage<T>& ECSManager::GetStorage()
 	{
+		m_ComponentManager.CreateStorage<T>(*m_This);
 		return m_ComponentManager.GetStorage<T>();
 	}
 	template<typename T>
 	inline const ComponentStorage<T>& ECSManager::GetStorage() const
 	{
+		m_ComponentManager.CreateStorage<T>(*m_This);
 		return m_ComponentManager.GetStorage<T>();
 	}
 	template<typename ...Args>
@@ -219,7 +225,7 @@ namespace XYZ {
 	template<auto Callable>
 	inline void ECSManager::AddOnConstruction()
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>();
 		m_OnConstruction.push_back(deleg);
 	}
@@ -227,7 +233,7 @@ namespace XYZ {
 	template<auto Callable, typename Type>
 	inline void ECSManager::AddOnConstruction(Type* instance)
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>(instance);
 		m_OnConstruction.push_back(deleg);
 	}
@@ -235,7 +241,7 @@ namespace XYZ {
 	template<auto Callable>
 	inline void ECSManager::RemoveOnConstruction()
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>();
 		std::remove(m_OnConstruction.begin(), m_OnConstruction.end(), deleg);
 	}
@@ -243,7 +249,7 @@ namespace XYZ {
 	template<auto Callable, typename Type>
 	inline void ECSManager::RemoveOnConstruction(Type* instance)
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>(instance);
 		std::remove(m_OnConstruction.begin(), m_OnConstruction.end(), deleg);
 	}
@@ -251,7 +257,7 @@ namespace XYZ {
 	template<auto Callable>
 	inline void ECSManager::AddOnDestruction()
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>();
 		m_OnDestruction.push_back(deleg);
 	}
@@ -259,7 +265,7 @@ namespace XYZ {
 	template<auto Callable, typename Type>
 	inline void ECSManager::AddOnDestruction(Type* instance)
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>(instance);
 		m_OnDestruction.push_back(deleg);
 	}
@@ -267,7 +273,7 @@ namespace XYZ {
 	template<auto Callable>
 	inline void ECSManager::RemoveOnDestruction()
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>();
 		std::remove(m_OnDestruction.begin(), m_OnDestruction.end(), deleg);
 	}
@@ -275,7 +281,7 @@ namespace XYZ {
 	template<auto Callable, typename Type>
 	inline void ECSManager::RemoveOnDestruction(Type* instance)
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>(instance);
 		std::remove(m_OnDestruction.begin(), m_OnDestruction.end(), deleg);
 	}

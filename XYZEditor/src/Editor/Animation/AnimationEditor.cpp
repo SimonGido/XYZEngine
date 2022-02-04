@@ -83,10 +83,30 @@ namespace XYZ {
 		}
 		void AnimationEditor::SetContext(const Ref<Animator>& context)
 		{
+			if (m_Context.Raw())
+			{
+				SceneEntity contextEntity = m_Context->GetSceneEntity();
+				auto ecs = contextEntity.GetECS();
+				if (ecs)
+				{
+					ecs->RemoveOnConstruction<&AnimationEditor::onEntityChanged>(this);
+					ecs->RemoveOnDestruction<&AnimationEditor::onEntityChanged>(this);
+				}
+			}
+
 			m_Context = context;
 			m_Animation = m_Context->GetAnimation();
-			m_AnimSelectedEntity = m_Context->GetSceneEntity();
-			m_ClassMap.BuildMap(m_AnimSelectedEntity);
+			m_FrameMax = m_Animation->GetNumFrames();
+
+			m_ContextSelectedEntity = m_Context->GetSceneEntity();
+			m_ClassMap.BuildMap(m_ContextSelectedEntity);
+
+			auto ecs = m_ContextSelectedEntity.GetECS();
+			if (ecs)
+			{
+				ecs->AddOnConstruction<&AnimationEditor::onEntityChanged>(this);
+				ecs->AddOnDestruction<&AnimationEditor::onEntityChanged>(this);
+			}
 		}
 		void AnimationEditor::SetSceneContext(const Ref<Scene>& scene)
 		{
@@ -98,7 +118,7 @@ namespace XYZ {
 			{
 				m_Animation->Update(ts);
 				m_CurrentFrame = static_cast<int>(m_Animation->GetCurrentFrame());
-			
+				
 				handleEditKeyValues();
 			}
 		}
@@ -109,7 +129,7 @@ namespace XYZ {
 			{
 				if (m_Context.Raw() && m_Scene.Raw())
 				{
-					if (m_AnimSelectedEntity.IsValid())
+					if (m_ContextSelectedEntity.IsValid())
 					{
 						const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
 
@@ -127,15 +147,15 @@ namespace XYZ {
 			const auto& tag = entity.GetComponent<SceneTagComponent>().Name;
 			const auto& rel = entity.GetComponent<Relationship>();
 
-			ImGuiTreeNodeFlags flags = (m_AnimSelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+			ImGuiTreeNodeFlags flags = (m_ContextSelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 			flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
 			const bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
 			if (ImGui::IsItemClicked())
 			{
-				if (m_AnimSelectedEntity != entity)
+				if (m_ContextSelectedEntity != entity)
 				{
-					m_AnimSelectedEntity = entity;
+					m_ContextSelectedEntity = entity;
 					onEntitySelected();
 				}
 			}
@@ -164,9 +184,9 @@ namespace XYZ {
 						bool open = ImGui::TreeNodeEx(prop.GetValueName().c_str(), 0, prop.GetValueName().c_str());
 						if (ImGui::IsItemClicked())
 						{
-							if (m_AnimSelectedEntity != entity)
+							if (m_ContextSelectedEntity != entity)
 							{
-								m_AnimSelectedEntity = entity;
+								m_ContextSelectedEntity = entity;
 								onEntitySelected();
 							}
 						}
@@ -199,12 +219,24 @@ namespace XYZ {
 			//drawProperties(m_Animation->GetProperties<void*>());
 		}
 
+		void AnimationEditor::onEntityChanged(ECSManager& ecs, Entity entity)
+		{
+			if (m_Context.Raw())
+			{
+				SceneEntity contextEntity = m_Context->GetSceneEntity();
+				if (entity = contextEntity)
+				{
+					m_ClassMap.BuildMap(contextEntity);
+				}
+			}
+		}
+
 		void AnimationEditor::onEntitySelected()
 		{
 			//auto addToSequencer = [&](const auto& props) {
 			//	for (const auto& prop : props)
 			//	{
-			//		if (prop.GetPath() == m_AnimSelectedEntity.GetComponent<SceneTagComponent>().Name)
+			//		if (prop.GetPath() == m_ContextSelectedEntity.GetComponent<SceneTagComponent>().Name)
 			//		{
 			//			if (!m_Sequencer.ItemExists(prop.GetComponentName()))
 			//				m_Sequencer.AddItem(prop.GetComponentName());
@@ -240,6 +272,7 @@ namespace XYZ {
 			if (ButtonTransparent("Play", m_ButtonSize, ED::MediaPlayIcon))
 			{
 				m_Playing = !m_Playing;
+				m_Animation->Reset();
 			}
 			ImGui::SameLine();
 			if (ButtonTransparent("NextKeyFrame", m_ButtonSize, ED::MediaNextIcon))
@@ -265,7 +298,7 @@ namespace XYZ {
 					m_ClassMap.Execute(selectedClass, selectedVariable, [&](auto classIndex, auto variableIndex) 
 					{
 						auto reflClass = ReflectedClasses::Get<classIndex.value>();
-						auto& val = reflClass.Get<variableIndex.value>(m_AnimSelectedEntity.GetComponentFromReflection(reflClass));
+						auto& val = reflClass.Get<variableIndex.value>(m_ContextSelectedEntity.GetComponentFromReflection(reflClass));
 						addReflectedProperty<variableIndex.value>(reflClass, val, selectedEntity, selectedVariable);
 						m_Context->UpdateAnimationEntities();
 						m_EntityPropertyMap.BuildMap(m_Animation);
@@ -318,65 +351,70 @@ namespace XYZ {
 
 		void AnimationEditor::timelineSection()
 		{		
-			std::string selectedEntity, selectedComponent, selectedValue;
-			if (ImGui::BeginNeoSequencer("AnimationNeoSequencer", &m_CurrentFrame, &m_FrameMin, &m_FrameMax, &m_OffsetFrame, &m_Zoom))
-			{ 
-				bool deleted = false;
-				for (auto& [entityName, componentData] : m_EntityPropertyMap)
+			bool rebuildMap = false;
+			if (!m_EntityPropertyMap.Empty())
+			{
+				std::string selectedEntity, selectedComponent, selectedValue;
+				if (ImGui::BeginNeoSequencer("AnimationNeoSequencer", &m_CurrentFrame, &m_FrameMin, &m_FrameMax, &m_OffsetFrame, &m_Zoom))
 				{
-					ImGui::PushID(entityName.c_str());
-					if (ImGui::BeginNeoGroup(entityName.c_str()))
+					bool deleted = false;
+
+					for (auto& [entityName, entityData] : m_EntityPropertyMap)
 					{
-						for (auto& [componentName, propertyData] : componentData)
+						ImGui::PushID(entityName.c_str());
+						if (ImGui::BeginNeoGroup(entityName.c_str(), &entityData.Open))
 						{
-							if (ImGui::BeginNeoGroup(componentName.c_str()))
+							for (auto& [componentName, propertyData] : entityData.Data)
 							{
-								for (auto& [prop, keyFrames, keyChangeFn] : propertyData)
+								if (ImGui::BeginNeoGroup(componentName.c_str(), &propertyData.Open))
 								{
-									if (ImGui::BeginNeoTimeline(prop->GetValueName().c_str(), keyFrames.data(), keyFrames.size(), keyChangeFn))
+									for (auto& [prop, keyFrames, keyChangeFn, open] : propertyData.Properties)
 									{
-										if (ImGui::IsEditingSelection())
+										if (ImGui::BeginNeoTimeline(prop->GetValueName().c_str(), keyFrames.data(), keyFrames.size(), keyChangeFn, &open))
 										{
-											XYZ_ASSERT(checkFramesValid(entityName, componentName, prop->GetValueName(), keyFrames), "");
+											if (ImGui::IsEditingSelection())
+											{
+												XYZ_ASSERT(checkFramesValid(entityName, componentName, prop->GetValueName(), keyFrames), "");
+											}
+											else if (Input::IsKeyPressed(KeyCode::KEY_DELETE))
+											{
+												auto& selection = ImGui::GetCurrentTimelineSelection();
+												// Note: pointer passed to BeginNeoTimeline is no longer valid
+												handleRemoveKeys(entityName, componentName, prop->GetValueName(), keyFrames, selection);
+												deleted = true;
+												rebuildMap = true;
+											}
+											else if (ImGui::IsCurrentTimelineSelected())
+											{
+												selectedEntity = entityName;
+												selectedComponent = componentName;
+												selectedValue = prop->GetValueName();
+											}
+											ImGui::EndNeoTimeLine();
 										}
-										else if (Input::IsKeyPressed(KeyCode::KEY_DELETE))
-										{
-											auto& selection = ImGui::GetCurrentTimelineSelection();
-											// Note: pointer passed to BeginNeoTimeline is no longer valid
-											handleRemoveKeys(entityName, componentName, prop->GetValueName(), keyFrames, selection);
-											deleted = true;
-										}
-										else if (ImGui::IsCurrentTimelineSelected())
-										{
-											selectedEntity = entityName;
-											selectedComponent = componentName;
-											selectedValue = prop->GetValueName();
-										}
-										ImGui::EndNeoTimeLine();
 									}
+									ImGui::EndNeoGroup();
 								}
-								ImGui::EndNeoGroup();
 							}
+							ImGui::EndNeoGroup();
 						}
-						ImGui::EndNeoGroup();
+						ImGui::PopID();
 					}
-					ImGui::PopID();
+					if (deleted)
+						ImGui::ClearSelection();
+
+					ImGui::EndNeoSequencer();
 				}
-				if (deleted)
-					ImGui::ClearSelection();
 
-				ImGui::EndNeoSequencer();
-			}
 
-	
-			if (ImGui::Button("Add Key") && !selectedEntity.empty())
-			{
-				handleAddKey(selectedEntity, selectedComponent, selectedValue);
-			}
-			if (m_RebuildEntityMap)
-			{
-				m_RebuildEntityMap = false;
-				m_EntityPropertyMap.BuildMap(m_Animation);
+				if (ImGui::Button("Add Key") && !selectedEntity.empty())
+				{
+					handleAddKey(selectedEntity, selectedComponent, selectedValue);
+				}
+				if (rebuildMap)
+				{
+					m_EntityPropertyMap.BuildMap(m_Animation);
+				}
 			}
 		}
 
@@ -416,7 +454,6 @@ namespace XYZ {
 			{
 				execFor(path, componentName, valueName, func, selection[i]);
 			}
-			m_RebuildEntityMap = true;
 		}
 
 		bool AnimationEditor::checkFramesValid(std::string_view path, std::string_view componentName, std::string_view valueName, const std::vector<ImNeoKeyFrame>& neoKeyFrames)

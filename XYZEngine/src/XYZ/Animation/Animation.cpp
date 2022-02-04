@@ -27,9 +27,7 @@ namespace XYZ {
 		{
 			if (!m_Repeat)
 				return;
-			resetProperties();
-			m_CurrentTime = 0.0f;
-			m_CurrentFrame = 0;
+			Reset();
 		}
 		
 		updateProperties(m_CurrentFrame);
@@ -37,9 +35,15 @@ namespace XYZ {
 		m_CurrentFrame = static_cast<uint32_t>(std::floor(m_CurrentTime / m_FrameLength));
 	}
 
+	void Animation::Reset()
+	{
+		resetProperties();
+		m_CurrentTime = 0.0f;
+		m_CurrentFrame = 0;
+	}
+
 	void Animation::UpdateLength()
 	{
-
 	}
 
 	void Animation::setSceneEntity(const SceneEntity& entity)

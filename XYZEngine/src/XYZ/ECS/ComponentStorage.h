@@ -6,10 +6,11 @@
 
 namespace XYZ {
 
+	class ECSManager;
 	class IComponentStorage
 	{
 	public:
-		IComponentStorage() = default;
+		IComponentStorage(ECSManager& ecs);
 		IComponentStorage(const IComponentStorage& other);
 		IComponentStorage(IComponentStorage&& other) noexcept;
 
@@ -58,15 +59,16 @@ namespace XYZ {
 		void RemoveOnDestruction(Type* instance);
 	
 	protected:
-		std::vector<Delegate<void(Entity)>> m_OnConstruction;
-		std::vector<Delegate<void(Entity)>> m_OnDestruction;
+		std::vector<Delegate<void(ECSManager&, Entity)>> m_OnConstruction;
+		std::vector<Delegate<void(ECSManager&, Entity)>> m_OnDestruction;
+		ECSManager*										 m_ECS;
 	};
 
 	template <typename T>
 	class ComponentStorage : public IComponentStorage
 	{
 	public:
-		ComponentStorage() = default;
+		ComponentStorage(ECSManager& ecs);
 		ComponentStorage(const ComponentStorage<T>& other);		
 		ComponentStorage(ComponentStorage<T>&& other) noexcept;
 			
@@ -112,6 +114,13 @@ namespace XYZ {
 	};
 
 	
+
+	template<typename T>
+	inline ComponentStorage<T>::ComponentStorage(ECSManager& ecs)
+		:
+		IComponentStorage(ecs)
+	{
+	}
 
 	template<typename T>
 	inline ComponentStorage<T>::ComponentStorage(const ComponentStorage<T>& other)
@@ -202,7 +211,7 @@ namespace XYZ {
 	{
 		m_Data.Emplace(entity, std::forward<Args>(args)...);
 		for (auto& callback : m_OnConstruction)
-			callback(entity);
+			callback(*m_ECS, entity);
 		return m_Data.Back();
 	}
 
@@ -211,7 +220,7 @@ namespace XYZ {
 	{
 		m_Data.Push(entity, component);
 		for (auto& callback : m_OnConstruction)
-			callback(entity);
+			callback(*m_ECS, entity);
 		return m_Data.Back();
 	}
 
@@ -220,7 +229,7 @@ namespace XYZ {
 	{
 		m_Data.Erase(entity);
 		for (auto& callback : m_OnDestruction)
-			callback(entity);
+			callback(*m_ECS, entity);
 	}
 
 	template<typename T>
@@ -265,7 +274,7 @@ namespace XYZ {
 	template<auto Callable>
 	inline void IComponentStorage::AddOnConstruction()
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>();
 		m_OnConstruction.push_back(deleg);
 	}
@@ -273,7 +282,7 @@ namespace XYZ {
 	template<auto Callable, typename Type>
 	inline void IComponentStorage::AddOnConstruction(Type* instance)
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>(instance);
 		m_OnConstruction.push_back(deleg);
 	}
@@ -281,7 +290,7 @@ namespace XYZ {
 	template<auto Callable>
 	inline void IComponentStorage::RemoveOnConstruction()
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>();
 		std::remove(m_OnConstruction.begin(), m_OnConstruction.end(), deleg);
 	}
@@ -289,7 +298,7 @@ namespace XYZ {
 	template<auto Callable, typename Type>
 	inline void IComponentStorage::RemoveOnConstruction(Type* instance)
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>(instance);
 		std::remove(m_OnConstruction.begin(), m_OnConstruction.end(), deleg);
 	}
@@ -297,7 +306,7 @@ namespace XYZ {
 	template<auto Callable>
 	inline void IComponentStorage::AddOnDestruction()
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>();
 		m_OnDestruction.push_back(deleg);
 	}
@@ -305,7 +314,7 @@ namespace XYZ {
 	template<auto Callable, typename Type>
 	inline void IComponentStorage::AddOnDestruction(Type* instance)
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>(instance);
 		m_OnDestruction.push_back(deleg);
 	}
@@ -313,7 +322,7 @@ namespace XYZ {
 	template<auto Callable>
 	inline void IComponentStorage::RemoveOnDestruction()
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>();
 		std::remove(m_OnDestruction.begin(), m_OnDestruction.end(), deleg);
 	}
@@ -321,7 +330,7 @@ namespace XYZ {
 	template<auto Callable, typename Type>
 	inline void IComponentStorage::RemoveOnDestruction(Type* instance)
 	{
-		Delegate<void(Entity)> deleg;
+		Delegate<void(ECSManager&, Entity)> deleg;
 		deleg.Connect<Callable>(instance);
 		std::remove(m_OnDestruction.begin(), m_OnDestruction.end(), deleg);
 	}

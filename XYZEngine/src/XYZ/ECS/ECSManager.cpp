@@ -3,6 +3,10 @@
 
 
 namespace XYZ {
+	ECSManager::ECSManager()
+	{
+		m_This = this;
+	}
 	ECSManager::ECSManager(const ECSManager& other)
 		:
 		m_ComponentManager(other.m_ComponentManager),
@@ -10,6 +14,7 @@ namespace XYZ {
 		m_OnConstruction(other.m_OnConstruction),
 		m_OnDestruction(other.m_OnDestruction)
 	{
+		m_This = this;
 	}
 	ECSManager::ECSManager(ECSManager&& other) noexcept
 		:
@@ -18,6 +23,7 @@ namespace XYZ {
 		m_OnConstruction(std::move(other.m_OnConstruction)),
 		m_OnDestruction(std::move(other.m_OnDestruction))
 	{
+		m_This = this;
 	}
 	ECSManager& ECSManager::operator=(const ECSManager& other)
 	{
@@ -92,11 +98,11 @@ namespace XYZ {
 	void ECSManager::executeOnConstruction(Entity entity)
 	{
 		for (auto& callback : m_OnConstruction)
-			callback(entity);
+			callback(*this, entity);
 	}
 	void ECSManager::executeOnDestruction(Entity entity)
 	{
 		for (auto& callback : m_OnDestruction)
-			callback(entity);
+			callback(*this, entity);
 	}
 }

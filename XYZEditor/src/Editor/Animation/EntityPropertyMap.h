@@ -13,15 +13,30 @@ namespace XYZ {
 				IProperty*				   Property;
 				std::vector<ImNeoKeyFrame> KeyFrames;
 				ImNeoKeyChangeFn		   KeyChangeFunc;
+				bool					   Open = true;
 			};
-			using DataMap = std::unordered_map<std::string, 
-							std::unordered_map<std::string, std::vector<PropertyData>>>;
+
+			struct ComponentData
+			{
+				std::vector<PropertyData> Properties;
+				bool Open = true;
+			};
+
+			struct EntityData
+			{
+				std::unordered_map<std::string, ComponentData> Data;
+				bool Open = true;
+			};
+
+			using DataMap = std::unordered_map<std::string, EntityData>;
 			
 			using iterator = DataMap::iterator;
 			using const_iterator = DataMap::const_iterator;
-
+		public:
 
 			void BuildMap(Ref<Animation>& anim);
+			void Clear()	   { m_PropertyData.clear(); }
+			bool Empty() const { return m_PropertyData.empty(); }
 
 			iterator	    begin()		   { return m_PropertyData.begin(); }
 			iterator	    end()		   { return m_PropertyData.end(); }
@@ -47,10 +62,10 @@ namespace XYZ {
 			for (auto& prop : props)
 			{
 				auto& entityData = m_PropertyData[prop.GetPath()];
-				auto& componentData = entityData[prop.GetComponentName()];
+				auto& componentData = entityData.Data[prop.GetComponentName()];
 
-				componentData.push_back({ &prop, {}, &keyChangeFunc<T> });
-				auto& keyFrames = componentData.back().KeyFrames;
+				componentData.Properties.push_back({ &prop, {}, &keyChangeFunc<T>, true });
+				auto& keyFrames = componentData.Properties.back().KeyFrames;
 
 				for (auto& keyFrame : prop.Keys)
 				{

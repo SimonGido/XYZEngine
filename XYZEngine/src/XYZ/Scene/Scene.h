@@ -70,8 +70,8 @@ namespace XYZ {
 
         static AssetType GetStaticType() { return AssetType::Scene; }
     private:
-        void onScriptComponentConstruct(Entity entity);
-        void onScriptComponentDestruct(Entity entity);
+        void onScriptComponentConstruct(ECSManager& ecs, Entity entity);
+        void onScriptComponentDestruct(ECSManager& ecs, Entity entity);
 
         void updateHierarchy();
         void setupPhysics();

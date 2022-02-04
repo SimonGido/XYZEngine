@@ -177,11 +177,19 @@ namespace ImGui {
         auto drawList = ImGui::GetWindowDrawList();
         const float arrowWidth = drawList->_Data->FontSize;
         const ImVec2 arrowSize = { arrowWidth, arrowWidth };
-        const ImRect arrowBB = {
-            context.ValuesCursor,
-            context.ValuesCursor + arrowSize
+        
+        const ImVec2 arrowBBMin = ImVec2{
+            context.ValuesCursor.x + (frameData.CurrentTimelineDepth * style.DepthItemSpacing),
+            context.ValuesCursor.y
         };
-        const ImVec2 groupBBMin = { context.ValuesCursor + ImVec2{arrowSize.x, 0.0f} };
+        const ImRect arrowBB = {
+            arrowBBMin,
+            arrowBBMin + arrowSize
+        };
+        const ImVec2 groupBBMin = ImVec2{ 
+            arrowBB.Min.x + arrowSize.x,
+            context.ValuesCursor.y
+        };
         const ImRect groupBB = {
                groupBBMin,
                groupBBMin + labelSize
@@ -214,9 +222,15 @@ namespace ImGui {
         auto& context = sequencerData[frameData.CurrentSequencer];
         ImGuiWindow* window = GetCurrentWindow();
 
+
+
+        const ImVec2 groupBBMin = ImVec2{
+           context.ValuesCursor.x + (frameData.CurrentTimelineDepth * style.DepthItemSpacing),
+           context.ValuesCursor.y
+        };
         const ImRect groupBB = {
-               context.ValuesCursor,
-               context.ValuesCursor + labelSize
+               groupBBMin,
+               groupBBMin + labelSize
         };
 
         const auto addGroupRes = ItemAdd(groupBB, id);
