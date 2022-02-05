@@ -37,6 +37,7 @@ namespace XYZ {
 			switch (format)
 			{
 			case ImageFormat::RGBA:    return width * height * 4;
+			case ImageFormat::RGBA16F: return width * height * 4 * 2;
 			case ImageFormat::RGBA32F: return width * height * 4 * sizeof(float);
 			}
 			XYZ_ASSERT(false, "");

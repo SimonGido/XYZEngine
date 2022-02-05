@@ -573,9 +573,9 @@ namespace XYZ {
 			for (uint32_t i = 0; i < m_TextureSlots.size(); ++i)
 			{
 				if (m_TextureSlots[i].Raw())
-					m_QuadMaterial->Set("u_Texture", m_TextureSlots[i]->GetImage(), i);
+					m_QuadMaterial->SetImageArray("u_Texture", m_TextureSlots[i]->GetImage(), i);
 				else
-					m_QuadMaterial->Set("u_Texture", m_WhiteTexture->GetImage(), i);
+					m_QuadMaterial->SetImageArray("u_Texture", m_WhiteTexture->GetImage(), i);
 			}
 			Renderer::BindPipeline(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_UniformBufferSet, nullptr, m_QuadMaterial);
 			Renderer::RenderGeometry(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_QuadMaterial, m_QuadBuffer.VertexBuffer, m_QuadBuffer.IndexBuffer, glm::mat4(1.0f), m_QuadBuffer.IndexCount);

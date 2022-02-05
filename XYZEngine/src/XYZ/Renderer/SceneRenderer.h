@@ -5,6 +5,7 @@
 #include "Mesh.h"
 #include "RenderCommandBuffer.h"
 #include "StorageBufferSet.h"
+#include "PipelineCompute.h"
 
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"
@@ -127,8 +128,6 @@ namespace XYZ {
 		void createCompositePass();
 		void createLightPass();
 
-		void createCompositePipeline();
-		void createLightPipeline();
 		void updateViewportSize();
 	private:
 		struct PointLight
@@ -151,7 +150,6 @@ namespace XYZ {
 			float Alignment[2];
 		};
 
-
 		struct CameraData
 		{
 			glm::mat4 ViewProjectionMatrix;
@@ -166,6 +164,13 @@ namespace XYZ {
 			
 			void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, const BufferLayout& layout, PrimitiveTopology topology = PrimitiveTopology::Triangles);
 		};
+
+		struct BloomSettings
+		{
+			float FilterTreshold = 1.0f;
+			float FilterKnee = 0.1f;
+		};
+		BloomSettings			   m_BloomSettings;
 
 		SceneRendererSpecification m_Specification;
 		Ref<Scene>				   m_ActiveScene;
@@ -190,13 +195,11 @@ namespace XYZ {
 		Ref<RenderPass>			   m_BloomPass;
 		Ref<UniformBuffer>		   m_CameraUniformBuffer;
 								   
-		Ref<Shader>				   m_BloomComputeShader;
+		Ref<Material>			   m_BloomComputeMaterial;
 		Ref<Texture2D>			   m_BloomTexture[3];
-
+		Ref<PipelineCompute>	   m_BloomComputePipeline;
 
 		
-
-
 		CameraData				   m_CameraBuffer;
 		RenderQueue				   m_Queue;
 

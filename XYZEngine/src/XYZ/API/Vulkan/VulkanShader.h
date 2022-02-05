@@ -80,14 +80,14 @@ namespace XYZ {
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const override { return m_Buffers; }
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override { return m_Resources; }
 
-		const std::vector<DescriptorSet>&				   GetDescriptorSets() const { return m_DescriptorSets; }
+		const std::vector<DescriptorSet>&				   GetDescriptorSets()		 const { return m_DescriptorSets; }
 		const std::vector<PushConstantRange>&			   GetPushConstantRanges()	 const { return m_PushConstantRanges; }
 		const std::vector<VkPipelineShaderStageCreateInfo> GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
 		const VkWriteDescriptorSet*						   GetDescriptorSet(const std::string& name, uint32_t set) const;
 		std::pair<const VkWriteDescriptorSet*, uint32_t>   GetDescriptorSet(const std::string& name) const;
 
 		std::vector<VkDescriptorSetLayout>				   GetAllDescriptorSetLayouts() const;
-		size_t GetVertexBufferSize() const { return m_VertexBufferSize; }
+		size_t											   GetVertexBufferSize()		const { return m_VertexBufferSize; }
 		
 	private:
 		void compileOrGetVulkanBinaries(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile);

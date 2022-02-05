@@ -3,6 +3,7 @@
 
 #include "VulkanRenderCommandBuffer.h"
 #include "VulkanPipeline.h"
+#include "VulkanPipelineCompute.h"
 #include "VulkanRenderPass.h"
 #include "VulkanFramebuffer.h"
 #include "VulkanContext.h"
@@ -252,6 +253,79 @@ namespace XYZ {
 
 			if (vulkanPipeline->GetSpecification().Topology == PrimitiveTopology::Lines)
 				vkCmdSetLineWidth(commandBuffer, vulkanPipeline->GetSpecification().LineWidth);
+		});
+	}
+
+	void VulkanRendererAPI::BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material)
+	{
+		Renderer::Submit([renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, material]() mutable
+		{
+			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
+			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
+
+			Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = renderCommandBuffer;
+			Ref<VulkanShader>			   vulkanShader = pipeline->GetShader();
+			Ref<VulkanPipelineCompute>	   vulkanPipeline = pipeline;
+			Ref<VulkanUniformBufferSet>	   vulkanUniformBufferSet = uniformBufferSet;
+			Ref<VulkanStorageBufferSet>    vulkanStorageBufferSet = storageBufferSet;
+			Ref<VulkanMaterial>			   vulkanMaterial = material;
+			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
+			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+			vulkanPipeline->Begin(vulkanCommandBuffer);
+
+			if (vulkanUniformBufferSet.Raw() && vulkanStorageBufferSet.Raw())
+			{
+				const auto& uniformBufferDescriptors = vulkanUniformBufferSet->GetDescriptors(vulkanShader->GetHash());
+				const auto& storageBufferDescriptors = vulkanStorageBufferSet->GetDescriptors(vulkanShader->GetHash());
+
+				vulkanMaterial->RT_UpdateForRendering(uniformBufferDescriptors, storageBufferDescriptors);
+			}
+			else if (vulkanUniformBufferSet.Raw())
+			{
+				const auto& uniformBufferDescriptors = vulkanUniformBufferSet->GetDescriptors(vulkanShader->GetHash());
+				vulkanMaterial->RT_UpdateForRendering(uniformBufferDescriptors, {});
+			}
+			else if (vulkanStorageBufferSet.Raw())
+			{
+				const auto& storageBufferDescriptors = vulkanStorageBufferSet->GetDescriptors(vulkanShader->GetHash());
+				vulkanMaterial->RT_UpdateForRendering({}, storageBufferDescriptors);
+			}
+			else
+			{
+				vulkanMaterial->RT_UpdateForRendering({}, {});
+			}
+			const auto& materialDescriptors = vulkanMaterial->GetDescriptors(frameIndex);
+
+			vkCmdBindDescriptorSets(
+				commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, layout,
+				0, static_cast<uint32_t>(materialDescriptors.size()),
+				materialDescriptors.data(), 0, nullptr
+			);
+		});
+	}
+
+	void VulkanRendererAPI::DispatchCompute(Ref<PipelineCompute> pipeline, Ref<Material> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
+	{
+		Renderer::Submit([pipeline, material, groupCountX, groupCountY, groupCountZ]() {
+			Ref<VulkanMaterial> vulkanMaterial = material;
+			Ref<VulkanPipelineCompute> vulkanPipeline = pipeline;
+
+			ByteBuffer vsUniformStorage = vulkanMaterial->GetVSUniformsBuffer();
+			vkCmdPushConstants(
+				vulkanPipeline->GetActiveCommandBuffer(), 
+				vulkanPipeline->GetVulkanPipelineLayout(), 
+				VK_SHADER_STAGE_COMPUTE_BIT, 0, vsUniformStorage.Size, vsUniformStorage.Data
+			);
+			vulkanPipeline->Dispatch(groupCountX, groupCountY, groupCountZ);
+		});
+	}
+
+	void VulkanRendererAPI::EndPipelineCompute(Ref<PipelineCompute> pipeline)
+	{
+		Renderer::Submit([pipeline]() mutable {
+			pipeline->End();
 		});
 	}
 

@@ -3,6 +3,7 @@
 #include "XYZ/Core/Ref/Ref.h"
 #include "XYZ/Renderer/VertexArray.h"
 #include "XYZ/Renderer/Pipeline.h"
+#include "XYZ/Renderer/PipelineCompute.h"
 #include "XYZ/Renderer/RenderCommandBuffer.h"
 #include "XYZ/Renderer/UniformBufferSet.h"
 #include "XYZ/Renderer/StorageBufferSet.h"
@@ -63,6 +64,9 @@ namespace XYZ {
 		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0) {};
 		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0) {};
 		virtual void BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material) {};
+		virtual void BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material) {};
+		virtual void DispatchCompute(Ref<PipelineCompute> pipeline, Ref<Material> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) {};
+		virtual void EndPipelineCompute(Ref<PipelineCompute> pipeline) {};
 
 
 		static const RenderAPICapabilities& GetCapabilities();

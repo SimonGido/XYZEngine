@@ -16,9 +16,12 @@ namespace XYZ {
 	{
 		m_ImageData.Destroy();
 		auto info = m_Info;
-		auto perLayerImageViews = m_PerLayerImageViews;
-		Renderer::SubmitResource([info, perLayerImageViews]() mutable {
-			RT_release(info, perLayerImageViews);
+		auto imageViews = m_PerLayerImageViews;
+		for (auto& mipView : m_MipImageViews)
+			imageViews.push_back(mipView.View);
+
+		Renderer::SubmitResource([info, imageViews]() mutable {
+			RT_release(info, imageViews);
 		});
 	}
 	void VulkanImage2D::Invalidate()
@@ -127,7 +130,6 @@ namespace XYZ {
 
 		const VkFormat vulkanFormat = Utils::VulkanImageFormat(m_Specification.Format);
 
-		//HZ_CORE_ASSERT(m_PerLayerImageViews.size() == m_Specification.Layers);
 		if (m_PerLayerImageViews.empty())
 			m_PerLayerImageViews.resize(m_Specification.Layers);
 
@@ -160,11 +162,20 @@ namespace XYZ {
 			VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			VkImageViewCreateInfo imageViewCreateInfo = createImageViewCreateInfo(1, 0, 1, mip);
 
-			VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_MipImageViews[mip].View));
-			m_MipImageViews[mip].Created = true;
+			auto& mipView = m_MipImageViews[mip];
+			VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCreateInfo, nullptr, &mipView.View));
+			mipView.Created = true;
+			mipView.Descriptor = m_DescriptorImageInfo;
+			mipView.Descriptor.imageView = mipView.View;
 		}
 		return m_MipImageViews[mip].View;
 	}
+	const VkDescriptorImageInfo& VulkanImage2D::RT_GetMipImageDescriptor(uint32_t mip)
+	{
+		RT_GetMipImageView(mip);
+		return m_MipImageViews[mip].Descriptor;
+	}
+	
 	void VulkanImage2D::RT_release(const VulkanImageInfo& info, const std::vector<VkImageView>& views)
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
@@ -318,7 +329,7 @@ namespace XYZ {
 		imageViewCreateInfo.subresourceRange.baseArrayLayer = baseLayer;
 		imageViewCreateInfo.subresourceRange.layerCount = layerCount;
 		imageViewCreateInfo.image = m_Info.Image;
-
+		findUsage();
 		return imageViewCreateInfo;
 	}
 	VkSamplerCreateInfo VulkanImage2D::createSamplerCreateInfo() const

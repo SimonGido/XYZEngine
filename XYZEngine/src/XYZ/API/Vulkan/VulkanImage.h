@@ -49,6 +49,7 @@ namespace XYZ {
 
 		VkImageView GetMipImageView(uint32_t mip);
 		VkImageView RT_GetMipImageView(uint32_t mip);
+		const VkDescriptorImageInfo& RT_GetMipImageDescriptor(uint32_t mip);
 
 		VulkanImageInfo& GetImageInfo() { return m_Info; }
 		const VulkanImageInfo& GetImageInfo() const { return m_Info; }
@@ -75,8 +76,9 @@ namespace XYZ {
 
 		struct MipView
 		{
-			VkImageView	View = VK_NULL_HANDLE;
-			bool		Created = false;
+			VkImageView			  View = VK_NULL_HANDLE;
+			VkDescriptorImageInfo Descriptor{};
+			bool				  Created = false;
 		};
 		std::vector<MipView>  m_MipImageViews;
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};

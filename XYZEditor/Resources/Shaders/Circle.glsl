@@ -36,7 +36,8 @@ void main()
 #type fragment
 #version 430 core
 
-layout(location = 0) out vec4 color;
+layout(location = 0) out vec4 o_Color;
+layout(location = 1) out vec4 o_Position;
 
 struct VertexOutput
 {
@@ -56,6 +57,7 @@ void main()
 
 	float alpha = 1.0 - smoothstep(1.0f - fade, 1.0f, dist);
 	alpha *= smoothstep(1.0 - v_Input.Thickness - fade, 1.0 - v_Input.Thickness, dist);
-	color = v_Input.Color;
-	color.a = alpha;
+	o_Color = v_Input.Color;
+	o_Color.a = alpha;
+	o_Position = vec4(v_Input.LocalPosition, 0.0, 1.0);
 }

@@ -23,9 +23,11 @@ namespace XYZ {
 		{
 			MaterialDependencies.clear();
 			PipelineDependencies.clear();
+			PipelineComputeDependencies.clear();
 		}
 		std::vector<Ref<Material>> MaterialDependencies;
 		std::vector<Ref<Pipeline>> PipelineDependencies;
+		std::vector<Ref<PipelineCompute>> PipelineComputeDependencies;
 	};
 
 	struct ShaderDependencyMap
@@ -48,6 +50,10 @@ namespace XYZ {
 		void Register(size_t hash, const Ref<Pipeline>& pipeline)
 		{
 			m_Dependencies[hash].PipelineDependencies.push_back(pipeline);
+		}
+		void Register(size_t hash, const Ref<PipelineCompute>& pipeline)
+		{
+			m_Dependencies[hash].PipelineComputeDependencies.push_back(pipeline);
 		}
 		void RemoveDependency(size_t hash)
 		{
@@ -158,9 +164,8 @@ namespace XYZ {
 		s_Data.ShaderLibrary->Load("Resources/Shaders/Circle.glsl");
 		
 		s_Data.ShaderLibrary->Load("Resources/Shaders/DefaultLitShader.glsl");
-		s_Data.ShaderLibrary->Load("Resources/Shaders/DefaultShader.glsl");
 		s_Data.ShaderLibrary->Load("Resources/Shaders/LineShader.glsl");
-
+		
 		s_Data.Resources.Init();
 		
 		//s_Data.ShaderLibrary->Load("Resources/Shaders/Particle/ParticleShaderCPU.glsl");
@@ -301,7 +306,25 @@ namespace XYZ {
 		s_RendererAPI->BindPipeline(renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, material);
 	}
 
+	void Renderer::BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material)
+	{
+		s_RendererAPI->BeginPipelineCompute(renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, material);
+	}
 
+	void Renderer::DispatchCompute(Ref<PipelineCompute> pipeline, Ref<Material> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
+	{
+		s_RendererAPI->DispatchCompute(pipeline, material, groupCountX, groupCountY, groupCountZ);
+	}
+
+	void Renderer::EndPipelineCompute(Ref<PipelineCompute> pipeline)
+	{
+		s_RendererAPI->EndPipelineCompute(pipeline);
+	}
+
+	void Renderer::RegisterShaderDependency(const Ref<Shader>& shader, const Ref<PipelineCompute>& pipeline)
+	{
+		s_Data.ShaderDependencies.Register(shader->GetHash(), pipeline);
+	}
 	void Renderer::RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Pipeline>& pipeline)
 	{
 		s_Data.ShaderDependencies.Register(shader->GetHash(), pipeline);

@@ -21,6 +21,7 @@ namespace XYZ {
 		m_Specification(specification),
 		m_ActiveScene(scene)
 	{
+		m_ViewportSize = { 1280, 720 };
 		Init();
 	}
 
@@ -79,14 +80,16 @@ namespace XYZ {
 			m_BloomPass = RenderPass::Create({ fbo });
 		}
 
+		auto bloomShader = shaderLibrary->Get("Bloom");
+		m_BloomComputePipeline = PipelineCompute::Create(bloomShader);
+		m_BloomComputeMaterial = Material::Create(bloomShader);
+
+		TextureProperties props;
+		props.Storage = true;
+		m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
+		m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
+		m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		
-
-		m_BloomComputeShader = shaderLibrary->Get("Bloom");
-
-		//m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
-		//m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
-		//m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
-
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -316,7 +319,7 @@ namespace XYZ {
 
 		
 		lightPass();
-		// bloomPass();
+		bloomPass();
 
 		//queue.m_SpriteDrawList.clear();
 		//queue.m_MeshCommandList.clear();
@@ -360,8 +363,8 @@ namespace XYZ {
 		Ref<Image2D> geometryColorImage = renderer2DFramebuffer->GetImage(0);
 		Ref<Image2D> geometryPositionImage = renderer2DFramebuffer->GetImage(1);
 
-		m_LightRenderPipeline.Material->Set("u_Texture", geometryColorImage, 0);
-		m_LightRenderPipeline.Material->Set("u_Texture", geometryPositionImage, 1);
+		m_LightRenderPipeline.Material->SetImageArray("u_Texture", geometryColorImage, 0);
+		m_LightRenderPipeline.Material->SetImageArray("u_Texture", geometryPositionImage, 1);
 
 		m_LightRenderPipeline.Material->Set("u_Uniforms.NumberPointLights", (int)m_NumPointLights);
 		m_LightRenderPipeline.Material->Set("u_Uniforms.NumberSpotLights", (int)m_NumSpotLights);
@@ -382,6 +385,24 @@ namespace XYZ {
 
 	void SceneRenderer::bloomPass()
 	{
+		const uint32_t workGroupSize = 4;
+		uint32_t workGroupsX = (uint32_t)glm::ceil(m_ViewportSize.x / workGroupSize);
+		uint32_t workGroupsY = (uint32_t)glm::ceil(m_ViewportSize.y / workGroupSize);
+		Ref<Image2D> lightPassImage = m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
+
+		m_BloomComputeMaterial->Set("u_Uniforms.FilterTreshold", m_BloomSettings.FilterTreshold);
+		m_BloomComputeMaterial->Set("u_Uniforms.FilterKnee", m_BloomSettings.FilterKnee);
+		m_BloomComputeMaterial->Set("u_Uniforms.Mode", 0);
+
+
+		m_BloomComputeMaterial->SetImage("o_Image", m_BloomTexture[0]->GetImage(), 0);
+		m_BloomComputeMaterial->SetImage("u_Texture", lightPassImage);
+		m_BloomComputeMaterial->SetImage("u_BloomTexture", lightPassImage);
+		
+		Renderer::BeginPipelineCompute(m_CommandBuffer, m_BloomComputePipeline, nullptr, nullptr, m_BloomComputeMaterial);
+		Renderer::DispatchCompute(m_BloomComputePipeline, m_BloomComputeMaterial, workGroupsX, workGroupsY, 1);
+		Renderer::EndPipelineCompute(m_BloomComputePipeline);
+		/*
 		m_BloomComputeShader->Bind();
 		m_BloomComputeShader->SetFloat("u_FilterTreshold", 1.0f);
 		m_BloomComputeShader->SetFloat("u_FilterKnee", 0.1f);
@@ -449,6 +470,7 @@ namespace XYZ {
 			m_BloomComputeShader->SetFloat("u_LOD", mip);
 			m_BloomComputeShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
 		}
+		*/
 	}
 	void SceneRenderer::createCompositePass()
 	{
@@ -497,9 +519,11 @@ namespace XYZ {
 			m_LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 			m_BloomPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 
-			m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
-			m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
-			m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
+			TextureProperties props;
+			props.Storage = true;
+			m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
+			m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
+			m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
 			m_ViewportSizeChanged = false;
 		}
 	}

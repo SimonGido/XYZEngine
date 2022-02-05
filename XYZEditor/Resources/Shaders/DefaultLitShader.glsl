@@ -60,12 +60,18 @@ struct VertexOutput
 layout (location = 0) in VertexOutput v_Input;
 layout (location = 3) in flat float   v_TextureID;
 
-
 layout(binding = 1) uniform sampler2D u_Texture[32];
+
+layout(push_constant) uniform LightInfo
+{
+	layout(offset = 64)
+	vec4 Color;
+
+} u_Uniforms;
 
 void main()
 {
 	vec4 color = v_Input.Color * texture(u_Texture[int(v_TextureID)], v_Input.TexCoord);
-	o_Color = color;
+	o_Color = color + u_Uniforms.Color;
 	o_Position = vec4(v_Input.Position, 1.0);
 }

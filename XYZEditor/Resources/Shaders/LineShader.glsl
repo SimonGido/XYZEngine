@@ -5,8 +5,14 @@ layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec4 a_Color;
 
 
-layout(location = 0) out vec4 v_Color;
 
+struct VertexOutput
+{
+	vec4 Color;
+	vec3 Position;
+};
+
+layout(location = 0) out VertexOutput v_Output;
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -20,7 +26,8 @@ layout(push_constant) uniform Transform
 
 void main()
 {
-	v_Color = a_Color;
+	v_Output.Color = a_Color;
+	v_Output.Position = a_Position;
 	gl_Position = u_ViewProjection * u_Renderer.Transform * vec4(a_Position, 1.0);
 }
 
@@ -28,10 +35,19 @@ void main()
 #version 430 core
 
 layout(location = 0) out vec4 o_Color;
+layout(location = 1) out vec4 o_Position;
 
-layout(location = 0) in vec4 v_Color;
+
+struct VertexOutput
+{
+	vec4 Color;
+	vec3 Position;
+};
+layout(location = 0) in VertexOutput v_Input;
+
 
 void main()
 {
-	o_Color = v_Color;
+	o_Color = v_Input.Color;
+	o_Position = vec4(v_Input.Position, 1.0);
 }

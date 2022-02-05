@@ -112,14 +112,16 @@ namespace XYZ {
 		set(name, value);
 	}
 
-	void VulkanMaterial::Set(const std::string& name, const Ref<Image2D>& image)
+	void VulkanMaterial::SetImageArray(const std::string& name, const Ref<Image2D>& image, uint32_t arrayIndex)
 	{
-		setDescriptor(name, image);
+		setDescriptor(name, arrayIndex, image);
 	}
-	void VulkanMaterial::Set(const std::string& name, const Ref<Image2D>& image, uint32_t arrayIndex)
+
+	void VulkanMaterial::SetImage(const std::string& name, const Ref<Image2D>& image, int32_t mip)
 	{
-		setDescriptor(name, image, arrayIndex);
+		setDescriptor(name, image, mip);
 	}
+
 	float& VulkanMaterial::GetFloat(const std::string& name)
 	{
 		return get<float>(name);
@@ -196,7 +198,8 @@ namespace XYZ {
 					{
 						if (pending.Image.Raw())
 						{
-							pending.WriteDescriptor.pImageInfo = &pending.Image->GetDescriptor();
+							pending.WriteDescriptor.pImageInfo = pending.Mip == -1 ? &pending.Image->GetDescriptor() 
+																				   : &pending.Image->RT_GetMipImageDescriptor(pending.Mip);
 							pending.WriteDescriptor.dstSet = m_DescriptorSets[frame][set];
 							m_WriteDescriptors[frame].push_back(pending.WriteDescriptor);
 						}
@@ -292,69 +295,76 @@ namespace XYZ {
 		}
 	}
 
-	void VulkanMaterial::setDescriptor(const std::string& name, const Ref<Image2D>& image)
+	void VulkanMaterial::setDescriptor(const std::string& name, const Ref<Image2D>& image, int32_t mip)
 	{
 		const ShaderResourceDeclaration* resource = findResourceDeclaration(name);
 		XYZ_ASSERT(resource, "");
 
 		uint32_t binding = resource->GetRegister();
 		// Texture is already set
-		if (binding < m_Images.size() && m_Images[binding].Raw() && image.Raw() == m_Images[binding].Raw())
-			return;
-
-		if (binding >= m_Images.size())
-			m_Images.resize(static_cast<size_t>(binding) + 1);
-		m_Images[binding] = image;
+		//if (binding < m_Images.size() && m_Images[binding].Raw() && image.Raw() == m_Images[binding].Raw())
+		//	return;
 
 		auto [wds, set] = m_Shader->GetDescriptorSet(name);
 		VkWriteDescriptorSet textureDescriptor = *wds;
 		uint32_t textureSet = set;
 
 		Ref<VulkanMaterial> instance = this;
-		Renderer::Submit([instance, textureDescriptor, textureSet, binding]() mutable {
+		Ref<VulkanImage2D> vulkanImage = image;
+		Renderer::Submit([instance, vulkanImage, textureDescriptor, textureSet, binding, mip]() mutable {
 
-			Ref<VulkanImage2D> vulkanImage = instance->m_Images[binding];
+			if (binding >= instance->m_Images.size())
+				instance->m_Images.resize(static_cast<size_t>(binding) + 1);
+			instance->m_Images[binding] = vulkanImage;
+
 			if (instance->m_ImageDescriptors[textureSet].size() <= binding)
 				instance->m_ImageDescriptors[textureSet].resize(static_cast<size_t>(binding) + 1);
 
-			instance->m_ImageDescriptors[textureSet][binding].Image = vulkanImage;
-			instance->m_ImageDescriptors[textureSet][binding].WriteDescriptor = textureDescriptor;
+			auto& desc = instance->m_ImageDescriptors[textureSet][binding];
+
+			desc.Image = vulkanImage;
+			desc.WriteDescriptor = textureDescriptor;
+			desc.Mip = mip;
 			instance->m_DescriptorsDirty = true;
 		});
 	}
-	void VulkanMaterial::setDescriptor(const std::string& name, const Ref<Image2D>& image, uint32_t index)
+	void VulkanMaterial::setDescriptor(const std::string& name, uint32_t index, const Ref<Image2D>& image)
 	{
 		const ShaderResourceDeclaration* resource = findResourceDeclaration(name);
 		XYZ_ASSERT(resource, "");
-	
+
 		uint32_t binding = resource->GetRegister();
 		// Texture is already set
-		if (binding < m_ImageArrays.size() && m_ImageArrays[binding].size() < index && image.Raw() == m_ImageArrays[binding][index].Raw())
-			return;
+		//if (binding < m_ImageArrays.size() && m_ImageArrays[binding].size() < index && image.Raw() == m_ImageArrays[binding][index].Raw())
+		//	return;
 
-		if (binding >= m_ImageArrays.size())
-			m_ImageArrays.resize(static_cast<size_t>(binding) + 1);
-		if (index >= m_ImageArrays[binding].size())
-			m_ImageArrays[binding].resize(static_cast<size_t>(index) + 1);
-
-		m_ImageArrays[binding][index] = image;
+		
 		auto [wds, set] = m_Shader->GetDescriptorSet(name);
 		VkWriteDescriptorSet textureDescriptor = *wds;
 		uint32_t textureSet = set;
 
 		Ref<VulkanMaterial> instance = this;
-		Renderer::Submit([instance, textureDescriptor, textureSet, binding, index]() mutable {
-			
-			Ref<VulkanImage2D> vulkanImage = instance->m_ImageArrays[binding][index];
+		Ref<VulkanImage2D> vulkanImage = image;
+		Renderer::Submit([instance, vulkanImage, textureDescriptor, textureSet, binding, index]() mutable {
+
+			if (binding >= instance->m_ImageArrays.size())
+				instance->m_ImageArrays.resize(static_cast<size_t>(binding) + 1);
+			if (index >= instance->m_ImageArrays[binding].size())
+				instance->m_ImageArrays[binding].resize(static_cast<size_t>(index) + 1);
+
+			instance->m_ImageArrays[binding][index] = vulkanImage;
 
 			if (instance->m_ImageArraysDescriptors[textureSet].size() <= binding)
 				instance->m_ImageArraysDescriptors[textureSet].resize(static_cast<size_t>(binding) + 1);
-			
+
 			if (instance->m_ImageArraysDescriptors[textureSet][binding].Images.size() <= index)
 				instance->m_ImageArraysDescriptors[textureSet][binding].Images.resize(static_cast<size_t>(index) + 1);
 
-			instance->m_ImageArraysDescriptors[textureSet][binding].Images[index] = vulkanImage;
-			instance->m_ImageArraysDescriptors[textureSet][binding].WriteDescriptor = textureDescriptor;
+
+			auto& desc = instance->m_ImageArraysDescriptors[textureSet][binding];
+			desc.Images[index] = vulkanImage;
+			desc.WriteDescriptor = textureDescriptor;
+
 			instance->m_DescriptorsDirty = true;
 		});
 	}

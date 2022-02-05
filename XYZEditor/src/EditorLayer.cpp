@@ -35,7 +35,7 @@ namespace XYZ {
 			m_CommandBuffer = RenderCommandBuffer::Create(0, "Overlay");
 			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 			m_OverlayRenderer2D = Ref<Renderer2D>::Create(m_CommandBuffer);
-			m_QuadMaterial = Material::Create(Shader::Create("Resources/Shaders/DefaultShader.glsl"));
+			m_QuadMaterial = Material::Create(Shader::Create("Resources/Shaders/DefaultLitShader.glsl"));
 			m_OverlayRenderer2D->SetQuadMaterial(m_QuadMaterial);
 			m_LineMaterial = Material::Create(Shader::Create("Resources/Shaders/LineShader.glsl"));
 			m_OverlayRenderer2D->SetLineMaterial(m_LineMaterial);

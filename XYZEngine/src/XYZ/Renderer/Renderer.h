@@ -12,8 +12,10 @@
 #include "RenderCommandQueue.h"
 #include "RenderPass.h"
 #include "Pipeline.h"
+#include "PipelineCompute.h"
 #include "Material.h"
 #include "StorageBufferSet.h"
+
 
 namespace XYZ {
 
@@ -80,9 +82,16 @@ namespace XYZ {
 		static void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline,  Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0);
 		static void SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material);
 		static void BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material);
+		static void BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material);
+		static void DispatchCompute(Ref<PipelineCompute> pipeline, Ref<Material> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
+		static void EndPipelineCompute(Ref<PipelineCompute> pipeline);
 
+
+
+		static void RegisterShaderDependency(const Ref<Shader>& shader, const Ref<PipelineCompute>& pipeline);
 		static void RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Pipeline>& pipeline);
 		static void RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Material>& material);
+		
 		static void RemoveShaderDependency(size_t hash);
 		static void OnShaderReload(size_t hash);
 		//////////////

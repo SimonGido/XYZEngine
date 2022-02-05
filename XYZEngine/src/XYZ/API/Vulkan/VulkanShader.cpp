@@ -202,14 +202,15 @@ namespace XYZ {
 		const spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
 		
-		if (stage == VK_SHADER_STAGE_FRAGMENT_BIT)
-			m_VertexBufferSize = getBuffersSize();
-
 		reflectConstantBuffers(compiler, stage, resources.push_constant_buffers);
 		reflectStorageBuffers(compiler, stage, resources.storage_buffers);
 		reflectUniformBuffers(compiler, stage, resources.uniform_buffers);
 		reflectSampledImages(compiler, stage, resources.sampled_images);
 		reflectStorageImages(compiler, stage, resources.storage_images);
+
+
+		if (stage == VK_SHADER_STAGE_VERTEX_BIT || stage == VK_SHADER_STAGE_COMPUTE_BIT)
+			m_VertexBufferSize = getBuffersSize();
 	}
 	void VulkanShader::reflectConstantBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers)
 	{

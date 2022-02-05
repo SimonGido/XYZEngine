@@ -29,9 +29,8 @@ namespace XYZ {
 		virtual void Set(const std::string& name, const glm::ivec3& value) override;
 		virtual void Set(const std::string& name, const glm::ivec4& value) override;
 
-
-		virtual void Set(const std::string& name, const Ref<Image2D>& image, uint32_t arrayIndex) override;
-		virtual void Set(const std::string& name, const Ref<Image2D>& image) override;
+		virtual void SetImageArray(const std::string& name, const Ref<Image2D>& image, uint32_t arrayIndex) override;
+		virtual void SetImage(const std::string& name, const Ref<Image2D>& image, int32_t mip = -1) override;
 
 		virtual float&     GetFloat(const std::string& name) override;
 		virtual int32_t&   GetInt(const std::string& name) override;
@@ -67,8 +66,8 @@ namespace XYZ {
 		void tryAllocateDescriptorSets();
 
 		void allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer) const;
-		void setDescriptor(const std::string& name, const Ref<Image2D>& image);
-		void setDescriptor(const std::string& name, const Ref<Image2D>& image, uint32_t index);
+		void setDescriptor(const std::string& name, const Ref<Image2D>& image, int32_t mip);
+		void setDescriptor(const std::string& name, uint32_t index, const Ref<Image2D>& image);
 
 		template <typename T>
 		void set(const std::string& name, const T& value);
@@ -98,6 +97,7 @@ namespace XYZ {
 		{
 			VkWriteDescriptorSet WriteDescriptor;
 			Ref<VulkanImage2D> Image;
+			int32_t Mip = -1;
 		};
 	
 		struct PendingDescriptorArray
