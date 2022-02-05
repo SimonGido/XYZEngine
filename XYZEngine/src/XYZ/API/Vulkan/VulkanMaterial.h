@@ -29,8 +29,8 @@ namespace XYZ {
 		virtual void Set(const std::string& name, const glm::ivec3& value) override;
 		virtual void Set(const std::string& name, const glm::ivec4& value) override;
 
-		virtual void Set(const std::string& name, const Ref<Texture2D>& texture) override;
-		virtual void Set(const std::string& name, const Ref<Texture2D>& texture, uint32_t arrayIndex) override;
+
+		virtual void Set(const std::string& name, const Ref<Image2D>& image, uint32_t arrayIndex) override;
 		virtual void Set(const std::string& name, const Ref<Image2D>& image) override;
 
 		virtual float&     GetFloat(const std::string& name) override;
@@ -55,7 +55,10 @@ namespace XYZ {
 		virtual Ref<Shader>	   GetShader() const override { return m_Shader; }
 
 
-		void RT_UpdateForRendering(const vector3D<VkWriteDescriptorSet>& descriptors);
+		void RT_UpdateForRendering(
+			const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors, 
+			const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors
+		);
 		const std::vector<VkWriteDescriptorSet>& GetWriteDescriptors(uint32_t frame) const { return m_WriteDescriptors[frame]; }
 		const std::vector<VkDescriptorSet>&      GetDescriptors(uint32_t frame) const { return m_DescriptorSets[frame]; }
 		const ByteBuffer						 GetFSUniformsBuffer() const;
@@ -64,9 +67,8 @@ namespace XYZ {
 		void tryAllocateDescriptorSets();
 
 		void allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer) const;
-		void setDescriptor(const std::string& name, const Ref<Texture2D>& texture);
 		void setDescriptor(const std::string& name, const Ref<Image2D>& image);
-		void setDescriptor(const std::string& name, const Ref<Texture2D>& texture, uint32_t index);
+		void setDescriptor(const std::string& name, const Ref<Image2D>& image, uint32_t index);
 
 		template <typename T>
 		void set(const std::string& name, const T& value);
@@ -83,15 +85,14 @@ namespace XYZ {
 		const ShaderResourceDeclaration*			 findResourceDeclaration(const std::string& name);
 
 	private:
-		Ref<VulkanShader>						 m_Shader;
-		ByteBuffer								 m_UniformsBuffer;
+		Ref<VulkanShader>					   m_Shader;
+		ByteBuffer							   m_UniformsBuffer;
 
-		std::vector<Ref<Image2D>>				 m_Images;
-		std::vector<Ref<Texture2D>>			     m_Textures;
-		std::vector<std::vector<Ref<Texture2D>>> m_TextureArrays;
+		std::vector<Ref<Image2D>>			   m_Images;
+		std::vector<std::vector<Ref<Image2D>>> m_ImageArrays;
 		// Per frame -> per set
-		vector2D<VkDescriptorSet>				 m_DescriptorSets;
-		VulkanDescriptorAllocator::Version		 m_DescriptorsVersion;
+		vector2D<VkDescriptorSet>			   m_DescriptorSets;
+		VulkanDescriptorAllocator::Version	   m_DescriptorsVersion;
 
 		struct PendingDescriptor
 		{
@@ -142,7 +143,7 @@ namespace XYZ {
 		auto decl = findResourceDeclaration(name);
 		XYZ_ASSERT(decl, "Could not find uniform with name 'x'");
 		uint32_t slot = decl->GetRegister();
-		XYZ_ASSERT(slot < m_Textures.size(), "Texture slot is invalid!");
-		return Ref<T>(m_Textures[slot]);
+		XYZ_ASSERT(slot < m_Images.size(), "Texture slot is invalid!");
+		return Ref<T>(m_Images[slot]);
 	}
 }

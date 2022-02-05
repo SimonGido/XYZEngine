@@ -622,7 +622,7 @@ namespace XYZ {
 			descriptorLayout.pNext = nullptr;
 			descriptorLayout.bindingCount = (uint32_t)(layoutBindings.size());
 			descriptorLayout.pBindings = layoutBindings.data();
-
+			
 			XYZ_INFO("Creating descriptor set {0} with {1} ubo's, {2} ssbo's, {3} samplers and {4} storage images", set,
 				shaderDescriptorSet.UniformBuffers.size(),
 				shaderDescriptorSet.StorageBuffers.size(),

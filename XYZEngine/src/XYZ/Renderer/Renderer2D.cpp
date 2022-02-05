@@ -507,17 +507,23 @@ namespace XYZ {
 
 	void Renderer2D::createRenderPass()
 	{
-		FramebufferSpecification framebufferSpec;
-		framebufferSpec.Attachments = { ImageFormat::RGBA32F };
-		framebufferSpec.Samples = 1;
-		framebufferSpec.ClearOnLoad = false;
-		framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+		{
+			FramebufferSpecification framebufferSpec;
+			framebufferSpec.Attachments = {
+					FramebufferTextureSpecification(ImageFormat::RGBA32F),
+					FramebufferTextureSpecification(ImageFormat::RGBA32F),
+					FramebufferTextureSpecification(ImageFormat::DEPTH24STENCIL8)
+			};
+			framebufferSpec.Samples = 1;
+			framebufferSpec.ClearOnLoad = false;
+			framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 
-		Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
+			Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
 
-		RenderPassSpecification renderPassSpec;
-		renderPassSpec.TargetFramebuffer = framebuffer;
-		m_RenderPass = RenderPass::Create(renderPassSpec);
+			RenderPassSpecification renderPassSpec;
+			renderPassSpec.TargetFramebuffer = framebuffer;
+			m_RenderPass = RenderPass::Create(renderPassSpec);
+		}
 	}
 
 	void Renderer2D::createDefaultPipelineBuckets()
@@ -567,11 +573,11 @@ namespace XYZ {
 			for (uint32_t i = 0; i < m_TextureSlots.size(); ++i)
 			{
 				if (m_TextureSlots[i].Raw())
-					m_QuadMaterial->Set("u_Texture", m_TextureSlots[i], i);
+					m_QuadMaterial->Set("u_Texture", m_TextureSlots[i]->GetImage(), i);
 				else
-					m_QuadMaterial->Set("u_Texture", m_WhiteTexture, i);
+					m_QuadMaterial->Set("u_Texture", m_WhiteTexture->GetImage(), i);
 			}
-			Renderer::BindPipeline(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_UniformBufferSet, m_QuadMaterial);
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_UniformBufferSet, nullptr, m_QuadMaterial);
 			Renderer::RenderGeometry(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_QuadMaterial, m_QuadBuffer.VertexBuffer, m_QuadBuffer.IndexBuffer, glm::mat4(1.0f), m_QuadBuffer.IndexCount);
 			m_Stats.DrawCalls++;
 			m_QuadBuffer.Reset();
@@ -586,7 +592,7 @@ namespace XYZ {
 		{
 			m_LineBuffer.VertexBuffer->Update(m_LineBuffer.BufferBase, dataSize);
 
-			Renderer::BindPipeline(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_UniformBufferSet, m_LineMaterial);
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_UniformBufferSet, nullptr, m_LineMaterial);
 			Renderer::RenderGeometry(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_LineMaterial, m_LineBuffer.VertexBuffer, m_LineBuffer.IndexBuffer, glm::mat4(1.0f), m_LineBuffer.IndexCount);
 
 			m_Stats.LineDrawCalls++;
@@ -602,7 +608,7 @@ namespace XYZ {
 		{
 			m_CircleBuffer.VertexBuffer->Update(m_CircleBuffer.BufferBase, dataSize);
 
-			Renderer::BindPipeline(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_UniformBufferSet, m_CircleMaterial);
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_UniformBufferSet, nullptr, m_CircleMaterial);
 			Renderer::RenderGeometry(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_CircleMaterial, m_CircleBuffer.VertexBuffer, m_CircleBuffer.IndexBuffer, glm::mat4(1.0f), m_CircleBuffer.IndexCount);
 
 			m_Stats.FilledCircleDrawCalls++;

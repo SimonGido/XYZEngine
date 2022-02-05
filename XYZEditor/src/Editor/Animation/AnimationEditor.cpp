@@ -241,7 +241,7 @@ namespace XYZ {
 
 			}
 
-			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
 			{
 				ImGui::OpenPopup("AddProperty");
 			}

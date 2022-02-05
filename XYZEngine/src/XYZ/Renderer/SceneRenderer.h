@@ -4,6 +4,7 @@
 #include "Renderer2D.h"
 #include "Mesh.h"
 #include "RenderCommandBuffer.h"
+#include "StorageBufferSet.h"
 
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"
@@ -92,23 +93,18 @@ namespace XYZ {
 		void SetScene(Ref<Scene> scene);
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void SetGridProperties(const GridProperties& props);
-	
+
 		void BeginScene(const SceneRendererCamera& camera);
 		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition);
 		void EndScene();
-		
+
 		void SubmitBillboard(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size);
-		
-		void SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform);	
+
+		void SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform);
 		void SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform);
 		void SubmitMeshInstanced(const Ref<Mesh>& mesh, const glm::mat4& transform, uint32_t count);
 		void SubmitMeshInstanced(const Ref<Mesh>& mesh, const std::vector<glm::mat4>& transforms, uint32_t count);
-		
-		// TODO: GetLights from current scene
-		//void SubmitLight(const PointLight2D& light, const glm::mat4& transform);
-		//void SubmitLight(const SpotLight2D& light, const glm::mat4& transform);
-		//void SubmitLight(const PointLight2D& light, const glm::vec3& position);
-		//void SubmitLight(const SpotLight2D& light, const glm::vec3& position);
+
 
 
 		void OnImGuiRender();
@@ -117,7 +113,7 @@ namespace XYZ {
 		Ref<RenderPass>		  GetFinalRenderPass() const;
 		Ref<Image2D>		  GetFinalPassImage() const;
 		SceneRendererOptions& GetOptions();
-	
+
 	private:
 		void flush();
 		void flushLightQueue();
@@ -128,7 +124,11 @@ namespace XYZ {
 		void lightPass();
 		void bloomPass();
 
+		void createCompositePass();
+		void createLightPass();
+
 		void createCompositePipeline();
+		void createLightPipeline();
 		void updateViewportSize();
 	private:
 		struct PointLight
@@ -159,14 +159,24 @@ namespace XYZ {
 			glm::vec4 ViewPosition;
 		};
 
+		struct SceneRenderPipeline
+		{
+			Ref<Pipeline> Pipeline;
+			Ref<Material> Material;
+			
+			void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, const BufferLayout& layout, PrimitiveTopology topology = PrimitiveTopology::Triangles);
+		};
+
 		SceneRendererSpecification m_Specification;
 		Ref<Scene>				   m_ActiveScene;
 		Ref<Renderer2D>			   m_Renderer2D;
 		
-		Ref<Pipeline>			   m_CompositePipeline;
+		SceneRenderPipeline		   m_CompositeRenderPipeline;
+		SceneRenderPipeline		   m_LightRenderPipeline;
+		Ref<RenderPass>			   m_CompositePass;
+		Ref<RenderPass>			   m_LightPass;
 
-		Ref<Material>			   m_CompositeMaterial;
-
+		Ref<StorageBufferSet>      m_LightStorageBufferSet;
 
 		SceneRendererCamera		   m_SceneCamera;
 		SceneRendererOptions	   m_Options;
@@ -174,29 +184,29 @@ namespace XYZ {
 		glm::ivec2				   m_ViewportSize;
 
 		Ref<RenderCommandBuffer>   m_CommandBuffer;
+		
 		// Passes
-		Ref<RenderPass>			   m_LightPass;
 		Ref<RenderPass>			   m_GeometryPass;
 		Ref<RenderPass>			   m_BloomPass;
 		Ref<UniformBuffer>		   m_CameraUniformBuffer;
 								   
-		Ref<Shader>				   m_LightShader;
 		Ref<Shader>				   m_BloomComputeShader;
 		Ref<Texture2D>			   m_BloomTexture[3];
 
-		Ref<StorageBuffer>		   m_LightStorageBuffer;
-		Ref<StorageBuffer>		   m_SpotLightStorageBuffer;
+
+		
+
 
 		CameraData				   m_CameraBuffer;
 		RenderQueue				   m_Queue;
 
-		std::vector<PointLight>	   m_PointLightsList;
-		std::vector<SpotLight>	   m_SpotLightsList;
+		uint32_t				   m_NumPointLights;
+		uint32_t				   m_NumSpotLights;
 								   
 		bool				       m_ViewportSizeChanged = false;
 		int32_t					   m_ThreadIndex;
 
-		static constexpr uint32_t sc_MaxNumberOfLights = 10 * 1024;
+		static constexpr uint32_t sc_MaxNumberOfLights = 1024;
 
 
 		struct GPUTimeQueries

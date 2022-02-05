@@ -14,6 +14,7 @@ namespace XYZ {
 		ByteBuffer(uint8_t* data, uint32_t size)
 			: Data(data), Size(size)
 		{}
+		
 		void Allocate(uint32_t size)
 		{
 			delete[] Data;

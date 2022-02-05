@@ -14,11 +14,16 @@ namespace XYZ {
 		virtual ~VulkanStorageBuffer() override;
 
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) override;
-		virtual uint32_t GetBinding() const override { return m_Binding; }
+		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) override;
+		virtual void Update(ByteBuffer data, uint32_t size, uint32_t offset = 0) override;
 
-		void RT_Update(const void* data, uint32_t size, uint32_t offset);
+		virtual uint32_t GetBinding() const override { return m_Binding; }
+		virtual ByteBuffer GetBuffer() override;
+
+
 		const VkDescriptorBufferInfo& GetDescriptorBufferInfo() const { return m_DescriptorInfo; }
 	
+		
 	private:
 		void release();
 		void RT_invalidate();

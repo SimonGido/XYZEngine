@@ -7,10 +7,14 @@ layout(location = 1) in vec2  a_TexCoord;
 
 layout(location = 0) out vec2 v_TexCoords;
 
+layout(push_constant) uniform Transform
+{
+	mat4 Transform;
+} u_Renderer;
 
 void main()
 {
-	gl_Position = vec4(a_Position, 1.0);
+	gl_Position = u_Renderer.Transform * vec4(a_Position, 1.0);
 	v_TexCoords = a_TexCoord;
 }
 
@@ -21,15 +25,15 @@ void main()
 
 layout(location = 0) out vec4 o_Color;
 
-layout(location = 1) in vec2 v_TexCoords;
+layout(location = 0) in vec2 v_TexCoords;
 
 
 layout(push_constant) uniform LightInfo
 {	
+	layout(offset = 64)
 	int NumberPointLights;
 	int NumberSpotLights;
-
-} u_Renderer;
+} u_Uniforms;
 
 
 struct PointLightData
@@ -71,7 +75,7 @@ float Determinant(vec2 a, vec2 b)
 vec3 CalculatePointLights(vec3 defaultColor, vec2 fragPos)
 {
 	vec3 litColor = vec3(0.0, 0.0, 0.0);
-	for (int i = 0; i < u_Renderer.NumberPointLights; ++i)
+	for (int i = 0; i < u_Uniforms.NumberPointLights; ++i)
 	{
 		float dist = distance(fragPos, PointLights[i].Position.xy);
 		float radius = PointLights[i].Radius;
@@ -84,7 +88,7 @@ vec3 CalculatePointLights(vec3 defaultColor, vec2 fragPos)
 vec3 CalculateSpotLights(vec3 defaultColor, vec2 fragPos)
 {
 	vec3 litColor = vec3(0.0, 0.0, 0.0);
-	for (int i = 0; i < u_Renderer.NumberSpotLights; ++i)
+	for (int i = 0; i < u_Uniforms.NumberSpotLights; ++i)
 	{
 		float dist = distance(fragPos, SpotLights[i].Position.xy);
 		float radius = SpotLights[i].Radius;

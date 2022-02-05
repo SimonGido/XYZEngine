@@ -14,21 +14,18 @@ namespace XYZ {
 		});
 	}
 	VulkanStorageBuffer::VulkanStorageBuffer(const void* data, uint32_t size, uint32_t binding)
+		:
+		m_Size(size), m_Binding(binding)
 	{
-		ByteBuffer buffer;
-		if (m_Buffers.Empty())
-			buffer.Allocate(m_Size);
-		else
-			buffer = m_Buffers.PopBack();
-
+		ByteBuffer buffer = GetBuffer();
 		buffer.Write(data, size);
 
 		Ref<VulkanStorageBuffer> instance = this;
-		Renderer::Submit([instance, buffer]() mutable
+		Renderer::Submit([instance, buf = std::move(buffer)]() mutable
 		{
 			instance->RT_invalidate();
-			instance->RT_Update(buffer.Data, buffer.Size, 0);
-			instance->m_Buffers.PushBack(buffer);
+			instance->RT_Update(buf.Data, buf.Size, 0);
+			instance->m_Buffers.PushBack(buf);
 		});
 	}
 	VulkanStorageBuffer::~VulkanStorageBuffer()
@@ -37,17 +34,30 @@ namespace XYZ {
 	}
 	void VulkanStorageBuffer::Update(const void* data, uint32_t size, uint32_t offset)
 	{
-		ByteBuffer buffer;
-		if (m_Buffers.Empty())
-			buffer.Allocate(m_Size);
-		else
-			buffer = m_Buffers.PopBack();
+		XYZ_ASSERT(size + offset <= m_Size, "");
+		ByteBuffer buffer = GetBuffer();
 
 		buffer.Write(data, size, offset);
 		Ref<VulkanStorageBuffer> instance = this;
 		Renderer::Submit([instance, size, offset, buffer]() mutable {
 			instance->RT_Update(buffer.Data, size, offset);
 			instance->m_Buffers.PushBack(buffer);
+		});
+	}
+	void VulkanStorageBuffer::RT_Update(const void* data, uint32_t size, uint32_t offset)
+	{
+		VulkanAllocator allocator("VulkanStorageBuffer");
+		uint8_t* pData = allocator.MapMemory<uint8_t>(m_MemoryAllocation);
+		memcpy(pData, (uint8_t*)data + offset, size);
+		allocator.UnmapMemory(m_MemoryAllocation);
+	}
+	void VulkanStorageBuffer::Update(ByteBuffer data, uint32_t size, uint32_t offset)
+	{
+		XYZ_ASSERT(data.Size <= m_Size, "");
+		Ref<VulkanStorageBuffer> instance = this;
+		Renderer::Submit([instance, data, size, offset]() mutable {
+			instance->RT_Update(data.Data, size, offset);
+			instance->m_Buffers.PushBack(data);
 		});
 	}
 	void VulkanStorageBuffer::release()
@@ -79,17 +89,20 @@ namespace XYZ {
 		bufferInfo.size = m_Size;
 
 		VulkanAllocator allocator("StorageBuffer");
-		m_MemoryAllocation = allocator.AllocateBuffer(bufferInfo, VMA_MEMORY_USAGE_GPU_ONLY, m_Buffer);
+		m_MemoryAllocation = allocator.AllocateBuffer(bufferInfo, VMA_MEMORY_USAGE_CPU_TO_GPU, m_Buffer);
 
 		m_DescriptorInfo.buffer = m_Buffer;
 		m_DescriptorInfo.offset = 0;
 		m_DescriptorInfo.range = m_Size;
 	}
-	void VulkanStorageBuffer::RT_Update(const void* data, uint32_t size, uint32_t offset)
+	ByteBuffer VulkanStorageBuffer::GetBuffer()
 	{
-		VulkanAllocator allocator("VulkanStorageBuffer");
-		uint8_t* pData = allocator.MapMemory<uint8_t>(m_MemoryAllocation);
-		memcpy(pData, (uint8_t*)data + offset, size);
-		allocator.UnmapMemory(m_MemoryAllocation);
+		ByteBuffer buffer;
+		if (m_Buffers.Empty())
+			buffer.Allocate(m_Size);
+		else
+			buffer = m_Buffers.PopBack();
+		return buffer;
 	}
+
 }

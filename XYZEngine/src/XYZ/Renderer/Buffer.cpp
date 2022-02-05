@@ -5,6 +5,7 @@
 #include "XYZ/API/Vulkan/VulkanVertexBuffer.h"
 #include "XYZ/API/Vulkan/VulkanIndexBuffer.h"
 #include "XYZ/API/Vulkan/VulkanUniformBuffer.h"
+#include "XYZ/API/Vulkan/VulkanStorageBuffer.h"
 
 #include "Renderer.h"
 
@@ -53,6 +54,7 @@ namespace XYZ {
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case RendererAPI::Type::OpenGL:  return Ref<OpenGLStorageBuffer>::Create((float*)NULL, size, binding, BufferUsage::Dynamic);
+		case RendererAPI::Type::Vulkan:  return Ref<VulkanStorageBuffer>::Create(size, binding);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
@@ -65,6 +67,7 @@ namespace XYZ {
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case RendererAPI::Type::OpenGL:  return Ref<OpenGLStorageBuffer>::Create(data, size, binding, usage);
+		case RendererAPI::Type::Vulkan:  return Ref<VulkanStorageBuffer>::Create(data, size, binding);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");

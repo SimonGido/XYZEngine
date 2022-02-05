@@ -43,19 +43,18 @@ namespace XYZ {
 
 		m_Renderer2D = Ref<Renderer2D>::Create(m_CommandBuffer);
 	
-		createCompositePipeline();
 
-		// Light pass
-		{
-			FramebufferSpecification specs;
-			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
-			specs.Attachments = {
-				FramebufferTextureSpecification(ImageFormat::RGBA16F, true),
-				FramebufferTextureSpecification(ImageFormat::DEPTH24STENCIL8)
-			};
-			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
-			m_LightPass = RenderPass::Create({ fbo });
-		}
+		createCompositePass();
+		createLightPass();
+		auto shaderLibrary = Renderer::GetShaderLibrary();
+		const BufferLayout layout = { 
+			{0, ShaderDataType::Float3, "a_Position" },
+			{1, ShaderDataType::Float2, "a_TexCoord" } 
+		};
+		m_CompositeRenderPipeline.Init(m_CompositePass, shaderLibrary->Get("CompositeShader"), layout);
+		m_LightRenderPipeline.Init(m_LightPass, shaderLibrary->Get("LightShader"), layout);
+
+		
 		// Geometry pass
 		{
 			FramebufferSpecification specs;
@@ -80,17 +79,14 @@ namespace XYZ {
 			m_BloomPass = RenderPass::Create({ fbo });
 		}
 
-		auto shaderLibrary = Renderer::GetShaderLibrary();
-		m_LightShader = shaderLibrary->Get("LightShader");
+		
+
 		m_BloomComputeShader = shaderLibrary->Get("Bloom");
 
 		//m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
 		//m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
 		//m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, {});
 
-		//m_LightStorageBuffer = StorageBuffer::Create(sc_MaxNumberOfLights * sizeof(SceneRenderer::PointLight), 1);
-		//m_SpotLightStorageBuffer = StorageBuffer::Create(sc_MaxNumberOfLights * sizeof(SceneRenderer::SpotLight), 2);
-		//m_CameraUniformBuffer = UniformBuffer::Create(sizeof(CameraData), 0);
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -121,7 +117,6 @@ namespace XYZ {
 	}
 	void SceneRenderer::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition)
 	{
-
 		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
 		updateViewportSize();
 
@@ -135,8 +130,17 @@ namespace XYZ {
 	{
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
-		flush();
+		
 		flushDefaultQueue();
+		flushLightQueue();
+
+		// Composite pass
+		//Renderer::BeginRenderPass(m_CommandBuffer, m_CompositePass, true);
+		//
+		//
+		//
+		//Renderer::EndRenderPass(m_CommandBuffer);
+
 		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
 
 		m_CommandBuffer->End();
@@ -228,6 +232,8 @@ namespace XYZ {
 
 	Ref<Image2D> SceneRenderer::GetFinalPassImage() const
 	{
+		return m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
+
 		return m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->GetImage();
 		//return m_CompositePipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->GetImage();
 	}
@@ -261,28 +267,60 @@ namespace XYZ {
 	void SceneRenderer::flushLightQueue()
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::flushLightQueue");
-		RenderQueue& queue = m_Queue;
 
-		if (m_PointLightsList.size())
+		auto& ecs = m_ActiveScene->GetECS();
+		m_NumSpotLights = ecs.GetStorage<SpotLight2D>().Size();
+		m_NumPointLights = ecs.GetStorage<PointLight2D>().Size();
+
+		std::vector<SpotLight> spotLights;
+		spotLights.reserve(m_NumSpotLights);
+		auto spotLight2DView = ecs.CreateView<TransformComponent, SpotLight2D>();
+		for (auto entity : spotLight2DView)
 		{
-			m_LightStorageBuffer->Update(m_PointLightsList.data(), (uint32_t)m_PointLightsList.size() * (uint32_t)sizeof(PointLight));
-			m_LightStorageBuffer->BindRange(0, (uint32_t)m_PointLightsList.size() * (uint32_t)sizeof(PointLight));
+			// Render previous frame data
+			auto &[transform, light] = spotLight2DView.Get<TransformComponent, SpotLight2D>(entity);
+			auto [trans, rot, scale] = transform.GetWorldComponents();
+
+			SpotLight lightData;
+			lightData.Color		 = glm::vec4(light.Color, 1.0f);
+			lightData.Position   = trans;
+			lightData.Radius	 = light.Radius;
+			lightData.Intensity  = light.Intensity;
+			lightData.InnerAngle = light.InnerAngle;
+			lightData.OuterAngle = light.OuterAngle;
+
+			spotLights.push_back(lightData);
 		}
 
-		if (m_SpotLightsList.size())
+		std::vector<PointLight> pointLights;
+		pointLights.reserve(m_NumPointLights);
+		auto pointLight2DView = ecs.CreateView<TransformComponent, PointLight2D>();
+		for (auto entity : pointLight2DView)
 		{
-			m_SpotLightStorageBuffer->Update(m_SpotLightsList.data(), (uint32_t)m_SpotLightsList.size() * (uint32_t)sizeof(SpotLight));
-			m_SpotLightStorageBuffer->BindRange(0, (uint32_t)m_SpotLightsList.size() * (uint32_t)sizeof(SpotLight));
+			auto &[transform, light] = pointLight2DView.Get<TransformComponent, PointLight2D>(entity);
+			auto [trans, rot, scale] = transform.GetWorldComponents();
+			PointLight lightData;
+			lightData.Color = glm::vec4(light.Color, 1.0f);
+			lightData.Position = trans;
+			lightData.Radius = light.Radius;
+			lightData.Intensity = light.Intensity;
+			pointLights.push_back(lightData);
 		}
+
+		Ref<StorageBufferSet> instance = m_LightStorageBufferSet;
+		Renderer::Submit([instance, pLights = std::move(pointLights), sLights = std::move(spotLights)]() mutable {
+			const uint32_t frame = Renderer::GetCurrentFrame();
+			instance->Get(1, 0, frame)->RT_Update(pLights.data(), pLights.size() * sizeof(PointLight));
+			instance->Get(2, 0, frame)->RT_Update(sLights.data(), sLights.size() * sizeof(SpotLight));
+		});
+
 		
 		lightPass();
-		bloomPass();
+		// bloomPass();
 
-		queue.m_SpriteDrawList.clear();
-		queue.m_MeshCommandList.clear();
-		queue.m_InstancedMeshCommandList.clear();
-		m_PointLightsList.clear();
-		m_SpotLightsList.clear();
+		//queue.m_SpriteDrawList.clear();
+		//queue.m_MeshCommandList.clear();
+		//queue.m_InstancedMeshCommandList.clear();
 	}
 	void SceneRenderer::flushDefaultQueue()
 	{
@@ -317,16 +355,28 @@ namespace XYZ {
 	void SceneRenderer::lightPass()
 	{
 		Renderer::BeginRenderPass(m_CommandBuffer, m_LightPass, true);
-	
-		m_LightShader->Bind();
-		m_LightShader->SetInt("u_NumberPointLights", (int)m_PointLightsList.size());
-		m_LightShader->SetInt("u_NumberSpotLights", (int)m_SpotLightsList.size());
-	
-		m_GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
-		m_GeometryPass->GetSpecification().TargetFramebuffer->BindTexture(1, 1);
-	
-		Renderer::SubmitFullscreenQuad();
-	
+
+		Ref<Framebuffer>& renderer2DFramebuffer = m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer;
+		Ref<Image2D> geometryColorImage = renderer2DFramebuffer->GetImage(0);
+		Ref<Image2D> geometryPositionImage = renderer2DFramebuffer->GetImage(1);
+
+		m_LightRenderPipeline.Material->Set("u_Texture", geometryColorImage, 0);
+		m_LightRenderPipeline.Material->Set("u_Texture", geometryPositionImage, 1);
+
+		m_LightRenderPipeline.Material->Set("u_Uniforms.NumberPointLights", (int)m_NumPointLights);
+		m_LightRenderPipeline.Material->Set("u_Uniforms.NumberSpotLights", (int)m_NumSpotLights);
+
+
+
+		Renderer::BindPipeline(
+			m_CommandBuffer, 
+			m_LightRenderPipeline.Pipeline, 
+			m_CameraUniformBuffer, 
+			m_LightStorageBufferSet, 
+			m_LightRenderPipeline.Material
+		);
+		
+		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_LightRenderPipeline.Pipeline, m_LightRenderPipeline.Material);
 		Renderer::EndRenderPass(m_CommandBuffer);
 	}
 
@@ -400,9 +450,8 @@ namespace XYZ {
 			m_BloomComputeShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
 		}
 	}
-	void SceneRenderer::createCompositePipeline()
+	void SceneRenderer::createCompositePass()
 	{
-		auto shaderLibrary = Renderer::GetShaderLibrary();
 		FramebufferSpecification compFramebufferSpec;
 		compFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 		compFramebufferSpec.SwapChainTarget = m_Specification.SwapChainTarget;
@@ -415,24 +464,28 @@ namespace XYZ {
 
 		Ref<Framebuffer> framebuffer = Framebuffer::Create(compFramebufferSpec);
 
-		PipelineSpecification pipelineSpecification;
-		pipelineSpecification.Layout = {
-			{0, ShaderDataType::Float3, "a_Position" },
-			{1, ShaderDataType::Float2, "a_TexCoord" }
-		};
-
-		pipelineSpecification.BackfaceCulling = false;
-		pipelineSpecification.Shader = shaderLibrary->Get("CompositeShader");
-
 		RenderPassSpecification renderPassSpec;
 		renderPassSpec.TargetFramebuffer = framebuffer;
-		pipelineSpecification.RenderPass = RenderPass::Create(renderPassSpec);
-		pipelineSpecification.DebugName = "SceneComposite";
-		pipelineSpecification.DepthWrite = false;
-		
-		m_CompositePipeline = Pipeline::Create(pipelineSpecification);
-		m_CompositeMaterial = Material::Create(shaderLibrary->Get("CompositeShader"));
+		m_CompositePass = RenderPass::Create(renderPassSpec);;
 	}
+	void SceneRenderer::createLightPass()
+	{
+		auto shaderLibrary = Renderer::GetShaderLibrary();
+		auto shader = shaderLibrary->Get("LightShader");
+		FramebufferSpecification specs;
+		specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
+		specs.Attachments = {
+			FramebufferTextureSpecification(ImageFormat::RGBA16F, true)
+		};
+		Ref<Framebuffer> fbo = Framebuffer::Create(specs);
+		m_LightPass = RenderPass::Create({ fbo });
+
+		m_LightStorageBufferSet = StorageBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
+		m_LightStorageBufferSet->Create(sc_MaxNumberOfLights * sizeof(PointLight), 0, 1);
+		m_LightStorageBufferSet->Create(sc_MaxNumberOfLights * sizeof(SpotLight), 0, 2);
+		m_LightStorageBufferSet->CreateDescriptors(shader);
+	}
+	
 
 	void SceneRenderer::updateViewportSize()
 	{
@@ -449,5 +502,15 @@ namespace XYZ {
 			m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, width, height, {});
 			m_ViewportSizeChanged = false;
 		}
+	}
+	void SceneRenderer::SceneRenderPipeline::Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, const BufferLayout& layout, PrimitiveTopology topology)
+	{
+		PipelineSpecification specification;
+		specification.Shader = shader;
+		specification.Layout = layout;
+		specification.RenderPass = renderPass;
+		specification.Topology = topology;
+		this->Pipeline = Pipeline::Create(specification);
+		this->Material = Material::Create(shader);
 	}
 }

@@ -147,9 +147,9 @@ namespace XYZ {
 		Ref<Material>			 m_LineMaterial;
 		Ref<Material>			 m_CircleMaterial;
 								 
-		Ref<Texture2D>							 m_WhiteTexture;
-		std::array<Ref<Texture>, sc_MaxTextures> m_TextureSlots;
-		uint32_t								 m_TextureSlotIndex = 0;
+		Ref<Texture2D>							   m_WhiteTexture;
+		std::array<Ref<Texture2D>, sc_MaxTextures> m_TextureSlots;
+		uint32_t								   m_TextureSlotIndex = 0;
 
 		std::map<size_t, Ref<Pipeline>> m_QuadPipelines;
 		std::map<size_t, Ref<Pipeline>> m_LinePipelines;

@@ -107,7 +107,7 @@ namespace XYZ {
         uint32_t m_ViewportWidth;
         uint32_t m_ViewportHeight;
 
-
+   
         friend class SceneEntity;
         friend class SceneSerializer;
         friend class ScriptEngine;

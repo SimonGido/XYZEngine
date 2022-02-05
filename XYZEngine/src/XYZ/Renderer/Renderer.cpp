@@ -113,16 +113,16 @@ namespace XYZ {
 		QuadVertex* data = new QuadVertex[4];
 
 		data[0].Position = glm::vec3(x, y, 0.0f);
-		data[0].TexCoord = glm::vec2(0, 0);
+		data[0].TexCoord = glm::vec2(0, 1);
 
 		data[1].Position = glm::vec3(x + width, y, 0.0f);
-		data[1].TexCoord = glm::vec2(1, 0);
+		data[1].TexCoord = glm::vec2(1, 1);
 
 		data[2].Position = glm::vec3(x + width, y + height, 0.0f);
-		data[2].TexCoord = glm::vec2(1, 1);
+		data[2].TexCoord = glm::vec2(1, 0);
 
 		data[3].Position = glm::vec3(x, y + height, 0.0f);
-		data[3].TexCoord = glm::vec2(0, 1);
+		data[3].TexCoord = glm::vec2(0, 0);
 
 		const BufferLayout layout = {
 			{ 0, ShaderDataType::Float3, "a_Position" },
@@ -261,7 +261,6 @@ namespace XYZ {
 	void Renderer::SubmitFullscreenQuad()
 	{
 		s_Data.Stats.DrawFullscreenCount++;
-		
 	}
 
 	void Renderer::BeginFrame()
@@ -297,10 +296,11 @@ namespace XYZ {
 		s_RendererAPI->RenderGeometry(renderCommandBuffer, pipeline, material, s_Data.FullscreenQuadVertexBuffer, s_Data.FullscreenQuadIndexBuffer);
 	}
 
-	void Renderer::BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<Material> material)
+	void Renderer::BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material)
 	{
-		s_RendererAPI->BindPipeline(renderCommandBuffer, pipeline, uniformBufferSet, material);
+		s_RendererAPI->BindPipeline(renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, material);
 	}
+
 
 	void Renderer::RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Pipeline>& pipeline)
 	{
@@ -419,7 +419,7 @@ namespace XYZ {
 
 		uint32_t whiteTextureData = 0xffffffff;
 		WhiteTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
-		DefaultQuadMaterial = Material::Create(shaderLibrary->Get("DefaultShader"));
+		DefaultQuadMaterial = Material::Create(shaderLibrary->Get("DefaultLitShader"));
 		DefaultLineMaterial = Material::Create(shaderLibrary->Get("LineShader"));
 		DefaultCircleMaterial = Material::Create(shaderLibrary->Get("Circle"));
 	}

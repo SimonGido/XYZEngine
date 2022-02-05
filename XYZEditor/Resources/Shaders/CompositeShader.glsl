@@ -10,12 +10,17 @@ struct VertexOutput
 	vec2 TexCoord;
 };
 
+layout(push_constant) uniform Transform
+{
+	mat4 Transform;
+} u_Renderer;
+
 layout(location = 0) out VertexOutput v_Output;
 
 void main()
 {
     v_Output.TexCoord = a_TexCoord;
-    gl_Position = vec4(a_Position, 1.0);
+    gl_Position = u_Renderer.Transform * vec4(a_Position, 1.0);
 }
 
 
