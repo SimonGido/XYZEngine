@@ -326,6 +326,11 @@ namespace XYZ {
 		s_RendererAPI->UpdateDescriptors(pipeline, material, uniformBufferSet, storageBufferSet);
 	}
 
+	void Renderer::ClearImage(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Image2D> image)
+	{
+		s_RendererAPI->ClearImage(renderCommandBuffer, image);
+	}
+
 	void Renderer::RegisterShaderDependency(const Ref<Shader>& shader, const Ref<PipelineCompute>& pipeline)
 	{
 		s_Data.ShaderDependencies.Register(shader->GetHash(), pipeline);

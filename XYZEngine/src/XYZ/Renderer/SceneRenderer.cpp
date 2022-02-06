@@ -88,6 +88,7 @@ namespace XYZ {
 
 		TextureProperties props;
 		props.Storage = true;
+		props.SamplerWrap = TextureWrap::Clamp;
 		m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
@@ -140,11 +141,21 @@ namespace XYZ {
 		flushLightQueue();
 
 		// Composite pass
-		//Renderer::BeginRenderPass(m_CommandBuffer, m_CompositePass, true);
-		//
-		//
-		//
-		//Renderer::EndRenderPass(m_CommandBuffer);
+		Ref<Image2D> lightPassImage = m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
+		Renderer::BeginRenderPass(m_CommandBuffer, m_CompositePass, true);
+		m_CompositeRenderPipeline.Material->SetImage("u_GeometryTexture", lightPassImage);
+		m_CompositeRenderPipeline.Material->SetImage("u_BloomTexture", m_BloomTexture[2]->GetImage());
+		Renderer::BindPipeline(
+			m_CommandBuffer,
+			m_CompositeRenderPipeline.Pipeline,
+			nullptr,
+			nullptr,
+			m_CompositeRenderPipeline.Material
+		);
+
+		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CompositeRenderPipeline.Pipeline, m_CompositeRenderPipeline.Material);
+		Renderer::EndRenderPass(m_CommandBuffer);
+		
 
 		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
 
@@ -237,11 +248,11 @@ namespace XYZ {
 
 	Ref<Image2D> SceneRenderer::GetFinalPassImage() const
 	{
-		return m_BloomTexture[2]->GetImage();
-		return m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
-
-		return m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->GetImage();
-		//return m_CompositePipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->GetImage();
+		//return m_BloomTexture[2]->GetImage();
+		//return m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
+		//
+		//return m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->GetImage();
+		return m_CompositeRenderPipeline.Pipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->GetImage();
 	}
 	SceneRendererOptions& SceneRenderer::GetOptions()
 	{
@@ -372,7 +383,7 @@ namespace XYZ {
 		m_LightRenderPipeline.Material->Set("u_Uniforms.NumberPointLights", (int)m_NumPointLights);
 		m_LightRenderPipeline.Material->Set("u_Uniforms.NumberSpotLights", (int)m_NumSpotLights);
 
-
+		
 
 		Renderer::BindPipeline(
 			m_CommandBuffer, 
@@ -421,13 +432,14 @@ namespace XYZ {
 		uint32_t workGroupsX = (uint32_t)glm::ceil(m_ViewportSize.x / workGroupSize);
 		uint32_t workGroupsY = (uint32_t)glm::ceil(m_ViewportSize.y / workGroupSize);
 		Ref<Image2D> lightPassImage = m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
+		//Renderer::ClearImage(m_CommandBuffer, m_BloomTexture[2]->GetImage());
 
 		Ref<Material> computeMaterial = m_BloomComputeMaterial;
 		Renderer::Submit([computeMaterial, bloomSettings = m_BloomSettings, prefilter]() mutable {
 			computeMaterial->Set("u_Uniforms.FilterTreshold", bloomSettings.FilterTreshold);
 			computeMaterial->Set("u_Uniforms.FilterKnee", bloomSettings.FilterKnee);
 			computeMaterial->Set("u_Uniforms.Mode", prefilter);
-			computeMaterial->Set("u_Uniforms.LOD", 0.0f);			
+			//computeMaterial->Set("u_Uniforms.LOD", 0.0f);			
 		});
 		computeMaterial->SetImage("o_Image", m_BloomTexture[0]->GetImage(), 0);
 		computeMaterial->SetImage("u_Texture", lightPassImage);
@@ -551,6 +563,8 @@ namespace XYZ {
 
 			TextureProperties props;
 			props.Storage = true;
+			props.SamplerWrap = TextureWrap::Clamp;
+			// TODO: resizing
 			m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
 			m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
 			m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);

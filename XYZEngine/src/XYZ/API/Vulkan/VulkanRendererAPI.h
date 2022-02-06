@@ -22,6 +22,7 @@ namespace XYZ {
 		virtual void DispatchCompute(Ref<PipelineCompute> pipeline, Ref<Material> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) override;
 		virtual void EndPipelineCompute(Ref<PipelineCompute> pipeline) override;
 		virtual void UpdateDescriptors(Ref<PipelineCompute> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet) override;
+		virtual void ClearImage(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Image2D> image) override;
 
 		static VkDescriptorSet					  RT_AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo);
 		static VkDescriptorSet					  RT_AllocateDescriptorSet(const VkDescriptorSetLayout& layout);

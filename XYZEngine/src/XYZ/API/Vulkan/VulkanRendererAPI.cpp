@@ -379,6 +379,22 @@ namespace XYZ {
 		});
 	}
 
+	void VulkanRendererAPI::ClearImage(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Image2D> image)
+	{
+		Renderer::Submit([renderCommandBuffer, image = image.As<VulkanImage2D>()]
+			{
+				const auto vulkanCommandBuffer = renderCommandBuffer.As<VulkanRenderCommandBuffer>()->GetVulkanCommandBuffer(Renderer::GetCurrentFrame());
+				VkImageSubresourceRange subresourceRange{};
+				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				subresourceRange.baseMipLevel = 0;
+				subresourceRange.levelCount = image->GetSpecification().Mips;
+				subresourceRange.layerCount = image->GetSpecification().Layers;
+
+				VkClearColorValue clearColor{ 0.f, 0.f, 0.f, 0.f };
+				vkCmdClearColorImage(vulkanCommandBuffer, image->GetImageInfo().Image, image->GetSpecification().Usage == ImageUsage::Storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &clearColor, 1, &subresourceRange);
+			});
+	}
+
 
 	VkDescriptorSet VulkanRendererAPI::RT_AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo)
 	{
