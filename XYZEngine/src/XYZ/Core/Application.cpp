@@ -40,12 +40,13 @@ namespace XYZ {
 		m_Window = Window::Create(Renderer::GetAPIContext());
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
 		m_Window->SetVSync(false);
-		
+		Renderer::InitResources();
+
 		m_ImGuiLayer = nullptr;
 		m_ImGuiLayer = ImGuiLayer::Create();
 		m_LayerStack.PushOverlay(m_ImGuiLayer);
 
-		Renderer::InitResources();
+		
 		AssetManager::Init();
 
 		TCHAR NPath[MAX_PATH];

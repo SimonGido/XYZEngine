@@ -93,14 +93,13 @@ namespace XYZ {
 			);
 			VulkanContext::GetCurrentDevice()->FlushCommandBuffer(commandBuffer);
 		}
-		else
-		{
-			VkImageViewCreateInfo imageViewCreateInfo = createImageViewCreateInfo(
-				m_Specification.Layers, 0, m_Specification.Mips, 0
-			);
-			imageViewCreateInfo.viewType = m_Specification.Layers > 1 ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
-			VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_Info.ImageView));
-		}
+		
+		VkImageViewCreateInfo imageViewCreateInfo = createImageViewCreateInfo(
+			m_Specification.Layers, 0, m_Specification.Mips, 0
+		);
+		imageViewCreateInfo.viewType = m_Specification.Layers > 1 ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
+		VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_Info.ImageView));
+		
 		VkSamplerCreateInfo samplerCreateInfo = createSamplerCreateInfo();
 		VK_CHECK_RESULT(vkCreateSampler(device, &samplerCreateInfo, nullptr, &m_Info.Sampler));
 

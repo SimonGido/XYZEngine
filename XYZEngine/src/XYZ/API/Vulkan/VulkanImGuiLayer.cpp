@@ -233,16 +233,15 @@ namespace XYZ {
 
 	ImTextureID VulkanImGuiLayer::AddImage(const Ref<VulkanImage2D>& image)
 	{	
-		const VulkanDescriptorAllocator::Version newVersion = m_DescriptorAllocator->GetVersion();
+		const uint32_t frame = Renderer::GetCurrentFrame();
 		const ImGuiID id = GetImageID(image);
 		auto it = m_ImGuiImageDescriptors.find(id);
 		if (it != m_ImGuiImageDescriptors.end())
-		{
-			if (it->second.Version == newVersion)
-				return it->second.Descriptor;
-		}
+			return it->second.Descriptor;
+
+		
 		VkDescriptorSet newImageDescriptor = m_DescriptorAllocator->RT_Allocate(ImGui_ImplVulkan_GetDescriptorSetLayout());
-		m_ImGuiImageDescriptors[id] = { image, newImageDescriptor, newVersion };	
+		m_ImGuiImageDescriptors[id] = { image, newImageDescriptor };	
 		return newImageDescriptor;
 	}
 	void VulkanImGuiLayer::addWaitingFonts()

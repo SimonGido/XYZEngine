@@ -60,6 +60,7 @@ namespace XYZ {
 
 	void VulkanRendererAPI::EndFrame()
 	{
+		//s_DescriptorAllocator->TryResetFull();
 		Renderer::Submit([]()
 		{
 		});
@@ -77,13 +78,13 @@ namespace XYZ {
 			uint32_t width = framebuffer->GetSpecification().Width;
 			uint32_t height = framebuffer->GetSpecification().Height;
 
-			VkViewport viewport = {0.0f, static_cast<float>(height) };
+			VkViewport viewport = { 0.0f, static_cast<float>(height) };
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
 			viewport.width = width;
 			viewport.height = -static_cast<float>(height);
 
-			
+
 			VkRenderPassBeginInfo renderPassBeginInfo = {};
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderPassBeginInfo.pNext = nullptr;
@@ -94,7 +95,7 @@ namespace XYZ {
 			renderPassBeginInfo.framebuffer = framebuffer->GetFramebuffer();
 			renderPassBeginInfo.clearValueCount = framebuffer->GetVulkanClearValues().size();
 			renderPassBeginInfo.pClearValues = framebuffer->GetVulkanClearValues().data();
-			
+
 			VkRect2D scissor = {};
 			scissor.offset = { 0, 0 };
 			scissor.extent.width = width;
@@ -111,17 +112,17 @@ namespace XYZ {
 				viewport.height = -static_cast<float>(height);
 				scissor.extent = swapChain.GetExtent();
 			}
-			
+
 			const VkCommandBuffer commandBuffer = renderCommandBuffer.As<VulkanRenderCommandBuffer>()->GetVulkanCommandBuffer(frameIndex);
-			
+
 			vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 			if (explicitClear)
 				clearFramebuffer(framebuffer, commandBuffer);
-			
+
 			// Update dynamic viewport state
 			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 			// Update dynamic scissor state				
-			vkCmdSetScissor(commandBuffer, 0, 1, &scissor);			
+			vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 		});
 	}
 
@@ -142,7 +143,7 @@ namespace XYZ {
 		Renderer::Submit([renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, trans = transform, indexCount]() mutable
 		{
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
-			const VkDevice device     = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
 			Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = renderCommandBuffer;
 			Ref<VulkanIndexBuffer>		   vulkanIndexBuffer = indexBuffer;
@@ -152,7 +153,7 @@ namespace XYZ {
 			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 
-	
+
 			///////////////////////////////		
 			const VkBuffer vertexBuffers[] = { vertexBuffer.As<VulkanVertexBuffer>()->GetVulkanBuffer() };
 			const VkDeviceSize offsets[] = { 0 };
@@ -167,7 +168,7 @@ namespace XYZ {
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &trans);
 			if (fsUniformStorage)
 				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, vsUniformStorage.Size, fsUniformStorage.Size, fsUniformStorage.Data);
-			vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);	
+			vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
 		});
 	}
 
@@ -190,7 +191,7 @@ namespace XYZ {
 			///////////////////////////////		
 			const VkBuffer vertexBuffers[] = { vertexBuffer.As<VulkanVertexBuffer>()->GetVulkanBuffer() };
 			const VkDeviceSize offsets[] = { 0 };
-			
+
 			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), 0, vulkanIndexBuffer->GetVulkanIndexType());
 			ByteBuffer fsUniformStorage = vulkanMaterial->GetFSUniformsBuffer();
@@ -207,7 +208,7 @@ namespace XYZ {
 	{
 		Renderer::Submit([renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, material]() mutable
 		{
-			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
+			XYZ_PROFILE_FUNC("VulkanRendererAPI::BindPipeline");
 			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
 
@@ -260,7 +261,7 @@ namespace XYZ {
 	{
 		Renderer::Submit([renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, material]() mutable
 		{
-			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
+			XYZ_PROFILE_FUNC("VulkanRendererAPI::BeginPipelineCompute");
 			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
 
@@ -314,8 +315,8 @@ namespace XYZ {
 
 			ByteBuffer vsUniformStorage = vulkanMaterial->GetVSUniformsBuffer();
 			vkCmdPushConstants(
-				vulkanPipeline->GetActiveCommandBuffer(), 
-				vulkanPipeline->GetVulkanPipelineLayout(), 
+				vulkanPipeline->GetActiveCommandBuffer(),
+				vulkanPipeline->GetVulkanPipelineLayout(),
 				VK_SHADER_STAGE_COMPUTE_BIT, 0, vsUniformStorage.Size, vsUniformStorage.Data
 			);
 			vulkanPipeline->Dispatch(groupCountX, groupCountY, groupCountZ);
@@ -326,6 +327,55 @@ namespace XYZ {
 	{
 		Renderer::Submit([pipeline]() mutable {
 			pipeline->End();
+		});
+	}
+
+	void VulkanRendererAPI::UpdateDescriptors(Ref<PipelineCompute> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet)
+	{
+		Renderer::Submit([pipeline, material, uniformBufferSet, storageBufferSet]() {
+			
+			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
+
+
+			Ref<VulkanUniformBufferSet>	   vulkanUniformBufferSet = uniformBufferSet;
+			Ref<VulkanStorageBufferSet>    vulkanStorageBufferSet = storageBufferSet;
+			Ref<VulkanMaterial>			   vulkanMaterial = material;
+			Ref<VulkanShader>			   vulkanShader = pipeline->GetShader();
+			Ref<VulkanPipelineCompute>	   vulkanPipeline = pipeline;
+
+			const VkCommandBuffer		   commandBuffer = vulkanPipeline->GetActiveCommandBuffer();
+			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+			if (vulkanUniformBufferSet.Raw() && vulkanStorageBufferSet.Raw())
+			{
+				const auto& uniformBufferDescriptors = vulkanUniformBufferSet->GetDescriptors(vulkanShader->GetHash());
+				const auto& storageBufferDescriptors = vulkanStorageBufferSet->GetDescriptors(vulkanShader->GetHash());
+
+				vulkanMaterial->RT_UpdateForRendering(uniformBufferDescriptors, storageBufferDescriptors, true);
+			}
+			else if (vulkanUniformBufferSet.Raw())
+			{
+				const auto& uniformBufferDescriptors = vulkanUniformBufferSet->GetDescriptors(vulkanShader->GetHash());
+				vulkanMaterial->RT_UpdateForRendering(uniformBufferDescriptors, {}, true);
+			}
+			else if (vulkanStorageBufferSet.Raw())
+			{
+				const auto& storageBufferDescriptors = vulkanStorageBufferSet->GetDescriptors(vulkanShader->GetHash());
+				vulkanMaterial->RT_UpdateForRendering({}, storageBufferDescriptors, true);
+			}
+			else
+			{
+				vulkanMaterial->RT_UpdateForRendering({}, {}, true);
+			}
+
+			
+			const auto& materialDescriptors = vulkanMaterial->GetDescriptors(frameIndex);
+
+			vkCmdBindDescriptorSets(
+				commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, layout,
+				0, static_cast<uint32_t>(materialDescriptors.size()),
+				materialDescriptors.data(), 0, nullptr
+			);
 		});
 	}
 
@@ -341,9 +391,9 @@ namespace XYZ {
 		return s_DescriptorAllocator->RT_Allocate(layout);
 	}
 
-	VulkanDescriptorAllocator::Version VulkanRendererAPI::GetDescriptorAllocatorVersion()
+	VulkanDescriptorAllocator::Version VulkanRendererAPI::GetDescriptorAllocatorVersion(uint32_t frame)
 	{
-		return s_DescriptorAllocator->GetVersion();
+		return s_DescriptorAllocator->GetVersion(frame);
 	}
 
 

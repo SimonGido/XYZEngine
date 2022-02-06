@@ -47,7 +47,7 @@ namespace XYZ {
 		m_DescriptorsDirty = true;
 		Ref<VulkanShader> vulkanShader = m_Shader;
 		const auto& shaderDescriptorSets = vulkanShader->GetDescriptorSets();
-		m_DescriptorSets.resize(Renderer::GetConfiguration().FramesInFlight);
+		m_Descriptors.resize(Renderer::GetConfiguration().FramesInFlight);
 		
 		m_ImageDescriptors.clear();
 		m_ImageArraysDescriptors.clear();
@@ -56,13 +56,16 @@ namespace XYZ {
 		m_ImageArraysDescriptors.resize(shaderDescriptorSets.size());
 
 
-		for (auto& descriptorSet : m_DescriptorSets) // Per frame
+		for (auto& descriptor : m_Descriptors) // Per frame
 		{
-			descriptorSet.resize(shaderDescriptorSets.size());
-			for (uint32_t set = 0; set < descriptorSet.size(); ++set)
-				descriptorSet[set] = VulkanRendererAPI::RT_AllocateDescriptorSet(shaderDescriptorSets[set].DescriptorSetLayout);
+			descriptor.DescriptorSets.resize(shaderDescriptorSets.size());
+			for (uint32_t set = 0; set < descriptor.DescriptorSets.size(); ++set)
+				descriptor.DescriptorSets[set] = VulkanRendererAPI::RT_AllocateDescriptorSet(shaderDescriptorSets[set].DescriptorSetLayout);
 		}
-		m_DescriptorsVersion = VulkanRendererAPI::GetDescriptorAllocatorVersion();
+		for (uint32_t frame = 0; frame < Renderer::GetConfiguration().FramesInFlight; ++frame)
+		{
+			m_Descriptors[frame].Version = VulkanRendererAPI::GetDescriptorAllocatorVersion(frame);
+		}
 	}
 	void VulkanMaterial::SetFlag(RenderFlags renderFlag, bool val)
 	{
@@ -112,12 +115,12 @@ namespace XYZ {
 		set(name, value);
 	}
 
-	void VulkanMaterial::SetImageArray(const std::string& name, const Ref<Image2D>& image, uint32_t arrayIndex)
+	void VulkanMaterial::SetImageArray(const std::string& name, Ref<Image2D> image, uint32_t arrayIndex)
 	{
 		setDescriptor(name, arrayIndex, image);
 	}
 
-	void VulkanMaterial::SetImage(const std::string& name, const Ref<Image2D>& image, int32_t mip)
+	void VulkanMaterial::SetImage(const std::string& name, Ref<Image2D> image, int32_t mip)
 	{
 		setDescriptor(name, image, mip);
 	}
@@ -175,69 +178,29 @@ namespace XYZ {
 		return getResource<Texture2D>(name);
 	}
 
-	void VulkanMaterial::RT_UpdateForRendering(const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors, const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors)
+	void VulkanMaterial::RT_UpdateForRendering(const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors, const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors,
+		bool forceDescriptorAllocation)
 	{
-		tryAllocateDescriptorSets();
-
 		vector3D<VkDescriptorImageInfo> arrayImageInfos;
-		if (m_DescriptorsDirty)
+		bool allocated = tryAllocateDescriptorSets(forceDescriptorAllocation);
+		if (allocated && !m_DescriptorsDirty)
 		{
-			Ref<VulkanShader> vulkanShader = m_Shader;
-			const uint32_t numSets = vulkanShader->GetDescriptorSets().size();
+			const uint32_t frame = Renderer::GetCurrentFrame();
+			arrayImageInfos.resize(1);
+			m_DescriptorsDirty = false;
+
+			RT_updateForRenderingFrame(frame, arrayImageInfos[0], uniformBufferDescriptors, storageBufferDescriptors);
+		}
+		else if (m_DescriptorsDirty)
+		{		
 			const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
 			arrayImageInfos.resize(framesInFlight);
+			const uint32_t frame = Renderer::GetCurrentFrame();
 			m_DescriptorsDirty = false;
 
 			for (uint32_t frame = 0; frame < framesInFlight; ++frame)
 			{
-				m_WriteDescriptors[frame].clear();
-				arrayImageInfos[frame].resize(numSets);
-				for (uint32_t set = 0; set < numSets; ++set)
-				{
-					for (auto& pending : m_ImageDescriptors[set])
-					{
-						if (pending.Image.Raw())
-						{
-							pending.WriteDescriptor.pImageInfo = pending.Mip == -1 ? &pending.Image->GetDescriptor() 
-																				   : &pending.Image->RT_GetMipImageDescriptor(pending.Mip);
-							pending.WriteDescriptor.dstSet = m_DescriptorSets[frame][set];
-							m_WriteDescriptors[frame].push_back(pending.WriteDescriptor);
-						}
-					}
-					for (auto& pending : m_ImageArraysDescriptors[set])
-					{
-						if (pending.Images.empty())
-							continue;
-
-						for (auto& image : pending.Images)
-						{
-							arrayImageInfos[frame][set].push_back(image->GetDescriptor());
-						}
-						pending.WriteDescriptor.pImageInfo = arrayImageInfos[frame][set].data();
-						pending.WriteDescriptor.descriptorCount = arrayImageInfos[frame][set].size();
-						pending.WriteDescriptor.dstSet = m_DescriptorSets[frame][set];
-						m_WriteDescriptors[frame].push_back(pending.WriteDescriptor);
-					}
-
-					if (!uniformBufferDescriptors.empty())
-					{
-						for (auto& desc : uniformBufferDescriptors[frame][set])
-						{
-							m_WriteDescriptors[frame].push_back(desc);
-							auto& last = m_WriteDescriptors[frame].back();
-							last.dstSet = m_DescriptorSets[frame][set];
-						}
-					}
-					if (!storageBufferDescriptors.empty())
-					{
-						for (auto& desc : storageBufferDescriptors[frame][set])
-						{
-							m_WriteDescriptors[frame].push_back(desc);
-							auto& last = m_WriteDescriptors[frame].back();
-							last.dstSet = m_DescriptorSets[frame][set];
-						}
-					}
-				}
+				RT_updateForRenderingFrame(frame, arrayImageInfos[frame], uniformBufferDescriptors, storageBufferDescriptors);
 			}
 		}
 		const uint32_t frameIndex = Renderer::GetAPIContext()->GetCurrentFrame();
@@ -259,21 +222,81 @@ namespace XYZ {
 		return ByteBuffer(m_UniformsBuffer.Data, vertexBufferSize);
 	}
 
-	void VulkanMaterial::tryAllocateDescriptorSets()
+	void VulkanMaterial::RT_updateForRenderingFrame(uint32_t frame,
+		vector2D<VkDescriptorImageInfo>& arrayImageInfos,
+		const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors,
+		const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors
+	)
 	{
-		VulkanDescriptorAllocator::Version newVersion = VulkanRendererAPI::GetDescriptorAllocatorVersion();
-		if (newVersion != m_DescriptorsVersion)
+		Ref<VulkanShader> vulkanShader = m_Shader;
+		const uint32_t numSets = vulkanShader->GetDescriptorSets().size();
+
+		m_WriteDescriptors[frame].clear();
+		arrayImageInfos.resize(numSets);
+		for (uint32_t set = 0; set < numSets; ++set)
 		{
-			m_DescriptorsVersion = newVersion;
-			Ref<VulkanShader> vulkanShader = m_Shader;
-			const auto& shaderDescriptorSets = vulkanShader->GetDescriptorSets();
-			for (auto& descriptorSet : m_DescriptorSets) // Per frame
+			for (auto& pending : m_ImageDescriptors[set])
 			{
-				for (uint32_t set = 0; set < descriptorSet.size(); ++set)
+				if (pending.Image.Raw())
 				{
-					descriptorSet[set] = VulkanRendererAPI::RT_AllocateDescriptorSet(shaderDescriptorSets[set].DescriptorSetLayout);
+					pending.WriteDescriptor.pImageInfo = pending.Mip == -1 ? &pending.Image->GetDescriptor()
+						: &pending.Image->RT_GetMipImageDescriptor(pending.Mip);
+					pending.WriteDescriptor.dstSet = m_Descriptors[frame].DescriptorSets[set];
+					m_WriteDescriptors[frame].push_back(pending.WriteDescriptor);
 				}
 			}
+			for (auto& pending : m_ImageArraysDescriptors[set])
+			{
+				if (pending.Images.empty())
+					continue;
+
+				for (auto& image : pending.Images)
+				{
+					arrayImageInfos[set].push_back(image->GetDescriptor());
+				}
+				pending.WriteDescriptor.pImageInfo = arrayImageInfos[set].data();
+				pending.WriteDescriptor.descriptorCount = arrayImageInfos[set].size();
+				pending.WriteDescriptor.dstSet = m_Descriptors[frame].DescriptorSets[set];
+				m_WriteDescriptors[frame].push_back(pending.WriteDescriptor);
+			}
+
+			if (!uniformBufferDescriptors.empty())
+			{
+				for (auto& desc : uniformBufferDescriptors[frame][set])
+				{
+					m_WriteDescriptors[frame].push_back(desc);
+					auto& last = m_WriteDescriptors[frame].back();
+					last.dstSet = m_Descriptors[frame].DescriptorSets[set];
+				}
+			}
+			if (!storageBufferDescriptors.empty())
+			{
+				for (auto& desc : storageBufferDescriptors[frame][set])
+				{
+					m_WriteDescriptors[frame].push_back(desc);
+					auto& last = m_WriteDescriptors[frame].back();
+					last.dstSet = m_Descriptors[frame].DescriptorSets[set];
+				}
+			}
+		}
+	}
+
+	bool VulkanMaterial::tryAllocateDescriptorSets(bool force)
+	{
+		const uint32_t frame = Renderer::GetCurrentFrame();
+		VulkanDescriptorAllocator::Version newVersion = VulkanRendererAPI::GetDescriptorAllocatorVersion(frame);
+		if (newVersion != m_Descriptors[frame].Version || force)
+		{
+			m_Descriptors[frame].Version = newVersion;
+			Ref<VulkanShader> vulkanShader = m_Shader;
+			const auto& shaderDescriptorSets = vulkanShader->GetDescriptorSets();
+		
+			auto& descriptorSet = m_Descriptors[frame].DescriptorSets;
+			for (uint32_t set = 0; set < descriptorSet.size(); ++set)
+			{
+				descriptorSet[set] = VulkanRendererAPI::RT_AllocateDescriptorSet(shaderDescriptorSets[set].DescriptorSetLayout);
+			}
+			return true;
 		}
 	}
 
@@ -295,15 +318,12 @@ namespace XYZ {
 		}
 	}
 
-	void VulkanMaterial::setDescriptor(const std::string& name, const Ref<Image2D>& image, int32_t mip)
+	void VulkanMaterial::setDescriptor(const std::string& name, Ref<Image2D> image, int32_t mip)
 	{
 		const ShaderResourceDeclaration* resource = findResourceDeclaration(name);
 		XYZ_ASSERT(resource, "");
 
 		uint32_t binding = resource->GetRegister();
-		// Texture is already set
-		//if (binding < m_Images.size() && m_Images[binding].Raw() && image.Raw() == m_Images[binding].Raw())
-		//	return;
 
 		auto [wds, set] = m_Shader->GetDescriptorSet(name);
 		VkWriteDescriptorSet textureDescriptor = *wds;
@@ -328,16 +348,12 @@ namespace XYZ {
 			instance->m_DescriptorsDirty = true;
 		});
 	}
-	void VulkanMaterial::setDescriptor(const std::string& name, uint32_t index, const Ref<Image2D>& image)
+	void VulkanMaterial::setDescriptor(const std::string& name, uint32_t index, Ref<Image2D> image)
 	{
 		const ShaderResourceDeclaration* resource = findResourceDeclaration(name);
 		XYZ_ASSERT(resource, "");
 
 		uint32_t binding = resource->GetRegister();
-		// Texture is already set
-		//if (binding < m_ImageArrays.size() && m_ImageArrays[binding].size() < index && image.Raw() == m_ImageArrays[binding][index].Raw())
-		//	return;
-
 		
 		auto [wds, set] = m_Shader->GetDescriptorSet(name);
 		VkWriteDescriptorSet textureDescriptor = *wds;

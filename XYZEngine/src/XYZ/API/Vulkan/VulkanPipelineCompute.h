@@ -14,7 +14,7 @@ namespace XYZ {
 
 		virtual void		Begin(Ref<RenderCommandBuffer> renderCommandBuffer = nullptr) override;
 		virtual void		End() override;
-		virtual Ref<Shader> GetShader() override { return m_Shader; }
+		virtual Ref<Shader> GetShader() const override { return m_Shader; }
 
 	
 		void Dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);

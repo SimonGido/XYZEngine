@@ -85,7 +85,7 @@ namespace XYZ {
 		static void BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material);
 		static void DispatchCompute(Ref<PipelineCompute> pipeline, Ref<Material> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
 		static void EndPipelineCompute(Ref<PipelineCompute> pipeline);
-
+		static void UpdateDescriptors(Ref<PipelineCompute> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet);
 
 
 		static void RegisterShaderDependency(const Ref<Shader>& shader, const Ref<PipelineCompute>& pipeline);

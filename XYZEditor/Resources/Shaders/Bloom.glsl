@@ -156,6 +156,6 @@ void main()
         vec3 existing = textureLod(u_Texture, texCoords, u_Uniforms.LOD).rgb;
         color.rgb = existing + upsampledTexture;
     }
-    
+
     imageStore(o_Image, ivec2(gl_GlobalInvocationID), color);
 }

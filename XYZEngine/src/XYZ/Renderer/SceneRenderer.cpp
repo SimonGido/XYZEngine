@@ -7,6 +7,8 @@
 #include "XYZ/Core/Input.h"
 #include "XYZ/Debug/Profiler.h"
 #include "XYZ/ImGui/ImGui.h"
+#include "XYZ/API/Vulkan/VulkanRendererAPI.h"
+#include "XYZ/API/Vulkan/VulkanPipelineCompute.h"
 
 #include <glm/gtx/transform.hpp>
 
@@ -61,8 +63,8 @@ namespace XYZ {
 			FramebufferSpecification specs;
 			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
 			specs.Attachments = {
-				FramebufferTextureSpecification(ImageFormat::RGBA16F),
-				FramebufferTextureSpecification(ImageFormat::RGBA16F),
+				FramebufferTextureSpecification(ImageFormat::RGBA32F),
+				FramebufferTextureSpecification(ImageFormat::RGBA32F),
 				FramebufferTextureSpecification(ImageFormat::DEPTH24STENCIL8)
 			};
 			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
@@ -235,6 +237,7 @@ namespace XYZ {
 
 	Ref<Image2D> SceneRenderer::GetFinalPassImage() const
 	{
+		return m_BloomTexture[2]->GetImage();
 		return m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
 
 		return m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->GetImage();
@@ -385,92 +388,119 @@ namespace XYZ {
 
 	void SceneRenderer::bloomPass()
 	{
+		constexpr int prefilter = 0;
+		constexpr int downsample = 1;
+		constexpr int upsamplefirst = 2;
+		constexpr int upsample = 3;
+
+		auto vulkanPipeline = m_BloomComputePipeline;
+
+		auto imageBarrier = [](Ref<VulkanPipelineCompute> pipeline, Ref<VulkanImage2D> image) {
+
+			Renderer::Submit([pipeline, image]() {
+				VkImageMemoryBarrier imageMemoryBarrier = {};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+				imageMemoryBarrier.image = image->GetImageInfo().Image;
+				imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				vkCmdPipelineBarrier(
+					pipeline->GetActiveCommandBuffer(),
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+					0,
+					0, nullptr,
+					0, nullptr,
+					1, &imageMemoryBarrier);
+			});
+		};
+
 		const uint32_t workGroupSize = 4;
 		uint32_t workGroupsX = (uint32_t)glm::ceil(m_ViewportSize.x / workGroupSize);
 		uint32_t workGroupsY = (uint32_t)glm::ceil(m_ViewportSize.y / workGroupSize);
 		Ref<Image2D> lightPassImage = m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
 
-		m_BloomComputeMaterial->Set("u_Uniforms.FilterTreshold", m_BloomSettings.FilterTreshold);
-		m_BloomComputeMaterial->Set("u_Uniforms.FilterKnee", m_BloomSettings.FilterKnee);
-		m_BloomComputeMaterial->Set("u_Uniforms.Mode", 0);
+		Ref<Material> computeMaterial = m_BloomComputeMaterial;
+		Renderer::Submit([computeMaterial, bloomSettings = m_BloomSettings, prefilter]() mutable {
+			computeMaterial->Set("u_Uniforms.FilterTreshold", bloomSettings.FilterTreshold);
+			computeMaterial->Set("u_Uniforms.FilterKnee", bloomSettings.FilterKnee);
+			computeMaterial->Set("u_Uniforms.Mode", prefilter);
+			computeMaterial->Set("u_Uniforms.LOD", 0.0f);			
+		});
+		computeMaterial->SetImage("o_Image", m_BloomTexture[0]->GetImage(), 0);
+		computeMaterial->SetImage("u_Texture", lightPassImage);
+		computeMaterial->SetImage("u_BloomTexture", lightPassImage);
 
-
-		m_BloomComputeMaterial->SetImage("o_Image", m_BloomTexture[0]->GetImage(), 0);
-		m_BloomComputeMaterial->SetImage("u_Texture", lightPassImage);
-		m_BloomComputeMaterial->SetImage("u_BloomTexture", lightPassImage);
-		
-		Renderer::BeginPipelineCompute(m_CommandBuffer, m_BloomComputePipeline, nullptr, nullptr, m_BloomComputeMaterial);
+		Renderer::BeginPipelineCompute(m_CommandBuffer, m_BloomComputePipeline, nullptr, nullptr, m_BloomComputeMaterial);		
 		Renderer::DispatchCompute(m_BloomComputePipeline, m_BloomComputeMaterial, workGroupsX, workGroupsY, 1);
-		Renderer::EndPipelineCompute(m_BloomComputePipeline);
-		/*
-		m_BloomComputeShader->Bind();
-		m_BloomComputeShader->SetFloat("u_FilterTreshold", 1.0f);
-		m_BloomComputeShader->SetFloat("u_FilterKnee", 0.1f);
+		imageBarrier(vulkanPipeline, m_BloomTexture[0]->GetImage());
 
-		const uint32_t workGroupSize = 4;
-		uint32_t workGroupsX = (uint32_t)glm::ceil(m_ViewportSize.x / workGroupSize);
-		uint32_t workGroupsY = (uint32_t)glm::ceil(m_ViewportSize.y / workGroupSize);
-	
-		// Filter stage
-		m_BloomComputeShader->SetInt("u_Mode", 0);
+		Renderer::Submit([computeMaterial, downsample]() mutable {
+			computeMaterial->Set("u_Uniforms.Mode", downsample);
+		});
 
-		m_BloomTexture[0]->BindImage(0, 0, BindImageType::Write); // o_Image
-		m_LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 1); // u_Texture
-		m_BloomComputeShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
-		
-		// Downsample stage
-		m_BloomComputeShader->SetInt("u_Mode", 1);
 		const uint32_t mips = m_BloomTexture[0]->GetMipLevelCount() - 2;
-		for (uint32_t i = 1; i < mips; ++i)
+		for (uint32_t mip = 1; mip < mips; ++mip)
 		{
-			auto [mipWidth, mipHeight] = m_BloomTexture[0]->GetMipSize(i);
-			
-			m_BloomTexture[1]->BindImage(0, i, BindImageType::Write); // o_Image
-			m_BloomTexture[0]->Bind(1);							   // u_Texture
-	
-			workGroupsX = (uint32_t)glm::ceil((float)mipWidth /  (float)workGroupSize);
+			auto [mipWidth, mipHeight] = m_BloomTexture[0]->GetMipSize(mip);
+
+			computeMaterial->SetImage("o_Image", m_BloomTexture[1]->GetImage(), mip);
+			computeMaterial->SetImage("u_Texture", m_BloomTexture[0]->GetImage());
+			Renderer::Submit([computeMaterial, mip]() mutable {
+
+				computeMaterial->Set("u_Uniforms.LOD", mip - 1.0f);
+			});
+
+			workGroupsX = (uint32_t)glm::ceil((float)mipWidth / (float)workGroupSize);
 			workGroupsY = (uint32_t)glm::ceil((float)mipHeight / (float)workGroupSize);
-	
-			m_BloomComputeShader->SetFloat("u_LOD", i - 1.0f);
-			m_BloomComputeShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
-		
-	
-			m_BloomTexture[0]->BindImage(0, i, BindImageType::Write); // o_Image
-			m_BloomTexture[1]->Bind(1);							   // u_Texture
-
-			m_BloomComputeShader->SetFloat("u_LOD", i);
-			m_BloomComputeShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
+			
+			Renderer::UpdateDescriptors(m_BloomComputePipeline, m_BloomComputeMaterial, nullptr, nullptr);
+			Renderer::DispatchCompute(m_BloomComputePipeline, m_BloomComputeMaterial, workGroupsX, workGroupsY, 1);
+			imageBarrier(vulkanPipeline, m_BloomTexture[1]->GetImage());
 		}
-
-		// Upsample first
-		m_BloomComputeShader->SetInt("u_Mode", 2);
-
-		m_BloomComputeShader->SetFloat("u_LOD", mips - 2.0f);
-		m_BloomTexture[2]->BindImage(0, mips - 2, BindImageType::Write); // o_Image
-		m_BloomTexture[0]->Bind(1);									  // u_Texture 
-
-	
+		Renderer::Submit([computeMaterial, mips, upsamplefirst]() mutable {
+			computeMaterial->Set("u_Uniforms.Mode", upsamplefirst);
+			computeMaterial->Set("u_Uniforms.LOD", mips - 2.0f);
+		});
+		
+		m_BloomComputeMaterial->SetImage("o_Image", m_BloomTexture[2]->GetImage(), mips - 2);
+		m_BloomComputeMaterial->SetImage("u_Texture", m_BloomTexture[0]->GetImage());
+		
 		auto [mipWidth, mipHeight] = m_BloomTexture[2]->GetMipSize(mips - 2);
 		workGroupsX = (uint32_t)glm::ceil((float)mipWidth / (float)workGroupSize);
 		workGroupsY = (uint32_t)glm::ceil((float)mipHeight / (float)workGroupSize);
-		m_BloomComputeShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
+		
+		Renderer::UpdateDescriptors(m_BloomComputePipeline, m_BloomComputeMaterial, nullptr, nullptr);
+		Renderer::DispatchCompute(m_BloomComputePipeline, m_BloomComputeMaterial, workGroupsX, workGroupsY, 1);	
+		imageBarrier(vulkanPipeline, m_BloomTexture[2]->GetImage());
 		
 		// Upsample stage
-		m_BloomComputeShader->SetInt("u_Mode", 3);
+		Renderer::Submit([computeMaterial, upsample]() mutable {
+			computeMaterial->Set("u_Uniforms.Mode", upsample);
+		});
+
 		for (int32_t mip = mips - 3; mip >= 0; mip--)
 		{
 			auto [mipWidth, mipHeight] = m_BloomTexture[2]->GetMipSize(mip);
 			workGroupsX = (uint32_t)glm::ceil((float)mipWidth / (float)workGroupSize);
 			workGroupsY = (uint32_t)glm::ceil((float)mipHeight / (float)workGroupSize);
-			
-			m_BloomTexture[2]->BindImage(0, mip, BindImageType::Write); // o_Image
-			m_BloomTexture[0]->Bind(1);							     // u_Texture 
-			m_BloomTexture[2]->Bind(2);								 // u_BloomTexture
-	
-			m_BloomComputeShader->SetFloat("u_LOD", mip);
-			m_BloomComputeShader->Compute(workGroupsX, workGroupsY, 1, ComputeBarrierType::ShaderImageAccessBarrier);
+		
+			m_BloomComputeMaterial->SetImage("o_Image", m_BloomTexture[2]->GetImage(), mip);
+			m_BloomComputeMaterial->SetImage("u_Texture", m_BloomTexture[0]->GetImage());
+			m_BloomComputeMaterial->SetImage("u_BloomTexture", m_BloomTexture[2]->GetImage());
+			Renderer::Submit([computeMaterial, mip]() mutable {
+
+				computeMaterial->Set("u_Uniforms.LOD", mip);
+			});
+		
+			Renderer::UpdateDescriptors(m_BloomComputePipeline, m_BloomComputeMaterial, nullptr, nullptr);
+			Renderer::DispatchCompute(m_BloomComputePipeline, m_BloomComputeMaterial, workGroupsX, workGroupsY, 1);
+			imageBarrier(vulkanPipeline, m_BloomTexture[2]->GetImage());
 		}
-		*/
+		
+		Renderer::EndPipelineCompute(m_BloomComputePipeline);
 	}
 	void SceneRenderer::createCompositePass()
 	{
@@ -497,7 +527,7 @@ namespace XYZ {
 		FramebufferSpecification specs;
 		specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
 		specs.Attachments = {
-			FramebufferTextureSpecification(ImageFormat::RGBA16F, true)
+			FramebufferTextureSpecification(ImageFormat::RGBA32F, true)
 		};
 		Ref<Framebuffer> fbo = Framebuffer::Create(specs);
 		m_LightPass = RenderPass::Create({ fbo });

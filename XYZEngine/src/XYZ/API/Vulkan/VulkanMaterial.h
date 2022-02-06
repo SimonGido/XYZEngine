@@ -29,8 +29,8 @@ namespace XYZ {
 		virtual void Set(const std::string& name, const glm::ivec3& value) override;
 		virtual void Set(const std::string& name, const glm::ivec4& value) override;
 
-		virtual void SetImageArray(const std::string& name, const Ref<Image2D>& image, uint32_t arrayIndex) override;
-		virtual void SetImage(const std::string& name, const Ref<Image2D>& image, int32_t mip = -1) override;
+		virtual void SetImageArray(const std::string& name, Ref<Image2D> image, uint32_t arrayIndex) override;
+		virtual void SetImage(const std::string& name, Ref<Image2D> image, int32_t mip = -1) override;
 
 		virtual float&     GetFloat(const std::string& name) override;
 		virtual int32_t&   GetInt(const std::string& name) override;
@@ -56,18 +56,25 @@ namespace XYZ {
 
 		void RT_UpdateForRendering(
 			const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors, 
-			const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors
+			const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors,
+			bool forceDescriptroAllocation = false
 		);
 		const std::vector<VkWriteDescriptorSet>& GetWriteDescriptors(uint32_t frame) const { return m_WriteDescriptors[frame]; }
-		const std::vector<VkDescriptorSet>&      GetDescriptors(uint32_t frame) const { return m_DescriptorSets[frame]; }
+		const std::vector<VkDescriptorSet>&      GetDescriptors(uint32_t frame) const { return m_Descriptors[frame].DescriptorSets; }
 		const ByteBuffer						 GetFSUniformsBuffer() const;
 		const ByteBuffer						 GetVSUniformsBuffer() const;
 	private:
-		void tryAllocateDescriptorSets();
+		void RT_updateForRenderingFrame(uint32_t frame,
+			vector2D<VkDescriptorImageInfo>& arrayImageInfos,
+			const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors,
+			const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors
+		);
+
+		bool tryAllocateDescriptorSets(bool force = false);
 
 		void allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer) const;
-		void setDescriptor(const std::string& name, const Ref<Image2D>& image, int32_t mip);
-		void setDescriptor(const std::string& name, uint32_t index, const Ref<Image2D>& image);
+		void setDescriptor(const std::string& name, Ref<Image2D> image, int32_t mip);
+		void setDescriptor(const std::string& name, uint32_t index, Ref<Image2D> image);
 
 		template <typename T>
 		void set(const std::string& name, const T& value);
@@ -89,9 +96,16 @@ namespace XYZ {
 
 		std::vector<Ref<Image2D>>			   m_Images;
 		std::vector<std::vector<Ref<Image2D>>> m_ImageArrays;
-		// Per frame -> per set
-		vector2D<VkDescriptorSet>			   m_DescriptorSets;
-		VulkanDescriptorAllocator::Version	   m_DescriptorsVersion;
+		
+			
+		struct Descriptor
+		{
+			// per set
+			std::vector<VkDescriptorSet>	   DescriptorSets;
+			VulkanDescriptorAllocator::Version Version;
+		};
+		// Per frame
+		std::vector<Descriptor>	m_Descriptors;
 
 		struct PendingDescriptor
 		{

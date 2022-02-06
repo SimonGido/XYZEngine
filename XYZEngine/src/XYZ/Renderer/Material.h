@@ -39,8 +39,8 @@ namespace XYZ {
 		virtual void Set(const std::string& name, const glm::ivec3& value) = 0;
 		virtual void Set(const std::string& name, const glm::ivec4& value) = 0;
 
-		virtual void SetImageArray(const std::string& name, const Ref<Image2D>& image, uint32_t arrayIndex) = 0;
-		virtual void SetImage(const std::string& name, const Ref<Image2D>& image, int32_t mip = -1) = 0;
+		virtual void SetImageArray(const std::string& name, Ref<Image2D> image, uint32_t arrayIndex) = 0;
+		virtual void SetImage(const std::string& name, Ref<Image2D> image, int32_t mip = -1) = 0;
 
 		virtual float&		   GetFloat(const std::string& name) = 0;
 		virtual int32_t&	   GetInt(const std::string& name) = 0;

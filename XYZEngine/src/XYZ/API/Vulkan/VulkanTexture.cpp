@@ -101,7 +101,16 @@ namespace XYZ {
 	}
 	std::pair<uint32_t, uint32_t> VulkanTexture2D::GetMipSize(uint32_t mip) const
 	{
-		return std::pair<uint32_t, uint32_t>();
+		uint32_t width = m_Width;
+		uint32_t height = m_Height;
+		while (mip != 0)
+		{
+			width /= 2;
+			height /= 2;
+			mip--;
+		}
+
+		return { width, height };
 	}
 	void VulkanTexture2D::Invalidate()
 	{

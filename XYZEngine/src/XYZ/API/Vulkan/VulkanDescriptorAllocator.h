@@ -14,7 +14,7 @@ namespace XYZ {
 		VkDescriptorSet RT_Allocate(const VkDescriptorSetLayout& layout);
 		void			TryResetFull();
 		void			RT_TryResetFull(uint32_t frame);
-		Version			GetVersion() const;
+		Version			GetVersion(uint32_t frame) const;
 
 	private:
 		VkDescriptorPool createPool() const;
@@ -26,7 +26,9 @@ namespace XYZ {
 		{
 			VkDescriptorPool			  InUsePool;
 			std::deque<VkDescriptorPool>  FullPools;
+			std::deque<VkDescriptorPool>  ResetPools;
 			std::deque<VkDescriptorPool>  ReusablePools;
+			Version						  AllocatorVersion = 0;
 		};
 
 		std::vector<Allocator>	 m_Allocators;
@@ -34,9 +36,9 @@ namespace XYZ {
 		bool					  m_Initialized = false;
 		std::mutex				  m_PoolMutex;
 		mutable std::mutex		  m_VersionMutex;
-		Version					  m_AllocatorVersion;
+		size_t					  m_AutoResetCount;
+		
 
 		static constexpr uint32_t sc_MaxSets = 1024;
-		static constexpr size_t	  sc_AutoResetCount = 3;
 	};
 }

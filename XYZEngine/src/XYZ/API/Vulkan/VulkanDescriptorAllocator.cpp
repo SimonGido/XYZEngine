@@ -36,7 +36,8 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(!m_Initialized, "Vulkan Descriptor Allocator is already initialized");
 		m_Initialized = true;
-		m_AllocatorVersion = 0;
+		m_AutoResetCount = Renderer::GetConfiguration().FramesInFlight;
+
 		Ref<VulkanDescriptorAllocator> instance = this;
 		Renderer::Submit([instance]() mutable 
 		{
@@ -65,6 +66,10 @@ namespace XYZ {
 					vkDestroyDescriptorPool(device, pool, nullptr);
 				}
 				for (auto& pool : allocator.ReusablePools)
+				{
+					vkDestroyDescriptorPool(device, pool, nullptr);
+				}
+				for (auto& pool : allocator.ResetPools)
 				{
 					vkDestroyDescriptorPool(device, pool, nullptr);
 				}
@@ -107,26 +112,30 @@ namespace XYZ {
 		{
 			std::scoped_lock<std::mutex> poolLock(m_PoolMutex);
 			auto& fullPools = m_Allocators[frame].FullPools;
-			if (fullPools.size() >= sc_AutoResetCount)
+			auto& resetPools = m_Allocators[frame].ResetPools;
+			if (fullPools.size() >= m_AutoResetCount)
 			{
 				XYZ_PROFILE_FUNC("VulkanDescriptorAllocator::RT_TryResetFull - while loop");
-				while (fullPools.size() != 1)
+				while (!resetPools.empty()) 
 				{
 					XYZ_PROFILE_FUNC("VulkanDescriptorAllocator::vkResetDescriptorPool");
-					VkDescriptorPool pool = fullPools.front();
-					fullPools.pop_front();
+					VkDescriptorPool pool = resetPools.back();
+					resetPools.pop_back();
 					VK_CHECK_RESULT(vkResetDescriptorPool(device, pool, VkDescriptorPoolResetFlags{ 0 }));
 					m_Allocators[frame].ReusablePools.push_back(pool);
 				}
+				resetPools = fullPools;
+				fullPools.clear();
+
 				std::scoped_lock<std::mutex> versionLock(m_VersionMutex);
-				m_AllocatorVersion++;
+				m_Allocators[frame].AllocatorVersion++;
 			}
 		}
 	}
-	VulkanDescriptorAllocator::Version VulkanDescriptorAllocator::GetVersion() const
+	VulkanDescriptorAllocator::Version VulkanDescriptorAllocator::GetVersion(uint32_t frame) const
 	{
 		std::scoped_lock<std::mutex> versionLock(m_VersionMutex);
-		return m_AllocatorVersion;
+		return m_Allocators[frame].AllocatorVersion;
 	}
 	VkDescriptorPool VulkanDescriptorAllocator::createPool() const
 	{

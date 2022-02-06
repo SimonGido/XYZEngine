@@ -150,7 +150,7 @@ namespace XYZ {
 			// Wait for execution of compute shader to complete
 			// Currently this is here for "safety"
 			{
-				// vkWaitForFences(device, 1, &s_ComputeFence, VK_TRUE, UINT64_MAX);
+				vkWaitForFences(device, 1, &s_ComputeFence, VK_TRUE, UINT64_MAX);
 			}
 		}
 		m_ActiveComputeCommandBuffer = nullptr;

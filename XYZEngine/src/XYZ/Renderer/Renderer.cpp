@@ -321,6 +321,11 @@ namespace XYZ {
 		s_RendererAPI->EndPipelineCompute(pipeline);
 	}
 
+	void Renderer::UpdateDescriptors(Ref<PipelineCompute> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet)
+	{
+		s_RendererAPI->UpdateDescriptors(pipeline, material, uniformBufferSet, storageBufferSet);
+	}
+
 	void Renderer::RegisterShaderDependency(const Ref<Shader>& shader, const Ref<PipelineCompute>& pipeline)
 	{
 		s_Data.ShaderDependencies.Register(shader->GetHash(), pipeline);

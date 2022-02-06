@@ -21,10 +21,11 @@ namespace XYZ {
 		virtual void BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material) override;
 		virtual void DispatchCompute(Ref<PipelineCompute> pipeline, Ref<Material> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) override;
 		virtual void EndPipelineCompute(Ref<PipelineCompute> pipeline) override;
+		virtual void UpdateDescriptors(Ref<PipelineCompute> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet) override;
 
 		static VkDescriptorSet					  RT_AllocateDescriptorSet(VkDescriptorSetAllocateInfo& allocInfo);
 		static VkDescriptorSet					  RT_AllocateDescriptorSet(const VkDescriptorSetLayout& layout);
-		static VulkanDescriptorAllocator::Version GetDescriptorAllocatorVersion();
+		static VulkanDescriptorAllocator::Version GetDescriptorAllocatorVersion(uint32_t frame);
 
 		static void InsertImageMemoryBarrier(
 				VkCommandBuffer cmdbuffer,

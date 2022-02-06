@@ -43,9 +43,8 @@ namespace  XYZ
 
         struct ImageDescriptorSet
         {
-            Ref<VulkanImage2D>                 Image;
-            VkDescriptorSet					   Descriptor;
-            VulkanDescriptorAllocator::Version Version;
+            Ref<VulkanImage2D>  Image;
+            VkDescriptorSet		Descriptor;
         };
 
         std::map<ImGuiID, ImageDescriptorSet> m_ImGuiImageDescriptors;
