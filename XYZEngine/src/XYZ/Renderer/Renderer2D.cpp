@@ -511,12 +511,11 @@ namespace XYZ {
 			FramebufferSpecification framebufferSpec;
 			framebufferSpec.Attachments = {
 					FramebufferTextureSpecification(ImageFormat::RGBA32F),
-					FramebufferTextureSpecification(ImageFormat::RGBA32F),
-					FramebufferTextureSpecification(ImageFormat::DEPTH24STENCIL8)
+					FramebufferTextureSpecification(ImageFormat::RGBA32F)
 			};
 			framebufferSpec.Samples = 1;
 			framebufferSpec.ClearOnLoad = false;
-			framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+			framebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 			Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
 

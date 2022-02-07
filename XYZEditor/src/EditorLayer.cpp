@@ -57,6 +57,10 @@ namespace XYZ {
 
 			Ref<Animator> animator = Ref<Animator>::Create();
 			Ref<Animation> animation = Ref<Animation>::Create();
+			auto& spriteRenderer = newEntity.EmplaceComponent<SpriteRenderer>();
+			spriteRenderer.Material = Material::Create(Renderer::GetShaderLibrary()->Get("DefaultLitShader"));
+			spriteRenderer.SubTexture = Ref<SubTexture>::Create(Texture2D::Create("Assets/Textures/1_ORK_head.png"));
+
 			auto& animatorComp = newEntity.EmplaceComponent<AnimatorComponent>();
 			animatorComp.Animator = animator;
 			animator->SetAnimation(animation);
