@@ -507,22 +507,20 @@ namespace XYZ {
 
 	void Renderer2D::createRenderPass()
 	{
-		{
-			FramebufferSpecification framebufferSpec;
-			framebufferSpec.Attachments = {
-					FramebufferTextureSpecification(ImageFormat::RGBA32F),
-					FramebufferTextureSpecification(ImageFormat::RGBA32F)
-			};
-			framebufferSpec.Samples = 1;
-			framebufferSpec.ClearOnLoad = false;
-			framebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+		FramebufferSpecification framebufferSpec;
+		framebufferSpec.Attachments = {
+				FramebufferTextureSpecification(ImageFormat::RGBA32F),
+				FramebufferTextureSpecification(ImageFormat::RGBA32F)
+		};
+		framebufferSpec.Samples = 1;
+		framebufferSpec.ClearOnLoad = false;
+		framebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-			Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
+		Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
 
-			RenderPassSpecification renderPassSpec;
-			renderPassSpec.TargetFramebuffer = framebuffer;
-			m_RenderPass = RenderPass::Create(renderPassSpec);
-		}
+		RenderPassSpecification renderPassSpec;
+		renderPassSpec.TargetFramebuffer = framebuffer;
+		m_RenderPass = RenderPass::Create(renderPassSpec);
 	}
 
 	void Renderer2D::createDefaultPipelineBuckets()
