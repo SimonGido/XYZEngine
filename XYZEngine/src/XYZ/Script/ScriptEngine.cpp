@@ -345,8 +345,8 @@ namespace XYZ {
 			mono_domain_unload(s_MonoDomain);
 			s_MonoDomain = domain;
 		}
-		s_ExceptionMethod = GetMethod(s_CoreAssemblyImage, "Hazel.RuntimeException:OnException(object)");
-		s_EntityClass = mono_class_from_name(s_CoreAssemblyImage, "Hazel", "Entity");
+		s_ExceptionMethod = GetMethod(s_CoreAssemblyImage, "XYZ.RuntimeException:OnException(object)");
+		s_EntityClass = mono_class_from_name(s_CoreAssemblyImage, "XYZ", "Entity");
 
 		s_AppAssembly = appAssembly;
 		s_AppAssemblyImage = appAssemblyImage;

@@ -249,7 +249,7 @@ namespace XYZ {
 	Ref<Image2D> SceneRenderer::GetFinalPassImage() const
 	{
 		//return m_BloomTexture[2]->GetImage();
-		//return m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
+		return m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
 		//
 		//return m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->GetImage();
 		return m_CompositeRenderPipeline.Pipeline->GetSpecification().RenderPass->GetSpecification().TargetFramebuffer->GetImage();
@@ -432,7 +432,7 @@ namespace XYZ {
 		uint32_t workGroupsX = (uint32_t)glm::ceil(m_ViewportSize.x / workGroupSize);
 		uint32_t workGroupsY = (uint32_t)glm::ceil(m_ViewportSize.y / workGroupSize);
 		Ref<Image2D> lightPassImage = m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
-		//Renderer::ClearImage(m_CommandBuffer, m_BloomTexture[2]->GetImage());
+		// Renderer::ClearImage(m_CommandBuffer, m_BloomTexture[2]->GetImage());
 
 		Ref<Material> computeMaterial = m_BloomComputeMaterial;
 		Renderer::Submit([computeMaterial, bloomSettings = m_BloomSettings, prefilter]() mutable {
