@@ -25,6 +25,9 @@ namespace XYZ {
 	static std::string s_AssemblyPath;
 	static Ref<Scene>  s_SceneContext;
 
+	static MonoMethod* s_ExceptionMethod = nullptr;
+	static MonoClass*  s_EntityClass = nullptr;
+
 	// Assembly images
 	MonoImage* s_AppAssemblyImage = nullptr;
 	MonoImage* s_CoreAssemblyImage = nullptr;
@@ -179,10 +182,32 @@ namespace XYZ {
 		return method;
 	}
 
+	static std::string GetStringProperty(const char* propertyName, MonoClass* classType, MonoObject* object)
+	{
+		MonoProperty* property = mono_class_get_property_from_name(classType, propertyName);
+		MonoMethod* getterMethod = mono_property_get_get_method(property);
+		MonoString* string = (MonoString*)mono_runtime_invoke(getterMethod, object, NULL, NULL);
+		return string != nullptr ? std::string(mono_string_to_utf8(string)) : "";
+	}
+
 	static MonoObject* CallMethod(MonoObject* object, MonoMethod* method, void** params = nullptr)
 	{
 		MonoObject* pException = NULL;
 		MonoObject* result = mono_runtime_invoke(method, object, params, &pException);
+		if (pException)
+		{
+			MonoClass* exceptionClass = mono_object_get_class(pException);
+			MonoType* exceptionType = mono_class_get_type(exceptionClass);
+			const char* typeName = mono_type_get_name(exceptionType);
+			std::string message = GetStringProperty("Message", exceptionClass, pException);
+			std::string stackTrace = GetStringProperty("StackTrace", exceptionClass, pException);
+
+			// TODO: console logging
+			XYZ_ERROR("{0}: {1}. Stack Trace: {2}", typeName, message, stackTrace);
+
+			void* args[] = { pException };
+			MonoObject* result = mono_runtime_invoke(s_ExceptionMethod, nullptr, args, nullptr);
+		}
 		return result;
 	}
 
@@ -320,6 +345,8 @@ namespace XYZ {
 			mono_domain_unload(s_MonoDomain);
 			s_MonoDomain = domain;
 		}
+		s_ExceptionMethod = GetMethod(s_CoreAssemblyImage, "Hazel.RuntimeException:OnException(object)");
+		s_EntityClass = mono_class_from_name(s_CoreAssemblyImage, "Hazel", "Entity");
 
 		s_AppAssembly = appAssembly;
 		s_AppAssemblyImage = appAssemblyImage;
@@ -434,7 +461,11 @@ namespace XYZ {
 		}
 
 		MonoClass* monoClass = mono_class_from_name(s_AppAssemblyImage, NamespaceName.c_str(), ClassName.c_str());
-		return monoClass != nullptr;
+		if (monoClass == nullptr)
+			return false;
+
+		auto isEntitySubclass = mono_class_is_subclass_of(monoClass, s_EntityClass, 0);
+		return isEntitySubclass;
 	}
 
 	void ScriptEngine::CreateScriptEntityInstance(const SceneEntity& entity)
