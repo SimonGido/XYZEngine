@@ -2,6 +2,7 @@
 #include "AssetSerializer.h"
 
 #include "XYZ/Scene/SceneSerializer.h"
+#include "XYZ/Animation/Animator.h"
 
 namespace XYZ {
 	namespace Utils {
@@ -139,5 +140,32 @@ namespace XYZ {
 		
 		asset = Texture2D::Create(imagePath, props);
 		return true;
+	}
+	void AnimationAssetSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
+	{
+		Ref<Animation> animation = asset.As<Animation>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		//out << YAML::Key << "Image Path" << texture->GetPath();
+		//out << YAML::Key << "Format" << static_cast<uint32_t>(texture->GetFormat());
+		//out << YAML::Key << "Width" << texture->GetWidth();
+		//out << YAML::Key << "Height" << texture->GetHeight();
+		//out << YAML::Key << "MipLevelCount" << texture->GetMipLevelCount();
+		//const auto& props = texture->GetProperties();
+		//out << YAML::Key << "SamplerWrap" << static_cast<uint32_t>(props.SamplerWrap);
+		//out << YAML::Key << "SamplerFilter" << static_cast<uint32_t>(props.SamplerFilter);
+		//out << YAML::Key << "GenerateMips" << props.GenerateMips;
+		//out << YAML::Key << "SRGB" << props.SRGB;
+		//out << YAML::Key << "Storage" << props.Storage;
+
+		out << YAML::EndMap;
+
+		std::ofstream fout(metadata.FilePath);
+		fout << out.c_str();
+	}
+	bool AnimationAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		return false;
 	}
 }
