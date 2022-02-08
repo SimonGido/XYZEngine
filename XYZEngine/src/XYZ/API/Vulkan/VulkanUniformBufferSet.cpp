@@ -69,6 +69,11 @@ namespace XYZ {
 
 		return m_UniformBuffers.at(frame).at(set).at(binding);
 	}
+
+	bool VulkanUniformBufferSet::HasDescriptors(size_t hash) const
+	{
+		return m_WriteDescriptors.find(hash) != m_WriteDescriptors.end();
+	}
 	
 	const std::vector<std::vector<std::vector<VkWriteDescriptorSet>>>& VulkanUniformBufferSet::GetDescriptors(size_t hash) const
 	{

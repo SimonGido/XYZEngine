@@ -86,7 +86,6 @@ namespace XYZ {
 			};
 			GPUTimeQueries m_GPUTimeQueries;
 
-
 			inline static EditorData s_Data;
 		};
 	}

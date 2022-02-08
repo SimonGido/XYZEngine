@@ -43,9 +43,15 @@ namespace XYZ {
 	{
 	public:
 		Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer);
+		Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer,
+			const Ref<Material>& quadMaterial,
+			const Ref<Material>& lineMaterial,
+			const Ref<Material>& circleMaterial,
+			const Ref<RenderPass>& renderPass
+		);
 		~Renderer2D();
 
-		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix);
+		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, bool clear = true);
 
 		void SetQuadMaterial(const Ref<Material>& material);
 		void SetLineMaterial(const Ref<Material>& material);
@@ -58,32 +64,30 @@ namespace XYZ {
 		void SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color = glm::vec4(1.0f));
 		void SubmitFilledCircle(const glm::vec3& pos, const glm::vec2& size, float thickness, const glm::vec4& color = glm::vec4(1.0f));
 		
+
 		void SubmitQuad(const glm::mat4& transform, const glm::vec4& color, float tilingFactor = 1.0f);
-		void SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, const Ref<Texture2D>& texture, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
-		void SubmitQuad(const glm::vec3& position,	const glm::vec2& size, const glm::vec4& texCoord, const Ref<Texture2D>& texture, const glm::vec4& color, float tilingFactor = 1.0f);
+		void SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, uint32_t textureIndex, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
+		void SubmitQuad(const glm::vec3& position,	const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureIndex, const glm::vec4& color, float tilingFactor = 1.0f);
 		
-		void SubmitQuad(const glm::mat4& transform, const Ref<SubTexture>& subTexture, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
-		void SubmitQuad(const glm::vec3& position, const glm::vec2& size, const Ref<SubTexture>& subTexture, const glm::vec4& color, float tilingFactor = 1.0f);
 
 		void SubmitQuadBillboard(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color);
-		void SubmitQuadBillboard(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const Ref<Texture2D>& texture, const glm::vec4& color = glm::vec4(1.0f), float tilingFactor = 1.0f);
-		void SubmitQuadBillboard(const glm::vec3& position, const glm::vec2& size, const Ref<SubTexture>& subTexture, const glm::vec4& color = glm::vec4(1.0f), float tilingFactor = 1.0f);
-
-
+		void SubmitQuadBillboard(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureIndex, const glm::vec4& color = glm::vec4(1.0f), float tilingFactor = 1.0f);
+	
 		void SubmitQuad(const glm::vec3& position,	const glm::vec2& size, const glm::vec4& color, float tilingFactor);
-		void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, const Ref<Texture2D>& texture, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
+		void SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureIndex, const glm::vec4& color = glm::vec4(1), float tilingFactor = 1.0f);
 
 		void SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f));
 		void SubmitRect(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color = glm::vec4(1.0f));
 		void SubmitRect(const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		void SubmitAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color);
 
-
-		void EndScene(bool clear = true);
+		void Flush();
+		void EndScene();
 		
 
-		const Renderer2DStats& GetStats();
+		const Renderer2DStats&	  GetStats();
 
+		static constexpr uint32_t GetMaxTextures() { return sc_MaxTextures; }
 	private:
 
 		struct QuadVertex
@@ -121,8 +125,6 @@ namespace XYZ {
 		void updateRenderPass(Ref<Pipeline>& pipeline) const;
 
 		Ref<Pipeline> setMaterial(std::map<size_t, Ref<Pipeline>>& pipelines, const Ref<Pipeline>& current, const Ref<Material>& material);
-
-		uint32_t findTextureIndex(const Ref<Texture2D>& texture);
 	
 	private:	
 		static constexpr uint32_t sc_MaxTextures = 32;
@@ -147,9 +149,6 @@ namespace XYZ {
 		Ref<Material>			 m_LineMaterial;
 		Ref<Material>			 m_CircleMaterial;
 								 
-		Ref<Texture2D>							   m_WhiteTexture;
-		std::array<Ref<Texture2D>, sc_MaxTextures> m_TextureSlots;
-		uint32_t								   m_TextureSlotIndex = 0;
 
 		std::map<size_t, Ref<Pipeline>> m_QuadPipelines;
 		std::map<size_t, Ref<Pipeline>> m_LinePipelines;

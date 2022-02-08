@@ -14,7 +14,8 @@ namespace XYZ {
 		virtual void CreateDescriptors(const Ref<Shader>& shader) = 0;
 
 		virtual Ref<UniformBuffer> Get(uint32_t binding, uint32_t set = 0, uint32_t frame = 0) = 0;
-	
+		virtual bool HasDescriptors(size_t hash) const = 0;
+
 		static Ref<UniformBufferSet> Create(uint32_t frames);
 	};
 }

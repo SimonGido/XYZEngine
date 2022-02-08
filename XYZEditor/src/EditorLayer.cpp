@@ -32,15 +32,21 @@ namespace XYZ {
 
 			m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification());
 			m_CameraTexture = Texture2D::Create("Resources/Editor/Camera.png");
+
 			m_CommandBuffer = RenderCommandBuffer::Create(0, "Overlay");
 			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
-			m_OverlayRenderer2D = Ref<Renderer2D>::Create(m_CommandBuffer);
-			m_QuadMaterial = Material::Create(Shader::Create("Resources/Shaders/DefaultLitShader.glsl"));
-			m_OverlayRenderer2D->SetQuadMaterial(m_QuadMaterial);
-			m_LineMaterial = Material::Create(Shader::Create("Resources/Shaders/LineShader.glsl"));
-			m_OverlayRenderer2D->SetLineMaterial(m_LineMaterial);
-			m_CircleMaterial = Material::Create(Shader::Create("Resources/Shaders/Circle.glsl"));
-			m_OverlayRenderer2D->SetCircleMaterial(m_CircleMaterial);
+			m_QuadMaterial = Material::Create(Shader::Create("Resources/Shaders/Overlay/OverlayQuad.glsl"));
+			m_LineMaterial = Material::Create(Shader::Create("Resources/Shaders/Overlay/OverlayLine.glsl"));
+			m_CircleMaterial = Material::Create(Shader::Create("Resources/Shaders/Overlay/OverlayCircle.glsl"));
+			m_OverlayRenderer2D = Ref<Renderer2D>::Create(
+				m_CommandBuffer,
+				m_QuadMaterial, m_LineMaterial, m_CircleMaterial, 
+				m_SceneRenderer->GetFinalRenderPass()
+			);
+
+			m_QuadMaterial->SetImageArray("u_Texture", m_CameraTexture->GetImage(), 0);
+			for (uint32_t i = 1; i < Renderer2D::GetMaxTextures(); ++i)
+				m_QuadMaterial->SetImageArray("u_Texture", Renderer::GetDefaultResources().WhiteTexture->GetImage(), i);
 
 			m_EditorManager.SetSceneContext(m_Scene);
 			m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
@@ -71,7 +77,11 @@ namespace XYZ {
 			scenePanel->SetSceneRenderer(m_SceneRenderer);
 			m_EditorCamera = &scenePanel->GetEditorCamera();
 
+
+
+
 			Renderer::WaitAndRenderAll();
+		
 			//AssetManager::CreateAsset<Texture2D>("Checkerboard.tex", "Assets/Textures", "Assets/Textures/checkerboard.png");
 		}
 
@@ -87,6 +97,7 @@ namespace XYZ {
 			m_EditorManager.OnUpdate(ts);
 			if (m_Scene->GetState() == SceneState::Edit)
 				renderOverlay();
+	
 
 			if (m_SelectedEntity != m_Scene->GetSelectedEntity())
 			{
@@ -132,15 +143,16 @@ namespace XYZ {
 		{
 			m_CommandBuffer->Begin();
 			m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
-			m_OverlayRenderer2D->BeginScene(m_EditorCamera->GetViewProjection(), m_EditorCamera->GetViewMatrix());
-			m_OverlayRenderer2D->SetTargetRenderPass(m_SceneRenderer->GetFinalRenderPass());
-
+			m_OverlayRenderer2D->BeginScene(m_EditorCamera->GetViewProjection(), m_EditorCamera->GetViewMatrix(), false);
+			
 			renderSelected();
 			renderColliders();
 			renderCameras();
 			renderLights();
 
-			m_OverlayRenderer2D->EndScene(false);
+			
+
+			m_OverlayRenderer2D->EndScene();
 			m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
 
 			m_CommandBuffer->End();
@@ -192,7 +204,7 @@ namespace XYZ {
 					auto [transform, camera] = cameraView.Get(entity);
 					auto [min, max] = cameraToAABB(transform, camera.Camera);
 					auto [translation, rotation, scale] = transform.GetWorldComponents();
-					m_OverlayRenderer2D->SubmitQuadBillboard(translation, glm::vec2(scale.x, scale.y), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), m_CameraTexture);
+					m_OverlayRenderer2D->SubmitQuadBillboard(translation, glm::vec2(scale.x, scale.y), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 0);
 				}
 			}
 		}

@@ -180,32 +180,25 @@ namespace XYZ {
 
 	void VulkanMaterial::RT_UpdateForRendering(const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors, const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors,
 		bool forceDescriptorAllocation)
-	{
-		vector3D<VkDescriptorImageInfo> arrayImageInfos;
+	{	
+		const uint32_t frame = Renderer::GetCurrentFrame();
 		bool allocated = tryAllocateDescriptorSets(forceDescriptorAllocation);
-		if (allocated && !m_DescriptorsDirty)
-		{
-			const uint32_t frame = Renderer::GetCurrentFrame();
-			arrayImageInfos.resize(1);
-			m_DescriptorsDirty = false;
 
-			RT_updateForRenderingFrame(frame, arrayImageInfos[0], uniformBufferDescriptors, storageBufferDescriptors);
-		}
-		else if (m_DescriptorsDirty)
-		{		
+		if (m_DescriptorsDirty || allocated)
+		{
 			const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
-			arrayImageInfos.resize(framesInFlight);
-			const uint32_t frame = Renderer::GetCurrentFrame();
+			m_ArrayImageInfos.clear();
+			m_ArrayImageInfos.resize(framesInFlight);
 			m_DescriptorsDirty = false;
 
 			for (uint32_t frame = 0; frame < framesInFlight; ++frame)
 			{
-				RT_updateForRenderingFrame(frame, arrayImageInfos[frame], uniformBufferDescriptors, storageBufferDescriptors);
+				RT_updateForRenderingFrame(frame, m_ArrayImageInfos[frame], uniformBufferDescriptors, storageBufferDescriptors);
 			}
 		}
-		const uint32_t frameIndex = Renderer::GetAPIContext()->GetCurrentFrame();
+	
 		auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-		vkUpdateDescriptorSets(vulkanDevice, (uint32_t)m_WriteDescriptors[frameIndex].size(), m_WriteDescriptors[frameIndex].data(), 0, nullptr);
+		vkUpdateDescriptorSets(vulkanDevice, (uint32_t)m_WriteDescriptors[frame].size(), m_WriteDescriptors[frame].data(), 0, nullptr);		
 	}
 
 	const ByteBuffer VulkanMaterial::GetFSUniformsBuffer() const

@@ -44,7 +44,12 @@ namespace XYZ {
 		{
 			return m_Func == other.m_Func && m_Data == other.m_Data;
 		}
+
+		operator bool() const { return m_Data != nullptr; }
+
+
 		const void* GetData() const { return m_Data; }
+		
 	private:
 		FuncType* m_Func;
 		const void* m_Data;

@@ -14,6 +14,7 @@ namespace XYZ {
 		virtual void Set(Ref<UniformBuffer> uniformBuffer, uint32_t set = 0, uint32_t frame = 0) override;
 
 		virtual Ref<UniformBuffer> Get(uint32_t binding, uint32_t set = 0, uint32_t frame = 0) override;
+		virtual bool HasDescriptors(size_t hash) const override;
 
 		const std::vector<std::vector<std::vector<VkWriteDescriptorSet>>> & GetDescriptors(size_t hash) const;
 	private:

@@ -33,50 +33,59 @@ namespace XYZ {
 		glm::vec3 ViewPosition{};
 	};
 
-	struct SpriteRenderData
-	{
-		Ref<SubTexture> SubTexture;
-		glm::vec4		Color;
-		glm::mat4		Transform;
-	};
 
 	struct RenderQueue
 	{
+		struct SpriteDrawCommand
+		{
+			Ref<Material>  Material;
+			std::array<Ref<Texture2D>, Renderer2D::GetMaxTextures()> Textures;
+
+			uint32_t       TextureCount = 0;
+			uint32_t       SpriteCount = 0;
+
+			uint32_t setTexture(const Ref<Texture2D>& texture);		
+		};
+
 		struct SpriteDrawData
 		{
-			Ref<Material>	Material;
-			Ref<SubTexture>	SubTexture;
-			glm::vec4		Color;
-			glm::mat4		Transform;
-		};
-
-		// TODO: this is not really a draw command
-		struct BillboardDrawCommand
-		{
-			Ref<Material>   Material;
-			Ref<SubTexture> SubTexture;
-			uint32_t		SortLayer;
-			glm::vec4		Color;
-			glm::vec3		Position;
-			glm::vec2	    Size;
-		};
-
-		struct DrawMeshCommand
-		{
-			Ref<Mesh> Mesh;
+			uint32_t  TextureIndex;
+			glm::vec4 TexCoords;
+			glm::vec4 Color;
 			glm::mat4 Transform;
 		};
-		struct InstancedDrawMeshCommand
+
+		struct BillboardDrawData
 		{
-			Ref<Mesh> Mesh;
-			glm::mat4 Transform;
-			uint32_t  Count;
+			uint32_t  TextureIndex;
+			glm::vec4 TexCoords;
+			glm::vec4 Color;
+			glm::vec3 Position;
+			glm::vec2 Size;
+		};
+	
+
+		struct SpriteDrawKey
+		{
+			SpriteDrawKey(const AssetHandle& matHandle)
+				: MaterialHandle(matHandle)
+			{}
+
+			bool operator<(const SpriteDrawKey& other) const
+			{
+				return (MaterialHandle < other.MaterialHandle);
+			}
+
+			AssetHandle MaterialHandle;
 		};
 
-		std::vector<SpriteDrawData>			  m_SpriteDrawList;		
-		std::vector<BillboardDrawCommand>	  m_BillboardDrawList;
-		std::vector<DrawMeshCommand>	      m_MeshCommandList;
-		std::vector<InstancedDrawMeshCommand> m_InstancedMeshCommandList;
+
+		std::map<SpriteDrawKey, SpriteDrawCommand> SpriteDrawCommands;
+		std::map<SpriteDrawKey, SpriteDrawCommand> BillboardDrawCommands;
+
+		std::vector<SpriteDrawData>				   SpriteData;
+		std::vector<BillboardDrawData>			   BillboardData;
+			
 	};
 
 	struct SceneRendererSpecification
@@ -84,6 +93,7 @@ namespace XYZ {
 		bool SwapChainTarget = false;
 	};
 
+	using RenderOverlayFn = Delegate<void(Ref<RenderCommandBuffer>, uint32_t& timeQuery)>;
 	class SceneRenderer : public RefCount
 	{
 	public:
@@ -100,21 +110,25 @@ namespace XYZ {
 		void EndScene();
 
 		void SubmitBillboard(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size);
-
 		void SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform);
-		void SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform);
-		void SubmitMeshInstanced(const Ref<Mesh>& mesh, const glm::mat4& transform, uint32_t count);
-		void SubmitMeshInstanced(const Ref<Mesh>& mesh, const std::vector<glm::mat4>& transforms, uint32_t count);
-
-
 
 		void OnImGuiRender();
 
+		template <auto Callable>
+		void RenderOverlay();
+
+		template <auto Callable, typename Type>
+		void RenderOverlay(Type* instance);
+
+		void StopRenderOverlay() { m_RenderOverlayFn = {}; }
+
 		Ref<Renderer2D>	      GetRenderer2D() const { return m_Renderer2D; }
+		Ref<RenderPass>		  GetRenderer2DPass() const { return m_Renderer2D->GetTargetRenderPass(); }
 		Ref<RenderPass>		  GetFinalRenderPass() const;
 		Ref<Image2D>		  GetFinalPassImage() const;
-		SceneRendererOptions& GetOptions();
+		Ref<RenderCommandBuffer> GetRenderCommandBuffer() const { return m_CommandBuffer; }
 
+		SceneRendererOptions& GetOptions();
 	private:
 		void flush();
 		void flushLightQueue();
@@ -175,7 +189,8 @@ namespace XYZ {
 		SceneRendererSpecification m_Specification;
 		Ref<Scene>				   m_ActiveScene;
 		Ref<Renderer2D>			   m_Renderer2D;
-		
+		Ref<Texture2D>			   m_WhiteTexture;
+
 		SceneRenderPipeline		   m_CompositeRenderPipeline;
 		SceneRenderPipeline		   m_LightRenderPipeline;
 		Ref<RenderPass>			   m_CompositePass;
@@ -190,9 +205,7 @@ namespace XYZ {
 
 		Ref<RenderCommandBuffer>   m_CommandBuffer;
 		
-		// Passes
-		Ref<RenderPass>			   m_GeometryPass;
-		Ref<RenderPass>			   m_BloomPass;
+
 		Ref<UniformBuffer>		   m_CameraUniformBuffer;
 								   
 		Ref<Material>			   m_BloomComputeMaterial;
@@ -216,10 +229,23 @@ namespace XYZ {
 		{
 			uint32_t GPUTime = 0;
 			uint32_t Renderer2DPassQuery = 0;
-
+			uint32_t OverlayQuery = 0;
 
 			static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
 		};
 		GPUTimeQueries m_GPUTimeQueries;
+	
+		RenderOverlayFn m_RenderOverlayFn;
 	};
+	template<auto Callable>
+	inline void SceneRenderer::RenderOverlay()
+	{
+		m_RenderOverlayFn.Connect<Callable>();
+	}
+
+	template<auto Callable, typename Type>
+	inline void SceneRenderer::RenderOverlay(Type* instance)
+	{
+		m_RenderOverlayFn.Connect<Callable>(instance);
+	}
 }

@@ -240,29 +240,6 @@ namespace XYZ {
 		{
 			anim.Animator->Update(ts);
 		}
-
-		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU>();
-		for (const auto entity : particleViewCPU)
-		{
-			auto [transform, particle] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU>(entity);
-			auto& system = particle.System;
-			system.Update(ts);
-		}
-		// TODO: This will be called only from script i guess
-		auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
-		for (const auto entity : particleView)
-		{
-			auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
-			auto& particleMaterial = particle.System->m_Renderer->m_ParticleMaterial;
-			particleMaterial->Set("u_MaxParticles", particleMaterial->GetMaxParticles());
-			particleMaterial->Set("u_MainModule.Time", ts);
-			particleMaterial->Set("u_MainModule.ParticlesEmitted", (int)particle.System->GetEmittedParticles());
-			auto& computeShader = particleMaterial->GetComputeShader();
-			computeShader->Bind();
-			particle.System->Update(ts);
-			particleMaterial->Compute();
-		}
-
 		updateHierarchy();
 	}
 
@@ -291,43 +268,10 @@ namespace XYZ {
 			sceneRenderer->SubmitSprite(data.Renderer->Material, data.Renderer->SubTexture, data.Renderer->Color, data.Transform->WorldTransform);
 		}
 
-		//auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
-		//for (auto entity : particleView)
-		//{
-		//	auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
-		//	sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
-		//}
-		//
-
-		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU, MeshComponent>();
-		for (auto entity : particleViewCPU)
-		{
-			auto [transform, particle, mesh] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU, MeshComponent>(entity);
-			particle.System.SetupForRender(sceneRenderer);
-			auto renderData = particle.System.GetRenderDataRead();
-			mesh.Mesh->SetVertexBufferData(1, renderData->m_RenderParticleData, renderData->m_RenderParticleData.SizeInBytes());
-			sceneRenderer->SubmitMeshInstanced(mesh.Mesh, transform.WorldTransform, renderData->m_InstanceCount);
-		}
-		
-		//auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
-		//for (auto entity : lightView)
-		//{
-		//	auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
-		//	sceneRenderer->SubmitLight(light, transform.WorldTransform);
-		//}
-		//auto spotLightView = m_ECS.CreateView<TransformComponent, SpotLight2D>();
-		//for (auto entity : spotLightView)
-		//{
-		//	auto [transform, light] = spotLightView.Get<TransformComponent, SpotLight2D>(entity);
-		//	sceneRenderer->SubmitLight(light, transform.WorldTransform);
-		//}
-
 		sceneRenderer->EndScene();
 	}
 
 	
-	
-
 	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos, Timestep ts)
 	{
 		XYZ_PROFILE_FUNC("Scene::OnRenderEditor");
@@ -350,48 +294,6 @@ namespace XYZ {
 			}
 			sceneRenderer->SubmitSprite(data.Renderer->Material, data.Renderer->SubTexture, data.Renderer->Color, data.Transform->WorldTransform);
 		}
-
-		//auto particleView = m_ECS.CreateView<TransformComponent, ParticleComponentGPU>();
-		//for (auto entity : particleView)
-		//{
-		//	auto [transform, particle] = particleView.Get<TransformComponent, ParticleComponentGPU>(entity);
-		//	sceneRenderer->SubmitRendererCommand(particle.System->m_Renderer, transform.WorldTransform);
-		//}
-
-		auto particleViewCPU = m_ECS.CreateView<TransformComponent, ParticleComponentCPU, MeshComponent>();
-		for (auto entity : particleViewCPU)
-		{
-			// Render previous frame data
-			auto [transform, particle, mesh] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU, MeshComponent>(entity);
-			particle.System.SetupForRender(sceneRenderer);
-			auto renderData = particle.System.GetRenderDataRead();
-			auto data = renderData->m_RenderParticleData.As<ParticleRenderData>();
-			mesh.Mesh->SetVertexBufferData(1, data, renderData->m_InstanceCount * renderData->m_RenderParticleData.ElementSize());
-			sceneRenderer->SubmitMeshInstanced(mesh.Mesh, transform.WorldTransform, renderData->m_InstanceCount);
-		}
-
-		for (auto entity : particleViewCPU)
-		{
-			// Update ( submit jobs worker threads )
-			auto [transform, particle, mesh] = particleViewCPU.Get<TransformComponent, ParticleComponentCPU, MeshComponent>(entity);
-			particle.System.SetPhysicsWorld(&m_PhysicsWorld);
-			particle.System.Update(ts);
-		}
-	
-		
-		//auto lightView = m_ECS.CreateView<TransformComponent, PointLight2D>();
-		//for (auto entity : lightView)
-		//{
-		//	auto [transform, light] = lightView.Get<TransformComponent, PointLight2D>(entity);
-		//	sceneRenderer->SubmitLight(light, transform.WorldTransform);
-		//}	
-		//
-		//auto spotLightView = m_ECS.CreateView<TransformComponent, SpotLight2D>();
-		//for (auto entity : spotLightView)
-		//{
-		//	auto [transform, light] = spotLightView.Get<TransformComponent, SpotLight2D>(entity);
-		//	sceneRenderer->SubmitLight(light, transform.WorldTransform);
-		//}		
 
 		sceneRenderer->EndScene();
 	}
@@ -564,8 +466,10 @@ namespace XYZ {
 				m_SpriteRenderData.push_back({ &renderer, &transform, sortKey.GetKey() });
 			}
 		}
-		std::sort(m_SpriteRenderData.begin(), m_SpriteRenderData.end(), [](const SpriteRenderData& a, const SpriteRenderData& b) {
-			return a.SortKey < b.SortKey;
-		});
+		//TODO: sort based on different criteria ( sort layer / z position )
+		
+		//std::sort(m_SpriteRenderData.begin(), m_SpriteRenderData.end(), [](const SpriteRenderData& a, const SpriteRenderData& b) {
+		//	return a.SortKey < b.SortKey;
+		//});
 	}
 }

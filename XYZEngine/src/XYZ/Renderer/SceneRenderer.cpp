@@ -9,6 +9,7 @@
 #include "XYZ/ImGui/ImGui.h"
 #include "XYZ/API/Vulkan/VulkanRendererAPI.h"
 #include "XYZ/API/Vulkan/VulkanPipelineCompute.h"
+#include "XYZ/Scene/SceneEntity.h"
 
 #include <glm/gtx/transform.hpp>
 
@@ -45,42 +46,19 @@ namespace XYZ {
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
 		m_Renderer2D = Ref<Renderer2D>::Create(m_CommandBuffer);
-	
+		m_WhiteTexture = Renderer::GetDefaultResources().WhiteTexture;
 
 		createCompositePass();
 		createLightPass();
-		auto shaderLibrary = Renderer::GetShaderLibrary();
+		
 		const BufferLayout layout = { 
 			{0, ShaderDataType::Float3, "a_Position" },
 			{1, ShaderDataType::Float2, "a_TexCoord" } 
 		};
+
+		auto shaderLibrary = Renderer::GetShaderLibrary();
 		m_CompositeRenderPipeline.Init(m_CompositePass, shaderLibrary->Get("CompositeShader"), layout);
 		m_LightRenderPipeline.Init(m_LightPass, shaderLibrary->Get("LightShader"), layout);
-
-		
-		// Geometry pass
-		{
-			FramebufferSpecification specs;
-			specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
-			specs.Attachments = {
-				FramebufferTextureSpecification(ImageFormat::RGBA32F),
-				FramebufferTextureSpecification(ImageFormat::RGBA32F),
-				FramebufferTextureSpecification(ImageFormat::DEPTH24STENCIL8)
-			};
-			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
-			m_GeometryPass = RenderPass::Create({ fbo });
-		}
-		// Bloom pass
-		{
-			FramebufferSpecification specs;
-			specs.ClearColor = { 0.0f,0.0f,0.0f, 0.0f };
-			specs.Attachments = {
-				FramebufferTextureSpecification(ImageFormat::RGBA16F),
-				FramebufferTextureSpecification(ImageFormat::DEPTH24STENCIL8)
-			};
-			Ref<Framebuffer> fbo = Framebuffer::Create(specs);
-			m_BloomPass = RenderPass::Create({ fbo });
-		}
 
 		auto bloomShader = shaderLibrary->Get("Bloom");
 		m_BloomComputePipeline = PipelineCompute::Create(bloomShader);
@@ -153,9 +131,8 @@ namespace XYZ {
 			m_CompositeRenderPipeline.Material
 		);
 
-		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CompositeRenderPipeline.Pipeline, m_CompositeRenderPipeline.Material);
+		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CompositeRenderPipeline.Pipeline, m_CompositeRenderPipeline.Material);	
 		Renderer::EndRenderPass(m_CommandBuffer);
-		
 
 		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
 
@@ -166,25 +143,27 @@ namespace XYZ {
 
 	void SceneRenderer::SubmitBillboard(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size)
 	{
-		m_Queue.m_BillboardDrawList.push_back({
-			   material,subTexture, sortLayer, color, position, size
-			});
+		RenderQueue::SpriteDrawKey key{ material->GetHandle() };
+
+		auto& command = m_Queue.BillboardDrawCommands[key];
+
+		uint32_t textureIndex = command.setTexture(subTexture->GetTexture());
+
+		command.Material = material;
+		command.SpriteCount++;
+		m_Queue.BillboardData.push_back({ textureIndex, subTexture->GetTexCoords(), color, position, size });
 	}
 
 	void SceneRenderer::SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform)
 	{
-		m_Queue.m_SpriteDrawList.push_back({ material, subTexture, color, transform });
-	}
-	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const glm::mat4& transform)
-	{
-		//m_Queues[mesh->GetMaterial()->GetRenderQueueID()].m_MeshCommandList.push_back({ mesh, transform });
-	}
-	void SceneRenderer::SubmitMeshInstanced(const Ref<Mesh>& mesh, const glm::mat4& transform, uint32_t count)
-	{
-		//m_Queues[mesh->GetMaterial()->GetRenderQueueID()].m_InstancedMeshCommandList.push_back({ mesh, transform, count });
-	}
-	void SceneRenderer::SubmitMeshInstanced(const Ref<Mesh>& mesh, const std::vector<glm::mat4>& transforms, uint32_t count)
-	{
+		RenderQueue::SpriteDrawKey key{ material->GetHandle() };
+		auto& command = m_Queue.SpriteDrawCommands[key];
+		
+		uint32_t textureIndex = command.setTexture(subTexture->GetTexture());
+		
+		command.Material = material;
+		command.SpriteCount++;
+		m_Queue.SpriteData.push_back({ textureIndex, subTexture->GetTexCoords(), color, transform });
 	}
 	
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
@@ -240,10 +219,8 @@ namespace XYZ {
 	}
 
 	Ref<RenderPass> SceneRenderer::GetFinalRenderPass() const
-	{	
-		// TODO: temporary;
-		return m_Renderer2D->GetTargetRenderPass();
-		// m_CompositeRenderPipeline.Pipeline->GetSpecification().RenderPass
+	{
+		return m_CompositeRenderPipeline.Pipeline->GetSpecification().RenderPass;
 	}
 
 	Ref<Image2D> SceneRenderer::GetFinalPassImage() const
@@ -257,25 +234,6 @@ namespace XYZ {
 	void SceneRenderer::flush()
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::flush");
-		//flushLightQueue();
-		
-		
-		//Renderer::BeginRenderPass(m_CommandBuffer, m_CompositePipeline->GetSpecification().RenderPass, true);
-		//
-		////m_LightPass->GetSpecification().TargetFramebuffer->BindTexture(0, 0);
-		////m_BloomTexture[2]->Bind(1);
-		//
-		//auto geometryImage = m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->GetImage();
-		//
-		//m_CompositeMaterial->Set("u_GeometryTexture", geometryImage);
-		//m_CompositeMaterial->Set("u_BloomTexture", geometryImage);
-		//Renderer::BindPipeline(m_CommandBuffer, m_CompositePipeline, nullptr, m_CompositeMaterial);
-		//Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CompositePipeline, m_CompositeMaterial);
-		//
-		//Renderer::EndRenderPass(m_CommandBuffer);
-
-		//auto [width, height] = Input::GetWindowSize();
-		//Renderer::SetViewPort(0, 0, (uint32_t)width, (uint32_t)height);
 	}
 	void SceneRenderer::flushLightQueue()
 	{
@@ -331,36 +289,55 @@ namespace XYZ {
 		lightPass();
 		if (m_NumPointLights || m_NumSpotLights)
 			bloomPass();
-
-		//queue.m_SpriteDrawList.clear();
-		//queue.m_MeshCommandList.clear();
-		//queue.m_InstancedMeshCommandList.clear();
 	}
 	void SceneRenderer::flushDefaultQueue()
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::flushDefaultQueue");
 		geometryPass2D(m_Queue, true);
 	
-		m_Queue.m_SpriteDrawList.clear();
-		m_Queue.m_BillboardDrawList.clear();
-		m_Queue.m_MeshCommandList.clear();
-		m_Queue.m_InstancedMeshCommandList.clear();
+		m_Queue.SpriteData.clear();
+		m_Queue.SpriteDrawCommands.clear();
+		
+		m_Queue.BillboardData.clear();
+		m_Queue.BillboardDrawCommands.clear();
 	}
 	
 	void SceneRenderer::geometryPass2D(RenderQueue& queue, bool clear)
 	{
 		m_GPUTimeQueries.Renderer2DPassQuery = m_CommandBuffer->BeginTimestampQuery();
-		m_Renderer2D->BeginScene(m_CameraBuffer.ViewProjectionMatrix, m_CameraBuffer.ViewMatrix);
+		m_Renderer2D->BeginScene(m_CameraBuffer.ViewProjectionMatrix, m_CameraBuffer.ViewMatrix, clear);
 		
-		for (auto& data : queue.m_SpriteDrawList)
+		uint32_t offset = 0;
+		for (auto& [key, command] : queue.SpriteDrawCommands)
 		{
-			m_Renderer2D->SetQuadMaterial(data.Material);
-			m_Renderer2D->SubmitQuad(data.Transform, data.SubTexture, data.Color);
+			m_Renderer2D->SetQuadMaterial(command.Material);
+			for (uint32_t i = 0; i < command.TextureCount; ++i)
+				command.Material->SetImageArray("u_Texture", command.Textures[i]->GetImage(), i);
+			for (uint32_t i = command.TextureCount; i < Renderer2D::GetMaxTextures(); ++i)
+				command.Material->SetImageArray("u_Texture", m_WhiteTexture->GetImage(), i);
+
+			for (uint32_t i = offset; i < command.SpriteCount + offset; ++i)
+			{
+				auto& data = queue.SpriteData[i];
+				m_Renderer2D->SubmitQuad(data.Transform, data.TexCoords, data.TextureIndex, data.Color);
+			}
+			m_Renderer2D->Flush();
 		}
-		for (auto& dc : queue.m_BillboardDrawList)
+
+		for (auto& [key, command] : queue.BillboardDrawCommands)
 		{
-			m_Renderer2D->SetQuadMaterial(dc.Material);
-			m_Renderer2D->SubmitQuadBillboard(dc.Position, dc.Size, dc.SubTexture, dc.Color);
+			m_Renderer2D->SetQuadMaterial(command.Material);
+			for (uint32_t i = 0; i < command.TextureCount; ++i)
+				command.Material->SetImageArray("u_Texture", command.Textures[i]->GetImage(), i);
+			for (uint32_t i = command.TextureCount; i < Renderer2D::GetMaxTextures(); ++i)
+				command.Material->SetImageArray("u_Texture", m_WhiteTexture->GetImage(), i);
+
+			for (uint32_t i = offset; i < command.SpriteCount + offset; ++i)
+			{
+				auto& data = queue.BillboardData[i];
+				m_Renderer2D->SubmitQuadBillboard(data.Position, data.Size, data.TexCoords, data.TextureIndex, data.Color);
+			}
+			m_Renderer2D->Flush();
 		}
 
 		m_Renderer2D->EndScene();
@@ -524,7 +501,7 @@ namespace XYZ {
 		FramebufferSpecification compFramebufferSpec;
 		compFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 		compFramebufferSpec.SwapChainTarget = m_Specification.SwapChainTarget;
-
+		compFramebufferSpec.ClearOnLoad = false;
 		// No depth for swapchain
 		if (m_Specification.SwapChainTarget)
 			compFramebufferSpec.Attachments = { ImageFormat::RGBA };
@@ -542,7 +519,7 @@ namespace XYZ {
 		auto shaderLibrary = Renderer::GetShaderLibrary();
 		auto shader = shaderLibrary->Get("LightShader");
 		FramebufferSpecification specs;
-		specs.ClearColor = { 0.0f,0.0f,0.0f,0.0f };
+		specs.ClearColor = { 0.1f,0.1f,0.1f,0.0f };
 		specs.Attachments = {
 			FramebufferTextureSpecification(ImageFormat::RGBA32F, true)
 		};
@@ -562,9 +539,8 @@ namespace XYZ {
 		{
 			const uint32_t width = (uint32_t)m_ViewportSize.x;
 			const uint32_t height = (uint32_t)m_ViewportSize.y;
-			m_GeometryPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 			m_LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-			m_BloomPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			m_CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
 
 			TextureProperties props;
 			props.Storage = true;
@@ -583,7 +559,22 @@ namespace XYZ {
 		specification.Layout = layout;
 		specification.RenderPass = renderPass;
 		specification.Topology = topology;
+		specification.DepthWrite = false;
 		this->Pipeline = Pipeline::Create(specification);
 		this->Material = Material::Create(shader);
+	}
+	uint32_t RenderQueue::SpriteDrawCommand::setTexture(const Ref<Texture2D>& texture)
+	{
+		for (uint32_t i = 0; i < TextureCount; i++)
+		{
+			if (Textures[i]->GetHandle() == texture->GetHandle())
+			{
+				return i;
+			}
+		}
+		uint32_t result = TextureCount;
+		Textures[result] = texture;
+		TextureCount++;
+		return result;
 	}
 }

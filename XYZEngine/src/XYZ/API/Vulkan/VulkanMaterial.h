@@ -97,6 +97,7 @@ namespace XYZ {
 		std::vector<Ref<Image2D>>			   m_Images;
 		std::vector<std::vector<Ref<Image2D>>> m_ImageArrays;
 		
+		vector3D<VkDescriptorImageInfo>		   m_ArrayImageInfos;
 			
 		struct Descriptor
 		{
@@ -106,6 +107,7 @@ namespace XYZ {
 		};
 		// Per frame
 		std::vector<Descriptor>	m_Descriptors;
+		
 
 		struct PendingDescriptor
 		{

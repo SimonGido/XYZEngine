@@ -93,9 +93,10 @@ namespace XYZ {
 			renderPassBeginInfo.renderArea.extent.width = width;
 			renderPassBeginInfo.renderArea.extent.height = height;
 			renderPassBeginInfo.framebuffer = framebuffer->GetFramebuffer();
+
 			renderPassBeginInfo.clearValueCount = framebuffer->GetVulkanClearValues().size();
 			renderPassBeginInfo.pClearValues = framebuffer->GetVulkanClearValues().data();
-
+		
 			VkRect2D scissor = {};
 			scissor.offset = { 0, 0 };
 			scissor.extent.width = width;
