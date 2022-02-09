@@ -46,16 +46,6 @@ namespace XYZ {
 	{
 	}
 
-	void Animation::setSceneEntity(const SceneEntity& entity)
-	{
-		m_Entity = entity;
-		setPropertySceneEntity(m_Vec4Properties);
-		setPropertySceneEntity(m_Vec3Properties);
-		setPropertySceneEntity(m_Vec2Properties);
-		setPropertySceneEntity(m_FloatProperties);
-		setPropertySceneEntity(m_PointerProperties);
-	}
-
 	void Animation::SetFrequency(uint32_t framesPerSecond)
 	{
 		m_Frequency = framesPerSecond;
@@ -83,6 +73,16 @@ namespace XYZ {
 			return true;
 		return false;
 	}
+
+	bool Animation::Empty() const
+	{
+		return m_Vec4Properties.empty() 
+			&& m_Vec3Properties.empty() 
+			&& m_Vec2Properties.empty() 
+			&& m_FloatProperties.empty() 
+			&& m_PointerProperties.empty();
+	}
+
 
 	void Animation::updateProperties(uint32_t frame)
 	{

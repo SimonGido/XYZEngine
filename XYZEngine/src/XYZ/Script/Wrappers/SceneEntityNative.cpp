@@ -2,7 +2,7 @@
 #include "SceneEntityNative.h"
 #include "XYZ/Scene/SceneEntity.h"
 
-#include "XYZ/Animation/Animator.h"
+#include "XYZ/Animation/AnimatorController.h"
 
 
 #include <mono/jit/jit.h>

@@ -45,7 +45,7 @@ namespace XYZ {
 			return m_Func == other.m_Func && m_Data == other.m_Data;
 		}
 
-		operator bool() const { return m_Data != nullptr; }
+		operator bool() const { return m_Func != nullptr; }
 
 
 		const void* GetData() const { return m_Data; }

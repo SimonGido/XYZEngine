@@ -2,7 +2,7 @@
 #include "AssetSerializer.h"
 
 #include "XYZ/Scene/SceneSerializer.h"
-#include "XYZ/Animation/Animator.h"
+#include "XYZ/Animation/AnimatorController.h"
 
 namespace XYZ {
 	namespace Utils {

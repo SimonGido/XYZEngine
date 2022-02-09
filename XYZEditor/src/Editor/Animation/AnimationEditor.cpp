@@ -81,41 +81,22 @@ namespace XYZ {
 			m_SplitterWidth(300.0f)
 		{
 		}
-		void AnimationEditor::SetContext(const Ref<Animator>& context)
+
+		void AnimationEditor::SetContext(const Ref<Animation>& context)
 		{
-			if (m_Context.Raw())
-			{
-				SceneEntity contextEntity = m_Context->GetSceneEntity();
-				auto ecs = contextEntity.GetECS();
-				if (ecs)
-				{
-					ecs->RemoveOnConstruction<&AnimationEditor::onEntityChanged>(this);
-					ecs->RemoveOnDestruction<&AnimationEditor::onEntityChanged>(this);
-				}
-			}
-
-			m_Context = context;
-			m_Animation = m_Context->GetAnimation();
-			m_FrameMax = m_Animation->GetNumFrames();
-
-			SceneEntity contextEntity = m_Context->GetSceneEntity();
-			m_ClassMap.BuildMap(contextEntity);
-
-			auto ecs = contextEntity.GetECS();
-			if (ecs)
-			{
-				ecs->AddOnConstruction<&AnimationEditor::onEntityChanged>(this);
-				ecs->AddOnDestruction<&AnimationEditor::onEntityChanged>(this);
-			}
+			m_Animation = context;
+			m_FrameMax = m_Animation->GetNumFrames();			
 		}
+		
 		void AnimationEditor::SetSceneContext(const Ref<Scene>& scene)
 		{
 			m_Scene = scene;
 		}
 		void AnimationEditor::OnUpdate(Timestep ts)
 		{
-			if (m_Playing && m_Context.Raw())
+			if (m_Playing && m_Animation.Raw() && m_Entity.IsValid())
 			{
+				m_Avatar.Create(m_Entity, m_Animation);
 				m_Animation->Update(ts);
 				m_CurrentFrame = static_cast<int>(m_Animation->GetCurrentFrame());
 				
@@ -127,18 +108,49 @@ namespace XYZ {
 		{
 			if (ImGui::Begin("Animation Editor", &open))
 			{
-				if (m_Context.Raw() && m_Scene.Raw())
+				if (m_Scene.Raw())
 				{
-					const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+					if (m_Entity != m_Scene->GetSelectedEntity())
+						setEntity(m_Scene->GetSelectedEntity());
 
-					UI::SplitterV(&m_SplitterWidth, "##PropertySection", "##TimelineSection",
-						[&]() { propertySection(); },
-						[&]() { timelineSection(); });
+					if (m_Animation.Raw() && m_Entity.IsValid())
+					{
+						const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+
+						UI::SplitterV(&m_SplitterWidth, "##PropertySection", "##TimelineSection",
+							[&]() { propertySection(); },
+							[&]() { timelineSection(); });
+					}
 				}
 			}
 			ImGui::End();
 		}
+		void AnimationEditor::setEntity(const SceneEntity& entity)
+		{
+			if (m_Entity)
+			{
+				auto ecs = m_Entity.GetECS();
+				if (ecs)
+				{
+					ecs->RemoveOnConstruction<&AnimationEditor::onEntityChanged>(this);
+					ecs->RemoveOnDestruction<&AnimationEditor::onEntityChanged>(this);
+				}
+			}
+			m_Entity = entity;
+			auto ecs = m_Entity.GetECS();
+			if (ecs)
+			{
+				ecs->AddOnConstruction<&AnimationEditor::onEntityChanged>(this);
+				ecs->AddOnDestruction<&AnimationEditor::onEntityChanged>(this);
+			}
 
+			if (m_Animation.Raw())
+			{
+				m_ClassMap.BuildMap(m_Entity, m_Animation);
+				if (!m_Avatar.Create(m_Entity, m_Animation))
+					XYZ_WARN("Failed to create avatar for entity {}", m_Entity.GetComponent<SceneTagComponent>().Name);
+			}
+		}
 		void AnimationEditor::drawEntityTree(const SceneEntity& entity)
 		{
 			const auto& tag = entity.GetComponent<SceneTagComponent>().Name;
@@ -201,12 +213,11 @@ namespace XYZ {
 
 		void AnimationEditor::onEntityChanged(ECSManager& ecs, Entity entity)
 		{
-			if (m_Context.Raw())
+			if (m_Animation.Raw())
 			{
-				SceneEntity contextEntity = m_Context->GetSceneEntity();
-				if (entity = contextEntity)
+				if (entity == m_Entity)
 				{
-					m_ClassMap.BuildMap(contextEntity);
+					m_ClassMap.BuildMap(m_Entity, m_Animation);
 				}
 			}
 		}
@@ -255,7 +266,6 @@ namespace XYZ {
 						auto reflClass = ReflectedClasses::Get<classIndex.value>();
 						auto& val = reflClass.Get<variableIndex.value>(findEntity(selectedEntity).GetComponentFromReflection(reflClass));
 						addReflectedProperty<variableIndex.value>(reflClass, val, selectedEntity, selectedVariable);
-						m_Context->UpdateAnimationEntities();
 						m_EntityPropertyMap.BuildMap(m_Animation);
 					});
 				}
@@ -299,7 +309,7 @@ namespace XYZ {
 				
 				ImGui::EndTable();
 			}
-			drawEntityTree(m_Context->GetSceneEntity());
+			drawEntityTree(m_Entity);
 		}
 
 		
@@ -429,7 +439,7 @@ namespace XYZ {
 
 		SceneEntity AnimationEditor::findEntity(std::string_view path) const
 		{
-			SceneEntity entity = m_Context->GetSceneEntity();
+			SceneEntity entity = m_Entity;
 			Entity childID = entity.GetComponent<Relationship>().FindByName(*entity.GetECS(), path);
 			if (childID)
 				entity = SceneEntity(childID, entity.GetScene());

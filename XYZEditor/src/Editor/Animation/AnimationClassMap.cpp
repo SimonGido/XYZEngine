@@ -18,12 +18,8 @@ namespace XYZ {
 			}
 		}
 
-		void AnimationClassMap::BuildMap(SceneEntity& entity)
+		void AnimationClassMap::BuildMap(SceneEntity& entity, const Ref<Animation>& animation)
 		{
-			XYZ_ASSERT(entity.HasComponent<AnimatorComponent>(), "");
-			const AnimatorComponent& animator = entity.GetComponent<AnimatorComponent>();
-			Ref<Animation> animation = animator.Animator->GetAnimation();
-
 			m_ClassData.clear();
 			if (entity)
 			{

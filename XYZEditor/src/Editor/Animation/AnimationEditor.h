@@ -4,7 +4,7 @@
 #include "EntityPropertyMap.h"
 
 #include "XYZ/Animation/Animation.h"
-#include "XYZ/Animation/Animator.h"
+#include "XYZ/Animation/AnimatorController.h"
 
 #include <imgui.h>
 
@@ -20,8 +20,10 @@ namespace XYZ {
 			virtual void OnUpdate(Timestep ts) override;
 			virtual void SetSceneContext(const Ref<Scene>& scene) override;
 
-			void SetContext(const Ref<Animator>& context);
+			void SetContext(const Ref<Animation>& context);
+			
 		private:
+			void setEntity(const SceneEntity& entity);
 			void drawEntityTree(const SceneEntity& entity);
 			void drawEntityTreeProperties(const SceneEntity& entity);
 
@@ -61,12 +63,12 @@ namespace XYZ {
 
 			SceneEntity findEntity(std::string_view path) const;
 		private:
-			glm::vec2 m_ButtonSize;
-
-			Ref<Animator>	   m_Context;
+			glm::vec2		   m_ButtonSize;
+			SceneEntity		   m_Entity;
 			Ref<Animation>	   m_Animation;
 			Ref<Scene>		   m_Scene;
 
+			AnimationAvatar		 m_Avatar;
 			AnimationClassMap    m_ClassMap;
 			EntityPropertyMap    m_EntityPropertyMap;
 

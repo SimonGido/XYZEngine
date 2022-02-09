@@ -117,10 +117,12 @@ namespace XYZ {
 
 
 	class Animator;
+	class AnimatorController;
 	struct AnimatorComponent 
 	{
 		AnimatorComponent() = default;
-		Ref<Animator> Animator;
+		Ref<Animator>			Animator;
+		Ref<AnimatorController> Controller;
 	};
 
 

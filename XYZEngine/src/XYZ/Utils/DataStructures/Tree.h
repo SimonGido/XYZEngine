@@ -67,7 +67,7 @@ namespace XYZ {
 	private:	
 		int32_t m_Root = TreeNode::sc_Invalid;
 		FreeList<TreeNode> m_Nodes;
-		std::vector<bool> m_NodeValid;
+		std::vector<bool>  m_NodeValid;
 
 		uint32_t m_NodeCount = 0;
 	};

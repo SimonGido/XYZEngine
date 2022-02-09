@@ -4,7 +4,7 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Animation/Animation.h"
-#include "XYZ/Animation/Animator.h"
+#include "XYZ/Animation/AnimatorController.h"
 #include "XYZ/Utils/Delegate.h"
 
 #include "ScriptWrappers.h"

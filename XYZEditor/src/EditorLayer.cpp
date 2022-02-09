@@ -69,9 +69,11 @@ namespace XYZ {
 
 			auto& animatorComp = newEntity.EmplaceComponent<AnimatorComponent>();
 			animatorComp.Animator = animator;
-			animator->SetAnimation(animation);
+	
 			animator->SetSceneEntity(newEntity);
-			m_EditorManager.GetPanel<Editor::AnimationEditor>("AnimationEditor")->SetContext(animator);
+			animator->AddAnimation("Default", animation);
+
+			m_EditorManager.GetPanel<Editor::AnimationEditor>("AnimationEditor")->SetContext(animation);
 
 			Ref<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
 			scenePanel->SetSceneRenderer(m_SceneRenderer);

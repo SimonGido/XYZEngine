@@ -1,13 +1,21 @@
 #pragma once
 #include "XYZ/Asset/Asset.h"
 #include "XYZ/Scene/SceneEntity.h"
-#include "Property.h"
 #include "XYZ/Scene/Components.h"
+#include "AnimationAvatar.h"
+#include "Property.h"
 
 #include <glm/glm.hpp>
 
 namespace XYZ {
 
+	/*
+	TODO: - Path must be combination of parent namesand entity name
+		  - Probably precompute every frame and store it in property
+		  - m_CurrentFrame must be stored in Animator, because if we want to share animations
+			every reference of animation might be in different frame ( currently it is expensive to SetCurrentFrame)
+		  - Remove Animation Update, keep only SetCurrentFrame
+	*/
 	class Animation : public Asset
 	{
 	public:
@@ -23,8 +31,6 @@ namespace XYZ {
 		template <typename ValueType>
 		Property<ValueType>* GetProperty(std::string_view path, std::string_view componentName, std::string_view valueName);
 
-		
-
 		void Update(Timestep ts);
 		void Reset();
 		void UpdateLength();
@@ -35,6 +41,7 @@ namespace XYZ {
 		void SetRepeat(bool repeat)			  { m_Repeat = repeat; }
 
 		bool HasProperty(std::string_view componentName, std::string_view varName, std::string_view path) const;
+		bool Empty() const;
 
 		inline uint32_t	GetNumFrames()    const { return m_NumFrames; }
 		inline uint32_t	GetCurrentFrame() const { return m_CurrentFrame; }
@@ -46,11 +53,12 @@ namespace XYZ {
 		template <typename T>
 		constexpr std::vector<Property<T>>& GetProperties();
 	
+		template <typename T>
+		constexpr const std::vector<Property<T>>& GetProperties() const;
 
 		static AssetType GetStaticType() { return AssetType::Animation; }
 
 	private:
-		void setSceneEntity(const SceneEntity& entity);
 		void updateProperties(uint32_t frame);
 		void setPropertiesKey(uint32_t frame);
 		void resetProperties();
@@ -72,9 +80,6 @@ namespace XYZ {
 			
 		void		clearProperties();
 	private:
-		SceneEntity m_Entity;
-
-
 		std::vector<Property<glm::vec4>> m_Vec4Properties;
 		std::vector<Property<glm::vec3>> m_Vec3Properties;
 		std::vector<Property<glm::vec2>> m_Vec2Properties;
@@ -88,7 +93,8 @@ namespace XYZ {
 		float    m_FrameLength;
 		bool     m_Repeat;
 
-		friend class Animator;
+
+		friend class AnimationAvatar;
 	};
 	
 
@@ -97,7 +103,6 @@ namespace XYZ {
 	{
 		Property<ValueType> prop = Property<ValueType>(std::string(path));
 		prop.Init<ComponentType, valIndex>();
-		prop.SetSceneEntity(m_Entity);
 
 		auto props = getProperties<ValueType>();
 		if (props)
@@ -140,6 +145,21 @@ namespace XYZ {
 	}
 
 	template<typename T>
+	inline constexpr const std::vector<Property<T>>& Animation::GetProperties() const
+	{
+		if constexpr (std::is_same_v<T, glm::vec4>)
+			return m_Vec4Properties;
+		else if constexpr (std::is_same_v<T, glm::vec3>)
+			return m_Vec3Properties;
+		else if constexpr (std::is_same_v<T, glm::vec2>)
+			return m_Vec2Properties;
+		else if constexpr (std::is_same_v<T, float>)
+			return m_FloatProperties;
+		else if constexpr (std::is_same_v<T, void*>)
+			return m_PointerProperties;
+	}
+
+	template<typename T>
 	inline constexpr std::vector<Property<T>>* Animation::getProperties()
 	{
 		if constexpr (std::is_same_v<T, glm::vec4>)
@@ -154,22 +174,6 @@ namespace XYZ {
 			return &m_PointerProperties;
 		else
 			return nullptr;
-	}
-
-	template<typename T>
-	inline void Animation::setPropertySceneEntity(std::vector<Property<T>>& container)
-	{
-		auto& relationship = m_Entity.GetComponent<Relationship>();
-		for (auto& prop : container)
-		{
-			auto ecs		 = m_Entity.GetECS();
-			const auto& path = prop.GetPath();
-			if (!path.empty())
-			{
-				Entity result = relationship.FindByName(*ecs, path);
-				prop.SetSceneEntity({ result, m_Entity.GetScene() });
-			}
-		}
 	}
 
 	template<typename T>

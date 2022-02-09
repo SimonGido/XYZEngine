@@ -35,7 +35,7 @@ namespace XYZ {
 		virtual void SetCurrentKey(uint32_t frame) = 0;
 		virtual void SetSceneEntity(const SceneEntity& entity) = 0;
 		virtual void Reset() = 0;
-
+		virtual bool IsCompatible(SceneEntity entity) const = 0;
 
 		virtual const SceneEntity& GetSceneEntity()	  const = 0;
 		virtual const std::string& GetPath()		  const = 0;
@@ -59,7 +59,8 @@ namespace XYZ {
 		virtual void SetCurrentKey(uint32_t frame) override;
 		virtual void SetSceneEntity(const SceneEntity& entity) override;
 		virtual void Reset() override { m_CurrentKey = 0; }
-	
+		virtual bool IsCompatible(SceneEntity entity) const override;
+
 		virtual const SceneEntity& GetSceneEntity()		  const override { return m_Entity; }
 		virtual const std::string& GetPath()			  const override { return m_Path; }
 		virtual const std::string& GetValueName()		  const override { return m_ValueName; }
@@ -96,8 +97,6 @@ namespace XYZ {
 		std::string						   m_ComponentName;
 	
 		
-
-
 		Delegate<T*(SceneEntity& entity)>  m_GetPropertyReference;	
 		uint16_t						   m_ValueIndex  = UINT16_MAX;
 		uint16_t						   m_ComponentID = UINT16_MAX;
@@ -192,6 +191,17 @@ namespace XYZ {
 	inline void Property<T>::SetSceneEntity(const SceneEntity& entity)
 	{
 		m_Entity = entity;
+	}
+
+	template<typename T>
+	inline bool Property<T>::IsCompatible(SceneEntity entity) const
+	{
+		if (m_GetPropertyReference)
+		{
+			return m_GetPropertyReference(entity) != nullptr
+				&& entity.GetComponent<SceneTagComponent>().Name == m_Path;
+		}
+		return false;
 	}
 
 	template<typename T>

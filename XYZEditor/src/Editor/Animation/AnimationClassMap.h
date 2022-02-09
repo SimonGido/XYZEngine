@@ -1,7 +1,7 @@
 #pragma once
 #include "XYZ/Scene/SceneEntity.h"
 
-#include "XYZ/Animation/Animator.h"
+#include "XYZ/Animation/AnimatorController.h"
 
 namespace XYZ {
 	namespace Editor {
@@ -19,7 +19,7 @@ namespace XYZ {
 
 			
 
-			void BuildMap(SceneEntity& entity);
+			void BuildMap(SceneEntity& entity, const Ref<Animation>& animation);
 			void Erase(const_iterator iter);
 			bool OnImGuiRender(std::string& selectedEntity, std::string& selectedClass, std::string& selectedVariable);
 			

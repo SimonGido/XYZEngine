@@ -10,7 +10,7 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SortKey.h"
 
-#include "XYZ/Animation/Animator.h"
+#include "XYZ/Animation/AnimatorController.h"
 #include "XYZ/Asset/AssetManager.h"
 
 #include "XYZ/Script/ScriptEngine.h"
@@ -238,6 +238,7 @@ namespace XYZ {
 		auto& animatorStorage = m_ECS.GetStorage<AnimatorComponent>();
 		for (auto& anim : animatorStorage)
 		{
+			anim.Controller->Update(anim.Animator);
 			anim.Animator->Update(ts);
 		}
 		updateHierarchy();
