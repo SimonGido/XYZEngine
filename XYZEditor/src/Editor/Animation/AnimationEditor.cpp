@@ -96,7 +96,6 @@ namespace XYZ {
 		{
 			if (m_Playing && m_Animation.Raw() && m_Entity.IsValid())
 			{
-				m_Player.Create(m_Entity, m_Animation);
 				m_Player.Update(ts);
 				
 				m_CurrentFrame = static_cast<int>(m_Player.GetCurrentFrame());
@@ -258,6 +257,7 @@ namespace XYZ {
 			if (ButtonTransparent("Play", m_ButtonSize, ED::MediaPlayIcon))
 			{
 				m_Playing = !m_Playing;
+				m_Player.Create(m_Entity, m_Animation);
 				m_Player.Reset();
 			}
 			ImGui::SameLine();

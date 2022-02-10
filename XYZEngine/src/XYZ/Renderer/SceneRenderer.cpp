@@ -150,8 +150,7 @@ namespace XYZ {
 		uint32_t textureIndex = command.setTexture(subTexture->GetTexture());
 
 		command.Material = material;
-		command.SpriteCount++;
-		m_Queue.BillboardData.push_back({ textureIndex, subTexture->GetTexCoords(), color, position, size });
+		command.BillboardData.push_back({ textureIndex, subTexture->GetTexCoords(), color, position, size });
 	}
 
 	void SceneRenderer::SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform)
@@ -162,8 +161,7 @@ namespace XYZ {
 		uint32_t textureIndex = command.setTexture(subTexture->GetTexture());
 		
 		command.Material = material;
-		command.SpriteCount++;
-		m_Queue.SpriteData.push_back({ textureIndex, subTexture->GetTexCoords(), color, transform });
+		command.SpriteData.push_back({ textureIndex, subTexture->GetTexCoords(), color, transform });
 	}
 	
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
@@ -295,10 +293,7 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("SceneRenderer::flushDefaultQueue");
 		geometryPass2D(m_Queue, true);
 	
-		m_Queue.SpriteData.clear();
 		m_Queue.SpriteDrawCommands.clear();
-		
-		m_Queue.BillboardData.clear();
 		m_Queue.BillboardDrawCommands.clear();
 	}
 	
@@ -307,7 +302,6 @@ namespace XYZ {
 		m_GPUTimeQueries.Renderer2DPassQuery = m_CommandBuffer->BeginTimestampQuery();
 		m_Renderer2D->BeginScene(m_CameraBuffer.ViewProjectionMatrix, m_CameraBuffer.ViewMatrix, clear);
 		
-		uint32_t offset = 0;
 		for (auto& [key, command] : queue.SpriteDrawCommands)
 		{
 			m_Renderer2D->SetQuadMaterial(command.Material);
@@ -316,12 +310,9 @@ namespace XYZ {
 			for (uint32_t i = command.TextureCount; i < Renderer2D::GetMaxTextures(); ++i)
 				command.Material->SetImageArray("u_Texture", m_WhiteTexture->GetImage(), i);
 
-			for (uint32_t i = offset; i < command.SpriteCount + offset; ++i)
-			{
-				auto& data = queue.SpriteData[i];
+			for (const auto& data : command.SpriteData)		
 				m_Renderer2D->SubmitQuad(data.Transform, data.TexCoords, data.TextureIndex, data.Color);
-			}
-			offset += command.SpriteCount;
+
 			m_Renderer2D->Flush();
 		}
 
@@ -333,12 +324,9 @@ namespace XYZ {
 			for (uint32_t i = command.TextureCount; i < Renderer2D::GetMaxTextures(); ++i)
 				command.Material->SetImageArray("u_Texture", m_WhiteTexture->GetImage(), i);
 
-			for (uint32_t i = offset; i < command.SpriteCount + offset; ++i)
-			{
-				auto& data = queue.BillboardData[i];
+			for (const auto& data : command.BillboardData)
 				m_Renderer2D->SubmitQuadBillboard(data.Position, data.Size, data.TexCoords, data.TextureIndex, data.Color);
-			}
-			offset += command.SpriteCount;
+			
 			m_Renderer2D->Flush();
 		}
 

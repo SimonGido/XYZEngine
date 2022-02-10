@@ -1,23 +1,23 @@
 Scene: TestScene
 Entities:
-  - Entity: 590254ce-c330-4b0b-bb7b-f703207a39d9
+  - Entity: 2c5ebb8e-228f-46a6-96e4-722227690f52
     SceneTagComponent:
       Name: Havko
     TransformComponent:
-      Position: [0, 0, 0]
+      Position: [0, 2.9000001, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteRenderer:
-      Material: 121f08f9-8539-4156-8a5f-637f36d17083
-      SubTexture: 04ef73df-7aad-44e5-8d85-7f71c74866c4
+      Material: 3b29fb0a-6afb-43c6-b6fa-5dc76151e7f7
+      SubTexture: 0557c55a-c66b-43dc-a72d-9ee625f5fbc1
       Color: [1, 1, 1, 1]
       SortLayer: 0
       Visible: true
     Relationship:
-      PreviousSibling: 725dce1f-0f00-40c8-ac8c-71a8afcd1d50
-      FirstChild: db1aaf52-38a4-40ca-ae57-03fc2f6f6838
+      PreviousSibling: b0d7f773-93a5-473e-b9e8-a38a5f80ac5e
+      FirstChild: b5a58a2a-d9a4-486f-86fc-eeee2826d9ed
       Depth: 1
-  - Entity: db1aaf52-38a4-40ca-ae57-03fc2f6f6838
+  - Entity: b5a58a2a-d9a4-486f-86fc-eeee2826d9ed
     SceneTagComponent:
       Name: Child
     TransformComponent:
@@ -25,21 +25,36 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 590254ce-c330-4b0b-bb7b-f703207a39d9
+      Parent: 2c5ebb8e-228f-46a6-96e4-722227690f52
       Depth: 2
-  - Entity: 725dce1f-0f00-40c8-ac8c-71a8afcd1d50
+  - Entity: b0d7f773-93a5-473e-b9e8-a38a5f80ac5e
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
-      Position: [-1.5, 0, 0]
+      Position: [-1.75, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      NextSibling: 2c5ebb8e-228f-46a6-96e4-722227690f52
+      PreviousSibling: eb95e765-de4f-41e8-ae7a-e1ef77073bb9
+      Depth: 1
+    PointLight2D:
+      Color: [1, 1, 1]
+      Radius: 4.1500001
+      Intensity: 1
+  - Entity: eb95e765-de4f-41e8-ae7a-e1ef77073bb9
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [-5.30000019, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteRenderer:
-      Material: 4c6648be-be1c-49c8-be73-326eac9d0df8
-      SubTexture: 0502360a-65c5-4e96-8809-36a848d63425
+      Material: 9ef32680-d227-47ef-b5dd-4884054a7386
+      SubTexture: 34881bf9-d998-4d18-a83e-d3d6b1478a84
       Color: [1, 1, 1, 1]
       SortLayer: 0
       Visible: true
     Relationship:
-      NextSibling: 590254ce-c330-4b0b-bb7b-f703207a39d9
+      NextSibling: b0d7f773-93a5-473e-b9e8-a38a5f80ac5e
       Depth: 1

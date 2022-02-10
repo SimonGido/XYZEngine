@@ -36,17 +36,6 @@ namespace XYZ {
 
 	struct RenderQueue
 	{
-		struct SpriteDrawCommand
-		{
-			Ref<Material>  Material;
-			std::array<Ref<Texture2D>, Renderer2D::GetMaxTextures()> Textures;
-
-			uint32_t       TextureCount = 0;
-			uint32_t       SpriteCount = 0;
-
-			uint32_t setTexture(const Ref<Texture2D>& texture);		
-		};
-
 		struct SpriteDrawData
 		{
 			uint32_t  TextureIndex;
@@ -63,8 +52,21 @@ namespace XYZ {
 			glm::vec3 Position;
 			glm::vec2 Size;
 		};
-	
 
+		struct SpriteDrawCommand
+		{
+			Ref<Material>  Material;
+			std::array<Ref<Texture2D>, Renderer2D::GetMaxTextures()> Textures;
+
+			uint32_t       TextureCount = 0;
+
+			uint32_t setTexture(const Ref<Texture2D>& texture);
+
+			std::vector<SpriteDrawData>		SpriteData;
+			std::vector<BillboardDrawData>	BillboardData;
+		};
+
+		
 		struct SpriteDrawKey
 		{
 			SpriteDrawKey(const AssetHandle& matHandle)
@@ -81,11 +83,7 @@ namespace XYZ {
 
 
 		std::map<SpriteDrawKey, SpriteDrawCommand> SpriteDrawCommands;
-		std::map<SpriteDrawKey, SpriteDrawCommand> BillboardDrawCommands;
-
-		std::vector<SpriteDrawData>				   SpriteData;
-		std::vector<BillboardDrawData>			   BillboardData;
-			
+		std::map<SpriteDrawKey, SpriteDrawCommand> BillboardDrawCommands;			
 	};
 
 	struct SceneRendererSpecification
@@ -93,7 +91,6 @@ namespace XYZ {
 		bool SwapChainTarget = false;
 	};
 
-	using RenderOverlayFn = Delegate<void(Ref<RenderCommandBuffer>, uint32_t& timeQuery)>;
 	class SceneRenderer : public RefCount
 	{
 	public:
@@ -114,13 +111,6 @@ namespace XYZ {
 
 		void OnImGuiRender();
 
-		template <auto Callable>
-		void RenderOverlay();
-
-		template <auto Callable, typename Type>
-		void RenderOverlay(Type* instance);
-
-		void StopRenderOverlay() { m_RenderOverlayFn = {}; }
 
 		Ref<Renderer2D>	      GetRenderer2D() const { return m_Renderer2D; }
 		Ref<RenderPass>		  GetRenderer2DPass() const { return m_Renderer2D->GetTargetRenderPass(); }
@@ -229,23 +219,9 @@ namespace XYZ {
 		{
 			uint32_t GPUTime = 0;
 			uint32_t Renderer2DPassQuery = 0;
-			uint32_t OverlayQuery = 0;
 
 			static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
 		};
 		GPUTimeQueries m_GPUTimeQueries;
-	
-		RenderOverlayFn m_RenderOverlayFn;
 	};
-	template<auto Callable>
-	inline void SceneRenderer::RenderOverlay()
-	{
-		m_RenderOverlayFn.Connect<Callable>();
-	}
-
-	template<auto Callable, typename Type>
-	inline void SceneRenderer::RenderOverlay(Type* instance)
-	{
-		m_RenderOverlayFn.Connect<Callable>(instance);
-	}
 }

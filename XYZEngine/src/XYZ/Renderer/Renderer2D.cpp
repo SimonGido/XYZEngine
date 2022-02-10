@@ -392,7 +392,7 @@ namespace XYZ {
 	void Renderer2D::SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
 	{
 		if (m_LineBuffer.IndexCount >= sc_MaxLineIndices)
-			XYZ_ASSERT(false, "")
+			XYZ_ASSERT(false, "");
 
 		m_LineBuffer.BufferPtr->Position = p0;
 		m_LineBuffer.BufferPtr->Color = color;
@@ -510,7 +510,9 @@ namespace XYZ {
 	void Renderer2D::EndScene()
 	{	
 		Flush();
-		m_QuadBuffer.Offset = 0;
+		m_QuadBuffer.Reset();
+		m_LineBuffer.Reset();
+		m_CircleBuffer.Reset();
 		Renderer::EndRenderPass(m_RenderCommandBuffer);
 	}
 	void Renderer2D::resetQuads()
@@ -578,47 +580,54 @@ namespace XYZ {
 	}
 	void Renderer2D::flush()
 	{
-		const uint32_t dataSize = (uint8_t*)m_QuadBuffer.BufferPtr - (uint8_t*)m_QuadBuffer.BufferBase;
+		const uint32_t dataSize = m_QuadBuffer.DataSize();
 		if (dataSize)
 		{
+			XYZ_ASSERT(dataSize + m_QuadBuffer.Offset < m_QuadBuffer.VertexBuffer->GetSize(), "");
 			XYZ_ASSERT(m_QuadMaterial.Raw(), "No material set");
-			m_QuadBuffer.VertexBuffer[m_QuadBuffer.Offset]->Update(m_QuadBuffer.BufferBase, dataSize, m_QuadBuffer.Offset);
+			m_QuadBuffer.VertexBuffer->Update(m_QuadBuffer.DataPtr(), dataSize, m_QuadBuffer.Offset);
 
 			Renderer::BindPipeline(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_UniformBufferSet, nullptr, m_QuadMaterial);
-			Renderer::RenderGeometry(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_QuadMaterial, m_QuadBuffer.VertexBuffer[m_QuadBuffer.Offset], m_QuadBuffer.IndexBuffer, glm::mat4(1.0f), m_QuadBuffer.IndexCount);
+			Renderer::RenderGeometry(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_QuadMaterial, m_QuadBuffer.VertexBuffer, m_QuadBuffer.IndexBuffer, glm::mat4(1.0f), m_QuadBuffer.IndexCount, m_QuadBuffer.Offset);
 			m_Stats.DrawCalls++;
-			m_QuadBuffer.Reset();
-			m_QuadBuffer.Offset++;
+			
+			m_QuadBuffer.IndexCount = 0;
+			m_QuadBuffer.Offset += dataSize;
 		}		
 	}
 	void Renderer2D::flushLines()
 	{
-		const uint32_t dataSize = (uint8_t*)m_LineBuffer.BufferPtr - (uint8_t*)m_LineBuffer.BufferBase;
+		const uint32_t dataSize = m_LineBuffer.DataSize();
 		if (dataSize)
 		{
-			//m_LineBuffer.VertexBuffer->Update(m_LineBuffer.BufferBase, dataSize);
-			//
-			//Renderer::BindPipeline(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_UniformBufferSet, nullptr, m_LineMaterial);
-			//Renderer::RenderGeometry(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_LineMaterial, m_LineBuffer.VertexBuffer, m_LineBuffer.IndexBuffer, glm::mat4(1.0f), m_LineBuffer.IndexCount);
+			XYZ_ASSERT(dataSize + m_LineBuffer.Offset < m_LineBuffer.VertexBuffer->GetSize(), "");
+			m_LineBuffer.VertexBuffer->Update(m_LineBuffer.DataPtr(), dataSize, m_LineBuffer.Offset);
+			
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_UniformBufferSet, nullptr, m_LineMaterial);
+			Renderer::RenderGeometry(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_LineMaterial, m_LineBuffer.VertexBuffer, m_LineBuffer.IndexBuffer, glm::mat4(1.0f), m_LineBuffer.IndexCount, m_LineBuffer.Offset);
 
 			m_Stats.LineDrawCalls++;
-			m_LineBuffer.Reset();;
+			m_LineBuffer.IndexCount = 0;
+			m_LineBuffer.Offset += dataSize;
 		}	
 	}
 
 
 	void Renderer2D::flushFilledCircles()
 	{
-		const uint32_t dataSize = (uint8_t*)m_CircleBuffer.BufferPtr - (uint8_t*)m_CircleBuffer.BufferBase;
+		const uint32_t dataSize = m_CircleBuffer.DataSize();
 		if (dataSize)
 		{
-			//m_CircleBuffer.VertexBuffer->Update(m_CircleBuffer.BufferBase, dataSize);
-			//
-			//Renderer::BindPipeline(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_UniformBufferSet, nullptr, m_CircleMaterial);
-			//Renderer::RenderGeometry(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_CircleMaterial, m_CircleBuffer.VertexBuffer, m_CircleBuffer.IndexBuffer, glm::mat4(1.0f), m_CircleBuffer.IndexCount);
+			XYZ_ASSERT(dataSize + m_CircleBuffer.Offset < m_CircleBuffer.VertexBuffer->GetSize(), "");
+			m_CircleBuffer.VertexBuffer->Update(m_CircleBuffer.DataPtr(), dataSize, m_CircleBuffer.Offset);
+			
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_UniformBufferSet, nullptr, m_CircleMaterial);
+			Renderer::RenderGeometry(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_CircleMaterial, m_CircleBuffer.VertexBuffer, m_CircleBuffer.IndexBuffer, glm::mat4(1.0f), m_CircleBuffer.IndexCount, m_CircleBuffer.Offset);
 
 			m_Stats.FilledCircleDrawCalls++;
-			m_CircleBuffer.Reset();
+
+			m_CircleBuffer.IndexCount = 0;
+			m_CircleBuffer.Offset += dataSize;
 		}
 	}
 

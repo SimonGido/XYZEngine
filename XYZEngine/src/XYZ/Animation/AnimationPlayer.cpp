@@ -19,28 +19,20 @@ namespace XYZ {
 		if (frame >= m_Animation->GetNumFrames())
 		{
 			m_CurrentTime = 0.0f;
+			for (auto& node : m_Properties)
+				node.Key = 0;
 			frame = 0;
 		}
 
-		bool finished = true;
 		for (auto& node : m_Properties)
 		{
-			if (node.Property->GetKeyCount() <= node.Key + 1)
-			{
-				finished &= true;
-			}
-			else
+			if (node.Key + 1 < node.Property->GetKeyCount())
 			{
 				node.Property->SetSceneEntity(node.Entity);
 				node.Property->Update(node.Key, frame);
 				if (node.Property->GetEndFrame(node.Key + 1) <= frame)
 					node.Key++;
 			}
-		}
-		if (finished) // Ale properties finished, restart key
-		{
-			for (auto& node : m_Properties)
-				node.Key = 0;
 		}
 		m_CurrentTime += ts;		
 	}
@@ -97,6 +89,7 @@ namespace XYZ {
 	}
 	void AnimationPlayer::Reset()
 	{
+		m_CurrentTime = 0.0f;
 		for (auto& node : m_Properties)
 			node.Key = 0;
 	}

@@ -97,8 +97,8 @@ namespace XYZ {
 		void EditorLayer::OnUpdate(Timestep ts)
 		{
 			m_EditorManager.OnUpdate(ts);
-			//if (m_Scene->GetState() == SceneState::Edit)
-			//	renderOverlay();
+			if (m_Scene->GetState() == SceneState::Edit)
+				renderOverlay();
 	
 
 			if (m_SelectedEntity != m_Scene->GetSelectedEntity())

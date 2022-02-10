@@ -160,8 +160,10 @@ namespace XYZ {
 			const VkDeviceSize offsets[] = { vertexOffsetSize };
 			if (indexCount == 0)
 				indexCount = indexBuffer->GetCount();
+			uint32_t offset = 0;
+
 			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), 0, vulkanIndexBuffer->GetVulkanIndexType());
+			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), offset, vulkanIndexBuffer->GetVulkanIndexType());
 			ByteBuffer fsUniformStorage = vulkanMaterial->GetFSUniformsBuffer();
 			ByteBuffer vsUniformStorage = vulkanMaterial->GetVSUniformsBuffer();
 

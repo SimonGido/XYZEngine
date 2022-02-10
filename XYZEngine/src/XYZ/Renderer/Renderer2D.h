@@ -30,14 +30,16 @@ namespace XYZ {
 
 		void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, uint32_t maxVertices, uint32_t* indices, uint32_t indexCount, const BufferLayout& layout, PrimitiveTopology topology = PrimitiveTopology::Triangles);
 		void Reset();
+		uint32_t DataSize() const;
+		uint8_t* DataPtr() const;
 
-		Ref<Pipeline>				   Pipeline;
-		Ref<IndexBuffer>			   IndexBuffer;
-		std::vector<Ref<VertexBuffer>> VertexBuffer;
-		VertexType*					   BufferBase = nullptr;
-		VertexType*					   BufferPtr  = nullptr;
-		uint32_t					   IndexCount = 0;
-		uint32_t					   Offset = 0;
+		Ref<Pipeline>	  Pipeline;
+		Ref<IndexBuffer>  IndexBuffer;
+		Ref<VertexBuffer> VertexBuffer;
+		VertexType*		  BufferBase = nullptr;
+		VertexType*		  BufferPtr  = nullptr;
+		uint32_t		  IndexCount = 0;
+		uint32_t		  Offset = 0;
 	};
 
 	class Renderer2D : public RefCount
@@ -184,13 +186,8 @@ namespace XYZ {
 	inline void Renderer2DBuffer<VertexType>::Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, uint32_t maxVertices, uint32_t* indices, uint32_t indexCount, const BufferLayout& layout, PrimitiveTopology topology)
 	{
 		this->BufferBase = new VertexType[maxVertices];
-		
-		for (uint32_t frame = 0; frame < Renderer::GetConfiguration().FramesInFlight; ++frame)
-		{
-			this->VertexBuffer.push_back({});
-			this->VertexBuffer[frame] = VertexBuffer::Create(maxVertices * sizeof(VertexType));
-			this->VertexBuffer[frame]->SetLayout(layout);
-		}
+		this->VertexBuffer = VertexBuffer::Create(maxVertices * sizeof(VertexType));
+		this->VertexBuffer->SetLayout(layout);	
 		this->IndexBuffer = IndexBuffer::Create(indices, indexCount);
 		PipelineSpecification specification;
 		specification.Shader = shader;
@@ -207,5 +204,15 @@ namespace XYZ {
 		BufferPtr = BufferBase;
 		IndexCount = 0;
 		Offset = 0;
+	}
+	template<typename VertexType>
+	inline uint32_t Renderer2DBuffer<VertexType>::DataSize() const
+	{
+		return (uint8_t*)BufferPtr - (uint8_t*)BufferBase - Offset;
+	}
+	template<typename VertexType>
+	inline uint8_t* Renderer2DBuffer<VertexType>::DataPtr() const
+	{
+		return (uint8_t*)BufferBase + Offset;
 	}
 }

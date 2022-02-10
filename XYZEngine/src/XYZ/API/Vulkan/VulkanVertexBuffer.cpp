@@ -107,8 +107,7 @@ namespace XYZ {
 			uint8_t* pData = allocator.MapMemory<uint8_t>(instance->m_MemoryAllocation);
 			memcpy(pData + offset, buffer.Data + offset, size);
 			allocator.UnmapMemory(instance->m_MemoryAllocation);
-			instance->m_Buffers.PushFront(buffer);
-			
+			instance->m_Buffers.PushFront(buffer);		
 		});
 	}
 	void VulkanVertexBuffer::RT_Update(const void* vertices, uint32_t size, uint32_t offset)
