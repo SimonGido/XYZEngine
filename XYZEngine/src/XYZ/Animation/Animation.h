@@ -2,20 +2,14 @@
 #include "XYZ/Asset/Asset.h"
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Components.h"
-#include "AnimationAvatar.h"
+#include "AnimationPlayer.h"
 #include "Property.h"
 
 #include <glm/glm.hpp>
 
 namespace XYZ {
 
-	/*
-	TODO: - Path must be combination of parent namesand entity name
-		  - Probably precompute every frame and store it in property
-		  - m_CurrentFrame must be stored in Animator, because if we want to share animations
-			every reference of animation might be in different frame ( currently it is expensive to SetCurrentFrame)
-		  - Remove Animation Update, keep only SetCurrentFrame
-	*/
+
 	class Animation : public Asset
 	{
 	public:
@@ -31,12 +25,8 @@ namespace XYZ {
 		template <typename ValueType>
 		Property<ValueType>* GetProperty(std::string_view path, std::string_view componentName, std::string_view valueName);
 
-		void Update(Timestep ts);
-		void Reset();
-		void UpdateLength();
-		
+
 		void SetFrequency(uint32_t framesPerSecond);
-		void SetCurrentFrame(uint32_t frame);
 		void SetNumFrames(uint32_t numFrames) { m_NumFrames = numFrames; }
 		void SetRepeat(bool repeat)			  { m_Repeat = repeat; }
 
@@ -44,11 +34,11 @@ namespace XYZ {
 		bool Empty() const;
 
 		inline uint32_t	GetNumFrames()    const { return m_NumFrames; }
-		inline uint32_t	GetCurrentFrame() const { return m_CurrentFrame; }
 		inline uint32_t GetFrequency()    const { return m_Frequency; }
+
 		inline float	GetFrameLength()  const { return m_FrameLength; }
 		inline bool		GetRepeat()	      const { return m_Repeat; }
-
+		size_t			GetPropertyCount() const;
 
 		template <typename T>
 		constexpr std::vector<Property<T>>& GetProperties();
@@ -59,15 +49,8 @@ namespace XYZ {
 		static AssetType GetStaticType() { return AssetType::Animation; }
 
 	private:
-		void updateProperties(uint32_t frame);
-		void setPropertiesKey(uint32_t frame);
-		void resetProperties();
-
 		template <typename T>
 		constexpr std::vector<Property<T>>* getProperties();
-
-		template <typename T>
-		void		setPropertySceneEntity(std::vector<Property<T>>& container);
 
 		template <typename T>
 		static void	removeFromContainer(std::vector<T>& container, std::string_view path, std::string_view valueName, std::string_view componentName);
@@ -87,14 +70,13 @@ namespace XYZ {
 		std::vector<Property<void*>>	 m_PointerProperties;
 		
 		uint32_t m_NumFrames;
-		uint32_t m_CurrentFrame;
 		uint32_t m_Frequency;
-		float	 m_CurrentTime;
+
 		float    m_FrameLength;
 		bool     m_Repeat;
 
 
-		friend class AnimationAvatar;
+		friend class AnimationPlayer;
 	};
 	
 
@@ -102,7 +84,7 @@ namespace XYZ {
 	inline void Animation::AddProperty(std::string_view path)
 	{
 		Property<ValueType> prop = Property<ValueType>(std::string(path));
-		prop.Init<ComponentType, valIndex>();
+		prop.Setup<ComponentType, valIndex>();
 
 		auto props = getProperties<ValueType>();
 		if (props)

@@ -23,12 +23,13 @@ namespace XYZ {
 		void Update(Timestep ts);
 		void SetSceneEntity(const SceneEntity& entity);
 		void AddAnimation(const std::string& name, const Ref<Animation>& animation);
-		void CreateAvatars();
+		void CreatePlayers();
+
 	private:
 		struct AnimationData
 		{
 			Ref<Animation>	Animation;
-			AnimationAvatar Avatar;
+			AnimationPlayer Player;
 		};
 
 		SceneEntity	   m_Entity;

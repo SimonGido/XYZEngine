@@ -145,6 +145,7 @@ namespace XYZ {
 		virtual void Bind() const = 0;
 		virtual void UnBind() const = 0;
 		virtual void Update(const void* vertices, uint32_t size, uint32_t offset = 0) = 0;
+		virtual void RT_Update(const void* vertices, uint32_t size, uint32_t offset = 0) {};
 		virtual void Resize(const void* vertices, uint32_t size) = 0;
 		virtual void SetLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;

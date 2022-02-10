@@ -321,6 +321,7 @@ namespace XYZ {
 				auto& data = queue.SpriteData[i];
 				m_Renderer2D->SubmitQuad(data.Transform, data.TexCoords, data.TextureIndex, data.Color);
 			}
+			offset += command.SpriteCount;
 			m_Renderer2D->Flush();
 		}
 
@@ -337,6 +338,7 @@ namespace XYZ {
 				auto& data = queue.BillboardData[i];
 				m_Renderer2D->SubmitQuadBillboard(data.Position, data.Size, data.TexCoords, data.TextureIndex, data.Color);
 			}
+			offset += command.SpriteCount;
 			m_Renderer2D->Flush();
 		}
 
@@ -540,7 +542,7 @@ namespace XYZ {
 			const uint32_t width = (uint32_t)m_ViewportSize.x;
 			const uint32_t height = (uint32_t)m_ViewportSize.y;
 			m_LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-			m_CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			//m_CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
 
 			TextureProperties props;
 			props.Storage = true;

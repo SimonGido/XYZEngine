@@ -54,7 +54,7 @@ namespace XYZ {
 
 			// Copy data to staging buffer
 			uint8_t* destData = allocator.MapMemory<uint8_t>(stagingBufferAllocation);
-			memcpy(destData, instance->m_LocalData, instance->m_LocalData.Size);
+			memcpy(destData, instance->m_LocalData.Data, instance->m_LocalData.Size);
 			allocator.UnmapMemory(stagingBufferAllocation);
 
 			VkBufferCreateInfo indexBufferCreateInfo = {};

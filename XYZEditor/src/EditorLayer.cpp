@@ -97,8 +97,8 @@ namespace XYZ {
 		void EditorLayer::OnUpdate(Timestep ts)
 		{
 			m_EditorManager.OnUpdate(ts);
-			if (m_Scene->GetState() == SceneState::Edit)
-				renderOverlay();
+			//if (m_Scene->GetState() == SceneState::Edit)
+			//	renderOverlay();
 	
 
 			if (m_SelectedEntity != m_Scene->GetSelectedEntity())
@@ -240,6 +240,7 @@ namespace XYZ {
 				{
 					auto& transform = selected.GetComponent<TransformComponent>();
 					auto [min, max] = transformToAABB(transform);
+					
 					m_OverlayRenderer2D->SubmitAABB(min, max, s_Data.Color[ED::BoundingBox]);
 				}
 			}

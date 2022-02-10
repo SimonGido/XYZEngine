@@ -15,15 +15,14 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("Animator::Update");
 		if (m_CurrentAnimation)
 		{
-			m_CurrentAnimation->Avatar.SetAvatar();
-			m_CurrentAnimation->Animation->Update(ts);
+			m_CurrentAnimation->Player.Update(ts);
 		}
 	}
 
 	void Animator::SetSceneEntity(const SceneEntity& entity)
 	{
 		m_Entity = entity;
-		CreateAvatars();
+		CreatePlayers();
 	}
 
 	void Animator::AddAnimation(const std::string& name, const Ref<Animation>& animation)
@@ -32,7 +31,7 @@ namespace XYZ {
 		auto it = m_Animations.find(name);
 		if (it == m_Animations.end())
 		{
-			AnimationAvatar avatar;
+			AnimationPlayer avatar;
 			if (!avatar.Create(m_Entity, animation))
 				XYZ_WARN("Failed to create avatar for animation {} ", name);
 			m_Animations[name] = { animation, avatar };
@@ -44,13 +43,13 @@ namespace XYZ {
 	}
 
 
-	void Animator::CreateAvatars()
+	void Animator::CreatePlayers()
 	{
 		for (auto& [name, data] : m_Animations)
 		{
-			if (!data.Avatar.Create(m_Entity, data.Animation))
+			if (!data.Player.Create(m_Entity, data.Animation))
 			{
-				XYZ_WARN("Failed to create avatar for animation {} ", name);
+				XYZ_WARN("Failed to create player for animation {} ", name);
 			}
 		}
 	}

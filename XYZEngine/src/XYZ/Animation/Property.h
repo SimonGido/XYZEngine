@@ -31,16 +31,18 @@ namespace XYZ {
 	public:
 		virtual ~IProperty() = default;
 
-		virtual bool Update(uint32_t frame) = 0;
-		virtual void SetCurrentKey(uint32_t frame) = 0;
+		virtual void Update(size_t key, uint32_t frame) = 0;
 		virtual void SetSceneEntity(const SceneEntity& entity) = 0;
-		virtual void Reset() = 0;
-		virtual bool IsCompatible(SceneEntity entity) const = 0;
 
-		virtual const SceneEntity& GetSceneEntity()	  const = 0;
-		virtual const std::string& GetPath()		  const = 0;
-		virtual const std::string& GetValueName()	  const = 0;
-		virtual const std::string& GetComponentName() const = 0;
+		virtual const SceneEntity& GetSceneEntity()				 const = 0;
+		virtual const std::string& GetPath()					 const = 0;
+		virtual const std::string& GetValueName()				 const = 0;
+		virtual const std::string& GetComponentName()			 const = 0;
+		virtual size_t			   GetKeyCount()				 const = 0;
+		virtual uint32_t		   GetEndFrame(size_t key)		 const = 0;
+		virtual uint32_t		   Length()					     const = 0;
+		virtual int64_t			   FindKey(uint32_t frame)	     const = 0;
+		virtual bool			   HasKeyAtFrame(uint32_t frame) const = 0;
 	};
 
 	template <typename T>
@@ -55,36 +57,29 @@ namespace XYZ {
 		Property<T>& operator=(const Property<T>& other);
 		Property<T>& operator=(Property<T>&& other) noexcept;
 
-		virtual bool Update(uint32_t frame) override;
-		virtual void SetCurrentKey(uint32_t frame) override;
+		virtual void Update(size_t key, uint32_t frame) override;
 		virtual void SetSceneEntity(const SceneEntity& entity) override;
-		virtual void Reset() override { m_CurrentKey = 0; }
-		virtual bool IsCompatible(SceneEntity entity) const override;
 
-		virtual const SceneEntity& GetSceneEntity()		  const override { return m_Entity; }
-		virtual const std::string& GetPath()			  const override { return m_Path; }
-		virtual const std::string& GetValueName()		  const override { return m_ValueName; }
-		virtual const std::string& GetComponentName()	  const override { return m_ComponentName; }
-		
 
+		virtual const SceneEntity& GetSceneEntity()				 const override { return m_Entity; }
+		virtual const std::string& GetPath()					 const override { return m_Path; }
+		virtual const std::string& GetValueName()				 const override { return m_ValueName; }
+		virtual const std::string& GetComponentName()			 const override { return m_ComponentName; }
+		virtual size_t			   GetKeyCount()				 const override { return Keys.size(); }
+		virtual uint32_t		   GetEndFrame(size_t key)		 const override { return Keys[key].Frame; }
+		virtual uint32_t		   Length()					     const override;
+		virtual int64_t			   FindKey(uint32_t frame)	     const override;
+		virtual bool			   HasKeyAtFrame(uint32_t frame) const override;
 
 		template <typename ComponentType, uint16_t valIndex>
-		void Init();
+		void Setup();
 
 		bool AddKeyFrame(const KeyFrame<T>& key);
 		T    GetValue(uint32_t frame) const;
 	
 			 
-		uint32_t Length()					   const;
-		int64_t	 FindKey(uint32_t frame)	   const;
-		bool	 HasKeyAtFrame(uint32_t frame) const;
-
-
-		std::vector<KeyFrame<T>>		Keys;
-
+		std::vector<KeyFrame<T>> Keys;
 	private:
-		bool isKeyInRange() const { return m_CurrentKey + 1 < Keys.size(); }
-
 		template <typename ComponentType, uint16_t valIndex>
 		static T* getReference(SceneEntity& entity);
 	
@@ -100,7 +95,6 @@ namespace XYZ {
 		Delegate<T*(SceneEntity& entity)>  m_GetPropertyReference;	
 		uint16_t						   m_ValueIndex  = UINT16_MAX;
 		uint16_t						   m_ComponentID = UINT16_MAX;
-		size_t							   m_CurrentKey  = MAXSIZE_T - 1;
 	};
 
 	template<typename T>
@@ -126,8 +120,7 @@ namespace XYZ {
 		m_ValueIndex(other.m_ValueIndex),
 		m_ComponentID(other.m_ComponentID),
 		m_GetPropertyReference(other.m_GetPropertyReference),
-		Keys(other.Keys),
-		m_CurrentKey(other.m_CurrentKey)
+		Keys(other.Keys)
 	{
 	}
 	template<typename T>
@@ -141,8 +134,7 @@ namespace XYZ {
 		m_ValueIndex(other.m_ValueIndex),
 		m_ComponentID(other.m_ComponentID),
 		m_GetPropertyReference(std::move(other.m_GetPropertyReference)),
-		Keys(std::move(other.Keys)),
-		m_CurrentKey(other.m_CurrentKey)
+		Keys(std::move(other.Keys))
 	{
 	}
 	template<typename T>
@@ -157,7 +149,6 @@ namespace XYZ {
 		m_ComponentID		  = other.m_ComponentID;
 		m_GetPropertyReference = other.m_GetPropertyReference;
 		Keys				  = other.Keys;
-		m_CurrentKey		  = other.m_CurrentKey;
 		return *this;
 	}
 	template<typename T>
@@ -172,20 +163,9 @@ namespace XYZ {
 		m_ComponentID		   = other.m_ComponentID;
 		m_GetPropertyReference = std::move(other.m_GetPropertyReference);
 		Keys				   = std::move(other.Keys);
-		m_CurrentKey		   = other.m_CurrentKey;
 		return *this;
 	}
 
-	template<typename T>
-	inline void Property<T>::SetCurrentKey(uint32_t frame)
-	{
-		if (Keys.empty())
-		{
-			m_CurrentKey = 0;
-			return;
-		}
-		m_CurrentKey = FindKey(frame);
-	}
 
 	template<typename T>
 	inline void Property<T>::SetSceneEntity(const SceneEntity& entity)
@@ -193,16 +173,7 @@ namespace XYZ {
 		m_Entity = entity;
 	}
 
-	template<typename T>
-	inline bool Property<T>::IsCompatible(SceneEntity entity) const
-	{
-		if (m_GetPropertyReference)
-		{
-			return m_GetPropertyReference(entity) != nullptr
-				&& entity.GetComponent<SceneTagComponent>().Name == m_Path;
-		}
-		return false;
-	}
+
 
 	template<typename T>
 	inline bool Property<T>::AddKeyFrame(const KeyFrame<T>& key)
@@ -292,7 +263,7 @@ namespace XYZ {
 	
 	template<typename T>
 	template<typename ComponentType, uint16_t valIndex>
-	inline void Property<T>::Init()
+	inline void Property<T>::Setup()
 	{
 		m_GetPropertyReference.Connect<Property<T>::getReference<ComponentType, valIndex>>();
 		m_ValueIndex = valIndex;

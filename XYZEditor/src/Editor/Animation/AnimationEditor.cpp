@@ -96,9 +96,10 @@ namespace XYZ {
 		{
 			if (m_Playing && m_Animation.Raw() && m_Entity.IsValid())
 			{
-				m_Avatar.Create(m_Entity, m_Animation);
-				m_Animation->Update(ts);
-				m_CurrentFrame = static_cast<int>(m_Animation->GetCurrentFrame());
+				m_Player.Create(m_Entity, m_Animation);
+				m_Player.Update(ts);
+				
+				m_CurrentFrame = static_cast<int>(m_Player.GetCurrentFrame());
 				
 				handleEditKeyValues();
 			}
@@ -144,11 +145,11 @@ namespace XYZ {
 				ecs->AddOnDestruction<&AnimationEditor::onEntityChanged>(this);
 			}
 
-			if (m_Animation.Raw())
+			if (m_Animation.Raw() && m_Entity.IsValid())
 			{
 				m_ClassMap.BuildMap(m_Entity, m_Animation);
-				if (!m_Avatar.Create(m_Entity, m_Animation))
-					XYZ_WARN("Failed to create avatar for entity {}", m_Entity.GetComponent<SceneTagComponent>().Name);
+				if (!m_Player.Create(m_Entity, m_Animation))
+					XYZ_WARN("Failed to create player for entity {}", m_Entity.GetComponent<SceneTagComponent>().Name);
 			}
 		}
 		void AnimationEditor::drawEntityTree(const SceneEntity& entity)
@@ -163,13 +164,31 @@ namespace XYZ {
 			{
 				drawEntityTreeProperties(entity);
 				if (rel.GetFirstChild())
-					drawEntityTree(SceneEntity(rel.GetFirstChild(), m_Scene.Raw()));
+					drawEntityNode(SceneEntity(rel.GetFirstChild(), m_Scene.Raw()));
+
+				ImGui::TreePop();
+			}
+		}
+
+		void AnimationEditor::drawEntityNode(const SceneEntity& entity)
+		{
+			const auto& tag = entity.GetComponent<SceneTagComponent>().Name;
+			const auto& rel = entity.GetComponent<Relationship>();
+
+			const ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+			const bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+
+			if (opened)
+			{
+				drawEntityTreeProperties(entity);
+				if (rel.GetFirstChild())
+					drawEntityNode(SceneEntity(rel.GetFirstChild(), m_Scene.Raw()));
 
 				ImGui::TreePop();
 			}
 
 			if (rel.GetNextSibling())
-				drawEntityTree(SceneEntity(rel.GetNextSibling(), m_Scene.Raw()));
+				drawEntityNode(SceneEntity(rel.GetNextSibling(), m_Scene.Raw()));
 		}
 
 		void AnimationEditor::drawEntityTreeProperties(const SceneEntity& entity)
@@ -239,7 +258,7 @@ namespace XYZ {
 			if (ButtonTransparent("Play", m_ButtonSize, ED::MediaPlayIcon))
 			{
 				m_Playing = !m_Playing;
-				m_Animation->Reset();
+				m_Player.Reset();
 			}
 			ImGui::SameLine();
 			if (ButtonTransparent("NextKeyFrame", m_ButtonSize, ED::MediaNextIcon))
@@ -264,8 +283,10 @@ namespace XYZ {
 					m_ClassMap.Execute(selectedClass, selectedVariable, [&](auto classIndex, auto variableIndex) 
 					{
 						auto reflClass = ReflectedClasses::Get<classIndex.value>();
-						auto& val = reflClass.Get<variableIndex.value>(findEntity(selectedEntity).GetComponentFromReflection(reflClass));
-						addReflectedProperty<variableIndex.value>(reflClass, val, selectedEntity, selectedVariable);
+						SceneEntity entity = findEntity(selectedEntity);
+						auto& val = reflClass.Get<variableIndex.value>(entity.GetComponentFromReflection(reflClass));
+						std::string entityPath = entity.GetComponent<Relationship>().GetPath(*m_Entity.GetECS(), entity, m_Entity);
+						addReflectedProperty<variableIndex.value>(reflClass, val, entityPath, selectedVariable);
 						m_EntityPropertyMap.BuildMap(m_Animation);
 					});
 				}
@@ -280,7 +301,7 @@ namespace XYZ {
 					[&]() 
 					{
 						if (ImGui::DragInt("##Frame Max", (int*)&m_FrameMax, 0.5f, m_FrameMin, INT_MAX, "%d"))
-							m_Animation->SetNumFrames(m_FrameMax);
+							m_Animation->SetNumFrames(m_FrameMax - m_FrameMin);
 					});
 
 				UI::TableRow("FrameMin",
@@ -295,7 +316,7 @@ namespace XYZ {
 					[&]()
 					{
 						if (ImGui::DragInt("##Frame", (int*)&m_CurrentFrame, 0.5f, m_FrameMin, m_FrameMax, "%d"))
-							m_Animation->SetCurrentFrame(m_CurrentFrame);
+							m_Player.SetCurrentFrame(m_CurrentFrame);
 					});
 				UI::TableRow("FPS",
 					[]() { ImGui::Text("FPS"); },

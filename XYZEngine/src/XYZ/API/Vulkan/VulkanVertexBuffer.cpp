@@ -92,6 +92,7 @@ namespace XYZ {
 	}
 	void VulkanVertexBuffer::Update(const void* vertices, uint32_t size, uint32_t offset)
 	{
+		XYZ_ASSERT(size + offset <= m_Size, "");
 		ByteBuffer buffer;
 		if (m_Buffers.Empty())
 			buffer.Allocate(m_Size);
@@ -104,10 +105,18 @@ namespace XYZ {
 		{
 			VulkanAllocator allocator("VulkanVertexBuffer");
 			uint8_t* pData = allocator.MapMemory<uint8_t>(instance->m_MemoryAllocation);
-			memcpy(pData, buffer.Data + offset, size);
+			memcpy(pData + offset, buffer.Data + offset, size);
 			allocator.UnmapMemory(instance->m_MemoryAllocation);
-			instance->m_Buffers.PushBack(buffer);
+			instance->m_Buffers.PushFront(buffer);
+			
 		});
+	}
+	void VulkanVertexBuffer::RT_Update(const void* vertices, uint32_t size, uint32_t offset)
+	{
+		VulkanAllocator allocator("VulkanVertexBuffer");
+		uint8_t* pData = allocator.MapMemory<uint8_t>(m_MemoryAllocation);
+		memcpy(pData, (uint8_t*)vertices + offset, size);
+		allocator.UnmapMemory(m_MemoryAllocation);
 	}
 	void VulkanVertexBuffer::Resize(const void* vertices, uint32_t size)
 	{

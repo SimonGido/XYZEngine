@@ -170,10 +170,12 @@ namespace XYZ {
 		
 		template <typename T>
 		Entity Find(const ECSManager& ecs, const T& component) const;
-
 		Entity FindByName(const ECSManager& ecs, std::string_view name) const;
 
 		std::vector<Entity> GetTree(const ECSManager& ecs) const;
+		std::string			GetPath(const ECSManager& ecs, Entity entity, Entity end = Entity(0)) const;
+		bool			    IsInHierarchy(const ECSManager& ecs, Entity parent, std::string_view path) const;
+		bool				IsInHierarchy(const ECSManager& ecs, Entity child) const;
 
 		Entity GetParent() const { return Parent; }
 		Entity GetFirstChild() const { return FirstChild; }

@@ -23,8 +23,10 @@ namespace XYZ {
 			void SetContext(const Ref<Animation>& context);
 			
 		private:
+
 			void setEntity(const SceneEntity& entity);
 			void drawEntityTree(const SceneEntity& entity);
+			void drawEntityNode(const SceneEntity& entity);
 			void drawEntityTreeProperties(const SceneEntity& entity);
 
 
@@ -68,7 +70,7 @@ namespace XYZ {
 			Ref<Animation>	   m_Animation;
 			Ref<Scene>		   m_Scene;
 
-			AnimationAvatar		 m_Avatar;
+			AnimationPlayer		 m_Player;
 			AnimationClassMap    m_ClassMap;
 			EntityPropertyMap    m_EntityPropertyMap;
 

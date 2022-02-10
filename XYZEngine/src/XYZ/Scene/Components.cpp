@@ -82,6 +82,7 @@ namespace XYZ {
 		return Entity();
 	}
 
+
 	std::vector<Entity> Relationship::GetTree(const ECSManager& ecs) const
 	{
 		std::vector<Entity> result;
@@ -102,6 +103,68 @@ namespace XYZ {
 				temp.push(relationship.FirstChild);
 		}
 		return result;
+	}
+
+	std::string Relationship::GetPath(const ECSManager& ecs, Entity entity, Entity end) const
+	{
+		std::string result = ecs.GetComponent<SceneTagComponent>(entity).Name;
+		if (entity == end)
+			return result;
+		auto* rel = &ecs.GetComponent<Relationship>(entity);
+		while (ecs.IsValid(rel->Parent) && rel->Parent != end)
+		{
+			result = ecs.GetComponent<SceneTagComponent>(rel->Parent).Name + "/" + result;
+			rel = &ecs.GetComponent<Relationship>(rel->Parent);
+		}
+		return result;
+	}
+
+	bool Relationship::IsInHierarchy(const ECSManager& ecs, Entity parent, std::string_view path) const
+	{		
+		std::stack<Entity> temp;
+		if (ecs.IsValid(FirstChild))
+			temp.push(FirstChild);
+
+		while (!temp.empty())
+		{
+			const Entity entity = temp.top();
+			temp.pop();
+
+			if (GetPath(ecs, entity, parent) == path)
+				return true;
+
+			const auto& relationship = ecs.GetComponent<Relationship>(entity);
+			if (relationship.NextSibling)
+				temp.push(relationship.NextSibling);
+
+			if (relationship.FirstChild)
+				temp.push(relationship.FirstChild);
+		}
+		return false;
+	}
+
+	
+	bool Relationship::IsInHierarchy(const ECSManager& ecs, Entity child) const
+	{
+		std::stack<Entity> temp;
+		if (ecs.IsValid(FirstChild))
+			temp.push(FirstChild);
+		while (!temp.empty())
+		{
+			const Entity entity = temp.top();
+			temp.pop();
+
+			if (entity == child)
+				return true;
+
+			const auto& relationship = ecs.GetComponent<Relationship>(entity);
+			if (relationship.NextSibling)
+				temp.push(relationship.NextSibling);
+
+			if (relationship.FirstChild)
+				temp.push(relationship.FirstChild);
+		}
+		return false;
 	}
 
 	void Relationship::SetupRelation(Entity parent, Entity child, ECSManager& ecs)

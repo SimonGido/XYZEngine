@@ -77,6 +77,6 @@ namespace XYZ {
 	}
 	bool EntityManager::IsValid(Entity entity) const
 	{
-		return m_Entities.Range() > entity && m_Entities.Valid(entity);
+		return m_Entities.Range() > entity && m_Entities.Valid(entity) && entity != Entity(0);
 	}
 }

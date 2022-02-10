@@ -15,7 +15,8 @@ namespace  XYZ
         virtual void Bind() const override{};
         virtual void UnBind() const override{};
         virtual void Update(const void* vertices, uint32_t size, uint32_t offset = 0) override;
-       
+        virtual void RT_Update(const void* vertices, uint32_t size, uint32_t offset = 0) override;
+
         // TODO: Remove this
         virtual void Resize(const void* vertices, uint32_t size) override;
         virtual void SetLayout(const BufferLayout& layout) override;

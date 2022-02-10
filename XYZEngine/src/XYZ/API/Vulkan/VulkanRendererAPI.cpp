@@ -139,9 +139,9 @@ namespace XYZ {
 	}
 
 	void VulkanRendererAPI::RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline,
-		Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount)
+		Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount, uint32_t vertexOffsetSize)
 	{
-		Renderer::Submit([renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, trans = transform, indexCount]() mutable
+		Renderer::Submit([renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, trans = transform, indexCount, vertexOffsetSize]() mutable
 		{
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
 			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
@@ -157,7 +157,7 @@ namespace XYZ {
 
 			///////////////////////////////		
 			const VkBuffer vertexBuffers[] = { vertexBuffer.As<VulkanVertexBuffer>()->GetVulkanBuffer() };
-			const VkDeviceSize offsets[] = { 0 };
+			const VkDeviceSize offsets[] = { vertexOffsetSize };
 			if (indexCount == 0)
 				indexCount = indexBuffer->GetCount();
 			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
