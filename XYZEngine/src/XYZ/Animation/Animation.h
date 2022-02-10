@@ -63,6 +63,7 @@ namespace XYZ {
 			
 		void		clearProperties();
 	private:
+		// TODO: it might be possible to store them inside variant, keep them sorted by type and store count of each type
 		std::vector<Property<glm::vec4>> m_Vec4Properties;
 		std::vector<Property<glm::vec3>> m_Vec3Properties;
 		std::vector<Property<glm::vec2>> m_Vec2Properties;

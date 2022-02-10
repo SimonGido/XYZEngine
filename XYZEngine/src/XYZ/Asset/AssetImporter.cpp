@@ -59,6 +59,7 @@ namespace XYZ {
 	{
 		s_Serializers[ToUnderlying(AssetType::Scene)] = CreateScope<SceneAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::Texture)] = CreateScope<TextureAssetSerializer>();
+		s_Serializers[ToUnderlying(AssetType::Animation)] = CreateScope<AnimationAssetSerializer>();
 	}
 
 	void AssetImporter::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset)

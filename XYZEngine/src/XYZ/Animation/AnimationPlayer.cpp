@@ -16,7 +16,7 @@ namespace XYZ {
 			return;
 
 		uint32_t frame = GetCurrentFrame();
-		if (frame >= m_Animation->GetNumFrames())
+		if (frame >= m_Animation->GetNumFrames() && m_Animation->GetRepeat())
 		{
 			m_CurrentTime = 0.0f;
 			for (auto& node : m_Properties)

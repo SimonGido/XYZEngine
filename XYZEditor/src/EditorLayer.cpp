@@ -62,7 +62,10 @@ namespace XYZ {
 			SceneEntity childEntity = m_Scene->CreateEntity("Child", newEntity, GUID());
 
 			Ref<Animator> animator = Ref<Animator>::Create();
-			Ref<Animation> animation = Ref<Animation>::Create();
+			Ref<Animation> animation = AssetManager::GetAsset<Animation>("Assets/Animations/HavkoAnim.anim");
+
+			
+
 			auto& spriteRenderer = newEntity.EmplaceComponent<SpriteRenderer>();
 			spriteRenderer.Material = Material::Create(Renderer::GetShaderLibrary()->Get("DefaultLitShader"));
 			spriteRenderer.SubTexture = Ref<SubTexture>::Create(Texture2D::Create("Assets/Textures/1_ORK_head.png"));

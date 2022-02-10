@@ -4,6 +4,8 @@
 #include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Animation/AnimatorController.h"
 
+#include "XYZ/Utils/YamlUtils.h"
+
 namespace XYZ {
 	namespace Utils {
 		static std::string ImageFormatToString(ImageFormat format)
@@ -141,23 +143,92 @@ namespace XYZ {
 		asset = Texture2D::Create(imagePath, props);
 		return true;
 	}
+
+	template <typename T>
+	static void SerializeProperties(YAML::Emitter& out, const std::vector<Property<T>>& props, const std::string& name)
+	{
+		out << YAML::Key << name << YAML::Value << YAML::BeginSeq;
+		for (const auto& prop : props)
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Path" << prop.GetPath();
+			out << YAML::Key << "ComponentName" << prop.GetComponentName();
+			out << YAML::Key << "ValueName" << prop.GetValueName();
+			out << YAML::Key << "Keys" << YAML::Value << YAML::BeginSeq;
+			for (const auto& key : prop.Keys)
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Frame" << key.Frame;
+				out << YAML::Key << "Value" << key.Value;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+	}
+
+
+
+	template <uint16_t valIndex, typename T, typename CompType>
+	void AddPropFromRefl(Reflection<CompType> refl, Ref<Animation>& anim, const std::string_view path)
+	{
+		anim->AddProperty<CompType, T, valIndex>(path);
+	}
+
+	template <typename T>
+	static void AddProperty(Ref<Animation>& anim, const std::string_view path, const std::string_view componentName, const std::string_view valName)
+	{
+		Reflect::For([&](auto j) {
+			if (ReflectedClasses::sc_ClassNames[j.value] == componentName)
+			{
+				auto reflClass = ReflectedClasses::Get<j.value>();
+				Reflect::For([&](auto i) {
+					if (reflClass.sc_VariableNames[i.value] == valName)
+					{
+						AddPropFromRefl<i.value, T>(reflClass, anim, path);
+					}
+				}, std::make_index_sequence<reflClass.sc_NumVariables>());
+			}
+		}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+	}
+
+	template <typename T>
+	static void DeserializeProperties(YAML::Node& data, Ref<Animation>& anim)
+	{
+		std::vector<Property<T>>& props = anim->GetProperties<T>();
+		for (auto prop : data)
+		{		
+			std::string path = prop["Path"].as<std::string>();
+			std::string componentName = prop["ComponentName"].as<std::string>();
+			std::string valueName = prop["ValueName"].as<std::string>();
+
+		
+			AddProperty<T>(anim, path, componentName, valueName);
+			auto& last = props.back();
+			for (auto key : prop["Keys"])
+			{
+				uint32_t frame = key["Frame"].as<uint32_t>();
+				T value = key["Value"].as<T>();
+				last.Keys.push_back({ value, frame });
+			}
+		}
+	}
+
 	void AnimationAssetSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
 		Ref<Animation> animation = asset.As<Animation>();
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 
-		//out << YAML::Key << "Image Path" << texture->GetPath();
-		//out << YAML::Key << "Format" << static_cast<uint32_t>(texture->GetFormat());
-		//out << YAML::Key << "Width" << texture->GetWidth();
-		//out << YAML::Key << "Height" << texture->GetHeight();
-		//out << YAML::Key << "MipLevelCount" << texture->GetMipLevelCount();
-		//const auto& props = texture->GetProperties();
-		//out << YAML::Key << "SamplerWrap" << static_cast<uint32_t>(props.SamplerWrap);
-		//out << YAML::Key << "SamplerFilter" << static_cast<uint32_t>(props.SamplerFilter);
-		//out << YAML::Key << "GenerateMips" << props.GenerateMips;
-		//out << YAML::Key << "SRGB" << props.SRGB;
-		//out << YAML::Key << "Storage" << props.Storage;
+		out << YAML::Key << "NumFrames" << animation->GetNumFrames();
+		out << YAML::Key << "Frequency" << animation->GetFrequency();
+		out << YAML::Key << "Repeat" << animation->GetRepeat();
+
+		SerializeProperties(out, animation->GetProperties<glm::vec4>(), "Vec4Properties");
+		SerializeProperties(out, animation->GetProperties<glm::vec3>(), "Vec3Properties");
+		SerializeProperties(out, animation->GetProperties<glm::vec2>(), "Vec2Properties");
+		SerializeProperties(out, animation->GetProperties<float>(),	   "FloatProperties");
 
 		out << YAML::EndMap;
 
@@ -165,7 +236,23 @@ namespace XYZ {
 		fout << out.c_str();
 	}
 	bool AnimationAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
-	{
-		return false;
+	{		
+		Ref<Animation> anim = Ref<Animation>::Create();
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+		const uint32_t numFrames = data["NumFrames"].as<uint32_t>();
+		const uint32_t frequency = data["Frequency"].as<uint32_t>();
+		const bool     repeat = data["Repeat"].as<bool>();
+
+		DeserializeProperties<glm::vec4>(data["Vec4Properties"], anim);
+		DeserializeProperties<glm::vec3>(data["Vec3Properties"], anim);
+		DeserializeProperties<glm::vec2>(data["Vec2Properties"], anim);
+		DeserializeProperties<float>(data["FloatProperties"], anim);
+
+		asset = anim;
+		return true;
 	}
 }

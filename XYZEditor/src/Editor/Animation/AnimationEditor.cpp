@@ -85,7 +85,8 @@ namespace XYZ {
 		void AnimationEditor::SetContext(const Ref<Animation>& context)
 		{
 			m_Animation = context;
-			m_FrameMax = m_Animation->GetNumFrames();			
+			m_FrameMax = m_Animation->GetNumFrames();	
+			m_EntityPropertyMap.BuildMap(m_Animation);
 		}
 		
 		void AnimationEditor::SetSceneContext(const Ref<Scene>& scene)
@@ -396,6 +397,10 @@ namespace XYZ {
 				if (ImGui::Button("Add Key") && !selectedEntity.empty())
 				{
 					handleAddKey(selectedEntity, selectedComponent, selectedValue);
+				}
+				if (ImGui::Button("Save"))
+				{
+					AssetImporter::Serialize(m_Animation);
 				}
 				if (rebuildMap)
 				{

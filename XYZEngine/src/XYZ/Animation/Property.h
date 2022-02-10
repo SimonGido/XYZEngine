@@ -277,7 +277,7 @@ namespace XYZ {
 	inline T* Property<T>::getReference(SceneEntity& entity)
 	{
 		if (entity.IsValid() && entity.HasComponent<ComponentType>())
-			return &Reflection<ComponentType>::Get<valIndex>(entity.GetComponent<ComponentType>());
+			return reinterpret_cast<T*>(&Reflection<ComponentType>::Get<valIndex>(entity.GetComponent<ComponentType>()));
 		return nullptr;
 	}
 
