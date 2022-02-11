@@ -27,7 +27,7 @@ namespace XYZ {
 		VkPipelineMultisampleStateCreateInfo			    createMultisampleInfo() const;
 		VkPipelineRasterizationStateCreateInfo			    createRasterizationInfo() const;
 		VkPipelineViewportStateCreateInfo				    createViewportStateInfo() const;
-		VkPipelineVertexInputStateCreateInfo			    createVertexInputInfo(VkVertexInputBindingDescription& vertexInputBinding, std::vector<VkVertexInputAttributeDescription>& vertexInputAttributs) const;
+		VkPipelineVertexInputStateCreateInfo			    createVertexInputInfo(VkVertexInputBindingDescription& vertexInputBinding, std::vector<VkVertexInputAttributeDescription>& vertexInputAttributs, bool instanced = false) const;
 		VkPipelineDepthStencilStateCreateInfo			    createDepthStencilInfo() const;
 		std::vector<VkPipelineColorBlendAttachmentState>    createColorBlendAttachments() const;
 		VkPipelineColorBlendStateCreateInfo					createColorBlendInfo(std::vector<VkPipelineColorBlendAttachmentState>& colorBlendAttachments) const;

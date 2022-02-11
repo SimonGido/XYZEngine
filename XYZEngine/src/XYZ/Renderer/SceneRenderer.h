@@ -12,7 +12,7 @@
 
 
 namespace XYZ {
-	
+
 	struct GridProperties
 	{
 		glm::mat4 Transform;
@@ -66,24 +66,79 @@ namespace XYZ {
 			std::vector<BillboardDrawData>	BillboardData;
 		};
 
-		
-		struct SpriteDrawKey
+		struct MeshDrawCommand
 		{
-			SpriteDrawKey(const AssetHandle& matHandle)
+			Ref<Mesh>			   Mesh;
+			Ref<Material>		   Material;
+			uint32_t			   InstanceCount = 0;
+
+			std::vector<glm::mat4> TransformData;
+			uint32_t			   TransformOffset = 0;
+		};
+	
+		struct InstanceMeshDrawCommand : public MeshDrawCommand
+		{
+			std::vector<std::byte> InstanceData;
+			uint32_t			   InstanceOffset = 0;
+		};
+
+
+		struct SpriteKey
+		{
+			SpriteKey(const AssetHandle& matHandle)
 				: MaterialHandle(matHandle)
 			{}
 
-			bool operator<(const SpriteDrawKey& other) const
+			bool operator<(const SpriteKey& other) const
 			{
 				return (MaterialHandle < other.MaterialHandle);
 			}
 
 			AssetHandle MaterialHandle;
 		};
+		struct MeshKey
+		{
+			AssetHandle MeshHandle;
+			AssetHandle MaterialHandle;
+
+			MeshKey(AssetHandle meshHandle, AssetHandle materialHandle)
+				: MeshHandle(meshHandle), MaterialHandle(materialHandle) {}
+
+			bool operator<(const MeshKey& other) const
+			{
+				if (MeshHandle < other.MeshHandle)
+					return true;
+
+				return (MeshHandle == other.MeshHandle) && (MaterialHandle < other.MaterialHandle);
+			}
+		};
+
+		struct InstanceMeshKey : public MeshKey
+		{
+			InstanceMeshKey(AssetHandle meshHandle, AssetHandle materialHandle, uint32_t instanceSize)
+				: MeshKey(meshHandle, materialHandle), InstanceSize(instanceSize) {}
+
+			bool operator<(const InstanceMeshKey& other) const
+			{
+				if (MeshHandle < other.MeshHandle)
+					return true;
+
+				if (MeshHandle == other.MeshHandle && InstanceSize == other.InstanceSize)
+					return true;
+
+				return (MeshHandle == other.MeshHandle) && (InstanceSize == other.InstanceSize) && (MaterialHandle < other.MaterialHandle);
+
+			}
+
+			uint32_t InstanceSize;
+		};
 
 
-		std::map<SpriteDrawKey, SpriteDrawCommand> SpriteDrawCommands;
-		std::map<SpriteDrawKey, SpriteDrawCommand> BillboardDrawCommands;			
+		std::map<SpriteKey, SpriteDrawCommand> SpriteDrawCommands;
+		std::map<SpriteKey, SpriteDrawCommand> BillboardDrawCommands;			
+
+		std::map<MeshKey,		  MeshDrawCommand>			MeshDrawCommands;
+		std::map<InstanceMeshKey, InstanceMeshDrawCommand>	InstanceMeshDrawCommands;
 	};
 
 	struct SceneRendererSpecification
@@ -109,6 +164,9 @@ namespace XYZ {
 		void SubmitBillboard(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size);
 		void SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform);
 
+		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<Material>& material, const glm::mat4& transform);
+		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<Material>& material, const glm::mat4& transform, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize);
+
 		void OnImGuiRender();
 
 
@@ -120,19 +178,21 @@ namespace XYZ {
 
 		SceneRendererOptions& GetOptions();
 	private:
-		void flush();
-		void flushLightQueue();
-		void flushDefaultQueue();
-
-
+		void geometryPass(RenderQueue& queue, bool clear);
 		void geometryPass2D(RenderQueue& queue, bool clear);
 		void lightPass();
 		void bloomPass();
+		void compositePass();
 
 		void createCompositePass();
 		void createLightPass();
 
 		void updateViewportSize();
+
+		void preRender();
+		void prepareInstances();
+		void prepareLights();
+
 	private:
 		struct PointLight
 		{
@@ -188,6 +248,14 @@ namespace XYZ {
 
 		Ref<StorageBufferSet>      m_LightStorageBufferSet;
 
+		Ref<VertexBuffer>		   m_InstanceVertexBuffer;
+		Ref<VertexBuffer>		   m_TransformVertexBuffer;
+
+		std::vector<glm::mat4>	   m_TransformData;
+		std::vector<std::byte>	   m_InstanceData;
+		std::vector<PointLight>	   m_PointLights;
+		std::vector<SpotLight>	   m_SpotLights;
+
 		SceneRendererCamera		   m_SceneCamera;
 		SceneRendererOptions	   m_Options;
 		GridProperties			   m_GridProps;
@@ -198,6 +266,7 @@ namespace XYZ {
 
 		Ref<UniformBuffer>		   m_CameraUniformBuffer;
 								   
+
 		Ref<Material>			   m_BloomComputeMaterial;
 		Ref<Texture2D>			   m_BloomTexture[3];
 		Ref<PipelineCompute>	   m_BloomComputePipeline;
@@ -213,7 +282,8 @@ namespace XYZ {
 		int32_t					   m_ThreadIndex;
 
 		static constexpr uint32_t sc_MaxNumberOfLights = 1024;
-
+		static constexpr uint32_t sc_InstanceVertexBufferSize = 512 * 1024 * 1024; // 512mb
+		static constexpr uint32_t sc_TransformBufferCount = 100 * 1024; // 10240 transforms
 
 		struct GPUTimeQueries
 		{

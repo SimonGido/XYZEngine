@@ -40,6 +40,11 @@ namespace XYZ {
 			return !(*this < other);
 		}
 
+		bool operator<=(const GUID& other) const
+		{
+			return *this < other || *this == other;
+		}
+
 		operator std::string() const;
 		operator std::string();
 		std::string ToString() const

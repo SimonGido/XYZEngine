@@ -102,19 +102,20 @@ namespace XYZ {
 
 		return viewportState;
 	}
-	VkPipelineVertexInputStateCreateInfo VulkanPipeline::createVertexInputInfo(VkVertexInputBindingDescription& vertexInputBinding, std::vector<VkVertexInputAttributeDescription>& vertexInputAttributs) const
+	VkPipelineVertexInputStateCreateInfo VulkanPipeline::createVertexInputInfo(VkVertexInputBindingDescription& vertexInputBinding, std::vector<VkVertexInputAttributeDescription>& vertexInputAttributs, bool instanced) const
 	{
-		const BufferLayout& layout = m_Specification.Layout;
-		vertexInputBinding.binding = 0;
+		// TODO: fix me for instancing
+		const BufferLayout& layout = instanced ? m_Specification.InstanceLayout : m_Specification.Layout;
+		vertexInputBinding.binding = instanced ? 1 : 0;
 		vertexInputBinding.stride = layout.GetStride();
-		vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+		vertexInputBinding.inputRate = instanced ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
 		
 		// Input attribute bindings describe shader attribute locations and memory layouts
 		vertexInputAttributs.resize(layout.GetElements().size());
 		uint32_t location = 0;
 		for (const auto &element : layout)
 		{
-			vertexInputAttributs[location].binding = 0;
+			vertexInputAttributs[location].binding = vertexInputBinding.binding;
 			vertexInputAttributs[location].location = location;
 			vertexInputAttributs[location].format = Utils::ShaderDataTypeToVulkanFormat(element.Component);
 			vertexInputAttributs[location].offset = element.Offset;

@@ -8,29 +8,34 @@
 
 namespace XYZ {
 
+	struct Vertex
+	{
+		glm::vec3 Position;
+		glm::vec2 TexCoord;
+	};
 
-	class Mesh : public RefCount
+	class Mesh : public Asset
 	{
 	public:
-		Mesh();
-		Mesh(const Ref<Material>& material);
+		Mesh(std::vector<Vertex> vertices, std::vector<uint32_t> indices);
+		virtual ~Mesh() override;
 
-		void SetMaterial(const Ref<Material>& material);
-		void SetIndices(uint32_t* indices, uint32_t count);
-		void SetVertexBufferData(uint32_t index, const void* vertices, uint32_t size, uint32_t offset = 0);
-		void AddVertexBuffer(const BufferLayout& layout, const void* vertices, uint32_t size, BufferUsage usage);
-		void ClearVertexBuffers();
+		const std::vector<Vertex>&   GetVertices() const { return m_Vertices; }
+		const std::vector<uint32_t>& GetIndices() const { return m_Indices; }
 
-		const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
-		Ref<Material>			GetMaterial()		   { return m_Material; }
-		uint32_t				GetIndexCount()  const { return m_IndexBuffer->GetCount(); }
-	private:
-		void updateVertexArray();
+		Ref<VertexBuffer>   GetVertexBuffer() const { return m_VertexBuffer; }
+		Ref<IndexBuffer>    GetIndexBuffer()  const { return m_IndexBuffer; }
+		const BufferLayout& GetVertexBufferLayout() const { return m_VertexBufferLayout; }
+
+		static AssetType	GetStaticType() { return AssetType::None; }
 
 	private:
-		Ref<Material>					m_Material;
-		Ref<VertexArray>				m_VertexArray;
-		Ref<IndexBuffer>				m_IndexBuffer;
-		std::vector<Ref<VertexBuffer>>	m_VertexBuffers;
+		Ref<VertexBuffer> m_VertexBuffer;
+		Ref<IndexBuffer>  m_IndexBuffer;
+		BufferLayout      m_VertexBufferLayout;
+
+		std::vector<Vertex>   m_Vertices;
+		std::vector<uint32_t> m_Indices;
 	};
+
 }

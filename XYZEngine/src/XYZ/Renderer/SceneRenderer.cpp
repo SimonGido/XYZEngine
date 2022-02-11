@@ -19,6 +19,10 @@ namespace XYZ {
 
 	static ThreadPool s_ThreadPool;
 
+
+	
+
+
 	SceneRenderer::SceneRenderer(Ref<Scene> scene, SceneRendererSpecification specification)
 		:
 		m_Specification(specification),
@@ -71,6 +75,10 @@ namespace XYZ {
 		m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		
+		m_InstanceVertexBuffer = VertexBuffer::Create(sc_InstanceVertexBufferSize);
+		m_TransformVertexBuffer = VertexBuffer::Create(sc_TransformBufferCount * sizeof(glm::mat4));
+		m_TransformData.resize(sc_TransformBufferCount * sizeof(glm::mat4));
+		m_InstanceData.resize(sc_InstanceVertexBufferSize);
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -112,38 +120,30 @@ namespace XYZ {
 	}
 	void SceneRenderer::EndScene()
 	{
+		preRender();
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 		
-		flushDefaultQueue();
-		flushLightQueue();
-
-		// Composite pass
-		Ref<Image2D> lightPassImage = m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
-		Renderer::BeginRenderPass(m_CommandBuffer, m_CompositePass, true);
-		m_CompositeRenderPipeline.Material->SetImage("u_GeometryTexture", lightPassImage);
-		m_CompositeRenderPipeline.Material->SetImage("u_BloomTexture", m_BloomTexture[2]->GetImage());
-		Renderer::BindPipeline(
-			m_CommandBuffer,
-			m_CompositeRenderPipeline.Pipeline,
-			nullptr,
-			nullptr,
-			m_CompositeRenderPipeline.Material
-		);
-
-		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CompositeRenderPipeline.Pipeline, m_CompositeRenderPipeline.Material);	
-		Renderer::EndRenderPass(m_CommandBuffer);
+		geometryPass2D(m_Queue, true);
+		lightPass();
+		bloomPass();
+		compositePass();
 
 		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
 
 		m_CommandBuffer->End();
 		m_CommandBuffer->Submit();
+
+		m_Queue.SpriteDrawCommands.clear();
+		m_Queue.BillboardDrawCommands.clear();
+		m_Queue.MeshDrawCommands.clear();
+		m_Queue.InstanceMeshDrawCommands.clear();
 	}
 
 
 	void SceneRenderer::SubmitBillboard(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size)
 	{
-		RenderQueue::SpriteDrawKey key{ material->GetHandle() };
+		RenderQueue::SpriteKey key{ material->GetHandle() };
 
 		auto& command = m_Queue.BillboardDrawCommands[key];
 
@@ -155,7 +155,7 @@ namespace XYZ {
 
 	void SceneRenderer::SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform)
 	{
-		RenderQueue::SpriteDrawKey key{ material->GetHandle() };
+		RenderQueue::SpriteKey key{ material->GetHandle() };
 		auto& command = m_Queue.SpriteDrawCommands[key];
 		
 		uint32_t textureIndex = command.setTexture(subTexture->GetTexture());
@@ -163,7 +163,34 @@ namespace XYZ {
 		command.Material = material;
 		command.SpriteData.push_back({ textureIndex, subTexture->GetTexCoords(), color, transform });
 	}
-	
+
+	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<Material>& material, const glm::mat4& transform)
+	{
+		RenderQueue::MeshKey key{ mesh->GetHandle(), material->GetHandle() };
+
+		auto& dc = m_Queue.MeshDrawCommands[key];
+		dc.Mesh = mesh;
+		dc.Material = material;
+		dc.InstanceCount++;
+		dc.TransformData.push_back(transform);
+	}
+
+	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<Material>& material, const glm::mat4& transform, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize)
+	{
+		RenderQueue::InstanceMeshKey key{ mesh->GetHandle(), material->GetHandle(), instanceSize };
+		
+		auto& dc = m_Queue.InstanceMeshDrawCommands[key];
+		dc.Mesh = mesh;
+		dc.Material = material;
+		dc.InstanceCount++;
+		dc.TransformData.push_back(transform);
+
+		size_t oldSize = dc.InstanceData.size();
+		dc.InstanceData.resize(oldSize + key.InstanceSize);
+		memcpy(dc.InstanceData.data() + oldSize, &transform, key.InstanceSize);
+	}
+
+
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
 	{
 		m_GridProps = props;
@@ -229,76 +256,25 @@ namespace XYZ {
 	{
 		return m_Options;
 	}
-	void SceneRenderer::flush()
+	void SceneRenderer::geometryPass(RenderQueue& queue, bool clear)
 	{
-		XYZ_PROFILE_FUNC("SceneRenderer::flush");
-	}
-	void SceneRenderer::flushLightQueue()
-	{
-		XYZ_PROFILE_FUNC("SceneRenderer::flushLightQueue");
+		XYZ_PROFILE_FUNC("SceneRenderer::geometryPass");
 
-		auto& ecs = m_ActiveScene->GetECS();
-		m_NumSpotLights = ecs.GetStorage<SpotLight2D>().Size();
-		m_NumPointLights = ecs.GetStorage<PointLight2D>().Size();
-
-		std::vector<SpotLight> spotLights;
-		spotLights.reserve(m_NumSpotLights);
-		auto spotLight2DView = ecs.CreateView<TransformComponent, SpotLight2D>();
-		for (auto entity : spotLight2DView)
+		for (auto& [key, command] : queue.MeshDrawCommands)
 		{
-			// Render previous frame data
-			auto &[transform, light] = spotLight2DView.Get<TransformComponent, SpotLight2D>(entity);
-			auto [trans, rot, scale] = transform.GetWorldComponents();
 
-			SpotLight lightData;
-			lightData.Color		 = glm::vec4(light.Color, 1.0f);
-			lightData.Position   = trans;
-			lightData.Radius	 = light.Radius;
-			lightData.Intensity  = light.Intensity;
-			lightData.InnerAngle = light.InnerAngle;
-			lightData.OuterAngle = light.OuterAngle;
-
-			spotLights.push_back(lightData);
 		}
 
-		std::vector<PointLight> pointLights;
-		pointLights.reserve(m_NumPointLights);
-		auto pointLight2DView = ecs.CreateView<TransformComponent, PointLight2D>();
-		for (auto entity : pointLight2DView)
+
+		for (auto& [key, command] : queue.InstanceMeshDrawCommands)
 		{
-			auto &[transform, light] = pointLight2DView.Get<TransformComponent, PointLight2D>(entity);
-			auto [trans, rot, scale] = transform.GetWorldComponents();
-			PointLight lightData;
-			lightData.Color = glm::vec4(light.Color, 1.0f);
-			lightData.Position = trans;
-			lightData.Radius = light.Radius;
-			lightData.Intensity = light.Intensity;
-			pointLights.push_back(lightData);
+
 		}
-
-		Ref<StorageBufferSet> instance = m_LightStorageBufferSet;
-		Renderer::Submit([instance, pLights = std::move(pointLights), sLights = std::move(spotLights)]() mutable {
-			const uint32_t frame = Renderer::GetCurrentFrame();
-			instance->Get(1, 0, frame)->RT_Update(pLights.data(), pLights.size() * sizeof(PointLight));
-			instance->Get(2, 0, frame)->RT_Update(sLights.data(), sLights.size() * sizeof(SpotLight));
-		});
-
-		
-		lightPass();
-		if (m_NumPointLights || m_NumSpotLights)
-			bloomPass();
 	}
-	void SceneRenderer::flushDefaultQueue()
-	{
-		XYZ_PROFILE_FUNC("SceneRenderer::flushDefaultQueue");
-		geometryPass2D(m_Queue, true);
-	
-		m_Queue.SpriteDrawCommands.clear();
-		m_Queue.BillboardDrawCommands.clear();
-	}
-	
 	void SceneRenderer::geometryPass2D(RenderQueue& queue, bool clear)
 	{
+		XYZ_PROFILE_FUNC("SceneRenderer::geometryPass2D");
+
 		m_GPUTimeQueries.Renderer2DPassQuery = m_CommandBuffer->BeginTimestampQuery();
 		m_Renderer2D->BeginScene(m_CameraBuffer.ViewProjectionMatrix, m_CameraBuffer.ViewMatrix, clear);
 		
@@ -335,6 +311,8 @@ namespace XYZ {
 	}
 	void SceneRenderer::lightPass()
 	{
+		XYZ_PROFILE_FUNC("SceneRenderer::lightPass");
+
 		Renderer::BeginRenderPass(m_CommandBuffer, m_LightPass, true);
 
 		Ref<Framebuffer>& renderer2DFramebuffer = m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer;
@@ -363,6 +341,8 @@ namespace XYZ {
 
 	void SceneRenderer::bloomPass()
 	{
+		XYZ_PROFILE_FUNC("SceneRenderer::bloomPass");
+
 		constexpr int prefilter = 0;
 		constexpr int downsample = 1;
 		constexpr int upsamplefirst = 2;
@@ -486,6 +466,25 @@ namespace XYZ {
 		
 		Renderer::EndPipelineCompute(m_BloomComputePipeline);
 	}
+	void SceneRenderer::compositePass()
+	{
+		XYZ_PROFILE_FUNC("SceneRenderer::compositePass");
+
+		Ref<Image2D> lightPassImage = m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
+		Renderer::BeginRenderPass(m_CommandBuffer, m_CompositePass, true);
+		m_CompositeRenderPipeline.Material->SetImage("u_GeometryTexture", lightPassImage);
+		m_CompositeRenderPipeline.Material->SetImage("u_BloomTexture", m_BloomTexture[2]->GetImage());
+		Renderer::BindPipeline(
+			m_CommandBuffer,
+			m_CompositeRenderPipeline.Pipeline,
+			nullptr,
+			nullptr,
+			m_CompositeRenderPipeline.Material
+		);
+
+		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CompositeRenderPipeline.Pipeline, m_CompositeRenderPipeline.Material);
+		Renderer::EndRenderPass(m_CommandBuffer);
+	}
 	void SceneRenderer::createCompositePass()
 	{
 		FramebufferSpecification compFramebufferSpec;
@@ -541,6 +540,97 @@ namespace XYZ {
 			m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
 			m_ViewportSizeChanged = false;
 		}
+	}
+	void SceneRenderer::preRender()
+	{
+		prepareInstances();
+		prepareLights();
+	}
+	void SceneRenderer::prepareInstances()
+	{
+		// Prepare transforms
+		uint32_t offset = 0;
+		for (auto& [key, dc] : m_Queue.MeshDrawCommands)
+		{
+			dc.TransformOffset = offset * sizeof(glm::mat4);
+			for (const auto& transform : dc.TransformData)
+			{
+				m_TransformData[offset] = transform;
+				offset++;
+			}
+		}
+
+		// Prepare transforms and instance data
+		uint32_t instanceOffset = 0;
+		for (auto& [key, dc] : m_Queue.InstanceMeshDrawCommands)
+		{
+			dc.TransformOffset = offset * sizeof(glm::mat4);
+			dc.InstanceOffset = instanceOffset;
+			for (const auto& transform : dc.TransformData)
+			{
+				m_TransformData[offset] = transform;
+				offset++;
+			}
+			// Copy instance data
+			const size_t instanceDataSize = dc.InstanceData.size() * key.InstanceSize;
+			memcpy(&m_InstanceData.data()[instanceOffset], dc.InstanceData.data(), instanceDataSize);
+			instanceOffset += instanceDataSize;
+		}
+
+		m_TransformVertexBuffer->Update(m_TransformData.data(), offset * sizeof(glm::mat4));
+		m_InstanceVertexBuffer->Update(m_InstanceData.data(), instanceOffset);
+	}
+	void SceneRenderer::prepareLights()
+	{
+		// Prepare lights
+		auto& ecs = m_ActiveScene->GetECS();
+		m_NumSpotLights = ecs.GetStorage<SpotLight2D>().Size();
+		m_NumPointLights = ecs.GetStorage<PointLight2D>().Size();
+
+		m_SpotLights.resize(m_NumSpotLights);
+		m_PointLights.resize(m_NumPointLights);
+
+		// Spot lights
+		uint32_t counter = 0;
+		auto spotLight2DView = ecs.CreateView<TransformComponent, SpotLight2D>();
+		for (auto entity : spotLight2DView)
+		{
+			// Render previous frame data
+			auto& [transform, light] = spotLight2DView.Get<TransformComponent, SpotLight2D>(entity);
+			auto [trans, rot, scale] = transform.GetWorldComponents();
+
+			SpotLight lightData;
+			lightData.Color = glm::vec4(light.Color, 1.0f);
+			lightData.Position = trans;
+			lightData.Radius = light.Radius;
+			lightData.Intensity = light.Intensity;
+			lightData.InnerAngle = light.InnerAngle;
+			lightData.OuterAngle = light.OuterAngle;
+
+			m_SpotLights[counter++] = lightData;
+		}
+
+		// Point Lights
+		counter = 0;
+		auto pointLight2DView = ecs.CreateView<TransformComponent, PointLight2D>();
+		for (auto entity : pointLight2DView)
+		{
+			auto& [transform, light] = pointLight2DView.Get<TransformComponent, PointLight2D>(entity);
+			auto [trans, rot, scale] = transform.GetWorldComponents();
+			PointLight lightData;
+			lightData.Color = glm::vec4(light.Color, 1.0f);
+			lightData.Position = trans;
+			lightData.Radius = light.Radius;
+			lightData.Intensity = light.Intensity;
+			m_PointLights[counter] = lightData;
+		}
+
+		Ref<StorageBufferSet> instance = m_LightStorageBufferSet;
+		Renderer::Submit([instance, pLights = m_PointLights, sLights = m_SpotLights]() mutable {
+			const uint32_t frame = Renderer::GetCurrentFrame();
+			instance->Get(1, 0, frame)->RT_Update(pLights.data(), pLights.size() * sizeof(PointLight));
+			instance->Get(2, 0, frame)->RT_Update(sLights.data(), sLights.size() * sizeof(SpotLight));
+		});
 	}
 	void SceneRenderer::SceneRenderPipeline::Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, const BufferLayout& layout, PrimitiveTopology topology)
 	{

@@ -23,6 +23,7 @@ namespace XYZ {
 	{
 		Ref<Shader>		  Shader;
 		BufferLayout	  Layout;
+		BufferLayout	  InstanceLayout;
 		Ref<RenderPass>   RenderPass;
 		PrimitiveTopology Topology = PrimitiveTopology::Triangles;
 		bool			  BackfaceCulling = true;
