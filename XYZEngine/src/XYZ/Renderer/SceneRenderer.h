@@ -66,14 +66,19 @@ namespace XYZ {
 			std::vector<BillboardDrawData>	BillboardData;
 		};
 
+		struct TransformData
+		{
+			glm::vec4 TransformRow[3];
+		};
+
 		struct MeshDrawCommand
 		{
 			Ref<Mesh>			   Mesh;
 			Ref<Material>		   Material;
 			uint32_t			   InstanceCount = 0;
 
-			std::vector<glm::mat4> TransformData;
-			uint32_t			   TransformOffset = 0;
+			std::vector<TransformData> TransformData;
+			uint32_t				   TransformOffset = 0;
 		};
 	
 		struct InstanceMeshDrawCommand : public MeshDrawCommand
@@ -213,7 +218,7 @@ namespace XYZ {
 		private:
 			float Alignment[2];
 		};
-
+	
 		struct CameraData
 		{
 			glm::mat4 ViewProjectionMatrix;
@@ -226,7 +231,7 @@ namespace XYZ {
 			Ref<Pipeline> Pipeline;
 			Ref<Material> Material;
 			
-			void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, const BufferLayout& layout, PrimitiveTopology topology = PrimitiveTopology::Triangles);
+			void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, const BufferLayout& layout, const BufferLayout& instanceLayout = {}, PrimitiveTopology topology = PrimitiveTopology::Triangles);
 		};
 
 		struct BloomSettings
@@ -243,15 +248,18 @@ namespace XYZ {
 
 		SceneRenderPipeline		   m_CompositeRenderPipeline;
 		SceneRenderPipeline		   m_LightRenderPipeline;
+		SceneRenderPipeline		   m_GeometryRenderPipeline;
+
 		Ref<RenderPass>			   m_CompositePass;
 		Ref<RenderPass>			   m_LightPass;
+		Ref<RenderPass>			   m_GeometryPass;
 
 		Ref<StorageBufferSet>      m_LightStorageBufferSet;
 
 		Ref<VertexBuffer>		   m_InstanceVertexBuffer;
 		Ref<VertexBuffer>		   m_TransformVertexBuffer;
 
-		std::vector<glm::mat4>	   m_TransformData;
+		std::vector<RenderQueue::TransformData> m_TransformData;
 		std::vector<std::byte>	   m_InstanceData;
 		std::vector<PointLight>	   m_PointLights;
 		std::vector<SpotLight>	   m_SpotLights;
@@ -282,7 +290,7 @@ namespace XYZ {
 		int32_t					   m_ThreadIndex;
 
 		static constexpr uint32_t sc_MaxNumberOfLights = 1024;
-		static constexpr uint32_t sc_InstanceVertexBufferSize = 512 * 1024 * 1024; // 512mb
+		static constexpr uint32_t sc_InstanceVertexBufferSize = 1 * 1024 * 1024; // 1mb
 		static constexpr uint32_t sc_TransformBufferCount = 100 * 1024; // 10240 transforms
 
 		struct GPUTimeQueries
@@ -293,5 +301,11 @@ namespace XYZ {
 			static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
 		};
 		GPUTimeQueries m_GPUTimeQueries;
+
+
+	private:
+		Ref<Mesh> m_TestMesh;
+		Ref<Material> m_TestMaterial;
+		Ref<Pipeline> m_TestPipeline;
 	};
 }

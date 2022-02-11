@@ -56,6 +56,7 @@ namespace XYZ {
 
 	void OpenGLVertexArray::AddVertexBuffer(Ref<VertexBuffer> vertexBuffer)
 	{
+		/*
 		if (vertexBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
 
@@ -68,10 +69,10 @@ namespace XYZ {
 			for (const auto& element : vbl)
 			{
 				glEnableVertexAttribArray(element.Index);
-				if (element.Component == ShaderDataType::Int 
-				 || element.Component == ShaderDataType::Int2
-				 || element.Component == ShaderDataType::Int3
-				 || element.Component == ShaderDataType::Int4)
+				if (element.Type == ShaderDataType::Int 
+				 || element.Type == ShaderDataType::Int2
+				 || element.Type == ShaderDataType::Int3
+				 || element.Type == ShaderDataType::Int4)
 				{
 					glVertexAttribIPointer(element.Index,
 						element.GetComponentCount(),
@@ -94,10 +95,12 @@ namespace XYZ {
 
 			instance->m_VertexBuffers.push_back(vertexBuffer);
 		});
+		*/
 	}
 
 	void OpenGLVertexArray::AddStorageBuffer(Ref<StorageBuffer> shaderBuffer)
 	{
+		/*
 		if (shaderBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
 
@@ -134,6 +137,7 @@ namespace XYZ {
 
 			instance->m_StorageBuffers.push_back(shaderBuffer);
 			});
+			*/
 	}
 
 	void OpenGLVertexArray::SetIndexBuffer(Ref<IndexBuffer> indexBuffer)

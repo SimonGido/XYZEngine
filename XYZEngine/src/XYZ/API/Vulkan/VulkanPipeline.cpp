@@ -102,45 +102,56 @@ namespace XYZ {
 
 		return viewportState;
 	}
-	VkPipelineVertexInputStateCreateInfo VulkanPipeline::createVertexInputInfo(VkVertexInputBindingDescription& vertexInputBinding, std::vector<VkVertexInputAttributeDescription>& vertexInputAttributs, bool instanced) const
+	VkPipelineVertexInputStateCreateInfo VulkanPipeline::createVertexInputInfo(std::vector<VkVertexInputBindingDescription>& bindingDescriptions, std::vector<VkVertexInputAttributeDescription>& vertexInputAttributes) const
 	{
-		// TODO: fix me for instancing
-		const BufferLayout& layout = instanced ? m_Specification.InstanceLayout : m_Specification.Layout;
-		vertexInputBinding.binding = instanced ? 1 : 0;
-		vertexInputBinding.stride = layout.GetStride();
-		vertexInputBinding.inputRate = instanced ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
-		
+		const BufferLayout& layout = m_Specification.Layout;
+		const BufferLayout& instanceLayout = m_Specification.InstanceLayout;
+
+		VkVertexInputBindingDescription& vertexInputBinding = bindingDescriptions.emplace_back();
+		vertexInputBinding.binding = 0;
+		vertexInputBinding.stride = m_Specification.Layout.GetStride();
+		vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+
 		// Input attribute bindings describe shader attribute locations and memory layouts
-		vertexInputAttributs.resize(layout.GetElements().size());
+		vertexInputAttributes.resize(layout.GetElements().size() + instanceLayout.GetElements().size());
 		uint32_t location = 0;
-		for (const auto &element : layout)
+		for (const auto& element : layout)
 		{
-			vertexInputAttributs[location].binding = vertexInputBinding.binding;
-			vertexInputAttributs[location].location = location;
-			vertexInputAttributs[location].format = Utils::ShaderDataTypeToVulkanFormat(element.Component);
-			vertexInputAttributs[location].offset = element.Offset;
+			vertexInputAttributes[location].binding = 0;
+			vertexInputAttributes[location].location = location;
+			vertexInputAttributes[location].format = Utils::ShaderDataTypeToVulkanFormat(element.Type);
+			vertexInputAttributes[location].offset = element.Offset;
 			location++;
+		}
+		for (const auto& element : instanceLayout)
+		{
+			vertexInputAttributes[location].binding = 1;
+			vertexInputAttributes[location].location = location;
+			vertexInputAttributes[location].format = Utils::ShaderDataTypeToVulkanFormat(element.Type);
+			vertexInputAttributes[location].offset = element.Offset;
+			location++;
+		}
+		if (!instanceLayout.Empty())
+		{
+			VkVertexInputBindingDescription& instanceInputBinding = bindingDescriptions.emplace_back();
+			instanceInputBinding.binding = 1;
+			instanceInputBinding.stride = m_Specification.InstanceLayout.GetStride();
+			instanceInputBinding.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 		}
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-		vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)vertexInputAttributs.size();
+		vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)vertexInputAttributes.size();
+
+			
+		vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributes.data();
+		vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.size();
+		vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
 		
-		
-		if (layout.GetElements().empty())
-		{
-			vertexInputInfo.pVertexAttributeDescriptions = VK_NULL_HANDLE;
-			vertexInputInfo.vertexBindingDescriptionCount = 0;
-			vertexInputInfo.pVertexBindingDescriptions = VK_NULL_HANDLE;
-		}
-		else
-		{
-			vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributs.data();
-			vertexInputInfo.vertexBindingDescriptionCount = 1;
-			vertexInputInfo.pVertexBindingDescriptions = &vertexInputBinding;
-		}
 		return vertexInputInfo;
 	}
+
 	VkPipelineDepthStencilStateCreateInfo VulkanPipeline::createDepthStencilInfo() const
 	{
 		// Depth and stencil state containing depth and stencil compare and test operations
@@ -259,9 +270,9 @@ namespace XYZ {
 		createPipelineLayoutInfo();
 		VkPipelineRasterizationStateCreateInfo rasterizationInfo = createRasterizationInfo();
 		VkPipelineViewportStateCreateInfo      viewportStateInfo = createViewportStateInfo();
-		VkVertexInputBindingDescription vertexInputBinding;
-		std::vector<VkVertexInputAttributeDescription> vertexInputAttributs;
-		VkPipelineVertexInputStateCreateInfo   vertexInputInfo = createVertexInputInfo(vertexInputBinding, vertexInputAttributs);
+		std::vector<VkVertexInputBindingDescription>  bindingDescriptions;
+		std::vector<VkVertexInputAttributeDescription> vertexInputAttributes;
+		VkPipelineVertexInputStateCreateInfo   vertexInputInfo = createVertexInputInfo(bindingDescriptions, vertexInputAttributes);
 		VkPipelineMultisampleStateCreateInfo   multisampleInfo = createMultisampleInfo();
 		VkPipelineDepthStencilStateCreateInfo  depthStencilInfo = createDepthStencilInfo();
 		std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachments;

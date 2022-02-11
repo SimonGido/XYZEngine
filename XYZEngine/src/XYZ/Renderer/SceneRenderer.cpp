@@ -15,14 +15,21 @@
 
 #include <imgui/imgui.h>
 
+
+#include "XYZ/Renderer/MeshFactory.h"
+
 namespace XYZ {
 
 	static ThreadPool s_ThreadPool;
 
-
-	
-
-
+	static RenderQueue::TransformData Mat4ToTransformData(const glm::mat4& transform)
+	{
+		RenderQueue::TransformData data;
+		data.TransformRow[0] = { transform[0][0], transform[1][0], transform[2][0], transform[3][0] };
+		data.TransformRow[1] = { transform[0][1], transform[1][1], transform[2][1], transform[3][1] };
+		data.TransformRow[2] = { transform[0][2], transform[1][2], transform[2][2], transform[3][2] };
+		return data;
+	}
 	SceneRenderer::SceneRenderer(Ref<Scene> scene, SceneRendererSpecification specification)
 		:
 		m_Specification(specification),
@@ -59,10 +66,16 @@ namespace XYZ {
 			{0, ShaderDataType::Float3, "a_Position" },
 			{1, ShaderDataType::Float2, "a_TexCoord" } 
 		};
+		const BufferLayout instanceLayout = {
+			{0, ShaderDataType::Float4, "a_TransformRow0"},
+			{1, ShaderDataType::Float4, "a_TransformRow1"},
+			{2, ShaderDataType::Float4, "a_TransformRow2"}
+		};
 
 		auto shaderLibrary = Renderer::GetShaderLibrary();
 		m_CompositeRenderPipeline.Init(m_CompositePass, shaderLibrary->Get("CompositeShader"), layout);
 		m_LightRenderPipeline.Init(m_LightPass, shaderLibrary->Get("LightShader"), layout);
+		m_GeometryRenderPipeline.Init(m_GeometryPass, shaderLibrary->Get("MeshShader"), layout, instanceLayout);
 
 		auto bloomShader = shaderLibrary->Get("Bloom");
 		m_BloomComputePipeline = PipelineCompute::Create(bloomShader);
@@ -76,9 +89,35 @@ namespace XYZ {
 		m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		
 		m_InstanceVertexBuffer = VertexBuffer::Create(sc_InstanceVertexBufferSize);
-		m_TransformVertexBuffer = VertexBuffer::Create(sc_TransformBufferCount * sizeof(glm::mat4));
-		m_TransformData.resize(sc_TransformBufferCount * sizeof(glm::mat4));
+		m_TransformVertexBuffer = VertexBuffer::Create(sc_TransformBufferCount * sizeof(RenderQueue::TransformData));
+		m_TransformData.resize(sc_TransformBufferCount);
 		m_InstanceData.resize(sc_InstanceVertexBufferSize);
+
+
+
+
+
+		m_TestMesh = MeshFactory::CreateBox(glm::vec3(2.0f));
+		m_TestMaterial = Material::Create(Shader::Create("Resources/Shaders/MeshShader.glsl"));
+		m_TestMaterial->SetImage("u_Texture", m_WhiteTexture->GetImage());
+
+		PipelineSpecification testSpec;
+		testSpec.Layout = {
+			{0, ShaderDataType::Float3, "a_Position"},
+			{1, ShaderDataType::Float2, "a_TexCoord"},
+		};
+		testSpec.InstanceLayout = {
+			{0, ShaderDataType::Float4, "a_TransformRow0"},
+			{1, ShaderDataType::Float4, "a_TransformRow1"},
+			{2, ShaderDataType::Float4, "a_TransformRow2"}
+		};
+		testSpec.RenderPass = m_CompositePass;
+		testSpec.Shader = m_TestMaterial->GetShader();
+		testSpec.Topology = PrimitiveTopology::Triangles;
+
+		m_TestPipeline = Pipeline::Create(testSpec);
+		m_Renderer2D->GetCameraBufferSet()->CreateDescriptors(m_TestMaterial->GetShader());
+
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -172,7 +211,7 @@ namespace XYZ {
 		dc.Mesh = mesh;
 		dc.Material = material;
 		dc.InstanceCount++;
-		dc.TransformData.push_back(transform);
+		dc.TransformData.push_back(Mat4ToTransformData(transform));
 	}
 
 	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<Material>& material, const glm::mat4& transform, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize)
@@ -183,7 +222,7 @@ namespace XYZ {
 		dc.Mesh = mesh;
 		dc.Material = material;
 		dc.InstanceCount++;
-		dc.TransformData.push_back(transform);
+		dc.TransformData.push_back(Mat4ToTransformData(transform));
 
 		size_t oldSize = dc.InstanceData.size();
 		dc.InstanceData.resize(oldSize + key.InstanceSize);
@@ -262,7 +301,15 @@ namespace XYZ {
 
 		for (auto& [key, command] : queue.MeshDrawCommands)
 		{
-
+			Renderer::RenderMesh(
+				m_CommandBuffer,
+				m_TestPipeline,
+				m_TestMaterial,
+				m_TestMesh->GetVertexBuffer(),
+				m_TestMesh->GetIndexBuffer(),
+				m_TransformVertexBuffer,
+				command.TransformOffset,
+				command.InstanceCount);
 		}
 
 
@@ -472,17 +519,31 @@ namespace XYZ {
 
 		Ref<Image2D> lightPassImage = m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
 		Renderer::BeginRenderPass(m_CommandBuffer, m_CompositePass, true);
-		m_CompositeRenderPipeline.Material->SetImage("u_GeometryTexture", lightPassImage);
-		m_CompositeRenderPipeline.Material->SetImage("u_BloomTexture", m_BloomTexture[2]->GetImage());
+		//m_CompositeRenderPipeline.Material->SetImage("u_GeometryTexture", lightPassImage);
+		//m_CompositeRenderPipeline.Material->SetImage("u_BloomTexture", m_BloomTexture[2]->GetImage());
+		//Renderer::BindPipeline(
+		//	m_CommandBuffer,
+		//	m_CompositeRenderPipeline.Pipeline,
+		//	nullptr,
+		//	nullptr,
+		//	m_CompositeRenderPipeline.Material
+		//);
 		Renderer::BindPipeline(
-			m_CommandBuffer,
-			m_CompositeRenderPipeline.Pipeline,
-			nullptr,
-			nullptr,
-			m_CompositeRenderPipeline.Material
-		);
+				m_CommandBuffer,
+				m_TestPipeline,
+				m_Renderer2D->GetCameraBufferSet(),
+				nullptr,
+				m_TestMaterial
+			);
 
-		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CompositeRenderPipeline.Pipeline, m_CompositeRenderPipeline.Material);
+		SubmitMesh(m_TestMesh, m_TestMaterial, glm::mat4(1.0f));
+		SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(7.0f,0.0f,0.0f)));
+		//SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(6.0f,0.0f,0.0f)));
+		//SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(9.0f,0.0f,0.0f)));
+		preRender();
+		geometryPass(m_Queue, true);
+
+		//Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CompositeRenderPipeline.Pipeline, m_CompositeRenderPipeline.Material);
 		Renderer::EndRenderPass(m_CommandBuffer);
 	}
 	void SceneRenderer::createCompositePass()
@@ -552,7 +613,7 @@ namespace XYZ {
 		uint32_t offset = 0;
 		for (auto& [key, dc] : m_Queue.MeshDrawCommands)
 		{
-			dc.TransformOffset = offset * sizeof(glm::mat4);
+			dc.TransformOffset = offset * sizeof(RenderQueue::TransformData);
 			for (const auto& transform : dc.TransformData)
 			{
 				m_TransformData[offset] = transform;
@@ -564,7 +625,7 @@ namespace XYZ {
 		uint32_t instanceOffset = 0;
 		for (auto& [key, dc] : m_Queue.InstanceMeshDrawCommands)
 		{
-			dc.TransformOffset = offset * sizeof(glm::mat4);
+			dc.TransformOffset = offset * sizeof(RenderQueue::TransformData);
 			dc.InstanceOffset = instanceOffset;
 			for (const auto& transform : dc.TransformData)
 			{
@@ -577,7 +638,7 @@ namespace XYZ {
 			instanceOffset += instanceDataSize;
 		}
 
-		m_TransformVertexBuffer->Update(m_TransformData.data(), offset * sizeof(glm::mat4));
+		m_TransformVertexBuffer->Update(m_TransformData.data(), offset * sizeof(RenderQueue::TransformData));
 		m_InstanceVertexBuffer->Update(m_InstanceData.data(), instanceOffset);
 	}
 	void SceneRenderer::prepareLights()
@@ -632,11 +693,12 @@ namespace XYZ {
 			instance->Get(2, 0, frame)->RT_Update(sLights.data(), sLights.size() * sizeof(SpotLight));
 		});
 	}
-	void SceneRenderer::SceneRenderPipeline::Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, const BufferLayout& layout, PrimitiveTopology topology)
+	void SceneRenderer::SceneRenderPipeline::Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, const BufferLayout& layout, const BufferLayout& instanceLayout, PrimitiveTopology topology)
 	{
 		PipelineSpecification specification;
 		specification.Shader = shader;
 		specification.Layout = layout;
+		specification.InstanceLayout = instanceLayout;
 		specification.RenderPass = renderPass;
 		specification.Topology = topology;
 		specification.DepthWrite = false;

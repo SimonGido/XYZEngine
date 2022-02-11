@@ -62,7 +62,7 @@ namespace XYZ {
 
 		void SetTargetRenderPass(const Ref<RenderPass>& renderPass);
 		Ref<RenderPass> GetTargetRenderPass() const;
-
+		Ref<UniformBufferSet> GetCameraBufferSet() const { return m_UniformBufferSet; }
 
 		void SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color = glm::vec4(1.0f));
 		void SubmitFilledCircle(const glm::vec3& pos, const glm::vec2& size, float thickness, const glm::vec4& color = glm::vec4(1.0f));

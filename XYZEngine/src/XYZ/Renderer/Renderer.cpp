@@ -165,7 +165,7 @@ namespace XYZ {
 		
 		s_Data.ShaderLibrary->Load("Resources/Shaders/DefaultLitShader.glsl");
 		s_Data.ShaderLibrary->Load("Resources/Shaders/LineShader.glsl");
-		
+		s_Data.ShaderLibrary->Load("Resources/Shaders/MeshShader.glsl");
 		s_Data.Resources.Init();
 		
 		//s_Data.ShaderLibrary->Load("Resources/Shaders/Particle/ParticleShaderCPU.glsl");
@@ -294,6 +294,16 @@ namespace XYZ {
 		Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount, uint32_t vertexOffsetSize)
 	{
 		s_RendererAPI->RenderGeometry(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transform, indexCount, vertexOffsetSize);
+	}
+
+	void Renderer::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount)
+	{
+		s_RendererAPI->RenderMesh(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transformBuffer, transformOffset, instanceCount);
+	}
+
+	void Renderer::RenderMeshInstanced(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
+	{
+		s_RendererAPI->RenderMeshInstanced(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transformBuffer, transformOffset, transformInstanceCount, instanceBuffer, instanceOffset, instanceCount);
 	}
 
 	void Renderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material)

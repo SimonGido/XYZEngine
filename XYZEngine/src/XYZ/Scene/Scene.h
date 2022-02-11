@@ -86,7 +86,6 @@ namespace XYZ {
         };
 
         std::vector<SpriteRenderData> m_SpriteRenderData;
-
     private:
         PhysicsWorld2D      m_PhysicsWorld;
         ContactListener     m_ContactListener;

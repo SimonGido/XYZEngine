@@ -21,6 +21,7 @@
 #include <glm/gtx/transform.hpp>
 
 
+
 namespace XYZ {
 	static ECSManager s_ECSCopyEdit;
 

@@ -210,32 +210,32 @@ namespace XYZ {
 		const uint32_t divisior = 1;
 		uint32_t counter = offset;
 		std::vector<BufferElement> elements;
-		for (auto& variable : variables)
-		{
-			switch (variable.Type)
-			{
-			case XYZ::ShaderUniformDataType::None:
-				break;
-			case XYZ::ShaderUniformDataType::Int:
-				elements.emplace_back(counter++, ShaderDataType::Int, variable.Name, divisior);
-				break;
-			case XYZ::ShaderUniformDataType::UInt:
-				elements.emplace_back(counter++, ShaderDataType::Int, variable.Name, divisior);
-				break;
-			case XYZ::ShaderUniformDataType::Float:
-				elements.emplace_back(counter++, ShaderDataType::Float, variable.Name, divisior);
-				break;
-			case XYZ::ShaderUniformDataType::Vec2:
-				elements.emplace_back(counter++, ShaderDataType::Float2, variable.Name, divisior);
-				break;
-			case XYZ::ShaderUniformDataType::Vec3:
-				elements.emplace_back(counter++, ShaderDataType::Float3, variable.Name, divisior);
-				break;
-			case XYZ::ShaderUniformDataType::Vec4:
-				elements.emplace_back(counter++, ShaderDataType::Float4, variable.Name, divisior);
-				break;
-			}
-		}
+		//for (auto& variable : variables)
+		//{
+		//	switch (variable.Type)
+		//	{
+		//	case XYZ::ShaderUniformDataType::None:
+		//		break;
+		//	case XYZ::ShaderUniformDataType::Int:
+		//		elements.emplace_back(counter++, ShaderDataType::Int, variable.Name);
+		//		break;
+		//	case XYZ::ShaderUniformDataType::UInt:
+		//		elements.emplace_back(counter++, ShaderDataType::Int, variable.Name);
+		//		break;
+		//	case XYZ::ShaderUniformDataType::Float:
+		//		elements.emplace_back(counter++, ShaderDataType::Float, variable.Name, divisior);
+		//		break;
+		//	case XYZ::ShaderUniformDataType::Vec2:
+		//		elements.emplace_back(counter++, ShaderDataType::Float2, variable.Name, divisior);
+		//		break;
+		//	case XYZ::ShaderUniformDataType::Vec3:
+		//		elements.emplace_back(counter++, ShaderDataType::Float3, variable.Name, divisior);
+		//		break;
+		//	case XYZ::ShaderUniformDataType::Vec4:
+		//		elements.emplace_back(counter++, ShaderDataType::Float4, variable.Name, divisior);
+		//		break;
+		//	}
+		//}
 		return BufferLayout(elements);
 	}
 

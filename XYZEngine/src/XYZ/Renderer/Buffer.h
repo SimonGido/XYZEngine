@@ -35,14 +35,14 @@ namespace XYZ {
 
 	struct BufferElement
 	{
-		BufferElement(uint32_t index, ShaderDataType Component, const std::string& name, uint32_t divisor = 0)
-			: Index(index), Component(Component), Divisor(divisor), Size(ShaderDataTypeSize(Component)), Offset(0)
+		BufferElement(uint32_t index, ShaderDataType type, const std::string& name)
+			: Index(index), Type(type), Size(ShaderDataTypeSize(type)), Offset(0)
 		{}
 
 
 		uint32_t GetComponentCount() const
 		{
-			switch (Component)
+			switch (Type)
 			{
 			case ShaderDataType::Bool:   return 1;
 			case ShaderDataType::Float:  return 1;
@@ -60,11 +60,10 @@ namespace XYZ {
 			return 0;
 		}
 
-		ShaderDataType Component;
+		ShaderDataType Type;
 		uint32_t   Size;
 		uint32_t   Offset;
 		uint32_t   Index;
-		uint32_t   Divisor;
 	};
 
 	class BufferLayout
@@ -75,14 +74,14 @@ namespace XYZ {
 		BufferLayout(const std::initializer_list<BufferElement>& elements)
 			: m_Elements(elements)
 		{
-			CreateMat4();
-			CalculateOffsetsAndStride();
+			createMat4();
+			calculateOffsetsAndStride();
 		}
 		BufferLayout(const std::vector<BufferElement>& elements)
 			: m_Elements(elements)
 		{
-			CreateMat4();
-			CalculateOffsetsAndStride();
+			createMat4();
+			calculateOffsetsAndStride();
 		}
 
 
@@ -90,6 +89,7 @@ namespace XYZ {
 
 
 		inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
+		inline const bool Empty() const { return m_Elements.empty(); }
 
 		auto begin() { return m_Elements.begin(); }
 		auto end() { return m_Elements.end(); }
@@ -97,7 +97,7 @@ namespace XYZ {
 		auto end() const { return m_Elements.end(); }
 	private:
 
-		inline void CalculateOffsetsAndStride()
+		inline void calculateOffsetsAndStride()
 		{
 			uint32_t offset = 0;
 			m_Stride = 0;
@@ -110,19 +110,19 @@ namespace XYZ {
 		};
 
 
-		inline void CreateMat4()
+		inline void createMat4()
 		{
 			for (auto& element : m_Elements)
 			{
-				if (element.Component == ShaderDataType::Mat4)
+				if (element.Type == ShaderDataType::Mat4)
 				{
-					element.Component = ShaderDataType::Float4;
+					element.Type = ShaderDataType::Float4;
 					element.Size = 4 * 4;
 
 					const BufferElement tmpElement = element;
-					m_Elements.push_back(BufferElement(tmpElement.Index + 1, tmpElement.Component, "", tmpElement.Divisor));
-					m_Elements.push_back(BufferElement(tmpElement.Index + 2, tmpElement.Component, "", tmpElement.Divisor));
-					m_Elements.push_back(BufferElement(tmpElement.Index + 3, tmpElement.Component, "", tmpElement.Divisor));
+					m_Elements.push_back(BufferElement(tmpElement.Index + 1, tmpElement.Type, ""));
+					m_Elements.push_back(BufferElement(tmpElement.Index + 2, tmpElement.Type, ""));
+					m_Elements.push_back(BufferElement(tmpElement.Index + 3, tmpElement.Type, ""));
 				}
 			}
 		}
