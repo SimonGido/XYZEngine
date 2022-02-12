@@ -22,11 +22,11 @@ namespace XYZ {
 		void Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
 
 
-		EmitShape	m_Shape;
-		glm::vec3	m_BoxMin;
-		glm::vec3	m_BoxMax;
-		float		m_Radius;
-		bool	    m_Enabled;
+		EmitShape	Shape;
+		glm::vec3	BoxMin;
+		glm::vec3	BoxMax;
+		float		Radius;
+		bool	    Enabled;
 
 	private:
 		void generateBox(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
@@ -43,8 +43,8 @@ namespace XYZ {
 
 		void  Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
 
-		float m_LifeTime;
-		bool  m_Enabled;
+		float LifeTime;
+		bool  Enabled;
 	};
 
 
@@ -57,8 +57,8 @@ namespace XYZ {
 
 		void Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
 
-		glm::vec3 m_MinVelocity;
-		glm::vec3 m_MaxVelocity;
-		bool	  m_Enabled;
+		glm::vec3 MinVelocity;
+		glm::vec3 MaxVelocity;
+		bool	  Enabled;
 	};
 }

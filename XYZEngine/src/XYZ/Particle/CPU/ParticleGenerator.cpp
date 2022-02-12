@@ -10,40 +10,40 @@ namespace XYZ {
 
 	ParticleShapeGenerator::ParticleShapeGenerator()
 		:
-		m_Shape(EmitShape::Box),
-		m_BoxMin(-1.0f, -1.0, 0.0f),
-		m_BoxMax(1.0f, 1.0f, 0.0f),
-		m_Radius(7.0f),
-		m_Enabled(true)
+		Shape(EmitShape::Box),
+		BoxMin(-1.0f, -1.0, 0.0f),
+		BoxMax(1.0f, 1.0f, 0.0f),
+		Radius(7.0f),
+		Enabled(true)
 	{
 	}
 
 	ParticleShapeGenerator::ParticleShapeGenerator(const ParticleShapeGenerator& other)
 	{
-		m_BoxMax  = other.m_BoxMax;
-		m_BoxMin  = other.m_BoxMin;
-		m_Shape   = other.m_Shape;
-		m_Radius  = other.m_Radius;
-		m_Enabled = other.m_Enabled;
+		BoxMax  = other.BoxMax;
+		BoxMin  = other.BoxMin;
+		Shape   = other.Shape;
+		Radius  = other.Radius;
+		Enabled = other.Enabled;
 	}
 
 	ParticleShapeGenerator& ParticleShapeGenerator::operator=(const ParticleShapeGenerator& other)
 	{
-		m_BoxMax  = other.m_BoxMax;
-		m_BoxMin  = other.m_BoxMin;
-		m_Shape   = other.m_Shape;
-		m_Radius  = other.m_Radius;
-		m_Enabled = other.m_Enabled;
+		BoxMax  = other.BoxMax;
+		BoxMin  = other.BoxMin;
+		Shape   = other.Shape;
+		Radius  = other.Radius;
+		Enabled = other.Enabled;
 		return *this;
 	}
 
 	void ParticleShapeGenerator::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const
 	{
-		if (m_Enabled)
+		if (Enabled)
 		{
-			if (m_Shape == EmitShape::Box)
+			if (Shape == EmitShape::Box)
 				generateBox(data, startId, endId);
-			else if (m_Shape == EmitShape::Circle)
+			else if (Shape == EmitShape::Circle)
 				generateCircle(data, startId, endId);
 		}
 	}
@@ -58,11 +58,11 @@ namespace XYZ {
 		endId = std::min(endId, data.GetMaxParticles());
 		for (uint32_t i = startId; i < endId; i++)
 		{
-			data.m_Particle[i].Color	 = glm::linearRand(glm::vec4(0.0f), glm::vec4(1.0f));
-			data.m_Particle[i].Position  = glm::linearRand(m_BoxMin, m_BoxMax);
-			data.m_TexOffset[i]			 = glm::vec2(0.0f, 0.0f);
-			data.m_Size[i]				 = glm::vec3(0.5f);
-			data.m_Rotation[i]			 = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+			data.Particle[i].Color	 = glm::linearRand(glm::vec4(0.0f), glm::vec4(1.0f));
+			data.Particle[i].Position  = glm::linearRand(BoxMin, BoxMax);
+			data.TexOffset[i]			 = glm::vec2(0.0f, 0.0f);
+			data.Size[i]				 = glm::vec3(0.5f);
+			data.Rotation[i]			 = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 		}
 	}
 
@@ -74,78 +74,78 @@ namespace XYZ {
 
 		for (uint32_t i = startId; i < endId; i++)
 		{
-			float r = m_Radius * (float)sqrt(dist(rng));
+			float r = Radius * (float)sqrt(dist(rng));
 			const float theta = dist(rng) * 2.0f * glm::pi<float>();
 			const glm::vec2 point(
-				m_Radius * cos(theta),
-				m_Radius * sin(theta)
+				Radius * cos(theta),
+				Radius * sin(theta)
 			);
-			data.m_Particle[i].Position  = glm::vec3(point.x, point.y, 0.0f);
-			data.m_Particle[i].Color	 = glm::vec4(glm::linearRand(0.0f, 1.0f));
-			data.m_TexOffset[i]			 = glm::vec2(0.0f, 0.0f);
-			data.m_Size[i]				 = glm::vec3(0.5f);
-			data.m_Rotation[i]			 = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+			data.Particle[i].Position  = glm::vec3(point.x, point.y, 0.0f);
+			data.Particle[i].Color	 = glm::vec4(glm::linearRand(0.0f, 1.0f));
+			data.TexOffset[i]			 = glm::vec2(0.0f, 0.0f);
+			data.Size[i]				 = glm::vec3(0.5f);
+			data.Rotation[i]			 = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 		}
 	}
 
 
 	ParticleLifeGenerator::ParticleLifeGenerator()
 		:
-		m_LifeTime(5.0f),
-		m_Enabled(true)
+		LifeTime(5.0f),
+		Enabled(true)
 	{
 	}
 
 	ParticleLifeGenerator::ParticleLifeGenerator(const ParticleLifeGenerator& other)
 	{
-		m_LifeTime = other.m_LifeTime;
-		m_Enabled  = other.m_Enabled;
+		LifeTime = other.LifeTime;
+		Enabled  = other.Enabled;
 	}
 	ParticleLifeGenerator& ParticleLifeGenerator::operator=(const ParticleLifeGenerator& other)
 	{
-		m_LifeTime = other.m_LifeTime;
-		m_Enabled  = other.m_Enabled;
+		LifeTime = other.LifeTime;
+		Enabled  = other.Enabled;
 		return *this;
 	}
 	void ParticleLifeGenerator::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const
 	{
-		if (m_Enabled)
+		if (Enabled)
 		{
 			for (uint32_t i = startId; i < endId; i++)
 			{
-				data.m_Particle[i].LifeRemaining = m_LifeTime;
+				data.Particle[i].LifeRemaining = LifeTime;
 			}
 		}
 	}
 
 	ParticleRandomVelocityGenerator::ParticleRandomVelocityGenerator()
 		:
-		m_MinVelocity(-1.0f, -1.0f, 0.0f),
-		m_MaxVelocity(1.0f, 1.0f, 0.0f),
-		m_Enabled(true)
+		MinVelocity(-1.0f, -1.0f, 0.0f),
+		MaxVelocity(1.0f, 1.0f, 0.0f),
+		Enabled(true)
 	{
 	}
 	ParticleRandomVelocityGenerator::ParticleRandomVelocityGenerator(const ParticleRandomVelocityGenerator& other)
 	{
-		m_MaxVelocity = other.m_MaxVelocity;
-		m_MinVelocity = other.m_MinVelocity;
-		m_Enabled = other.m_Enabled;
+		MaxVelocity = other.MaxVelocity;
+		MinVelocity = other.MinVelocity;
+		Enabled = other.Enabled;
 	}
 
 	ParticleRandomVelocityGenerator& ParticleRandomVelocityGenerator::operator=(const ParticleRandomVelocityGenerator& other)
 	{
-		m_MaxVelocity = other.m_MaxVelocity;
-		m_MinVelocity = other.m_MinVelocity;
-		m_Enabled = other.m_Enabled;
+		MaxVelocity = other.MaxVelocity;
+		MinVelocity = other.MinVelocity;
+		Enabled = other.Enabled;
 		return *this;
 	}
 	void ParticleRandomVelocityGenerator::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const
 	{
-		if (m_Enabled)
+		if (Enabled)
 		{
 			for (uint32_t i = startId; i < endId; i++)
 			{
-				data.m_Particle[i].Velocity = glm::linearRand(m_MinVelocity, m_MaxVelocity);
+				data.Particle[i].Velocity = glm::linearRand(MinVelocity, MaxVelocity);
 			}
 		}
 	}

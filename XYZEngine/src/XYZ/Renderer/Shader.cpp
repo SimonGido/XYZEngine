@@ -7,7 +7,7 @@
 
 namespace XYZ {
 	
-	Ref<Shader> Shader::Create(const std::string& path)
+	Ref<Shader> Shader::Create(const std::string& path, std::vector<BufferLayout> layouts)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -17,13 +17,13 @@ namespace XYZ {
 			return nullptr;
 		}
 		case RendererAPI::Type::OpenGL: return  Ref<OpenGLShader>::Create(path);
-		case RendererAPI::Type::Vulkan: return Ref<VulkanShader>::Create(path);		
+		case RendererAPI::Type::Vulkan: return Ref<VulkanShader>::Create(path, std::move(layouts));		
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 		return nullptr;
 	}
-	Ref<Shader> Shader::Create(const std::string& name, const std::string& path)
+	Ref<Shader> Shader::Create(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -33,7 +33,7 @@ namespace XYZ {
 			return nullptr;
 		}
 		case RendererAPI::Type::OpenGL: return Ref<OpenGLShader>::Create(name, path);
-		case RendererAPI::Type::Vulkan: return Ref<VulkanShader>::Create(name, path);
+		case RendererAPI::Type::Vulkan: return Ref<VulkanShader>::Create(name, path, std::move(layouts));
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
@@ -48,15 +48,15 @@ namespace XYZ {
 		}
 		else XYZ_ASSERT(false, "Shader name already exists.");
 	}
-	Ref<Shader> ShaderLibrary::Load(const std::string& path)
+	Ref<Shader> ShaderLibrary::Load(const std::string& path, std::vector<BufferLayout> layouts)
 	{
-		auto shader = Shader::Create(path);
+		auto shader = Shader::Create(path, std::move(layouts));
 		Add(shader);
 		return shader;
 	}
-	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& path)
+	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts)
 	{
-		auto shader = Shader::Create(name, path);
+		auto shader = Shader::Create(name, path, std::move(layouts));
 		Add(shader);
 		return shader;
 	}

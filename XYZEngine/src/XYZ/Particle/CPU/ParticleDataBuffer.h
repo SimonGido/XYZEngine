@@ -25,7 +25,7 @@ namespace XYZ {
         void Kill(uint32_t id);
 
         // Default particle data
-        struct Particle
+        struct ParticleData
         {
             glm::vec4 Color;
             glm::vec3 Position;
@@ -35,17 +35,15 @@ namespace XYZ {
             bool      Alive;
         };
 
-        Particle*   m_Particle;
+        ParticleData*   Particle;
 
         // Additional particle properties;
-        glm::vec2*  m_TexOffset;
-        glm::vec4*  m_StartColor;
-        glm::vec4*  m_EndColor;
-        glm::vec3*  m_Size;
-        glm::quat*  m_Rotation;
+        glm::vec2*  TexOffset;
+        glm::vec4*  StartColor;
+        glm::vec4*  EndColor;
+        glm::vec3*  Size;
+        glm::quat*  Rotation;
 
-
-        CustomBuffer m_CustomData[3];
 
         uint32_t GetMaxParticles() const { return m_MaxParticles; }
         uint32_t GetAliveParticles() const { return m_AliveParticles; }

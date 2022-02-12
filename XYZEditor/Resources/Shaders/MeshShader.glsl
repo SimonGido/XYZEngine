@@ -41,10 +41,11 @@ void main()
 	);
 
 
-	v_Output.Position = a_Position;
+	vec4 instancePosition = transform * vec4(a_Position, 1.0);
+	v_Output.Position = instancePosition.xyz;
 	v_Output.TexCoord = a_TexCoord;
 
-	gl_Position = u_ViewProjection * u_Renderer.Transform * transform * vec4(a_Position, 1.0);
+	gl_Position = u_ViewProjection * u_Renderer.Transform * instancePosition;
 }
 
 #type fragment
@@ -52,7 +53,7 @@ void main()
 
 
 layout(location = 0) out vec4 o_Color;
-//layout(location = 1) out vec4 o_Position;
+layout(location = 1) out vec4 o_Position;
 
 
 struct VertexOutput
@@ -68,5 +69,5 @@ layout(binding = 1) uniform sampler2D u_Texture;
 void main()
 {
 	o_Color = texture(u_Texture, v_Input.TexCoord);
-	//o_Position = vec4(v_Input.Position, 1.0);
+	o_Position = vec4(v_Input.Position, 1.0);
 }

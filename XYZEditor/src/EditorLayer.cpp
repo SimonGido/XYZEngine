@@ -33,11 +33,13 @@ namespace XYZ {
 			m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification());
 			m_CameraTexture = Texture2D::Create("Resources/Editor/Camera.png");
 
+			auto shaderLib = Renderer::GetShaderLibrary();
+
 			m_CommandBuffer = RenderCommandBuffer::Create(0, "Overlay");
 			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
-			m_QuadMaterial = Material::Create(Shader::Create("Resources/Shaders/Overlay/OverlayQuad.glsl"));
-			m_LineMaterial = Material::Create(Shader::Create("Resources/Shaders/Overlay/OverlayLine.glsl"));
-			m_CircleMaterial = Material::Create(Shader::Create("Resources/Shaders/Overlay/OverlayCircle.glsl"));
+			m_QuadMaterial = Material::Create(shaderLib->Get("OverlayQuad"));
+			m_LineMaterial = Material::Create(shaderLib->Get("OverlayLine"));
+			m_CircleMaterial = Material::Create(shaderLib->Get("OverlayCircle"));
 			m_OverlayRenderer2D = Ref<Renderer2D>::Create(
 				m_CommandBuffer,
 				m_QuadMaterial, m_LineMaterial, m_CircleMaterial, 
@@ -65,6 +67,11 @@ namespace XYZ {
 			Ref<Animation> animation = AssetManager::GetAsset<Animation>("Assets/Animations/HavkoAnim.anim");
 
 			
+			newEntity.AddComponent<MeshComponent>(
+				MeshComponent{ MeshFactory::CreateBox(glm::vec3(0.5f)),
+				  Material::Create(shaderLib->Get("MeshShader"))
+				});
+			newEntity.AddComponent<ParticleComponentCPU>({ ParticleSystemCPU(100) });
 
 			auto& spriteRenderer = newEntity.EmplaceComponent<SpriteRenderer>();
 			spriteRenderer.Material = Material::Create(Renderer::GetShaderLibrary()->Get("DefaultLitShader"));

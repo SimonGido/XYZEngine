@@ -547,31 +547,17 @@ namespace XYZ {
 	{
 		uint32_t* quadIndices = GenerateQuadIndices(sc_MaxIndices);
 		
-		m_QuadBuffer.Init(m_RenderPass, m_QuadMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
-				{0, XYZ::ShaderDataType::Float4, "a_Color" },
-				{1, XYZ::ShaderDataType::Float3, "a_Position" },
-				{2, XYZ::ShaderDataType::Float2, "a_TexCoord" },
-				{3, XYZ::ShaderDataType::Float,  "a_TextureID" },
-				{4, XYZ::ShaderDataType::Float,  "a_TilingFactor" }
-			});
+		m_QuadBuffer.Init(m_RenderPass, m_QuadMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices);
 		const size_t quadShaderHash = m_QuadMaterial->GetShader()->GetHash();
 		m_QuadPipelines.emplace(quadShaderHash, m_QuadBuffer.Pipeline);
 
 		uint32_t* lineIndices = GenerateLineIndices(sc_MaxLineIndices);
-		m_LineBuffer.Init(m_RenderPass, m_LineMaterial->GetShader(), sc_MaxLineVertices, lineIndices, sc_MaxLineIndices, BufferLayout{
-				{0, XYZ::ShaderDataType::Float4, "a_Color" },
-				{1, XYZ::ShaderDataType::Float3, "a_Position" },
-			}, PrimitiveTopology::Lines);
+		m_LineBuffer.Init(m_RenderPass, m_LineMaterial->GetShader(), sc_MaxLineVertices, lineIndices, sc_MaxLineIndices, PrimitiveTopology::Lines);
 		const size_t lineShaderHash = m_LineMaterial->GetShader()->GetHash();
 		m_LinePipelines.emplace(lineShaderHash, m_LineBuffer.Pipeline);
 
 
-		m_CircleBuffer.Init(m_RenderPass, m_CircleMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
-				{0, XYZ::ShaderDataType::Float3, "a_WorldPosition" },
-				{1, XYZ::ShaderDataType::Float,  "a_Thickness" },
-				{2, XYZ::ShaderDataType::Float2, "a_LocalPosition" },
-				{3, XYZ::ShaderDataType::Float4, "a_Color" }
-			});
+		m_CircleBuffer.Init(m_RenderPass, m_CircleMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices);
 		const size_t circleShaderHash = m_CircleMaterial->GetShader()->GetHash();
 		m_CirclePipelines.emplace(circleShaderHash, m_CircleBuffer.Pipeline);
 

@@ -22,8 +22,7 @@ namespace XYZ {
 	struct PipelineSpecification
 	{
 		Ref<Shader>		  Shader;
-		BufferLayout	  Layout;
-		BufferLayout	  InstanceLayout;
+		std::vector<BufferLayout> Layouts;
 		Ref<RenderPass>   RenderPass;
 		PrimitiveTopology Topology = PrimitiveTopology::Triangles;
 		bool			  BackfaceCulling = true;

@@ -296,7 +296,21 @@ namespace XYZ {
 			}
 			sceneRenderer->SubmitSprite(data.Renderer->Material, data.Renderer->SubTexture, data.Renderer->Color, data.Transform->WorldTransform);
 		}
-
+		
+		auto particleView = m_ECS.CreateView<TransformComponent, MeshComponent, ParticleComponentCPU>();
+		for (auto entity : particleView)
+		{
+			auto& [transform, meshComponent, particleComponent] = particleView.Get<TransformComponent, MeshComponent, ParticleComponentCPU>(entity);
+			particleComponent.System.Update(ts);
+			
+			auto renderData = particleComponent.System.GetRenderDataRead();
+			sceneRenderer->SubmitMesh(
+				meshComponent.Mesh, meshComponent.Material, transform.WorldTransform,
+				renderData->Data.data(),
+				renderData->InstanceCount,
+				sizeof(ParticleRenderData)
+			);
+		}
 		sceneRenderer->EndScene();
 	}
 

@@ -56,26 +56,19 @@ namespace XYZ {
 
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
-		m_Renderer2D = Ref<Renderer2D>::Create(m_CommandBuffer);
-		m_WhiteTexture = Renderer::GetDefaultResources().WhiteTexture;
-
 		createCompositePass();
 		createLightPass();
-		
-		const BufferLayout layout = { 
-			{0, ShaderDataType::Float3, "a_Position" },
-			{1, ShaderDataType::Float2, "a_TexCoord" } 
-		};
-		const BufferLayout instanceLayout = {
-			{0, ShaderDataType::Float4, "a_TransformRow0"},
-			{1, ShaderDataType::Float4, "a_TransformRow1"},
-			{2, ShaderDataType::Float4, "a_TransformRow2"}
-		};
+		createGeometryPass();
 
+		m_Renderer2D = Ref<Renderer2D>::Create(m_CommandBuffer);
+		m_Renderer2D->SetTargetRenderPass(m_GeometryPass);
+		m_WhiteTexture = Renderer::GetDefaultResources().WhiteTexture;
+
+		
 		auto shaderLibrary = Renderer::GetShaderLibrary();
-		m_CompositeRenderPipeline.Init(m_CompositePass, shaderLibrary->Get("CompositeShader"), layout);
-		m_LightRenderPipeline.Init(m_LightPass, shaderLibrary->Get("LightShader"), layout);
-		m_GeometryRenderPipeline.Init(m_GeometryPass, shaderLibrary->Get("MeshShader"), layout, instanceLayout);
+		m_CompositeRenderPipeline.Init(m_CompositePass, shaderLibrary->Get("CompositeShader"));
+		m_LightRenderPipeline.Init(m_LightPass, shaderLibrary->Get("LightShader"));
+
 
 		auto bloomShader = shaderLibrary->Get("Bloom");
 		m_BloomComputePipeline = PipelineCompute::Create(bloomShader);
@@ -95,29 +88,10 @@ namespace XYZ {
 
 
 
-
-
 		m_TestMesh = MeshFactory::CreateBox(glm::vec3(2.0f));
-		m_TestMaterial = Material::Create(Shader::Create("Resources/Shaders/MeshShader.glsl"));
+		m_TestMaterial = Material::Create(shaderLibrary->Get("MeshShader"));
 		m_TestMaterial->SetImage("u_Texture", m_WhiteTexture->GetImage());
-
-		PipelineSpecification testSpec;
-		testSpec.Layout = {
-			{0, ShaderDataType::Float3, "a_Position"},
-			{1, ShaderDataType::Float2, "a_TexCoord"},
-		};
-		testSpec.InstanceLayout = {
-			{0, ShaderDataType::Float4, "a_TransformRow0"},
-			{1, ShaderDataType::Float4, "a_TransformRow1"},
-			{2, ShaderDataType::Float4, "a_TransformRow2"}
-		};
-		testSpec.RenderPass = m_CompositePass;
-		testSpec.Shader = m_TestMaterial->GetShader();
-		testSpec.Topology = PrimitiveTopology::Triangles;
-
-		m_TestPipeline = Pipeline::Create(testSpec);
 		m_Renderer2D->GetCameraBufferSet()->CreateDescriptors(m_TestMaterial->GetShader());
-
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -159,11 +133,15 @@ namespace XYZ {
 	}
 	void SceneRenderer::EndScene()
 	{
+		SubmitMesh(m_TestMesh, m_TestMaterial, glm::mat4(1.0f));
+		SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 0.0f, 0.0f)));
+
 		preRender();
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 		
-		geometryPass2D(m_Queue, true);
+		geometryPass(m_Queue, true);
+		geometryPass2D(m_Queue, false);
 		lightPass();
 		bloomPass();
 		compositePass();
@@ -225,8 +203,9 @@ namespace XYZ {
 		dc.TransformData.push_back(Mat4ToTransformData(transform));
 
 		size_t oldSize = dc.InstanceData.size();
-		dc.InstanceData.resize(oldSize + key.InstanceSize);
-		memcpy(dc.InstanceData.data() + oldSize, &transform, key.InstanceSize);
+		size_t instanceDataSize = static_cast<size_t>(instanceCount * instanceSize);
+		dc.InstanceData.resize(oldSize + instanceDataSize);
+		memcpy(dc.InstanceData.data() + oldSize, &transform, instanceDataSize);
 	}
 
 
@@ -298,15 +277,22 @@ namespace XYZ {
 	void SceneRenderer::geometryPass(RenderQueue& queue, bool clear)
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::geometryPass");
-
+		Renderer::BeginRenderPass(m_CommandBuffer, m_GeometryPass, clear);
 		for (auto& [key, command] : queue.MeshDrawCommands)
 		{
+			Renderer::BindPipeline(
+				m_CommandBuffer,
+				command.Pipeline,
+				m_Renderer2D->GetCameraBufferSet(),
+				nullptr,
+				command.Material
+			);
 			Renderer::RenderMesh(
 				m_CommandBuffer,
-				m_TestPipeline,
-				m_TestMaterial,
-				m_TestMesh->GetVertexBuffer(),
-				m_TestMesh->GetIndexBuffer(),
+				command.Pipeline,
+				command.Material,
+				command.Mesh->GetVertexBuffer(),
+				command.Mesh->GetIndexBuffer(),
 				m_TransformVertexBuffer,
 				command.TransformOffset,
 				command.InstanceCount);
@@ -315,8 +301,28 @@ namespace XYZ {
 
 		for (auto& [key, command] : queue.InstanceMeshDrawCommands)
 		{
-
+			Renderer::BindPipeline(
+				m_CommandBuffer,
+				command.Pipeline,
+				m_Renderer2D->GetCameraBufferSet(),
+				nullptr,
+				command.Material
+			);
+			Renderer::RenderMeshInstanced(
+				m_CommandBuffer,
+				command.Pipeline,
+				command.Material,
+				command.Mesh->GetVertexBuffer(),
+				command.Mesh->GetIndexBuffer(),
+				m_TransformVertexBuffer,
+				command.TransformOffset,
+				command.InstanceCount,
+				m_InstanceVertexBuffer,
+				command.InstanceOffset,
+				static_cast<uint32_t>(command.InstanceData.size())
+			);
 		}
+		Renderer::EndRenderPass(m_CommandBuffer);
 	}
 	void SceneRenderer::geometryPass2D(RenderQueue& queue, bool clear)
 	{
@@ -519,31 +525,16 @@ namespace XYZ {
 
 		Ref<Image2D> lightPassImage = m_LightPass->GetSpecification().TargetFramebuffer->GetImage();
 		Renderer::BeginRenderPass(m_CommandBuffer, m_CompositePass, true);
-		//m_CompositeRenderPipeline.Material->SetImage("u_GeometryTexture", lightPassImage);
-		//m_CompositeRenderPipeline.Material->SetImage("u_BloomTexture", m_BloomTexture[2]->GetImage());
-		//Renderer::BindPipeline(
-		//	m_CommandBuffer,
-		//	m_CompositeRenderPipeline.Pipeline,
-		//	nullptr,
-		//	nullptr,
-		//	m_CompositeRenderPipeline.Material
-		//);
+		m_CompositeRenderPipeline.Material->SetImage("u_GeometryTexture", lightPassImage);
+		m_CompositeRenderPipeline.Material->SetImage("u_BloomTexture", m_BloomTexture[2]->GetImage());
 		Renderer::BindPipeline(
-				m_CommandBuffer,
-				m_TestPipeline,
-				m_Renderer2D->GetCameraBufferSet(),
-				nullptr,
-				m_TestMaterial
-			);
-
-		SubmitMesh(m_TestMesh, m_TestMaterial, glm::mat4(1.0f));
-		SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(7.0f,0.0f,0.0f)));
-		//SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(6.0f,0.0f,0.0f)));
-		//SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(9.0f,0.0f,0.0f)));
-		preRender();
-		geometryPass(m_Queue, true);
-
-		//Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CompositeRenderPipeline.Pipeline, m_CompositeRenderPipeline.Material);
+			m_CommandBuffer,
+			m_CompositeRenderPipeline.Pipeline,
+			nullptr,
+			nullptr,
+			m_CompositeRenderPipeline.Material
+		);
+		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CompositeRenderPipeline.Pipeline, m_CompositeRenderPipeline.Material);
 		Renderer::EndRenderPass(m_CommandBuffer);
 	}
 	void SceneRenderer::createCompositePass()
@@ -581,6 +572,24 @@ namespace XYZ {
 		m_LightStorageBufferSet->Create(sc_MaxNumberOfLights * sizeof(SpotLight), 0, 2);
 		m_LightStorageBufferSet->CreateDescriptors(shader);
 	}
+
+	void SceneRenderer::createGeometryPass()
+	{
+		FramebufferSpecification framebufferSpec;
+		framebufferSpec.Attachments = {
+				FramebufferTextureSpecification(ImageFormat::RGBA32F),
+				FramebufferTextureSpecification(ImageFormat::RGBA32F)
+		};
+		framebufferSpec.Samples = 1;
+		framebufferSpec.ClearOnLoad = false;
+		framebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+		Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
+
+		RenderPassSpecification renderPassSpec;
+		renderPassSpec.TargetFramebuffer = framebuffer;
+		m_GeometryPass = RenderPass::Create(renderPassSpec);
+	}
 	
 
 	void SceneRenderer::updateViewportSize()
@@ -613,6 +622,7 @@ namespace XYZ {
 		uint32_t offset = 0;
 		for (auto& [key, dc] : m_Queue.MeshDrawCommands)
 		{
+			dc.Pipeline = createGeometryPipeline(dc.Material);
 			dc.TransformOffset = offset * sizeof(RenderQueue::TransformData);
 			for (const auto& transform : dc.TransformData)
 			{
@@ -625,6 +635,7 @@ namespace XYZ {
 		uint32_t instanceOffset = 0;
 		for (auto& [key, dc] : m_Queue.InstanceMeshDrawCommands)
 		{
+			dc.Pipeline = createGeometryPipeline(dc.Material);
 			dc.TransformOffset = offset * sizeof(RenderQueue::TransformData);
 			dc.InstanceOffset = instanceOffset;
 			for (const auto& transform : dc.TransformData)
@@ -693,12 +704,30 @@ namespace XYZ {
 			instance->Get(2, 0, frame)->RT_Update(sLights.data(), sLights.size() * sizeof(SpotLight));
 		});
 	}
-	void SceneRenderer::SceneRenderPipeline::Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, const BufferLayout& layout, const BufferLayout& instanceLayout, PrimitiveTopology topology)
+	Ref<Pipeline> SceneRenderer::createGeometryPipeline(const Ref<Material>& material, bool instanced)
+	{
+		Ref<Shader> shader = material->GetShader();
+		auto it = m_GeometryPipelines.find(shader->GetHash());
+		if (it != m_GeometryPipelines.end())
+			return it->second;
+
+
+		PipelineSpecification spec;
+		spec.Layouts = shader->GetLayouts();
+		spec.RenderPass = m_GeometryPass;
+		spec.Shader = shader;
+		spec.Topology = PrimitiveTopology::Triangles;
+
+		auto& pipeline = m_GeometryPipelines[shader->GetHash()];
+		pipeline = Pipeline::Create(spec);
+		return pipeline;
+	}
+
+	void SceneRenderer::SceneRenderPipeline::Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, PrimitiveTopology topology)
 	{
 		PipelineSpecification specification;
 		specification.Shader = shader;
-		specification.Layout = layout;
-		specification.InstanceLayout = instanceLayout;
+		specification.Layouts = shader->GetLayouts();
 		specification.RenderPass = renderPass;
 		specification.Topology = topology;
 		specification.DepthWrite = false;

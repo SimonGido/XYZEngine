@@ -85,10 +85,10 @@ namespace XYZ {
 
         Ref<VertexBuffer> vbo = VertexBuffer::Create(m_Vertices.data(), (uint32_t)m_Vertices.size() * (uint32_t)sizeof(AnimatedVertex));
         vbo->SetLayout({
-            {0, XYZ::ShaderDataType::Float3, "a_Position" },
-            {1, XYZ::ShaderDataType::Float2, "a_TexCoord" },
-            {2, XYZ::ShaderDataType::Int4,   "a_BoneIDs"  },
-            {3, XYZ::ShaderDataType::Float4, "a_Weights"  }
+            {XYZ::ShaderDataType::Float3, "a_Position" },
+            {XYZ::ShaderDataType::Float2, "a_TexCoord" },
+            {XYZ::ShaderDataType::Int4,   "a_BoneIDs"  },
+            {XYZ::ShaderDataType::Float4, "a_Weights"  }
             });
 
         m_VertexArray->AddVertexBuffer(vbo);

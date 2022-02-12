@@ -408,7 +408,7 @@ namespace XYZ {
 		Ref<VertexBuffer> squareVBpar;
 		squareVBpar = XYZ::VertexBuffer::Create(quad, 4 * sizeof(glm::vec3));
 		squareVBpar->SetLayout({
-			{ 0, XYZ::ShaderDataType::Float3, "a_Position" }
+			{ XYZ::ShaderDataType::Float3, "a_Position" }
 			});
 		m_VertexArray->AddVertexBuffer(squareVBpar);
 

@@ -35,8 +35,8 @@ namespace XYZ {
 
 	struct BufferElement
 	{
-		BufferElement(uint32_t index, ShaderDataType type, const std::string& name)
-			: Index(index), Type(type), Size(ShaderDataTypeSize(type)), Offset(0)
+		BufferElement(ShaderDataType type, const std::string& name)
+			: Type(type), Size(ShaderDataTypeSize(type)), Offset(0)
 		{}
 
 
@@ -69,16 +69,17 @@ namespace XYZ {
 	class BufferLayout
 	{
 	public:
-		BufferLayout() {};
+		BufferLayout(bool instanced = false)
+		: m_Instanced(instanced) {};
 
-		BufferLayout(const std::initializer_list<BufferElement>& elements)
-			: m_Elements(elements)
+		BufferLayout(const std::initializer_list<BufferElement>& elements, bool instanced = false)
+			: m_Elements(elements), m_Instanced(instanced)
 		{
 			createMat4();
 			calculateOffsetsAndStride();
 		}
-		BufferLayout(const std::vector<BufferElement>& elements)
-			: m_Elements(elements)
+		BufferLayout(const std::vector<BufferElement>& elements, bool instanced = false)
+			: m_Elements(elements), m_Instanced(instanced)
 		{
 			createMat4();
 			calculateOffsetsAndStride();
@@ -90,6 +91,7 @@ namespace XYZ {
 
 		inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
 		inline const bool Empty() const { return m_Elements.empty(); }
+		inline const bool Instanced() const { return m_Instanced; }
 
 		auto begin() { return m_Elements.begin(); }
 		auto end() { return m_Elements.end(); }
@@ -120,16 +122,17 @@ namespace XYZ {
 					element.Size = 4 * 4;
 
 					const BufferElement tmpElement = element;
-					m_Elements.push_back(BufferElement(tmpElement.Index + 1, tmpElement.Type, ""));
-					m_Elements.push_back(BufferElement(tmpElement.Index + 2, tmpElement.Type, ""));
-					m_Elements.push_back(BufferElement(tmpElement.Index + 3, tmpElement.Type, ""));
+					m_Elements.push_back(BufferElement(tmpElement.Type, ""));
+					m_Elements.push_back(BufferElement(tmpElement.Type, ""));
+					m_Elements.push_back(BufferElement(tmpElement.Type, ""));
 				}
 			}
 		}
 
 	private:
 		std::vector<BufferElement> m_Elements;
-		uint32_t m_Stride = 0;
+		bool					   m_Instanced;
+		uint32_t				   m_Stride = 0;
 	};
 
 

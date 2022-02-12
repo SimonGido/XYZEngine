@@ -131,8 +131,8 @@ namespace XYZ {
 		data[3].TexCoord = glm::vec2(0, 0);
 
 		const BufferLayout layout = {
-			{ 0, ShaderDataType::Float3, "a_Position" },
-			{ 1, ShaderDataType::Float2, "a_TexCoord" }
+			{ ShaderDataType::Float3, "a_Position" },
+			{ ShaderDataType::Float2, "a_TexCoord" }
 		};
 		s_Data.FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
 		s_Data.FullscreenQuadVertexBuffer->SetLayout(layout);
@@ -156,19 +156,89 @@ namespace XYZ {
 		s_RendererAPI->Init();
 		
 		SetupFullscreenQuad();
-
+		// TODO: maybe store it in metadata
+		std::vector<BufferLayout> defaultLayouts = {
+			BufferLayout{
+				{ ShaderDataType::Float3, "a_Position" },
+				{ ShaderDataType::Float2, "a_TexCoord" }
+			} 
+		};
+		std::vector<BufferLayout> lineLayouts = {
+			BufferLayout{
+				{ ShaderDataType::Float4, "a_Color" },
+				{ ShaderDataType::Float3, "a_Position" }
+			}
+		};
+		std::vector<BufferLayout> circleLayouts = {
+			BufferLayout{
+				{XYZ::ShaderDataType::Float3, "a_WorldPosition" },
+				{XYZ::ShaderDataType::Float,  "a_Thickness" },
+				{XYZ::ShaderDataType::Float2, "a_LocalPosition" },
+				{XYZ::ShaderDataType::Float4, "a_Color" }
+			}
+		};
+		std::vector<BufferLayout> lit2DLayouts = {
+			BufferLayout{
+				{XYZ::ShaderDataType::Float4, "a_Color" },
+				{XYZ::ShaderDataType::Float3, "a_Position" },
+				{XYZ::ShaderDataType::Float2, "a_TexCoord" },
+				{XYZ::ShaderDataType::Float,  "a_TextureID" },
+				{XYZ::ShaderDataType::Float,  "a_TilingFactor" }
+			}
+		};
+		std::vector<BufferLayout> meshLayouts = {
+			BufferLayout{
+				{ShaderDataType::Float3, "a_Position" },
+				{ShaderDataType::Float2, "a_TexCoord" }
+			},
+			BufferLayout{
+				{{ShaderDataType::Float4, "a_TransformRow0"},
+				{ShaderDataType::Float4, "a_TransformRow1"},
+				{ShaderDataType::Float4, "a_TransformRow2"}}
+				,true
+			}
+		};
+		std::vector<BufferLayout> particleCPULayouts = {
+			BufferLayout{
+				{ShaderDataType::Float3, "a_Position" },
+				{ShaderDataType::Float2, "a_TexCoord" }
+			},
+			BufferLayout{
+				{{ShaderDataType::Float4, "a_TransformRow0"},
+				{ShaderDataType::Float4, "a_TransformRow1"},
+				{ShaderDataType::Float4, "a_TransformRow2"}}
+				,true
+			},
+			BufferLayout{
+				{{ShaderDataType::Float4, "a_IColor"},
+				{ShaderDataType::Float3, "a_IPosition"},
+				{ShaderDataType::Float3, "a_ISize"},
+				{ShaderDataType::Float4, "a_IAxis"},
+				{ShaderDataType::Float2, "a_ITexOffset"}}
+				,true
+			}
+		};
 		s_Data.ShaderLibrary = Ref<ShaderLibrary>::Create();
-		s_Data.ShaderLibrary->Load("Resources/Shaders/CompositeShader.glsl");
-		s_Data.ShaderLibrary->Load("Resources/Shaders/LightShader.glsl");
-		s_Data.ShaderLibrary->Load("Resources/Shaders/Bloom.glsl");
-		s_Data.ShaderLibrary->Load("Resources/Shaders/Circle.glsl");
+		s_Data.ShaderLibrary->Load("Resources/Shaders/CompositeShader.glsl", defaultLayouts);
+		s_Data.ShaderLibrary->Load("Resources/Shaders/LightShader.glsl", defaultLayouts);
+
+		s_Data.ShaderLibrary->Load("Resources/Shaders/Bloom.glsl", {});
 		
-		s_Data.ShaderLibrary->Load("Resources/Shaders/DefaultLitShader.glsl");
-		s_Data.ShaderLibrary->Load("Resources/Shaders/LineShader.glsl");
-		s_Data.ShaderLibrary->Load("Resources/Shaders/MeshShader.glsl");
+		s_Data.ShaderLibrary->Load("Resources/Shaders/DefaultLitShader.glsl", lit2DLayouts);
+		s_Data.ShaderLibrary->Load("Resources/Shaders/LineShader.glsl", lineLayouts);
+		s_Data.ShaderLibrary->Load("Resources/Shaders/Circle.glsl", circleLayouts);
+
+		s_Data.ShaderLibrary->Load("Resources/Shaders/MeshShader.glsl", meshLayouts);
+		s_Data.ShaderLibrary->Load("Resources/Shaders/Particle/ParticleShaderCPU.glsl", particleCPULayouts);
+		
+
+		s_Data.ShaderLibrary->Load("Resources/Shaders/Overlay/OverlayQuad.glsl", lit2DLayouts);
+		s_Data.ShaderLibrary->Load("Resources/Shaders/Overlay/OverlayLine.glsl", lineLayouts);
+		s_Data.ShaderLibrary->Load("Resources/Shaders/Overlay/OverlayCircle.glsl", circleLayouts);
+
+		
 		s_Data.Resources.Init();
 		
-		//s_Data.ShaderLibrary->Load("Resources/Shaders/Particle/ParticleShaderCPU.glsl");
 		WaitAndRenderAll();
 	}
 

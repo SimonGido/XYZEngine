@@ -28,7 +28,7 @@ namespace XYZ {
 		Renderer2DBuffer() = default;
 		~Renderer2DBuffer();
 
-		void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, uint32_t maxVertices, uint32_t* indices, uint32_t indexCount, const BufferLayout& layout, PrimitiveTopology topology = PrimitiveTopology::Triangles);
+		void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, uint32_t maxVertices, uint32_t* indices, uint32_t indexCount, PrimitiveTopology topology = PrimitiveTopology::Triangles);
 		void Reset();
 		uint32_t DataSize() const;
 		uint8_t* DataPtr() const;
@@ -183,15 +183,14 @@ namespace XYZ {
 
 
 	template<typename VertexType>
-	inline void Renderer2DBuffer<VertexType>::Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, uint32_t maxVertices, uint32_t* indices, uint32_t indexCount, const BufferLayout& layout, PrimitiveTopology topology)
+	inline void Renderer2DBuffer<VertexType>::Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, uint32_t maxVertices, uint32_t* indices, uint32_t indexCount,PrimitiveTopology topology)
 	{
 		this->BufferBase = new VertexType[maxVertices];
 		this->VertexBuffer = VertexBuffer::Create(maxVertices * sizeof(VertexType));
-		this->VertexBuffer->SetLayout(layout);	
 		this->IndexBuffer = IndexBuffer::Create(indices, indexCount);
 		PipelineSpecification specification;
 		specification.Shader = shader;
-		specification.Layout = layout;
+		specification.Layouts = shader->GetLayouts();
 		specification.RenderPass = renderPass;
 		specification.Topology = topology;
 		this->Pipeline = Pipeline::Create(specification);

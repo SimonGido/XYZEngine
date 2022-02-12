@@ -104,40 +104,25 @@ namespace XYZ {
 	}
 	VkPipelineVertexInputStateCreateInfo VulkanPipeline::createVertexInputInfo(std::vector<VkVertexInputBindingDescription>& bindingDescriptions, std::vector<VkVertexInputAttributeDescription>& vertexInputAttributes) const
 	{
-		const BufferLayout& layout = m_Specification.Layout;
-		const BufferLayout& instanceLayout = m_Specification.InstanceLayout;
-
-		VkVertexInputBindingDescription& vertexInputBinding = bindingDescriptions.emplace_back();
-		vertexInputBinding.binding = 0;
-		vertexInputBinding.stride = m_Specification.Layout.GetStride();
-		vertexInputBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-
-		// Input attribute bindings describe shader attribute locations and memory layouts
-		vertexInputAttributes.resize(layout.GetElements().size() + instanceLayout.GetElements().size());
+		uint32_t binding = 0;
 		uint32_t location = 0;
-		for (const auto& element : layout)
+		for (const auto& layout : m_Specification.Layouts)
 		{
-			vertexInputAttributes[location].binding = 0;
-			vertexInputAttributes[location].location = location;
-			vertexInputAttributes[location].format = Utils::ShaderDataTypeToVulkanFormat(element.Type);
-			vertexInputAttributes[location].offset = element.Offset;
-			location++;
-		}
-		for (const auto& element : instanceLayout)
-		{
-			vertexInputAttributes[location].binding = 1;
-			vertexInputAttributes[location].location = location;
-			vertexInputAttributes[location].format = Utils::ShaderDataTypeToVulkanFormat(element.Type);
-			vertexInputAttributes[location].offset = element.Offset;
-			location++;
-		}
-		if (!instanceLayout.Empty())
-		{
-			VkVertexInputBindingDescription& instanceInputBinding = bindingDescriptions.emplace_back();
-			instanceInputBinding.binding = 1;
-			instanceInputBinding.stride = m_Specification.InstanceLayout.GetStride();
-			instanceInputBinding.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+			VkVertexInputBindingDescription& inputBinding = bindingDescriptions.emplace_back();
+			inputBinding.binding = binding;
+			inputBinding.stride = layout.GetStride();
+			inputBinding.inputRate = layout.Instanced() ? VK_VERTEX_INPUT_RATE_INSTANCE : VK_VERTEX_INPUT_RATE_VERTEX;
+			
+			for (const auto& element : layout)
+			{
+				vertexInputAttributes.push_back({});
+				vertexInputAttributes[location].binding = binding;
+				vertexInputAttributes[location].location = location;
+				vertexInputAttributes[location].format = Utils::ShaderDataTypeToVulkanFormat(element.Type);
+				vertexInputAttributes[location].offset = element.Offset;
+				location++;
+			}
+			binding++;
 		}
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};

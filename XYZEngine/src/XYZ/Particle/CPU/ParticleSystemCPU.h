@@ -24,7 +24,6 @@ namespace XYZ {
 		glm::vec2 TexOffset;
 	};
 
-	class SceneRenderer;
 	class ParticleSystemCPU
 	{
 	public:
@@ -32,22 +31,21 @@ namespace XYZ {
 		{
 			ModuleData(uint32_t maxParticles);
 
-			MainModule				m_MainModule;
-			LightModule				m_LightModule;
-			TextureAnimationModule  m_TextureAnimModule;
-			RotationOverLife		m_RotationOverLife;
-			PhysicsModule			m_PhysicsModule;
+			MainModule				Main;
+			LightModule				Light;
+			TextureAnimationModule  TextureAnim;
+			RotationOverLife		RotationOverLife;
 
-			ParticleEmitterCPU		m_Emitter;
-			ParticleDataBuffer		m_Particles;
+			ParticleEmitterCPU		Emitter;
+			ParticleDataBuffer		Particles;
 		};
 		struct RenderData
 		{
-			RenderData();
+			RenderData() = default;
 			RenderData(uint32_t maxParticles);
 
-			CustomBuffer m_RenderParticleData;
-			uint32_t	 m_InstanceCount;
+			std::vector<ParticleRenderData> Data;
+			uint32_t						InstanceCount = 0;
 		};
 
 	public:
@@ -59,10 +57,6 @@ namespace XYZ {
 
 		ParticleSystemCPU& operator=(const ParticleSystemCPU& other);
 		ParticleSystemCPU& operator=(ParticleSystemCPU&& other) noexcept;
-
-		//void SetSceneEntity(const SceneEntity& entity);
-		void SetPhysicsWorld(PhysicsWorld2D* world);
-		void SetupForRender(Ref<SceneRenderer> renderer);
 
 		void Update(Timestep ts);	
 		void Play();
@@ -83,8 +77,8 @@ namespace XYZ {
 
 	private:
 		void particleThreadUpdate(float timestep);
-		void update(Timestep timestep, ModuleData& data, const glm::mat4& transform);
-		void emit(Timestep timestep, ModuleData& data, const glm::mat4& transform, float speed);
+		void update(Timestep timestep, ModuleData& data);
+		void emit(Timestep timestep, ModuleData& data, float speed);
 		void buildRenderData(ModuleData& data);
 
 	private:
@@ -93,8 +87,6 @@ namespace XYZ {
 		uint32_t							 m_MaxParticles;
 		bool								 m_Play;
 		float								 m_Speed;
-		//TODO: use prefabs instead
-		//SceneEntity						 m_Entity;
 	};
 
 }

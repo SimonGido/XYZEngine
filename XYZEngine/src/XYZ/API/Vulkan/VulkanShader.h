@@ -67,16 +67,18 @@ namespace XYZ {
 		};
 
 	public:
-		VulkanShader(const std::string& path);
-		VulkanShader(const std::string& name, const std::string& path);
+		VulkanShader(const std::string& path, std::vector<BufferLayout> layouts);
+		VulkanShader(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts);
 		virtual ~VulkanShader() override;
 
 		virtual void Reload(bool forceCompile = false) override;
+		virtual void Reload(std::vector<BufferLayout> newLayouts, bool forceCompile = false) override;
 
-		inline virtual const std::string&		GetPath() const override { return m_AssetPath; };
-		inline virtual const std::string&		GetName() const override { return m_Name; }
-		virtual size_t							GetHash() const override;
-		virtual bool							IsCompiled() const override;
+		inline virtual const std::string&		 GetPath() const override { return m_AssetPath; };
+		inline virtual const std::string&		 GetName() const override { return m_Name; }
+		virtual const std::vector<BufferLayout>& GetLayouts() const override { return m_Layouts; }
+		virtual size_t							 GetHash() const override;
+		virtual bool							 IsCompiled() const override;
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const override { return m_Buffers; }
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override { return m_Resources; }
 
@@ -113,6 +115,7 @@ namespace XYZ {
 		std::string				   m_Name;
 		std::string				   m_AssetPath;
 		std::vector<DescriptorSet> m_DescriptorSets;
+		std::vector<BufferLayout>  m_Layouts;
 
 		std::unordered_map<VkShaderStageFlagBits, std::string>		m_ShaderSources;
 		std::vector<VkPipelineShaderStageCreateInfo>				m_PipelineShaderStageCreateInfos;
@@ -122,5 +125,6 @@ namespace XYZ {
 		
 		std::unordered_map<std::string, ShaderBuffer>				m_Buffers;
 		size_t														m_VertexBufferSize;
+
 	};
 }

@@ -131,21 +131,23 @@ namespace XYZ {
 	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::StorageBuffer*>> s_StorageBuffers; // set -> binding point -> buffer
 	
 
-	VulkanShader::VulkanShader(const std::string& path)
+	VulkanShader::VulkanShader(const std::string& path, std::vector<BufferLayout> layouts)
 		:
 		m_Compiled(false),
 		m_Name(Utils::GetFilenameWithoutExtension(path)),
 		m_AssetPath(path),
-		m_VertexBufferSize(0)
+		m_VertexBufferSize(0),
+		m_Layouts(std::move(layouts))
 	{
 		Reload(true);
 	}
-	VulkanShader::VulkanShader(const std::string& name, const std::string& path)
+	VulkanShader::VulkanShader(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts)
 		:
 		m_Compiled(false),
 		m_Name(name),
 		m_AssetPath(path),
-		m_VertexBufferSize(0)
+		m_VertexBufferSize(0),
+		m_Layouts(std::move(layouts))
 	{
 		Reload(true);
 	}
@@ -171,6 +173,12 @@ namespace XYZ {
 		createDescriptorSetLayout();
 		m_Compiled = true;
 		Renderer::OnShaderReload(GetHash());		
+	}
+
+	void VulkanShader::Reload(std::vector<BufferLayout> newLayouts, bool forceCompile)
+	{
+		m_Layouts = std::move(newLayouts);
+		Reload(forceCompile);
 	}
 
 	size_t VulkanShader::GetHash() const

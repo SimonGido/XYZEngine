@@ -13,8 +13,8 @@ namespace XYZ {
         m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), static_cast<uint32_t>(m_Indices.size()));
 
         m_VertexBufferLayout = {
-            {0, ShaderDataType::Float3, "a_Position"},
-            {1, ShaderDataType::Float2, "a_TexCoord"}
+            {ShaderDataType::Float3, "a_Position"},
+            {ShaderDataType::Float2, "a_TexCoord"}
         };
     }
 

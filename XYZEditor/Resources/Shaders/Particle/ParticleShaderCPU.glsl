@@ -5,14 +5,25 @@
 layout(location = 0) in vec3  a_Position;
 layout(location = 1) in vec2  a_TexCoord;
 
-layout(location = 2) in vec4  a_IColor;
-layout(location = 3) in vec3  a_IPosition;
-layout(location = 4) in vec3  a_ISize;
-layout(location = 5) in vec4  a_IAxis;
-layout(location = 6) in vec2  a_ITexOffset;
+layout(location = 2) in vec4  a_TransformRow0;
+layout(location = 3) in vec4  a_TransformRow1;
+layout(location = 4) in vec4  a_TransformRow2;
 
-layout(location = 0) out vec4 v_Color;
-layout(location = 1) out vec2 v_TexCoord;
+layout(location = 5) in vec4  a_IColor;
+layout(location = 6) in vec3  a_IPosition;
+layout(location = 7) in vec3  a_ISize;
+layout(location = 8) in vec4  a_IAxis;
+layout(location = 9) in vec2  a_ITexOffset;
+
+
+struct VertexOutput
+{
+	vec4 Color;
+	vec3 Position;
+	vec2 TexCoord;
+};
+
+layout(location = 0) out VertexOutput v_Output;
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -21,12 +32,12 @@ layout(std140, binding = 0) uniform Camera
 	vec4 u_ViewPosition;
 };
 
-layout(push_constant) uniform Uniforms
+layout(push_constant) uniform Transform
 {
-	uniform mat4 Transform;
-	uniform vec2 Tiles;
+	mat4 Transform;
 
-} u_Uniforms;
+} u_Renderer;
+
 
 
 float GetRadians(float angleInDegrees)
@@ -60,12 +71,22 @@ vec3 RotateVertex(vec3 position, vec4 q)
 
 void main()
 {
-	vec3 worldPos = RotateVertex(a_Position * a_ISize, a_IAxis);
-	worldPos += a_IPosition;
+	mat4 transform = mat4(
+		vec4(a_TransformRow0.x, a_TransformRow1.x, a_TransformRow2.x, 0.0),
+		vec4(a_TransformRow0.y, a_TransformRow1.y, a_TransformRow2.y, 0.0),
+		vec4(a_TransformRow0.z, a_TransformRow1.z, a_TransformRow2.z, 0.0),
+		vec4(a_TransformRow0.w, a_TransformRow1.w, a_TransformRow2.w, 1.0)
+	);
 
-	gl_Position = u_ViewProjection * u_Uniforms.Transform * vec4(worldPos, 1.0);
-	v_Color		= a_IColor;
-	v_TexCoord  = a_ITexOffset + (a_TexCoord / u_Uniforms.Tiles);
+	vec3 worldPos = RotateVertex(a_Position * a_ISize, a_IAxis) + a_IPosition;
+
+	vec4 instancePosition = transform * vec4(worldPos, 1.0);
+
+	
+
+	gl_Position = u_ViewProjection * u_Renderer.Transform * instancePosition;
+	v_Output.Color = a_IColor;
+	// v_Output.TexCoord  = a_ITexOffset + (a_TexCoord / u_Uniforms.Tiles);
 }
 
 
@@ -74,13 +95,26 @@ void main()
 
 layout(location = 0) out vec4 o_Color;
 
-layout(location = 0) in vec4 v_Color;
-layout(location = 1) in vec2 v_TexCoord;
+struct VertexOutput
+{
+	vec4 Color;
+	vec3 Position;
+	vec2 TexCoord;
+};
+layout(location = 0) in VertexOutput v_Input;
+
+layout(push_constant) uniform Uniform
+{
+	layout(offset = 64)
+	vec2 Tiles;
+
+} u_Uniforms;
+
 
 layout(binding = 1) uniform sampler2D u_Texture;
 
 void main()
 {
-	o_Color = texture(u_Texture, v_TexCoord) * v_Color;
+	o_Color = texture(u_Texture, v_Input.TexCoord) * v_Input.Color;
 }
 

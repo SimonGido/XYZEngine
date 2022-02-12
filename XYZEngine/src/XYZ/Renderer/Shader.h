@@ -3,6 +3,8 @@
 #include "XYZ/Asset/Asset.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 #include "XYZ/Renderer/ShaderResource.h"
+#include "XYZ/Renderer/Buffer.h"
+
 
 #include <unordered_map>
 #include <memory>
@@ -129,6 +131,7 @@ namespace XYZ {
 		virtual void SetFSUniforms(ByteBuffer buffer) const {};
 
 		virtual void Reload(bool forceCompile = false) = 0;
+		virtual void Reload(std::vector<BufferLayout> newLayouts, bool forceCompile = false) {};
 
 		virtual void SetInt(const std::string& name, int value) {};
 		virtual void SetFloat(const std::string& name, float value) {};
@@ -140,6 +143,7 @@ namespace XYZ {
 		virtual const UniformList& GetVSUniformList() const { return UniformList(); };
 		virtual const UniformList& GetFSUniformList() const { return UniformList(); };
 		virtual const TextureUniformList& GetTextureList() const { return TextureUniformList(); };
+		virtual const std::vector<BufferLayout>& GetLayouts() const { return {}; }
 
 		virtual const std::string& GetPath() const = 0;
 		virtual const std::string& GetName() const = 0;
@@ -152,8 +156,8 @@ namespace XYZ {
 
 		virtual bool IsCompiled() const { return false; };
 
-		static Ref<Shader> Create(const std::string& path);
-		static Ref<Shader> Create(const std::string& name, const std::string& path);
+		static Ref<Shader> Create(const std::string& path, std::vector<BufferLayout> layouts);
+		static Ref<Shader> Create(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts);
 		
 		static AssetType GetStaticType() { return AssetType::Shader; }
 	};
@@ -164,8 +168,8 @@ namespace XYZ {
 		void Add(const Ref<Shader>& shader);
 		//void Add(const std::string& name, const Ref<Shader>& shader);
 
-		Ref<Shader> Load(const std::string& path);
-		Ref<Shader> Load(const std::string& name, const std::string& path);
+		Ref<Shader> Load(const std::string& path, std::vector<BufferLayout> layouts);
+		Ref<Shader> Load(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts);
 		Ref<Shader> Get(const std::string& name);
 		bool Exists(const std::string& name);
 

@@ -107,6 +107,7 @@ namespace XYZ {
 	struct MeshComponent
 	{
 		Ref<Mesh> Mesh;
+		Ref<Material> Material;
 	};
 
 	struct CameraComponent 

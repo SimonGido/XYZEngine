@@ -75,6 +75,7 @@ namespace XYZ {
 		{
 			Ref<Mesh>			   Mesh;
 			Ref<Material>		   Material;
+			Ref<Pipeline>		   Pipeline;
 			uint32_t			   InstanceCount = 0;
 
 			std::vector<TransformData> TransformData;
@@ -191,13 +192,15 @@ namespace XYZ {
 
 		void createCompositePass();
 		void createLightPass();
+		void createGeometryPass();
 
 		void updateViewportSize();
 
 		void preRender();
 		void prepareInstances();
 		void prepareLights();
-
+		
+		Ref<Pipeline> createGeometryPipeline(const Ref<Material>& material, bool instanced = false);
 	private:
 		struct PointLight
 		{
@@ -231,7 +234,7 @@ namespace XYZ {
 			Ref<Pipeline> Pipeline;
 			Ref<Material> Material;
 			
-			void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, const BufferLayout& layout, const BufferLayout& instanceLayout = {}, PrimitiveTopology topology = PrimitiveTopology::Triangles);
+			void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, PrimitiveTopology topology = PrimitiveTopology::Triangles);
 		};
 
 		struct BloomSettings
@@ -248,7 +251,8 @@ namespace XYZ {
 
 		SceneRenderPipeline		   m_CompositeRenderPipeline;
 		SceneRenderPipeline		   m_LightRenderPipeline;
-		SceneRenderPipeline		   m_GeometryRenderPipeline;
+		
+		std::map<size_t, Ref<Pipeline>> m_GeometryPipelines;
 
 		Ref<RenderPass>			   m_CompositePass;
 		Ref<RenderPass>			   m_LightPass;
@@ -306,6 +310,5 @@ namespace XYZ {
 	private:
 		Ref<Mesh> m_TestMesh;
 		Ref<Material> m_TestMaterial;
-		Ref<Pipeline> m_TestPipeline;
 	};
 }

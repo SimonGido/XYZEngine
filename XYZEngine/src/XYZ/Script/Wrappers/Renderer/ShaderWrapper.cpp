@@ -15,7 +15,8 @@ namespace XYZ {
 		}
 		Ref<Shader>* ShaderNative::Constructor(MonoString* path)
 		{
-			Ref<Shader> shader = Shader::Create(mono_string_to_utf8(path));
+			XYZ_ASSERT(false, "Specify buffer layout");
+			Ref<Shader> shader = Shader::Create(mono_string_to_utf8(path), {});
 			return new Ref<Shader>(shader);
 		}
 		void ShaderNative::Destructor(Ref<Shader>* instance)
