@@ -19,8 +19,13 @@ namespace XYZ {
 		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0, uint32_t vertexOffsetSize = 0) override;
 		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0) override;
 		virtual void RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount) override;
-		virtual void RenderMeshInstanced(
+		virtual void RenderMesh(
 			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, 
+			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform,
+			Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount
+		) override;
+		virtual void RenderMesh(
+			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material,
 			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer,
 			Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount,
 			Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount

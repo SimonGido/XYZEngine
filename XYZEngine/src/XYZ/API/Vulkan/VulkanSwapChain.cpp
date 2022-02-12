@@ -86,14 +86,17 @@ namespace XYZ {
 	}
 	void VulkanSwapChain::OnResize(uint32_t width, uint32_t height)
 	{
-		const auto device = m_Device->GetVulkanDevice();
-		const auto physicaldevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
-		VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicaldevice, m_Surface, &m_SwapChainDetails.Capabilities));
+		if (width > 0 && height > 0)
+		{	
+			const auto device = m_Device->GetVulkanDevice();
+			const auto physicaldevice = m_Device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
+			VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicaldevice, m_Surface, &m_SwapChainDetails.Capabilities));
 
-		vkDeviceWaitIdle(device);
-		Create(&width, &height, m_VSync);
-		m_CurrentBufferIndex = 0;
-		m_CurrentImageIndex = 0;
+			vkDeviceWaitIdle(device);
+			Create(&width, &height, m_VSync);
+			m_CurrentBufferIndex = 0;
+			m_CurrentImageIndex = 0;
+		}
 	}
 	void VulkanSwapChain::BeginFrame()
 	{

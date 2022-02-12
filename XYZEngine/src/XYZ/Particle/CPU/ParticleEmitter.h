@@ -15,8 +15,8 @@ namespace XYZ {
 			Burst();
 			Burst(uint32_t count, float time);
 
-			uint32_t m_Count;
-			float	 m_Time;
+			uint32_t Count;
+			float	 Time;
 
 		private:
 			bool     m_Called;
@@ -27,8 +27,8 @@ namespace XYZ {
 		BurstEmitter();
 		uint32_t Update(Timestep ts);
 
-		std::vector<Burst> m_Bursts;
-		float			   m_Interval;
+		std::vector<Burst> Bursts;
+		float			   Interval;
 	private:
 		void reset();
 
@@ -45,13 +45,12 @@ namespace XYZ {
 		void Emit(Timestep ts, ParticleDataBuffer& particles);
 
 
-		ParticleShapeGenerator		    m_ShapeGenerator;
-		ParticleLifeGenerator		    m_LifeGenerator;
-		ParticleRandomVelocityGenerator m_RandomVelGenerator;
-		BurstEmitter					m_BurstEmitter;
-		float							m_EmitRate;
+		ParticleShapeGenerator		    ShapeGenerator;
+		ParticleLifeGenerator		    LifeGenerator;
+		ParticleRandomVelocityGenerator RandomVelGenerator;
+		BurstEmitter					BurstEmitter;
+		float							EmitRate;
 
-		std::pair<uint32_t, uint32_t>	m_EmittedIDs;
 	private:
 		float							m_EmittedParticles;
 	};

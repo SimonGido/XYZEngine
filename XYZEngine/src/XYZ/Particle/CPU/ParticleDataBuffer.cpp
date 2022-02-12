@@ -16,12 +16,12 @@ namespace XYZ {
 		}
 		else
 		{
-			Particle		  = nullptr;
-			TexOffset		  = nullptr;
-			StartColor	  = nullptr;
-			EndColor		  = nullptr;
-			Size			  = nullptr;
-			Rotation        = nullptr;
+			Particle	= nullptr;
+			TexOffset	= nullptr;
+			StartColor	= nullptr;
+			EndColor	= nullptr;
+			Size		= nullptr;
+			Rotation    = nullptr;
 		}
 	}
 	ParticleDataBuffer::ParticleDataBuffer(ParticleDataBuffer&& other) noexcept

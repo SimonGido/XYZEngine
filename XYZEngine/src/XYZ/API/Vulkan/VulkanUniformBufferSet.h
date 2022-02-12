@@ -1,6 +1,7 @@
 #pragma once
 #include "XYZ/Renderer/UniformBufferSet.h"
 #include "VulkanUniformBuffer.h"
+#include "VulkanShader.h"
 #include "Vulkan.h"
 
 namespace XYZ {
@@ -17,6 +18,10 @@ namespace XYZ {
 		virtual bool HasDescriptors(size_t hash) const override;
 
 		const std::vector<std::vector<std::vector<VkWriteDescriptorSet>>> & GetDescriptors(size_t hash) const;
+		const std::vector<std::vector<std::vector<VkWriteDescriptorSet>>>& GetDescriptors(const Ref<Shader>& shader);
+	private:
+		void RT_createDescriptors(const Ref<VulkanShader>& shader);
+
 	private:
 		uint32_t m_Frames;
 

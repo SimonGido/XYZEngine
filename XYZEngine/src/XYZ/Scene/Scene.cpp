@@ -305,7 +305,16 @@ namespace XYZ {
 			
 			auto renderData = particleComponent.System.GetRenderDataRead();
 			sceneRenderer->SubmitMesh(
-				meshComponent.Mesh, meshComponent.Material, transform.WorldTransform,
+				meshComponent.Mesh, meshComponent.Material, 
+				transform.WorldTransform,
+				renderData->Data.data(),
+				renderData->InstanceCount,
+				sizeof(ParticleRenderData)
+			);
+
+			sceneRenderer->SubmitMesh(
+				meshComponent.Mesh, meshComponent.Material, 
+				glm::translate(transform.WorldTransform, glm::vec3(5.0f, 0.0f, 0.0f)),
 				renderData->Data.data(),
 				renderData->InstanceCount,
 				sizeof(ParticleRenderData)

@@ -61,9 +61,9 @@ namespace XYZ {
 		}
 
 		ShaderDataType Type;
-		uint32_t   Size;
-		uint32_t   Offset;
-		uint32_t   Index;
+		uint32_t	   Size;
+		uint32_t	   Offset;
+		uint32_t	   Divisor;
 	};
 
 	class BufferLayout
@@ -133,6 +133,7 @@ namespace XYZ {
 		std::vector<BufferElement> m_Elements;
 		bool					   m_Instanced;
 		uint32_t				   m_Stride = 0;
+
 	};
 
 

@@ -30,6 +30,7 @@ namespace XYZ {
 			case ShaderDataType::Float2:    return VK_FORMAT_R32G32_SFLOAT;
 			case ShaderDataType::Float3:    return VK_FORMAT_R32G32B32_SFLOAT;
 			case ShaderDataType::Float4:    return VK_FORMAT_R32G32B32A32_SFLOAT;
+			case ShaderDataType::Int:		return VK_FORMAT_R32G32B32A32_SINT;
 			}
 			XYZ_ASSERT(false, "");
 			return VK_FORMAT_UNDEFINED;
@@ -103,7 +104,7 @@ namespace XYZ {
 		return viewportState;
 	}
 	VkPipelineVertexInputStateCreateInfo VulkanPipeline::createVertexInputInfo(std::vector<VkVertexInputBindingDescription>& bindingDescriptions, std::vector<VkVertexInputAttributeDescription>& vertexInputAttributes) const
-	{
+	{	
 		uint32_t binding = 0;
 		uint32_t location = 0;
 		for (const auto& layout : m_Specification.Layouts)

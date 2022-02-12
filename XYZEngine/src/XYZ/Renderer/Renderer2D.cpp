@@ -59,10 +59,7 @@ namespace XYZ {
 
 		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
 		m_UniformBufferSet->Create(sizeof(UBCamera), 0, 0);
-		m_UniformBufferSet->CreateDescriptors(m_QuadMaterial->GetShader());
-		m_UniformBufferSet->CreateDescriptors(m_LineMaterial->GetShader());
-		m_UniformBufferSet->CreateDescriptors(m_CircleMaterial->GetShader());
-	
+
 
 		createDefaultPipelineBuckets();
 	}
@@ -87,10 +84,6 @@ namespace XYZ {
 		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
 		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
 		m_UniformBufferSet->Create(sizeof(UBCamera), 0, 0);
-		m_UniformBufferSet->CreateDescriptors(m_QuadMaterial->GetShader());
-		m_UniformBufferSet->CreateDescriptors(m_LineMaterial->GetShader());
-		m_UniformBufferSet->CreateDescriptors(m_CircleMaterial->GetShader());
-
 
 		createDefaultPipelineBuckets();
 	}
@@ -633,8 +626,6 @@ namespace XYZ {
 		
 		auto spec = current->GetSpecification();
 		spec.Shader = material->GetShader();
-		if (!m_UniformBufferSet->HasDescriptors(spec.Shader->GetHash()))
-			m_UniformBufferSet->CreateDescriptors(spec.Shader);
 		return Pipeline::Create(spec);
 	}
 

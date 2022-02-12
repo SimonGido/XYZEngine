@@ -203,18 +203,13 @@ namespace XYZ {
 				{ShaderDataType::Float3, "a_Position" },
 				{ShaderDataType::Float2, "a_TexCoord" }
 			},
-			BufferLayout{
-				{{ShaderDataType::Float4, "a_TransformRow0"},
-				{ShaderDataType::Float4, "a_TransformRow1"},
-				{ShaderDataType::Float4, "a_TransformRow2"}}
-				,true
-			},
+		
 			BufferLayout{
 				{{ShaderDataType::Float4, "a_IColor"},
-				{ShaderDataType::Float3, "a_IPosition"},
-				{ShaderDataType::Float3, "a_ISize"},
-				{ShaderDataType::Float4, "a_IAxis"},
-				{ShaderDataType::Float2, "a_ITexOffset"}}
+				{ ShaderDataType::Float3, "a_IPosition"},
+				{ ShaderDataType::Float3, "a_ISize"},
+				{ ShaderDataType::Float4, "a_IAxis"},
+				{ ShaderDataType::Float2, "a_ITexOffset"}}
 				,true
 			}
 		};
@@ -371,9 +366,14 @@ namespace XYZ {
 		s_RendererAPI->RenderMesh(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transformBuffer, transformOffset, instanceCount);
 	}
 
-	void Renderer::RenderMeshInstanced(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
+	void Renderer::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
 	{
-		s_RendererAPI->RenderMeshInstanced(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transformBuffer, transformOffset, transformInstanceCount, instanceBuffer, instanceOffset, instanceCount);
+		s_RendererAPI->RenderMesh(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transform, instanceBuffer, instanceOffset, instanceCount);
+	}
+
+	void Renderer::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
+	{
+		s_RendererAPI->RenderMesh(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transformBuffer, transformOffset, transformInstanceCount, instanceBuffer, instanceOffset, instanceCount);
 	}
 
 	void Renderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material)

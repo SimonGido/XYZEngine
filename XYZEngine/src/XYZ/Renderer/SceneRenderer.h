@@ -70,24 +70,28 @@ namespace XYZ {
 		{
 			glm::vec4 TransformRow[3];
 		};
-
+		
 		struct MeshDrawCommand
 		{
 			Ref<Mesh>			   Mesh;
 			Ref<Material>		   Material;
 			Ref<Pipeline>		   Pipeline;
-			uint32_t			   InstanceCount = 0;
+			uint32_t			   TransformInstanceCount = 0;
 
 			std::vector<TransformData> TransformData;
 			uint32_t				   TransformOffset = 0;
 		};
 	
-		struct InstanceMeshDrawCommand : public MeshDrawCommand
+		struct InstanceMeshDrawCommand
 		{
+			Ref<Mesh>			   Mesh;
+			Ref<Material>		   Material;
+			glm::mat4			   Transform;
+
 			std::vector<std::byte> InstanceData;
+			uint32_t			   InstanceCount = 0;
 			uint32_t			   InstanceOffset = 0;
 		};
-
 
 		struct SpriteKey
 		{
@@ -118,33 +122,25 @@ namespace XYZ {
 				return (MeshHandle == other.MeshHandle) && (MaterialHandle < other.MaterialHandle);
 			}
 		};
-
-		struct InstanceMeshKey : public MeshKey
+		struct InstanceMeshKey
 		{
-			InstanceMeshKey(AssetHandle meshHandle, AssetHandle materialHandle, uint32_t instanceSize)
-				: MeshKey(meshHandle, materialHandle), InstanceSize(instanceSize) {}
-
+			InstanceMeshKey(const Ref<Material>& material)
+				: Material(material)
+			{}
 			bool operator<(const InstanceMeshKey& other) const
 			{
-				if (MeshHandle < other.MeshHandle)
-					return true;
-
-				if (MeshHandle == other.MeshHandle && InstanceSize == other.InstanceSize)
-					return true;
-
-				return (MeshHandle == other.MeshHandle) && (InstanceSize == other.InstanceSize) && (MaterialHandle < other.MaterialHandle);
-
+				return Material->GetHandle() < other.Material->GetHandle();
 			}
-
-			uint32_t InstanceSize;
+			Ref<Material>		  Material;
+			mutable Ref<Pipeline> Pipeline;
 		};
 
 
 		std::map<SpriteKey, SpriteDrawCommand> SpriteDrawCommands;
 		std::map<SpriteKey, SpriteDrawCommand> BillboardDrawCommands;			
 
-		std::map<MeshKey,		  MeshDrawCommand>			MeshDrawCommands;
-		std::map<InstanceMeshKey, InstanceMeshDrawCommand>	InstanceMeshDrawCommands;
+		std::map<MeshKey, MeshDrawCommand>							    MeshDrawCommands;
+		std::map<InstanceMeshKey, std::vector<InstanceMeshDrawCommand>>	InstanceMeshDrawCommands;
 	};
 
 	struct SceneRendererSpecification
@@ -200,7 +196,7 @@ namespace XYZ {
 		void prepareInstances();
 		void prepareLights();
 		
-		Ref<Pipeline> createGeometryPipeline(const Ref<Material>& material, bool instanced = false);
+		Ref<Pipeline> getGeometryPipeline(const Ref<Material>& material);
 	private:
 		struct PointLight
 		{
@@ -295,7 +291,7 @@ namespace XYZ {
 
 		static constexpr uint32_t sc_MaxNumberOfLights = 1024;
 		static constexpr uint32_t sc_InstanceVertexBufferSize = 1 * 1024 * 1024; // 1mb
-		static constexpr uint32_t sc_TransformBufferCount = 100 * 1024; // 10240 transforms
+		static constexpr uint32_t sc_TransformBufferCount = 10 * 1024; // 10240 transforms
 
 		struct GPUTimeQueries
 		{

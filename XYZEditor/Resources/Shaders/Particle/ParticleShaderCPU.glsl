@@ -4,16 +4,12 @@
 
 layout(location = 0) in vec3  a_Position;
 layout(location = 1) in vec2  a_TexCoord;
+layout(location = 2) in vec4  a_IColor;
+layout(location = 3) in vec3  a_IPosition;
+layout(location = 4) in vec3  a_ISize;
+layout(location = 5) in vec4  a_IAxis;
+layout(location = 6) in vec2  a_ITexOffset;
 
-layout(location = 2) in vec4  a_TransformRow0;
-layout(location = 3) in vec4  a_TransformRow1;
-layout(location = 4) in vec4  a_TransformRow2;
-
-layout(location = 5) in vec4  a_IColor;
-layout(location = 6) in vec3  a_IPosition;
-layout(location = 7) in vec3  a_ISize;
-layout(location = 8) in vec4  a_IAxis;
-layout(location = 9) in vec2  a_ITexOffset;
 
 
 struct VertexOutput
@@ -21,6 +17,7 @@ struct VertexOutput
 	vec4 Color;
 	vec3 Position;
 	vec2 TexCoord;
+	vec2 TexOffset;
 };
 
 layout(location = 0) out VertexOutput v_Output;
@@ -37,7 +34,6 @@ layout(push_constant) uniform Transform
 	mat4 Transform;
 
 } u_Renderer;
-
 
 
 float GetRadians(float angleInDegrees)
@@ -71,22 +67,14 @@ vec3 RotateVertex(vec3 position, vec4 q)
 
 void main()
 {
-	mat4 transform = mat4(
-		vec4(a_TransformRow0.x, a_TransformRow1.x, a_TransformRow2.x, 0.0),
-		vec4(a_TransformRow0.y, a_TransformRow1.y, a_TransformRow2.y, 0.0),
-		vec4(a_TransformRow0.z, a_TransformRow1.z, a_TransformRow2.z, 0.0),
-		vec4(a_TransformRow0.w, a_TransformRow1.w, a_TransformRow2.w, 1.0)
-	);
+	vec3 instancePos = RotateVertex(a_Position * a_ISize, a_IAxis) + a_IPosition;
+	vec4 worldPos = u_Renderer.Transform * vec4(instancePos, 1.0);
 
-	vec3 worldPos = RotateVertex(a_Position * a_ISize, a_IAxis) + a_IPosition;
-
-	vec4 instancePosition = transform * vec4(worldPos, 1.0);
-
-	
-
-	gl_Position = u_ViewProjection * u_Renderer.Transform * instancePosition;
 	v_Output.Color = a_IColor;
-	// v_Output.TexCoord  = a_ITexOffset + (a_TexCoord / u_Uniforms.Tiles);
+	v_Output.Position = worldPos.xyz;
+	v_Output.TexCoord  = a_TexCoord;
+	v_Output.TexOffset = a_ITexOffset;
+	gl_Position = u_ViewProjection * worldPos;
 }
 
 
@@ -94,12 +82,14 @@ void main()
 #version 450
 
 layout(location = 0) out vec4 o_Color;
+layout(location = 1) out vec4 o_Position;
 
 struct VertexOutput
 {
 	vec4 Color;
 	vec3 Position;
 	vec2 TexCoord;
+	vec2 TexOffset;
 };
 layout(location = 0) in VertexOutput v_Input;
 
@@ -115,6 +105,8 @@ layout(binding = 1) uniform sampler2D u_Texture;
 
 void main()
 {
-	o_Color = texture(u_Texture, v_Input.TexCoord) * v_Input.Color;
+	vec2 texCoord = v_Input.TexOffset + (v_Input.TexCoord / u_Uniforms.Tiles);
+	o_Color = texture(u_Texture, texCoord) * v_Input.Color;
+	o_Position = vec4(v_Input.Position, 1.0);
 }
 

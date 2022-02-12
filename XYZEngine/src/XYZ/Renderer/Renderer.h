@@ -82,7 +82,12 @@ namespace XYZ {
 		
 		static void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline,  Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0, uint32_t vertexOffsetSize = 0);
 		static void RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount);
-		static void RenderMeshInstanced(
+		static void RenderMesh(
+			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material,
+			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform,
+			Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount
+		);
+		static void RenderMesh(
 			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material,
 			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer,
 			Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount,

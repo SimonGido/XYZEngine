@@ -30,6 +30,7 @@ namespace XYZ {
 		data.TransformRow[2] = { transform[0][2], transform[1][2], transform[2][2], transform[3][2] };
 		return data;
 	}
+
 	SceneRenderer::SceneRenderer(Ref<Scene> scene, SceneRendererSpecification specification)
 		:
 		m_Specification(specification),
@@ -86,12 +87,9 @@ namespace XYZ {
 		m_TransformData.resize(sc_TransformBufferCount);
 		m_InstanceData.resize(sc_InstanceVertexBufferSize);
 
-
-
 		m_TestMesh = MeshFactory::CreateBox(glm::vec3(2.0f));
 		m_TestMaterial = Material::Create(shaderLibrary->Get("MeshShader"));
 		m_TestMaterial->SetImage("u_Texture", m_WhiteTexture->GetImage());
-		m_Renderer2D->GetCameraBufferSet()->CreateDescriptors(m_TestMaterial->GetShader());
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -188,24 +186,27 @@ namespace XYZ {
 		auto& dc = m_Queue.MeshDrawCommands[key];
 		dc.Mesh = mesh;
 		dc.Material = material;
-		dc.InstanceCount++;
+		dc.TransformInstanceCount++;
 		dc.TransformData.push_back(Mat4ToTransformData(transform));
 	}
 
 	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<Material>& material, const glm::mat4& transform, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize)
 	{
-		RenderQueue::InstanceMeshKey key{ mesh->GetHandle(), material->GetHandle(), instanceSize };
-		
-		auto& dc = m_Queue.InstanceMeshDrawCommands[key];
+		RenderQueue::InstanceMeshKey key{ material };
+
+		auto& dg = m_Queue.InstanceMeshDrawCommands[key];
+		auto& dc = dg.emplace_back();
+
 		dc.Mesh = mesh;
 		dc.Material = material;
-		dc.InstanceCount++;
-		dc.TransformData.push_back(Mat4ToTransformData(transform));
+		dc.Transform = transform;
 
-		size_t oldSize = dc.InstanceData.size();
-		size_t instanceDataSize = static_cast<size_t>(instanceCount * instanceSize);
-		dc.InstanceData.resize(oldSize + instanceDataSize);
-		memcpy(dc.InstanceData.data() + oldSize, &transform, instanceDataSize);
+		dc.InstanceCount += instanceCount;
+
+		size_t offset = dc.InstanceData.size();
+		size_t instanceDataSize = static_cast<size_t>(instanceCount) * instanceSize; 
+		dc.InstanceData.resize(offset + instanceDataSize);	
+		memcpy(dc.InstanceData.data() + offset, instanceData, instanceDataSize);
 	}
 
 
@@ -295,32 +296,34 @@ namespace XYZ {
 				command.Mesh->GetIndexBuffer(),
 				m_TransformVertexBuffer,
 				command.TransformOffset,
-				command.InstanceCount);
+				command.TransformInstanceCount
+			);
 		}
 
 
-		for (auto& [key, command] : queue.InstanceMeshDrawCommands)
+		for (auto& [key, group] : queue.InstanceMeshDrawCommands)
 		{
 			Renderer::BindPipeline(
 				m_CommandBuffer,
-				command.Pipeline,
+				key.Pipeline,
 				m_Renderer2D->GetCameraBufferSet(),
 				nullptr,
-				command.Material
+				key.Material
 			);
-			Renderer::RenderMeshInstanced(
-				m_CommandBuffer,
-				command.Pipeline,
-				command.Material,
-				command.Mesh->GetVertexBuffer(),
-				command.Mesh->GetIndexBuffer(),
-				m_TransformVertexBuffer,
-				command.TransformOffset,
-				command.InstanceCount,
-				m_InstanceVertexBuffer,
-				command.InstanceOffset,
-				static_cast<uint32_t>(command.InstanceData.size())
-			);
+			for (auto& command : group)
+			{
+				Renderer::RenderMesh(
+					m_CommandBuffer,
+					key.Pipeline,
+					command.Material,
+					command.Mesh->GetVertexBuffer(),
+					command.Mesh->GetIndexBuffer(),
+					command.Transform,
+					m_InstanceVertexBuffer,
+					command.InstanceOffset,
+					command.InstanceCount
+				);
+			}
 		}
 		Renderer::EndRenderPass(m_CommandBuffer);
 	}
@@ -570,7 +573,6 @@ namespace XYZ {
 		m_LightStorageBufferSet = StorageBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
 		m_LightStorageBufferSet->Create(sc_MaxNumberOfLights * sizeof(PointLight), 0, 1);
 		m_LightStorageBufferSet->Create(sc_MaxNumberOfLights * sizeof(SpotLight), 0, 2);
-		m_LightStorageBufferSet->CreateDescriptors(shader);
 	}
 
 	void SceneRenderer::createGeometryPass()
@@ -622,7 +624,7 @@ namespace XYZ {
 		uint32_t offset = 0;
 		for (auto& [key, dc] : m_Queue.MeshDrawCommands)
 		{
-			dc.Pipeline = createGeometryPipeline(dc.Material);
+			dc.Pipeline = getGeometryPipeline(dc.Material);
 			dc.TransformOffset = offset * sizeof(RenderQueue::TransformData);
 			for (const auto& transform : dc.TransformData)
 			{
@@ -630,25 +632,20 @@ namespace XYZ {
 				offset++;
 			}
 		}
-
+		
 		// Prepare transforms and instance data
 		uint32_t instanceOffset = 0;
-		for (auto& [key, dc] : m_Queue.InstanceMeshDrawCommands)
+		for (auto& [key, group] : m_Queue.InstanceMeshDrawCommands)
 		{
-			dc.Pipeline = createGeometryPipeline(dc.Material);
-			dc.TransformOffset = offset * sizeof(RenderQueue::TransformData);
-			dc.InstanceOffset = instanceOffset;
-			for (const auto& transform : dc.TransformData)
+			key.Pipeline = getGeometryPipeline(key.Material);
+			for (auto& dc : group)
 			{
-				m_TransformData[offset] = transform;
-				offset++;
+				dc.InstanceOffset = instanceOffset;
+				// Copy instance data
+				memcpy(&m_InstanceData.data()[instanceOffset], dc.InstanceData.data(), dc.InstanceData.size());
+				instanceOffset += dc.InstanceData.size();
 			}
-			// Copy instance data
-			const size_t instanceDataSize = dc.InstanceData.size() * key.InstanceSize;
-			memcpy(&m_InstanceData.data()[instanceOffset], dc.InstanceData.data(), instanceDataSize);
-			instanceOffset += instanceDataSize;
-		}
-
+		}	
 		m_TransformVertexBuffer->Update(m_TransformData.data(), offset * sizeof(RenderQueue::TransformData));
 		m_InstanceVertexBuffer->Update(m_InstanceData.data(), instanceOffset);
 	}
@@ -704,7 +701,7 @@ namespace XYZ {
 			instance->Get(2, 0, frame)->RT_Update(sLights.data(), sLights.size() * sizeof(SpotLight));
 		});
 	}
-	Ref<Pipeline> SceneRenderer::createGeometryPipeline(const Ref<Material>& material, bool instanced)
+	Ref<Pipeline> SceneRenderer::getGeometryPipeline(const Ref<Material>& material)
 	{
 		Ref<Shader> shader = material->GetShader();
 		auto it = m_GeometryPipelines.find(shader->GetHash());

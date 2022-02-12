@@ -67,11 +67,12 @@ namespace XYZ {
 			Ref<Animation> animation = AssetManager::GetAsset<Animation>("Assets/Animations/HavkoAnim.anim");
 
 			
-			newEntity.AddComponent<MeshComponent>(
+			MeshComponent& meshComp = newEntity.AddComponent<MeshComponent>(
 				MeshComponent{ MeshFactory::CreateBox(glm::vec3(0.5f)),
-				  Material::Create(shaderLib->Get("MeshShader"))
+				  Material::Create(shaderLib->Get("ParticleShaderCPU"))
 				});
-			newEntity.AddComponent<ParticleComponentCPU>({ ParticleSystemCPU(100) });
+			meshComp.Material->SetImage("u_Texture", Renderer::GetDefaultResources().WhiteTexture->GetImage());
+			newEntity.AddComponent<ParticleComponentCPU>({ ParticleSystemCPU(50) });
 
 			auto& spriteRenderer = newEntity.EmplaceComponent<SpriteRenderer>();
 			spriteRenderer.Material = Material::Create(Renderer::GetShaderLibrary()->Get("DefaultLitShader"));
