@@ -311,14 +311,6 @@ namespace XYZ {
 				renderData->InstanceCount,
 				sizeof(ParticleRenderData)
 			);
-
-			sceneRenderer->SubmitMesh(
-				meshComponent.Mesh, meshComponent.Material, 
-				glm::translate(transform.WorldTransform, glm::vec3(5.0f, 0.0f, 0.0f)),
-				renderData->Data.data(),
-				renderData->InstanceCount,
-				sizeof(ParticleRenderData)
-			);
 		}
 		sceneRenderer->EndScene();
 	}
