@@ -34,7 +34,7 @@ namespace XYZ {
 	}
 
 	template <>
-	void SceneSerializer::serialize<SceneTagComponent>(YAML::Emitter& out, const SceneTagComponent& val)
+	void SceneSerializer::serialize<SceneTagComponent>(YAML::Emitter& out, const SceneTagComponent& val, SceneEntity entity)
 	{
 		out << YAML::Key << "SceneTagComponent";
 		out << YAML::BeginMap;
@@ -43,7 +43,7 @@ namespace XYZ {
 	}
 
 	template <>
-	void SceneSerializer::serialize<TransformComponent>(YAML::Emitter& out, const TransformComponent& val)
+	void SceneSerializer::serialize<TransformComponent>(YAML::Emitter& out, const TransformComponent& val, SceneEntity entity)
 	{
 		out << YAML::Key << "TransformComponent";
 		out << YAML::BeginMap;
@@ -56,7 +56,7 @@ namespace XYZ {
 	}
 
 	template <>
-	void SceneSerializer::serialize<CameraComponent>(YAML::Emitter& out, const CameraComponent& val)
+	void SceneSerializer::serialize<CameraComponent>(YAML::Emitter& out, const CameraComponent& val, SceneEntity entity)
 	{
 		out << YAML::Key << "CameraComponent";
 		out << YAML::BeginMap; // CameraComponent
@@ -78,7 +78,7 @@ namespace XYZ {
 	}
 
 	template <>
-	void SceneSerializer::serialize<SpriteRenderer>(YAML::Emitter& out, const SpriteRenderer& val)
+	void SceneSerializer::serialize<SpriteRenderer>(YAML::Emitter& out, const SpriteRenderer& val, SceneEntity entity)
 	{
 		out << YAML::Key << "SpriteRenderer";
 		out << YAML::BeginMap; // SpriteRenderer
@@ -91,7 +91,7 @@ namespace XYZ {
 		out << YAML::EndMap; // SpriteRenderer
 	}
 	template <>
-	void SceneSerializer::serialize<PointLight2D>(YAML::Emitter& out, const PointLight2D& val)
+	void SceneSerializer::serialize<PointLight2D>(YAML::Emitter& out, const PointLight2D& val, SceneEntity entity)
 	{
 		out << YAML::Key << "PointLight2D";
 		out << YAML::BeginMap; // Point Light
@@ -102,7 +102,7 @@ namespace XYZ {
 		out << YAML::EndMap; // Point Light
 	}
 	template <>
-	void SceneSerializer::serialize<SpotLight2D>(YAML::Emitter& out, const SpotLight2D& val)
+	void SceneSerializer::serialize<SpotLight2D>(YAML::Emitter& out, const SpotLight2D& val, SceneEntity entity)
 	{
 		out << YAML::Key << "SpotLight2D";
 		out << YAML::BeginMap; // Spot Light
@@ -116,7 +116,7 @@ namespace XYZ {
 	}
 
 	template <>
-	void SceneSerializer::serialize<RigidBody2DComponent>(YAML::Emitter& out, const RigidBody2DComponent& val)
+	void SceneSerializer::serialize<RigidBody2DComponent>(YAML::Emitter& out, const RigidBody2DComponent& val, SceneEntity entity)
 	{
 		out << YAML::Key << "RigidBody2D";
 		out << YAML::BeginMap;
@@ -126,7 +126,7 @@ namespace XYZ {
 	}
 
 	template <>
-	void SceneSerializer::serialize<BoxCollider2DComponent>(YAML::Emitter& out, const BoxCollider2DComponent& val)
+	void SceneSerializer::serialize<BoxCollider2DComponent>(YAML::Emitter& out, const BoxCollider2DComponent& val, SceneEntity entity)
 	{
 		out << YAML::Key << "BoxCollider2D";
 		out << YAML::BeginMap;
@@ -138,7 +138,7 @@ namespace XYZ {
 	}
 
 	template <>
-	void SceneSerializer::serialize<CircleCollider2DComponent>(YAML::Emitter& out, const CircleCollider2DComponent& val)
+	void SceneSerializer::serialize<CircleCollider2DComponent>(YAML::Emitter& out, const CircleCollider2DComponent& val, SceneEntity entity)
 	{
 		out << YAML::Key << "CircleCollider2D";
 		out << YAML::BeginMap;
@@ -149,7 +149,7 @@ namespace XYZ {
 		out << YAML::EndMap; // CircleCollider2D;
 	}
 	template <>
-	void SceneSerializer::serialize<ChainCollider2DComponent>(YAML::Emitter& out, const ChainCollider2DComponent& val)
+	void SceneSerializer::serialize<ChainCollider2DComponent>(YAML::Emitter& out, const ChainCollider2DComponent& val, SceneEntity entity)
 	{
 		out << YAML::Key << "ChainCollider2D";
 		out << YAML::BeginMap;
@@ -167,104 +167,47 @@ namespace XYZ {
 	}
 
 	template <>
-	void SceneSerializer::serialize<ScriptComponent>(YAML::Emitter& out, const ScriptComponent& val)
+	void SceneSerializer::serialize<ScriptComponent>(YAML::Emitter& out, const ScriptComponent& val, SceneEntity entity)
 	{
 		out << YAML::Key << "ScriptComponent";
 		out << YAML::BeginMap;
 
 		out << YAML::Key << "ModuleName" << val.ModuleName;
-		//for (auto& field : val.GetFields())
-		//{
-		//	out << YAML::Key << field.GetName();
-		//	if (field.GetType() == PublicFieldType::Float)
-		//	{
-		//		out << YAML::Value << field.GetStoredValue<float>();
-		//	}
-		//	else if (field.GetType() == PublicFieldType::Int)
-		//	{
-		//		out << YAML::Value << field.GetStoredValue<int32_t>();
-		//	}
-		//	else if (field.GetType() == PublicFieldType::UnsignedInt)
-		//	{
-		//		out << YAML::Value << field.GetStoredValue<uint32_t>();
-		//	}
-		//	else if (field.GetType() == PublicFieldType::String)
-		//	{
-		//		out << YAML::Value << std::string(field.GetStoredValue<char*>());
-		//	}
-		//	else if (field.GetType() == PublicFieldType::Vec2)
-		//	{
-		//		out << YAML::Value << field.GetStoredValue<glm::vec2>();
-		//	}
-		//	else if (field.GetType() == PublicFieldType::Vec3)
-		//	{
-		//		out << YAML::Value << field.GetStoredValue<glm::vec3>();
-		//	}
-		//	else if (field.GetType() == PublicFieldType::Vec4)
-		//	{
-		//		out << YAML::Value << field.GetStoredValue<glm::vec4>();
-		//	}
-		//}
+		auto& fields = ScriptEngine::GetPublicFields(entity);
+		for (auto& field : fields)
+		{
+			out << YAML::Key << field.GetName();
+			if (field.GetType() == PublicFieldType::Float)
+			{
+				out << YAML::Value << field.GetStoredValue<float>();
+			}
+			else if (field.GetType() == PublicFieldType::Int)
+			{
+				out << YAML::Value << field.GetStoredValue<int32_t>();
+			}
+			else if (field.GetType() == PublicFieldType::UnsignedInt)
+			{
+				out << YAML::Value << field.GetStoredValue<uint32_t>();
+			}
+			else if (field.GetType() == PublicFieldType::String)
+			{
+				out << YAML::Value << std::string(field.GetStoredValue<char*>());
+			}
+			else if (field.GetType() == PublicFieldType::Vec2)
+			{
+				out << YAML::Value << field.GetStoredValue<glm::vec2>();
+			}
+			else if (field.GetType() == PublicFieldType::Vec3)
+			{
+				out << YAML::Value << field.GetStoredValue<glm::vec3>();
+			}
+			else if (field.GetType() == PublicFieldType::Vec4)
+			{
+				out << YAML::Value << field.GetStoredValue<glm::vec4>();
+			}
+		}
 		out << YAML::EndMap; // Script Component
 	}
-
-	template<>
-	void SceneSerializer::serialize<SceneEntity>(YAML::Emitter& out, const SceneEntity& val)
-	{
-		out << YAML::BeginMap;
-		out << YAML::Key << "Entity" << YAML::Value << val.GetComponent<IDComponent>().ID;
-		
-		if (val.HasComponent<SceneTagComponent>())
-		{
-			serialize<SceneTagComponent>(out, val.GetComponent<SceneTagComponent>());
-		}
-		if (val.HasComponent<TransformComponent>())
-		{
-			serialize<TransformComponent>(out, val.GetComponent<TransformComponent>());
-		}
-		if (val.HasComponent<CameraComponent>())
-		{
-			serialize<CameraComponent>(out, val.GetComponent<CameraComponent>());
-		}
-		if (val.HasComponent<SpriteRenderer>())
-		{
-			serialize<SpriteRenderer>(out, val.GetComponent<SpriteRenderer>());
-		}
-		if (val.HasComponent<Relationship>())
-		{
-			SerializeRelationship(val.m_Scene->m_ECS, out, val.GetComponent<Relationship>());
-		}
-		if (val.HasComponent<RigidBody2DComponent>())
-		{
-			serialize<RigidBody2DComponent>(out, val.GetComponent<RigidBody2DComponent>());
-		}
-		if (val.HasComponent<BoxCollider2DComponent>())
-		{
-			serialize<BoxCollider2DComponent>(out, val.GetComponent<BoxCollider2DComponent>());
-		}
-		if (val.HasComponent<CircleCollider2DComponent>())
-		{
-			serialize<CircleCollider2DComponent>(out, val.GetComponent<CircleCollider2DComponent>());
-		}
-		if (val.HasComponent<ChainCollider2DComponent>())
-		{
-			serialize<ChainCollider2DComponent>(out, val.GetComponent<ChainCollider2DComponent>());
-		}
-		if (val.HasComponent<ScriptComponent>())
-		{
-			serialize<ScriptComponent>(out, val.GetComponent<ScriptComponent>());
-		}
-		if (val.HasComponent<PointLight2D>())
-		{
-			serialize<PointLight2D>(out, val.GetComponent<PointLight2D>());
-		}
-		if (val.HasComponent<SpotLight2D>())
-		{
-			serialize<SpotLight2D>(out, val.GetComponent<SpotLight2D>());
-		}
-		out << YAML::EndMap; // Entity
-	}
-
 
 	template <>
 	void SceneSerializer::deserialize<ScriptComponent>(YAML::Node& data, SceneEntity entity)
@@ -273,42 +216,43 @@ namespace XYZ {
 		scriptComponent.ModuleName = data["ModuleName"].as<std::string>();
 		entity.AddComponent(scriptComponent);
 
+		auto& fields = ScriptEngine::GetPublicFields(entity);
 		const auto& component = entity.GetComponent<ScriptComponent>();
-		//for (auto& field : component.GetFields())
-		//{
-		//	auto val = data[field.GetName()];
-		//	if (!val)
-		//		continue;
-		//	if (field.GetType() == PublicFieldType::Float)
-		//	{
-		//		field.SetStoredValue<float>(val.as<float>());
-		//	}
-		//	else if (field.GetType() == PublicFieldType::Int)
-		//	{
-		//		field.SetStoredValue<int32_t>(val.as<int32_t>());
-		//	}
-		//	else if (field.GetType() == PublicFieldType::UnsignedInt)
-		//	{
-		//		field.SetStoredValue<uint32_t>(val.as<uint32_t>());
-		//	}
-		//	else if (field.GetType() == PublicFieldType::String)
-		//	{
-		//		std::string str = val.as<std::string>();
-		//		field.SetStoredValue<const char*>(str.c_str());
-		//	}
-		//	else if (field.GetType() == PublicFieldType::Vec2)
-		//	{
-		//		field.SetStoredValue <glm::vec2>(val.as<glm::vec2>());
-		//	}
-		//	else if (field.GetType() == PublicFieldType::Vec3)
-		//	{
-		//		field.SetStoredValue <glm::vec3>(val.as<glm::vec3>());
-		//	}
-		//	else if (field.GetType() == PublicFieldType::Vec4)
-		//	{
-		//		field.SetStoredValue <glm::vec4>(val.as<glm::vec4>());
-		//	}
-		//}
+		for (auto& field : fields)
+		{
+			auto val = data[field.GetName()];
+			if (!val)
+				continue;
+			if (field.GetType() == PublicFieldType::Float)
+			{
+				field.SetStoredValue<float>(val.as<float>());
+			}
+			else if (field.GetType() == PublicFieldType::Int)
+			{
+				field.SetStoredValue<int32_t>(val.as<int32_t>());
+			}
+			else if (field.GetType() == PublicFieldType::UnsignedInt)
+			{
+				field.SetStoredValue<uint32_t>(val.as<uint32_t>());
+			}
+			else if (field.GetType() == PublicFieldType::String)
+			{
+				std::string str = val.as<std::string>();
+				field.SetStoredValue<const char*>(str.c_str());
+			}
+			else if (field.GetType() == PublicFieldType::Vec2)
+			{
+				field.SetStoredValue <glm::vec2>(val.as<glm::vec2>());
+			}
+			else if (field.GetType() == PublicFieldType::Vec3)
+			{
+				field.SetStoredValue <glm::vec3>(val.as<glm::vec3>());
+			}
+			else if (field.GetType() == PublicFieldType::Vec4)
+			{
+				field.SetStoredValue <glm::vec4>(val.as<glm::vec4>());
+			}
+		}
 	}
 
 	template <>
@@ -554,7 +498,7 @@ namespace XYZ {
 			auto& rel = entity.GetComponent<Relationship>();
 			if (rel.Parent == m_Scene->GetSceneEntity())
 				rel.Parent = Entity();
-			serialize<SceneEntity>(out, entity);
+			serializeEntity(out, entity);
 		}
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
@@ -617,5 +561,60 @@ namespace XYZ {
 			}
 		}
 		return m_Scene;
+	}
+	void SceneSerializer::serializeEntity(YAML::Emitter& out, SceneEntity entity)
+	{
+		out << YAML::BeginMap;
+		out << YAML::Key << "Entity" << YAML::Value << entity.GetComponent<IDComponent>().ID;
+
+		if (entity.HasComponent<SceneTagComponent>())
+		{
+			serialize<SceneTagComponent>(out, entity.GetComponent<SceneTagComponent>(), entity);
+		}
+		if (entity.HasComponent<TransformComponent>())
+		{
+			serialize<TransformComponent>(out, entity.GetComponent<TransformComponent>(), entity);
+		}
+		if (entity.HasComponent<CameraComponent>())
+		{
+			serialize<CameraComponent>(out, entity.GetComponent<CameraComponent>(), entity);
+		}
+		if (entity.HasComponent<SpriteRenderer>())
+		{
+			serialize<SpriteRenderer>(out, entity.GetComponent<SpriteRenderer>(), entity);
+		}
+		if (entity.HasComponent<Relationship>())
+		{
+			SerializeRelationship(entity.m_Scene->m_ECS, out, entity.GetComponent<Relationship>());
+		}
+		if (entity.HasComponent<RigidBody2DComponent>())
+		{
+			serialize<RigidBody2DComponent>(out, entity.GetComponent<RigidBody2DComponent>(), entity);
+		}
+		if (entity.HasComponent<BoxCollider2DComponent>())
+		{
+			serialize<BoxCollider2DComponent>(out, entity.GetComponent<BoxCollider2DComponent>(), entity);
+		}
+		if (entity.HasComponent<CircleCollider2DComponent>())
+		{
+			serialize<CircleCollider2DComponent>(out, entity.GetComponent<CircleCollider2DComponent>(), entity);
+		}
+		if (entity.HasComponent<ChainCollider2DComponent>())
+		{
+			serialize<ChainCollider2DComponent>(out, entity.GetComponent<ChainCollider2DComponent>(), entity);
+		}
+		if (entity.HasComponent<ScriptComponent>())
+		{
+			serialize<ScriptComponent>(out, entity.GetComponent<ScriptComponent>(), entity);
+		}
+		if (entity.HasComponent<PointLight2D>())
+		{
+			serialize<PointLight2D>(out, entity.GetComponent<PointLight2D>(), entity);
+		}
+		if (entity.HasComponent<SpotLight2D>())
+		{
+			serialize<SpotLight2D>(out, entity.GetComponent<SpotLight2D>(), entity);
+		}
+		out << YAML::EndMap; // Entity
 	}
 }
