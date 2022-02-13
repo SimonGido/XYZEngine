@@ -54,4 +54,9 @@ namespace XYZ {
 		}
 		return count;
 	}
+	EmitterBurst::EmitterBurst(uint32_t count, float time, float probability)
+		:
+		Count(count), Time(time), Probability(probability)
+	{
+	}
 }

@@ -313,12 +313,17 @@ namespace XYZ {
 			sceneRenderer->SubmitSprite(data.Renderer->Material, data.Renderer->SubTexture, data.Renderer->Color, data.Transform->WorldTransform);
 		}
 		
-		//auto meshView = m_ECS.CreateView<TransformComponent, MeshComponent>();
+		auto meshView = m_ECS.CreateView<TransformComponent, MeshComponent>();
+		for (auto entity : meshView)
+		{
+			auto& [transform, meshComponent] = meshView.Get<TransformComponent, MeshComponent>(entity);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.Material, transform.WorldTransform);
+		}
 
-		auto particleView = m_ECS.CreateView<TransformComponent, MeshComponent, ParticleComponent>();
+		auto particleView = m_ECS.CreateView<TransformComponent, ParticleRenderer, ParticleComponent>();
 		for (auto entity : particleView)
 		{
-			auto& [transform, meshComponent, particleComponent] = particleView.Get<TransformComponent, MeshComponent, ParticleComponent>(entity);
+			auto& [transform, renderer, particleComponent] = particleView.Get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
 
 			auto moduleData = particleComponent.System.GetModuleDataRead();
 			const auto& lightModule = moduleData->Light;
@@ -336,7 +341,7 @@ namespace XYZ {
 
 			auto renderData = particleComponent.System.GetRenderDataRead();
 			sceneRenderer->SubmitMesh(
-				meshComponent.Mesh, meshComponent.Material, 
+				renderer.Mesh, renderer.Material,
 				transform.WorldTransform,
 				renderData->Data.data(),
 				renderData->InstanceCount,

@@ -208,6 +208,202 @@ namespace XYZ {
 		}
 		out << YAML::EndMap; // Script Component
 	}
+	template <>
+	void SceneSerializer::serialize<ParticleRenderer>(YAML::Emitter& out, const ParticleRenderer& val, SceneEntity entity)
+	{
+		out << YAML::Key << "ParticleRenderer";
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Material" << val.Material->GetHandle();
+		out << YAML::Key << "Mesh" << val.Material->GetHandle();
+
+		out << YAML::EndMap;
+	}
+
+	template <>
+	void SceneSerializer::serialize<ParticleComponent>(YAML::Emitter& out, const ParticleComponent& val, SceneEntity entity)
+	{
+		out << YAML::Key << "ParticleComponent";
+		out << YAML::BeginMap;
+
+		auto moduleData = val.System.GetModuleDataRead();
+
+		out << YAML::Key << "MaxParticles" << val.System.GetMaxParticles();
+		out << YAML::Key << "Speed" << val.System.GetSpeed();
+
+		{ // Emitter
+			out << YAML::Key << "Emitter";
+			out << YAML::BeginMap; // Emitter
+
+			out << YAML::Key << "EmitRate" << moduleData->Emitter.EmitRate;
+			out << YAML::Key << "BurstInterval" << moduleData->Emitter.BurstInterval;
+
+			{
+				out << YAML::Key << "Bursts";
+				out << YAML::Value << YAML::BeginSeq;
+				for (const auto& burst : moduleData->Emitter.Bursts)
+				{
+					out << YAML::Key << "Burst";
+					out << YAML::BeginMap; // Burst
+					out << YAML::Key << "Count" << burst.Count;
+					out << YAML::Key << "Time" << burst.Time;
+					out << YAML::Key << "Probability" << burst.Probability;
+					out << YAML::EndMap; // Burst
+				}
+				out << YAML::EndSeq;
+			}
+			out << YAML::EndMap; // Emitter
+		}
+		{ // Particle Generator
+			out << YAML::Key << "ParticleGenerator";
+			out << YAML::BeginMap; // ParticleGenerator
+
+			out << YAML::Key << "Color" << moduleData->Default.Color;
+			out << YAML::Key << "Size" << moduleData->Default.Size;
+			out << YAML::Key << "Enabled" << moduleData->Default.Enabled;
+
+			out << YAML::EndMap; // ParticleGenerator
+		}
+		{ // ParticleShapeGenerator
+			out << YAML::Key << "ParticleShapeGenerator";
+			out << YAML::BeginMap; // ParticleShapeGenerator
+
+			out << YAML::Key << "Shape" << static_cast<uint32_t>(moduleData->Shape.Shape);
+			out << YAML::Key << "BoxMin" << moduleData->Shape.BoxMin;
+			out << YAML::Key << "BoxMax" << moduleData->Shape.BoxMax;
+			out << YAML::Key << "Radius" << moduleData->Shape.Radius;
+			out << YAML::Key << "Enabled" << moduleData->Shape.Enabled;
+
+			out << YAML::EndMap; // ParticleShapeGenerator
+		}
+		{ // ParticleLifeGenerator
+			out << YAML::Key << "ParticleLifeGenerator";
+			out << YAML::BeginMap; // ParticleLifeGenerator
+
+			out << YAML::Key << "LifeTime" << moduleData->Life.LifeTime;
+			out << YAML::Key << "Enabled" << moduleData->Life.Enabled;
+
+			out << YAML::EndMap; // ParticleLifeGenerator
+		}
+		{ // ParticleRandomVelocityGenerator
+			out << YAML::Key << "ParticleRandomVelocityGenerator";
+			out << YAML::BeginMap;
+
+			out << YAML::Key << "MinVelocity" << moduleData->RandomVelocity.MinVelocity;
+			out << YAML::Key << "MaxVelocity" << moduleData->RandomVelocity.MaxVelocity;
+			out << YAML::Key << "Enabled" << moduleData->RandomVelocity.Enabled;
+
+			out << YAML::EndMap;
+		}
+		{
+			// LightUpdater
+			out << YAML::Key << "LightUpdater";
+			out << YAML::BeginMap;
+
+			out << YAML::Key << "LightColor" << moduleData->Light.Light.Color;
+			out << YAML::Key << "LightRadius" << moduleData->Light.Light.Radius;
+			out << YAML::Key << "LightIntensity" << moduleData->Light.Light.Intensity;
+			out << YAML::Key << "MaxLights" << moduleData->Light.MaxLights;
+			out << YAML::Key << "Enabled" << moduleData->Light.Enabled;
+
+			out << YAML::EndMap;
+		}
+		{
+			// TextureAnimationUpdater
+			out << YAML::Key << "TextureAnimationUpdater";
+			out << YAML::BeginMap;
+
+			out << YAML::Key << "Tiles" << moduleData->TextureAnim.Tiles;
+			out << YAML::Key << "StartFrame" << moduleData->TextureAnim.StartFrame;
+			out << YAML::Key << "CycleLength" << moduleData->TextureAnim.CycleLength;
+			out << YAML::Key << "Enabled" << moduleData->TextureAnim.Enabled;
+	
+			out << YAML::EndMap;
+		}
+		{ // RotationOverLife
+			out << YAML::Key << "RotationOverLife";
+			out << YAML::BeginMap;
+
+			out << YAML::Key << "EulerAngles" << moduleData->RotationOverLife.EulerAngles;
+			out << YAML::Key << "CycleLength" << moduleData->RotationOverLife.CycleLength;
+			out << YAML::Key << "Enabled" << moduleData->RotationOverLife.Enabled;
+
+			out << YAML::EndMap;
+		}
+		out << YAML::EndMap; // Particle Component
+	}
+
+	template <>
+	void SceneSerializer::deserialize<ParticleComponent>(YAML::Node& data, SceneEntity entity)
+	{
+		ParticleComponent component;
+		auto& moduleData = component.System.GetModuleData();
+
+		component.System.SetMaxParticles(data["MaxParticles"].as<uint32_t>());
+		component.System.SetSpeed(data["Speed"].as<float>());
+
+		{ // Emitter
+			auto emitter = data["Emitter"];
+			moduleData->Emitter.EmitRate = emitter["EmitRate"].as<float>();
+			moduleData->Emitter.BurstInterval = emitter["BurstInterval"].as<float>();
+			for (auto burst : emitter["Bursts"])
+			{
+				auto burstData = burst["Burst"];
+				moduleData->Emitter.Bursts.push_back({
+					burstData["Count"].as<uint32_t>(),
+					burstData["Time"].as<float>(),
+					burstData["Probability"].as<float>()
+				});	
+			}
+		}
+		{ // ParticleGenerator
+			auto generator = data["ParticleGenerator"];
+			moduleData->Default.Color = generator["Color"].as<glm::vec4>();
+			moduleData->Default.Size = generator["Size"].as<glm::vec3>();
+			moduleData->Default.Enabled = generator["Enabled"].as<bool>();
+		}
+		{ // ParticleShapeGenerator
+			auto generator = data["ParticleShapeGenerator"];
+			moduleData->Shape.Shape = static_cast<EmitShape>(generator["Shape"].as<uint32_t>());
+			moduleData->Shape.BoxMin = generator["BoxMin"].as<glm::vec3>();
+			moduleData->Shape.BoxMax = generator["BoxMax"].as<glm::vec3>();
+			moduleData->Shape.Radius = generator["Radius"].as<float>();
+			moduleData->Shape.Enabled = generator["Enabled"].as<bool>();
+		}
+		{ // ParticleLifeGenerator
+			auto generator = data["ParticleLifeGenerator"];
+			moduleData->Life.LifeTime = generator["LifeTime"].as<float>();
+			moduleData->Life.Enabled = generator["Enabled"].as<bool>();
+		}
+		{ // ParticleRandomVelocityGenerator
+			auto generator = data["ParticleRandomVelocityGenerator"];
+			moduleData->RandomVelocity.MinVelocity = generator["MinVelocity"].as<glm::vec3>();
+			moduleData->RandomVelocity.MaxVelocity = generator["MaxVelocity"].as<glm::vec3>();
+			moduleData->RandomVelocity.Enabled = generator["Enabled"].as<bool>();
+		}
+		{ // LightUpdater
+			auto updater = data["LightUpdater"];
+			moduleData->Light.Light.Color = updater["LightColor"].as<glm::vec3>();
+			moduleData->Light.Light.Radius = updater["LightRadius"].as<float>();
+			moduleData->Light.Light.Intensity = updater["LightIntensity"].as<float>();
+			
+			moduleData->Light.MaxLights = updater["MaxLights"].as<uint32_t>();
+			moduleData->Light.Enabled = updater["Enabled"].as<bool>();
+		}
+		{ // TextureAnimationUpdater
+			auto updater = data["TextureAnimationUpdater"];
+			moduleData->TextureAnim.Tiles = updater["Tiles"].as<glm::ivec2>();
+			moduleData->TextureAnim.StartFrame = updater["StartFrame"].as<uint32_t>();
+			moduleData->TextureAnim.CycleLength = updater["CycleLength"].as<float>();
+			moduleData->TextureAnim.Enabled = updater["Enabled"].as<bool>();
+		}
+		{ // RotationOverLife
+			auto updater = data["RotationOverLife"];
+			moduleData->RotationOverLife.EulerAngles = data["EulerAngles"].as<glm::vec3>();
+			moduleData->RotationOverLife.CycleLength = data["CycleLength"].as<float>();
+			moduleData->RotationOverLife.Enabled = data["Enabled"].as<bool>();
+		}
+	}
 
 	template <>
 	void SceneSerializer::deserialize<ScriptComponent>(YAML::Node& data, SceneEntity entity)
@@ -476,6 +672,12 @@ namespace XYZ {
 		{
 			deserialize<SpotLight2D>(spotLightComponent, entity);
 		}
+
+		auto particleComponent = data["ParticleComponent"];
+		if (particleComponent)
+		{
+			deserialize<ParticleComponent>(particleComponent, entity);
+		}
 	}
 
 
@@ -614,6 +816,14 @@ namespace XYZ {
 		if (entity.HasComponent<SpotLight2D>())
 		{
 			serialize<SpotLight2D>(out, entity.GetComponent<SpotLight2D>(), entity);
+		}
+		if (entity.HasComponent<ParticleRenderer>())
+		{
+			serialize<ParticleRenderer>(out, entity.GetComponent<ParticleRenderer>(), entity);
+		}
+		if (entity.HasComponent<ParticleComponent>())
+		{
+			serialize<ParticleComponent>(out, entity.GetComponent<ParticleComponent>(), entity);
 		}
 		out << YAML::EndMap; // Entity
 	}

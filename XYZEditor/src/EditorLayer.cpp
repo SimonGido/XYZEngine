@@ -67,11 +67,12 @@ namespace XYZ {
 			Ref<Animation> animation = AssetManager::GetAsset<Animation>("Assets/Animations/HavkoAnim.anim");
 
 			
-			MeshComponent& meshComp = newEntity.AddComponent<MeshComponent>(
-				MeshComponent{ MeshFactory::CreateBox(glm::vec3(0.5f)),
-				  Material::Create(shaderLib->Get("ParticleShaderCPU"))
+			ParticleRenderer& particleRenderer = newEntity.AddComponent<ParticleRenderer>(
+				ParticleRenderer{ 
+					MeshFactory::CreateBox(glm::vec3(0.5f)),
+					Material::Create(shaderLib->Get("ParticleShaderCPU"))
 				});
-			meshComp.Material->SetImage("u_Texture", Renderer::GetDefaultResources().WhiteTexture->GetImage());
+			particleRenderer.Material->SetImage("u_Texture", Renderer::GetDefaultResources().WhiteTexture->GetImage());
 			newEntity.AddComponent<ParticleComponent>({ ParticleSystem(50) });
 
 			auto& spriteRenderer = newEntity.EmplaceComponent<SpriteRenderer>();
@@ -91,11 +92,7 @@ namespace XYZ {
 			m_EditorCamera = &scenePanel->GetEditorCamera();
 
 
-
-
 			Renderer::WaitAndRenderAll();
-		
-			//AssetManager::CreateAsset<Texture2D>("Checkerboard.tex", "Assets/Textures", "Assets/Textures/checkerboard.png");
 		}
 
 		void EditorLayer::OnDetach()

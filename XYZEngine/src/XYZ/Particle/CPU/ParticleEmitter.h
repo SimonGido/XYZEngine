@@ -9,6 +9,9 @@ namespace XYZ {
 	
 	struct EmitterBurst
 	{
+		EmitterBurst() = default;
+		EmitterBurst(uint32_t count, float time, float probability);
+
 		uint32_t Count = 0;
 		float	 Time = 0.0f;
 		float    Probability = 1.0f;

@@ -7,6 +7,7 @@
 #include "XYZ/Reflection/Reflection.h"
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture.h"
+#include "XYZ/Renderer/Mesh.h"
 #include "XYZ/Script/ScriptPublicField.h"
 #include "XYZ/Particle/CPU/ParticleSystem.h"
 
@@ -102,8 +103,13 @@ namespace XYZ {
 	REFLECTABLE(SpriteRenderer, Material, SubTexture, Color, SortLayer, Visible);
 
 
-	class Mesh;
 	struct MeshComponent
+	{
+		Ref<Mesh> Mesh;
+		Ref<Material> Material;
+	};
+
+	struct ParticleRenderer
 	{
 		Ref<Mesh> Mesh;
 		Ref<Material> Material;
