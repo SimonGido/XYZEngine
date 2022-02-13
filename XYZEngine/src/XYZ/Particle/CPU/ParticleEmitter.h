@@ -7,51 +7,35 @@
 namespace XYZ {
 
 	
-
-	struct BurstEmitter
+	struct EmitterBurst
 	{
-		struct Burst
-		{
-			Burst();
-			Burst(uint32_t count, float time);
-
-			uint32_t Count;
-			float	 Time;
-
-		private:
-			bool     m_Called;
-
-			friend struct BurstEmitter;
-		};
-
-		BurstEmitter();
-		uint32_t Update(Timestep ts);
-
-		std::vector<Burst> Bursts;
-		float			   Interval;
+		uint32_t Count = 0;
+		float	 Time = 0.0f;
+		float    Probability = 1.0f;
 	private:
-		void reset();
+		bool	 m_Called = false;
 
-	private:
-		float			   m_PassedTime;
+		friend class ParticleEmitter;
 	};
 
-
-	class ParticleEmitterCPU
+	class ParticleEmitter
 	{
 	public:
-		ParticleEmitterCPU();
+		ParticleEmitter();
 
-		void Emit(Timestep ts, ParticleDataBuffer& particles);
+		std::pair<uint32_t, uint32_t> Emit(Timestep ts, ParticleDataBuffer& particles);
+		float GetEmittedParticles() const { return m_EmittedParticles; }
 
-
-		ParticleShapeGenerator		    ShapeGenerator;
-		ParticleLifeGenerator		    LifeGenerator;
-		ParticleRandomVelocityGenerator RandomVelGenerator;
-		BurstEmitter					BurstEmitter;
+	
 		float							EmitRate;
+		float							BurstInterval;
+		std::vector<EmitterBurst>		Bursts;
 
 	private:
-		float							m_EmittedParticles;
+		uint32_t burstEmit();
+
+	private:
+		float m_EmittedParticles;
+		float m_PassedTime;
 	};
 }

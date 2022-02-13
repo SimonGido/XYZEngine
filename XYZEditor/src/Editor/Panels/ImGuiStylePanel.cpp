@@ -200,21 +200,21 @@ namespace XYZ {
 						UI::TableRow(font,
 							[]() { ImGui::Text("Name"); },
 							[&]() { 
-							UI::ScopedStyleStack style(ImGuiStyleVar_Alpha, 0.6f);
+							UI::ScopedStyleStack style(true, ImGuiStyleVar_Alpha, 0.6f);
 							UI::ScopedTableColumnAutoWidth scoped(1);
 							ImGui::InputText("##Name", (char*)fontName.c_str(), fontName.size(), ImGuiInputTextFlags_ReadOnly); });
 					
 						UI::TableRow(font,
 							[]() { ImGui::Text("Font Size"); },
 							[&]() {
-							UI::ScopedStyleStack style(ImGuiStyleVar_Alpha, 0.6f);
+							UI::ScopedStyleStack style(true, ImGuiStyleVar_Alpha, 0.6f);
 							UI::ScopedTableColumnAutoWidth scoped(1);
 							ImGui::InputFloat("##FontSize", &font->FontSize, 0.0f, 0.0f, "%.2f", ImGuiInputTextFlags_ReadOnly); });
 
 						UI::TableRow(font,
 							[]() { ImGui::Text("Glyph Count"); },
 							[&]() {
-							UI::ScopedStyleStack style(ImGuiStyleVar_Alpha, 0.6f);
+							UI::ScopedStyleStack style(true, ImGuiStyleVar_Alpha, 0.6f);
 							UI::ScopedTableColumnAutoWidth scoped(1);
 							ImGui::InputInt("##GlyphCount", &font->Glyphs.Size, 0.0f, 0.0f, ImGuiInputTextFlags_ReadOnly); });
 						

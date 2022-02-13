@@ -3,14 +3,13 @@
 #include "XYZ/ECS/Component.h"
 #include "XYZ/Core/GUID.h"
 
-#include "XYZ/Particle/GPU/ParticleMaterial.h"
-#include "XYZ/Particle/GPU/ParticleSystem.h"
-#include "XYZ/Particle/CPU/ParticleSystemCPU.h"
 
 #include "XYZ/Reflection/Reflection.h"
-
+#include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Script/ScriptPublicField.h"
+#include "XYZ/Particle/CPU/ParticleSystem.h"
+
 #include "SceneCamera.h"
 
 #include <glm/glm.hpp>
@@ -127,18 +126,11 @@ namespace XYZ {
 	};
 
 
-	struct ParticleComponentGPU 
+	struct ParticleComponent
 	{
-		ParticleComponentGPU() = default;
+		ParticleComponent() = default;
 		
-		Ref<ParticleSystem>    System;
-	};
-
-	struct ParticleComponentCPU 
-	{
-		ParticleComponentCPU() = default;
-		
-		ParticleSystemCPU System;
+		ParticleSystem System;
 	};
 
 

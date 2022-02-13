@@ -72,7 +72,7 @@ namespace XYZ {
 				  Material::Create(shaderLib->Get("ParticleShaderCPU"))
 				});
 			meshComp.Material->SetImage("u_Texture", Renderer::GetDefaultResources().WhiteTexture->GetImage());
-			newEntity.AddComponent<ParticleComponentCPU>({ ParticleSystemCPU(50) });
+			newEntity.AddComponent<ParticleComponent>({ ParticleSystem(50) });
 
 			auto& spriteRenderer = newEntity.EmplaceComponent<SpriteRenderer>();
 			spriteRenderer.Material = Material::Create(Renderer::GetShaderLibrary()->Get("DefaultLitShader"));

@@ -46,6 +46,7 @@ namespace XYZ {
 				IconHoverColor,
 				IconClickColor,
 				DisabledColor,
+				ContainerSelectedItem,
 				NumColors
 			};
 			glm::vec4 Color[NumColors];

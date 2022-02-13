@@ -283,13 +283,9 @@ namespace XYZ {
 				{
 					m_EditablesInUse.push_back(&m_ChainCollider2DInspector);
 				}
-				if (m_SelectedEntity.HasComponent<ParticleComponentGPU>())
+				if (m_SelectedEntity.HasComponent<ParticleComponent>())
 				{
-					m_EditablesInUse.push_back(&m_ParticleGPUInspector);
-				}
-				if (m_SelectedEntity.HasComponent<ParticleComponentCPU>())
-				{
-					m_EditablesInUse.push_back(&m_ParticleCPUInspector);
+					m_EditablesInUse.push_back(&m_ParticleInspector);
 				}
 			}
 

@@ -47,11 +47,11 @@ namespace XYZ {
 		void SplitterV(float* size, const char* stringID0, const char* stringID1, const Func0& func0, const Func1& func1)
 		{
 			ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
-			ScopedStyleStack styleSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+			ScopedStyleStack styleSpacing(true, ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 			ImGui::BeginChild(stringID0, ImVec2(*size, 0), true);
 			
 			{
-				ScopedStyleStack style(ImGuiStyleVar_ItemSpacing, spacing);
+				ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, spacing);
 				func0();
 			}
 			
@@ -68,7 +68,7 @@ namespace XYZ {
 		
 			ImGui::BeginChild(stringID1, ImVec2(0, 0), true);			
 			{
-				ScopedStyleStack style(ImGuiStyleVar_ItemSpacing, spacing);
+				ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, spacing);
 				func1();
 			}
 			ImGui::EndChild();	
@@ -228,7 +228,9 @@ namespace XYZ {
 		public:
 			ScopedTableColumnAutoWidth(uint32_t itemCount, float offset = 0.0f)
 			{
-				const float width = ImGui::TableGetMaxColumnWidth(ImGui::GetCurrentTable(), ImGui::TableGetColumnIndex());
+				auto table = ImGui::GetCurrentTable();
+				auto& column = table->Columns[table->CurrentColumn];
+				const float width = column.WorkMaxX - column.WorkMinX;
 				ImGui::PushItemWidth((width / static_cast<float>(itemCount)) - offset);
 			}
 			~ScopedTableColumnAutoWidth()
@@ -265,6 +267,7 @@ namespace XYZ {
 			const bool m_Enable;
 		};
 
+
 		class ScopedStyleStack
 		{
 		public:
@@ -272,9 +275,9 @@ namespace XYZ {
 			ScopedStyleStack operator=(const ScopedStyleStack&) = delete;
 
 			template <typename ValueType, typename... OtherStylePairs>
-			ScopedStyleStack(ImGuiStyleVar firstStyleVar, ValueType firstValue, OtherStylePairs&& ... otherStylePairs);
+			ScopedStyleStack(bool push, ImGuiStyleVar firstStyleVar, ValueType firstValue, OtherStylePairs&& ... otherStylePairs);
 				
-			~ScopedStyleStack() { ImGui::PopStyleVar(m_Count); }
+			~ScopedStyleStack() { if (m_Push) ImGui::PopStyleVar(m_Count); }
 
 		private:
 
@@ -283,15 +286,18 @@ namespace XYZ {
 			
 		private:
 			int m_Count;
+			bool m_Push;
 		};
 
 		template<typename ValueType, typename ...OtherStylePairs>
-		inline ScopedStyleStack::ScopedStyleStack(ImGuiStyleVar firstStyleVar, ValueType firstValue, OtherStylePairs && ...otherStylePairs)
+		inline ScopedStyleStack::ScopedStyleStack(bool push, ImGuiStyleVar firstStyleVar, ValueType firstValue, OtherStylePairs && ...otherStylePairs)
 			: 
-			m_Count((sizeof... (otherStylePairs) / 2) + 1)
+			m_Count((sizeof... (otherStylePairs) / 2) + 1),
+			m_Push(push)
 		{
 			static_assert ((sizeof... (otherStylePairs) & 1u) == 0, "ScopedStyleStack constructor expects a list of pairs of colour IDs and colours as its arguments");
-			pushStyle(firstStyleVar, firstValue, std::forward<OtherStylePairs>(otherStylePairs)...);
+			if (m_Push)
+				pushStyle(firstStyleVar, firstValue, std::forward<OtherStylePairs>(otherStylePairs)...);
 		}
 
 		template<typename ValueType, typename ...OtherStylePairs>
@@ -310,9 +316,9 @@ namespace XYZ {
 			ScopedColorStack operator=(const ScopedColorStack&) = delete;
 
 			template <typename ColorType, typename... OtherColors>
-			ScopedColorStack(ImGuiCol firstColorID, ColorType firstColor, OtherColors&& ... otherColorPairs);
+			ScopedColorStack(bool push, ImGuiCol firstColorID, ColorType firstColor, OtherColors&& ... otherColorPairs);
 				
-			~ScopedColorStack() { ImGui::PopStyleColor(m_Count); }
+			~ScopedColorStack() { if (m_Push) ImGui::PopStyleColor(m_Count); }
 
 		private:
 			template <typename ColorType, typename... OtherColors>
@@ -320,14 +326,17 @@ namespace XYZ {
 		
 		private:
 			int m_Count;
+			bool m_Push;
 		};
 		template<typename ColorType, typename ...OtherColors>
-		inline ScopedColorStack::ScopedColorStack(ImGuiCol firstColorID, ColorType firstColor, OtherColors && ...otherColorPairs)
+		inline ScopedColorStack::ScopedColorStack(bool push, ImGuiCol firstColorID, ColorType firstColor, OtherColors && ...otherColorPairs)
 			:
-			m_Count((sizeof... (otherColorPairs) / 2) + 1)
+			m_Count((sizeof... (otherColorPairs) / 2) + 1),
+			m_Push(push)
 		{
 			static_assert ((sizeof... (otherColorPairs) & 1u) == 0,"ScopedColorStack constructor expects a list of pairs of color IDs and colors as its arguments");
-			pushColor(firstColorID, firstColor, std::forward<OtherColors>(otherColorPairs)...);
+			if (m_Push)
+				pushColor(firstColorID, firstColor, std::forward<OtherColors>(otherColorPairs)...);
 		}
 		template<typename ColorType, typename ...OtherColors>
 		inline void ScopedColorStack::pushColor(ImGuiCol colorID, ColorType color, OtherColors && ...otherColorPairs)
@@ -336,5 +345,7 @@ namespace XYZ {
 			if constexpr (sizeof... (otherColorPairs) != 0)
 				pushColor(std::forward<OtherColors>(otherColorPairs)...);
 		}
+
+		
 	}
 }

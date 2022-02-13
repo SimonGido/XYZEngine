@@ -98,12 +98,14 @@ namespace XYZ {
 		ImGui::Checkbox("##Enabled", &enabled);
 		ImGui::PopID();
 
+
 		if (!enabled)
 			PushDisabled();
 		if (open)
 		{
-			uiFunction(val);
 			ImGui::TreePop();
+			uiFunction(val);
+			
 		}
 		if (!enabled)
 			PopDisabled();
@@ -125,6 +127,8 @@ namespace XYZ {
 				ImGui::SameLine();
 				std::string id = name + std::to_string(counter++);
 				ImGui::PushID(id.c_str());
+				
+	
 				if (ImGui::Button("-"))
 				{
 					it = container.erase(it);

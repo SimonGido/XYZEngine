@@ -16,6 +16,7 @@ namespace XYZ {
 			Color[IconHoverColor] = glm::vec4(0.8f, 0.8f, 0.8f, 1.0f);
 			Color[IconClickColor] = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 			Color[DisabledColor]  = glm::vec4(0.5f, 0.5f, 0.5f, 0.3f);
+			Color[ContainerSelectedItem] = glm::vec4(0.1f, 0.4f, 0.5f, 1.0f);
 		}
 
 		void EditorData::Shutdown()

@@ -36,6 +36,16 @@ namespace XYZ {
 			glm::decompose(transform, scale, rotq, translation, skew, perspective);
 			rotation = glm::eulerAngles(rotq);
 		}
+		glm::vec3 TransformToTranslation(const glm::mat4& transform)
+		{
+			glm::vec3 translation, scale;
+			glm::quat rotq;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+
+			glm::decompose(transform, scale, rotq, translation, skew, perspective);
+			return translation;
+		}
 		std::tuple<glm::vec3, glm::vec3, glm::vec3> DecomposeTransform(const glm::mat4& transform)
 		{
 			glm::vec3 translation;

@@ -5,7 +5,7 @@
 #include "XYZ/Core/Ref/Ref.h"
 
 #include "ParticleDataBuffer.h"
-#include "ParticleModule.h"
+#include "ParticleUpdater.h"
 #include "ParticleGenerator.h"
 #include "ParticleEmitter.h"
 
@@ -24,20 +24,29 @@ namespace XYZ {
 		glm::vec2 TexOffset;
 	};
 
-	class ParticleSystemCPU
+	class ParticleSystem
 	{
 	public:
 		struct ModuleData
 		{
 			ModuleData(uint32_t maxParticles);
 
-			MainModule				Main;
-			LightModule				Light;
-			TextureAnimationModule  TextureAnim;
-			RotationOverLife		RotationOverLife;
+			// Emitter
+			ParticleEmitter					Emitter;
+			
+			// Generators
+			ParticleGenerator				Default;
+			ParticleShapeGenerator		    Shape;
+			ParticleLifeGenerator		    Life;
+			ParticleRandomVelocityGenerator RandomVelocity;
 
-			ParticleEmitterCPU		Emitter;
-			ParticleDataBuffer		Particles;
+			// Updaters
+			LightUpdater					Light;
+			TextureAnimationUpdater			TextureAnim;
+			RotationOverLife				RotationOverLife;
+
+			
+			ParticleDataBuffer				Particles;
 		};
 		struct RenderData
 		{
@@ -49,14 +58,14 @@ namespace XYZ {
 		};
 
 	public:
-		ParticleSystemCPU();
-		ParticleSystemCPU(uint32_t maxParticles);	
-		ParticleSystemCPU(const ParticleSystemCPU& other);
-		ParticleSystemCPU(ParticleSystemCPU&& other) noexcept;
-		~ParticleSystemCPU();
+		ParticleSystem();
+		ParticleSystem(uint32_t maxParticles);	
+		ParticleSystem(const ParticleSystem& other);
+		ParticleSystem(ParticleSystem&& other) noexcept;
+		~ParticleSystem();
 
-		ParticleSystemCPU& operator=(const ParticleSystemCPU& other);
-		ParticleSystemCPU& operator=(ParticleSystemCPU&& other) noexcept;
+		ParticleSystem& operator=(const ParticleSystem& other);
+		ParticleSystem& operator=(ParticleSystem&& other) noexcept;
 
 		void Update(Timestep ts);	
 		void Play();
@@ -78,7 +87,6 @@ namespace XYZ {
 	private:
 		void particleThreadUpdate(float timestep);
 		void update(Timestep timestep, ModuleData& data);
-		void emit(Timestep timestep, ModuleData& data, float speed);
 		void buildRenderData(ModuleData& data);
 
 	private:

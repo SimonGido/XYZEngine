@@ -7,7 +7,19 @@
 #include <glm/gtc/constants.hpp>
 
 namespace XYZ {
-
+	void ParticleGenerator::Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const
+	{
+		if (Enabled)
+		{
+			for (uint32_t i = startId; i < endId; i++)
+			{
+				data.Particle[i].Color = Color;
+				data.TexOffset[i] = glm::vec2(0.0f, 0.0f);
+				data.Size[i] = Size;
+				data.Rotation[i] = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+			}
+		}
+	}
 	ParticleShapeGenerator::ParticleShapeGenerator()
 		:
 		Shape(EmitShape::Box),
@@ -55,14 +67,9 @@ namespace XYZ {
 		std::mt19937 rng(dev());
 		std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
 
-		endId = std::min(endId, data.GetMaxParticles());
 		for (uint32_t i = startId; i < endId; i++)
 		{
-			data.Particle[i].Color	 = glm::linearRand(glm::vec4(0.0f), glm::vec4(1.0f));
-			data.Particle[i].Position  = glm::linearRand(BoxMin, BoxMax);
-			data.TexOffset[i]			 = glm::vec2(0.0f, 0.0f);
-			data.Size[i]				 = glm::vec3(0.5f);
-			data.Rotation[i]			 = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+			data.Particle[i].Position    = glm::linearRand(BoxMin, BoxMax);
 		}
 	}
 
@@ -80,11 +87,7 @@ namespace XYZ {
 				Radius * cos(theta),
 				Radius * sin(theta)
 			);
-			data.Particle[i].Position  = glm::vec3(point.x, point.y, 0.0f);
-			data.Particle[i].Color	 = glm::vec4(glm::linearRand(0.0f, 1.0f));
-			data.TexOffset[i]			 = glm::vec2(0.0f, 0.0f);
-			data.Size[i]				 = glm::vec3(0.5f);
-			data.Rotation[i]			 = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+			data.Particle[i].Position   = glm::vec3(point.x, point.y, 0.0f);
 		}
 	}
 

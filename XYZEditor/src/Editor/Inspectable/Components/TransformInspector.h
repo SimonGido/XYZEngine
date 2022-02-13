@@ -3,16 +3,18 @@
 #include "XYZ/Scene/SceneEntity.h"
 
 namespace XYZ {
-	class TransformInspector : public Inspectable
-	{
-	public:
-		TransformInspector();
+	namespace Editor {
+		class TransformInspector : public Inspectable
+		{
+		public:
+			TransformInspector();
 
-		virtual bool OnEditorRender() override;
-		virtual void SetSceneEntity(const SceneEntity& entity) override;
+			virtual bool OnEditorRender() override;
+			virtual void SetSceneEntity(const SceneEntity& entity) override;
 
-		virtual Type GetType() const override { return Inspectable::Type::Entity; }
-	private:
-		SceneEntity m_Context;
-	};
+			virtual Type GetType() const override { return Inspectable::Type::Entity; }
+		private:
+			SceneEntity m_Context;
+		};
+	}
 }

@@ -243,7 +243,7 @@ namespace XYZ {
 
 		void AnimationEditor::propertySection()
 		{
-			UI::ScopedStyleStack style(ImGuiStyleVar_ItemSpacing, ImVec2(1.0f, 0.0f));
+			UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2(1.0f, 0.0f));
 
 			if (ButtonTransparent("Beginning", m_ButtonSize + glm::vec2(10.0f, 0.0f), ED::MediaBeginningIcon))
 			{

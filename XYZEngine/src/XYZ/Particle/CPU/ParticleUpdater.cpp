@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ParticleModule.h"
+#include "ParticleUpdater.h"
 
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Renderer/SceneRenderer.h"
@@ -18,70 +18,42 @@ namespace XYZ {
 		return (length - value) / length;
 	}
 
-	MainModule::MainModule()
-	{
+
+	LightUpdater::LightUpdater()
+		:
+		MaxLights(20)
+	{		
 	}
 
-	void MainModule::UpdateParticles(float ts, ParticleDataBuffer& data)
+	void LightUpdater::UpdateParticles(float ts, ParticleDataBuffer& data)
 	{
-		if (IsEnabled())
+		if (Enabled)
 		{
-			m_Killed.clear();
-			uint32_t aliveParticles = data.GetAliveParticles();
-			for (uint32_t i = 0; i < aliveParticles; ++i)
+			Lights.clear();
+			const uint32_t aliveParticles = data.GetAliveParticles();
+			
+			for (uint32_t i = 0; i < aliveParticles && i < MaxLights; ++i)
 			{
-				data.Particle[i].Position += data.Particle[i].Velocity * ts;
-				data.Particle[i].LifeRemaining -= ts;
-				if (data.Particle[i].LifeRemaining <= 0.0f)
-				{		
-					aliveParticles--;
-					m_Killed.push_back(i);
-				}
+				Lights.push_back(data.Particle[i].Position);
 			}
 		}
 	}
 
-
-
-	LightModule::LightModule()
-		:
-		MaxLights(1000)
-	{
-		
-	}
-	void LightModule::UpdateParticles(float ts, ParticleDataBuffer& data)
-	{
-		if (IsEnabled())
-		{
-			m_Lights.clear();
-			const uint32_t aliveParticles = data.GetAliveParticles();
-			//if (m_TransformEntity.IsValid()
-			//	&& m_LightEntity.IsValid()
-			//	&& m_LightEntity.HasComponent<PointLight2D>())
-			//{
-			//	for (uint32_t i = 0; i < aliveParticles && i < m_MaxLights; ++i)
-			//	{
-			//		m_Lights.push_back(data.m_Particle[i].Position);
-			//	}
-			//}
-		}
-	}
-
-	void LightModule::Reset()
+	void LightUpdater::Reset()
 	{
 
 	}
 
-	TextureAnimationModule::TextureAnimationModule()
+	TextureAnimationUpdater::TextureAnimationUpdater()
 		:
 		Tiles(1, 1),
 		StartFrame(0),
 		CycleLength(5.0f)
 	{
 	}
-	void TextureAnimationModule::UpdateParticles(float ts, ParticleDataBuffer& data) const
+	void TextureAnimationUpdater::UpdateParticles(float ts, ParticleDataBuffer& data) const
 	{
-		if (IsEnabled())
+		if (Enabled)
 		{
 			const uint32_t stageCount =  Tiles.x * Tiles.y;
 			float columnSize	= 1.0f / Tiles.x;
@@ -110,7 +82,7 @@ namespace XYZ {
 	}
 	void RotationOverLife::UpdateParticles(float ts, ParticleDataBuffer& data) const
 	{
-		if (IsEnabled())
+		if (Enabled)
 		{
 			const uint32_t aliveParticles = data.GetAliveParticles();
 			const glm::vec3 radians = glm::radians(EulerAngles);

@@ -32,7 +32,7 @@ namespace XYZ
     {
         // TODO
     }
-    public class ParticleComponentGPU : Component
+    public class ParticleComponent : Component
     {
         // TODO
     }

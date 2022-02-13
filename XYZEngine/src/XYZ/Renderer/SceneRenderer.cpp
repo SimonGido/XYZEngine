@@ -153,6 +153,8 @@ namespace XYZ {
 		m_Queue.BillboardDrawCommands.clear();
 		m_Queue.MeshDrawCommands.clear();
 		m_Queue.InstanceMeshDrawCommands.clear();
+		m_PointLights.clear();
+		m_SpotLights.clear();
 	}
 
 
@@ -207,6 +209,16 @@ namespace XYZ {
 		size_t instanceDataSize = static_cast<size_t>(instanceCount) * instanceSize; 
 		dc.InstanceData.resize(offset + instanceDataSize);	
 		memcpy(dc.InstanceData.data() + offset, instanceData, instanceDataSize);
+	}
+
+	void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::vec2& position)
+	{
+		m_PointLights.push_back({
+			glm::vec4(light.Color, 1.0f),
+			position,
+			light.Radius,
+			light.Intensity
+		});
 	}
 
 
@@ -378,8 +390,8 @@ namespace XYZ {
 		m_LightRenderPipeline.Material->SetImageArray("u_Texture", geometryColorImage, 0);
 		m_LightRenderPipeline.Material->SetImageArray("u_Texture", geometryPositionImage, 1);
 
-		m_LightRenderPipeline.Material->Set("u_Uniforms.NumberPointLights", (int)m_NumPointLights);
-		m_LightRenderPipeline.Material->Set("u_Uniforms.NumberSpotLights", (int)m_NumSpotLights);
+		m_LightRenderPipeline.Material->Set("u_Uniforms.NumberPointLights", (int)m_PointLights.size());
+		m_LightRenderPipeline.Material->Set("u_Uniforms.NumberSpotLights", (int)m_SpotLights.size());
 
 		
 
@@ -653,14 +665,11 @@ namespace XYZ {
 	{
 		// Prepare lights
 		auto& ecs = m_ActiveScene->GetECS();
-		m_NumSpotLights = ecs.GetStorage<SpotLight2D>().Size();
-		m_NumPointLights = ecs.GetStorage<PointLight2D>().Size();
 
-		m_SpotLights.resize(m_NumSpotLights);
-		m_PointLights.resize(m_NumPointLights);
+		m_SpotLights.reserve(ecs.GetStorage<SpotLight2D>().Size());
+		m_PointLights.reserve(ecs.GetStorage<PointLight2D>().Size());
 
 		// Spot lights
-		uint32_t counter = 0;
 		auto spotLight2DView = ecs.CreateView<TransformComponent, SpotLight2D>();
 		for (auto entity : spotLight2DView)
 		{
@@ -676,11 +685,10 @@ namespace XYZ {
 			lightData.InnerAngle = light.InnerAngle;
 			lightData.OuterAngle = light.OuterAngle;
 
-			m_SpotLights[counter++] = lightData;
+			m_SpotLights.push_back(lightData);
 		}
 
 		// Point Lights
-		counter = 0;
 		auto pointLight2DView = ecs.CreateView<TransformComponent, PointLight2D>();
 		for (auto entity : pointLight2DView)
 		{
@@ -691,7 +699,7 @@ namespace XYZ {
 			lightData.Position = trans;
 			lightData.Radius = light.Radius;
 			lightData.Intensity = light.Intensity;
-			m_PointLights[counter] = lightData;
+			m_PointLights.push_back(lightData);
 		}
 
 		Ref<StorageBufferSet> instance = m_LightStorageBufferSet;

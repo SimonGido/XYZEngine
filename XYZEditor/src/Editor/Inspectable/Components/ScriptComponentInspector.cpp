@@ -8,94 +8,95 @@
 #include "Editor/EditorHelper.h"
 
 namespace XYZ {
+	namespace Editor {
+		ScriptComponentInspector::ScriptComponentInspector()
+			:
+			Inspectable("ScriptComponentInspector")
+		{
+		}
+		bool ScriptComponentInspector::OnEditorRender()
+		{
+			return EditorHelper::DrawComponent<ScriptComponent>("Script", m_Context, [&](auto& component) {
 
-	ScriptComponentInspector::ScriptComponentInspector()
-		:
-		Inspectable("ScriptComponentInspector")
-	{
-	}
-	bool ScriptComponentInspector::OnEditorRender()
-	{
-		return EditorHelper::DrawComponent<ScriptComponent>("Script", m_Context, [&](auto& component) {
-			
-			if (ImGui::BeginTable("##PublicFields", 2, ImGuiTableFlags_SizingStretchProp))
-			{
-				const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-
-				for (const PublicField& field : ScriptEngine::GetPublicFields(m_Context))
+				if (ImGui::BeginTable("##PublicFields", 2, ImGuiTableFlags_SizingStretchProp))
 				{
-					UI::TableRow(field.GetName().c_str(),
-						[&]() { ImGui::Text(field.GetName().c_str()); },
-						[&]()
+					const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+
+					for (const PublicField& field : ScriptEngine::GetPublicFields(m_Context))
 					{
-						std::string id = "##Field_" + field.GetName();
-						if (field.GetType() == PublicFieldType::Float)
+						UI::TableRow(field.GetName().c_str(),
+							[&]() { ImGui::Text(field.GetName().c_str()); },
+							[&]()
 						{
-							float value = field.GetStoredValue<float>();
-							if (ImGui::DragFloat(id.c_str(), &value))
+							std::string id = "##Field_" + field.GetName();
+							if (field.GetType() == PublicFieldType::Float)
 							{
-								field.SetStoredValue<float>(value);
+								float value = field.GetStoredValue<float>();
+								if (ImGui::DragFloat(id.c_str(), &value))
+								{
+									field.SetStoredValue<float>(value);
+								}
 							}
-						}
-						else if (field.GetType() == PublicFieldType::Int)
-						{
-							int32_t value = field.GetStoredValue<int32_t>();
-							if (ImGui::DragInt(id.c_str(), &value))
+							else if (field.GetType() == PublicFieldType::Int)
 							{
-								field.SetStoredValue<int32_t>(value);
+								int32_t value = field.GetStoredValue<int32_t>();
+								if (ImGui::DragInt(id.c_str(), &value))
+								{
+									field.SetStoredValue<int32_t>(value);
+								}
 							}
-						}
-						else if (field.GetType() == PublicFieldType::UnsignedInt)
-						{
-							uint32_t value = field.GetStoredValue<uint32_t>();
-							if (ImGui::DragInt(id.c_str(), (int*)&value))
+							else if (field.GetType() == PublicFieldType::UnsignedInt)
 							{
-								field.SetStoredValue<uint32_t>(value);
+								uint32_t value = field.GetStoredValue<uint32_t>();
+								if (ImGui::DragInt(id.c_str(), (int*)&value))
+								{
+									field.SetStoredValue<uint32_t>(value);
+								}
 							}
-						}
-						else if (field.GetType() == PublicFieldType::String)
-						{
-							char* value = field.GetStoredValue<char*>();
-							const size_t size = strlen(value);
-							if (ImGui::InputText(id.c_str(), value, size))
+							else if (field.GetType() == PublicFieldType::String)
 							{
-								field.SetStoredValue<char*>(value);
+								char* value = field.GetStoredValue<char*>();
+								const size_t size = strlen(value);
+								if (ImGui::InputText(id.c_str(), value, size))
+								{
+									field.SetStoredValue<char*>(value);
+								}
+								delete[]value;
 							}
-							delete[]value;
-						}
-						else if (field.GetType() == PublicFieldType::Vec2)
-						{
-							glm::vec2 value = field.GetStoredValue<glm::vec2>();
-							if (ImGui::InputFloat2(id.c_str(), glm::value_ptr(value)))
+							else if (field.GetType() == PublicFieldType::Vec2)
 							{
-								field.SetStoredValue<glm::vec2>(value);
+								glm::vec2 value = field.GetStoredValue<glm::vec2>();
+								if (ImGui::InputFloat2(id.c_str(), glm::value_ptr(value)))
+								{
+									field.SetStoredValue<glm::vec2>(value);
+								}
 							}
-						}
-						else if (field.GetType() == PublicFieldType::Vec3)
-						{
-							glm::vec3 value = field.GetStoredValue<glm::vec3>();
-							if (ImGui::InputFloat3(id.c_str(), glm::value_ptr(value)))
+							else if (field.GetType() == PublicFieldType::Vec3)
 							{
-								field.SetStoredValue<glm::vec3>(value);
+								glm::vec3 value = field.GetStoredValue<glm::vec3>();
+								if (ImGui::InputFloat3(id.c_str(), glm::value_ptr(value)))
+								{
+									field.SetStoredValue<glm::vec3>(value);
+								}
 							}
-						}
-						else if (field.GetType() == PublicFieldType::Vec4)
-						{
-							glm::vec4 value = field.GetStoredValue<glm::vec4>();
-							if (ImGui::InputFloat4(id.c_str(), glm::value_ptr(value)))
+							else if (field.GetType() == PublicFieldType::Vec4)
 							{
-								field.SetStoredValue<glm::vec4>(value);
+								glm::vec4 value = field.GetStoredValue<glm::vec4>();
+								if (ImGui::InputFloat4(id.c_str(), glm::value_ptr(value)))
+								{
+									field.SetStoredValue<glm::vec4>(value);
+								}
 							}
-						}
-					});
-				}					
-				
-				ImGui::EndTable();
-			}
-		});
-	}
-	void ScriptComponentInspector::SetSceneEntity(const SceneEntity& entity)
-	{
-		m_Context = entity;
+						});
+					}
+
+					ImGui::EndTable();
+				}
+			});
+		}
+		void ScriptComponentInspector::SetSceneEntity(const SceneEntity& entity)
+		{
+			m_Context = entity;
+		}
 	}
 }

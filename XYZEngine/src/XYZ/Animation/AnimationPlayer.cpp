@@ -117,6 +117,7 @@ namespace XYZ {
 			if (node.Property->GetPath() != rel.GetPath(*m_Entity.GetECS(), node.Entity, m_Entity))
 				return false;
 		}
+		return true;
 	}
 	bool AnimationPlayer::Compatible(SceneEntity entity) const
 	{

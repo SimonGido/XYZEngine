@@ -83,7 +83,7 @@ namespace XYZ {
 	
 		void ScenePanel::OnImGuiRender(bool& open)
 		{
-			UI::ScopedStyleStack styleStack(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+			UI::ScopedStyleStack styleStack(true, ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 			if (ImGui::Begin("Scene", &open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 			{
 				if (m_Context.Raw())
@@ -129,8 +129,9 @@ namespace XYZ {
 			{
 				if (m_Context->GetState() == SceneState::Edit)
 				{
-					m_EditorCamera.OnUpdate(ts);			
-					m_Context->OnRenderEditor(m_SceneRenderer, m_EditorCamera.GetViewProjection(), m_EditorCamera.GetViewMatrix(), m_EditorCamera.GetPosition(), ts);
+					m_EditorCamera.OnUpdate(ts);	
+					m_Context->OnUpdateEditor(ts);
+					m_Context->OnRenderEditor(m_SceneRenderer, m_EditorCamera.GetViewProjection(), m_EditorCamera.GetViewMatrix(), m_EditorCamera.GetPosition());
 				}
 				else
 				{

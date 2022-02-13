@@ -6,6 +6,17 @@
 
 namespace XYZ {
 
+
+	class ParticleGenerator
+	{
+	public:
+		void Generate(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
+
+		glm::vec4 Color = glm::vec4(1.0f);
+		glm::vec3 Size = glm::vec3(1.0f);
+		bool Enabled = true;
+	};
+
 	enum class EmitShape
 	{
 		Box,

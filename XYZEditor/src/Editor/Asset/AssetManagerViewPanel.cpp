@@ -65,14 +65,14 @@ namespace XYZ {
 				UI::TableRow("Metadata",
 					[]() { ImGui::Text("Handle"); },
 					[&]() { 
-					UI::ScopedStyleStack style(ImGuiStyleVar_Alpha, 0.6f);
+					UI::ScopedStyleStack style(true, ImGuiStyleVar_Alpha, 0.6f);
 					UI::ScopedTableColumnAutoWidth scoped(1);
 					ImGui::InputText("##Handle", (char*)handle.c_str(), handle.size(), ImGuiInputTextFlags_ReadOnly); });
 
 				UI::TableRow("Metadata",
 					[]() { ImGui::Text("File Path"); },
 					[&]() { 
-					UI::ScopedStyleStack style(ImGuiStyleVar_Alpha, 0.6f);
+					UI::ScopedStyleStack style(true, ImGuiStyleVar_Alpha, 0.6f);
 					UI::ScopedTableColumnAutoWidth scoped(1);
 					ImGui::InputText("##FilePath", (char*)filePath.c_str(), handle.size(), ImGuiInputTextFlags_ReadOnly); });
 
@@ -80,7 +80,7 @@ namespace XYZ {
 				UI::TableRow("Metadata",
 					[]() { ImGui::Text("Type"); },
 					[&]() { 
-					UI::ScopedStyleStack style(ImGuiStyleVar_Alpha, 0.6f);
+					UI::ScopedStyleStack style(true, ImGuiStyleVar_Alpha, 0.6f);
 					UI::ScopedTableColumnAutoWidth scoped(1);
 					ImGui::InputText("##Type", (char*)assetType.c_str(), assetType.size(), ImGuiInputTextFlags_ReadOnly); });
 				
@@ -103,14 +103,14 @@ namespace XYZ {
 					UI::TableRow("Metadata",
 						[]() { ImGui::Text("Handle"); },
 						[&]() {
-						UI::ScopedStyleStack style(ImGuiStyleVar_Alpha, 0.6f);
+						UI::ScopedStyleStack style(true, ImGuiStyleVar_Alpha, 0.6f);
 						UI::ScopedTableColumnAutoWidth scoped(1);
 						ImGui::InputText("##Handle", (char*)handle.c_str(), handle.size(), ImGuiInputTextFlags_ReadOnly); });
 
 					UI::TableRow("Metadata",
 						[]() { ImGui::Text("File Path"); },
 						[&]() {
-						UI::ScopedStyleStack style(ImGuiStyleVar_Alpha, 0.6f);
+						UI::ScopedStyleStack style(true, ImGuiStyleVar_Alpha, 0.6f);
 						UI::ScopedTableColumnAutoWidth scoped(1);
 						ImGui::InputText("##FilePath", (char*)filePath.c_str(), handle.size(), ImGuiInputTextFlags_ReadOnly); });
 
@@ -118,7 +118,7 @@ namespace XYZ {
 					UI::TableRow("Metadata",
 						[]() { ImGui::Text("Type"); },
 						[&]() {
-						UI::ScopedStyleStack style(ImGuiStyleVar_Alpha, 0.6f);
+						UI::ScopedStyleStack style(true, ImGuiStyleVar_Alpha, 0.6f);
 						UI::ScopedTableColumnAutoWidth scoped(1);
 						ImGui::InputText("##Type", (char*)assetType.c_str(), assetType.size(), ImGuiInputTextFlags_ReadOnly); });
 

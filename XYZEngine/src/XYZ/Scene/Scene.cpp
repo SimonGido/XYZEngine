@@ -15,6 +15,8 @@
 
 #include "XYZ/Script/ScriptEngine.h"
 #include "XYZ/Debug/Profiler.h"
+#include "XYZ/Utils/Math/Math.h"
+
 #include "SceneEntity.h"
 
 #include <glm/glm.hpp>
@@ -174,7 +176,7 @@ namespace XYZ {
 			ScriptEngine::OnCreateEntity(entity);
 		}
 
-		auto& storageParticleCPU = m_ECS.GetStorage<ParticleComponentCPU>();
+		auto& storageParticleCPU = m_ECS.GetStorage<ParticleComponent>();
 		for (auto &it : storageParticleCPU)
 		{
 			it.System.Reset();
@@ -198,7 +200,7 @@ namespace XYZ {
 			ScriptEngine::OnDestroyEntity({ scriptStorage.GetEntityAtIndex(i), this });
 		}
 
-		auto& storageParticleCPU = m_ECS.GetStorage<ParticleComponentCPU>();
+		auto& storageParticleCPU = m_ECS.GetStorage<ParticleComponent>();
 		for (auto& it : storageParticleCPU)
 		{
 			it.System.Reset();
@@ -273,16 +275,30 @@ namespace XYZ {
 		sceneRenderer->EndScene();
 	}
 
-	
-	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos, Timestep ts)
+	void Scene::OnUpdateEditor(Timestep ts)
 	{
-		XYZ_PROFILE_FUNC("Scene::OnRenderEditor");
+		XYZ_PROFILE_FUNC("Scene::OnUpdateEditor");
 		m_PhysicsWorld.Step(ts);
 
 		updateHierarchy();
+		sortSpriteRenderers();
+
+		auto particleView = m_ECS.CreateView<ParticleComponent>();
+		for (auto entity : particleView)
+		{
+			XYZ_PROFILE_FUNC("Scene::OnRenderEditor particleView");
+			auto& [particleComponent] = particleView.Get<ParticleComponent>(entity);
+			particleComponent.System.Update(ts);
+		}
+	}
+
+	
+	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos)
+	{
+		XYZ_PROFILE_FUNC("Scene::OnRenderEditor");
 		sceneRenderer->BeginScene(viewProjection, view, camPos);
 		
-		sortSpriteRenderers();
+		
 		for (auto& data : m_SpriteRenderData)
 		{
 			// Assets could be reloaded by AssetManager, update references
@@ -297,12 +313,27 @@ namespace XYZ {
 			sceneRenderer->SubmitSprite(data.Renderer->Material, data.Renderer->SubTexture, data.Renderer->Color, data.Transform->WorldTransform);
 		}
 		
-		auto particleView = m_ECS.CreateView<TransformComponent, MeshComponent, ParticleComponentCPU>();
+		//auto meshView = m_ECS.CreateView<TransformComponent, MeshComponent>();
+
+		auto particleView = m_ECS.CreateView<TransformComponent, MeshComponent, ParticleComponent>();
 		for (auto entity : particleView)
 		{
-			auto& [transform, meshComponent, particleComponent] = particleView.Get<TransformComponent, MeshComponent, ParticleComponentCPU>(entity);
-			particleComponent.System.Update(ts);
-			
+			auto& [transform, meshComponent, particleComponent] = particleView.Get<TransformComponent, MeshComponent, ParticleComponent>(entity);
+
+			auto moduleData = particleComponent.System.GetModuleDataRead();
+			const auto& lightModule = moduleData->Light;
+			for (const auto& lightPos : lightModule.Lights)
+			{
+				glm::mat4 lightTransform = glm::translate(transform.WorldTransform, lightPos);
+				glm::vec3 worldLightPos = Math::TransformToTranslation(lightTransform);
+				PointLight2D light{
+					lightModule.Light.Color,
+					lightModule.Light.Radius,
+					lightModule.Light.Intensity
+				};
+				sceneRenderer->SubmitLight(light, worldLightPos);
+			}
+
 			auto renderData = particleComponent.System.GetRenderDataRead();
 			sceneRenderer->SubmitMesh(
 				meshComponent.Mesh, meshComponent.Material, 

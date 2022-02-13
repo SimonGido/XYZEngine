@@ -53,7 +53,8 @@ namespace XYZ {
         void OnStop();
         void OnUpdate(Timestep ts);
         void OnRender(Ref<SceneRenderer> sceneRenderer);
-        void OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos, Timestep ts);
+        void OnUpdateEditor(Timestep ts);
+        void OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos);
 
         SceneEntity GetEntity(uint32_t index);
         SceneEntity GetEntityByName(const std::string& name);

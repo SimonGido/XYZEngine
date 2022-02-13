@@ -169,6 +169,8 @@ namespace XYZ {
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<Material>& material, const glm::mat4& transform);
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<Material>& material, const glm::mat4& transform, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize);
 
+		void SubmitLight(const PointLight2D& light, const glm::vec2& position);
+
 		void OnImGuiRender();
 
 
@@ -282,15 +284,12 @@ namespace XYZ {
 		
 		CameraData				   m_CameraBuffer;
 		RenderQueue				   m_Queue;
-
-		uint32_t				   m_NumPointLights;
-		uint32_t				   m_NumSpotLights;
 								   
 		bool				       m_ViewportSizeChanged = false;
 		int32_t					   m_ThreadIndex;
 
 		static constexpr uint32_t sc_MaxNumberOfLights = 1024;
-		static constexpr uint32_t sc_InstanceVertexBufferSize = 1 * 1024 * 1024; // 1mb
+		static constexpr uint32_t sc_InstanceVertexBufferSize = 10 * 1024 * 1024; // 10mb
 		static constexpr uint32_t sc_TransformBufferCount = 10 * 1024; // 10240 transforms
 
 		struct GPUTimeQueries
