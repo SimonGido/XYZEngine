@@ -10,6 +10,7 @@
 #include "XYZ/Core/Application.h"
 #include "XYZ/Debug/Profiler.h"
 
+#include "XYZ/Asset/AssetManager.h"
 
 #include "XYZ/API/OpenGL/OpenGLRendererAPI.h"
 #include "XYZ/API/Vulkan/VulkanRendererAPI.h"
@@ -533,13 +534,29 @@ namespace XYZ {
 	}
 	void RendererResources::Init()
 	{
-		auto shaderLibrary = Renderer::GetShaderLibrary();
+		WhiteTexture = AssetManager::GetAsset<Texture2D>("Resources/Textures/WhiteTexture.tex");
+		WhiteTexture->SetFlag(AssetFlag::ReadOnly);
 
-		uint32_t whiteTextureData = 0xffffffff;
-		WhiteTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
-		DefaultQuadMaterial = Ref<MaterialAsset>::Create(shaderLibrary->Get("DefaultLitShader"));
-		DefaultLineMaterial = Ref<MaterialAsset>::Create(shaderLibrary->Get("LineShader"));
-		DefaultCircleMaterial = Ref<MaterialAsset>::Create(shaderLibrary->Get("Circle"));
+		DefaultQuadMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultLitQuad.mat");
+		DefaultQuadMaterial->SetFlag(AssetFlag::ReadOnly);
+
+		DefaultLineMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultLine.mat");
+		DefaultLineMaterial->SetFlag(AssetFlag::ReadOnly);
+		
+		DefaultCircleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultCircle.mat");
+		DefaultCircleMaterial->SetFlag(AssetFlag::ReadOnly);
+
+		OverlayQuadMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayQuad.mat");
+		OverlayQuadMaterial->SetFlag(AssetFlag::ReadOnly);
+
+		OverlayLineMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayLine.mat");
+		OverlayLineMaterial->SetFlag(AssetFlag::ReadOnly);
+
+		OverlayCircleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayCircle.mat");
+		OverlayCircleMaterial->SetFlag(AssetFlag::ReadOnly);
+
+		DefaultParticleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
+		DefaultParticleMaterial->SetFlag(AssetFlag::ReadOnly);
 	}
 	void RendererResources::Shutdown()
 	{
@@ -547,5 +564,11 @@ namespace XYZ {
 		DefaultQuadMaterial.Reset();
 		DefaultLineMaterial.Reset();
 		DefaultCircleMaterial.Reset();
+
+		OverlayQuadMaterial.Reset();
+		OverlayLineMaterial.Reset();
+		OverlayCircleMaterial.Reset();
+
+		DefaultParticleMaterial.Reset();
 	}
 }

@@ -6,7 +6,7 @@ namespace XYZ {
 	class AssetSerializer
 	{
 	public:
-		virtual void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const = 0;
+		virtual void Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const = 0;
 		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const = 0;
 	};
 
@@ -14,7 +14,7 @@ namespace XYZ {
 	class SceneAssetSerializer : public AssetSerializer
 	{
 	public:
-		virtual void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
+		virtual void Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const override;
 		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
 
@@ -22,7 +22,7 @@ namespace XYZ {
 	class MaterialAssetSerializer : public AssetSerializer
 	{
 	public:
-		virtual void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
+		virtual void Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const override;
 		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
 
@@ -30,7 +30,7 @@ namespace XYZ {
 	class TextureAssetSerializer : public AssetSerializer
 	{
 	public:
-		virtual void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
+		virtual void Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const override;
 		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
 
@@ -38,7 +38,7 @@ namespace XYZ {
 	class AnimationAssetSerializer : public AssetSerializer
 	{
 	public:
-		virtual void Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const override;
+		virtual void Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const override;
 		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
 }

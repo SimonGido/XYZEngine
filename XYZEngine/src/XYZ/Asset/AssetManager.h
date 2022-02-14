@@ -58,8 +58,17 @@ namespace XYZ {
 	public:
 		static void Init();
 		static void Shutdown();
+		static void SerializeAll();
+		static void Serialize(const AssetHandle& assetHandle);
 
-	
+
+		template<typename T, typename... Args>
+		static Ref<T> CreateMemoryAsset(const std::string& name, Args&&... args);
+
+		template<typename T>
+		static Ref<T> GetMemoryAsset(const AssetHandle& assetHandle);
+
+
 		template<typename T, typename... Args>
 		static Ref<T> CreateAsset(const std::string& filename, const std::string& directoryPath, Args&&... args);
 			
@@ -97,7 +106,8 @@ namespace XYZ {
 	private:
 		static MemoryPool											  s_Pool;
 		static AssetRegistry										  s_Registry;
-		static std::unordered_map<AssetHandle, WeakRef<Asset>>		  s_LoadedAssets;		
+		static std::unordered_map<AssetHandle, WeakRef<Asset>>		  s_LoadedAssets;
+		static std::unordered_map<AssetHandle, WeakRef<Asset>>        s_MemoryAssets;
 		static std::shared_ptr<FileWatcher>							  s_FileWatcher;
 	private:
 		friend Editor::AssetBrowser;
@@ -105,6 +115,26 @@ namespace XYZ {
 	};
 	
 	
+	template<typename T, typename ...Args>
+	inline Ref<T> AssetManager::CreateMemoryAsset(const std::string& name, Args && ...args)
+	{
+		static_assert(std::is_base_of<Asset, T>::value, "CreateAsset only works for types derived from Asset");
+
+		Ref<T> asset = Utils::CreateRef<T>(std::forward<Args>(args)...);
+		asset->m_Handle = AssetHandle();
+
+		s_MemoryAssets[asset->m_Handle] = asset.Raw();
+		return asset;
+	}
+
+	template<typename T>
+	inline Ref<T> AssetManager::GetMemoryAsset(const AssetHandle& assetHandle)
+	{
+		auto it = s_MemoryAssets.find(assetHandle);
+		XYZ_ASSERT(it != s_MemoryAssets.end(), "Memory asset does not exist");
+		return it->second;
+	}
+
 	template<typename T, typename ...Args>
 	inline Ref<T> AssetManager::CreateAsset(const std::string& filename, const std::string& directoryPath, Args && ...args)
 	{

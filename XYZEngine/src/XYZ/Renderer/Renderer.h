@@ -43,6 +43,12 @@ namespace XYZ {
 		Ref<MaterialAsset>	DefaultQuadMaterial;
 		Ref<MaterialAsset>	DefaultLineMaterial;
 		Ref<MaterialAsset>	DefaultCircleMaterial;
+
+		Ref<MaterialAsset>  OverlayQuadMaterial;
+		Ref<MaterialAsset>  OverlayLineMaterial;
+		Ref<MaterialAsset>  OverlayCircleMaterial;
+
+		Ref<MaterialAsset>  DefaultParticleMaterial;
 	};
 
 	struct RendererConfiguration

@@ -60,16 +60,17 @@ namespace XYZ {
 		s_Serializers[ToUnderlying(AssetType::Scene)] = CreateScope<SceneAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::Texture)] = CreateScope<TextureAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::Animation)] = CreateScope<AnimationAssetSerializer>();
+		s_Serializers[ToUnderlying(AssetType::Material)] = CreateScope<MaterialAssetSerializer>();
 	}
 
-	void AssetImporter::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset)
+	void AssetImporter::Serialize(const AssetMetadata& metadata, WeakRef<Asset> asset)
 	{
 		if (!s_Serializers[ToUnderlying(metadata.Type)])
 		{
 			XYZ_WARN("There is no importer for assets of type {0}", Utils::AssetTypeToString(metadata.Type));
 			return;
 		}
-		s_Serializers[ToUnderlying(metadata.Type)]->Serialize(metadata, asset);		
+		s_Serializers[ToUnderlying(metadata.Type)]->Serialize(metadata, asset);
 	}
 
 	void AssetImporter::Serialize(const Ref<Asset>& asset)

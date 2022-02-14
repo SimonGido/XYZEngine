@@ -48,6 +48,6 @@ namespace XYZ {
 			last.Textures.resize(arrayIndex + 1);
 
 		last.Textures[arrayIndex] = texture;
-		m_Material->SetImage(name, texture->GetImage(), index);
+		m_Material->SetImageArray(name, texture->GetImage(), index);
 	}
 }

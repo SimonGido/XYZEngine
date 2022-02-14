@@ -605,19 +605,19 @@ namespace XYZ {
 		entity.AddComponent(chain);
 	}
 
-	template <>
-	void SceneSerializer::deserialize<SceneEntity>(YAML::Node& data, SceneEntity ent)
+
+	void SceneSerializer::deserializeEntity(YAML::Node& data,  WeakRef<Scene> scene)
 	{
 		GUID guid = data["Entity"].as<std::string>();
 		auto& tagComponent = data["SceneTagComponent"];
 		
 		SceneTagComponent tag = tagComponent["Name"].as<std::string>();
-		SceneEntity entity = m_Scene->CreateEntity(tag, guid);
+		SceneEntity entity = scene->CreateEntity(tag, guid);
 
 		auto transformComponent = data["TransformComponent"];
 		if (transformComponent)
 		{
-			SceneSerializer::deserialize<TransformComponent>(transformComponent, entity);
+			deserialize<TransformComponent>(transformComponent, entity);
 		}
 
 		auto cameraComponent = data["CameraComponent"];
@@ -681,24 +681,20 @@ namespace XYZ {
 	}
 
 
-	SceneSerializer::SceneSerializer(const Ref<Scene>& scene)
-		:
-		m_Scene(scene)
-	{
-	}
-	void SceneSerializer::Serialize(const std::string& filepath)
+
+	void SceneSerializer::Serialize(const std::string& filepath, WeakRef<Scene> scene)
 	{
 		YAML::Emitter out;
 		
 		out << YAML::BeginMap;
-		out << YAML::Key << "Scene" << m_Scene->m_Name;
+		out << YAML::Key << "Scene" << scene->m_Name;
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
-		for (const auto ent : m_Scene->m_Entities)
+		for (const auto ent : scene->m_Entities)
 		{
-			SceneEntity entity(ent, m_Scene.Raw());
+			SceneEntity entity(ent, scene.Raw());
 			auto& rel = entity.GetComponent<Relationship>();
-			if (rel.Parent == m_Scene->GetSceneEntity())
+			if (rel.Parent == scene->GetSceneEntity())
 				rel.Parent = Entity();
 			serializeEntity(out, entity);
 		}
@@ -709,7 +705,6 @@ namespace XYZ {
 	}
 
 
-
 	Ref<Scene> SceneSerializer::Deserialize(const std::string& filepath)
 	{
 		std::ifstream stream(filepath);
@@ -717,15 +712,15 @@ namespace XYZ {
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
-		m_Scene->m_Name = data["Scene"].as<std::string>();
-		ECSManager& ecs = m_Scene->m_ECS;
-		ecs.GetComponent<SceneTagComponent>(m_Scene->m_SceneEntity).Name = m_Scene->m_Name;
+		Ref<Scene> scene = Ref<Scene>::Create(data["Scene"].as<std::string>());
+		ECSManager& ecs = scene->m_ECS;
+		ecs.GetComponent<SceneTagComponent>(scene->m_SceneEntity).Name = scene->m_Name;
 		auto entities = data["Entities"];
 		if (entities)
 		{
 			for (auto entity : entities)
 			{
-				SceneSerializer::deserialize<SceneEntity>(entity, SceneEntity());
+				SceneSerializer::deserializeEntity(entity, scene);
 			}
 			for (auto data : entities)
 			{
@@ -762,7 +757,7 @@ namespace XYZ {
 				relationship.Depth = relComponent["Depth"].as<uint32_t>();
 			}
 		}
-		return m_Scene;
+		return scene;
 	}
 	void SceneSerializer::serializeEntity(YAML::Emitter& out, SceneEntity entity)
 	{

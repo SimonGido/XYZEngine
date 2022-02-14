@@ -23,6 +23,15 @@ namespace XYZ {
 		Animator,
 		NumTypes
 	};
+
+	enum class AssetFlag : uint16_t
+	{
+		None     = 0,
+		Missing  = BIT(0),
+		Invalid  = BIT(1),
+		ReadOnly = BIT(2)
+	};
+
 	namespace Utils {
 
 		inline AssetType AssetTypeFromString(const std::string& assetType)
@@ -79,8 +88,18 @@ namespace XYZ {
 		const AssetHandle& GetHandle() const { return m_Handle; }
 
 		static AssetType GetStaticType() { return AssetType::None; }
+
+		bool IsFlagSet(AssetFlag flag) const { return (uint16_t)flag & m_Flags; }
+		void SetFlag(AssetFlag flag, bool value = true)
+		{
+			if (value)
+				m_Flags |= (uint16_t)flag;
+			else
+				m_Flags &= ~(uint16_t)flag;
+		}
 	private:
 		AssetHandle m_Handle;
+		uint16_t    m_Flags;
 
 		friend class AssetManager;
 		friend class AssetImporter;

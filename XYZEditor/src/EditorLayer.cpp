@@ -33,22 +33,20 @@ namespace XYZ {
 			m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification());
 			m_CameraTexture = Texture2D::Create("Resources/Editor/Camera.png");
 
-			auto shaderLib = Renderer::GetShaderLibrary();
-
 			m_CommandBuffer = RenderCommandBuffer::Create(0, "Overlay");
 			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
-			m_QuadMaterial = Ref<MaterialAsset>::Create(shaderLib->Get("OverlayQuad"));
-			m_LineMaterial = Ref<MaterialAsset>::Create(shaderLib->Get("OverlayLine"));
-			m_CircleMaterial = Ref<MaterialAsset>::Create(shaderLib->Get("OverlayCircle"));
+
+			m_QuadMaterial	 = Renderer::GetDefaultResources().OverlayQuadMaterial;
+			m_LineMaterial	 = Renderer::GetDefaultResources().OverlayLineMaterial;
+			m_CircleMaterial = Renderer::GetDefaultResources().OverlayCircleMaterial;
+			m_QuadMaterial->SetTexture("u_Texture", m_CameraTexture, 0);
+
+
 			m_OverlayRenderer2D = Ref<Renderer2D>::Create(
 				m_CommandBuffer,
 				m_QuadMaterial, m_LineMaterial, m_CircleMaterial, 
 				m_SceneRenderer->GetFinalRenderPass()
 			);
-
-			m_QuadMaterial->SetTexture("u_Texture", m_CameraTexture, 0);
-			for (uint32_t i = 1; i < Renderer2D::GetMaxTextures(); ++i)
-				m_QuadMaterial->SetTexture("u_Texture", Renderer::GetDefaultResources().WhiteTexture, i);
 
 			m_EditorManager.SetSceneContext(m_Scene);
 			m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
@@ -66,19 +64,17 @@ namespace XYZ {
 			Ref<Animator> animator = Ref<Animator>::Create();
 			Ref<Animation> animation = AssetManager::GetAsset<Animation>("Assets/Animations/HavkoAnim.anim");
 
-			
-			Ref<MaterialAsset> material = Ref<MaterialAsset>::Create(shaderLib->Get("ParticleShaderCPU"));
-			material->SetTexture("u_Texture", Renderer::GetDefaultResources().WhiteTexture);
-			
 			ParticleRenderer& particleRenderer = newEntity.AddComponent<ParticleRenderer>(
-				ParticleRenderer{ 
+				ParticleRenderer
+				{ 
 					MeshFactory::CreateBox(glm::vec3(0.5f)),
-					material,
-				});
+					Renderer::GetDefaultResources().DefaultParticleMaterial,
+				}
+			);
 			newEntity.AddComponent<ParticleComponent>({ ParticleSystem(50) });
 
 			auto& spriteRenderer = newEntity.EmplaceComponent<SpriteRenderer>();
-			Ref<MaterialAsset> spriteMaterial = Ref<MaterialAsset>::Create(Renderer::GetShaderLibrary()->Get("DefaultLitShader"));
+			Ref<MaterialAsset> spriteMaterial = Renderer::GetDefaultResources().DefaultQuadMaterial;
 			spriteRenderer.Material = spriteMaterial;
 			spriteRenderer.SubTexture = Ref<SubTexture>::Create(Texture2D::Create("Assets/Textures/1_ORK_head.png"));
 
@@ -100,8 +96,9 @@ namespace XYZ {
 
 		void EditorLayer::OnDetach()
 		{
-			SceneSerializer serializer(m_Scene);
-			serializer.Serialize("Assets/Scenes/Scene.xyz");
+			AssetManager::SerializeAll();
+			SceneSerializer serializer;
+			serializer.Serialize("Assets/Scenes/Scene.xyz", m_Scene);
 			ScriptEngine::Shutdown();
 			m_EditorManager.Clear();
 		}

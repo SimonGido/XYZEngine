@@ -13,6 +13,7 @@ namespace XYZ
 	MemoryPool												AssetManager::s_Pool = MemoryPool(1024 * 1024 * 10);
 	AssetRegistry											AssetManager::s_Registry;
 	std::unordered_map<AssetHandle, WeakRef<Asset>>			AssetManager::s_LoadedAssets;
+	std::unordered_map<AssetHandle, WeakRef<Asset>>			AssetManager::s_MemoryAssets;
 	std::shared_ptr<FileWatcher>							AssetManager::s_FileWatcher;
 	
 	static std::string s_Directory = "Assets";
@@ -21,6 +22,8 @@ namespace XYZ
 	{
 		AssetImporter::Init();
 		processDirectory(s_Directory);
+		processDirectory("Resources");
+
 		std::wstring wdir = std::wstring(s_Directory.begin(), s_Directory.end());
 		s_FileWatcher = std::make_shared<FileWatcher>(wdir);
 		
@@ -33,7 +36,31 @@ namespace XYZ
 	void AssetManager::Shutdown()
 	{
 		s_LoadedAssets.clear();
+		s_MemoryAssets.clear();
 		s_FileWatcher->Stop();
+	}
+
+	void AssetManager::SerializeAll()
+	{
+		for (const auto& [handle, asset] : s_LoadedAssets)
+		{
+			const auto &metadata = GetMetadata(handle);
+			AssetImporter::Serialize(metadata, asset);
+		}
+	}
+
+	void AssetManager::Serialize(const AssetHandle& assetHandle)
+	{
+		auto it = s_LoadedAssets.find(assetHandle);
+		if (it != s_LoadedAssets.end() && it->second.Raw())
+		{
+			const auto& metadata = GetMetadata(assetHandle);
+			AssetImporter::Serialize(metadata, it->second);
+		}
+		else
+		{
+			XYZ_WARN("Trying to serialize asset that does not exist!");
+		}
 	}
 
 	void AssetManager::ReloadAsset(const std::filesystem::path& filepath)

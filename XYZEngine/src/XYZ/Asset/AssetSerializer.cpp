@@ -4,6 +4,8 @@
 #include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Animation/AnimatorController.h"
 #include "XYZ/Renderer/MaterialAsset.h"
+#include "XYZ/Renderer/Renderer.h"
+#include "AssetManager.h"
 
 #include "XYZ/Utils/YamlUtils.h"
 
@@ -75,43 +77,107 @@ namespace XYZ {
 	}
 
 
-	void SceneAssetSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
+	void SceneAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
 	{
-		SceneSerializer serializer(asset.As<Scene>());
-		serializer.Serialize(metadata.FilePath.string());
+		SceneSerializer serializer;
+		serializer.Serialize(metadata.FilePath.string(), asset.As<Scene>());
 	}
 	bool SceneAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		SceneSerializer serializer(asset.As<Scene>());
+		SceneSerializer serializer;
 		asset = serializer.Deserialize(metadata.FilePath.string());
 		return true;
 	}
-	void MaterialAssetSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
+	void MaterialAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
 	{
-		Ref<MaterialAsset> material = asset.As<MaterialAsset>();
+		WeakRef<MaterialAsset> material = asset.As<MaterialAsset>();
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 
 		out << YAML::Key << "Shader" << material->GetShader()->GetName();
 		out << YAML::Key << "Textures" << YAML::BeginSeq;
-
-
-
+		for (const auto& texture : material->GetTextures())
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Name" << texture.Name;
+			out << YAML::Key << "Handle" << texture.Texture->GetHandle();
+			out << YAML::EndMap;
+		}
 		out << YAML::EndSeq;
 
+		out << YAML::Key << "TextureArrays" << YAML::BeginSeq;
+		for (const auto& textureArr : material->GetTextureArrays())
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Name" << textureArr.Name;
+			out << YAML::Key << "Textures" << YAML::BeginSeq;
+			out << YAML::Flow;
+			for (const auto& texture : textureArr.Textures)
+			{
+				out << texture->GetHandle();
+			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
 		out << YAML::EndMap;
+
+		std::ofstream fout(metadata.FilePath);
+		fout << out.c_str();
 	}
 	bool MaterialAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
 
-		return false;
+		Ref<Shader> shader = Renderer::GetShaderLibrary()->Get(data["Shader"].as<std::string>());
+		Ref<MaterialAsset> material = Ref<MaterialAsset>::Create(shader);
+
+		for (auto texture : data["Textures"])
+		{
+			GUID handle(texture["Handle"].as<std::string>());
+			auto name = texture["Name"].as<std::string>();
+			if (AssetManager::Exist(handle))
+			{
+				material->SetTexture(name, AssetManager::GetAsset<Texture2D>(handle));
+			}
+			else
+			{
+				XYZ_WARN("Missing texture!");
+				material->SetTexture(name, Renderer::GetDefaultResources().WhiteTexture);
+			}
+		}
+		auto textureArrays = data["TextureArrays"];
+		for (auto textureArr : textureArrays)
+		{
+			auto name = textureArr["Name"].as<std::string>();
+			uint32_t index = 0;
+			for (auto texture : textureArr["Textures"])
+			{
+				GUID handle(texture.as<std::string>());
+				if (AssetManager::Exist(handle))
+				{
+					material->SetTexture(name, AssetManager::GetAsset<Texture2D>(handle), index);
+				}
+				else
+				{
+					XYZ_WARN("Missing texture!");
+					material->SetTexture(name, Renderer::GetDefaultResources().WhiteTexture, index);
+				}
+				index++;
+			}
+		}
+		asset = material;
+		return true;
 	}
 
 	
 
-	void TextureAssetSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
+	void TextureAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
 	{
-		Ref<Texture2D> texture = asset.As<Texture2D>();
+		WeakRef<Texture2D> texture = asset.As<Texture2D>();
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 	
@@ -228,9 +294,9 @@ namespace XYZ {
 		}
 	}
 
-	void AnimationAssetSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
+	void AnimationAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
 	{
-		Ref<Animation> animation = asset.As<Animation>();
+		WeakRef<Animation> animation = asset.As<Animation>();
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 

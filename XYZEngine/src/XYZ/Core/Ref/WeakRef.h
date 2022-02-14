@@ -31,6 +31,13 @@ namespace XYZ {
 	
 		T* Raw() { return m_Instance; }
 		const T* Raw() const { return m_Instance; }
+
+		template <typename T2>
+		WeakRef<T2> As() { return WeakRef<T2>((T2*)m_Instance); }
+
+		template <typename T2>
+		const WeakRef<T2> As() const { return WeakRef<T2>((T2*)m_Instance); }
+
 	private:
 		T* m_Instance = nullptr;
 	};
