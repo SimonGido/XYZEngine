@@ -43,6 +43,7 @@ namespace XYZ {
 		Script::SubTextureNative::Register();
 		Script::ShaderNative::Register();
 		Script::MaterialNative::Register();
+		Script::MaterialInstanceNative::Register();
 		////////////////////////
 	}
 }

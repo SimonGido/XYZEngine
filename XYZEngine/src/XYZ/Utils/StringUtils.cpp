@@ -92,6 +92,13 @@ namespace XYZ::Utils {
 		return string.substr(start, end);
 	}
 
+	std::string_view FirstSubString(const std::string_view string, const char delimiter)
+	{
+		size_t start = 0;
+		size_t end = string.find_first_of(delimiter);
+		return string.substr(start, end);
+	}
+
 	std::string BytesToString(uint64_t bytes)
 	{
 		constexpr uint64_t GB = 1024 * 1024 * 1024;

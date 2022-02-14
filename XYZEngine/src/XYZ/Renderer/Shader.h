@@ -1,6 +1,6 @@
 #pragma once
 
-#include "XYZ/Asset/Asset.h"
+
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 #include "XYZ/Renderer/ShaderResource.h"
 #include "XYZ/Renderer/Buffer.h"
@@ -119,7 +119,7 @@ namespace XYZ {
 		ShaderImageAccessBarrier
 	};
 
-	class Shader : public Asset
+	class Shader : public RefCount
 	{
 	public:
 		virtual ~Shader() = default;
@@ -148,6 +148,7 @@ namespace XYZ {
 		virtual const std::string& GetPath() const = 0;
 		virtual const std::string& GetName() const = 0;
 		
+		virtual size_t GetVertexBufferSize() const { return 0;};
 		virtual uint32_t GetRendererID() const { return 0; }
 		virtual size_t	 GetHash()	     const = 0;
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const { return {}; }
@@ -158,8 +159,7 @@ namespace XYZ {
 
 		static Ref<Shader> Create(const std::string& path, std::vector<BufferLayout> layouts);
 		static Ref<Shader> Create(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts);
-		
-		static AssetType GetStaticType() { return AssetType::Shader; }
+	
 	};
 
 	class ShaderLibrary : public RefCount

@@ -28,7 +28,6 @@ namespace XYZ {
 		m_DescriptorsDirty(true),
 		m_ID(Utils::GenerateID())
 	{
-		allocateStorage(m_Shader->GetBuffers(), m_UniformsBuffer);
 		Ref<VulkanMaterial> instance = this;
 		Renderer::Submit([instance]() mutable
 		{
@@ -36,15 +35,16 @@ namespace XYZ {
 		});
 		Renderer::RegisterShaderDependency(shader, this);
 	}
+
 	VulkanMaterial::~VulkanMaterial()
-	{
-		m_UniformsBuffer.Destroy();
+	{	
 		Utils::s_FreeIDs.push(m_ID);
 	}
 	void VulkanMaterial::Invalidate()
 	{
-		allocateStorage(m_Shader->GetBuffers(), m_UniformsBuffer);
 		m_DescriptorsDirty = true;
+		invalidateInstances();
+
 		Ref<VulkanShader> vulkanShader = m_Shader;
 		const auto& shaderDescriptorSets = vulkanShader->GetDescriptorSets();
 		m_Descriptors.resize(Renderer::GetConfiguration().FramesInFlight);
@@ -54,7 +54,6 @@ namespace XYZ {
 
 		m_ImageDescriptors.resize(shaderDescriptorSets.size());
 		m_ImageArraysDescriptors.resize(shaderDescriptorSets.size());
-
 
 		for (auto& descriptor : m_Descriptors) // Per frame
 		{
@@ -78,42 +77,7 @@ namespace XYZ {
 			m_Flags.Unset(renderFlag);
 		}
 	}
-	void VulkanMaterial::Set(const std::string& name, float value)
-	{
-		set(name, value);
-	}
-	void VulkanMaterial::Set(const std::string& name, int value)
-	{
-		set(name, value);
-	}
-	void VulkanMaterial::Set(const std::string& name, const glm::vec2& value)
-	{
-		set(name, value);
-	}
-	void VulkanMaterial::Set(const std::string& name, const glm::vec3& value)
-	{
-		set(name, value);
-	}
-	void VulkanMaterial::Set(const std::string& name, const glm::vec4& value)
-	{
-		set(name, value);
-	}
-	void VulkanMaterial::Set(const std::string& name, const glm::mat4& value)
-	{
-		set(name, value);
-	}
-	void VulkanMaterial::Set(const std::string& name, const glm::ivec2& value)
-	{
-		set(name, value);
-	}
-	void VulkanMaterial::Set(const std::string& name, const glm::ivec3& value)
-	{
-		set(name, value);
-	}
-	void VulkanMaterial::Set(const std::string& name, const glm::ivec4& value)
-	{
-		set(name, value);
-	}
+
 
 	void VulkanMaterial::SetImageArray(const std::string& name, Ref<Image2D> image, uint32_t arrayIndex)
 	{
@@ -123,59 +87,6 @@ namespace XYZ {
 	void VulkanMaterial::SetImage(const std::string& name, Ref<Image2D> image, int32_t mip)
 	{
 		setDescriptor(name, image, mip);
-	}
-
-	float& VulkanMaterial::GetFloat(const std::string& name)
-	{
-		return get<float>(name);
-	}
-	int32_t& VulkanMaterial::GetInt(const std::string& name)
-	{
-		return get<int32_t>(name);
-	}
-	uint32_t& VulkanMaterial::GetUInt(const std::string& name)
-	{
-		return get<uint32_t>(name);
-	}
-	bool& VulkanMaterial::GetBool(const std::string& name)
-	{
-		return get<bool>(name);
-	}
-	glm::ivec2& VulkanMaterial::GetIVector2(const std::string& name)
-	{
-		return get<glm::ivec2>(name);
-	}
-	glm::ivec3& VulkanMaterial::GetIVector3(const std::string& name)
-	{
-		return get<glm::ivec3>(name);
-	}
-	glm::ivec4& VulkanMaterial::GetIVector4(const std::string& name)
-	{
-		return get<glm::ivec4>(name);
-	}
-	glm::vec2& VulkanMaterial::GetVector2(const std::string& name)
-	{
-		return get<glm::vec2>(name);
-	}
-	glm::vec3& VulkanMaterial::GetVector3(const std::string& name)
-	{
-		return get<glm::vec3>(name);
-	}
-	glm::vec4& VulkanMaterial::GetVector4(const std::string& name)
-	{
-		return get<glm::vec4>(name);
-	}
-	glm::mat3& VulkanMaterial::GetMatrix3(const std::string& name)
-	{
-		return get<glm::mat3>(name);
-	}
-	glm::mat4& VulkanMaterial::GetMatrix4(const std::string& name)
-	{
-		return get<glm::mat4>(name);
-	}
-	Ref<Texture2D> VulkanMaterial::GetTexture2D(const std::string& name)
-	{
-		return getResource<Texture2D>(name);
 	}
 
 	void VulkanMaterial::RT_UpdateForRendering(const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors, const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors,
@@ -201,19 +112,6 @@ namespace XYZ {
 		vkUpdateDescriptorSets(vulkanDevice, (uint32_t)m_WriteDescriptors[frame].size(), m_WriteDescriptors[frame].data(), 0, nullptr);		
 	}
 
-	const ByteBuffer VulkanMaterial::GetFSUniformsBuffer() const
-	{
-		const size_t vertexBufferSize = m_Shader->GetVertexBufferSize();
-		if (m_UniformsBuffer.Size - vertexBufferSize != 0)
-			return ByteBuffer(&m_UniformsBuffer.Data[vertexBufferSize], m_UniformsBuffer.Size - vertexBufferSize);
-		return ByteBuffer(nullptr, 0);
-	}
-
-	const ByteBuffer VulkanMaterial::GetVSUniformsBuffer() const
-	{
-		const size_t vertexBufferSize = m_Shader->GetVertexBufferSize();
-		return ByteBuffer(m_UniformsBuffer.Data, vertexBufferSize);
-	}
 
 	void VulkanMaterial::RT_updateForRenderingFrame(uint32_t frame,
 		vector2D<VkDescriptorImageInfo>& arrayImageInfos,
@@ -293,23 +191,6 @@ namespace XYZ {
 		}
 	}
 
-	void VulkanMaterial::allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers, ByteBuffer& buffer) const
-	{
-		uint32_t size = 0;
-		for (auto [name, shaderBuffer] : buffers)
-			size += shaderBuffer.Size;
-
-		if (buffer.Size != size)
-		{
-			if (buffer)
-				buffer.Destroy();
-			if (size)
-			{
-				buffer.Allocate(size);
-				buffer.ZeroInitialize();
-			}
-		}
-	}
 
 	void VulkanMaterial::setDescriptor(const std::string& name, Ref<Image2D> image, int32_t mip)
 	{
@@ -378,20 +259,6 @@ namespace XYZ {
 		});
 	}
 
-	std::pair<const ShaderUniform*, ByteBuffer*> VulkanMaterial::findUniformDeclaration(const std::string& name)
-	{
-		std::string bufferName = Utils::FirstSubString(name, '.');
-		const auto& shaderBuffers = m_Shader->GetBuffers();
-		auto itBuffer = shaderBuffers.find(bufferName);
-		if (itBuffer != shaderBuffers.end())
-		{
-			const ShaderBuffer& buffer = itBuffer->second;
-			auto itUniform = buffer.Uniforms.find(name);
-			if (itUniform != buffer.Uniforms.end())
-				return { &itUniform->second, &m_UniformsBuffer };
-		}
-		return { nullptr, nullptr };
-	}
 
 	const ShaderResourceDeclaration* VulkanMaterial::findResourceDeclaration(const std::string& name)
 	{

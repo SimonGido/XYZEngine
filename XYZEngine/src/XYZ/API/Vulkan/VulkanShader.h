@@ -78,6 +78,7 @@ namespace XYZ {
 		inline virtual const std::string&		 GetName() const override { return m_Name; }
 		virtual const std::vector<BufferLayout>& GetLayouts() const override { return m_Layouts; }
 		virtual size_t							 GetHash() const override;
+		virtual size_t							 GetVertexBufferSize() const override{ return m_VertexBufferSize; }
 		virtual bool							 IsCompiled() const override;
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const override { return m_Buffers; }
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override { return m_Resources; }
@@ -89,7 +90,6 @@ namespace XYZ {
 		std::pair<const VkWriteDescriptorSet*, uint32_t>   GetDescriptorSet(const std::string& name) const;
 
 		std::vector<VkDescriptorSetLayout>				   GetAllDescriptorSetLayouts() const;
-		size_t											   GetVertexBufferSize()		const { return m_VertexBufferSize; }
 		
 	private:
 		void compileOrGetVulkanBinaries(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile);

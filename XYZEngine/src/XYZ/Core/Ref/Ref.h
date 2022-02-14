@@ -66,6 +66,8 @@ namespace XYZ {
 		T& operator*();
 		const T& operator*() const;
 		
+		bool operator==(const Ref<T>& other) const;
+
 		bool EqualsObject(const Ref<T, Allocator>& other);
 		
 		T* Raw();
@@ -200,6 +202,12 @@ namespace XYZ {
 	const T& Ref<T, Allocator>::operator*() const
 	{
 		return *m_Instance;
+	}
+
+	template<typename T, typename Allocator>
+	inline bool Ref<T, Allocator>::operator==(const Ref<T>& other) const
+	{
+		return m_Instance == other.m_Instance;
 	}
 
 	template <typename T, typename Allocator>

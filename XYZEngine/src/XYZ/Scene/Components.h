@@ -8,6 +8,8 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Mesh.h"
+#include "XYZ/Renderer/MaterialAsset.h"
+
 #include "XYZ/Script/ScriptPublicField.h"
 #include "XYZ/Particle/CPU/ParticleSystem.h"
 
@@ -80,7 +82,7 @@ namespace XYZ {
 	{
 		SpriteRenderer() = default;
 		SpriteRenderer(
-			const Ref<Material>& material,
+			const Ref<MaterialAsset>& material,
 			const Ref<SubTexture>& subTexture,
 			const glm::vec4& color,
 			uint32_t sortLayer,
@@ -93,8 +95,8 @@ namespace XYZ {
 
 		SpriteRenderer& operator =(const SpriteRenderer& other);
 
-		Ref<Material>	Material;
-		Ref<SubTexture> SubTexture;
+		Ref<MaterialAsset> Material;
+		Ref<SubTexture>	   SubTexture;
 		
 		glm::vec4 Color = glm::vec4(1.0f);
 		uint32_t  SortLayer = 0;
@@ -105,14 +107,23 @@ namespace XYZ {
 
 	struct MeshComponent
 	{
-		Ref<Mesh> Mesh;
-		Ref<Material> Material;
+		MeshComponent() = default;
+		MeshComponent(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& materialAsset);
+
+		Ref<Mesh>		      Mesh;
+		Ref<MaterialAsset>    MaterialAsset;
+		Ref<MaterialInstance> OverrideMaterial;
 	};
 
 	struct ParticleRenderer
 	{
-		Ref<Mesh> Mesh;
-		Ref<Material> Material;
+		ParticleRenderer() = default;
+		ParticleRenderer(const Ref<Mesh>&mesh, const Ref<MaterialAsset>&materialAsset);
+
+
+		Ref<Mesh>		      Mesh;
+		Ref<MaterialAsset>    MaterialAsset;
+		Ref<MaterialInstance> OverrideMaterial;
 	};
 
 	struct CameraComponent 

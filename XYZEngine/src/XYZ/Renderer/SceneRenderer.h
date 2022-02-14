@@ -6,6 +6,8 @@
 #include "RenderCommandBuffer.h"
 #include "StorageBufferSet.h"
 #include "PipelineCompute.h"
+#include "MaterialAsset.h"
+#include "MaterialInstance.h"
 
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"
@@ -55,7 +57,7 @@ namespace XYZ {
 
 		struct SpriteDrawCommand
 		{
-			Ref<Material>  Material;
+			Ref<MaterialAsset>  Material;
 			std::array<Ref<Texture2D>, Renderer2D::GetMaxTextures()> Textures;
 
 			uint32_t       TextureCount = 0;
@@ -71,22 +73,33 @@ namespace XYZ {
 			glm::vec4 TransformRow[3];
 		};
 		
+		struct MeshDrawCommandOverride
+		{
+			Ref<MaterialInstance>  OverrideMaterial;
+			glm::mat4			   Transform;
+		};
+
 		struct MeshDrawCommand
 		{
-			Ref<Mesh>			   Mesh;
-			Ref<Material>		   Material;
-			Ref<Pipeline>		   Pipeline;
-			uint32_t			   TransformInstanceCount = 0;
+			Ref<Mesh>					 Mesh;
+			Ref<MaterialAsset>			 MaterialAsset;
+			Ref<MaterialInstance>		 OverrideMaterial;
+			Ref<Pipeline>				 Pipeline;
+			uint32_t					 TransformInstanceCount = 0;
 
-			std::vector<TransformData> TransformData;
-			uint32_t				   TransformOffset = 0;
+			std::vector<TransformData>	 TransformData;
+			uint32_t					 TransformOffset = 0;
+
+			std::vector<MeshDrawCommandOverride> OverrideCommands;
 		};
-	
+
+		
 		struct InstanceMeshDrawCommand
 		{
-			Ref<Mesh>			   Mesh;
-			Ref<Material>		   Material;
-			glm::mat4			   Transform;
+			Ref<Mesh>			  Mesh;
+			Ref<MaterialAsset>	  MaterialAsset;
+			Ref<MaterialInstance> OverrideMaterial;
+			glm::mat4			  Transform;
 
 			std::vector<std::byte> InstanceData;
 			uint32_t			   InstanceCount = 0;
@@ -106,15 +119,15 @@ namespace XYZ {
 
 			AssetHandle MaterialHandle;
 		};
-		struct MeshKey
+		struct BatchMeshKey
 		{
 			AssetHandle MeshHandle;
 			AssetHandle MaterialHandle;
 
-			MeshKey(AssetHandle meshHandle, AssetHandle materialHandle)
+			BatchMeshKey(AssetHandle meshHandle, AssetHandle materialHandle)
 				: MeshHandle(meshHandle), MaterialHandle(materialHandle) {}
 
-			bool operator<(const MeshKey& other) const
+			bool operator<(const BatchMeshKey& other) const
 			{
 				if (MeshHandle < other.MeshHandle)
 					return true;
@@ -122,16 +135,16 @@ namespace XYZ {
 				return (MeshHandle == other.MeshHandle) && (MaterialHandle < other.MaterialHandle);
 			}
 		};
-		struct InstanceMeshKey
+		struct MeshKey
 		{
-			InstanceMeshKey(const Ref<Material>& material)
+			MeshKey(const Ref<MaterialAsset>& material)
 				: Material(material)
 			{}
-			bool operator<(const InstanceMeshKey& other) const
+			bool operator<(const MeshKey& other) const
 			{
 				return Material->GetHandle() < other.Material->GetHandle();
 			}
-			Ref<Material>		  Material;
+			Ref<MaterialAsset>	  Material;
 			mutable Ref<Pipeline> Pipeline;
 		};
 
@@ -139,8 +152,8 @@ namespace XYZ {
 		std::map<SpriteKey, SpriteDrawCommand> SpriteDrawCommands;
 		std::map<SpriteKey, SpriteDrawCommand> BillboardDrawCommands;			
 
-		std::map<MeshKey, MeshDrawCommand>							    MeshDrawCommands;
-		std::map<InstanceMeshKey, std::vector<InstanceMeshDrawCommand>>	InstanceMeshDrawCommands;
+		std::map<BatchMeshKey,	  MeshDrawCommand>						MeshDrawCommands;
+		std::map<MeshKey,		  std::vector<InstanceMeshDrawCommand>>	InstanceMeshDrawCommands;
 	};
 
 	struct SceneRendererSpecification
@@ -163,11 +176,11 @@ namespace XYZ {
 		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition);
 		void EndScene();
 
-		void SubmitBillboard(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size);
-		void SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform);
+		void SubmitBillboard(const Ref<MaterialAsset>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size);
+		void SubmitSprite(const Ref<MaterialAsset>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform);
 
-		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<Material>& material, const glm::mat4& transform);
-		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<Material>& material, const glm::mat4& transform, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize);
+		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial = nullptr);
+		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial);
 
 		void SubmitLight(const PointLight2D& light, const glm::vec2& position);
 
@@ -231,7 +244,8 @@ namespace XYZ {
 		{
 			Ref<Pipeline> Pipeline;
 			Ref<Material> Material;
-			
+			Ref<MaterialInstance> MaterialInstance;
+
 			void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, PrimitiveTopology topology = PrimitiveTopology::Triangles);
 		};
 
@@ -278,6 +292,7 @@ namespace XYZ {
 								   
 
 		Ref<Material>			   m_BloomComputeMaterial;
+		Ref<MaterialInstance>      m_BloomComputeMaterialInstance;
 		Ref<Texture2D>			   m_BloomTexture[3];
 		Ref<PipelineCompute>	   m_BloomComputePipeline;
 
@@ -303,7 +318,7 @@ namespace XYZ {
 
 
 	private:
-		Ref<Mesh> m_TestMesh;
-		Ref<Material> m_TestMaterial;
+		Ref<Mesh>			  m_TestMesh;
+		Ref<MaterialAsset>	  m_TestMaterial;
 	};
 }

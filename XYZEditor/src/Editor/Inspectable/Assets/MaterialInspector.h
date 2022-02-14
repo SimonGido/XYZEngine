@@ -14,7 +14,7 @@ namespace XYZ {
 
 			virtual Type GetType() const { return Type::Asset; }
 		private:
-			Ref<Material> m_MaterialAsset;
+			Ref<MaterialAsset> m_MaterialAsset;
 		};
 	}
 }

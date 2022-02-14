@@ -356,27 +356,32 @@ namespace XYZ {
 	}
 
 	void Renderer::RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline,
-		Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount, uint32_t vertexOffsetSize)
+		Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount, uint32_t vertexOffsetSize)
 	{
 		s_RendererAPI->RenderGeometry(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transform, indexCount, vertexOffsetSize);
 	}
 
-	void Renderer::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount)
+	void Renderer::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform)
+	{
+		s_RendererAPI->RenderMesh(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transform);
+	}
+
+	void Renderer::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount)
 	{
 		s_RendererAPI->RenderMesh(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transformBuffer, transformOffset, instanceCount);
 	}
 
-	void Renderer::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
+	void Renderer::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
 	{
 		s_RendererAPI->RenderMesh(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transform, instanceBuffer, instanceOffset, instanceCount);
 	}
 
-	void Renderer::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
+	void Renderer::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
 	{
 		s_RendererAPI->RenderMesh(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transformBuffer, transformOffset, transformInstanceCount, instanceBuffer, instanceOffset, instanceCount);
 	}
 
-	void Renderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material)
+	void Renderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material)
 	{
 		s_RendererAPI->RenderGeometry(renderCommandBuffer, pipeline, material, s_Data.FullscreenQuadVertexBuffer, s_Data.FullscreenQuadIndexBuffer);
 	}
@@ -391,7 +396,7 @@ namespace XYZ {
 		s_RendererAPI->BeginPipelineCompute(renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, material);
 	}
 
-	void Renderer::DispatchCompute(Ref<PipelineCompute> pipeline, Ref<Material> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
+	void Renderer::DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 	{
 		s_RendererAPI->DispatchCompute(pipeline, material, groupCountX, groupCountY, groupCountZ);
 	}
@@ -532,9 +537,9 @@ namespace XYZ {
 
 		uint32_t whiteTextureData = 0xffffffff;
 		WhiteTexture = Texture2D::Create(ImageFormat::RGBA, 1, 1, &whiteTextureData);
-		DefaultQuadMaterial = Material::Create(shaderLibrary->Get("DefaultLitShader"));
-		DefaultLineMaterial = Material::Create(shaderLibrary->Get("LineShader"));
-		DefaultCircleMaterial = Material::Create(shaderLibrary->Get("Circle"));
+		DefaultQuadMaterial = Ref<MaterialAsset>::Create(shaderLibrary->Get("DefaultLitShader"));
+		DefaultLineMaterial = Ref<MaterialAsset>::Create(shaderLibrary->Get("LineShader"));
+		DefaultCircleMaterial = Ref<MaterialAsset>::Create(shaderLibrary->Get("Circle"));
 	}
 	void RendererResources::Shutdown()
 	{

@@ -14,6 +14,7 @@
 #include "Pipeline.h"
 #include "PipelineCompute.h"
 #include "Material.h"
+#include "MaterialAsset.h"
 #include "StorageBufferSet.h"
 
 
@@ -38,10 +39,10 @@ namespace XYZ {
 		void Init();
 		void Shutdown();
 
-		Ref<Texture2D>	WhiteTexture;
-		Ref<Material>	DefaultQuadMaterial;
-		Ref<Material>	DefaultLineMaterial;
-		Ref<Material>	DefaultCircleMaterial;
+		Ref<Texture2D>		WhiteTexture;
+		Ref<MaterialAsset>	DefaultQuadMaterial;
+		Ref<MaterialAsset>	DefaultLineMaterial;
+		Ref<MaterialAsset>	DefaultCircleMaterial;
 	};
 
 	struct RendererConfiguration
@@ -80,24 +81,33 @@ namespace XYZ {
 		static void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass, bool clear);
 		static void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer);
 		
-		static void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline,  Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0, uint32_t vertexOffsetSize = 0);
-		static void RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount);
+		static void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline,  Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0, uint32_t vertexOffsetSize = 0);
+		
+		static void RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material,
+			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform
+		);
+		
+		static void RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, 
+			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount
+		);
+		
 		static void RenderMesh(
-			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material,
+			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material,
 			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform,
 			Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount
 		);
+		
 		static void RenderMesh(
-			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material,
+			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material,
 			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer,
 			Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount,
 			Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount
 		);
 
-		static void SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material);
+		static void SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material);
 		static void BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material);
 		static void BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material);
-		static void DispatchCompute(Ref<PipelineCompute> pipeline, Ref<Material> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
+		static void DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
 		static void EndPipelineCompute(Ref<PipelineCompute> pipeline);
 		static void UpdateDescriptors(Ref<PipelineCompute> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet);
 		static void ClearImage(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Image2D> image);

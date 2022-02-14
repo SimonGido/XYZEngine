@@ -65,9 +65,9 @@ namespace XYZ {
 	}
 
 	Renderer2D::Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer, 
-		const Ref<Material>& quadMaterial, 
-		const Ref<Material>& lineMaterial, 
-		const Ref<Material>& circleMaterial,
+		const Ref<MaterialAsset>& quadMaterial, 
+		const Ref<MaterialAsset>& lineMaterial, 
+		const Ref<MaterialAsset>& circleMaterial,
 		const Ref<RenderPass>& renderPass
 	)
 		:
@@ -108,30 +108,30 @@ namespace XYZ {
 	}
 
 
-	void Renderer2D::SetQuadMaterial(const Ref<Material>& material)
+	void Renderer2D::SetQuadMaterial(const Ref<MaterialAsset>& material)
 	{
 		if (m_QuadMaterial.Raw() != material.Raw())
 		{
 			m_QuadMaterial = material;
-			m_QuadBuffer.Pipeline = setMaterial(m_QuadPipelines, m_QuadBuffer.Pipeline, material);
+			m_QuadBuffer.Pipeline = setMaterial(m_QuadPipelines, m_QuadBuffer.Pipeline, material->GetMaterial());
 		}
 	}
 
-	void Renderer2D::SetLineMaterial(const Ref<Material>& material)
+	void Renderer2D::SetLineMaterial(const Ref<MaterialAsset>& material)
 	{
 		if (m_LineMaterial.Raw() != material.Raw())
 		{
 			m_LineMaterial = material;
-			m_LineBuffer.Pipeline = setMaterial(m_LinePipelines, m_LineBuffer.Pipeline, material);
+			m_LineBuffer.Pipeline = setMaterial(m_LinePipelines, m_LineBuffer.Pipeline, material->GetMaterial());
 		}
 	}
 
-	void Renderer2D::SetCircleMaterial(const Ref<Material>& material)
+	void Renderer2D::SetCircleMaterial(const Ref<MaterialAsset>& material)
 	{
 		if (m_CircleMaterial.Raw() != material.Raw())
 		{
 			m_CircleMaterial = material;
-			m_CircleBuffer.Pipeline = setMaterial(m_CirclePipelines, m_CircleBuffer.Pipeline, material);
+			m_CircleBuffer.Pipeline = setMaterial(m_CirclePipelines, m_CircleBuffer.Pipeline, material->GetMaterial());
 		}
 	}
 
@@ -540,18 +540,22 @@ namespace XYZ {
 	{
 		uint32_t* quadIndices = GenerateQuadIndices(sc_MaxIndices);
 		
-		m_QuadBuffer.Init(m_RenderPass, m_QuadMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices);
-		const size_t quadShaderHash = m_QuadMaterial->GetShader()->GetHash();
+		auto quadMaterial = m_QuadMaterial->GetMaterial();
+		auto lineMaterial = m_LineMaterial->GetMaterial();
+		auto circleMaterial = m_CircleMaterial->GetMaterial();
+
+		m_QuadBuffer.Init(m_RenderPass, quadMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices);
+		const size_t quadShaderHash = quadMaterial->GetShader()->GetHash();
 		m_QuadPipelines.emplace(quadShaderHash, m_QuadBuffer.Pipeline);
 
 		uint32_t* lineIndices = GenerateLineIndices(sc_MaxLineIndices);
-		m_LineBuffer.Init(m_RenderPass, m_LineMaterial->GetShader(), sc_MaxLineVertices, lineIndices, sc_MaxLineIndices, PrimitiveTopology::Lines);
-		const size_t lineShaderHash = m_LineMaterial->GetShader()->GetHash();
+		m_LineBuffer.Init(m_RenderPass, lineMaterial->GetShader(), sc_MaxLineVertices, lineIndices, sc_MaxLineIndices, PrimitiveTopology::Lines);
+		const size_t lineShaderHash = lineMaterial->GetShader()->GetHash();
 		m_LinePipelines.emplace(lineShaderHash, m_LineBuffer.Pipeline);
 
 
-		m_CircleBuffer.Init(m_RenderPass, m_CircleMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices);
-		const size_t circleShaderHash = m_CircleMaterial->GetShader()->GetHash();
+		m_CircleBuffer.Init(m_RenderPass, circleMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices);
+		const size_t circleShaderHash = circleMaterial->GetShader()->GetHash();
 		m_CirclePipelines.emplace(circleShaderHash, m_CircleBuffer.Pipeline);
 
 		delete[]quadIndices;
@@ -566,8 +570,8 @@ namespace XYZ {
 			XYZ_ASSERT(m_QuadMaterial.Raw(), "No material set");
 			m_QuadBuffer.VertexBuffer->Update(m_QuadBuffer.DataPtr(), dataSize, m_QuadBuffer.Offset);
 
-			Renderer::BindPipeline(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_UniformBufferSet, nullptr, m_QuadMaterial);
-			Renderer::RenderGeometry(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_QuadMaterial, m_QuadBuffer.VertexBuffer, m_QuadBuffer.IndexBuffer, glm::mat4(1.0f), m_QuadBuffer.IndexCount, m_QuadBuffer.Offset);
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_UniformBufferSet, nullptr, m_QuadMaterial->GetMaterial());
+			Renderer::RenderGeometry(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_QuadMaterial->GetMaterialInstance(), m_QuadBuffer.VertexBuffer, m_QuadBuffer.IndexBuffer, glm::mat4(1.0f), m_QuadBuffer.IndexCount, m_QuadBuffer.Offset);
 			m_Stats.DrawCalls++;
 			
 			m_QuadBuffer.IndexCount = 0;
@@ -582,8 +586,8 @@ namespace XYZ {
 			XYZ_ASSERT(dataSize + m_LineBuffer.Offset < m_LineBuffer.VertexBuffer->GetSize(), "");
 			m_LineBuffer.VertexBuffer->Update(m_LineBuffer.DataPtr(), dataSize, m_LineBuffer.Offset);
 			
-			Renderer::BindPipeline(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_UniformBufferSet, nullptr, m_LineMaterial);
-			Renderer::RenderGeometry(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_LineMaterial, m_LineBuffer.VertexBuffer, m_LineBuffer.IndexBuffer, glm::mat4(1.0f), m_LineBuffer.IndexCount, m_LineBuffer.Offset);
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_UniformBufferSet, nullptr, m_LineMaterial->GetMaterial());
+			Renderer::RenderGeometry(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_LineMaterial->GetMaterialInstance(), m_LineBuffer.VertexBuffer, m_LineBuffer.IndexBuffer, glm::mat4(1.0f), m_LineBuffer.IndexCount, m_LineBuffer.Offset);
 
 			m_Stats.LineDrawCalls++;
 			m_LineBuffer.IndexCount = 0;
@@ -600,8 +604,8 @@ namespace XYZ {
 			XYZ_ASSERT(dataSize + m_CircleBuffer.Offset < m_CircleBuffer.VertexBuffer->GetSize(), "");
 			m_CircleBuffer.VertexBuffer->Update(m_CircleBuffer.DataPtr(), dataSize, m_CircleBuffer.Offset);
 			
-			Renderer::BindPipeline(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_UniformBufferSet, nullptr, m_CircleMaterial);
-			Renderer::RenderGeometry(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_CircleMaterial, m_CircleBuffer.VertexBuffer, m_CircleBuffer.IndexBuffer, glm::mat4(1.0f), m_CircleBuffer.IndexCount, m_CircleBuffer.Offset);
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_UniformBufferSet, nullptr, m_CircleMaterial->GetMaterial());
+			Renderer::RenderGeometry(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_CircleMaterial->GetMaterialInstance(), m_CircleBuffer.VertexBuffer, m_CircleBuffer.IndexBuffer, glm::mat4(1.0f), m_CircleBuffer.IndexCount, m_CircleBuffer.Offset);
 
 			m_Stats.FilledCircleDrawCalls++;
 

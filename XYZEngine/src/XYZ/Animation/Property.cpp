@@ -134,6 +134,18 @@ namespace XYZ {
 		}
 	}
 
+	void Property<Ref<MaterialAsset>>::Update(size_t key, uint32_t frame)
+	{
+		XYZ_PROFILE_FUNC("Property<Ref<MaterialAsset>>::Update");
+		XYZ_ASSERT(std::is_sorted(Keys.begin(), Keys.end()), "Key frames are not sorted");
+		XYZ_ASSERT(key < static_cast<int64_t>(Keys.size()) - 1, "Key indices are out of range");
+
+		m_Value = m_GetPropertyReference(m_Entity);
+		if (m_Value != nullptr)
+		{
+			*m_Value = Keys[key].Value;
+		}
+	}
 	void Property<Ref<Material>>::Update(size_t key, uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<Ref<Material>>::Update");
@@ -146,7 +158,18 @@ namespace XYZ {
 			*m_Value = Keys[key].Value;
 		}
 	}
+	void Property<Ref<MaterialInstance>>::Update(size_t key, uint32_t frame)
+	{
+		XYZ_PROFILE_FUNC("Property<Ref<MaterialInstance>>::Update");
+		XYZ_ASSERT(std::is_sorted(Keys.begin(), Keys.end()), "Key frames are not sorted");
+		XYZ_ASSERT(key < static_cast<int64_t>(Keys.size()) - 1, "Key indices are out of range");
 
+		m_Value = m_GetPropertyReference(m_Entity);
+		if (m_Value != nullptr)
+		{
+			*m_Value = Keys[key].Value;
+		}
+	}
 	void Property<glm::mat4>::Update(size_t key, uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<glm::mat4>::Update");

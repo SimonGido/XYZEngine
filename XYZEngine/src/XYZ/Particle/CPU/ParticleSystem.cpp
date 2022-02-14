@@ -170,7 +170,7 @@ namespace XYZ {
 				auto& particles = moduleData->Particles;
 				auto[startId, endId] = moduleData->Emitter.Emit(timestep, particles);
 
-				moduleData->Default.Generate(particles, startId, endId);
+				moduleData->Main.Generate(particles, startId, endId);
 				moduleData->Shape.Generate(particles, startId, endId);
 				moduleData->Life.Generate(particles, startId, endId);
 				moduleData->RandomVelocity.Generate(particles, startId, endId);

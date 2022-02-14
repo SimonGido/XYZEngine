@@ -162,8 +162,8 @@ namespace XYZ {
 		}
 		void ParticleComponentInspector::drawDefaultGenerator(ParticleSystem::ModuleData& moduleData)
 		{		
-			EditorHelper::DrawNodeControl("Shape", moduleData.Default, [=](auto& gen) {
-				if (ImGui::BeginTable("Shape", 2, ImGuiTableFlags_SizingStretchProp))
+			EditorHelper::DrawNodeControl("Main", moduleData.Main, [=](auto& gen) {
+				if (ImGui::BeginTable("Main", 2, ImGuiTableFlags_SizingStretchProp))
 				{
 					UI::TableRow("Color",
 						[]() {ImGui::Text("Color"); },
@@ -175,7 +175,7 @@ namespace XYZ {
 					);
 					ImGui::EndTable();
 				}
-			}, moduleData.Default.Enabled);
+			}, moduleData.Main.Enabled);
 		}
 		void ParticleComponentInspector::drawShapeGenerator(ParticleSystem::ModuleData& moduleData)
 		{

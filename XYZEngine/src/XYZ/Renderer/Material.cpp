@@ -4,6 +4,8 @@
 #include "Renderer.h"
 #include "XYZ/API/Vulkan/VulkanMaterial.h"
 
+
+
 namespace XYZ {
 	
 	Ref<Material> Material::Create(const Ref<Shader>& shader)
@@ -17,5 +19,15 @@ namespace XYZ {
 		XYZ_ASSERT(false, "Not supported API");
 		return nullptr;
 	}
+
+	void Material::invalidateInstances()
+	{
+		for (auto& instance : m_MaterialInstances)
+			instance->allocateStorage(GetShader()->GetBuffers());
+	}
+
+	
+
+	
 
 }

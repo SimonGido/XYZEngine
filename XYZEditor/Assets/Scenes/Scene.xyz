@@ -1,6 +1,6 @@
 Scene: TestScene
 Entities:
-  - Entity: fd1230e5-61e1-4a09-afd6-d97a9e841d5f
+  - Entity: 62f8b85f-7e1e-48e1-9452-c6bb0c9eb950
     SceneTagComponent:
       Name: Havko
     TransformComponent:
@@ -8,17 +8,17 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteRenderer:
-      Material: 3ea53bb8-0b1e-4cfe-a776-d0953bf930bc
-      SubTexture: b5a20f68-f79a-435f-8c73-db26e4115f22
+      Material: 32f1e321-e0d3-4e34-9ab3-2a7a5ec3620a
+      SubTexture: 257cf58b-70e5-4db8-9a11-a827e2d6dd41
       Color: [1, 1, 1, 1]
       SortLayer: 0
       Visible: true
     Relationship:
-      FirstChild: d51b4463-537f-4c46-9630-d73af3ba32df
+      FirstChild: 84a2d1bc-e8d1-4938-b288-ea693a973af6
       Depth: 1
     ParticleRenderer:
-      Material: 8765caca-77bc-4b6b-ba4e-af23b0580116
-      Mesh: 8765caca-77bc-4b6b-ba4e-af23b0580116
+      Material: 0db36c50-4c4c-4622-a9fe-17dc0271b30e
+      Mesh: 991f8d79-783a-4717-86a1-a49b277d6633
     ParticleComponent:
       MaxParticles: 50
       Speed: 1
@@ -27,7 +27,39 @@ Entities:
         BurstInterval: 5
         Bursts:
           []
-  - Entity: d51b4463-537f-4c46-9630-d73af3ba32df
+      ParticleGenerator:
+        Color: [1, 1, 1, 1]
+        Size: [1, 1, 1]
+        Enabled: true
+      ParticleShapeGenerator:
+        Shape: 0
+        BoxMin: [-5, -5, 0]
+        BoxMax: [5, 5, 0]
+        Radius: 7
+        Enabled: true
+      ParticleLifeGenerator:
+        LifeTime: 5
+        Enabled: true
+      ParticleRandomVelocityGenerator:
+        MinVelocity: [-1, -1, 0]
+        MaxVelocity: [1, 1, 0]
+        Enabled: true
+      LightUpdater:
+        LightColor: [1, 1, 1]
+        LightRadius: 1
+        LightIntensity: 1
+        MaxLights: 20
+        Enabled: true
+      TextureAnimationUpdater:
+        Tiles: [1, 1]
+        StartFrame: 0
+        CycleLength: 5
+        Enabled: true
+      RotationOverLife:
+        EulerAngles: [0, 0, 0]
+        CycleLength: 5
+        Enabled: true
+  - Entity: 84a2d1bc-e8d1-4938-b288-ea693a973af6
     SceneTagComponent:
       Name: Child
     TransformComponent:
@@ -35,5 +67,5 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: fd1230e5-61e1-4a09-afd6-d97a9e841d5f
+      Parent: 62f8b85f-7e1e-48e1-9452-c6bb0c9eb950
       Depth: 2

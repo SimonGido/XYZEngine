@@ -74,6 +74,7 @@ namespace XYZ {
 		auto bloomShader = shaderLibrary->Get("Bloom");
 		m_BloomComputePipeline = PipelineCompute::Create(bloomShader);
 		m_BloomComputeMaterial = Material::Create(bloomShader);
+		m_BloomComputeMaterialInstance = Ref<MaterialInstance>::Create(m_BloomComputeMaterial);
 
 		TextureProperties props;
 		props.Storage = true;
@@ -88,15 +89,14 @@ namespace XYZ {
 		m_InstanceData.resize(sc_InstanceVertexBufferSize);
 
 		m_TestMesh = MeshFactory::CreateBox(glm::vec3(2.0f));
-		m_TestMaterial = Material::Create(shaderLibrary->Get("MeshShader"));
-		m_TestMaterial->SetImage("u_Texture", m_WhiteTexture->GetImage());
+		m_TestMaterial = Ref<MaterialAsset>::Create(shaderLibrary->Get("MeshShader"));
+		m_TestMaterial->SetTexture("u_Texture", m_WhiteTexture);
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
 	{
 		m_ActiveScene = scene;
 	}
-
 
 	void SceneRenderer::SetViewportSize(uint32_t width, uint32_t height)
 	{
@@ -134,6 +134,11 @@ namespace XYZ {
 		SubmitMesh(m_TestMesh, m_TestMaterial, glm::mat4(1.0f));
 		SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 0.0f, 0.0f)));
 
+		SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)), m_TestMaterial->GetMaterialInstance());
+		SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 10.0f, 0.0f)), m_TestMaterial->GetMaterialInstance());
+
+
+
 		preRender();
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
@@ -158,7 +163,7 @@ namespace XYZ {
 	}
 
 
-	void SceneRenderer::SubmitBillboard(const Ref<Material>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size)
+	void SceneRenderer::SubmitBillboard(const Ref<MaterialAsset>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size)
 	{
 		RenderQueue::SpriteKey key{ material->GetHandle() };
 
@@ -170,7 +175,7 @@ namespace XYZ {
 		command.BillboardData.push_back({ textureIndex, subTexture->GetTexCoords(), color, position, size });
 	}
 
-	void SceneRenderer::SubmitSprite(const Ref<Material>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform)
+	void SceneRenderer::SubmitSprite(const Ref<MaterialAsset>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform)
 	{
 		RenderQueue::SpriteKey key{ material->GetHandle() };
 		auto& command = m_Queue.SpriteDrawCommands[key];
@@ -181,28 +186,40 @@ namespace XYZ {
 		command.SpriteData.push_back({ textureIndex, subTexture->GetTexCoords(), color, transform });
 	}
 
-	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<Material>& material, const glm::mat4& transform)
+	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial)
 	{
-		RenderQueue::MeshKey key{ mesh->GetHandle(), material->GetHandle() };
-
+		RenderQueue::BatchMeshKey key{ mesh->GetHandle(), material->GetHandle() };
+		
 		auto& dc = m_Queue.MeshDrawCommands[key];
 		dc.Mesh = mesh;
-		dc.Material = material;
-		dc.TransformInstanceCount++;
-		dc.TransformData.push_back(Mat4ToTransformData(transform));
+		dc.MaterialAsset = material;
+
+		if (overrideMaterial.Raw())
+		{
+			auto& dcOverride = dc.OverrideCommands.emplace_back();
+			dcOverride.OverrideMaterial = overrideMaterial;
+			dcOverride.Transform = transform;
+		}
+		else
+		{		
+			dc.OverrideMaterial = material->GetMaterialInstance();
+			dc.TransformInstanceCount++;
+			dc.TransformData.push_back(Mat4ToTransformData(transform));
+		}
 	}
 
-	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<Material>& material, const glm::mat4& transform, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize)
+	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial)
 	{
-		RenderQueue::InstanceMeshKey key{ material };
+		RenderQueue::MeshKey key{ material };
 
 		auto& dg = m_Queue.InstanceMeshDrawCommands[key];
 		auto& dc = dg.emplace_back();
 
 		dc.Mesh = mesh;
-		dc.Material = material;
+		dc.MaterialAsset = material;
+		dc.OverrideMaterial = overrideMaterial.Raw() ? overrideMaterial : material->GetMaterialInstance();
 		dc.Transform = transform;
-
+		
 		dc.InstanceCount += instanceCount;
 
 		size_t offset = dc.InstanceData.size();
@@ -298,20 +315,31 @@ namespace XYZ {
 				command.Pipeline,
 				m_Renderer2D->GetCameraBufferSet(),
 				nullptr,
-				command.Material
+				command.MaterialAsset->GetMaterial()
 			);
+
 			Renderer::RenderMesh(
 				m_CommandBuffer,
 				command.Pipeline,
-				command.Material,
+				command.OverrideMaterial,
 				command.Mesh->GetVertexBuffer(),
 				command.Mesh->GetIndexBuffer(),
 				m_TransformVertexBuffer,
 				command.TransformOffset,
 				command.TransformInstanceCount
 			);
+			for (auto& dcOverride : command.OverrideCommands)
+			{
+				Renderer::RenderMesh(
+					m_CommandBuffer,
+					command.Pipeline,
+					dcOverride.OverrideMaterial,
+					command.Mesh->GetVertexBuffer(),
+					command.Mesh->GetIndexBuffer(),
+					dcOverride.Transform
+				);
+			}
 		}
-
 
 		for (auto& [key, group] : queue.InstanceMeshDrawCommands)
 		{
@@ -320,14 +348,14 @@ namespace XYZ {
 				key.Pipeline,
 				m_Renderer2D->GetCameraBufferSet(),
 				nullptr,
-				key.Material
+				key.Material->GetMaterial()
 			);
 			for (auto& command : group)
 			{
 				Renderer::RenderMesh(
 					m_CommandBuffer,
 					key.Pipeline,
-					command.Material,
+					command.OverrideMaterial,
 					command.Mesh->GetVertexBuffer(),
 					command.Mesh->GetIndexBuffer(),
 					command.Transform,
@@ -349,10 +377,11 @@ namespace XYZ {
 		for (auto& [key, command] : queue.SpriteDrawCommands)
 		{
 			m_Renderer2D->SetQuadMaterial(command.Material);
+			Ref<Material> material = command.Material->GetMaterial();
 			for (uint32_t i = 0; i < command.TextureCount; ++i)
-				command.Material->SetImageArray("u_Texture", command.Textures[i]->GetImage(), i);
+				material->SetImageArray("u_Texture", command.Textures[i]->GetImage(), i);
 			for (uint32_t i = command.TextureCount; i < Renderer2D::GetMaxTextures(); ++i)
-				command.Material->SetImageArray("u_Texture", m_WhiteTexture->GetImage(), i);
+				material->SetImageArray("u_Texture", m_WhiteTexture->GetImage(), i);
 
 			for (const auto& data : command.SpriteData)		
 				m_Renderer2D->SubmitQuad(data.Transform, data.TexCoords, data.TextureIndex, data.Color);
@@ -363,10 +392,11 @@ namespace XYZ {
 		for (auto& [key, command] : queue.BillboardDrawCommands)
 		{
 			m_Renderer2D->SetQuadMaterial(command.Material);
+			Ref<Material> material = command.Material->GetMaterial();
 			for (uint32_t i = 0; i < command.TextureCount; ++i)
-				command.Material->SetImageArray("u_Texture", command.Textures[i]->GetImage(), i);
+				material->SetImageArray("u_Texture", command.Textures[i]->GetImage(), i);
 			for (uint32_t i = command.TextureCount; i < Renderer2D::GetMaxTextures(); ++i)
-				command.Material->SetImageArray("u_Texture", m_WhiteTexture->GetImage(), i);
+				material->SetImageArray("u_Texture", m_WhiteTexture->GetImage(), i);
 
 			for (const auto& data : command.BillboardData)
 				m_Renderer2D->SubmitQuadBillboard(data.Position, data.Size, data.TexCoords, data.TextureIndex, data.Color);
@@ -390,8 +420,8 @@ namespace XYZ {
 		m_LightRenderPipeline.Material->SetImageArray("u_Texture", geometryColorImage, 0);
 		m_LightRenderPipeline.Material->SetImageArray("u_Texture", geometryPositionImage, 1);
 
-		m_LightRenderPipeline.Material->Set("u_Uniforms.NumberPointLights", (int)m_PointLights.size());
-		m_LightRenderPipeline.Material->Set("u_Uniforms.NumberSpotLights", (int)m_SpotLights.size());
+		m_LightRenderPipeline.MaterialInstance->Set("u_Uniforms.NumberPointLights", (int)m_PointLights.size());
+		m_LightRenderPipeline.MaterialInstance->Set("u_Uniforms.NumberSpotLights", (int)m_SpotLights.size());
 
 		
 
@@ -403,7 +433,7 @@ namespace XYZ {
 			m_LightRenderPipeline.Material
 		);
 		
-		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_LightRenderPipeline.Pipeline, m_LightRenderPipeline.Material);
+		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_LightRenderPipeline.Pipeline, m_LightRenderPipeline.MaterialInstance);
 		Renderer::EndRenderPass(m_CommandBuffer);
 	}
 
@@ -447,10 +477,11 @@ namespace XYZ {
 		// Renderer::ClearImage(m_CommandBuffer, m_BloomTexture[2]->GetImage());
 
 		Ref<Material> computeMaterial = m_BloomComputeMaterial;
-		Renderer::Submit([computeMaterial, bloomSettings = m_BloomSettings, prefilter]() mutable {
-			computeMaterial->Set("u_Uniforms.FilterTreshold", bloomSettings.FilterTreshold);
-			computeMaterial->Set("u_Uniforms.FilterKnee", bloomSettings.FilterKnee);
-			computeMaterial->Set("u_Uniforms.Mode", prefilter);
+		Ref<MaterialInstance> computeMaterialInst = m_BloomComputeMaterialInstance;
+		Renderer::Submit([computeMaterialInst, bloomSettings = m_BloomSettings, prefilter]() mutable {
+			computeMaterialInst->Set("u_Uniforms.FilterTreshold", bloomSettings.FilterTreshold);
+			computeMaterialInst->Set("u_Uniforms.FilterKnee", bloomSettings.FilterKnee);
+			computeMaterialInst->Set("u_Uniforms.Mode", prefilter);
 			//computeMaterial->Set("u_Uniforms.LOD", 0.0f);			
 		});
 		computeMaterial->SetImage("o_Image", m_BloomTexture[0]->GetImage(), 0);
@@ -458,11 +489,11 @@ namespace XYZ {
 		computeMaterial->SetImage("u_BloomTexture", lightPassImage);
 
 		Renderer::BeginPipelineCompute(m_CommandBuffer, m_BloomComputePipeline, nullptr, nullptr, m_BloomComputeMaterial);		
-		Renderer::DispatchCompute(m_BloomComputePipeline, m_BloomComputeMaterial, workGroupsX, workGroupsY, 1);
+		Renderer::DispatchCompute(m_BloomComputePipeline, computeMaterialInst, workGroupsX, workGroupsY, 1);
 		imageBarrier(vulkanPipeline, m_BloomTexture[0]->GetImage());
 
-		Renderer::Submit([computeMaterial, downsample]() mutable {
-			computeMaterial->Set("u_Uniforms.Mode", downsample);
+		Renderer::Submit([computeMaterialInst, downsample]() mutable {
+			computeMaterialInst->Set("u_Uniforms.Mode", downsample);
 		});
 
 		const uint32_t mips = m_BloomTexture[0]->GetMipLevelCount() - 2;
@@ -474,27 +505,27 @@ namespace XYZ {
 	
 			computeMaterial->SetImage("o_Image", m_BloomTexture[1]->GetImage(), mip);
 			computeMaterial->SetImage("u_Texture", m_BloomTexture[0]->GetImage());
-			Renderer::Submit([computeMaterial, mip]() mutable {
-				computeMaterial->Set("u_Uniforms.LOD", (float)mip - 1.0f);
+			Renderer::Submit([computeMaterialInst, mip]() mutable {
+				computeMaterialInst->Set("u_Uniforms.LOD", (float)mip - 1.0f);
 			});
 
 			Renderer::UpdateDescriptors(m_BloomComputePipeline, m_BloomComputeMaterial, nullptr, nullptr);
-			Renderer::DispatchCompute(m_BloomComputePipeline, m_BloomComputeMaterial, workGroupsX, workGroupsY, 1);
+			Renderer::DispatchCompute(m_BloomComputePipeline, computeMaterialInst, workGroupsX, workGroupsY, 1);
 			imageBarrier(vulkanPipeline, m_BloomTexture[1]->GetImage());
 
 
 			computeMaterial->SetImage("o_Image", m_BloomTexture[0]->GetImage(), mip);
 			computeMaterial->SetImage("u_Texture", m_BloomTexture[1]->GetImage());
-			Renderer::Submit([computeMaterial, mip]() mutable {
-				computeMaterial->Set("u_Uniforms.LOD", (float)mip);
+			Renderer::Submit([computeMaterialInst, mip]() mutable {
+				computeMaterialInst->Set("u_Uniforms.LOD", (float)mip);
 			});
 			Renderer::UpdateDescriptors(m_BloomComputePipeline, m_BloomComputeMaterial, nullptr, nullptr);
-			Renderer::DispatchCompute(m_BloomComputePipeline, m_BloomComputeMaterial, workGroupsX, workGroupsY, 1);
+			Renderer::DispatchCompute(m_BloomComputePipeline, computeMaterialInst, workGroupsX, workGroupsY, 1);
 			imageBarrier(vulkanPipeline, m_BloomTexture[0]->GetImage());
 		}
-		Renderer::Submit([computeMaterial, mips, upsamplefirst]() mutable {
-			computeMaterial->Set("u_Uniforms.Mode", upsamplefirst);
-			computeMaterial->Set("u_Uniforms.LOD", mips - 2.0f);
+		Renderer::Submit([computeMaterialInst, mips, upsamplefirst]() mutable {
+			computeMaterialInst->Set("u_Uniforms.Mode", upsamplefirst);
+			computeMaterialInst->Set("u_Uniforms.LOD", mips - 2.0f);
 		});
 		
 		m_BloomComputeMaterial->SetImage("o_Image", m_BloomTexture[2]->GetImage(), mips - 2);
@@ -505,12 +536,12 @@ namespace XYZ {
 		workGroupsY = (uint32_t)glm::ceil((float)mipHeight / (float)workGroupSize);
 		
 		Renderer::UpdateDescriptors(m_BloomComputePipeline, m_BloomComputeMaterial, nullptr, nullptr);
-		Renderer::DispatchCompute(m_BloomComputePipeline, m_BloomComputeMaterial, workGroupsX, workGroupsY, 1);	
+		Renderer::DispatchCompute(m_BloomComputePipeline, computeMaterialInst, workGroupsX, workGroupsY, 1);	
 		imageBarrier(vulkanPipeline, m_BloomTexture[2]->GetImage());
 		
 		// Upsample stage
-		Renderer::Submit([computeMaterial, upsample]() mutable {
-			computeMaterial->Set("u_Uniforms.Mode", upsample);
+		Renderer::Submit([computeMaterialInst, upsample]() mutable {
+			computeMaterialInst->Set("u_Uniforms.Mode", upsample);
 		});
 
 		for (int32_t mip = mips - 3; mip >= 0; mip--)
@@ -522,13 +553,13 @@ namespace XYZ {
 			m_BloomComputeMaterial->SetImage("o_Image", m_BloomTexture[2]->GetImage(), mip);
 			m_BloomComputeMaterial->SetImage("u_Texture", m_BloomTexture[0]->GetImage());
 			m_BloomComputeMaterial->SetImage("u_BloomTexture", m_BloomTexture[2]->GetImage());
-			Renderer::Submit([computeMaterial, mip]() mutable {
+			Renderer::Submit([computeMaterialInst, mip]() mutable {
 
-				computeMaterial->Set("u_Uniforms.LOD", (float)mip);
+				computeMaterialInst->Set("u_Uniforms.LOD", (float)mip);
 			});
 		
 			Renderer::UpdateDescriptors(m_BloomComputePipeline, m_BloomComputeMaterial, nullptr, nullptr);
-			Renderer::DispatchCompute(m_BloomComputePipeline, m_BloomComputeMaterial, workGroupsX, workGroupsY, 1);
+			Renderer::DispatchCompute(m_BloomComputePipeline, computeMaterialInst, workGroupsX, workGroupsY, 1);
 			imageBarrier(vulkanPipeline, m_BloomTexture[2]->GetImage());
 		}
 		
@@ -549,7 +580,7 @@ namespace XYZ {
 			nullptr,
 			m_CompositeRenderPipeline.Material
 		);
-		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CompositeRenderPipeline.Pipeline, m_CompositeRenderPipeline.Material);
+		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CompositeRenderPipeline.Pipeline, m_CompositeRenderPipeline.MaterialInstance);
 		Renderer::EndRenderPass(m_CommandBuffer);
 	}
 	void SceneRenderer::createCompositePass()
@@ -636,7 +667,7 @@ namespace XYZ {
 		uint32_t offset = 0;
 		for (auto& [key, dc] : m_Queue.MeshDrawCommands)
 		{
-			dc.Pipeline = getGeometryPipeline(dc.Material);
+			dc.Pipeline = getGeometryPipeline(dc.MaterialAsset->GetMaterial());
 			dc.TransformOffset = offset * sizeof(RenderQueue::TransformData);
 			for (const auto& transform : dc.TransformData)
 			{
@@ -644,12 +675,12 @@ namespace XYZ {
 				offset++;
 			}
 		}
-		
+
 		// Prepare transforms and instance data
 		uint32_t instanceOffset = 0;
 		for (auto& [key, group] : m_Queue.InstanceMeshDrawCommands)
 		{
-			key.Pipeline = getGeometryPipeline(key.Material);
+			key.Pipeline = getGeometryPipeline(key.Material->GetMaterial());
 			for (auto& dc : group)
 			{
 				dc.InstanceOffset = instanceOffset;
@@ -738,6 +769,7 @@ namespace XYZ {
 		specification.DepthWrite = false;
 		this->Pipeline = Pipeline::Create(specification);
 		this->Material = Material::Create(shader);
+		this->MaterialInstance = Ref<XYZ::MaterialInstance>::Create(this->Material);
 	}
 	uint32_t RenderQueue::SpriteDrawCommand::setTexture(const Ref<Texture2D>& texture)
 	{

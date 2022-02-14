@@ -139,8 +139,9 @@ namespace XYZ {
 	}
 
 	void VulkanRendererAPI::RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline,
-		Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount, uint32_t vertexOffsetSize)
+		Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount, uint32_t vertexOffsetSize)
 	{
+		XYZ_ASSERT(material.Raw(), "");
 		Renderer::Submit([renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, trans = transform, indexCount, vertexOffsetSize]() mutable
 		{
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
@@ -150,7 +151,6 @@ namespace XYZ {
 			Ref<VulkanIndexBuffer>		   vulkanIndexBuffer = indexBuffer;
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
-			Ref<VulkanMaterial>			   vulkanMaterial = material;
 			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 
@@ -164,8 +164,8 @@ namespace XYZ {
 
 			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), offset, vulkanIndexBuffer->GetVulkanIndexType());
-			ByteBuffer fsUniformStorage = vulkanMaterial->GetFSUniformsBuffer();
-			ByteBuffer vsUniformStorage = vulkanMaterial->GetVSUniformsBuffer();
+			ByteBuffer fsUniformStorage = material->GetFSUniformsBuffer();
+			ByteBuffer vsUniformStorage = material->GetVSUniformsBuffer();
 
 
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &trans);
@@ -175,8 +175,10 @@ namespace XYZ {
 		});
 	}
 
-	void VulkanRendererAPI::RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount)
+	void VulkanRendererAPI::RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, 
+		Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount)
 	{
+		XYZ_ASSERT(material.Raw(), "");
 		Renderer::Submit([renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer]() mutable
 		{
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
@@ -186,7 +188,6 @@ namespace XYZ {
 			Ref<VulkanIndexBuffer>		   vulkanIndexBuffer = indexBuffer;
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
-			Ref<VulkanMaterial>			   vulkanMaterial = material;
 			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 
@@ -197,8 +198,8 @@ namespace XYZ {
 
 			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
 			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), 0, vulkanIndexBuffer->GetVulkanIndexType());
-			ByteBuffer fsUniformStorage = vulkanMaterial->GetFSUniformsBuffer();
-			ByteBuffer vsUniformStorage = vulkanMaterial->GetVSUniformsBuffer();
+			ByteBuffer fsUniformStorage = material->GetFSUniformsBuffer();
+			ByteBuffer vsUniformStorage = material->GetVSUniformsBuffer();
 			glm::mat4 trans(1.0f);
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &trans);
 			if (fsUniformStorage)
@@ -207,8 +208,48 @@ namespace XYZ {
 		});
 	}
 
-	void VulkanRendererAPI::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount)
+	void VulkanRendererAPI::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform)
 	{
+		XYZ_ASSERT(material.Raw(), "");
+		Renderer::Submit([renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transf = transform]() mutable
+		{
+			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
+			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
+			Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = renderCommandBuffer;
+			Ref<VulkanVertexBuffer>		   vulkanVertexBuffer = vertexBuffer.As<VulkanVertexBuffer>();
+			Ref<VulkanIndexBuffer>		   vulkanIndexBuffer = indexBuffer;
+			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
+			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
+			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
+			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+
+			///////////////////////////////		
+			// Vertex Buffer
+			VkBuffer vbVertexBuffer = vulkanVertexBuffer->GetVulkanBuffer();
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vbVertexBuffer, offsets);
+
+			// Index buffer
+			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), 0, vulkanIndexBuffer->GetVulkanIndexType());
+
+			ByteBuffer fsUniformStorage = material->GetFSUniformsBuffer();
+			ByteBuffer vsUniformStorage = material->GetVSUniformsBuffer();
+
+			
+			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &transf);
+			if (fsUniformStorage)
+				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, vsUniformStorage.Size, fsUniformStorage.Size, fsUniformStorage.Data);
+
+			vkCmdDrawIndexed(commandBuffer, indexBuffer->GetCount(), 1, 0, 0, 0);
+		});
+	}
+
+	void VulkanRendererAPI::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, 
+		Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount)
+	{
+		XYZ_ASSERT(material.Raw(), "");
 		Renderer::Submit([renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transformBuffer, transformOffset, instanceCount]() mutable
 		{
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
@@ -220,7 +261,6 @@ namespace XYZ {
 			Ref<VulkanIndexBuffer>		   vulkanIndexBuffer = indexBuffer;
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
-			Ref<VulkanMaterial>			   vulkanMaterial = material;
 			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 
@@ -239,8 +279,8 @@ namespace XYZ {
 			// Index buffer
 			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), 0, vulkanIndexBuffer->GetVulkanIndexType());
 			
-			ByteBuffer fsUniformStorage = vulkanMaterial->GetFSUniformsBuffer();
-			ByteBuffer vsUniformStorage = vulkanMaterial->GetVSUniformsBuffer();
+			ByteBuffer fsUniformStorage = material->GetFSUniformsBuffer();
+			ByteBuffer vsUniformStorage = material->GetVSUniformsBuffer();
 			glm::mat4 trans(1.0f);
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &trans);
 			if (fsUniformStorage)
@@ -250,8 +290,10 @@ namespace XYZ {
 		});
 	}
 
-	void VulkanRendererAPI::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
+	void VulkanRendererAPI::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, 
+		Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
 	{
+		XYZ_ASSERT(material.Raw(), "");
 		Renderer::Submit([renderCommandBuffer, pipeline, material, 
 			vertexBuffer, indexBuffer, transCopy = transform,
 			instanceBuffer, instanceOffset, instanceCount
@@ -268,7 +310,6 @@ namespace XYZ {
 
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
-			Ref<VulkanMaterial>			   vulkanMaterial = material;
 
 			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
@@ -288,8 +329,8 @@ namespace XYZ {
 			// Index buffer
 			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), 0, vulkanIndexBuffer->GetVulkanIndexType());
 
-			ByteBuffer fsUniformStorage = vulkanMaterial->GetFSUniformsBuffer();
-			ByteBuffer vsUniformStorage = vulkanMaterial->GetVSUniformsBuffer();
+			ByteBuffer fsUniformStorage = material->GetFSUniformsBuffer();
+			ByteBuffer vsUniformStorage = material->GetVSUniformsBuffer();
 
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &transCopy);
 			if (fsUniformStorage)
@@ -299,7 +340,8 @@ namespace XYZ {
 		});
 	}
 
-	void VulkanRendererAPI::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
+	void VulkanRendererAPI::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, 
+		Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
 	{
 		Renderer::Submit([renderCommandBuffer, pipeline, material,
 			vertexBuffer, indexBuffer,
@@ -319,7 +361,6 @@ namespace XYZ {
 
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
-			Ref<VulkanMaterial>			   vulkanMaterial = material;
 
 			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
@@ -344,8 +385,8 @@ namespace XYZ {
 			// Index buffer
 			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), 0, vulkanIndexBuffer->GetVulkanIndexType());
 
-			ByteBuffer fsUniformStorage = vulkanMaterial->GetFSUniformsBuffer();
-			ByteBuffer vsUniformStorage = vulkanMaterial->GetVSUniformsBuffer();
+			ByteBuffer fsUniformStorage = material->GetFSUniformsBuffer();
+			ByteBuffer vsUniformStorage = material->GetVSUniformsBuffer();
 			glm::mat4 trans(1.0f);
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &trans);
 			if (fsUniformStorage)
@@ -458,13 +499,13 @@ namespace XYZ {
 		});
 	}
 
-	void VulkanRendererAPI::DispatchCompute(Ref<PipelineCompute> pipeline, Ref<Material> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
+	void VulkanRendererAPI::DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 	{
 		Renderer::Submit([pipeline, material, groupCountX, groupCountY, groupCountZ]() {
 			Ref<VulkanMaterial> vulkanMaterial = material;
 			Ref<VulkanPipelineCompute> vulkanPipeline = pipeline;
 
-			ByteBuffer vsUniformStorage = vulkanMaterial->GetVSUniformsBuffer();
+			ByteBuffer vsUniformStorage = material->GetVSUniformsBuffer();
 			vkCmdPushConstants(
 				vulkanPipeline->GetActiveCommandBuffer(),
 				vulkanPipeline->GetVulkanPipelineLayout(),

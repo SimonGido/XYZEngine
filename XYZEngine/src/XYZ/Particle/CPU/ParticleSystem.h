@@ -35,7 +35,7 @@ namespace XYZ {
 			ParticleEmitter					Emitter;
 			
 			// Generators
-			ParticleGenerator				Default;
+			ParticleGenerator				Main;
 			ParticleShapeGenerator		    Shape;
 			ParticleLifeGenerator		    Life;
 			ParticleRandomVelocityGenerator RandomVelocity;

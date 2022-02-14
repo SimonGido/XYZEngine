@@ -41,8 +41,8 @@ namespace XYZ {
 			SceneEntity m_SelectedEntity;
 			Ref<Asset>  m_SelectedAsset;
 
-			Ref<Material>	m_DefaultMaterial;
-			Ref<SubTexture>	m_DefaultSubTexture;
+			Ref<MaterialAsset>	m_DefaultMaterial;
+			Ref<SubTexture>		m_DefaultSubTexture;
 		private:
 			std::unordered_map<std::string, Ref<Inspectable>> m_Editables;
 

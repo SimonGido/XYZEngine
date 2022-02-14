@@ -31,4 +31,28 @@ namespace XYZ
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void Destructor_Native(IntPtr unmanagedInstance);
     }
+
+    public class MaterialInstance : UnmanagedResource
+    {
+        internal IntPtr m_UnmanagedInstance;
+        public MaterialInstance(Material material)
+        {
+            m_UnmanagedInstance = Constructor_Native(material.m_UnmanagedInstance);
+        }
+
+        public override void Destroy()
+        {
+            Destructor_Native(m_UnmanagedInstance);
+        }
+
+        internal MaterialInstance(IntPtr instance)
+        {
+            m_UnmanagedInstance = instance;
+        }
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern IntPtr Constructor_Native(IntPtr shaderInstance);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void Destructor_Native(IntPtr unmanagedInstance);
+    }
 }

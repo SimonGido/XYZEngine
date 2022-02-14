@@ -304,7 +304,7 @@ namespace XYZ {
 			// Assets could be reloaded by AssetManager, update references
 			if (AssetManager::Exist(data.Renderer->Material->GetHandle()))
 			{
-				data.Renderer->Material = AssetManager::GetAsset<Material>(data.Renderer->Material->GetHandle());
+				data.Renderer->Material = AssetManager::GetAsset<MaterialAsset>(data.Renderer->Material->GetHandle());
 			}
 			if (AssetManager::Exist(data.Renderer->SubTexture->GetHandle()))
 			{
@@ -317,7 +317,7 @@ namespace XYZ {
 		for (auto entity : meshView)
 		{
 			auto& [transform, meshComponent] = meshView.Get<TransformComponent, MeshComponent>(entity);
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.Material, transform.WorldTransform);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.OverrideMaterial);
 		}
 
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleRenderer, ParticleComponent>();
@@ -341,11 +341,12 @@ namespace XYZ {
 
 			auto renderData = particleComponent.System.GetRenderDataRead();
 			sceneRenderer->SubmitMesh(
-				renderer.Mesh, renderer.Material,
+				renderer.Mesh, renderer.MaterialAsset,
 				transform.WorldTransform,
 				renderData->Data.data(),
 				renderData->InstanceCount,
-				sizeof(ParticleRenderData)
+				sizeof(ParticleRenderData),
+				renderer.OverrideMaterial
 			);
 		}
 		sceneRenderer->EndScene();
@@ -515,7 +516,7 @@ namespace XYZ {
 			if (renderer.Visible)
 			{
 				SortKey<uint64_t, RenderSortFlags> sortKey;
-				sortKey.Set(RenderSortFlags::MaterialFlag, static_cast<uint64_t>(renderer.Material->GetID()));
+				sortKey.Set(RenderSortFlags::MaterialFlag, static_cast<uint64_t>(renderer.Material->GetMaterial()->GetID()));
 				m_SpriteRenderData.push_back({ &renderer, &transform, sortKey.GetKey() });
 			}
 		}

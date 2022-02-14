@@ -3,6 +3,7 @@
 
 #include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Animation/AnimatorController.h"
+#include "XYZ/Renderer/MaterialAsset.h"
 
 #include "XYZ/Utils/YamlUtils.h"
 
@@ -87,6 +88,18 @@ namespace XYZ {
 	}
 	void MaterialAssetSerializer::Serialize(const AssetMetadata& metadata, const Ref<Asset>& asset) const
 	{
+		Ref<MaterialAsset> material = asset.As<MaterialAsset>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Shader" << material->GetShader()->GetName();
+		out << YAML::Key << "Textures" << YAML::BeginSeq;
+
+
+
+		out << YAML::EndSeq;
+
+		out << YAML::EndMap;
 	}
 	bool MaterialAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{

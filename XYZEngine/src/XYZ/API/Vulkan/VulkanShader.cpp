@@ -183,8 +183,8 @@ namespace XYZ {
 
 	size_t VulkanShader::GetHash() const
 	{		
-		return std::hash<GUID>{}(GetHandle());
-		//return std::hash<std::string>{}(m_AssetPath);
+		//return std::hash<GUID>{}(GetHandle());
+		return std::hash<std::string>{}(m_AssetPath);
 	}
 
 	bool VulkanShader::IsCompiled() const

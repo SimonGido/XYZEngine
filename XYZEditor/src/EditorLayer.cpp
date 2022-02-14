@@ -37,18 +37,18 @@ namespace XYZ {
 
 			m_CommandBuffer = RenderCommandBuffer::Create(0, "Overlay");
 			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
-			m_QuadMaterial = Material::Create(shaderLib->Get("OverlayQuad"));
-			m_LineMaterial = Material::Create(shaderLib->Get("OverlayLine"));
-			m_CircleMaterial = Material::Create(shaderLib->Get("OverlayCircle"));
+			m_QuadMaterial = Ref<MaterialAsset>::Create(shaderLib->Get("OverlayQuad"));
+			m_LineMaterial = Ref<MaterialAsset>::Create(shaderLib->Get("OverlayLine"));
+			m_CircleMaterial = Ref<MaterialAsset>::Create(shaderLib->Get("OverlayCircle"));
 			m_OverlayRenderer2D = Ref<Renderer2D>::Create(
 				m_CommandBuffer,
 				m_QuadMaterial, m_LineMaterial, m_CircleMaterial, 
 				m_SceneRenderer->GetFinalRenderPass()
 			);
 
-			m_QuadMaterial->SetImageArray("u_Texture", m_CameraTexture->GetImage(), 0);
+			m_QuadMaterial->SetTexture("u_Texture", m_CameraTexture, 0);
 			for (uint32_t i = 1; i < Renderer2D::GetMaxTextures(); ++i)
-				m_QuadMaterial->SetImageArray("u_Texture", Renderer::GetDefaultResources().WhiteTexture->GetImage(), i);
+				m_QuadMaterial->SetTexture("u_Texture", Renderer::GetDefaultResources().WhiteTexture, i);
 
 			m_EditorManager.SetSceneContext(m_Scene);
 			m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
@@ -67,16 +67,19 @@ namespace XYZ {
 			Ref<Animation> animation = AssetManager::GetAsset<Animation>("Assets/Animations/HavkoAnim.anim");
 
 			
+			Ref<MaterialAsset> material = Ref<MaterialAsset>::Create(shaderLib->Get("ParticleShaderCPU"));
+			material->SetTexture("u_Texture", Renderer::GetDefaultResources().WhiteTexture);
+			
 			ParticleRenderer& particleRenderer = newEntity.AddComponent<ParticleRenderer>(
 				ParticleRenderer{ 
 					MeshFactory::CreateBox(glm::vec3(0.5f)),
-					Material::Create(shaderLib->Get("ParticleShaderCPU"))
+					material,
 				});
-			particleRenderer.Material->SetImage("u_Texture", Renderer::GetDefaultResources().WhiteTexture->GetImage());
 			newEntity.AddComponent<ParticleComponent>({ ParticleSystem(50) });
 
 			auto& spriteRenderer = newEntity.EmplaceComponent<SpriteRenderer>();
-			spriteRenderer.Material = Material::Create(Renderer::GetShaderLibrary()->Get("DefaultLitShader"));
+			Ref<MaterialAsset> spriteMaterial = Ref<MaterialAsset>::Create(Renderer::GetShaderLibrary()->Get("DefaultLitShader"));
+			spriteRenderer.Material = spriteMaterial;
 			spriteRenderer.SubTexture = Ref<SubTexture>::Create(Texture2D::Create("Assets/Textures/1_ORK_head.png"));
 
 			auto& animatorComp = newEntity.EmplaceComponent<AnimatorComponent>();

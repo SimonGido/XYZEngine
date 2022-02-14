@@ -214,8 +214,8 @@ namespace XYZ {
 		out << YAML::Key << "ParticleRenderer";
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "Material" << val.Material->GetHandle();
-		out << YAML::Key << "Mesh" << val.Material->GetHandle();
+		out << YAML::Key << "Material" << val.MaterialAsset->GetHandle();
+		out << YAML::Key << "Mesh" << val.Mesh->GetHandle();
 
 		out << YAML::EndMap;
 	}
@@ -258,9 +258,9 @@ namespace XYZ {
 			out << YAML::Key << "ParticleGenerator";
 			out << YAML::BeginMap; // ParticleGenerator
 
-			out << YAML::Key << "Color" << moduleData->Default.Color;
-			out << YAML::Key << "Size" << moduleData->Default.Size;
-			out << YAML::Key << "Enabled" << moduleData->Default.Enabled;
+			out << YAML::Key << "Color" << moduleData->Main.Color;
+			out << YAML::Key << "Size" << moduleData->Main.Size;
+			out << YAML::Key << "Enabled" << moduleData->Main.Enabled;
 
 			out << YAML::EndMap; // ParticleGenerator
 		}
@@ -358,9 +358,9 @@ namespace XYZ {
 		}
 		{ // ParticleGenerator
 			auto generator = data["ParticleGenerator"];
-			moduleData->Default.Color = generator["Color"].as<glm::vec4>();
-			moduleData->Default.Size = generator["Size"].as<glm::vec3>();
-			moduleData->Default.Enabled = generator["Enabled"].as<bool>();
+			moduleData->Main.Color = generator["Color"].as<glm::vec4>();
+			moduleData->Main.Size = generator["Size"].as<glm::vec3>();
+			moduleData->Main.Enabled = generator["Enabled"].as<bool>();
 		}
 		{ // ParticleShapeGenerator
 			auto generator = data["ParticleShapeGenerator"];

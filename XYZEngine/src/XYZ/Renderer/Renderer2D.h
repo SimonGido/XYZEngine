@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Camera.h"
-#include "Material.h"
+#include "MaterialAsset.h"
 #include "Mesh.h"
 #include "SkeletalMesh.h"
 #include "Font.h"
@@ -47,18 +47,18 @@ namespace XYZ {
 	public:
 		Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer);
 		Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer,
-			const Ref<Material>& quadMaterial,
-			const Ref<Material>& lineMaterial,
-			const Ref<Material>& circleMaterial,
+			const Ref<MaterialAsset>& quadMaterial,
+			const Ref<MaterialAsset>& lineMaterial,
+			const Ref<MaterialAsset>& circleMaterial,
 			const Ref<RenderPass>& renderPass
 		);
 		~Renderer2D();
 
 		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, bool clear = true);
 
-		void SetQuadMaterial(const Ref<Material>& material);
-		void SetLineMaterial(const Ref<Material>& material);
-		void SetCircleMaterial(const Ref<Material>& material);
+		void SetQuadMaterial(const Ref<MaterialAsset>& material);
+		void SetLineMaterial(const Ref<MaterialAsset>& material);
+		void SetCircleMaterial(const Ref<MaterialAsset>& material);
 
 		void SetTargetRenderPass(const Ref<RenderPass>& renderPass);
 		Ref<RenderPass> GetTargetRenderPass() const;
@@ -148,9 +148,9 @@ namespace XYZ {
 		Ref<RenderCommandBuffer> m_RenderCommandBuffer;
 		Ref<RenderPass>			 m_RenderPass;
 
-		Ref<Material>			 m_QuadMaterial;
-		Ref<Material>			 m_LineMaterial;
-		Ref<Material>			 m_CircleMaterial;
+		Ref<MaterialAsset>		 m_QuadMaterial;
+		Ref<MaterialAsset>		 m_LineMaterial;
+		Ref<MaterialAsset>		 m_CircleMaterial;
 								 
 
 		std::map<size_t, Ref<Pipeline>> m_QuadPipelines;

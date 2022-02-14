@@ -65,9 +65,9 @@ namespace XYZ {
 			Ref<RenderCommandBuffer>	m_CommandBuffer;
 			Ref<Renderer2D>				m_OverlayRenderer2D;
 			Ref<Texture2D>				m_CameraTexture;
-			Ref<Material>				m_QuadMaterial;
-			Ref<Material>				m_LineMaterial;
-			Ref<Material>				m_CircleMaterial;
+			Ref<MaterialAsset>			m_QuadMaterial;
+			Ref<MaterialAsset>			m_LineMaterial;
+			Ref<MaterialAsset>			m_CircleMaterial;
 			EditorCamera* m_EditorCamera = nullptr;
 
 			bool m_ShowColliders = true;

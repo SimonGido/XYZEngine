@@ -7,7 +7,7 @@
 
 namespace XYZ {
 
-	SpriteRenderer::SpriteRenderer(const XYZ::Ref<XYZ::Material>& material, const Ref<XYZ::SubTexture>& subTexture, const glm::vec4& color, uint32_t sortLayer, bool isVisible)
+	SpriteRenderer::SpriteRenderer(const XYZ::Ref<XYZ::MaterialAsset>& material, const Ref<XYZ::SubTexture>& subTexture, const glm::vec4& color, uint32_t sortLayer, bool isVisible)
 		:
 		Material(material),
 		SubTexture(subTexture),
@@ -242,5 +242,16 @@ namespace XYZ {
 
 		glm::decompose(transform, Scale, rotation, Translation, skew, perspective);
 		Rotation = glm::eulerAngles(rotation);
+	}
+	MeshComponent::MeshComponent(const Ref<XYZ::Mesh>& mesh, const Ref<XYZ::MaterialAsset>& materialAsset)
+		:
+		Mesh(mesh), MaterialAsset(materialAsset)
+	{
+	}
+
+	ParticleRenderer::ParticleRenderer(const Ref<XYZ::Mesh>& mesh, const Ref<XYZ::MaterialAsset>& materialAsset)
+		:
+		Mesh(mesh), MaterialAsset(materialAsset)
+	{
 	}
 }
