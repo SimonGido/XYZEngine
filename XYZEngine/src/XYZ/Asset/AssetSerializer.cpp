@@ -6,6 +6,7 @@
 #include "XYZ/Renderer/Renderer.h"
 
 #include "MaterialAsset.h"
+#include "ShaderAsset.h"
 #include "AssetManager.h"
 
 #include "XYZ/Utils/YamlUtils.h"
@@ -89,13 +90,72 @@ namespace XYZ {
 		asset = serializer.Deserialize(metadata.FilePath.string());
 		return true;
 	}
+
+	void ShaderAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+		WeakRef<ShaderAsset> shaderAsset = asset.As<ShaderAsset>();
+		Ref<Shader> shader = shaderAsset->GetShader();
+		const auto& layouts = shaderAsset->GetLayouts();
+
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Name" << shader->GetName();
+		out << YAML::Key << "FilePath" << shader->GetPath();
+
+		out << YAML::Key << "Layouts" << YAML::BeginSeq;
+		for (const auto& layout : layouts)
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Instanced" << layout.Instanced();
+			out << YAML::Key << "Elements" << YAML::BeginSeq;
+			out << YAML::Flow;
+			for (const auto& element : layout)
+			{
+				out << static_cast<uint32_t>(element.Type);
+			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
+		std::ofstream fout(metadata.FilePath);
+		fout << out.c_str();
+	}
+	bool ShaderAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+		std::string name = data["Name"].as<std::string>();
+		std::string filePath = data["FilePath"].as<std::string>();
+
+		std::vector<BufferLayout> layouts;
+		for (auto layoutData : data["Layouts"])
+		{
+			bool instanced = layoutData["Instanced"].as<bool>();
+			std::vector<BufferElement> elements;
+			for (auto elementData : layoutData["Elements"])
+			{
+				ShaderDataType type = static_cast<ShaderDataType>(elementData.as<uint32_t>());
+				elements.push_back({ type, "" });
+			}
+			layouts.emplace_back(elements, instanced);
+		}
+
+		Ref<Shader> shader = Shader::Create(name, filePath, layouts);
+		asset = Ref<ShaderAsset>::Create(shader);
+		return true;
+	}
+
 	void MaterialAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
 	{
 		WeakRef<MaterialAsset> material = asset.As<MaterialAsset>();
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "Shader" << material->GetShader()->GetName();
+		out << YAML::Key << "Shader" << material->GetShaderAsset()->GetHandle();
 		out << YAML::Key << "Textures" << YAML::BeginSeq;
 		for (const auto& texture : material->GetTextures())
 		{
@@ -133,8 +193,9 @@ namespace XYZ {
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
-		Ref<Shader> shader = Renderer::GetShaderLibrary()->Get(data["Shader"].as<std::string>());
-		Ref<MaterialAsset> material = Ref<MaterialAsset>::Create(shader);
+		AssetHandle shaderHandle = AssetHandle(data["Shader"].as<std::string>());
+		Ref<ShaderAsset> shaderAsset = AssetManager::GetAsset<ShaderAsset>(shaderHandle);
+		Ref<MaterialAsset> materialAsset = Ref<MaterialAsset>::Create(shaderAsset);
 
 		for (auto texture : data["Textures"])
 		{
@@ -142,12 +203,12 @@ namespace XYZ {
 			auto name = texture["Name"].as<std::string>();
 			if (AssetManager::Exist(handle))
 			{
-				material->SetTexture(name, AssetManager::GetAsset<Texture2D>(handle));
+				materialAsset->SetTexture(name, AssetManager::GetAsset<Texture2D>(handle));
 			}
 			else
 			{
 				XYZ_WARN("Missing texture!");
-				material->SetTexture(name, Renderer::GetDefaultResources().WhiteTexture);
+				materialAsset->SetTexture(name, Renderer::GetDefaultResources().WhiteTexture);
 			}
 		}
 		auto textureArrays = data["TextureArrays"];
@@ -160,17 +221,17 @@ namespace XYZ {
 				GUID handle(texture.as<std::string>());
 				if (AssetManager::Exist(handle))
 				{
-					material->SetTexture(name, AssetManager::GetAsset<Texture2D>(handle), index);
+					materialAsset->SetTexture(name, AssetManager::GetAsset<Texture2D>(handle), index);
 				}
 				else
 				{
 					XYZ_WARN("Missing texture!");
-					material->SetTexture(name, Renderer::GetDefaultResources().WhiteTexture, index);
+					materialAsset->SetTexture(name, Renderer::GetDefaultResources().WhiteTexture, index);
 				}
 				index++;
 			}
 		}
-		asset = material;
+		asset = materialAsset;
 		return true;
 	}
 
@@ -335,4 +396,5 @@ namespace XYZ {
 		asset = anim;
 		return true;
 	}
+
 }

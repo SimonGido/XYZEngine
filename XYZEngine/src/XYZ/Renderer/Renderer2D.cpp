@@ -49,8 +49,6 @@ namespace XYZ {
 		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
 			
 		createRenderPass();	
-		auto shaderLibrary = Renderer::GetShaderLibrary();
-		
 		const auto& defaultResources = Renderer::GetDefaultResources();
 
 		m_QuadMaterial = defaultResources.DefaultQuadMaterial;

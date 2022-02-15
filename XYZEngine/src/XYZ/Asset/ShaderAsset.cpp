@@ -3,6 +3,12 @@
 
 
 namespace XYZ {
+	ShaderAsset::ShaderAsset(Ref<Shader> shader)
+		:
+		m_Shader(shader),
+		m_Layouts(shader->GetLayouts())
+	{
+	}
 	ShaderAsset::ShaderAsset(const std::string& filepath, std::vector<BufferLayout> layouts)
 		:
 		m_Layouts(std::move(layouts))

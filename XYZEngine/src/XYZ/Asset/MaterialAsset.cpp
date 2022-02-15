@@ -4,9 +4,11 @@
 
 namespace XYZ {
 
-	MaterialAsset::MaterialAsset(Ref<Shader> shader)
+	MaterialAsset::MaterialAsset(Ref<ShaderAsset> shaderAsset)
+		:
+		m_ShaderAsset(shaderAsset)
 	{
-		m_Material = Material::Create(shader);
+		m_Material = Material::Create(shaderAsset->GetShader());
 		m_MaterialInstance = Ref<MaterialInstance>::Create(m_Material);
 	}
 	MaterialAsset::~MaterialAsset()

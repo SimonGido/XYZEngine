@@ -6,6 +6,8 @@
 #include "XYZ/Asset/Asset.h"
 #include "XYZ/Core/Core.h"
 
+#include "ShaderAsset.h"
+
 namespace XYZ {
 
 	class MaterialAsset : public Asset
@@ -22,7 +24,7 @@ namespace XYZ {
 			std::vector<Ref<Texture2D>> Textures;
 		};
 	public:
-		MaterialAsset(Ref<Shader> shader);
+		MaterialAsset(Ref<ShaderAsset> shaderAsset);
 		virtual ~MaterialAsset() override;
 
 		void SetTexture(const std::string& name, Ref<Texture2D> texture);
@@ -34,6 +36,7 @@ namespace XYZ {
 		template <typename T>
 		T&	 Get(const std::string_view name);
 
+		Ref<ShaderAsset>	  GetShaderAsset()	    const { return m_ShaderAsset; }
 		Ref<Shader>			  GetShader()			const { return m_Material->GetShader(); }
 		Ref<Material>		  GetMaterial()			const { return m_Material; }
 		Ref<MaterialInstance> GetMaterialInstance() const { return m_MaterialInstance; }
@@ -43,6 +46,7 @@ namespace XYZ {
 
 		static AssetType GetStaticType() { return AssetType::Material; }
 	private:
+		Ref<ShaderAsset>			  m_ShaderAsset;
 		Ref<Material>				  m_Material;
 		Ref<MaterialInstance>		  m_MaterialInstance;
 		std::vector<TextureData>	  m_Textures;

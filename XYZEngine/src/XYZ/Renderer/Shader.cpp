@@ -39,37 +39,7 @@ namespace XYZ {
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 		return nullptr;
 	}
-	void ShaderLibrary::Add(const Ref<Shader>& shader)
-	{
-		auto& name = shader->GetName();
-		if (m_Shaders.find(name) == m_Shaders.end())
-		{
-			m_Shaders[name] = shader;
-		}
-		else XYZ_ASSERT(false, "Shader name already exists.");
-	}
-	Ref<Shader> ShaderLibrary::Load(const std::string& path, std::vector<BufferLayout> layouts)
-	{
-		auto shader = Shader::Create(path, std::move(layouts));
-		Add(shader);
-		return shader;
-	}
-	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts)
-	{
-		auto shader = Shader::Create(name, path, std::move(layouts));
-		Add(shader);
-		return shader;
-	}
-	Ref<Shader> ShaderLibrary::Get(const std::string& name)
-	{
-		if (Exists(name)) return m_Shaders[name];
-		XYZ_ASSERT(false, "Shader does not exist.");
-		return Ref<Shader>();
-	}
-	bool ShaderLibrary::Exists(const std::string& name)
-	{
-		return m_Shaders.find(name) != m_Shaders.end();
-	}
+	
 
 	ShaderUniform::ShaderUniform(std::string name, ShaderUniformDataType dataType, uint32_t size, uint32_t offset, uint32_t count)
 		:

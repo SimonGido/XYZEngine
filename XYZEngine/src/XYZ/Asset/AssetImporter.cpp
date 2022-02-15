@@ -25,34 +25,6 @@
 
 namespace XYZ {
 
-	static YAML::Emitter& ToVec2(YAML::Emitter& out, const glm::vec2& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
-		return out;
-	}
-	
-	static YAML::Emitter& ToVec3(YAML::Emitter& out, const glm::vec3& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
-		return out;
-	}
-	
-	static YAML::Emitter& ToVec4(YAML::Emitter& out, const glm::vec4& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
-		return out;
-	}
-
-	static YAML::Emitter& ToQuat(YAML::Emitter& out, const glm::quat& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.w << v.x << v.y << v.z << YAML::EndSeq;
-		return out;
-	}
-
 	std::array<Scope<AssetSerializer>, ToUnderlying(AssetType::NumTypes)> AssetImporter::s_Serializers;
 
 	void AssetImporter::Init()
@@ -61,6 +33,7 @@ namespace XYZ {
 		s_Serializers[ToUnderlying(AssetType::Texture)] = CreateScope<TextureAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::Animation)] = CreateScope<AnimationAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::Material)] = CreateScope<MaterialAssetSerializer>();
+		s_Serializers[ToUnderlying(AssetType::Shader)] = CreateScope<ShaderAssetSerializer>();
 	}
 
 	void AssetImporter::Serialize(const AssetMetadata& metadata, WeakRef<Asset> asset)

@@ -78,12 +78,9 @@ namespace XYZ {
 	{
 		RendererQueueData			   QueueData;
 		Ref<APIContext>				   APIContext;
-		Ref<ShaderLibrary>			   ShaderLibrary;
 		Ref<VertexBuffer>			   FullscreenQuadVertexBuffer;
 		Ref<IndexBuffer>			   FullscreenQuadIndexBuffer;
 
-		
-		
 		RendererStats				   Stats;
 		RendererConfiguration		   Configuration;
 		RendererResources			   Resources;
@@ -156,83 +153,7 @@ namespace XYZ {
 		s_Data.QueueData.Init(s_Data.Configuration.FramesInFlight);
 		s_RendererAPI->Init();
 		
-		SetupFullscreenQuad();
-		// TODO: maybe store it in metadata
-		std::vector<BufferLayout> defaultLayouts = {
-			BufferLayout{
-				{ ShaderDataType::Float3, "a_Position" },
-				{ ShaderDataType::Float2, "a_TexCoord" }
-			} 
-		};
-		std::vector<BufferLayout> lineLayouts = {
-			BufferLayout{
-				{ ShaderDataType::Float4, "a_Color" },
-				{ ShaderDataType::Float3, "a_Position" }
-			}
-		};
-		std::vector<BufferLayout> circleLayouts = {
-			BufferLayout{
-				{XYZ::ShaderDataType::Float3, "a_WorldPosition" },
-				{XYZ::ShaderDataType::Float,  "a_Thickness" },
-				{XYZ::ShaderDataType::Float2, "a_LocalPosition" },
-				{XYZ::ShaderDataType::Float4, "a_Color" }
-			}
-		};
-		std::vector<BufferLayout> lit2DLayouts = {
-			BufferLayout{
-				{XYZ::ShaderDataType::Float4, "a_Color" },
-				{XYZ::ShaderDataType::Float3, "a_Position" },
-				{XYZ::ShaderDataType::Float2, "a_TexCoord" },
-				{XYZ::ShaderDataType::Float,  "a_TextureID" },
-				{XYZ::ShaderDataType::Float,  "a_TilingFactor" }
-			}
-		};
-		std::vector<BufferLayout> meshLayouts = {
-			BufferLayout{
-				{ShaderDataType::Float3, "a_Position" },
-				{ShaderDataType::Float2, "a_TexCoord" }
-			},
-			BufferLayout{
-				{{ShaderDataType::Float4, "a_TransformRow0"},
-				{ShaderDataType::Float4, "a_TransformRow1"},
-				{ShaderDataType::Float4, "a_TransformRow2"}}
-				,true
-			}
-		};
-		std::vector<BufferLayout> particleCPULayouts = {
-			BufferLayout{
-				{ShaderDataType::Float3, "a_Position" },
-				{ShaderDataType::Float2, "a_TexCoord" }
-			},
-		
-			BufferLayout{
-				{{ShaderDataType::Float4, "a_IColor"},
-				{ ShaderDataType::Float3, "a_IPosition"},
-				{ ShaderDataType::Float3, "a_ISize"},
-				{ ShaderDataType::Float4, "a_IAxis"},
-				{ ShaderDataType::Float2, "a_ITexOffset"}}
-				,true
-			}
-		};
-		s_Data.ShaderLibrary = Ref<ShaderLibrary>::Create();
-		s_Data.ShaderLibrary->Load("Resources/Shaders/CompositeShader.glsl", defaultLayouts);
-		s_Data.ShaderLibrary->Load("Resources/Shaders/LightShader.glsl", defaultLayouts);
-
-		s_Data.ShaderLibrary->Load("Resources/Shaders/Bloom.glsl", {});
-		
-		s_Data.ShaderLibrary->Load("Resources/Shaders/DefaultLitShader.glsl", lit2DLayouts);
-		s_Data.ShaderLibrary->Load("Resources/Shaders/LineShader.glsl", lineLayouts);
-		s_Data.ShaderLibrary->Load("Resources/Shaders/Circle.glsl", circleLayouts);
-
-		s_Data.ShaderLibrary->Load("Resources/Shaders/MeshShader.glsl", meshLayouts);
-		s_Data.ShaderLibrary->Load("Resources/Shaders/Particle/ParticleShaderCPU.glsl", particleCPULayouts);
-		
-
-		s_Data.ShaderLibrary->Load("Resources/Shaders/Overlay/OverlayQuad.glsl", lit2DLayouts);
-		s_Data.ShaderLibrary->Load("Resources/Shaders/Overlay/OverlayLine.glsl", lineLayouts);
-		s_Data.ShaderLibrary->Load("Resources/Shaders/Overlay/OverlayCircle.glsl", circleLayouts);
-
-		
+		SetupFullscreenQuad();	
 		s_Data.Resources.Init();
 		
 		WaitAndRenderAll();
@@ -242,7 +163,6 @@ namespace XYZ {
 	{	
 		s_Data.FullscreenQuadVertexBuffer.Reset();
 		s_Data.FullscreenQuadIndexBuffer.Reset();
-		s_Data.ShaderLibrary.Reset();
 		s_Data.ShaderDependencies.Clear();
 		s_Data.Resources.Shutdown();
 		s_RendererAPI->Shutdown();
@@ -482,10 +402,7 @@ namespace XYZ {
 		uint32_t currentFrame = s_Data.APIContext->GetCurrentFrame();
 		s_Data.QueueData.ExecuteResourceQueue(currentFrame);
 	}
-	Ref<ShaderLibrary> Renderer::GetShaderLibrary()
-	{
-		return s_Data.ShaderLibrary;
-	}
+
 	Ref<APIContext> Renderer::GetAPIContext()
 	{
 		return s_Data.APIContext;
@@ -537,7 +454,7 @@ namespace XYZ {
 		WhiteTexture = AssetManager::GetAsset<Texture2D>("Resources/Textures/WhiteTexture.tex");
 		WhiteTexture->SetFlag(AssetFlag::ReadOnly);
 
-		DefaultQuadMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultLitQuad.mat");
+		DefaultQuadMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultLit.mat");
 		DefaultQuadMaterial->SetFlag(AssetFlag::ReadOnly);
 
 		DefaultLineMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultLine.mat");
@@ -557,6 +474,14 @@ namespace XYZ {
 
 		DefaultParticleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
 		DefaultParticleMaterial->SetFlag(AssetFlag::ReadOnly);
+
+		for (uint32_t i = 0; i < Renderer2D::GetMaxTextures(); ++i)
+		{
+			DefaultQuadMaterial->SetTexture("u_Texture", WhiteTexture, i);
+			OverlayQuadMaterial->SetTexture("u_Texture", WhiteTexture, i);
+		}
+		DefaultParticleMaterial->SetTexture("u_Texture", WhiteTexture);
+		AssetManager::SerializeAll();
 	}
 	void RendererResources::Shutdown()
 	{

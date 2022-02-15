@@ -35,7 +35,7 @@ namespace XYZ {
 
 	struct BufferElement
 	{
-		BufferElement(ShaderDataType type, const std::string& name)
+		BufferElement(ShaderDataType type, const std::string_view name)
 			: Type(type), Size(ShaderDataTypeSize(type)), Offset(0)
 		{}
 
@@ -63,7 +63,6 @@ namespace XYZ {
 		ShaderDataType Type;
 		uint32_t	   Size;
 		uint32_t	   Offset;
-		uint32_t	   Divisor;
 	};
 
 	class BufferLayout

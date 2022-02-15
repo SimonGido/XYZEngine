@@ -44,8 +44,11 @@ namespace XYZ
 	{
 		for (const auto& [handle, asset] : s_LoadedAssets)
 		{
-			const auto &metadata = GetMetadata(handle);
-			AssetImporter::Serialize(metadata, asset);
+			if (asset.IsValid())
+			{
+				const auto& metadata = GetMetadata(handle);
+				AssetImporter::Serialize(metadata, asset);
+			}
 		}
 	}
 

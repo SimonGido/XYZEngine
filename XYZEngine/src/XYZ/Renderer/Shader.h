@@ -165,19 +165,4 @@ namespace XYZ {
 	
 	};
 
-	class ShaderLibrary : public RefCount
-	{
-	public:
-		void Add(const Ref<Shader>& shader);
-		//void Add(const std::string& name, const Ref<Shader>& shader);
-
-		Ref<Shader> Load(const std::string& path, std::vector<BufferLayout> layouts);
-		Ref<Shader> Load(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts);
-		Ref<Shader> Get(const std::string& name);
-		bool Exists(const std::string& name);
-
-	private:
-		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
-	};
-
 }

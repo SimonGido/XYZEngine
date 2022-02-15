@@ -126,8 +126,6 @@ namespace XYZ {
 		static void RemoveShaderDependency(size_t hash);
 		static void OnShaderReload(size_t hash);
 		//////////////
-
-		static Ref<ShaderLibrary>			GetShaderLibrary();
 		static Ref<APIContext>				GetAPIContext();
 		
 		static const RendererResources&		GetDefaultResources();

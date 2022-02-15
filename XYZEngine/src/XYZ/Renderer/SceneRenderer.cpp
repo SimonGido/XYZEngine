@@ -10,6 +10,8 @@
 #include "XYZ/API/Vulkan/VulkanRendererAPI.h"
 #include "XYZ/API/Vulkan/VulkanPipelineCompute.h"
 #include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Asset/AssetManager.h"
+
 
 #include <glm/gtx/transform.hpp>
 
@@ -66,14 +68,17 @@ namespace XYZ {
 		m_WhiteTexture = Renderer::GetDefaultResources().WhiteTexture;
 
 		
-		auto shaderLibrary = Renderer::GetShaderLibrary();
-		m_CompositeRenderPipeline.Init(m_CompositePass, shaderLibrary->Get("CompositeShader"));
-		m_LightRenderPipeline.Init(m_LightPass, shaderLibrary->Get("LightShader"));
+		Ref<ShaderAsset> compositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
+		Ref<ShaderAsset> lightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
+		Ref<ShaderAsset> bloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
+		Ref<ShaderAsset> meshShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/MeshShader.shader");
+
+		m_CompositeRenderPipeline.Init(m_CompositePass, compositeShaderAsset->GetShader());
+		m_LightRenderPipeline.Init(m_LightPass, lightShaderAsset->GetShader());
 
 
-		auto bloomShader = shaderLibrary->Get("Bloom");
-		m_BloomComputePipeline = PipelineCompute::Create(bloomShader);
-		m_BloomComputeMaterial = Material::Create(bloomShader);
+		m_BloomComputePipeline = PipelineCompute::Create(bloomShaderAsset->GetShader());
+		m_BloomComputeMaterial = Material::Create(bloomShaderAsset->GetShader());
 		m_BloomComputeMaterialInstance = Ref<MaterialInstance>::Create(m_BloomComputeMaterial);
 
 		TextureProperties props;
@@ -89,7 +94,7 @@ namespace XYZ {
 		m_InstanceData.resize(sc_InstanceVertexBufferSize);
 
 		m_TestMesh = MeshFactory::CreateBox(glm::vec3(2.0f));
-		m_TestMaterial = Ref<MaterialAsset>::Create(shaderLibrary->Get("MeshShader"));
+		m_TestMaterial = Ref<MaterialAsset>::Create(meshShaderAsset);
 		m_TestMaterial->SetTexture("u_Texture", m_WhiteTexture);
 	}
 
@@ -603,8 +608,6 @@ namespace XYZ {
 	}
 	void SceneRenderer::createLightPass()
 	{
-		auto shaderLibrary = Renderer::GetShaderLibrary();
-		auto shader = shaderLibrary->Get("LightShader");
 		FramebufferSpecification specs;
 		specs.ClearColor = { 0.1f,0.1f,0.1f,0.0f };
 		specs.Attachments = {
