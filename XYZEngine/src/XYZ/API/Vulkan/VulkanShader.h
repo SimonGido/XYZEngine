@@ -73,6 +73,7 @@ namespace XYZ {
 
 		virtual void Reload(bool forceCompile = false) override;
 		virtual void Reload(std::vector<BufferLayout> newLayouts, bool forceCompile = false) override;
+		virtual void SetLayouts(std::vector<BufferLayout> layouts) override;
 
 		inline virtual const std::string&		 GetPath() const override { return m_AssetPath; };
 		inline virtual const std::string&		 GetName() const override { return m_Name; }

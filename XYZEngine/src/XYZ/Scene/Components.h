@@ -8,7 +8,7 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Mesh.h"
-#include "XYZ/Renderer/MaterialAsset.h"
+#include "XYZ/Asset/MaterialAsset.h"
 
 #include "XYZ/Script/ScriptPublicField.h"
 #include "XYZ/Particle/CPU/ParticleSystem.h"

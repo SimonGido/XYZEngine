@@ -132,6 +132,7 @@ namespace XYZ {
 
 		virtual void Reload(bool forceCompile = false) = 0;
 		virtual void Reload(std::vector<BufferLayout> newLayouts, bool forceCompile = false) {};
+		virtual void SetLayouts(std::vector<BufferLayout> layouts) {};
 
 		virtual void SetInt(const std::string& name, int value) {};
 		virtual void SetFloat(const std::string& name, float value) {};
@@ -140,6 +141,8 @@ namespace XYZ {
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) {};
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) {};
 
+
+		
 		virtual const UniformList& GetVSUniformList() const { return UniformList(); };
 		virtual const UniformList& GetFSUniformList() const { return UniformList(); };
 		virtual const TextureUniformList& GetTextureList() const { return TextureUniformList(); };
@@ -148,7 +151,7 @@ namespace XYZ {
 		virtual const std::string& GetPath() const = 0;
 		virtual const std::string& GetName() const = 0;
 		
-		virtual size_t GetVertexBufferSize() const { return 0;};
+		virtual size_t   GetVertexBufferSize() const { return 0;};
 		virtual uint32_t GetRendererID() const { return 0; }
 		virtual size_t	 GetHash()	     const = 0;
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const { return {}; }

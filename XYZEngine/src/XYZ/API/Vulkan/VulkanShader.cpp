@@ -181,6 +181,12 @@ namespace XYZ {
 		Reload(forceCompile);
 	}
 
+	void VulkanShader::SetLayouts(std::vector<BufferLayout> layouts)
+	{
+		m_Layouts = std::move(layouts);
+		Reload(true);
+	}
+
 	size_t VulkanShader::GetHash() const
 	{		
 		//return std::hash<GUID>{}(GetHandle());

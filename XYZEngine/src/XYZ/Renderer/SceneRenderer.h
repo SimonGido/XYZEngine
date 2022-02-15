@@ -6,8 +6,9 @@
 #include "RenderCommandBuffer.h"
 #include "StorageBufferSet.h"
 #include "PipelineCompute.h"
-#include "MaterialAsset.h"
 #include "MaterialInstance.h"
+
+#include "XYZ/Asset/MaterialAsset.h"
 
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"

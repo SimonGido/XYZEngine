@@ -14,8 +14,8 @@
 #include "Pipeline.h"
 #include "PipelineCompute.h"
 #include "Material.h"
-#include "MaterialAsset.h"
 #include "StorageBufferSet.h"
+#include "XYZ/Asset/MaterialAsset.h"
 
 
 namespace XYZ {

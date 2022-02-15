@@ -1,7 +1,7 @@
 #pragma once
-#include "Shader.h"
-#include "Texture.h"
-#include "Material.h"
+#include "XYZ/Renderer/Shader.h"
+#include "XYZ/Renderer/Texture.h"
+#include "XYZ/Renderer/Material.h"
 
 #include "XYZ/Asset/Asset.h"
 #include "XYZ/Core/Core.h"

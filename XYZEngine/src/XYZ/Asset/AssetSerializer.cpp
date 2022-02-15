@@ -3,8 +3,9 @@
 
 #include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Animation/AnimatorController.h"
-#include "XYZ/Renderer/MaterialAsset.h"
 #include "XYZ/Renderer/Renderer.h"
+
+#include "MaterialAsset.h"
 #include "AssetManager.h"
 
 #include "XYZ/Utils/YamlUtils.h"
