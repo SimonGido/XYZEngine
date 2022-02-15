@@ -79,7 +79,7 @@ namespace XYZ {
 		static const char* GetCacheDirectory()
 		{
 			// TODO: make sure the assets directory is valid
-			return "Assets/Cache/Shader/Vulkan";
+			return "Resources/Cache/Shader/Vulkan";
 		}
 
 		static void CreateCacheDirectoryIfNeeded()
@@ -164,6 +164,8 @@ namespace XYZ {
 		m_DescriptorSets.clear();
 		m_PushConstantRanges.clear();
 		m_Buffers.clear();
+
+		Utils::CreateCacheDirectoryIfNeeded();
 
 		preProcess(Utils::ReadFile(m_AssetPath));
 		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
