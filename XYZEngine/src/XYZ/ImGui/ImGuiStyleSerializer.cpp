@@ -63,7 +63,7 @@ namespace XYZ {
 		out << YAML::Key << "Variables";
 		out << YAML::Value << YAML::BeginSeq;
 		auto styleTuple = ImGuiStyleReflection::StyleToTuple();
-		Reflect::For<ImGuiStyleReflection::ImGuiStyleVariableCount>([&](auto j)
+		Utils::For<ImGuiStyleReflection::ImGuiStyleVariableCount>([&](auto j)
 		{
 			out << YAML::BeginMap;
 			out << YAML::Key << "Index" << YAML::Value << j.value;
@@ -111,7 +111,7 @@ namespace XYZ {
 		for (auto& var : variables)
 		{
 			uint32_t index = var["Index"].as<uint32_t>();
-			Reflect::For<ImGuiStyleReflection::ImGuiStyleVariableCount>([&](auto j)
+			Utils::For<ImGuiStyleReflection::ImGuiStyleVariableCount>([&](auto j)
 			{
 				if (j.value == index)
 				{

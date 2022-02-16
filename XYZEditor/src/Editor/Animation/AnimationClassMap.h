@@ -42,12 +42,12 @@ namespace XYZ {
 		template<typename F>
 		inline void AnimationClassMap::Execute(std::string_view selectedClass, std::string_view selectedVariable, F func)
 		{
-			Reflect::For<ReflectedClasses::sc_NumClasses>([&](auto j) 
+			Utils::For<ReflectedComponents::sc_NumClasses>([&](auto j) 
 			{
-				if (selectedClass == ReflectedClasses::sc_ClassNames[j.value])
+				if (selectedClass == ReflectedComponents::sc_ClassNames[j.value])
 				{
-					auto reflClass = ReflectedClasses::Get<j.value>();
-					Reflect::For<reflClass.sc_NumVariables>([&](auto i)
+					auto reflClass = ReflectedComponents::Get<j.value>();
+					Utils::For<reflClass.sc_NumVariables>([&](auto i)
 					{
 						if (selectedVariable == reflClass.sc_VariableNames[i.value])
 							func(j, i);

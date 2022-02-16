@@ -283,7 +283,7 @@ namespace XYZ {
 				{
 					m_ClassMap.Execute(selectedClass, selectedVariable, [&](auto classIndex, auto variableIndex) 
 					{
-						auto reflClass = ReflectedClasses::Get<classIndex.value>();
+						auto reflClass = ReflectedComponents::Get<classIndex.value>();
 						SceneEntity entity = findEntity(selectedEntity);
 						auto& val = reflClass.Get<variableIndex.value>(entity.GetComponentFromReflection(reflClass));
 						std::string entityPath = entity.GetComponent<Relationship>().GetPath(*m_Entity.GetECS(), entity, m_Entity);
@@ -419,7 +419,7 @@ namespace XYZ {
 			SceneEntity entity = findEntity(path);
 			auto func = [&](auto classIndex, auto valueIndex) 
 			{
-				auto reflClass = ReflectedClasses::Get<classIndex.value>();
+				auto reflClass = ReflectedComponents::Get<classIndex.value>();
 				auto& val = reflClass.Get<valueIndex.value>(entity.GetComponentFromReflection(reflClass));
 				addKeyToProperty(path, componentName, valueName, m_CurrentFrame, val);
 				m_EntityPropertyMap.BuildMap(m_Animation);
@@ -434,7 +434,7 @@ namespace XYZ {
 			SceneEntity entity = findEntity(path);
 			auto func = [&](auto classIndex, auto valueIndex, uint32_t keyIndex)
 			{
-				auto reflClass = ReflectedClasses::Get<classIndex.value>();
+				auto reflClass = ReflectedComponents::Get<classIndex.value>();
 				auto& val = reflClass.Get<valueIndex.value>(entity.GetComponentFromReflection(reflClass));
 				auto property = getProperty(val, path, componentName, valueName);
 				auto& keys = property->Keys;
@@ -453,7 +453,7 @@ namespace XYZ {
 			SceneEntity entity = findEntity(path);
 			auto func = [&](auto classIndex, auto valueIndex)
 			{
-				auto reflClass = ReflectedClasses::Get<classIndex.value>();
+				auto reflClass = ReflectedComponents::Get<classIndex.value>();
 				auto& val = reflClass.Get<valueIndex.value>(entity.GetComponentFromReflection(reflClass));
 				auto property = getProperty(val, path, componentName, valueName);
 				result &= std::is_sorted(property->Keys.begin(), property->Keys.end());

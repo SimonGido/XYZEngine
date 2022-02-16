@@ -111,35 +111,35 @@ namespace XYZ {
 		template<typename Func, typename ...Args>
 		inline void AnimationEditor::execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func, Args && ...args)
 		{
-			Reflect::For([&](auto j) {
-				if (ReflectedClasses::sc_ClassNames[j.value] == componentName)
+			Utils::For([&](auto j) {
+				if (ReflectedComponents::sc_ClassNames[j.value] == componentName)
 				{
-					auto reflClass = ReflectedClasses::Get<j.value>();
-					Reflect::For([&](auto i) {
+					auto reflClass = ReflectedComponents::Get<j.value>();
+					Utils::For([&](auto i) {
 						if (reflClass.sc_VariableNames[i.value] == valName)
 						{
 							func(j, i, std::forward<Args>(args)...);
 						}
 					}, std::make_index_sequence<reflClass.sc_NumVariables>());
 				}
-			}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+			}, std::make_index_sequence<ReflectedComponents::sc_NumClasses>());
 		}
 
 		template<typename Func, typename ...Args>
 		inline void AnimationEditor::execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func, Args && ...args) const
 		{
-			Reflect::For([&](auto j) {
-				if (ReflectedClasses::sc_ClassNames[j.value] == componentName)
+			Utils::For([&](auto j) {
+				if (ReflectedComponents::sc_ClassNames[j.value] == componentName)
 				{
-					auto reflClass = ReflectedClasses::Get<j.value>();
-					Reflect::For([&](auto i) {
+					auto reflClass = ReflectedComponents::Get<j.value>();
+					Utils::For([&](auto i) {
 						if (reflClass.sc_VariableNames[i.value] == valName)
 						{
 							func(j, i, std::forward<Args>(args)... );
 						}
 					}, std::make_index_sequence<reflClass.sc_NumVariables>());
 				}
-			}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+			}, std::make_index_sequence<ReflectedComponents::sc_NumClasses>());
 		}
 	}
 }

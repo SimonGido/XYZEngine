@@ -160,7 +160,7 @@ namespace XYZ {
 				if (ImGui::BeginTable("Variables", 2, ImGuiTableFlags_SizingFixedSame))
 				{
 					auto styleTuple = ImGuiStyleReflection::StyleToTuple();
-					Reflect::For<ImGuiStyleReflection::ImGuiStyleVariableCount>([&](auto j)
+					Utils::For<ImGuiStyleReflection::ImGuiStyleVariableCount>([&](auto j)
 					{
 						modified |= ValueControl(ImGuiStyleReflection::ImGuiStyleVariables[j.value], std::get<j.value>(styleTuple));
 					});

@@ -5,6 +5,7 @@
 
 
 #include "XYZ/Reflection/Reflection.h"
+
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Mesh.h"
@@ -303,7 +304,6 @@ namespace XYZ {
 		void* RuntimeFixture = nullptr;
 	};
 
-	REGISTER_REFLECTABLES(TransformComponent, SpriteRenderer, PointLight2D, SpotLight2D, BoxCollider2DComponent, CircleCollider2DComponent);
+	REGISTER_REFLECTABLES(ReflectedComponents, TransformComponent, SpriteRenderer, PointLight2D, SpotLight2D, BoxCollider2DComponent, CircleCollider2DComponent);
 	
-
 }

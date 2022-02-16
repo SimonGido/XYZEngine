@@ -320,18 +320,18 @@ namespace XYZ {
 	template <typename T>
 	static void AddProperty(Ref<Animation>& anim, const std::string_view path, const std::string_view componentName, const std::string_view valName)
 	{
-		Reflect::For([&](auto j) {
-			if (ReflectedClasses::sc_ClassNames[j.value] == componentName)
+		Utils::For([&](auto j) {
+			if (ReflectedComponents::sc_ClassNames[j.value] == componentName)
 			{
-				auto reflClass = ReflectedClasses::Get<j.value>();
-				Reflect::For([&](auto i) {
+				auto reflClass = ReflectedComponents::Get<j.value>();
+				Utils::For([&](auto i) {
 					if (reflClass.sc_VariableNames[i.value] == valName)
 					{
 						AddPropFromRefl<i.value, T>(reflClass, anim, path);
 					}
 				}, std::make_index_sequence<reflClass.sc_NumVariables>());
 			}
-		}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+		}, std::make_index_sequence<ReflectedComponents::sc_NumClasses>());
 	}
 
 	template <typename T>

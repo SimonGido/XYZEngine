@@ -24,15 +24,15 @@ namespace XYZ {
 			if (entity)
 			{
 				const std::vector<Entity> tree = entity.GetComponent<Relationship>().GetTree(*entity.GetECS());
-				Reflect::For([&](auto j) {
-					auto reflClass = ReflectedClasses::Get<j.value>();
+				Utils::For([&](auto j) {
+					auto reflClass = ReflectedComponents::Get<j.value>();
 					addToClassData(reflClass, entity, animation);
 					for (const Entity node : tree)
 					{
 						addToClassData(reflClass, { node, entity.GetScene() }, animation);
 					}
 
-				}, std::make_index_sequence<ReflectedClasses::sc_NumClasses>());
+				}, std::make_index_sequence<ReflectedComponents::sc_NumClasses>());
 			}
 		}
 		void AnimationClassMap::Erase(const_iterator iter)
