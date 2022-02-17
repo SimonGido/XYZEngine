@@ -131,7 +131,6 @@ namespace XYZ {
 		virtual void SetFSUniforms(ByteBuffer buffer) const {};
 
 		virtual void Reload(bool forceCompile = false) = 0;
-		virtual void Reload(std::vector<BufferLayout> newLayouts, bool forceCompile = false) {};
 		virtual void SetLayouts(std::vector<BufferLayout> layouts) {};
 
 		virtual void SetInt(const std::string& name, int value) {};
@@ -150,6 +149,7 @@ namespace XYZ {
 
 		virtual const std::string& GetPath() const = 0;
 		virtual const std::string& GetName() const = 0;
+		virtual const std::string& GetSource() const { return std::string(); }
 		
 		virtual size_t   GetVertexBufferSize() const { return 0;};
 		virtual uint32_t GetRendererID() const { return 0; }
@@ -160,8 +160,8 @@ namespace XYZ {
 
 		virtual bool IsCompiled() const { return false; };
 
-		static Ref<Shader> Create(const std::string& path, std::vector<BufferLayout> layouts);
-		static Ref<Shader> Create(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts);
+		static Ref<Shader> Create(const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile = true);
+		static Ref<Shader> Create(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile = true);
 	
 	};
 

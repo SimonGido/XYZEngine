@@ -5,6 +5,8 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/Pipeline.h"
 #include "XYZ/Utils/StringUtils.h"
+#include "XYZ/Utils/FileSystem.h"
+
 #include "VulkanContext.h"
 #include "VulkanRendererAPI.h"
 #include "Vulkan.h"
@@ -23,31 +25,6 @@
 namespace XYZ {
 
 	namespace Utils {
-		static std::string ReadFile(const std::string& filepath)
-		{
-			std::string result;
-			std::ifstream in(filepath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
-			if (in)
-			{
-				in.seekg(0, std::ios::end);
-				const size_t size = in.tellg();
-				if (size != -1)
-				{
-					result.resize(size);
-					in.seekg(0, std::ios::beg);
-					in.read(&result[0], size);
-				}
-				else
-				{
-					XYZ_ERROR("Could not read from file '{0}'", filepath);
-				}
-			}
-			else
-			{
-				XYZ_ERROR("Could not open file '{0}'", filepath);
-			}
-			return result;
-		}
 
 		static ShaderUniformDataType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
 		{
@@ -101,6 +78,13 @@ namespace XYZ {
 			return "";
 		}
 
+		static std::string GetCachePath(const std::string& name, VkShaderStageFlagBits stage)
+		{
+			std::string result = GetCacheDirectory();
+			result += "/" + name + VkShaderStageCachedFileExtension(stage);
+			return result;
+		}
+
 		static shaderc_shader_kind VkShaderStageToShaderC(VkShaderStageFlagBits stage)
 		{
 			switch (stage)
@@ -131,25 +115,25 @@ namespace XYZ {
 	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::StorageBuffer*>> s_StorageBuffers; // set -> binding point -> buffer
 	
 
-	VulkanShader::VulkanShader(const std::string& path, std::vector<BufferLayout> layouts)
+	VulkanShader::VulkanShader(const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile)
 		:
 		m_Compiled(false),
 		m_Name(Utils::GetFilenameWithoutExtension(path)),
-		m_AssetPath(path),
+		m_FilePath(path),
 		m_VertexBufferSize(0),
 		m_Layouts(std::move(layouts))
 	{
-		Reload(true);
+		Reload(forceCompile);
 	}
-	VulkanShader::VulkanShader(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts)
+	VulkanShader::VulkanShader(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile)
 		:
 		m_Compiled(false),
 		m_Name(name),
-		m_AssetPath(path),
+		m_FilePath(path),
 		m_VertexBufferSize(0),
 		m_Layouts(std::move(layouts))
 	{
-		Reload(true);
+		Reload(forceCompile);
 	}
 	VulkanShader::~VulkanShader()
 	{
@@ -167,9 +151,12 @@ namespace XYZ {
 
 		Utils::CreateCacheDirectoryIfNeeded();
 
-		preProcess(Utils::ReadFile(m_AssetPath));
-		std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>> shaderData;
-		compileOrGetVulkanBinaries(shaderData, forceCompile);
+		m_Source = FileSystem::ReadFile(m_FilePath);
+		SourceMap sources = preProcess(m_Source);
+		if (!forceCompile)
+			forceCompile = !binaryExists(sources);
+		
+		DataMap shaderData = compileOrGetVulkanBinaries(sources, forceCompile);
 		reflectAllStages(shaderData);
 		createProgram(shaderData);
 		createDescriptorSetLayout();
@@ -177,11 +164,6 @@ namespace XYZ {
 		Renderer::OnShaderReload(GetHash());		
 	}
 
-	void VulkanShader::Reload(std::vector<BufferLayout> newLayouts, bool forceCompile)
-	{
-		m_Layouts = std::move(newLayouts);
-		Reload(forceCompile);
-	}
 
 	void VulkanShader::SetLayouts(std::vector<BufferLayout> layouts)
 	{
@@ -191,8 +173,7 @@ namespace XYZ {
 
 	size_t VulkanShader::GetHash() const
 	{		
-		//return std::hash<GUID>{}(GetHandle());
-		return std::hash<std::string>{}(m_AssetPath);
+		return std::hash<std::string>{}(m_FilePath);
 	}
 
 	bool VulkanShader::IsCompiled() const
@@ -201,11 +182,11 @@ namespace XYZ {
 	}
 
 
-	void VulkanShader::reflectAllStages(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
+	void VulkanShader::reflectAllStages(const VulkanShader::DataMap& shaderData)
 	{
 		XYZ_TRACE("===========================");
 		XYZ_TRACE(" Vulkan Shader Reflection");
-		XYZ_TRACE(" {0}", m_AssetPath);
+		XYZ_TRACE(" {0}", m_FilePath);
 		XYZ_TRACE("===========================");
 		m_Resources.clear();
 		for (auto [stage, data] : shaderData)
@@ -441,13 +422,14 @@ namespace XYZ {
 
 		return result;
 	}
-	void VulkanShader::compileOrGetVulkanBinaries(std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& outputBinary, bool forceCompile)
+	VulkanShader::DataMap VulkanShader::compileOrGetVulkanBinaries(const VulkanShader::SourceMap& shaderSources, bool forceCompile)
 	{
+		DataMap outputBinary;
 		XYZ_INFO("Compiling shader {}", m_Name);
 		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
-		for (auto [stage, source] : m_ShaderSources)
+		for (auto [stage, source] : shaderSources)
 		{
-			std::filesystem::path shaderFilePath = m_AssetPath;
+			std::filesystem::path shaderFilePath = m_FilePath;
 			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::VkShaderStageCachedFileExtension(stage));
 
 			if (!forceCompile)
@@ -480,8 +462,8 @@ namespace XYZ {
 
 				// Compile shader
 				{
-					auto& shaderSource = m_ShaderSources.at(stage);
-					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, Utils::VkShaderStageToShaderC(stage), m_AssetPath.c_str(), options);
+					auto& shaderSource = shaderSources.at(stage);
+					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, Utils::VkShaderStageToShaderC(stage), m_FilePath.c_str(), options);
 
 					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 					{
@@ -500,8 +482,9 @@ namespace XYZ {
 				}
 			}
 		}
+		return outputBinary;
 	}
-	void VulkanShader::createProgram(const std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>& shaderData)
+	void VulkanShader::createProgram(const DataMap& shaderData)
 	{
 		const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 		m_PipelineShaderStageCreateInfos.clear();
@@ -526,8 +509,9 @@ namespace XYZ {
 		}
 	}
 
-	void VulkanShader::preProcess(const std::string& source)
+	std::unordered_map<VkShaderStageFlagBits, std::string> VulkanShader::preProcess(const std::string& source) const
 	{
+		std::unordered_map<VkShaderStageFlagBits, std::string> sources;
 		const char* TypeToken = "#type";
 		const size_t TypeTokenLength = strlen(TypeToken);
 		size_t pos = source.find(TypeToken, 0);
@@ -542,11 +526,11 @@ namespace XYZ {
 
 			const size_t nextLinePos = source.find_first_not_of("\r\n", eol);
 			pos = source.find(TypeToken, nextLinePos);
-			m_ShaderSources[stageType] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
+			sources[stageType] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
 		}
+		return sources;
 	}
-	
-	
+
 
 	void VulkanShader::createDescriptorSetLayout()
 	{
@@ -675,6 +659,20 @@ namespace XYZ {
 		});
 		m_Compiled = false;
 	}
+	bool VulkanShader::binaryExists(const SourceMap& sources) const
+	{
+		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
+		std::filesystem::path shaderFilePath = m_FilePath;
+		
+		for (auto& [stage, source] : sources)
+		{
+			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::VkShaderStageCachedFileExtension(stage));
+			if (!std::filesystem::exists(cachedPath))
+				return false;
+		}
+		return true;
+	}
+	
 	size_t VulkanShader::getBuffersSize() const
 	{
 		size_t size = 0;

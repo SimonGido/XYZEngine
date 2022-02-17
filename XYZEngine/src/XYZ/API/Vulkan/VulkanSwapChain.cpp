@@ -10,6 +10,7 @@ namespace XYZ {
 
 	static VulkanSwapChain::SwapChainSupportDetails QuerySwapChainSupport(VkSurfaceKHR surface, VkPhysicalDevice physicalDevice)
 	{
+		
 		VulkanSwapChain::SwapChainSupportDetails details;
 		VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, &details.Capabilities));
 

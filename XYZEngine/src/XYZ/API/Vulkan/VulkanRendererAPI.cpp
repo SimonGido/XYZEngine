@@ -40,8 +40,11 @@ namespace XYZ {
 	{
 		s_DescriptorAllocator = Ref<VulkanDescriptorAllocator>::Create();
 		s_DescriptorAllocator->Init();
-		auto& properties = VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetProperties();
+		auto device = VulkanContext::GetCurrentDevice()->GetPhysicalDevice();
+		auto& properties = device->GetProperties();
+		auto& memoryProperties = device->GetMemoryProperties();
 		auto& caps = RendererAPI::getCapabilities();
+
 		caps.Vendor = Utils::VulkanVendorIDToString(properties.vendorID);
 		caps.Device = properties.deviceName;
 		caps.Version = std::to_string(properties.driverVersion);

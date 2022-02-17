@@ -474,14 +474,6 @@ namespace XYZ {
 
 		DefaultParticleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
 		DefaultParticleMaterial->SetFlag(AssetFlag::ReadOnly);
-
-		for (uint32_t i = 0; i < Renderer2D::GetMaxTextures(); ++i)
-		{
-			DefaultQuadMaterial->SetTexture("u_Texture", WhiteTexture, i);
-			OverlayQuadMaterial->SetTexture("u_Texture", WhiteTexture, i);
-		}
-		DefaultParticleMaterial->SetTexture("u_Texture", WhiteTexture);
-		AssetManager::SerializeAll();
 	}
 	void RendererResources::Shutdown()
 	{

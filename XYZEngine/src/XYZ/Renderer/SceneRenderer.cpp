@@ -73,6 +73,7 @@ namespace XYZ {
 		Ref<ShaderAsset> bloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
 		Ref<ShaderAsset> meshShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/MeshShader.shader");
 
+
 		m_CompositeRenderPipeline.Init(m_CompositePass, compositeShaderAsset->GetShader());
 		m_LightRenderPipeline.Init(m_LightPass, lightShaderAsset->GetShader());
 
@@ -96,6 +97,7 @@ namespace XYZ {
 		m_TestMesh = MeshFactory::CreateBox(glm::vec3(2.0f));
 		m_TestMaterial = Ref<MaterialAsset>::Create(meshShaderAsset);
 		m_TestMaterial->SetTexture("u_Texture", m_WhiteTexture);
+
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -263,6 +265,34 @@ namespace XYZ {
 				);
 				ImGui::EndTable();
 			}
+			if (ImGui::BeginTable("##Specification", 2, ImGuiTableFlags_SizingFixedFit))
+			{
+				UI::TextTableRow("%s", "Max Light Count:", "%u", sc_MaxNumberOfLights);
+				UI::TextTableRow("%s", "Max Transform Instances:", "%u", sc_TransformBufferCount);
+				UI::TextTableRow("%s", "Max Instance Data Size:", "%u", sc_InstanceVertexBufferSize);
+
+				ImGui::EndTable();
+			}
+			if (UI::BeginTreeNode("Render Statistics"))
+			{
+				if (ImGui::BeginTable("##RenderStatistics", 2, ImGuiTableFlags_SizingFixedFit))
+				{
+					UI::TextTableRow("%s", "Sprite Draw Count:", "%u", m_RenderStatistics.SpriteDrawCommandCount);
+					UI::TextTableRow("%s", "Mesh Draw Count:", "%u", m_RenderStatistics.MeshDrawCommandCount);
+
+					UI::TextTableRow("%s", "Mesh Override Draw Count:", "%u", m_RenderStatistics.MeshOverrideDrawCommandCount);
+					UI::TextTableRow("%s", "Instance Mesh Draw Count:", "%u", m_RenderStatistics.InstanceMeshDrawCommandCount);
+
+					UI::TextTableRow("%s", "Point Light2D Count:", "%u", m_RenderStatistics.PointLight2DCount);
+					UI::TextTableRow("%s", "Spot Light2D Count:", "%u", m_RenderStatistics.SpotLight2DCount);
+
+					UI::TextTableRow("%s", "Transform Instances:", "%u", m_RenderStatistics.TransformInstanceCount);
+					UI::TextTableRow("%s", "Instance Data Size:", "%u", m_RenderStatistics.InstanceDataSize);
+					
+					ImGui::EndTable();
+				}
+				UI::EndTreeNode();
+			}
 			uint32_t frameIndex = Renderer::GetCurrentFrame();
 			if (UI::BeginTreeNode("GPU measurements"))
 			{
@@ -425,11 +455,16 @@ namespace XYZ {
 		m_LightRenderPipeline.Material->SetImageArray("u_Texture", geometryColorImage, 0);
 		m_LightRenderPipeline.Material->SetImageArray("u_Texture", geometryPositionImage, 1);
 
-		m_LightRenderPipeline.MaterialInstance->Set("u_Uniforms.NumberPointLights", (int)m_PointLights.size());
-		m_LightRenderPipeline.MaterialInstance->Set("u_Uniforms.NumberSpotLights", (int)m_SpotLights.size());
+		const uint32_t pointLightsSize = static_cast<uint32_t>(m_PointLights.size());
+		const uint32_t spotLightsSize =  static_cast<uint32_t>(m_SpotLights.size());
+
+		const int realNumPointLights = pointLightsSize < sc_MaxNumberOfLights ? pointLightsSize : sc_MaxNumberOfLights;
+		const int realNumSpotLights = spotLightsSize < sc_MaxNumberOfLights ? spotLightsSize : sc_MaxNumberOfLights;
+
+		m_LightRenderPipeline.MaterialInstance->Set("u_Uniforms.NumberPointLights", realNumPointLights);
+		m_LightRenderPipeline.MaterialInstance->Set("u_Uniforms.NumberSpotLights", realNumSpotLights);
 
 		
-
 		Renderer::BindPipeline(
 			m_CommandBuffer, 
 			m_LightRenderPipeline.Pipeline, 
@@ -663,15 +698,18 @@ namespace XYZ {
 	{
 		prepareInstances();
 		prepareLights();
+		m_RenderStatistics.SpriteDrawCommandCount = static_cast<uint32_t>(m_Queue.SpriteDrawCommands.size());
 	}
 	void SceneRenderer::prepareInstances()
 	{
 		// Prepare transforms
+		size_t overrideCount = 0;
 		uint32_t offset = 0;
 		for (auto& [key, dc] : m_Queue.MeshDrawCommands)
 		{
 			dc.Pipeline = getGeometryPipeline(dc.MaterialAsset->GetMaterial());
 			dc.TransformOffset = offset * sizeof(RenderQueue::TransformData);
+			overrideCount += dc.OverrideCommands.size();
 			for (const auto& transform : dc.TransformData)
 			{
 				m_TransformData[offset] = transform;
@@ -694,6 +732,13 @@ namespace XYZ {
 		}	
 		m_TransformVertexBuffer->Update(m_TransformData.data(), offset * sizeof(RenderQueue::TransformData));
 		m_InstanceVertexBuffer->Update(m_InstanceData.data(), instanceOffset);
+
+		m_RenderStatistics.MeshDrawCommandCount = static_cast<uint32_t>(m_Queue.MeshDrawCommands.size());
+		m_RenderStatistics.MeshOverrideDrawCommandCount = static_cast<uint32_t>(overrideCount);
+		m_RenderStatistics.InstanceMeshDrawCommandCount = static_cast<uint32_t>(m_Queue.InstanceMeshDrawCommands.size());
+
+		m_RenderStatistics.TransformInstanceCount = offset;
+		m_RenderStatistics.InstanceDataSize = instanceOffset;
 	}
 	void SceneRenderer::prepareLights()
 	{
@@ -735,13 +780,22 @@ namespace XYZ {
 			lightData.Intensity = light.Intensity;
 			m_PointLights.push_back(lightData);
 		}
+		
+		const uint32_t pointLightsSize = static_cast<uint32_t>(m_PointLights.size());
+		const uint32_t spotLightsSize = static_cast<uint32_t>(m_SpotLights.size());
+
+		const uint32_t realNumPointLights = pointLightsSize < sc_MaxNumberOfLights ? pointLightsSize : sc_MaxNumberOfLights;
+		const uint32_t realNumSpotLights = spotLightsSize < sc_MaxNumberOfLights ? spotLightsSize : sc_MaxNumberOfLights;
 
 		Ref<StorageBufferSet> instance = m_LightStorageBufferSet;
-		Renderer::Submit([instance, pLights = m_PointLights, sLights = m_SpotLights]() mutable {
+		Renderer::Submit([instance, pLights = m_PointLights, sLights = m_SpotLights, realNumPointLights, realNumSpotLights]() mutable {
 			const uint32_t frame = Renderer::GetCurrentFrame();
-			instance->Get(1, 0, frame)->RT_Update(pLights.data(), pLights.size() * sizeof(PointLight));
-			instance->Get(2, 0, frame)->RT_Update(sLights.data(), sLights.size() * sizeof(SpotLight));
+			instance->Get(1, 0, frame)->RT_Update(pLights.data(), realNumPointLights * sizeof(PointLight));
+			instance->Get(2, 0, frame)->RT_Update(sLights.data(), realNumSpotLights * sizeof(SpotLight));
 		});
+
+		m_RenderStatistics.PointLight2DCount = static_cast<uint32_t>(m_PointLights.size());
+		m_RenderStatistics.SpotLight2DCount = static_cast<uint32_t>(m_SpotLights.size());
 	}
 	Ref<Pipeline> SceneRenderer::getGeometryPipeline(const Ref<Material>& material)
 	{

@@ -27,14 +27,15 @@ namespace XYZ {
 		
 		bool							  IsExtensionSupported(const std::string& extensionName) const;
 		VkPhysicalDevice				  GetVulkanPhysicalDevice() const { return m_PhysicalDevice; }
-		VkPhysicalDeviceMemoryProperties  GetMemoryProperties()		const { return m_MemoryProperties; }
 		VkFormat						  GetDepthFormat()			const { return m_DepthFormat; }
+		uint32_t						  GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties) const;
 		
 	
-		const QueueFamilyIndices&		  GetQueueFamilyIndices()	const { return m_QueueFamilyIndices; }
-		const VkPhysicalDeviceProperties& GetProperties()			const { return m_Properties; }
-		const VkPhysicalDeviceFeatures&   GetFeatures()				const { return m_Features; }
-		const VkPhysicalDeviceLimits&     GetLimits()				const { return m_Properties.limits; }
+		const QueueFamilyIndices&		  GetQueueFamilyIndices()	  const { return m_QueueFamilyIndices; }
+		const VkPhysicalDeviceProperties& GetProperties()			  const { return m_Properties; }
+		const VkPhysicalDeviceFeatures&   GetFeatures()				  const { return m_Features; }
+		const VkPhysicalDeviceLimits&     GetLimits()				  const { return m_Properties.limits; }
+		const VkPhysicalDeviceMemoryProperties& GetMemoryProperties() const { return m_MemoryProperties; }
 	private:
 		void setupQueueFamilyIndices(int flags);
 		void findPresentationQueue(VkSurfaceKHR surface);

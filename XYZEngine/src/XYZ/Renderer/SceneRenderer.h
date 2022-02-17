@@ -304,9 +304,22 @@ namespace XYZ {
 		bool				       m_ViewportSizeChanged = false;
 		int32_t					   m_ThreadIndex;
 
-		static constexpr uint32_t sc_MaxNumberOfLights = 1024;
-		static constexpr uint32_t sc_InstanceVertexBufferSize = 10 * 1024 * 1024; // 10mb
+		static constexpr uint32_t sc_MaxNumberOfLights = 2 * 1024;
 		static constexpr uint32_t sc_TransformBufferCount = 10 * 1024; // 10240 transforms
+		static constexpr uint32_t sc_InstanceVertexBufferSize = 30 * 1024 * 1024; // 30mb
+
+		struct RenderStatistics
+		{
+			uint32_t SpriteDrawCommandCount = 0;
+			uint32_t MeshDrawCommandCount = 0;
+			uint32_t MeshOverrideDrawCommandCount = 0;
+			uint32_t InstanceMeshDrawCommandCount = 0;
+			uint32_t PointLight2DCount = 0;
+			uint32_t SpotLight2DCount = 0;
+			uint32_t TransformInstanceCount = 0;
+			uint32_t InstanceDataSize = 0;
+		};
+		RenderStatistics m_RenderStatistics;
 
 		struct GPUTimeQueries
 		{

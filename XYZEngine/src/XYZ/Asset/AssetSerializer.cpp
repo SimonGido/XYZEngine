@@ -101,7 +101,7 @@ namespace XYZ {
 		out << YAML::BeginMap;
 		out << YAML::Key << "Name" << shader->GetName();
 		out << YAML::Key << "FilePath" << shader->GetPath();
-
+		out << YAML::Key << "SourceHash" << shaderAsset->GetSourceHash();
 		out << YAML::Key << "Layouts" << YAML::BeginSeq;
 		for (const auto& layout : layouts)
 		{
@@ -130,6 +130,7 @@ namespace XYZ {
 
 		std::string name = data["Name"].as<std::string>();
 		std::string filePath = data["FilePath"].as<std::string>();
+		const size_t sourceHash = data["SourceHash"].as<size_t>();
 
 		std::vector<BufferLayout> layouts;
 		for (auto layoutData : data["Layouts"])
@@ -144,8 +145,8 @@ namespace XYZ {
 			layouts.emplace_back(elements, instanced);
 		}
 
-		Ref<Shader> shader = Shader::Create(name, filePath, layouts);
-		asset = Ref<ShaderAsset>::Create(shader);
+
+		asset = Ref<ShaderAsset>::Create(name, filePath, sourceHash, layouts);
 		return true;
 	}
 

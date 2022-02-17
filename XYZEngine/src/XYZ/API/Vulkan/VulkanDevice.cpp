@@ -163,6 +163,23 @@ namespace XYZ {
 	{
 		return m_SupportedExtensions.find(extensionName) != m_SupportedExtensions.end();
 	}
+
+	uint32_t VulkanPhysicalDevice::GetMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties) const
+	{
+		// Iterate over all memory types available for the device used in this example
+		for (uint32_t i = 0; i < m_MemoryProperties.memoryTypeCount; i++)
+		{
+			if ((typeBits & 1) == 1)
+			{
+				if ((m_MemoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+					return i;
+			}
+			typeBits >>= 1;
+		}
+
+		XYZ_ASSERT(false, "Could not find a suitable memory type!");
+		return UINT32_MAX;
+	}
 	
 	void VulkanPhysicalDevice::setupQueueFamilyIndices(int flags)
 	{

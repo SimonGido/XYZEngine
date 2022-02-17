@@ -7,7 +7,7 @@
 
 namespace XYZ {
 	
-	Ref<Shader> Shader::Create(const std::string& path, std::vector<BufferLayout> layouts)
+	Ref<Shader> Shader::Create(const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -17,13 +17,13 @@ namespace XYZ {
 			return nullptr;
 		}
 		case RendererAPI::Type::OpenGL: return  Ref<OpenGLShader>::Create(path);
-		case RendererAPI::Type::Vulkan: return Ref<VulkanShader>::Create(path, std::move(layouts));		
+		case RendererAPI::Type::Vulkan: return Ref<VulkanShader>::Create(path, std::move(layouts), forceCompile);
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 		return nullptr;
 	}
-	Ref<Shader> Shader::Create(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts)
+	Ref<Shader> Shader::Create(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile)
 	{
 		switch (Renderer::GetAPI())
 		{
@@ -33,7 +33,7 @@ namespace XYZ {
 			return nullptr;
 		}
 		case RendererAPI::Type::OpenGL: return Ref<OpenGLShader>::Create(name, path);
-		case RendererAPI::Type::Vulkan: return Ref<VulkanShader>::Create(name, path, std::move(layouts));
+		case RendererAPI::Type::Vulkan: return Ref<VulkanShader>::Create(name, path, std::move(layouts), forceCompile);
 		}
 
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");

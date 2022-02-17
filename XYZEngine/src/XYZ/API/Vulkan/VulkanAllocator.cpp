@@ -33,7 +33,7 @@ namespace XYZ {
 		VmaAllocation allocation;
 		vmaCreateBuffer(s_Data->Allocator, &bufferCreateInfo, &allocCreateInfo, &outBuffer, &allocation, nullptr);
 
-		// TODO: Tracking
+
 		VmaAllocationInfo allocInfo{};
 		vmaGetAllocationInfo(s_Data->Allocator, allocation, &allocInfo);
 
