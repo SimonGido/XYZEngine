@@ -69,7 +69,7 @@ namespace XYZ {
 				const float column	= index % Tiles.x;
 				const float row		= index / Tiles.y;
 				
-				data.TexOffset[i] = glm::vec2(column / Tiles.x, row / Tiles.y);
+				data.Particle[i].TexOffset = glm::vec2(column / Tiles.x, row / Tiles.y);
 			}
 		}
 	}
@@ -89,7 +89,7 @@ namespace XYZ {
 			for (uint32_t i = 0; i < aliveParticles; ++i)
 			{
 				const float ratio = CalcRatio(CycleLength, data.Particle[i].LifeRemaining);
-				data.Rotation[i] = glm::quat(radians * ratio);
+				data.Particle[i].Rotation = glm::quat(radians * ratio);
 			}
 		}
 	}

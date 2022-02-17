@@ -326,7 +326,7 @@ namespace XYZ {
 			auto& [transform, renderer, particleComponent] = particleView.Get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
 
 			auto moduleData = particleComponent.System.GetModuleDataRead();
-			const auto& lightModule = moduleData->Light;
+			const auto& lightModule = moduleData->LightUpdater;
 			for (const auto& lightPos : lightModule.Lights)
 			{
 				glm::mat4 lightTransform = glm::translate(transform.WorldTransform, lightPos);

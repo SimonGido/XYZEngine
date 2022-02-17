@@ -6,7 +6,6 @@
 
 #include "ParticleDataBuffer.h"
 #include "ParticleUpdater.h"
-#include "ParticleGenerator.h"
 #include "ParticleEmitter.h"
 
 #include <glm/glm.hpp>
@@ -31,19 +30,11 @@ namespace XYZ {
 		{
 			ModuleData(uint32_t maxParticles);
 
-			// Emitter
 			ParticleEmitter					Emitter;
-			
-			// Generators
-			ParticleGenerator				Main;
-			ParticleShapeGenerator		    Shape;
-			ParticleLifeGenerator		    Life;
-			ParticleRandomVelocityGenerator RandomVelocity;
-
 			// Updaters
-			LightUpdater					Light;
-			TextureAnimationUpdater			TextureAnim;
-			RotationOverLife				RotationOverLife;
+			LightUpdater					LightUpdater;
+			TextureAnimationUpdater			TextureAnimationUpdater;
+			RotationOverLife				RotationOverLifeUpdater;
 
 			
 			ParticleDataBuffer				Particles;

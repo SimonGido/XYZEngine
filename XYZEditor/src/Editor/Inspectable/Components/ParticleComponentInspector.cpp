@@ -15,6 +15,7 @@ namespace XYZ {
 		{
 			switch (shape)
 			{
+			case EmitShape::None: return "None";
 			case EmitShape::Box: return "Box";
 			case EmitShape::Circle: return "Circle";
 			}
@@ -50,7 +51,7 @@ namespace XYZ {
 					UI::TableRow("Simulation Speed",
 						[]() {ImGui::Text("Simulation Speed"); },
 						[&]() {
-						if (ImGui::DragFloat("##SimulationSpeed", &speed))
+						if (ImGui::DragFloat("##SimulationSpeed", &speed, sc_VSpeed))
 							system.SetSpeed(speed);
 					});
 
@@ -62,14 +63,9 @@ namespace XYZ {
 				}
 
 				ScopedLock<ParticleSystem::ModuleData> moduleData = system.GetModuleData();
-				drawRotationOverLife(moduleData.As());
-				drawLight(moduleData.As());
-				drawTextureAnim(moduleData.As());
-
-				drawDefaultGenerator(moduleData.As());
-				drawShapeGenerator(moduleData.As());
-				drawLifeGenerator(moduleData.As());
-				drawRandomVelGenerator(moduleData.As()); 
+				drawRotationOverLifeUpdater(moduleData.As());
+				drawLightUpdater(moduleData.As());
+				drawTextureAnimationUpdater(moduleData.As());
 
 				drawEmitter(moduleData.As());
 			});
@@ -80,9 +76,9 @@ namespace XYZ {
 			m_SelectedBurstIndex = sc_InvalidIndex;
 		}
 
-		void ParticleComponentInspector::drawRotationOverLife(ParticleSystem::ModuleData& moduleData)
+		void ParticleComponentInspector::drawRotationOverLifeUpdater(ParticleSystem::ModuleData& moduleData)
 		{
-			EditorHelper::DrawNodeControl("Rotation Over Life", moduleData.RotationOverLife, [](auto& val) {
+			EditorHelper::DrawNodeControl("Rotation Over Life", moduleData.RotationOverLifeUpdater, [](auto& val) {
 
 				if (ImGui::BeginTable("TextureAnimationTable", 2, ImGuiTableFlags_SizingStretchProp))
 				{
@@ -93,17 +89,17 @@ namespace XYZ {
 
 					UI::TableRow("Cycle Length",
 						[]() {ImGui::Text("Cycle Length"); },
-						[&]() { ImGui::DragFloat("##CycleLength", &val.CycleLength); }
+						[&]() { ImGui::DragFloat("##CycleLength", &val.CycleLength, sc_VSpeed); }
 					);
 
 					ImGui::EndTable();
 				}
 
-			}, moduleData.RotationOverLife.Enabled);
+			}, moduleData.RotationOverLifeUpdater.Enabled);
 		}
-		void ParticleComponentInspector::drawLight(ParticleSystem::ModuleData& moduleData)
+		void ParticleComponentInspector::drawLightUpdater(ParticleSystem::ModuleData& moduleData)
 		{
-			EditorHelper::DrawNodeControl("Light", moduleData.Light, [](auto& val) {
+			EditorHelper::DrawNodeControl("Light", moduleData.LightUpdater, [](auto& val) {
 
 				int maxLights = val.MaxLights;
 				if (ImGui::BeginTable("LightTable", 2, ImGuiTableFlags_SizingStretchProp))
@@ -115,12 +111,12 @@ namespace XYZ {
 
 					UI::TableRow("Light Radius",
 						[]() {ImGui::Text("Light Radius"); },
-						[&]() { ImGui::DragFloat("##LightRadius", &val.Light.Radius); }
+						[&]() { ImGui::DragFloat("##LightRadius", &val.Light.Radius, sc_VSpeed); }
 					);
 
 					UI::TableRow("Light Intensity",
 						[]() {ImGui::Text("Light Intensity"); },
-						[&]() { ImGui::DragFloat("##LightIntensity", &val.Light.Intensity); }
+						[&]() { ImGui::DragFloat("##LightIntensity", &val.Light.Intensity, sc_VSpeed); }
 					);
 
 					UI::TableRow("Max Lights",
@@ -130,12 +126,12 @@ namespace XYZ {
 					ImGui::EndTable();
 				}
 
-			}, moduleData.Light.Enabled);
+			}, moduleData.LightUpdater.Enabled);
 
 		}
-		void ParticleComponentInspector::drawTextureAnim(ParticleSystem::ModuleData& moduleData)
+		void ParticleComponentInspector::drawTextureAnimationUpdater(ParticleSystem::ModuleData& moduleData)
 		{
-			EditorHelper::DrawNodeControl("Texture Animation", moduleData.TextureAnim, [](auto& val) {
+			EditorHelper::DrawNodeControl("Texture Animation", moduleData.TextureAnimationUpdater, [](auto& val) {
 
 				if (ImGui::BeginTable("TextureAnimationTable", 2, ImGuiTableFlags_SizingStretchProp))
 				{
@@ -157,100 +153,10 @@ namespace XYZ {
 					ImGui::EndTable();
 				}
 
-			}, moduleData.TextureAnim.Enabled);
+			}, moduleData.TextureAnimationUpdater.Enabled);
 
 		}
-		void ParticleComponentInspector::drawDefaultGenerator(ParticleSystem::ModuleData& moduleData)
-		{		
-			EditorHelper::DrawNodeControl("Main", moduleData.Main, [=](auto& gen) {
-				if (ImGui::BeginTable("Main", 2, ImGuiTableFlags_SizingStretchProp))
-				{
-					UI::TableRow("Color",
-						[]() {ImGui::Text("Color"); },
-						[&]() { ImGui::ColorEdit4("##Color", glm::value_ptr(gen.Color)); }
-					);
-					UI::TableRow("Size",
-						[]() {ImGui::Text("Size"); },
-						[&]() { ImGui::DragFloat2("##Size", glm::value_ptr(gen.Size)); }
-					);
-					ImGui::EndTable();
-				}
-			}, moduleData.Main.Enabled);
-		}
-		void ParticleComponentInspector::drawShapeGenerator(ParticleSystem::ModuleData& moduleData)
-		{
-			EditorHelper::DrawNodeControl("Shape", moduleData.Shape, [=](auto& gen) {
-				if (ImGui::BeginTable("Shape", 2, ImGuiTableFlags_SizingStretchProp))
-				{
-					UI::TableRow("Shape",
-						[]() { ImGui::Text("Shape"); },
-						[&]() 
-					{ 
-						const char* text = ShapeToText(gen.Shape);
-						UI::ScopedTableColumnAutoWidth width(1);
-						if (ImGui::Button(text))
-							ImGui::OpenPopup("Shape Type");
-						if (ImGui::BeginPopup("Shape Type"))
-						{
-							if (ImGui::MenuItem("Box"))
-								gen.Shape = EmitShape::Box;
-							if (ImGui::MenuItem("Circle"))
-								gen.Shape = EmitShape::Circle;
-							ImGui::EndPopup();
-						}
-					});
 
-					UI::TableRow("Box Min",
-						[]() {ImGui::Text("Box Min"); },
-						[&]() { ImGui::DragFloat3("##BoxMin", glm::value_ptr(gen.BoxMin)); }
-					);
-					UI::TableRow("Box Max",
-						[]() {ImGui::Text("Box Max"); },
-						[&]() { ImGui::DragFloat3("##BoxMax", glm::value_ptr(gen.BoxMax)); }
-					);
-					UI::TableRow("Radius",
-						[]() {ImGui::Text("Radius"); },
-						[&]() { ImGui::DragFloat("##Radius", &gen.Radius); }
-					);
-					ImGui::EndTable();
-				}
-			}, moduleData.Shape.Enabled);
-		}
-		void ParticleComponentInspector::drawLifeGenerator(ParticleSystem::ModuleData& moduleData)
-		{
-			EditorHelper::DrawNodeControl("Life", moduleData.Life, [=](auto& gen) {
-
-				if (ImGui::BeginTable("Life", 2, ImGuiTableFlags_SizingStretchProp))
-				{
-					UI::TableRow("Emit Rate",
-						[]() {ImGui::Text("Life Time"); },
-						[&]() { ImGui::DragFloat("##LifeTime", &gen.LifeTime); }
-					);
-	
-					ImGui::EndTable();
-				}
-			}, moduleData.Life.Enabled);
-		}
-		void ParticleComponentInspector::drawRandomVelGenerator(ParticleSystem::ModuleData& moduleData)
-		{
-			EditorHelper::DrawNodeControl("Random Velocity", moduleData.RandomVelocity, [=](auto& gen) {
-
-				if (ImGui::BeginTable("Random Velocity", 2, ImGuiTableFlags_SizingStretchProp))
-				{
-					UI::TableRow("MinVelocity",
-						[]() {ImGui::Text("Min Velocity"); },
-						[&]() { ImGui::DragFloat3("##MinVelocity", glm::value_ptr(gen.MinVelocity)); }
-					);
-					UI::TableRow("MaxVelocity",
-						[]() {ImGui::Text("Max Velocity"); },
-						[&]() { ImGui::DragFloat3("##MaxVelocity", glm::value_ptr(gen.MaxVelocity)); }
-					);
-
-					ImGui::EndTable();
-				}
-
-			}, moduleData.RandomVelocity.Enabled);
-		}
 		void ParticleComponentInspector::drawEmitter(ParticleSystem::ModuleData& moduleData)
 		{
 			auto& colors = EditorLayer::GetData().Color;
@@ -261,14 +167,75 @@ namespace XYZ {
 
 				if (ImGui::BeginTable("Emitter", 2, ImGuiTableFlags_SizingStretchProp))
 				{
+					////////////////////////
+					UI::TableRow("Shape",
+						[]() { ImGui::Text("Shape"); },
+						[&]()
+					{
+						const char* text = ShapeToText(val.Shape);
+						UI::ScopedTableColumnAutoWidth width(1);
+						if (ImGui::Button(text))
+							ImGui::OpenPopup("Shape Type");
+						if (ImGui::BeginPopup("Shape Type"))
+						{
+							if (ImGui::MenuItem("None"))
+								val.Shape = EmitShape::None;
+							if (ImGui::MenuItem("Box"))
+								val.Shape = EmitShape::Box;
+							if (ImGui::MenuItem("Circle"))
+								val.Shape = EmitShape::Circle;
+							ImGui::EndPopup();
+						}
+					});
+
+					UI::TableRow("Box Min",
+						[]() {ImGui::Text("Box Min"); },
+						[&]() { ImGui::DragFloat3("##BoxMin", glm::value_ptr(val.BoxMin), sc_VSpeed); }
+					);
+					UI::TableRow("Box Max",
+						[]() {ImGui::Text("Box Max"); },
+						[&]() { ImGui::DragFloat3("##BoxMax", glm::value_ptr(val.BoxMax), sc_VSpeed); }
+					);
+					UI::TableRow("Radius",
+						[]() {ImGui::Text("Radius"); },
+						[&]() { ImGui::DragFloat("##Radius", &val.Radius, sc_VSpeed); }
+					);
+
+					////////////////////////
 					UI::TableRow("Emit Rate",
 						[]() {ImGui::Text("Emit Rate"); },
-						[&]() { ImGui::DragFloat("##EmitRate", &val.EmitRate); }
+						[&]() { ImGui::DragFloat("##EmitRate", &val.EmitRate, sc_VSpeed); }
 					);
+					UI::TableRow("Life Time",
+						[]() {ImGui::Text("Life Time"); },
+						[&]() { ImGui::DragFloat("##LifeTime", &val.LifeTime, sc_VSpeed); }
+					);
+
+
+					////////////////////////				
+					UI::TableRow("MinVelocity",
+						[]() {ImGui::Text("Min Velocity"); },
+						[&]() { ImGui::DragFloat3("##MinVelocity", glm::value_ptr(val.MinVelocity), sc_VSpeed); }
+					);
+					UI::TableRow("MaxVelocity",
+						[]() {ImGui::Text("Max Velocity"); },
+						[&]() { ImGui::DragFloat3("##MaxVelocity", glm::value_ptr(val.MaxVelocity), sc_VSpeed); }
+					);
+					UI::TableRow("Size",
+						[]() {ImGui::Text("Size"); },
+						[&]() { ImGui::DragFloat2("##Size", glm::value_ptr(val.Size), sc_VSpeed); }
+					);
+					UI::TableRow("Color",
+						[]() {ImGui::Text("Color"); },
+						[&]() { ImGui::ColorEdit4("##Color", glm::value_ptr(val.Color), sc_VSpeed); }
+					);
+				
+					////////////////////////
 					UI::TableRow("Burst Interval",
 						[]() {ImGui::Text("Burst Interval"); },
-						[&]() { ImGui::DragFloat("##BurstInterval", &val.BurstInterval); }
+						[&]() { ImGui::DragFloat("##BurstInterval", &val.BurstInterval, sc_VSpeed); }
 					);
+
 					ImGui::EndTable();
 				}
 				
@@ -301,11 +268,11 @@ namespace XYZ {
 								selected = ImGui::IsItemDeactivated(); },
 							[&]() {
 								UI::ScopedTableColumnAutoWidth width(1);
-								ImGui::DragFloat(timeID.c_str(), &burst.Time);
+								ImGui::DragFloat(timeID.c_str(), &burst.Time, sc_VSpeed);
 								selected |= ImGui::IsItemDeactivated(); },
 							[&]() {
 								UI::ScopedTableColumnAutoWidth width(1);
-								ImGui::DragFloat(probID.c_str(), &burst.Probability, 0.0f, 0.0f, 1.0f);
+								ImGui::DragFloat(probID.c_str(), &burst.Probability, sc_VSpeed, 0.0f, 1.0f);
 								selected |= ImGui::IsItemDeactivated(); }
 							);
 						

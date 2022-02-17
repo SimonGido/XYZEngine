@@ -231,13 +231,25 @@ namespace XYZ {
 		out << YAML::Key << "MaxParticles" << val.System.GetMaxParticles();
 		out << YAML::Key << "Speed" << val.System.GetSpeed();
 
-		{ // Emitter
+		{  // Emitter
 			out << YAML::Key << "Emitter";
 			out << YAML::BeginMap; // Emitter
 
-			out << YAML::Key << "EmitRate" << moduleData->Emitter.EmitRate;
-			out << YAML::Key << "BurstInterval" << moduleData->Emitter.BurstInterval;
+			out << YAML::Key << "Shape" << static_cast<uint32_t>(moduleData->Emitter.Shape);
+			out << YAML::Key << "BoxMin" <<  moduleData->Emitter.BoxMin;
+			out << YAML::Key << "BoxMax" <<  moduleData->Emitter.BoxMax;
+			out << YAML::Key << "Radius" <<  moduleData->Emitter.Radius;
 
+			out << YAML::Key << "EmitRate" << moduleData->Emitter.EmitRate;
+			out << YAML::Key << "LifeTime" << moduleData->Emitter.LifeTime;
+			
+			out << YAML::Key << "MinVelocity" << moduleData->Emitter.MinVelocity;
+			out << YAML::Key << "MaxVelocity" << moduleData->Emitter.MaxVelocity;
+			
+			out << YAML::Key << "Size" <<    moduleData->Emitter.Size;
+			out << YAML::Key << "Color" <<   moduleData->Emitter.Color;
+
+			out << YAML::Key << "BurstInterval" << moduleData->Emitter.BurstInterval;
 			{
 				out << YAML::Key << "Bursts";
 				out << YAML::Value << YAML::BeginSeq;
@@ -254,57 +266,16 @@ namespace XYZ {
 			}
 			out << YAML::EndMap; // Emitter
 		}
-		{ // Particle Generator
-			out << YAML::Key << "ParticleGenerator";
-			out << YAML::BeginMap; // ParticleGenerator
-
-			out << YAML::Key << "Color" << moduleData->Main.Color;
-			out << YAML::Key << "Size" << moduleData->Main.Size;
-			out << YAML::Key << "Enabled" << moduleData->Main.Enabled;
-
-			out << YAML::EndMap; // ParticleGenerator
-		}
-		{ // ParticleShapeGenerator
-			out << YAML::Key << "ParticleShapeGenerator";
-			out << YAML::BeginMap; // ParticleShapeGenerator
-
-			out << YAML::Key << "Shape" << static_cast<uint32_t>(moduleData->Shape.Shape);
-			out << YAML::Key << "BoxMin" << moduleData->Shape.BoxMin;
-			out << YAML::Key << "BoxMax" << moduleData->Shape.BoxMax;
-			out << YAML::Key << "Radius" << moduleData->Shape.Radius;
-			out << YAML::Key << "Enabled" << moduleData->Shape.Enabled;
-
-			out << YAML::EndMap; // ParticleShapeGenerator
-		}
-		{ // ParticleLifeGenerator
-			out << YAML::Key << "ParticleLifeGenerator";
-			out << YAML::BeginMap; // ParticleLifeGenerator
-
-			out << YAML::Key << "LifeTime" << moduleData->Life.LifeTime;
-			out << YAML::Key << "Enabled" << moduleData->Life.Enabled;
-
-			out << YAML::EndMap; // ParticleLifeGenerator
-		}
-		{ // ParticleRandomVelocityGenerator
-			out << YAML::Key << "ParticleRandomVelocityGenerator";
-			out << YAML::BeginMap;
-
-			out << YAML::Key << "MinVelocity" << moduleData->RandomVelocity.MinVelocity;
-			out << YAML::Key << "MaxVelocity" << moduleData->RandomVelocity.MaxVelocity;
-			out << YAML::Key << "Enabled" << moduleData->RandomVelocity.Enabled;
-
-			out << YAML::EndMap;
-		}
 		{
 			// LightUpdater
 			out << YAML::Key << "LightUpdater";
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "LightColor" << moduleData->Light.Light.Color;
-			out << YAML::Key << "LightRadius" << moduleData->Light.Light.Radius;
-			out << YAML::Key << "LightIntensity" << moduleData->Light.Light.Intensity;
-			out << YAML::Key << "MaxLights" << moduleData->Light.MaxLights;
-			out << YAML::Key << "Enabled" << moduleData->Light.Enabled;
+			out << YAML::Key << "LightColor" << moduleData->LightUpdater.Light.Color;
+			out << YAML::Key << "LightRadius" << moduleData->LightUpdater.Light.Radius;
+			out << YAML::Key << "LightIntensity" << moduleData->LightUpdater.Light.Intensity;
+			out << YAML::Key << "MaxLights" << moduleData->LightUpdater.MaxLights;
+			out << YAML::Key << "Enabled" << moduleData->LightUpdater.Enabled;
 
 			out << YAML::EndMap;
 		}
@@ -313,10 +284,10 @@ namespace XYZ {
 			out << YAML::Key << "TextureAnimationUpdater";
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "Tiles" << moduleData->TextureAnim.Tiles;
-			out << YAML::Key << "StartFrame" << moduleData->TextureAnim.StartFrame;
-			out << YAML::Key << "CycleLength" << moduleData->TextureAnim.CycleLength;
-			out << YAML::Key << "Enabled" << moduleData->TextureAnim.Enabled;
+			out << YAML::Key << "Tiles" << moduleData->TextureAnimationUpdater.Tiles;
+			out << YAML::Key << "StartFrame" << moduleData->TextureAnimationUpdater.StartFrame;
+			out << YAML::Key << "CycleLength" << moduleData->TextureAnimationUpdater.CycleLength;
+			out << YAML::Key << "Enabled" << moduleData->TextureAnimationUpdater.Enabled;
 	
 			out << YAML::EndMap;
 		}
@@ -324,9 +295,9 @@ namespace XYZ {
 			out << YAML::Key << "RotationOverLife";
 			out << YAML::BeginMap;
 
-			out << YAML::Key << "EulerAngles" << moduleData->RotationOverLife.EulerAngles;
-			out << YAML::Key << "CycleLength" << moduleData->RotationOverLife.CycleLength;
-			out << YAML::Key << "Enabled" << moduleData->RotationOverLife.Enabled;
+			out << YAML::Key << "EulerAngles" << moduleData->RotationOverLifeUpdater.EulerAngles;
+			out << YAML::Key << "CycleLength" << moduleData->RotationOverLifeUpdater.CycleLength;
+			out << YAML::Key << "Enabled" << moduleData->RotationOverLifeUpdater.Enabled;
 
 			out << YAML::EndMap;
 		}
@@ -344,7 +315,20 @@ namespace XYZ {
 
 		{ // Emitter
 			auto emitter = data["Emitter"];
+			moduleData->Emitter.Shape = static_cast<EmitShape>(emitter["Shape"].as<uint32_t>());
+			moduleData->Emitter.BoxMin = emitter["BoxMin"].as<glm::vec3>();
+			moduleData->Emitter.BoxMax = emitter["BoxMax"].as<glm::vec3>();
+			moduleData->Emitter.Radius = emitter["Radius"].as<float>();
+
 			moduleData->Emitter.EmitRate = emitter["EmitRate"].as<float>();
+			moduleData->Emitter.LifeTime = emitter["LifeTime"].as<float>();
+			
+			moduleData->Emitter.MinVelocity = emitter["MinVelocity"].as<glm::vec3>();
+			moduleData->Emitter.MaxVelocity = emitter["MaxVelocity"].as<glm::vec3>();
+			
+			moduleData->Emitter.Size  = emitter["Size"].as<glm::vec3>();
+			moduleData->Emitter.Color = emitter["Color"].as<glm::vec4>();
+
 			moduleData->Emitter.BurstInterval = emitter["BurstInterval"].as<float>();
 			for (auto burst : emitter["Bursts"])
 			{
@@ -356,52 +340,28 @@ namespace XYZ {
 				});	
 			}
 		}
-		{ // ParticleGenerator
-			auto generator = data["ParticleGenerator"];
-			moduleData->Main.Color = generator["Color"].as<glm::vec4>();
-			moduleData->Main.Size = generator["Size"].as<glm::vec3>();
-			moduleData->Main.Enabled = generator["Enabled"].as<bool>();
-		}
-		{ // ParticleShapeGenerator
-			auto generator = data["ParticleShapeGenerator"];
-			moduleData->Shape.Shape = static_cast<EmitShape>(generator["Shape"].as<uint32_t>());
-			moduleData->Shape.BoxMin = generator["BoxMin"].as<glm::vec3>();
-			moduleData->Shape.BoxMax = generator["BoxMax"].as<glm::vec3>();
-			moduleData->Shape.Radius = generator["Radius"].as<float>();
-			moduleData->Shape.Enabled = generator["Enabled"].as<bool>();
-		}
-		{ // ParticleLifeGenerator
-			auto generator = data["ParticleLifeGenerator"];
-			moduleData->Life.LifeTime = generator["LifeTime"].as<float>();
-			moduleData->Life.Enabled = generator["Enabled"].as<bool>();
-		}
-		{ // ParticleRandomVelocityGenerator
-			auto generator = data["ParticleRandomVelocityGenerator"];
-			moduleData->RandomVelocity.MinVelocity = generator["MinVelocity"].as<glm::vec3>();
-			moduleData->RandomVelocity.MaxVelocity = generator["MaxVelocity"].as<glm::vec3>();
-			moduleData->RandomVelocity.Enabled = generator["Enabled"].as<bool>();
-		}
+
 		{ // LightUpdater
 			auto updater = data["LightUpdater"];
-			moduleData->Light.Light.Color = updater["LightColor"].as<glm::vec3>();
-			moduleData->Light.Light.Radius = updater["LightRadius"].as<float>();
-			moduleData->Light.Light.Intensity = updater["LightIntensity"].as<float>();
+			moduleData->LightUpdater.Light.Color = updater["LightColor"].as<glm::vec3>();
+			moduleData->LightUpdater.Light.Radius = updater["LightRadius"].as<float>();
+			moduleData->LightUpdater.Light.Intensity = updater["LightIntensity"].as<float>();
 			
-			moduleData->Light.MaxLights = updater["MaxLights"].as<uint32_t>();
-			moduleData->Light.Enabled = updater["Enabled"].as<bool>();
+			moduleData->LightUpdater.MaxLights = updater["MaxLights"].as<uint32_t>();
+			moduleData->LightUpdater.Enabled = updater["Enabled"].as<bool>();
 		}
 		{ // TextureAnimationUpdater
 			auto updater = data["TextureAnimationUpdater"];
-			moduleData->TextureAnim.Tiles = updater["Tiles"].as<glm::ivec2>();
-			moduleData->TextureAnim.StartFrame = updater["StartFrame"].as<uint32_t>();
-			moduleData->TextureAnim.CycleLength = updater["CycleLength"].as<float>();
-			moduleData->TextureAnim.Enabled = updater["Enabled"].as<bool>();
+			moduleData->TextureAnimationUpdater.Tiles = updater["Tiles"].as<glm::ivec2>();
+			moduleData->TextureAnimationUpdater.StartFrame = updater["StartFrame"].as<uint32_t>();
+			moduleData->TextureAnimationUpdater.CycleLength = updater["CycleLength"].as<float>();
+			moduleData->TextureAnimationUpdater.Enabled = updater["Enabled"].as<bool>();
 		}
 		{ // RotationOverLife
 			auto updater = data["RotationOverLife"];
-			moduleData->RotationOverLife.EulerAngles = data["EulerAngles"].as<glm::vec3>();
-			moduleData->RotationOverLife.CycleLength = data["CycleLength"].as<float>();
-			moduleData->RotationOverLife.Enabled = data["Enabled"].as<bool>();
+			moduleData->RotationOverLifeUpdater.EulerAngles = data["EulerAngles"].as<glm::vec3>();
+			moduleData->RotationOverLifeUpdater.CycleLength = data["CycleLength"].as<float>();
+			moduleData->RotationOverLifeUpdater.Enabled = data["Enabled"].as<bool>();
 		}
 	}
 

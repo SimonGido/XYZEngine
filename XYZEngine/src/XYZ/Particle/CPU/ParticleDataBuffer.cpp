@@ -17,31 +17,16 @@ namespace XYZ {
 		else
 		{
 			Particle	= nullptr;
-			TexOffset	= nullptr;
-			StartColor	= nullptr;
-			EndColor	= nullptr;
-			Size		= nullptr;
-			Rotation    = nullptr;
 		}
 	}
 	ParticleDataBuffer::ParticleDataBuffer(ParticleDataBuffer&& other) noexcept
 	{
 		Particle = other.Particle;
-		TexOffset = other.TexOffset;
-		StartColor = other.StartColor;
-		EndColor = other.EndColor;
-		Size = other.Size;
-		Rotation = other.Rotation;
-
+	
 		m_MaxParticles = other.m_MaxParticles;
 		m_AliveParticles = other.m_AliveParticles;
 
 		other.Particle = nullptr;
-		other.TexOffset = nullptr;
-		other.StartColor = nullptr;
-		other.EndColor = nullptr;
-		other.Size = nullptr;
-		other.Rotation = nullptr;
 		other.m_MaxParticles = 0;
 		other.m_AliveParticles = 0;
 	}
@@ -63,11 +48,6 @@ namespace XYZ {
 		else
 		{
 			Particle = nullptr;
-			TexOffset = nullptr;
-			StartColor = nullptr;
-			EndColor = nullptr;
-			Size = nullptr;
-			Rotation = nullptr;
 		}
 	}
 	
@@ -85,11 +65,6 @@ namespace XYZ {
 		else
 		{
 			Particle = nullptr;
-			TexOffset = nullptr;
-			StartColor = nullptr;
-			EndColor = nullptr;
-			Size = nullptr;
-			Rotation = nullptr;
 		}	
 		return *this;
 	}
@@ -98,21 +73,11 @@ namespace XYZ {
 	{
 		deleteParticles();
 		Particle = other.Particle;
-		TexOffset = other.TexOffset;
-		StartColor = other.StartColor;
-		EndColor = other.EndColor;
-		Size = other.Size;
-		Rotation = other.Rotation;
 
 		m_MaxParticles = other.m_MaxParticles;
 		m_AliveParticles = other.m_AliveParticles;
 
 		other.Particle = nullptr;
-		other.TexOffset = nullptr;
-		other.StartColor = nullptr;
-		other.EndColor = nullptr;
-		other.Size = nullptr;
-		other.Rotation = nullptr;
 		other.m_MaxParticles = 0;
 		other.m_AliveParticles = 0;
 		return *this;
@@ -138,22 +103,12 @@ namespace XYZ {
 	void ParticleDataBuffer::generateParticles(uint32_t particleCount)
 	{
 		Particle		  = new ParticleData[particleCount];
-		TexOffset		  = new glm::vec2[particleCount];
-		StartColor        = new glm::vec4[particleCount];
-		EndColor          = new glm::vec4[particleCount];
-		Size			  = new glm::vec3[particleCount];
-		Rotation		  = new glm::quat[particleCount];
 		for (size_t i = 0; i < particleCount; ++i)
 			Particle[i].Alive = false;
 	}
 	void ParticleDataBuffer::swapData(uint32_t a, uint32_t b)
 	{
-		Particle[a]			 = Particle[b];
-		TexOffset[a]		 = TexOffset[b];
-		StartColor[a]		 = StartColor[b];
-		EndColor[a]			 = EndColor[b];
-		Size[a]				 = Size[b];
-		Rotation[a]			 = Rotation[b];
+		Particle[a]	= Particle[b];
 	}
 
 	template <typename T>
@@ -164,21 +119,11 @@ namespace XYZ {
 
 	void ParticleDataBuffer::copyData(const ParticleDataBuffer& source)
 	{
-		copy(Particle,   source.Particle,	m_MaxParticles);
-		copy(TexOffset,  source.TexOffset,	m_MaxParticles);
-		copy(StartColor, source.StartColor,	m_MaxParticles);
-		copy(EndColor,   source.EndColor,	m_MaxParticles);
-		copy(Size,	     source.Size,		m_MaxParticles);
-		copy(Rotation,   source.Rotation,	m_MaxParticles);	
+		copy(Particle,   source.Particle,	m_MaxParticles);	
 	}
 
 	void ParticleDataBuffer::deleteParticles()
 	{
 		delete[]Particle;
-		delete[]TexOffset;
-		delete[]StartColor;
-		delete[]EndColor;
-		delete[]Size;
-		delete[]Rotation;
 	}
 }

@@ -1,6 +1,6 @@
 Name: MeshShader
 FilePath: Resources/Shaders/MeshShader.glsl
-SourceHash: 17431338210763430060
+SourceHash: 15741610105229386806
 Layouts:
   - Instanced: false
     Elements:

@@ -41,11 +41,11 @@ void main()
 	);
 
 
-	vec4 instancePosition = transform * vec4(a_Position, 1.0);
+	vec4 instancePosition = transform * u_Renderer.Transform * vec4(a_Position, 1.0);
 	v_Output.Position = instancePosition.xyz;
 	v_Output.TexCoord = a_TexCoord;
 
-	gl_Position = u_ViewProjection * u_Renderer.Transform * instancePosition;
+	gl_Position = u_ViewProjection * instancePosition;
 }
 
 #type fragment

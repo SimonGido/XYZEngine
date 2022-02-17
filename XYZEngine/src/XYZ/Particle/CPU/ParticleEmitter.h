@@ -2,11 +2,18 @@
 
 #include "XYZ/Core/Timestep.h"
 #include "ParticleDataBuffer.h"
-#include "ParticleGenerator.h"
+#include "ParticleUpdater.h"
 
 namespace XYZ {
 
-	
+
+	enum class EmitShape
+	{
+		None,
+		Box,
+		Circle
+	};
+
 	struct EmitterBurst
 	{
 		EmitterBurst() = default;
@@ -15,27 +22,37 @@ namespace XYZ {
 		uint32_t Count = 0;
 		float	 Time = 0.0f;
 		float    Probability = 1.0f;
-	private:
-		bool	 m_Called = false;
-
-		friend class ParticleEmitter;
+		bool	 Ready = true;
 	};
+
 
 	class ParticleEmitter
 	{
 	public:
 		ParticleEmitter();
+		
+		void Emit(Timestep ts, ParticleDataBuffer& data);
 
-		std::pair<uint32_t, uint32_t> Emit(Timestep ts, ParticleDataBuffer& particles);
-		float GetEmittedParticles() const { return m_EmittedParticles; }
 
-	
-		float							EmitRate;
-		float							BurstInterval;
-		std::vector<EmitterBurst>		Bursts;
+		EmitShape				  Shape;
+		glm::vec3				  BoxMin;
+		glm::vec3				  BoxMax;
+		float					  Radius;
 
+		float					  EmitRate;
+		float					  LifeTime;
+
+		glm::vec3				  MinVelocity;
+		glm::vec3				  MaxVelocity;
+		glm::vec3				  Size;
+		glm::vec4				  Color;
+
+		float					  BurstInterval;
+		std::vector<EmitterBurst> Bursts;
 	private:
 		uint32_t burstEmit();
+		void	 generateBox(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
+		void	 generateCircle(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
 
 	private:
 		float m_EmittedParticles;

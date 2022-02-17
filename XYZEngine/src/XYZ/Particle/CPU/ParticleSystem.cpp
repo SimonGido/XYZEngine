@@ -101,8 +101,6 @@ namespace XYZ {
 		auto moduleData = GetModuleData();
 		for (uint32_t i = 0; i < moduleData->Particles.GetAliveParticles(); ++i)
 			moduleData->Particles.Kill(i);
-		
-		moduleData->Light.Reset();
 	}
 
 	void ParticleSystem::SetMaxParticles(uint32_t maxParticles)
@@ -168,13 +166,8 @@ namespace XYZ {
 			{			
 				ScopedLock<ModuleData> moduleData = m_ModuleThreadPass.Get<ModuleData>();
 				auto& particles = moduleData->Particles;
-				auto[startId, endId] = moduleData->Emitter.Emit(timestep, particles);
-
-				moduleData->Main.Generate(particles, startId, endId);
-				moduleData->Shape.Generate(particles, startId, endId);
-				moduleData->Life.Generate(particles, startId, endId);
-				moduleData->RandomVelocity.Generate(particles, startId, endId);
-
+				moduleData->Emitter.Emit(timestep, particles);
+		
 				update(timestep, moduleData.As());
 				buildRenderData(moduleData.As());
 			}
@@ -194,9 +187,9 @@ namespace XYZ {
 			
 		}
 
-		data.Light.UpdateParticles(timestep, data.Particles);
-		data.TextureAnim.UpdateParticles(timestep, data.Particles);
-		data.RotationOverLife.UpdateParticles(timestep, data.Particles);
+		data.LightUpdater.UpdateParticles(timestep, data.Particles);
+		data.TextureAnimationUpdater.UpdateParticles(timestep, data.Particles);
+		data.RotationOverLifeUpdater.UpdateParticles(timestep, data.Particles);
 
 		for (uint32_t i = 0; i < aliveParticles; ++i)
 		{
@@ -219,9 +212,9 @@ namespace XYZ {
 			val->Data[i] = ParticleRenderData{
 				particle.Color,
 				particle.Position,
-				data.Particles.Size[i],
-				data.Particles.Rotation[i],
-				data.Particles.TexOffset[i]
+				particle.Size,
+				particle.Rotation,
+				particle.TexOffset
 			};
 		}
 		val->InstanceCount = endId;

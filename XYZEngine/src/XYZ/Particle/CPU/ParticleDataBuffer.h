@@ -30,20 +30,16 @@ namespace XYZ {
             glm::vec4 Color;
             glm::vec3 Position;
             glm::vec3 Velocity;
-           
+            glm::vec2 TexOffset;
+            glm::vec4 StartColor;
+            glm::vec4 EndColor;
+            glm::vec3 Size;
+            glm::quat Rotation;
             float     LifeRemaining;
             bool      Alive;
         };
 
         ParticleData*   Particle;
-
-        // Additional particle properties;
-        glm::vec2*  TexOffset;
-        glm::vec4*  StartColor;
-        glm::vec4*  EndColor;
-        glm::vec3*  Size;
-        glm::quat*  Rotation;
-
 
         uint32_t GetMaxParticles() const { return m_MaxParticles; }
         uint32_t GetAliveParticles() const { return m_AliveParticles; }
