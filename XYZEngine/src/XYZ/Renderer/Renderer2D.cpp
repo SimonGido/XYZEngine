@@ -102,7 +102,6 @@ namespace XYZ {
 		m_ViewMatrix = viewMatrix;
 
 		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, clear);
-
 	}
 
 
@@ -131,6 +130,11 @@ namespace XYZ {
 			m_CircleMaterial = material;
 			m_CircleBuffer.Pipeline = setMaterial(m_CirclePipelines, m_CircleBuffer.Pipeline, material->GetMaterial());
 		}
+	}
+
+	void Renderer2D::SetCommandBuffer(const Ref<RenderCommandBuffer>& commandBuffer)
+	{
+		m_RenderCommandBuffer = commandBuffer;
 	}
 
 	void Renderer2D::SetTargetRenderPass(const Ref<RenderPass>& renderPass)

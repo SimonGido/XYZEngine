@@ -52,6 +52,7 @@ namespace XYZ {
 				panel.Panel->SetSceneContext(scene);
 			}
 		}
+
 		Ref<EditorPanel> EditorManager::getPanel(const std::string& name) const
 		{
 			for (auto& panel : m_EditorPanels)

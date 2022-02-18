@@ -60,6 +60,7 @@ project "XYZEngine"
 			"vendor/stb_image",		
 			"vendor/assimp/include",
 			"vendor/spdlog/include",
+			"%{IncludeDir.delaunator}",
 			"%{IncludeDir.ImGui}",
 			"%{IncludeDir.ImGuizmo}",
 			"%{IncludeDir.yaml}",
@@ -73,7 +74,6 @@ project "XYZEngine"
 			"%{IncludeDir.FreeType}/include",
 			"%{IncludeDir.Asio}",
 			"%{IncludeDir.mono}",
-			"%{IncludeDir.TrianglePP}",
 			"%{IncludeDir.box2d}",
 			"%{IncludeDir.optick}",
 			"%{IncludeDir.VulkanSDK}"
@@ -86,7 +86,6 @@ project "XYZEngine"
 			"OpenAL-Soft",
 			"FreeType",
 			"opengl32",
-			"TrianglePP",
 			"ImGui",
 			"box2d",
 			"optick",

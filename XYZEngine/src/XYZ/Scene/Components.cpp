@@ -254,4 +254,9 @@ namespace XYZ {
 		Mesh(mesh), MaterialAsset(materialAsset)
 	{
 	}
+	AnimatedMeshComponent::AnimatedMeshComponent(const Ref<AnimatedMesh>& mesh, const Ref<XYZ::MaterialAsset>& materialAsset)
+		:
+		Mesh(mesh), MaterialAsset(materialAsset)
+	{
+	}
 }

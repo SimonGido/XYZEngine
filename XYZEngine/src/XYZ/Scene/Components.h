@@ -57,6 +57,12 @@ namespace XYZ {
 	};
 	REFLECTABLE(TransformComponent, Translation, Rotation, Scale, WorldTransform);
 
+	class BoneComponent
+	{
+	public:
+		Ref<AnimatedMesh> Mesh;
+	};
+
 	struct SceneTagComponent 
 	{
 		std::string Name;
@@ -112,6 +118,16 @@ namespace XYZ {
 		MeshComponent(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& materialAsset);
 
 		Ref<Mesh>		      Mesh;
+		Ref<MaterialAsset>    MaterialAsset;
+		Ref<MaterialInstance> OverrideMaterial;
+	};
+
+	struct AnimatedMeshComponent
+	{
+		AnimatedMeshComponent() = default;
+		AnimatedMeshComponent(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& materialAsset);
+
+		Ref<AnimatedMesh>	  Mesh;
 		Ref<MaterialAsset>    MaterialAsset;
 		Ref<MaterialInstance> OverrideMaterial;
 	};

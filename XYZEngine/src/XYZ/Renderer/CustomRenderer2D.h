@@ -3,7 +3,6 @@
 #include "Camera.h"
 #include "Material.h"
 #include "Mesh.h"
-#include "SkeletalMesh.h"
 #include "Buffer.h"
 
 namespace XYZ {

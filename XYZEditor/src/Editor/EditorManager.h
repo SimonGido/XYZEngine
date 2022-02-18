@@ -34,8 +34,8 @@ namespace XYZ {
 				Ref<EditorPanel> Panel;
 				bool			 Open;
 			};
-			std::vector<View> m_EditorPanels;
-			Ref<Scene>		  m_Scene;
+			std::vector<View>		 m_EditorPanels;
+			Ref<Scene>				 m_Scene;
 		};
 		template<typename T>
 		inline void EditorManager::RegisterPanel(std::string name, bool open)
@@ -45,6 +45,7 @@ namespace XYZ {
 			Ref<T> panel = Ref<T>::Create(std::move(name));
 			if (m_Scene.Raw())
 				panel->SetSceneContext(m_Scene);
+
 			m_EditorPanels.push_back({ panel, open });
 		}
 

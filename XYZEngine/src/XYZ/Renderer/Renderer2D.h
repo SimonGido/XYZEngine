@@ -2,7 +2,6 @@
 
 #include "Camera.h"
 #include "Mesh.h"
-#include "SkeletalMesh.h"
 #include "Font.h"
 #include "Pipeline.h"
 #include "RenderCommandBuffer.h"
@@ -59,8 +58,9 @@ namespace XYZ {
 		void SetQuadMaterial(const Ref<MaterialAsset>& material);
 		void SetLineMaterial(const Ref<MaterialAsset>& material);
 		void SetCircleMaterial(const Ref<MaterialAsset>& material);
-
+		void SetCommandBuffer(const Ref<RenderCommandBuffer>& commandBuffer);
 		void SetTargetRenderPass(const Ref<RenderPass>& renderPass);
+
 		Ref<RenderPass> GetTargetRenderPass() const;
 		Ref<UniformBufferSet> GetCameraBufferSet() const { return m_UniformBufferSet; }
 
@@ -87,6 +87,9 @@ namespace XYZ {
 		void Flush();
 		void EndScene();
 		
+		Ref<MaterialAsset> GetQuadMaterialAsset() const { return m_QuadMaterial;}
+		Ref<MaterialAsset> GetCircleMaterialAsset() const { return m_CircleMaterial;}
+		Ref<MaterialAsset> GetLineMaterialAsset() const { return m_LineMaterial; }
 
 		const Renderer2DStats&	  GetStats();
 

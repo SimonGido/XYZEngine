@@ -73,7 +73,8 @@ namespace XYZ {
 		{
 			glm::vec4 TransformRow[3];
 		};
-		
+		using BoneTransforms = std::array<glm::mat4, 60>;
+
 		struct MeshDrawCommandOverride
 		{
 			Ref<MaterialInstance>  OverrideMaterial;
@@ -94,6 +95,30 @@ namespace XYZ {
 			std::vector<MeshDrawCommandOverride> OverrideCommands;
 		};
 
+		struct AnimatedMeshDrawCommandOverride
+		{
+			Ref<MaterialInstance>  OverrideMaterial;
+			glm::mat4			   Transform;
+			BoneTransforms		   BoneTransforms;
+			uint32_t			   BoneTransformsIndex = 0;
+		};
+
+		struct AnimatedMeshDrawCommand
+		{
+			Ref<AnimatedMesh>			 Mesh;
+			Ref<MaterialAsset>			 MaterialAsset;
+			Ref<MaterialInstance>		 OverrideMaterial;
+			Ref<Pipeline>				 Pipeline;
+			uint32_t					 TransformInstanceCount = 0;
+
+			std::vector<TransformData>	 TransformData;
+			uint32_t					 TransformOffset = 0;
+
+			std::vector<BoneTransforms>	 BoneData;
+			uint32_t					 BoneTransformsIndex = 0;
+
+			std::vector<AnimatedMeshDrawCommandOverride> OverrideCommands;
+		};
 		
 		struct InstanceMeshDrawCommand
 		{
@@ -154,6 +179,7 @@ namespace XYZ {
 		std::map<SpriteKey, SpriteDrawCommand> BillboardDrawCommands;			
 
 		std::map<BatchMeshKey,	  MeshDrawCommand>						MeshDrawCommands;
+		std::map<BatchMeshKey,	  AnimatedMeshDrawCommand>				AnimatedMeshDrawCommands;
 		std::map<MeshKey,		  std::vector<InstanceMeshDrawCommand>>	InstanceMeshDrawCommands;
 	};
 
@@ -182,6 +208,7 @@ namespace XYZ {
 
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial);
+		void SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<glm::mat4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 
 		void SubmitLight(const PointLight2D& light, const glm::vec2& position);
 
@@ -213,6 +240,8 @@ namespace XYZ {
 		void prepareLights();
 		
 		Ref<Pipeline> getGeometryPipeline(const Ref<Material>& material);
+
+		void copyToBoneStorage(RenderQueue::BoneTransforms& storage, const std::vector<glm::mat4>& boneTransforms);
 	private:
 		struct PointLight
 		{
@@ -272,11 +301,15 @@ namespace XYZ {
 		Ref<RenderPass>			   m_GeometryPass;
 
 		Ref<StorageBufferSet>      m_LightStorageBufferSet;
+		Ref<StorageBufferSet>	   m_BoneTransformsStorageSet;
 
 		Ref<VertexBuffer>		   m_InstanceVertexBuffer;
 		Ref<VertexBuffer>		   m_TransformVertexBuffer;
+		
 
 		std::vector<RenderQueue::TransformData> m_TransformData;
+		std::vector<glm::mat4>					m_BoneTransformsData;
+
 		std::vector<std::byte>	   m_InstanceData;
 		std::vector<PointLight>	   m_PointLights;
 		std::vector<SpotLight>	   m_SpotLights;
@@ -304,9 +337,10 @@ namespace XYZ {
 		bool				       m_ViewportSizeChanged = false;
 		int32_t					   m_ThreadIndex;
 
-		static constexpr uint32_t sc_MaxNumberOfLights = 2 * 1024;
-		static constexpr uint32_t sc_TransformBufferCount = 10 * 1024; // 10240 transforms
+		static constexpr uint32_t sc_MaxNumberOfLights		  =  2 * 1024;
+		static constexpr uint32_t sc_TransformBufferCount	  = 10 * 1024; // 10240 transforms
 		static constexpr uint32_t sc_InstanceVertexBufferSize = 30 * 1024 * 1024; // 30mb
+		static constexpr uint32_t sc_MaxBoneTransforms		  =  1 * 1024;
 
 		struct RenderStatistics
 		{
@@ -334,5 +368,8 @@ namespace XYZ {
 	private:
 		Ref<Mesh>			  m_TestMesh;
 		Ref<MaterialAsset>	  m_TestMaterial;
+
+		Ref<AnimatedMesh>  m_TestAnimMesh;
+		Ref<MaterialAsset> m_TestAnimMaterial;
 	};
 }

@@ -30,7 +30,8 @@ namespace XYZ {
 			case ShaderDataType::Float2:    return VK_FORMAT_R32G32_SFLOAT;
 			case ShaderDataType::Float3:    return VK_FORMAT_R32G32B32_SFLOAT;
 			case ShaderDataType::Float4:    return VK_FORMAT_R32G32B32A32_SFLOAT;
-			case ShaderDataType::Int:		return VK_FORMAT_R32G32B32A32_SINT;
+			case ShaderDataType::Int:		return VK_FORMAT_R32_SINT;
+			case ShaderDataType::Int4:		return VK_FORMAT_R32G32B32A32_SINT;
 			}
 			XYZ_ASSERT(false, "");
 			return VK_FORMAT_UNDEFINED;

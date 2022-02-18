@@ -23,6 +23,44 @@ namespace XYZ {
 		Ref<Mesh> result;
 		return result;
 	}
+
+	Ref<AnimatedMesh> MeshFactory::CreateAnimatedBox(const glm::vec3& size)
+	{
+		std::vector<AnimatedVertex> vertices = {
+			AnimatedVertex{{ -size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, {}},  // Front Down Left
+			AnimatedVertex{{  size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, {}},  // Front Down Right 
+			AnimatedVertex{{  size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f }, {}},  // Front Up   Right
+			AnimatedVertex{{ -size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f }, {}},	 // Front Up   Left
+
+			AnimatedVertex{{ -size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f }, {}},	// Back  Down Left
+			AnimatedVertex{{  size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f }, {}},	// Back  Down Right
+			AnimatedVertex{{  size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f }, {}},	// Back  Up	  Right
+			AnimatedVertex{{ -size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f }, {}}	// Back  Up	  Left
+		};
+
+		std::vector<uint32_t> indices = {
+			0, 1, 2,
+			2, 3, 0,
+
+			1, 5, 6,
+			6, 2, 1,
+
+			7, 6, 5,
+			5, 4, 7,
+
+			4, 0, 3,
+			3, 7, 4,
+
+			4, 5, 1,
+			1, 0, 4,
+
+			3, 2, 6,
+			6, 7, 3
+		};
+		Ref<AnimatedMesh> result = Ref<AnimatedMesh>::Create(vertices, indices);
+		return result;
+	}
+
 	Ref<Mesh> MeshFactory::CreateBox(const glm::vec3& size)
 	{
 		std::vector<Vertex> vertices = {

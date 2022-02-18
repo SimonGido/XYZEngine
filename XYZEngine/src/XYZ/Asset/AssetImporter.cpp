@@ -5,7 +5,6 @@
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/Font.h"
-#include "XYZ/Renderer/SkeletalMesh.h"
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/Animation/Animation.h"

@@ -19,9 +19,10 @@ namespace XYZ {
 			void OnEvent(Event& e);
 
 			inline float GetDistance() const { return m_Distance; }
-			inline void SetDistance(float distance) { m_Distance = distance; }
-			inline void SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; updateProjection(); }
-			inline void LockOrtho(bool val) { m_LockOrtho = val; }
+			inline void  SetDistance(float distance) { m_Distance = distance; }
+			inline void  SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; updateProjection(); }
+			inline void  LockOrtho(bool val) { m_LockOrtho = val; }
+			inline float GetAspectRatio() const { return m_AspectRatio; }
 
 			const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 			glm::mat4 GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }

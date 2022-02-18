@@ -37,7 +37,7 @@ namespace XYZ {
 		virtual Ref<Shader>	GetShader()const = 0;
 		
 		static Ref<Material> Create(const Ref<Shader>& shader);
-	
+
 		friend class MaterialInstance;
 	protected:
 		void		    invalidateInstances();

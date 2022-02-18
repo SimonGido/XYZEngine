@@ -67,12 +67,11 @@ namespace XYZ {
 		m_Renderer2D->SetTargetRenderPass(m_GeometryPass);
 		m_WhiteTexture = Renderer::GetDefaultResources().WhiteTexture;
 
-		
 		Ref<ShaderAsset> compositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
 		Ref<ShaderAsset> lightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
 		Ref<ShaderAsset> bloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
 		Ref<ShaderAsset> meshShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/MeshShader.shader");
-
+		Ref<ShaderAsset> meshAnimShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/AnimMeshShader.shader");
 
 		m_CompositeRenderPipeline.Init(m_CompositePass, compositeShaderAsset->GetShader());
 		m_LightRenderPipeline.Init(m_LightPass, lightShaderAsset->GetShader());
@@ -93,11 +92,19 @@ namespace XYZ {
 		m_TransformVertexBuffer = VertexBuffer::Create(sc_TransformBufferCount * sizeof(RenderQueue::TransformData));
 		m_TransformData.resize(sc_TransformBufferCount);
 		m_InstanceData.resize(sc_InstanceVertexBufferSize);
+		m_BoneTransformsData.resize(sc_MaxBoneTransforms);
+
+		m_BoneTransformsStorageSet = StorageBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
+		m_BoneTransformsStorageSet->Create(sc_MaxBoneTransforms * sizeof(RenderQueue::BoneTransforms), 2, 0);
 
 		m_TestMesh = MeshFactory::CreateBox(glm::vec3(2.0f));
 		m_TestMaterial = Ref<MaterialAsset>::Create(meshShaderAsset);
 		m_TestMaterial->SetTexture("u_Texture", m_WhiteTexture);
 
+		
+		m_TestAnimMesh = MeshFactory::CreateAnimatedBox(glm::vec3(3.0f));
+		m_TestAnimMaterial = Ref<MaterialAsset>::Create(meshAnimShaderAsset);
+		m_TestAnimMaterial->SetTexture("u_Texture", m_WhiteTexture);
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -144,7 +151,12 @@ namespace XYZ {
 		SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)), m_TestMaterial->GetMaterialInstance());
 		SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 10.0f, 0.0f)), m_TestMaterial->GetMaterialInstance());
 
-
+		SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(5.0f)) });
+		SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f)) });
+		SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(7.0f)) });
+		SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(4.0f)) });
+		SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(8.0f)) });
+		SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)) });
 
 		preRender();
 		m_CommandBuffer->Begin();
@@ -164,6 +176,7 @@ namespace XYZ {
 		m_Queue.SpriteDrawCommands.clear();
 		m_Queue.BillboardDrawCommands.clear();
 		m_Queue.MeshDrawCommands.clear();
+		m_Queue.AnimatedMeshDrawCommands.clear();
 		m_Queue.InstanceMeshDrawCommands.clear();
 		m_PointLights.clear();
 		m_SpotLights.clear();
@@ -233,6 +246,31 @@ namespace XYZ {
 		size_t instanceDataSize = static_cast<size_t>(instanceCount) * instanceSize; 
 		dc.InstanceData.resize(offset + instanceDataSize);	
 		memcpy(dc.InstanceData.data() + offset, instanceData, instanceDataSize);
+	}
+
+	void SceneRenderer::SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<glm::mat4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial)
+	{
+		RenderQueue::BatchMeshKey key{ mesh->GetHandle(), material->GetHandle() };
+
+		auto& dc = m_Queue.AnimatedMeshDrawCommands[key];
+		dc.Mesh = mesh;
+		dc.MaterialAsset = material;
+
+		if (overrideMaterial.Raw())
+		{
+			auto& dcOverride = dc.OverrideCommands.emplace_back();
+			dcOverride.OverrideMaterial = overrideMaterial;
+			dcOverride.Transform = transform;
+			copyToBoneStorage(dcOverride.BoneTransforms, boneTransforms);
+		}
+		else
+		{
+			dc.OverrideMaterial = material->GetMaterialInstance();
+			dc.TransformInstanceCount++;
+			dc.TransformData.push_back(Mat4ToTransformData(transform));
+			auto& boneStorage = dc.BoneData.emplace_back();
+			copyToBoneStorage(boneStorage, boneTransforms);
+		}
 	}
 
 	void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::vec2& position)
@@ -359,6 +397,7 @@ namespace XYZ {
 				command.OverrideMaterial,
 				command.Mesh->GetVertexBuffer(),
 				command.Mesh->GetIndexBuffer(),
+				glm::mat4(1.0f),
 				m_TransformVertexBuffer,
 				command.TransformOffset,
 				command.TransformInstanceCount
@@ -373,6 +412,32 @@ namespace XYZ {
 					command.Mesh->GetIndexBuffer(),
 					dcOverride.Transform
 				);
+			}
+		}
+
+		for (auto& [key, command] : queue.AnimatedMeshDrawCommands)
+		{
+			Renderer::BindPipeline(
+				m_CommandBuffer,
+				command.Pipeline,
+				m_Renderer2D->GetCameraBufferSet(),
+				m_BoneTransformsStorageSet,
+				command.MaterialAsset->GetMaterial()
+			);
+			Renderer::RenderMesh(
+				m_CommandBuffer,
+				command.Pipeline,
+				command.OverrideMaterial,
+				command.Mesh->GetVertexBuffer(),
+				command.Mesh->GetIndexBuffer(),
+				command.BoneTransformsIndex,
+				m_TransformVertexBuffer,
+				command.TransformOffset,
+				command.TransformInstanceCount
+			);
+			for (auto& dcOverride : command.OverrideCommands)
+			{
+				
 			}
 		}
 
@@ -704,16 +769,45 @@ namespace XYZ {
 	{
 		// Prepare transforms
 		size_t overrideCount = 0;
-		uint32_t offset = 0;
+		uint32_t transformsCount = 0;
 		for (auto& [key, dc] : m_Queue.MeshDrawCommands)
 		{
 			dc.Pipeline = getGeometryPipeline(dc.MaterialAsset->GetMaterial());
-			dc.TransformOffset = offset * sizeof(RenderQueue::TransformData);
+			dc.TransformOffset = transformsCount * sizeof(RenderQueue::TransformData);
 			overrideCount += dc.OverrideCommands.size();
 			for (const auto& transform : dc.TransformData)
 			{
-				m_TransformData[offset] = transform;
-				offset++;
+				m_TransformData[transformsCount] = transform;
+				transformsCount++;
+			}
+		}
+
+
+		uint32_t boneTransformsCount = 0;
+		for (auto& [key, dc] : m_Queue.AnimatedMeshDrawCommands)
+		{
+			dc.Pipeline = getGeometryPipeline(dc.MaterialAsset->GetMaterial());
+			dc.TransformOffset = transformsCount * sizeof(RenderQueue::TransformData);
+			dc.BoneTransformsIndex = boneTransformsCount;
+			overrideCount += dc.OverrideCommands.size();
+			for (const auto& transform : dc.TransformData)
+			{
+				m_TransformData[transformsCount] = transform;
+				transformsCount++;
+			}
+			for (const auto& bones : dc.BoneData)
+			{
+				const size_t offset = boneTransformsCount * bones.size();
+				memcpy(&m_BoneTransformsData[offset], bones.data(), sizeof(RenderQueue::BoneTransforms));
+				boneTransformsCount++;
+			}
+			for (auto& overrideDc : dc.OverrideCommands)
+			{
+				const auto& bones = overrideDc.BoneTransforms;
+				const size_t offset = boneTransformsCount * bones.size();
+				memcpy(&m_BoneTransformsData[offset], bones.data(), sizeof(RenderQueue::BoneTransforms));
+				overrideDc.BoneTransformsIndex = boneTransformsCount;
+				boneTransformsCount++;
 			}
 		}
 
@@ -730,14 +824,17 @@ namespace XYZ {
 				instanceOffset += dc.InstanceData.size();
 			}
 		}	
-		m_TransformVertexBuffer->Update(m_TransformData.data(), offset * sizeof(RenderQueue::TransformData));
+		m_TransformVertexBuffer->Update(m_TransformData.data(), transformsCount * sizeof(RenderQueue::TransformData));
 		m_InstanceVertexBuffer->Update(m_InstanceData.data(), instanceOffset);
+		m_BoneTransformsStorageSet->Update(m_BoneTransformsData.data(), boneTransformsCount * sizeof(RenderQueue::BoneTransforms), 0, 0, 2);
+	
+		
 
 		m_RenderStatistics.MeshDrawCommandCount = static_cast<uint32_t>(m_Queue.MeshDrawCommands.size());
 		m_RenderStatistics.MeshOverrideDrawCommandCount = static_cast<uint32_t>(overrideCount);
 		m_RenderStatistics.InstanceMeshDrawCommandCount = static_cast<uint32_t>(m_Queue.InstanceMeshDrawCommands.size());
 
-		m_RenderStatistics.TransformInstanceCount = offset;
+		m_RenderStatistics.TransformInstanceCount = transformsCount;
 		m_RenderStatistics.InstanceDataSize = instanceOffset;
 	}
 	void SceneRenderer::prepareLights()
@@ -814,6 +911,20 @@ namespace XYZ {
 		auto& pipeline = m_GeometryPipelines[shader->GetHash()];
 		pipeline = Pipeline::Create(spec);
 		return pipeline;
+	}
+
+	void SceneRenderer::copyToBoneStorage(RenderQueue::BoneTransforms& storage, const std::vector<glm::mat4>& boneTransforms)
+	{
+		if (boneTransforms.empty())
+		{
+			for (auto& bone : storage)
+				bone = glm::mat4(1.0f);
+		}
+		else
+		{
+			for (size_t i = 0; i < boneTransforms.size(); ++i)
+				storage[i] = boneTransforms[i];
+		}
 	}
 
 	void SceneRenderer::SceneRenderPipeline::Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, PrimitiveTopology topology)

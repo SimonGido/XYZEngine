@@ -5,13 +5,13 @@
 
 namespace XYZ {
 
-	SubTexture::SubTexture(const Ref<Texture>& texture, const glm::vec4& texCoords)
+	SubTexture::SubTexture(const Ref<Texture2D>& texture, const glm::vec4& texCoords)
 		:
 		m_Texture(texture),
 		m_TexCoords(texCoords)
 	{
 	}
-	SubTexture::SubTexture(const Ref<Texture>& texture)
+	SubTexture::SubTexture(const Ref<Texture2D>& texture)
 		:
 		m_Texture(texture),
 		m_TexCoords(0.0f, 0.0f, 1.0f, 1.0f)

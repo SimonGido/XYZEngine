@@ -7,7 +7,6 @@
 
 #include "XYZ/Renderer/Shader.h"
 #include "XYZ/Renderer/Texture.h"
-#include "XYZ/Renderer/SkeletalMesh.h"
 #include "XYZ/FileWatcher/FileWatcher.h"
 
 #include "AssetSerializer.h"

@@ -15,6 +15,7 @@
 #include "Editor/Asset/AssetBrowser.h"
 #include "Editor/Script/ScriptPanel.h"
 #include "Editor/Animation/AnimationEditor.h"
+#include "Editor/SkinningEditor/SkinningEditor.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>

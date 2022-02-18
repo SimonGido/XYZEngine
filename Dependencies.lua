@@ -9,12 +9,12 @@ IncludeDir["MiniMp3"] = "%{wks.location}/XYZEngine/vendor/minimp3"
 IncludeDir["FreeType"] = "%{wks.location}/XYZEngine/vendor/freetype-2.10.1"
 IncludeDir["Asio"] = "%{wks.location}/XYZEngine/vendor/asio/include"
 IncludeDir["mono"] = "%{wks.location}/XYZEngine/vendor/mono/include"
-IncludeDir["TrianglePP"] = "%{wks.location}/XYZEngine/vendor/TrianglePP/source"
 IncludeDir["yaml"] = "%{wks.location}/XYZEngine/vendor/yaml-cpp/include"
 IncludeDir["ImGui"] = "%{wks.location}/XYZEngine/vendor/imgui"
 IncludeDir["ImGuizmo"] = "%{wks.location}/XYZEngine/vendor/ImGuizmo"
 IncludeDir["box2d"] = "%{wks.location}/XYZEngine/vendor/box2d/include"
 IncludeDir["optick"] = "%{wks.location}/XYZEngine/vendor/optick/src"
+IncludeDir["delaunator"] = "%{wks.location}/XYZEngine/vendor/delaunator/include"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 
 LibraryDir = {}

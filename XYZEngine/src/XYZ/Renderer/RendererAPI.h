@@ -30,6 +30,29 @@ namespace XYZ {
 		int   MaxTextureUnits = 0;
 	};
 
+	struct PushConstBuffer
+	{
+		PushConstBuffer() = default;
+		template <typename T>
+		PushConstBuffer(const T& data);
+
+		PushConstBuffer(const PushConstBuffer& other);
+		PushConstBuffer& operator=(const PushConstBuffer& other);
+
+		static constexpr size_t sc_MaxSize = 128;
+
+		std::byte Bytes[sc_MaxSize];
+		uint32_t  Size = 0;
+
+	};
+
+	template<typename T>
+	inline PushConstBuffer::PushConstBuffer(const T& data)
+	{
+		XYZ_ASSERT(sizeof(T) < sc_MaxSize, "");
+		memcpy(Bytes, &data, sizeof(T));
+		Size = sizeof(T);
+	}
 
 	class RendererAPI
 	{
@@ -62,15 +85,17 @@ namespace XYZ {
 		virtual void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<RenderPass> renderPass, bool explicitClear = false) {};
 		virtual void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer) {};
 		
-		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform, uint32_t indexCount = 0, uint32_t vertexOffsetSize = 0) {};
+		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, 
+			const PushConstBuffer& constData, uint32_t indexCount = 0, uint32_t vertexOffsetSize = 0) {};
+
 		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, uint32_t indexCount = 0) {};
+
 		virtual void RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material,
-			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform
+			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData
 		) {};
-		virtual void RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t instanceCount) {};
 		virtual void RenderMesh(
 			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material,
-			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const glm::mat4& transform,
+			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData,
 			Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount
 		) {};
 		virtual void RenderMesh(

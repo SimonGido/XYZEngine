@@ -33,7 +33,7 @@ namespace XYZ {
 			m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification());
 			m_CameraTexture = Texture2D::Create("Resources/Editor/Camera.png");
 
-			m_CommandBuffer = RenderCommandBuffer::Create(0, "Overlay");
+			m_CommandBuffer = RenderCommandBuffer::Create(0, "Editor");
 			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
 			m_QuadMaterial	 = Renderer::GetDefaultResources().OverlayQuadMaterial;
@@ -57,6 +57,7 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::AssetBrowser>("AssetBrowser");
 			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
 			m_EditorManager.RegisterPanel<Editor::AnimationEditor>("AnimationEditor");
+			m_EditorManager.RegisterPanel<Editor::SkinningEditor>("SkinningEditor");
 
 			SceneEntity newEntity = m_Scene->CreateEntity("Havko", GUID());
 			SceneEntity childEntity = m_Scene->CreateEntity("Child", newEntity, GUID());
