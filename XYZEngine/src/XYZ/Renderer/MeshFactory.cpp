@@ -2,9 +2,17 @@
 #include "MeshFactory.h"
 
 namespace XYZ {
-
-
-    Ref<Mesh> MeshFactory::CreateQuad(const glm::vec2& size, const BufferLayout& layout)
+	Ref<AnimatedMesh> MeshFactory::CreateQuad(const glm::vec2& size, const glm::vec4& texCoords)
+	{
+		const AnimatedVertex quad[4] = {
+			AnimatedVertex{glm::vec3(-size.x / 2.0f, -size.y / 2.0f, 0.0f), glm::vec2(texCoords.x, texCoords.y)},
+			AnimatedVertex{glm::vec3( size.x / 2.0f, -size.y / 2.0f, 0.0f), glm::vec2(texCoords.z, texCoords.y)},
+			AnimatedVertex{glm::vec3( size.x / 2.0f,  size.y / 2.0f, 0.0f), glm::vec2(texCoords.z, texCoords.w)},
+			AnimatedVertex{glm::vec3(-size.x / 2.0f,  size.y / 2.0f, 0.0f), glm::vec2(texCoords.x, texCoords.w)}
+		};
+		return Ref<AnimatedMesh>();
+	}
+	Ref<Mesh> MeshFactory::CreateQuad(const glm::vec2& size, const BufferLayout& layout)
     {
 	    //const Vertex quad[4] = {
 		//	Vertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)},

@@ -5,7 +5,9 @@
 
 namespace XYZ {
 	OrthographicCameraController::OrthographicCameraController(float aspectRatio, bool rotation)
-		: m_AspectRatio(aspectRatio), m_Bounds({ -m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel }), m_Camera(m_Bounds.Left, m_Bounds.Right, m_Bounds.Bottom, m_Bounds.Top), m_Rotation(rotation)
+		: 
+		m_AspectRatio(aspectRatio), 
+		m_Bounds({ -m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel }), m_Camera(m_Bounds.Left, m_Bounds.Right, m_Bounds.Bottom, m_Bounds.Top), m_Rotation(rotation)
 	{
 	}
 
@@ -60,7 +62,13 @@ namespace XYZ {
 		{
 			dispatcher.Dispatch<MouseScrollEvent>(Hook(&OrthographicCameraController::onMouseScrolled, this));
 		}
-		dispatcher.Dispatch<WindowResizeEvent>(Hook(&OrthographicCameraController::onWindowResized, this));
+	}
+
+	void OrthographicCameraController::SetAspectRatio(float aspect)
+	{
+		m_AspectRatio = aspect;
+		m_Bounds = { -m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel };
+		m_Camera.SetProjection(m_Bounds.Left, m_Bounds.Right, m_Bounds.Bottom, m_Bounds.Top);
 	}
 
 	bool OrthographicCameraController::onMouseScrolled(MouseScrollEvent& e)
@@ -72,11 +80,4 @@ namespace XYZ {
 		return false;
 	}
 
-	bool OrthographicCameraController::onWindowResized(WindowResizeEvent& e)
-	{
-		m_AspectRatio = (float)e.GetWidth() / (float)e.GetHeight();
-		m_Bounds = { -m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel };
-		m_Camera.SetProjection(m_Bounds.Left, m_Bounds.Right, m_Bounds.Bottom, m_Bounds.Top);
-		return false;
-	}
 }

@@ -8,6 +8,7 @@ namespace XYZ {
 	class MeshFactory
 	{
 	public:
+		static Ref<AnimatedMesh> CreateQuad(const glm::vec2& size, const glm::vec4& texCoords);
 		static Ref<Mesh> CreateQuad(const glm::vec2& size,const BufferLayout& layout);
 		static Ref<Mesh> CreateInstancedQuad(const glm::vec2& size, const BufferLayout& layout, const BufferLayout& instanceLayout, uint32_t count);
 		

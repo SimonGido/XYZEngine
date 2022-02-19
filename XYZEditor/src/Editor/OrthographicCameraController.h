@@ -27,12 +27,15 @@ namespace XYZ {
 		const OrthographicCamera& GetCamera() const { return m_Camera; }
 
 		float GetZoomLevel() const { return m_ZoomLevel; }
+		float GetAspectRatio() const { return m_AspectRatio; }
 		void SetZoomLevel(float level) { m_ZoomLevel = level; }
+		void SetAspectRatio(float aspect);
 
 		const OrthographicCameraBounds& GetBounds() const { return m_Bounds; }
+		const glm::vec3& GetPosition() const { return m_CameraPosition; }
 	private:
 		bool onMouseScrolled(MouseScrollEvent& e);
-		bool onWindowResized(WindowResizeEvent& e);
+
 	private:
 		float m_AspectRatio;
 		float m_ZoomLevel = 1.0f;

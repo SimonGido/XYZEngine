@@ -2,6 +2,8 @@
 #include "Editor/EditorPanel.h"
 #include "Editor/EditorCamera.h"
 
+#include "Editor/OrthographicCameraController.h"
+
 namespace XYZ {
 	namespace Editor {
 		class SkinningEditor : public EditorPanel
@@ -16,21 +18,32 @@ namespace XYZ {
 
 			void SetContext(const Ref<SubTexture>& subTexture);
 		private:
+			bool handleToolbar();
+			void handleStateActions();
+			void createPipeline();
 
-
+			glm::vec2 getMouseWorldPosition() const;
 		private:
 			Ref<Scene>				 m_Scene;
 			Ref<RenderCommandBuffer> m_CommandBuffer;
 			Ref<Renderer2D>			 m_Renderer2D;
 
-
 			Ref<SubTexture>    m_Context;
 			Ref<Texture2D>	   m_Texture;
 			Ref<AnimatedMesh>  m_Mesh;
 			Ref<MaterialAsset> m_MaterialAsset;
+			Ref<Pipeline>	   m_Pipeline;
 
 
-			EditorCamera m_Camera;
+			OrthographicCameraController m_CameraController;
+
+			enum class State
+			{
+				None,
+				PlacingPoints
+			};
+
+			State m_State = State::None;
 
 			struct GPUTimeQueries
 			{
@@ -40,13 +53,33 @@ namespace XYZ {
 			};
 			GPUTimeQueries m_GPUTimeQueries;
 
+			glm::vec2 m_ViewportSize{};
+			glm::vec2 m_MousePosition{};
+			glm::vec2 m_ButtonSize;
+			float m_ContextAspectRatio = 1.0f;
 
+			bool m_UpdateViewport = false;
 			bool m_Hoovered = false;
 			bool m_Focused = false;
-			glm::vec2 m_ViewportSize{};
-			bool m_UpdateViewport = false;
+			
+			struct Triangle
+			{
+				uint32_t First, Second, Third;
+			};
 
 			std::vector<glm::vec2> m_Points;
+			std::vector<Triangle>  m_Triangles;
+
+
+			enum Color
+			{
+				Points,
+				Selected,
+				Lines,
+				NumColors
+			};
+
+			glm::vec4 m_Colors[NumColors];
 		};
 	}
 }
