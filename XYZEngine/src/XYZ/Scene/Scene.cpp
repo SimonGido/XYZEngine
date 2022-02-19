@@ -18,6 +18,7 @@
 #include "XYZ/Utils/Math/Math.h"
 
 #include "SceneEntity.h"
+#include "Components.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -54,6 +55,7 @@ namespace XYZ {
 		m_ViewportWidth(0),
 		m_ViewportHeight(0)
 	{
+		m_ECS.CreateStorage<BoneComponent>();
 		m_ECS.CreateStorage<ScriptComponent>();
 		m_SceneEntity = m_ECS.CreateEntity();
 
@@ -281,6 +283,7 @@ namespace XYZ {
 		m_PhysicsWorld.Step(ts);
 
 		updateHierarchy();
+		updateBones();
 		sortSpriteRenderers();
 
 		auto particleView = m_ECS.CreateView<ParticleComponent>();
@@ -318,6 +321,23 @@ namespace XYZ {
 		{
 			auto& [transform, meshComponent] = meshView.Get<TransformComponent, MeshComponent>(entity);
 			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.OverrideMaterial);
+		}
+
+		auto animMeshView = m_ECS.CreateView<TransformComponent, AnimatedMeshComponent>();
+		for (auto entity : animMeshView)
+		{
+			auto& [transform, meshComponent] = animMeshView.Get<TransformComponent, AnimatedMeshComponent>(entity);
+			auto tree = m_ECS.GetComponent<Relationship>(entity).GetTree(m_ECS);
+			
+			tree.insert(tree.begin(), entity);
+			std::vector<glm::mat4> transforms;
+			transforms.resize(tree.size());
+			for (const auto ent : tree)
+			{
+				auto& boneComponent = m_ECS.GetComponent<BoneComponent>(ent);
+				transforms[boneComponent.BoneIndex] = boneComponent.WorldTransform;
+			}
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, transforms, meshComponent.OverrideMaterial);
 		}
 
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleRenderer, ParticleComponent>();
@@ -415,7 +435,25 @@ namespace XYZ {
 			}
 		}
 	}
-
+	void Scene::updateBones()
+	{
+		XYZ_PROFILE_FUNC("Scene::updateBones");
+		auto boneView = m_ECS.CreateView<BoneComponent>();
+		for (auto entity : boneView)
+		{
+			auto& [boneComponent] = boneView.Get<BoneComponent>(entity);
+			const Relationship& relation = m_ECS.GetComponent<Relationship>(entity);
+			if (relation.Parent && m_ECS.HasComponent<BoneComponent>(relation.Parent))
+			{
+				BoneComponent& parentBone = m_ECS.GetComponent<BoneComponent>(relation.Parent);
+				//boneComponent.WorldTransform = parentBone.WorldTransform * boneComponent.GetTransform();
+			}
+			else
+			{
+				//boneComponent.WorldTransform = boneComponent.GetTransform();
+			}
+		}
+	}
 	void Scene::setupPhysics()
 	{
 		auto& storage = m_ECS.GetStorage<RigidBody2DComponent>();
@@ -505,6 +543,7 @@ namespace XYZ {
 			counter++;
 		}
 	}
+	
 	void Scene::sortSpriteRenderers()
 	{
 		XYZ_PROFILE_FUNC("Scene::processSpriteRenderers");

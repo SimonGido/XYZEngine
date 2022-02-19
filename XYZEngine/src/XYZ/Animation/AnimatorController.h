@@ -1,8 +1,9 @@
 #pragma once
 #include "XYZ/Asset/Asset.h"
 #include "XYZ/Scene/SceneEntity.h"
-#include "Animation.h"
 
+#include "Animation.h"
+#include "AnimationPlayer.h"
 
 namespace XYZ {
 	

@@ -28,6 +28,8 @@ namespace XYZ {
 	}
 	bool Animation::HasProperty(std::string_view componentName, std::string_view varName, std::string_view path) const
 	{
+		if (propertyContainerHasVariable(m_QuatProperties, componentName, varName, path))
+			return true;
 		if (propertyContainerHasVariable(m_Vec4Properties, componentName, varName, path))
 			return true;
 		if (propertyContainerHasVariable(m_Vec3Properties, componentName, varName, path))
@@ -43,7 +45,8 @@ namespace XYZ {
 
 	bool Animation::Empty() const
 	{
-		return m_Vec4Properties.empty() 
+		return m_QuatProperties.empty()
+			&& m_Vec4Properties.empty() 
 			&& m_Vec3Properties.empty() 
 			&& m_Vec2Properties.empty() 
 			&& m_FloatProperties.empty() 
@@ -52,7 +55,8 @@ namespace XYZ {
 
 	size_t Animation::GetPropertyCount() const
 	{
-		return m_Vec4Properties.size()
+		return m_QuatProperties.size()
+			 + m_Vec4Properties.size()
 			 + m_Vec3Properties.size()
 			 + m_Vec2Properties.size()
 			 + m_FloatProperties.size()
@@ -61,6 +65,7 @@ namespace XYZ {
 
 	void Animation::clearProperties()
 	{
+		m_QuatProperties.clear();
 		m_Vec4Properties.clear();
 		m_Vec3Properties.clear();
 		m_Vec2Properties.clear();

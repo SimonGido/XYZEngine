@@ -1,6 +1,7 @@
 #pragma once
 #include "Editor/Inspectable/Inspectable.h"
 #include "XYZ/Renderer/Material.h"
+#include "XYZ/Asset/MaterialAsset.h"
 
 namespace XYZ {
 	namespace Editor {

@@ -1,11 +1,11 @@
 #pragma once
 
 #include "XYZ/Scene/SceneEntity.h"
-#include "Property.h"
-
 
 namespace XYZ {
 	class Animation;
+	class IProperty;
+
 	class AnimationPlayer
 	{
 	public:
@@ -21,10 +21,6 @@ namespace XYZ {
 		bool Compatible(SceneEntity entity) const;
 
 		uint32_t GetCurrentFrame() const;
-	private:
-
-		template <typename T>
-		bool propertyCompatible(const std::vector<Property<T>>& props, const std::string_view path) const;
 
 	private:
 		struct PropertyNode
@@ -41,16 +37,5 @@ namespace XYZ {
 		bool					  m_IsCreated = false;
 		friend Animation;
 	};
-
-	template<typename T>
-	inline bool AnimationPlayer::propertyCompatible(const std::vector<Property<T>>& props, const std::string_view path) const
-	{
-		for (const auto& pr : props)
-		{
-			if (pr.GetPath() == path)
-				return true;
-		}
-		return false;
-	}
 
 }

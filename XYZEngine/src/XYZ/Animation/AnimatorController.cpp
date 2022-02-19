@@ -4,6 +4,7 @@
 #include "XYZ/Debug/Profiler.h"
 #include "AnimatorController.h"
 
+
 namespace XYZ {
 	Animator::Animator()
 		:
@@ -31,10 +32,10 @@ namespace XYZ {
 		auto it = m_Animations.find(name);
 		if (it == m_Animations.end())
 		{
-			AnimationPlayer avatar;
-			if (!avatar.Create(m_Entity, animation))
+			AnimationPlayer player;
+			if (!player.Create(m_Entity, animation))
 				XYZ_WARN("Failed to create avatar for animation {} ", name);
-			m_Animations[name] = { animation, avatar };
+			m_Animations[name] = { animation, player };
 		}
 		else
 		{

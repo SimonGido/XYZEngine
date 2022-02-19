@@ -241,7 +241,7 @@ namespace XYZ {
 			ByteBuffer vsUniformStorage = material->GetVSUniformsBuffer();
 
 			if (vsData.Size)
-				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, vsData.Size, &vsData);
+				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, vsData.Size, vsData.Bytes);
 			if (fsUniformStorage)
 				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, vsUniformStorage.Size, fsUniformStorage.Size, fsUniformStorage.Data);
 

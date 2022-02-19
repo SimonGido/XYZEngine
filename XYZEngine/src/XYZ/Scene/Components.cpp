@@ -173,15 +173,21 @@ namespace XYZ {
 		auto& parentRel = ecs.GetComponent<Relationship>(parent);
 		auto& childRel = ecs.GetComponent<Relationship>(child);
 
-		if (parentRel.FirstChild)
+		Entity lastChild = parentRel.FirstChild;
+		while (lastChild) // Find last child
 		{
-			auto& firstChildRel = ecs.GetComponent<Relationship>(parentRel.FirstChild);
-			firstChildRel.PreviousSibling = child;
-			childRel.NextSibling = parentRel.FirstChild;
+			auto& lastChildRel = ecs.GetComponent<Relationship>(lastChild);
+			if (!lastChildRel.NextSibling)
+				break;
+			lastChild = lastChildRel.NextSibling;
 		}
-		childRel.Parent = parent;
-		parentRel.FirstChild = child;
+		if (lastChild)
+			ecs.GetComponent<Relationship>(lastChild).NextSibling = child;
+		else
+			parentRel.FirstChild = child;
 
+		childRel.PreviousSibling = lastChild;
+		childRel.Parent = parent;
 		childRel.Depth = parentRel.Depth + 1;
 	}
 
@@ -243,6 +249,19 @@ namespace XYZ {
 		glm::decompose(transform, Scale, rotation, Translation, skew, perspective);
 		Rotation = glm::eulerAngles(rotation);
 	}
+	glm::mat4 BoneComponent::GetTransform() const
+	{
+		return glm::translate(glm::mat4(1.0f), Translation)
+			* glm::toMat4(Rotation)
+			* glm::scale(glm::mat4(1.0f), Scale);
+	}
+	void BoneComponent::DecomposeTransform(const glm::mat4& transform)
+	{
+		glm::vec3 skew;
+		glm::vec4 perspective;
+
+		glm::decompose(transform, Scale, Rotation, Translation, skew, perspective);
+	}
 	MeshComponent::MeshComponent(const Ref<XYZ::Mesh>& mesh, const Ref<XYZ::MaterialAsset>& materialAsset)
 		:
 		Mesh(mesh), MaterialAsset(materialAsset)
@@ -259,4 +278,5 @@ namespace XYZ {
 		Mesh(mesh), MaterialAsset(materialAsset)
 	{
 	}
+	
 }

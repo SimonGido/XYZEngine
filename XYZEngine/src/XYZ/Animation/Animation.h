@@ -2,7 +2,7 @@
 #include "XYZ/Asset/Asset.h"
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Components.h"
-#include "AnimationPlayer.h"
+
 #include "Property.h"
 
 #include <glm/glm.hpp>
@@ -17,7 +17,7 @@ namespace XYZ {
 		virtual ~Animation() override;
 
 		template <typename ComponentType, typename ValueType, uint16_t valIndex>
-		void AddProperty(std::string_view path);
+		Property<ValueType>* AddProperty(std::string_view path);
 
 		template <typename ValueType>
 		void RemoveProperty(std::string_view path, std::string_view componentName, std::string_view valueName);
@@ -64,6 +64,7 @@ namespace XYZ {
 		void		clearProperties();
 	private:
 		// TODO: it might be possible to store them inside variant, keep them sorted by type and store count of each type
+		std::vector<Property<glm::quat>> m_QuatProperties;
 		std::vector<Property<glm::vec4>> m_Vec4Properties;
 		std::vector<Property<glm::vec3>> m_Vec3Properties;
 		std::vector<Property<glm::vec2>> m_Vec2Properties;
@@ -82,14 +83,18 @@ namespace XYZ {
 	
 
 	template<typename ComponentType, typename ValueType, uint16_t valIndex>
-	inline void Animation::AddProperty(std::string_view path)
+	inline Property<ValueType>* Animation::AddProperty(std::string_view path)
 	{
 		Property<ValueType> prop = Property<ValueType>(std::string(path));
 		prop.Setup<ComponentType, valIndex>();
 
 		auto props = getProperties<ValueType>();
 		if (props)
+		{
 			props->push_back(prop);
+			return &props->back();
+		}
+		return nullptr;
 	}
 
 	template<typename ValueType>
@@ -115,7 +120,9 @@ namespace XYZ {
 	template<typename T>
 	inline constexpr std::vector<Property<T>>& Animation::GetProperties()
 	{
-		if constexpr (std::is_same_v<T, glm::vec4>)
+		if constexpr (std::is_same_v<T, glm::quat>)
+			return m_QuatProperties;
+		else if constexpr (std::is_same_v<T, glm::vec4>)
 			return m_Vec4Properties;
 		else if constexpr (std::is_same_v<T, glm::vec3>)
 			return m_Vec3Properties;
@@ -130,7 +137,9 @@ namespace XYZ {
 	template<typename T>
 	inline constexpr const std::vector<Property<T>>& Animation::GetProperties() const
 	{
-		if constexpr (std::is_same_v<T, glm::vec4>)
+		if constexpr (std::is_same_v<T, glm::quat>)
+			return m_QuatProperties;
+		else if constexpr (std::is_same_v<T, glm::vec4>)
 			return m_Vec4Properties;
 		else if constexpr (std::is_same_v<T, glm::vec3>)
 			return m_Vec3Properties;
@@ -145,7 +154,9 @@ namespace XYZ {
 	template<typename T>
 	inline constexpr std::vector<Property<T>>* Animation::getProperties()
 	{
-		if constexpr (std::is_same_v<T, glm::vec4>)
+		if constexpr (std::is_same_v<T, glm::quat>)
+			return &m_QuatProperties;
+		else if constexpr (std::is_same_v<T, glm::vec4>)
 			return &m_Vec4Properties;
 		else if constexpr (std::is_same_v<T, glm::vec3>)
 			return &m_Vec3Properties;

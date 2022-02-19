@@ -63,7 +63,7 @@ namespace XYZ {
 
 			Ref<Animator> animator = Ref<Animator>::Create();
 			Ref<Animation> animation = AssetManager::GetAsset<Animation>("Assets/Animations/HavkoAnim.anim");
-
+			
 			ParticleRenderer& particleRenderer = newEntity.AddComponent<ParticleRenderer>(
 				ParticleRenderer
 				{ 
@@ -84,12 +84,25 @@ namespace XYZ {
 			animator->SetSceneEntity(newEntity);
 			animator->AddAnimation("Default", animation);
 
-			m_EditorManager.GetPanel<Editor::AnimationEditor>("AnimationEditor")->SetContext(animation);
+
+			auto meshSource = Ref<MeshSource>::Create("Resources/Meshes/man.fbx");
+			SceneEntity entity = meshSource->CreateBoneHierarchy(m_Scene);
+			m_EditorManager.GetPanel<Editor::AnimationEditor>("AnimationEditor")->SetContext(meshSource->GetAnimations()[0]);
+
+
+			Ref<ShaderAsset> meshAnimShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/AnimMeshShader.shader");
+			auto animMeshMaterialAsset = Ref<MaterialAsset>::Create(meshAnimShaderAsset);
+			animMeshMaterialAsset->SetTexture("u_Texture", Renderer::GetDefaultResources().WhiteTexture);
+			entity.AddComponent<AnimatedMeshComponent>({
+					Ref<AnimatedMesh>::Create(meshSource),
+					animMeshMaterialAsset
+				});
 
 			Ref<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
 			scenePanel->SetSceneRenderer(m_SceneRenderer);
 			m_EditorCamera = &scenePanel->GetEditorCamera();
-
+			
+			
 
 			Renderer::WaitAndRenderAll();
 		}

@@ -342,7 +342,7 @@ namespace XYZ {
 			if (!m_EntityPropertyMap.Empty())
 			{
 				std::string selectedEntity, selectedComponent, selectedValue;
-				if (ImGui::BeginNeoSequencer("AnimationNeoSequencer", &m_CurrentFrame, &m_FrameMin, &m_FrameMax, &m_OffsetFrame, &m_Zoom))
+				if (ImGui::BeginNeoSequencer("AnimationNeoSequencer", &m_CurrentFrame, &m_FrameMin, &m_FrameMax, &m_OffsetFrame, &m_Zoom, ImVec2(0.0f, 0.0f),ImGuiNeoSequencerFlags_MouseScroll))
 				{
 					bool deleted = false;
 

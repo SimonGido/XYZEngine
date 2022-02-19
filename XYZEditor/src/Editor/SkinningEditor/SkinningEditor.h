@@ -5,6 +5,9 @@
 #include "Editor/OrthographicCameraController.h"
 
 #include "XYZ/Renderer/StorageBufferSet.h"
+#include "XYZ/Renderer/SubTexture.h"
+#include "XYZ/Renderer/Mesh.h"
+#include "XYZ/Asset/MaterialAsset.h"
 
 namespace XYZ {
 	namespace Editor {

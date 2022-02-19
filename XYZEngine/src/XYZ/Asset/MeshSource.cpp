@@ -1,13 +1,15 @@
 #include "stdafx.h"
 #include "MeshSource.h"
 
+#include "XYZ/Animation/Animation.h"
+
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
-#include <glm/glm.hpp>
+
 
 namespace XYZ {
 	namespace Utils {
@@ -70,13 +72,15 @@ namespace XYZ {
 		m_Scene = scene;
 
 		m_IsAnimated = scene->mAnimations != nullptr;
-		m_IsAnimated = false;
 		m_InverseTransform = glm::inverse(Utils::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
 		loadMeshes(m_Scene);
 		loadBones(m_Scene);
 
 		if (m_IsAnimated)
+		{
+			loadAnimations(m_Scene);		
 			m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), static_cast<uint32_t>(m_AnimatedVertices.size() * sizeof(AnimatedVertex)));
+		}
 		else
 			m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), static_cast<uint32_t>(m_StaticVertices.size() * sizeof(Vertex)));
 		
@@ -103,6 +107,16 @@ namespace XYZ {
 	{
 		m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), static_cast<uint32_t>(m_AnimatedVertices.size() * sizeof(AnimatedVertex)));
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), static_cast<uint32_t>(m_Indices.size()));
+	}
+	const std::vector<Ref<Animation>>& MeshSource::GetAnimations() const
+	{
+		return m_Animations;
+	}
+	SceneEntity MeshSource::CreateBoneHierarchy(Ref<Scene> scene)
+	{
+		SceneEntity root;
+		createNodeHierarchy(m_Scene->mRootNode, SceneEntity(), scene, root);
+		return root;
 	}
 	void MeshSource::loadMeshes(const aiScene* scene)
 	{
@@ -180,6 +194,156 @@ namespace XYZ {
 				}
 			}
 		}
+	}
+
+	void MeshSource::loadAnimations(const aiScene* scene)
+	{
+		for (uint32_t i = 0; i < scene->mNumAnimations; ++i)
+		{
+			const aiAnimation* aiAnim = scene->mAnimations[i];
+			Ref<Animation> animation = m_Animations.emplace_back(Ref<Animation>::Create());
+			readNodeHierarchy(scene->mRootNode, aiAnim, animation, "");
+			readNodeHierarchyTransforms(scene->mRootNode, aiAnim, glm::mat4(1.0f));
+		}
+	}
+
+	void MeshSource::readNodeHierarchy(const aiNode* node, const aiAnimation* aiAnim, Ref<Animation>& animation, const std::string& parentPath)
+	{
+		std::string name(node->mName.data);
+		glm::mat4 nodeTransform(Utils::Mat4FromAssimpMat4(node->mTransformation));
+		const aiNodeAnim* nodeAnim = findNodeAnim(aiAnim, name);
+
+		std::string path;
+		if (m_BoneMapping.find(name) != m_BoneMapping.end())
+		{
+			path = name;
+
+			if (!parentPath.empty())
+				path = parentPath + "/" + path;
+
+			if (nodeAnim)
+			{
+				if (nodeAnim->mNumPositionKeys > 1)
+				{
+					auto prop = animation->AddProperty<BoneComponent, glm::vec3, 0>(path);
+					for (uint32_t key = 0; key < nodeAnim->mNumPositionKeys; ++key)
+					{
+						const uint32_t frame = nodeAnim->mPositionKeys[key].mTime / animation->GetFrameLength();
+						const auto val = nodeAnim->mPositionKeys[key].mValue;
+						glm::vec3 value = { val.x , val.y , val.z };
+						prop->AddKeyFrame({ value, frame });
+					}
+				}
+				if (nodeAnim->mNumRotationKeys > 1)
+				{
+					auto prop = animation->AddProperty<BoneComponent, glm::quat, 1>(path);
+					for (uint32_t key = 0; key < nodeAnim->mNumRotationKeys; ++key)
+					{
+						const uint32_t frame = nodeAnim->mRotationKeys[key].mTime / animation->GetFrameLength();
+						auto rotV = nodeAnim->mRotationKeys[key].mValue;
+						glm::quat value = glm::quat(rotV.w, rotV.x, rotV.y, rotV.z);
+						prop->AddKeyFrame({ value, frame });
+					}
+				}
+				if (nodeAnim->mNumPositionKeys > 1)
+				{
+					auto prop = animation->AddProperty<BoneComponent, glm::vec3, 2>(path);
+					for (uint32_t key = 0; key < nodeAnim->mNumScalingKeys; ++key)
+					{
+						const uint32_t frame = nodeAnim->mScalingKeys[key].mTime / animation->GetFrameLength();
+						const auto val = nodeAnim->mScalingKeys[key].mValue;
+						glm::vec3 value = { val.x , val.y , val.z };
+						prop->AddKeyFrame({ value, frame });
+					}
+				}
+			}
+		}
+		if (node != m_Scene->mRootNode)
+		{
+			for (uint32_t i = 0; i < node->mNumChildren; i++)
+				readNodeHierarchy(node->mChildren[i], aiAnim, animation, path);
+		}
+		else
+		{
+			for (uint32_t i = 0; i < node->mNumChildren; i++)
+				readNodeHierarchy(node->mChildren[i], aiAnim, animation, "");
+		}
+	}
+
+	void MeshSource::readNodeHierarchyTransforms(const aiNode* node, const aiAnimation* aiAnim, const glm::mat4& parentTransform)
+	{
+		std::string name(node->mName.data);
+		glm::mat4 nodeTransform(Utils::Mat4FromAssimpMat4(node->mTransformation));
+		const aiNodeAnim* nodeAnim = findNodeAnim(aiAnim, name);
+		
+		glm::vec3 translation{}, scale{};
+		glm::quat rotation{};
+		
+		if (nodeAnim)
+		{		
+			auto transV = nodeAnim->mPositionKeys[0].mValue;
+			auto rotV = nodeAnim->mRotationKeys[0].mValue;
+			auto scaleV = nodeAnim->mScalingKeys[0].mValue;
+
+			translation = { transV.x, transV.y, transV.z };
+			rotation = { rotV.w, rotV.x, rotV.y, rotV.z };
+			scale = { scaleV.x, scaleV.y, scaleV.z };
+			nodeTransform = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(rotation) * glm::scale(glm::mat4(1.0f), scale);
+		}
+		glm::mat4 transform = parentTransform * nodeTransform;
+
+		if (m_BoneMapping.find(name) != m_BoneMapping.end() && nodeAnim)
+		{
+			uint32_t BoneIndex = m_BoneMapping[name];
+			m_BoneInfo[BoneIndex].Translation = translation;
+			m_BoneInfo[BoneIndex].Rotation = rotation;
+			m_BoneInfo[BoneIndex].Scale = scale;
+
+			m_BoneInfo[BoneIndex].Transformation = nodeTransform * m_BoneInfo[BoneIndex].BoneOffset;
+			m_BoneInfo[BoneIndex].FinalTransformation = m_InverseTransform * transform * m_BoneInfo[BoneIndex].BoneOffset;
+		}
+		for (uint32_t i = 0; i < node->mNumChildren; i++)
+			readNodeHierarchyTransforms(node->mChildren[i], aiAnim, transform);
+	}
+
+	void MeshSource::createNodeHierarchy(const aiNode* node, SceneEntity parentEntity, Ref<Scene>& scene, SceneEntity& root)
+	{
+		std::string name(node->mName.data);
+		glm::mat4 nodeTransform(Utils::Mat4FromAssimpMat4(node->mTransformation));
+		SceneEntity newEntity;
+
+		if (m_BoneMapping.find(name) != m_BoneMapping.end())
+		{
+			if (parentEntity.IsValid())
+			{
+				newEntity = scene->CreateEntity(name, parentEntity, GUID());
+			}
+			else
+			{
+				newEntity = scene->CreateEntity(name, GUID());
+				root = newEntity;
+			}
+			auto& boneComponent = newEntity.EmplaceComponent<BoneComponent>();
+			uint32_t BoneIndex = m_BoneMapping[name];
+			boneComponent.DecomposeTransform(m_BoneInfo[BoneIndex].Transformation);
+			boneComponent.Scale = m_BoneInfo[BoneIndex].Scale;
+			boneComponent.BoneIndex = BoneIndex;
+			boneComponent.WorldTransform = m_BoneInfo[BoneIndex].FinalTransformation;
+		}
+		
+		for (uint32_t i = 0; i < node->mNumChildren; i++)
+			createNodeHierarchy(node->mChildren[i], newEntity, scene, root);
+	}
+
+	const aiNodeAnim* MeshSource::findNodeAnim(const aiAnimation* animation, const std::string& nodeName) const
+	{
+		for (uint32_t i = 0; i < animation->mNumChannels; i++)
+		{
+			const aiNodeAnim* nodeAnim = animation->mChannels[i];
+			if (std::string(nodeAnim->mNodeName.data) == nodeName)
+				return nodeAnim;
+		}
+		return nullptr;
 	}
 
 	void AnimatedVertex::AddBoneData(uint32_t boneID, float weight)

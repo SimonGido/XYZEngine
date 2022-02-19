@@ -15,7 +15,7 @@
 #include "XYZ/Asset/Asset.h"
 
 #include "SceneCamera.h"
-#include "Components.h"
+
 
 #include <box2d/box2d.h>
 
@@ -32,6 +32,8 @@ namespace XYZ {
     class Renderer2D;
     class SceneRenderer;
     class SceneEntity;
+    class SpriteRenderer;
+    class TransformComponent;
 
     namespace Editor {
         class SceneHierarchyPanel;
@@ -75,6 +77,7 @@ namespace XYZ {
         void onScriptComponentDestruct(ECSManager& ecs, Entity entity);
 
         void updateHierarchy();
+        void updateBones();
         void setupPhysics();
 
         void sortSpriteRenderers();

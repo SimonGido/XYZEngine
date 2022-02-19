@@ -58,6 +58,23 @@ namespace XYZ {
 	REFLECTABLE(TransformComponent, Translation, Rotation, Scale, WorldTransform);
 
 
+	class BoneComponent
+	{
+	public:
+		glm::vec3 Translation = { 0.0f,0.0f,0.0f };
+		glm::quat Rotation = { 1.0f,0.0f,0.0f, 0.0f };
+		glm::vec3 Scale = { 1.0f,1.0f,1.0f };
+
+		glm::mat4 WorldTransform = glm::mat4(1.0f);
+		uint32_t BoneIndex = 0;
+		
+		glm::mat4 GetTransform() const;
+
+		void DecomposeTransform(const glm::mat4& transform);
+	};
+	REFLECTABLE(BoneComponent, Translation, Rotation, Scale, WorldTransform, BoneIndex);
+
+
 	struct SceneTagComponent 
 	{
 		std::string Name;
@@ -315,6 +332,6 @@ namespace XYZ {
 		void* RuntimeFixture = nullptr;
 	};
 
-	REGISTER_REFLECTABLES(ReflectedComponents, TransformComponent, SpriteRenderer, PointLight2D, SpotLight2D, BoxCollider2DComponent, CircleCollider2DComponent);
+	REGISTER_REFLECTABLES(ReflectedComponents, TransformComponent, BoneComponent, SpriteRenderer, PointLight2D, SpotLight2D, BoxCollider2DComponent, CircleCollider2DComponent);
 	
 }

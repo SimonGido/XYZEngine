@@ -3,6 +3,7 @@
 
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Material.h"
+#include "XYZ/Asset/MaterialAsset.h"
 
 #include "XYZ/Debug/Profiler.h"
 
@@ -120,7 +121,23 @@ namespace XYZ {
 			*m_Value = glm::lerp(curr.Value, next.Value, (float)passed / (float)length);
 		}
 	}
+	void Property<glm::quat>::Update(size_t key, uint32_t frame)
+	{
+		XYZ_PROFILE_FUNC("Property<glm::vec4>::Update");
+		XYZ_ASSERT(std::is_sorted(Keys.begin(), Keys.end()), "Key frames are not sorted");
+		XYZ_ASSERT(key < static_cast<int64_t>(Keys.size()) - 1, "Key indices are out of range");
 
+		m_Value = m_GetPropertyReference(m_Entity);
+		if (m_Value != nullptr)
+		{
+			const KeyFrame<glm::quat>& curr = Keys[key];
+			const KeyFrame<glm::quat>& next = Keys[key + 1];
+			const uint32_t length = next.Frame - curr.Frame;
+			const uint32_t passed = frame - curr.Frame;
+
+			*m_Value = glm::lerp(curr.Value, next.Value, (float)passed / (float)length);
+		}
+	}
 	void Property<Ref<SubTexture>>::Update(size_t key, uint32_t frame)
 	{
 		XYZ_PROFILE_FUNC("Property<Ref<SubTexture>>::Update");

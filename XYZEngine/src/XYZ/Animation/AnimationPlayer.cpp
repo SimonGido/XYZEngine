@@ -2,8 +2,23 @@
 #include "AnimationPlayer.h"
 
 #include "Animation.h"
+#include "Property.h"
 
 namespace XYZ {
+
+	 template <typename T>
+	 static uint32_t PropertyCompatible(const std::vector<Property<T>>& props, const std::string_view path)
+	 {
+		 uint32_t count = 0;
+		 for (const auto& pr : props)
+		 {
+			 if (pr.GetPath() == path)
+				 count++;
+		 }
+		 return count;
+	 }
+
+
 	AnimationPlayer::AnimationPlayer()
 		:
 		m_CurrentTime(0.0f)
@@ -58,6 +73,11 @@ namespace XYZ {
 		{
 			SceneEntity nodeEntity(node, m_Entity.GetScene());
 			const auto& name = nodeEntity.GetComponent<SceneTagComponent>().Name;
+			for (auto& prop : m_Animation->m_QuatProperties)
+			{
+				if (prop.GetPath() == name)
+					m_Properties.push_back({ nodeEntity, &prop });
+			}
 			for (auto& prop : m_Animation->m_Vec4Properties)
 			{
 				if (prop.GetPath() == name)
@@ -133,14 +153,12 @@ namespace XYZ {
 		{
 			SceneEntity nodeEntity(node, entity.GetScene());
 			std::string path = nodeEntity.GetComponent<Relationship>().GetPath(ecs, node, entity);
-			bool compatible = propertyCompatible(m_Animation->GetProperties<glm::vec4>(), path)
-						   || propertyCompatible(m_Animation->GetProperties<glm::vec3>(), path)
-						   || propertyCompatible(m_Animation->GetProperties<glm::vec2>(), path)
-						   || propertyCompatible(m_Animation->GetProperties<float>(), path)
-						   || propertyCompatible(m_Animation->GetProperties<void*>(), path);
-
-			if (compatible)
-				numCompatibles++;
+			numCompatibles += PropertyCompatible(m_Animation->GetProperties<glm::quat>(), path);
+			numCompatibles += PropertyCompatible(m_Animation->GetProperties<glm::vec4>(), path);
+			numCompatibles += PropertyCompatible(m_Animation->GetProperties<glm::vec3>(), path);
+			numCompatibles += PropertyCompatible(m_Animation->GetProperties<glm::vec2>(), path);
+			numCompatibles += PropertyCompatible(m_Animation->GetProperties<float>(), path);
+			numCompatibles += PropertyCompatible(m_Animation->GetProperties<void*>(), path);
 		}
 
 		return numCompatibles == numProperties;

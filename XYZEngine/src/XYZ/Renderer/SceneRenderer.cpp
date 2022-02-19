@@ -97,14 +97,17 @@ namespace XYZ {
 		m_BoneTransformsStorageSet = StorageBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
 		m_BoneTransformsStorageSet->Create(sc_MaxBoneTransforms * sizeof(RenderQueue::BoneTransforms), 2, 0);
 
+
+		//auto meshSource = Ref<MeshSource>::Create("Resources/Meshes/Character Running.fbx");
 		m_TestMesh = MeshFactory::CreateBox(glm::vec3(2.0f));
 		m_TestMaterial = Ref<MaterialAsset>::Create(meshShaderAsset);
 		m_TestMaterial->SetTexture("u_Texture", m_WhiteTexture);
 
-		
-		m_TestAnimMesh = MeshFactory::CreateAnimatedBox(glm::vec3(3.0f));
+	
+
+		//m_TestAnimMesh = Ref<AnimatedMesh>::Create(meshSource);
 		m_TestAnimMaterial = Ref<MaterialAsset>::Create(meshAnimShaderAsset);
-		m_TestAnimMaterial->SetTexture("u_Texture", m_WhiteTexture);
+		m_TestAnimMaterial->SetTexture("u_Texture", m_WhiteTexture);	
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -151,12 +154,13 @@ namespace XYZ {
 		SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)), m_TestMaterial->GetMaterialInstance());
 		SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 10.0f, 0.0f)), m_TestMaterial->GetMaterialInstance());
 
-		SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(5.0f)) });
-		SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f)) });
-		SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(7.0f)) });
-		SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(4.0f)) });
-		SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(8.0f)) });
-		SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)) });
+		//SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::mat4(1.0f), m_TestAnimMesh->GetMeshSource()->GetBoneTransforms());
+		//SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(5.0f)) });
+		//SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(-5.0f)) });
+		//SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(7.0f)) });
+		//SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(4.0f)) });
+		//SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(8.0f)) });
+		//SubmitMesh(m_TestAnimMesh, m_TestAnimMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 0.0f)), { glm::translate(glm::mat4(1.0f), glm::vec3(0.0f)) });
 
 		preRender();
 		m_CommandBuffer->Begin();
