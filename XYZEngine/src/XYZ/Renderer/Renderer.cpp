@@ -485,15 +485,5 @@ namespace XYZ {
 
 		DefaultParticleMaterial.Reset();
 	}
-	PushConstBuffer::PushConstBuffer(const PushConstBuffer& other)
-	{
-		memcpy(Bytes, other.Bytes, other.Size);
-		Size = other.Size;
-	}
-	PushConstBuffer& PushConstBuffer::operator=(const PushConstBuffer& other)
-	{
-		memcpy(Bytes, other.Bytes, other.Size);
-		Size = other.Size;
-		return *this;
-	}
+
 }

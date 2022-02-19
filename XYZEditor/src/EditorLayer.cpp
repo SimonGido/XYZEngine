@@ -29,7 +29,6 @@ namespace XYZ {
 			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
 			ScriptEngine::SetSceneContext(m_Scene);
 
-
 			m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification());
 			m_CameraTexture = Texture2D::Create("Resources/Editor/Camera.png");
 
@@ -57,7 +56,7 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::AssetBrowser>("AssetBrowser");
 			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
 			m_EditorManager.RegisterPanel<Editor::AnimationEditor>("AnimationEditor");
-			m_EditorManager.RegisterPanel<Editor::SkinningEditor>("SkinningEditor");
+
 
 			SceneEntity newEntity = m_Scene->CreateEntity("Havko", GUID());
 			SceneEntity childEntity = m_Scene->CreateEntity("Child", newEntity, GUID());

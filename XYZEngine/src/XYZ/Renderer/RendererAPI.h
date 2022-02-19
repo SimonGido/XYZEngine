@@ -33,26 +33,41 @@ namespace XYZ {
 	struct PushConstBuffer
 	{
 		PushConstBuffer() = default;
-		template <typename T>
-		PushConstBuffer(const T& data);
 
-		PushConstBuffer(const PushConstBuffer& other);
-		PushConstBuffer& operator=(const PushConstBuffer& other);
+		template <typename ...Args>
+		PushConstBuffer(const Args&... args)
+		{
+			constexpr size_t size = (sizeof(Args) + ...);
+			size_t offset = 0;
+			(store(args, offset), ...);
+			Size = size;
+		}
+		PushConstBuffer(const PushConstBuffer& other)
+		{
+			memcpy(Bytes, other.Bytes, other.Size);
+			Size = other.Size;
+		}
+		PushConstBuffer& operator=(const PushConstBuffer& other)
+		{
+			memcpy(Bytes, other.Bytes, other.Size);
+			Size = other.Size;
+			return *this;
+		}
+
 
 		static constexpr size_t sc_MaxSize = 128;
 
 		std::byte Bytes[sc_MaxSize];
 		uint32_t  Size = 0;
 
+	private:
+		template <typename T>
+		void store(const T& val, size_t& offset)
+		{
+			memcpy(&Bytes[offset], &val, sizeof(T));
+			offset += sizeof(T);
+		}
 	};
-
-	template<typename T>
-	inline PushConstBuffer::PushConstBuffer(const T& data)
-	{
-		XYZ_ASSERT(sizeof(T) < sc_MaxSize, "");
-		memcpy(Bytes, &data, sizeof(T));
-		Size = sizeof(T);
-	}
 
 	class RendererAPI
 	{
@@ -125,4 +140,5 @@ namespace XYZ {
 		static Type s_API;
 
 	};
+	
 }

@@ -4,6 +4,8 @@
 
 #include "Editor/OrthographicCameraController.h"
 
+#include "XYZ/Renderer/StorageBufferSet.h"
+
 namespace XYZ {
 	namespace Editor {
 		class SkinningEditor : public EditorPanel
@@ -33,7 +35,8 @@ namespace XYZ {
 			Ref<AnimatedMesh>  m_Mesh;
 			Ref<MaterialAsset> m_MaterialAsset;
 			Ref<Pipeline>	   m_Pipeline;
-
+			Ref<StorageBufferSet> m_BoneTransformsStorageSet;
+			Ref<VertexBuffer>	  m_TransformsVertexBuffer;
 
 			OrthographicCameraController m_CameraController;
 

@@ -60,6 +60,7 @@ project "XYZEngine"
 			"vendor/stb_image",		
 			"vendor/assimp/include",
 			"vendor/spdlog/include",
+			"%{IncludeDir.Assimp}",
 			"%{IncludeDir.delaunator}",
 			"%{IncludeDir.ImGui}",
 			"%{IncludeDir.ImGuizmo}",
@@ -112,6 +113,7 @@ project "XYZEngine"
 
 				links
 				{
+					"%{Library.Assimp_Debug}",
 					"%{Library.ShaderC_Debug}",
 					"%{Library.SPIRV_Cross_Debug}",
 					"%{Library.SPIRV_Cross_GLSL_Debug}"
@@ -125,6 +127,7 @@ project "XYZEngine"
 				
 				links
 				{
+					"%{Library.Assimp_Release}",
 					"%{Library.ShaderC_Release}",
 					"%{Library.SPIRV_Cross_Release}",
 					"%{Library.SPIRV_Cross_GLSL_Release}"

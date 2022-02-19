@@ -57,11 +57,6 @@ namespace XYZ {
 	};
 	REFLECTABLE(TransformComponent, Translation, Rotation, Scale, WorldTransform);
 
-	class BoneComponent
-	{
-	public:
-		Ref<AnimatedMesh> Mesh;
-	};
 
 	struct SceneTagComponent 
 	{

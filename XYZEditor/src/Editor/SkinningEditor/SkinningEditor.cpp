@@ -40,15 +40,20 @@ namespace XYZ {
 			Ref<MaterialAsset> lineMaterial = Ref<MaterialAsset>::Create(Renderer::GetDefaultResources().DefaultLineMaterial->GetShaderAsset());
 			Ref<MaterialAsset> circleMaterial = Ref<MaterialAsset>::Create(Renderer::GetDefaultResources().DefaultCircleMaterial->GetShaderAsset());
 
-			m_Renderer2D = Ref<Renderer2D>::Create(m_CommandBuffer, quadMaterial, lineMaterial, circleMaterial, nullptr);
-			
-		
-			Ref<ShaderAsset> meshAnimShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/AnimMeshShader.shader");
-			m_MaterialAsset = Ref<MaterialAsset>::Create(meshAnimShaderAsset);
-			m_MaterialAsset->SetTexture("u_Texture", Renderer::GetDefaultResources().WhiteTexture);
+			m_Renderer2D = Ref<Renderer2D>::Create(m_CommandBuffer, quadMaterial, lineMaterial, circleMaterial, nullptr);	
+			m_BoneTransformsStorageSet = StorageBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
+			m_BoneTransformsStorageSet->Create(1 * sizeof(RenderQueue::BoneTransforms), 2, 0);
+			m_TransformsVertexBuffer = VertexBuffer::Create(1 * sizeof(glm::mat4));
+
 			
 			m_Texture = Texture2D::Create("Assets/Textures/full_simple_char.png");
 			m_Context = Ref<SubTexture>::Create(m_Texture);
+			SetContext(m_Context);
+
+			Ref<ShaderAsset> meshAnimShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/AnimMeshShader.shader");
+			m_MaterialAsset = Ref<MaterialAsset>::Create(meshAnimShaderAsset);
+			m_MaterialAsset->SetTexture("u_Texture", m_Context->GetTexture());
+
 
 			for (uint32_t i = 0; i < Renderer2D::GetMaxTextures(); ++i)
 				quadMaterial->SetTexture("u_Texture", m_Context->GetTexture(), i);
@@ -104,23 +109,36 @@ namespace XYZ {
 			m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 			m_Renderer2D->BeginScene(camera.GetViewProjectionMatrix(), camera.GetViewMatrix(), true);
 	
+			// TODO: it is flickering because, Storage with bones is updater multiple times per frame ( it is global inside shaders )
 			if (m_Mesh.Raw())
 			{
-				//Renderer::BindPipeline(
-				//	m_CommandBuffer,
-				//	m_Pipeline,
-				//	m_Renderer2D->GetCameraBufferSet(),
-				//	nullptr,
-				//	m_MaterialAsset->GetMaterial()
-				//);
+				Renderer::BindPipeline(
+					m_CommandBuffer,
+					m_Pipeline,
+					m_Renderer2D->GetCameraBufferSet(),
+					m_BoneTransformsStorageSet,
+					m_MaterialAsset->GetMaterial()
+				);
+
+				Renderer::RenderMesh(
+					m_CommandBuffer,
+					m_Pipeline,
+					m_MaterialAsset->GetMaterialInstance(),
+					m_Mesh->GetVertexBuffer(),
+					m_Mesh->GetIndexBuffer(),
+					0,
+					m_TransformsVertexBuffer,
+					0,
+					1
+				);
 			}
 
 			const uint32_t width = m_Texture->GetWidth();
 			const uint32_t height = m_Texture->GetHeight();
-			m_Renderer2D->SubmitQuad(
-				glm::vec3(0.0f), glm::vec2(1.0f * m_ContextAspectRatio, 1.0f), 
-				m_Context->GetTexCoords(), 0, glm::vec4(1.0f)
-			);
+			//m_Renderer2D->SubmitQuad(
+			//	glm::vec3(0.0f), glm::vec2(1.0f * m_ContextAspectRatio, 1.0f), 
+			//	m_Context->GetTexCoords(), 0, glm::vec4(1.0f)
+			//);
 			
 			if (m_State == State::PlacingPoints)
 				m_Renderer2D->SubmitFilledCircle(glm::vec3(m_MousePosition, 0.0f), glm::vec2(0.03f), 0.5f, m_Colors[Points]);
@@ -165,6 +183,10 @@ namespace XYZ {
 
 			m_ContextAspectRatio = width / height;
 			m_Mesh = MeshFactory::CreateQuad(glm::vec2(m_ContextAspectRatio, 1.0f), m_Context->GetTexCoords());
+		
+			glm::mat4 bone(1.0f);
+			m_BoneTransformsStorageSet->Update(&bone, sizeof(glm::mat4), 0, 0, 2);
+			m_TransformsVertexBuffer->Update(&bone, sizeof(glm::mat4));
 		}
 		bool SkinningEditor::handleToolbar()
 		{

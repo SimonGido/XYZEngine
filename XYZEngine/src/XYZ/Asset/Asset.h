@@ -18,7 +18,9 @@ namespace XYZ {
 		Font,
 		Audio,
 		Script,
-		SkeletalMesh,
+		Mesh,
+		AnimatedMesh,
+		MeshSource,
 		Animation,
 		Animator,
 		NumTypes
@@ -45,7 +47,9 @@ namespace XYZ {
 			if (assetType == "Font")			  return AssetType::Font;
 			if (assetType == "Audio")			  return AssetType::Audio;
 			if (assetType == "Script")			  return AssetType::Script;
-			if (assetType == "SkeletalMesh")	  return AssetType::SkeletalMesh;
+			if (assetType == "Mesh")			  return AssetType::Mesh;
+			if (assetType == "AnimatedMesh")	  return AssetType::AnimatedMesh;
+			if (assetType == "MeshSource")		  return AssetType::MeshSource;
 			if (assetType == "Animation")		  return AssetType::Animation;
 			if (assetType == "Animator")		  return AssetType::Animator;
 			
@@ -66,7 +70,9 @@ namespace XYZ {
 			case XYZ::AssetType::Font:				return "Font";
 			case XYZ::AssetType::Audio:				return "Audio";
 			case XYZ::AssetType::Script:			return "Script";
-			case XYZ::AssetType::SkeletalMesh:		return "SkeletalMesh";
+			case XYZ::AssetType::Mesh:				return "Mesh";
+			case XYZ::AssetType::AnimatedMesh:		return "AnimatedMesh";
+			case XYZ::AssetType::MeshSource:		return "MeshSource";
 			case XYZ::AssetType::Animation:			return "Animation";
 			case XYZ::AssetType::Animator:			return "Animator";
 			default:

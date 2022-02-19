@@ -1,6 +1,7 @@
 VULKAN_SDK = os.getenv("VULKAN_SDK")
 
 IncludeDir = {}
+IncludeDir["Assimp"] = "%{wks.location}/XYZEngine/vendor/assimp/include"
 IncludeDir["GLFW"] = "%{wks.location}/XYZEngine/vendor/glfw/include"
 IncludeDir["GLEW"] = "%{wks.location}/XYZEngine/vendor/GLEW/include"
 IncludeDir["glm"] = "%{wks.location}/XYZEngine/vendor/glm"
@@ -26,6 +27,8 @@ LibraryDir["VulkanSDK_DebugDLL"] = "%{wks.location}/XYZEngine/vendor/VulkanSDK/B
 
 
 Library = {}
+Library["Assimp_Debug"] = "%{wks.location}/XYZEngine/vendor/assimp/bin/Debug/assimp-vc142-mtd.lib"
+Library["Assimp_Release"] = "%{wks.location}/XYZEngine/vendor/assimp/bin/Release/assimp-vc142-mt.lib"
 Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
 Library["VulkanUtils"] = "%{LibraryDir.VulkanSDK}/VkLayer_utils.lib"
 
@@ -37,3 +40,7 @@ Library["SPIRV_Tools_Debug"] = "%{LibraryDir.VulkanSDK_Debug}/SPIRV-Toolsd.lib"
 Library["ShaderC_Release"] = "%{LibraryDir.VulkanSDK}/shaderc_shared.lib"
 Library["SPIRV_Cross_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-core.lib"
 Library["SPIRV_Cross_GLSL_Release"] = "%{LibraryDir.VulkanSDK}/spirv-cross-glsl.lib"
+
+Binaries = {}
+Binaries["Assimp_Debug"] = "%{wks.location}/XYZEngine/vendor/assimp/bin/Debug/assimp-vc142-mtd.dll"
+Binaries["Assimp_Release"] = "%{wks.location}/XYZEngine/vendor/assimp/bin/Release/assimp-vc142-mt.dll"

@@ -1,6 +1,6 @@
 Scene: TestScene
 Entities:
-  - Entity: 7cc7305b-b039-4571-b586-27fa9b13c2ed
+  - Entity: ab432fa0-e1f2-4f78-a4b9-f166e571f2eb
     SceneTagComponent:
       Name: Havko
     TransformComponent:
@@ -9,16 +9,16 @@ Entities:
       Scale: [1, 1, 1]
     SpriteRenderer:
       Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
-      SubTexture: b5d2986c-bd27-4cca-b5ff-bd46d8cfc007
+      SubTexture: 88f2a590-59f3-4956-aaf7-cf1920eb658c
       Color: [1, 1, 1, 1]
       SortLayer: 0
       Visible: true
     Relationship:
-      FirstChild: 1614309d-4256-42d5-834c-37a60b922134
+      FirstChild: 3737d32b-109a-4f1a-a0f2-a4aaa228550b
       Depth: 1
     ParticleRenderer:
       Material: 2d5d0b92-0ea7-4b45-bd54-63521deafbda
-      Mesh: 2af84bcf-4e64-419b-bf38-5308b58c5171
+      Mesh: b4105b2b-d68e-4183-aaca-caa66bf2fbc0
     ParticleComponent:
       MaxParticles: 50
       Speed: 1
@@ -51,7 +51,7 @@ Entities:
         EulerAngles: [0, 0, 0]
         CycleLength: 5
         Enabled: true
-  - Entity: 1614309d-4256-42d5-834c-37a60b922134
+  - Entity: 3737d32b-109a-4f1a-a0f2-a4aaa228550b
     SceneTagComponent:
       Name: Child
     TransformComponent:
@@ -59,5 +59,5 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 7cc7305b-b039-4571-b586-27fa9b13c2ed
+      Parent: ab432fa0-e1f2-4f78-a4b9-f166e571f2eb
       Depth: 2

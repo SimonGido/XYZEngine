@@ -430,14 +430,24 @@ namespace XYZ {
 				command.OverrideMaterial,
 				command.Mesh->GetVertexBuffer(),
 				command.Mesh->GetIndexBuffer(),
-				command.BoneTransformsIndex,
+				{ glm::mat4(1.0f), command.BoneTransformsIndex },
 				m_TransformVertexBuffer,
 				command.TransformOffset,
 				command.TransformInstanceCount
 			);
 			for (auto& dcOverride : command.OverrideCommands)
 			{
-				
+				Renderer::RenderMesh(
+					m_CommandBuffer,
+					command.Pipeline,
+					dcOverride.OverrideMaterial,
+					command.Mesh->GetVertexBuffer(),
+					command.Mesh->GetIndexBuffer(),
+					{ dcOverride.Transform, dcOverride.BoneTransformsIndex },
+					m_TransformVertexBuffer,
+					command.TransformOffset,
+					command.TransformInstanceCount
+				);
 			}
 		}
 

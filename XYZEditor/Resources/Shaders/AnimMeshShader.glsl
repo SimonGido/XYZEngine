@@ -31,6 +31,7 @@ layout (std140, set = 2, binding = 0) readonly buffer BoneTransforms
 
 layout(push_constant) uniform Transform
 {
+	mat4 Transform;
 	uint BoneIndex;
 
 } u_Renderer;
@@ -58,7 +59,7 @@ void main()
 
 
 
-	vec4 instancePosition = transform * boneTransform * vec4(a_Position, 1.0);
+	vec4 instancePosition = transform * boneTransform * u_Renderer.Transform * vec4(a_Position, 1.0);
 	
 	v_Output.Position = instancePosition.xyz;
 	v_Output.TexCoord = a_TexCoord;

@@ -4,13 +4,17 @@
 namespace XYZ {
 	Ref<AnimatedMesh> MeshFactory::CreateQuad(const glm::vec2& size, const glm::vec4& texCoords)
 	{
-		const AnimatedVertex quad[4] = {
+		std::vector<AnimatedVertex> quad = {
 			AnimatedVertex{glm::vec3(-size.x / 2.0f, -size.y / 2.0f, 0.0f), glm::vec2(texCoords.x, texCoords.y)},
 			AnimatedVertex{glm::vec3( size.x / 2.0f, -size.y / 2.0f, 0.0f), glm::vec2(texCoords.z, texCoords.y)},
 			AnimatedVertex{glm::vec3( size.x / 2.0f,  size.y / 2.0f, 0.0f), glm::vec2(texCoords.z, texCoords.w)},
 			AnimatedVertex{glm::vec3(-size.x / 2.0f,  size.y / 2.0f, 0.0f), glm::vec2(texCoords.x, texCoords.w)}
 		};
-		return Ref<AnimatedMesh>();
+		std::vector<uint32_t> indices = {
+			0, 1, 2, 2, 3, 0
+		};
+		
+		return Ref<AnimatedMesh>::Create(Ref<MeshSource>::Create(quad, indices));
 	}
 	Ref<Mesh> MeshFactory::CreateQuad(const glm::vec2& size, const BufferLayout& layout)
     {
@@ -65,7 +69,7 @@ namespace XYZ {
 			3, 2, 6,
 			6, 7, 3
 		};
-		Ref<AnimatedMesh> result = Ref<AnimatedMesh>::Create(vertices, indices);
+		Ref<AnimatedMesh> result = Ref<AnimatedMesh>::Create(Ref<MeshSource>::Create(vertices, indices));
 		return result;
 	}
 
@@ -102,7 +106,7 @@ namespace XYZ {
 			3, 2, 6,
 			6, 7, 3
 		};
-		Ref<Mesh> result = Ref<Mesh>::Create(vertices, indices);
+		Ref<Mesh> result = Ref<Mesh>::Create(Ref<MeshSource>::Create(vertices, indices));
 		return result;
 	}
 	Ref<Mesh> MeshFactory::CreateInstancedBox(const glm::vec3& size, const BufferLayout& layout, const BufferLayout& instanceLayout, uint32_t count)
