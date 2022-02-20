@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Asset/Asset.h"
+#include "XYZ/Asset/Animation/SkeletonAsset.h"
 
 #include "XYZ/Renderer/Buffer.h"
 
@@ -42,6 +43,7 @@ namespace XYZ {
 		glm::mat4 BoneOffset;
 		glm::mat4 Transformation;
 		glm::mat4 FinalTransformation;
+		uint32_t JointIndex;
 	};
 
 	class MeshSource : public Asset
@@ -85,7 +87,7 @@ namespace XYZ {
 		std::vector<Vertex>			m_StaticVertices;
 		std::vector<uint32_t>		m_Indices;
 
-
+		ozz::unique_ptr<ozz::animation::Skeleton> m_Skeleton;
 		std::unordered_map<std::string, uint32_t> m_BoneMapping;
 		glm::mat4								  m_InverseTransform;
 		const aiScene*							  m_Scene;

@@ -63,19 +63,19 @@ namespace XYZ {
 			{
 				aiVectorKey key = nodeAnim->mPositionKeys[keyIndex];
 				float frameTime = std::clamp(static_cast<float>(key.mTime / samplingRate), 0.0f, rawAnimation.duration);
-				//rawAnimation.tracks[jointIndex].translations.emplace_back(frameTime, ozz::math::Float3(static_cast<float>(key.mValue.x), static_cast<float>(key.mValue.y), static_cast<float>(key.mValue.z)));
+				rawAnimation.tracks[jointIndex].translations.push_back({ frameTime, ozz::math::Float3(static_cast<float>(key.mValue.x), static_cast<float>(key.mValue.y), static_cast<float>(key.mValue.z)) });
 			}
 			for (uint32_t keyIndex = 0; keyIndex < nodeAnim->mNumRotationKeys; ++keyIndex)
 			{
 				aiQuatKey key = nodeAnim->mRotationKeys[keyIndex];
 				float frameTime = std::clamp(static_cast<float>(key.mTime / samplingRate), 0.0f, rawAnimation.duration);
-				//rawAnimation.tracks[jointIndex].rotations.emplace_back(frameTime, ozz::math::Quaternion(static_cast<float>(key.mValue.x), static_cast<float>(key.mValue.y), static_cast<float>(key.mValue.z), static_cast<float>(key.mValue.w)));
+				rawAnimation.tracks[jointIndex].rotations.push_back({ frameTime, ozz::math::Quaternion(static_cast<float>(key.mValue.x), static_cast<float>(key.mValue.y), static_cast<float>(key.mValue.z), static_cast<float>(key.mValue.w)) });
 			}
 			for (uint32_t keyIndex = 0; keyIndex < nodeAnim->mNumScalingKeys; ++keyIndex)
 			{
 				aiVectorKey key = nodeAnim->mScalingKeys[keyIndex];
 				float frameTime = std::clamp(static_cast<float>(key.mTime / samplingRate), 0.0f, rawAnimation.duration);
-				//rawAnimation.tracks[jointIndex].scales.emplace_back(frameTime, ozz::math::Float3(static_cast<float>(key.mValue.x), static_cast<float>(key.mValue.y), static_cast<float>(key.mValue.z)));
+				rawAnimation.tracks[jointIndex].scales.push_back({ frameTime, ozz::math::Float3(static_cast<float>(key.mValue.x), static_cast<float>(key.mValue.y), static_cast<float>(key.mValue.z)) });
 			}
 		}
 		return true;

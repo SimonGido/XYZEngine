@@ -10,6 +10,14 @@
 #include <assimp/LogStream.hpp>
 
 
+#include <ozz/animation/offline/skeleton_builder.h>
+
+#include <ozz/animation/offline/animation_builder.h>
+#include <ozz/animation/runtime/animation.h>
+#include <ozz/animation/runtime/local_to_model_job.h>
+#include <ozz/animation/runtime/sampling_job.h>
+#include <ozz/base/span.h>
+
 
 namespace XYZ {
 	namespace Utils {
@@ -58,6 +66,19 @@ namespace XYZ {
 		m_IsAnimated = scene->mAnimations != nullptr;
 		m_InverseTransform = glm::inverse(Utils::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
 		loadMeshes(m_Scene);
+		
+		ozz::animation::offline::RawSkeleton rawSkeleton;
+		if (AssimpImporter::ExtractRawSkeleton(scene, rawSkeleton))
+		{
+			ozz::animation::offline::SkeletonBuilder builder;
+			m_Skeleton = builder(rawSkeleton);
+			if (!m_Skeleton)
+				XYZ_ERROR("Failed to build runtime skeleton from file {0}", filepath);
+		}
+		else
+		{
+			XYZ_ERROR("No skeleton in file {0}", filepath);
+		}
 		loadBones(m_Scene);
 
 		if (m_IsAnimated)
@@ -151,6 +172,16 @@ namespace XYZ {
 						boneIndex = m_BoneCount;
 						m_BoneCount++;
 						BoneInfo bi;
+						uint32_t jointIndex = ~0;
+						for (size_t j = 0; j < m_Skeleton->joint_names().size(); ++j)
+						{
+							if (boneName == m_Skeleton->joint_names()[j])
+							{
+								jointIndex = static_cast<int>(j);
+								break;
+							}
+						}
+						bi.JointIndex = jointIndex;
 						m_BoneInfo.push_back(bi);
 						m_BoneInfo[boneIndex].BoneOffset = Utils::Mat4FromAssimpMat4(bone->mOffsetMatrix);
 						m_BoneMapping[boneName] = boneIndex;

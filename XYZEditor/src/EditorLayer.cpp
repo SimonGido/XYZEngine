@@ -55,14 +55,9 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::AssetManagerViewPanel>("AssetManagerViewPanel");
 			m_EditorManager.RegisterPanel<Editor::AssetBrowser>("AssetBrowser");
 			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
-			m_EditorManager.RegisterPanel<Editor::AnimationEditor>("AnimationEditor");
+			//m_EditorManager.RegisterPanel<Editor::AnimationEditor>("AnimationEditor");
 
 
-			auto animation = Ref<Animation>::Create();
-			//animation->Vec3Tracks.emplace_back(TrackType::Translation, "Havko");
-			//animation->Vec3Tracks.emplace_back(TrackType::Rotation, "Havko");
-			//animation->Vec3Tracks.emplace_back(TrackType::Scale, "Havko");
-			m_EditorManager.GetPanel<Editor::AnimationEditor>("AnimationEditor")->SetContext(animation);
 
 			SceneEntity newEntity = m_Scene->CreateEntity("Havko", GUID());
 			SceneEntity childEntity = m_Scene->CreateEntity("Child", newEntity, GUID());
@@ -84,9 +79,8 @@ namespace XYZ {
 
 
 
-			auto meshSource = Ref<MeshSource>::Create("Resources/Meshes/man.fbx");
-			auto skeleton = Ref<SkeletonAsset>::Create("Resources/Meshes/man.fbx");
-			auto animationAsset = Ref<AnimationAsset>::Create("Resources/Meshes/man.fbx", "Armature|Walk", skeleton);
+			auto meshSource = Ref<MeshSource>::Create("Resources/Meshes/Character Running.fbx");
+			auto skeleton = Ref<SkeletonAsset>::Create("Resources/Meshes/Character Running.fbx");
 
 			SceneEntity entity = m_Scene->CreateEntity("Anim", GUID());
 

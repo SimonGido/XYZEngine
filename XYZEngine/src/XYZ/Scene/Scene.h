@@ -13,6 +13,8 @@
 
 #include "XYZ/Utils/DataStructures/ThreadPass.h"
 #include "XYZ/Asset/Asset.h"
+#include "XYZ/Asset/Animation/AnimationController.h"
+#include "XYZ/Asset/Renderer/MeshSource.h"
 
 #include "SceneCamera.h"
 
@@ -115,5 +117,14 @@ namespace XYZ {
         friend class ScriptEngine;
         friend class LuaEntity;
         friend class Editor::SceneHierarchyPanel;
+
+
+
+
+
+        Ref<SkeletonAsset>       m_SkeletonAsset;
+        Ref<MeshSource>          m_MeshSource;
+        Ref<AnimationAsset>      m_AnimationAsset;
+        Ref<AnimationController> m_Controller;
     };
 }

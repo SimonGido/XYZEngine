@@ -1,6 +1,6 @@
 Scene: TestScene
 Entities:
-  - Entity: dd0adc13-40b5-4854-ad1e-51f9267c5fc5
+  - Entity: 54191a1a-146d-4964-8e09-692b54f15632
     SceneTagComponent:
       Name: Havko
     TransformComponent:
@@ -9,17 +9,17 @@ Entities:
       Scale: [1, 1, 1]
     SpriteRenderer:
       Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
-      SubTexture: d4d37e06-e256-42da-8ff2-f753c247b42c
+      SubTexture: fa327009-dcb3-4f50-a319-2aea5e9e2435
       Color: [1, 1, 1, 1]
       SortLayer: 0
       Visible: true
     Relationship:
-      NextSibling: d28ebef6-bcae-4903-91c4-e66c96719e26
-      FirstChild: 52808a42-c87b-4b34-93ce-6d741670a2eb
+      NextSibling: 4712cae4-2230-4e4f-942d-c95b0d3eb4e5
+      FirstChild: fd61f752-b6cc-4195-b534-ae4a22bedbb4
       Depth: 1
     ParticleRenderer:
       Material: 2d5d0b92-0ea7-4b45-bd54-63521deafbda
-      Mesh: 9cd004a8-b52c-4e54-a70c-69fe3c16d833
+      Mesh: ba1ecd01-3f47-43ba-a310-9e9ee8203ff4
     ParticleComponent:
       MaxParticles: 50
       Speed: 1
@@ -52,7 +52,7 @@ Entities:
         EulerAngles: [0, 0, 0]
         CycleLength: 5
         Enabled: true
-  - Entity: 52808a42-c87b-4b34-93ce-6d741670a2eb
+  - Entity: fd61f752-b6cc-4195-b534-ae4a22bedbb4
     SceneTagComponent:
       Name: Child
     TransformComponent:
@@ -60,15 +60,15 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: dd0adc13-40b5-4854-ad1e-51f9267c5fc5
+      Parent: 54191a1a-146d-4964-8e09-692b54f15632
       Depth: 2
-  - Entity: d28ebef6-bcae-4903-91c4-e66c96719e26
+  - Entity: 4712cae4-2230-4e4f-942d-c95b0d3eb4e5
     SceneTagComponent:
       Name: Anim
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [100, 100, 100]
     Relationship:
-      PreviousSibling: dd0adc13-40b5-4854-ad1e-51f9267c5fc5
+      PreviousSibling: 54191a1a-146d-4964-8e09-692b54f15632
       Depth: 1

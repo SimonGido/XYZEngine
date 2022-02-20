@@ -68,6 +68,15 @@ namespace XYZ {
 
 		m_ECS.GetStorage<ScriptComponent>().AddOnConstruction<&Scene::onScriptComponentConstruct>(this);
 		m_ECS.GetStorage<ScriptComponent>().AddOnDestruction<&Scene::onScriptComponentDestruct>(this);
+	
+	
+		m_MeshSource = Ref<MeshSource>::Create("Resources/Meshes/Character Running.fbx");
+		m_SkeletonAsset = Ref<SkeletonAsset>::Create("Resources/Meshes/Character Running.fbx");
+		m_AnimationAsset = Ref<AnimationAsset>::Create("Resources/Meshes/Character Running.fbx", "Armature|ArmatureAction", m_SkeletonAsset);
+		m_Controller = Ref<AnimationController>::Create();
+
+		m_Controller->Animation = m_AnimationAsset;
+		m_Controller->SetSkeletonAsset(m_SkeletonAsset);
 	}
 
 	Scene::~Scene()
@@ -284,8 +293,9 @@ namespace XYZ {
 			auto& [particleComponent] = particleView.Get<ParticleComponent>(entity);
 			particleComponent.System.Update(ts);
 		}
-	}
 
+		m_Controller->Update(ts);
+	}
 	
 	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos)
 	{
@@ -320,11 +330,16 @@ namespace XYZ {
 			auto& [transform, meshComponent] = animMeshView.Get<TransformComponent, AnimatedMeshComponent>(entity);
 			auto tree = m_ECS.GetComponent<Relationship>(entity).GetTree(m_ECS);
 			
-			std::vector<glm::mat4> transforms;
+			
+
 			const auto& boneInfo = meshComponent.Mesh->GetMeshSource()->GetBoneInfo();
-			for (auto& bone : boneInfo)
-				transforms.push_back(bone.FinalTransformation);
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, transforms, meshComponent.OverrideMaterial);
+			std::vector<glm::mat4> transforms = m_Controller->GetTransforms();
+			std::vector<glm::mat4> boneTransforms(boneInfo.size());
+			for (size_t i = 0; i < boneInfo.size(); ++i)
+			{
+				boneTransforms[i] = transforms[boneInfo[i].JointIndex] * boneInfo[i].BoneOffset;
+			}
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, boneTransforms, meshComponent.OverrideMaterial);
 		}
 
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleRenderer, ParticleComponent>();

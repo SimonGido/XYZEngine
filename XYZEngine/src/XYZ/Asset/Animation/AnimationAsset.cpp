@@ -28,7 +28,7 @@ static const uint32_t s_AnimationImportFlags =
 					aiProcess_JoinIdenticalVertices |
 					aiProcess_LimitBoneWeights |        // If more than N (=4) bone weights, discard least influencing bones and renormalise sum to 1
 					aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
-					//		aiProcess_PopulateArmatureData |    // not currently using this data
+					aiProcess_PopulateArmatureData |    // not currently using this data
 					aiProcess_ValidateDataStructure;    // Validation 
 
 namespace XYZ {

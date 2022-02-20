@@ -178,6 +178,7 @@ namespace XYZ {
 			{
 				for (auto& [name, data] : m_TrackMap.DataMap)
 				{
+					ImGui::PushID(name.c_str());
 					if (ImGui::BeginNeoGroup(name.c_str(), &data.Open))
 					{
 						for (auto& [track, keyFrames, keyChangeFn, open] : data.Vec3Tracks)
