@@ -4,7 +4,7 @@
 
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Material.h"
-#include "XYZ/Asset/MaterialAsset.h"
+#include "XYZ/Asset/Renderer/MaterialAsset.h"
 
 namespace XYZ {
 	namespace Editor {

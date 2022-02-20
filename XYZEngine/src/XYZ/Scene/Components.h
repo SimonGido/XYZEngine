@@ -3,13 +3,12 @@
 #include "XYZ/ECS/Component.h"
 #include "XYZ/Core/GUID.h"
 
-
 #include "XYZ/Reflection/Reflection.h"
 
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Mesh.h"
-#include "XYZ/Asset/MaterialAsset.h"
+#include "XYZ/Asset/Renderer/MaterialAsset.h"
 
 #include "XYZ/Script/ScriptPublicField.h"
 #include "XYZ/Particle/CPU/ParticleSystem.h"
@@ -55,8 +54,7 @@ namespace XYZ {
 		
 		void DecomposeTransform(const glm::mat4& transform);
 	};
-	REFLECTABLE(TransformComponent, Translation, Rotation, Scale, WorldTransform);
-
+	
 
 	class BoneComponent
 	{
@@ -72,7 +70,6 @@ namespace XYZ {
 
 		void DecomposeTransform(const glm::mat4& transform);
 	};
-	REFLECTABLE(BoneComponent, Translation, Rotation, Scale, WorldTransform, BoneIndex);
 
 
 	struct SceneTagComponent 
@@ -121,8 +118,6 @@ namespace XYZ {
 		uint32_t  SortLayer = 0;
 		bool	  Visible = true;
 	};
-	REFLECTABLE(SpriteRenderer, Material, SubTexture, Color, SortLayer, Visible);
-
 
 	struct MeshComponent
 	{
@@ -162,16 +157,6 @@ namespace XYZ {
 	};
 
 
-	class Animator;
-	class AnimatorController;
-	struct AnimatorComponent 
-	{
-		AnimatorComponent() = default;
-		Ref<Animator>			Animator;
-		Ref<AnimatorController> Controller;
-	};
-
-
 	struct ParticleComponent
 	{
 		ParticleComponent() = default;
@@ -188,8 +173,7 @@ namespace XYZ {
 		float	  Radius	= 1.0f;
 		float	  Intensity = 1.0f;
 	};
-	REFLECTABLE(PointLight2D, Color, Radius, Intensity);
-
+	
 
 	struct SpotLight2D 
 	{
@@ -199,7 +183,6 @@ namespace XYZ {
 		float InnerAngle = -180.0f;
 		float OuterAngle =  180.0f;
 	};
-	REFLECTABLE(SpotLight2D, Color, Radius, Intensity, InnerAngle, OuterAngle);
 
 
 	struct Relationship 
@@ -293,7 +276,6 @@ namespace XYZ {
 
 		void* RuntimeFixture = nullptr;
 	};
-	REFLECTABLE(BoxCollider2DComponent, Size, Offset, Density, Friction, RuntimeFixture);
 
 
 	struct CircleCollider2DComponent 
@@ -305,7 +287,7 @@ namespace XYZ {
 				  
 		void*	  RuntimeFixture = nullptr;
 	};
-	REFLECTABLE(CircleCollider2DComponent, Offset, Radius, Density, Friction, RuntimeFixture);
+
 
 	struct PolygonCollider2DComponent 
 	{
@@ -331,7 +313,4 @@ namespace XYZ {
 
 		void* RuntimeFixture = nullptr;
 	};
-
-	REGISTER_REFLECTABLES(ReflectedComponents, TransformComponent, BoneComponent, SpriteRenderer, PointLight2D, SpotLight2D, BoxCollider2DComponent, CircleCollider2DComponent);
-	
 }

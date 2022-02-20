@@ -1,170 +1,126 @@
 #include "stdafx.h"
 #include "AnimationPlayer.h"
 
-#include "Animation.h"
-#include "Property.h"
+#include "XYZ/Scene/Components.h"
 
 namespace XYZ {
-
-	 template <typename T>
-	 static uint32_t PropertyCompatible(const std::vector<Property<T>>& props, const std::string_view path)
-	 {
-		 uint32_t count = 0;
-		 for (const auto& pr : props)
-		 {
-			 if (pr.GetPath() == path)
-				 count++;
-		 }
-		 return count;
-	 }
-
-
-	AnimationPlayer::AnimationPlayer()
+	AnimationPlayer::AnimationPlayer(const SceneEntity& entity, const Ref<Animation>& animation)
 		:
-		m_CurrentTime(0.0f)
+		m_Entity(entity),
+		m_Animation(animation)
 	{
+		Create(entity, animation);
 	}
+
 	void AnimationPlayer::Update(Timestep ts)
 	{
-		XYZ_ASSERT(Valid(), "AnimationPlayer is not valid");
-		if (!m_IsCreated)
-			return;
-
 		uint32_t frame = GetCurrentFrame();
-		if (frame >= m_Animation->GetNumFrames() && m_Animation->GetRepeat())
+		if (frame >= m_Animation->NumFrames)
 		{
-			m_CurrentTime = 0.0f;
-			for (auto& node : m_Properties)
-				node.Key = 0;
-			frame = 0;
+			if (m_Animation->Repeat)
+				Reset();
+			return;
 		}
 
-		for (auto& node : m_Properties)
+		for (auto& tv : m_TransformTracks[Translation])
 		{
-			if (node.Key + 1 < node.Property->GetKeyCount())
-			{
-				node.Property->SetSceneEntity(node.Entity);
-				node.Property->Update(node.Key, frame);
-				if (node.Property->GetEndFrame(node.Key + 1) <= frame)
-					node.Key++;
-			}
+			TransformComponent& transform = tv.Entity.GetComponent<TransformComponent>();
+			updateVec3TrackView(tv, transform.Translation, frame);
 		}
-		m_CurrentTime += ts;		
+		for (auto& tv : m_TransformTracks[Rotation])
+		{
+			TransformComponent& transform = tv.Entity.GetComponent<TransformComponent>();
+			updateVec3TrackView(tv, transform.Rotation, frame);
+		}
+		for (auto& tv : m_TransformTracks[Scale])
+		{
+			TransformComponent& transform = tv.Entity.GetComponent<TransformComponent>();
+			updateVec3TrackView(tv, transform.Scale, frame);
+		}
+		m_CurrentTime += ts;
 	}
-	bool AnimationPlayer::Create(const SceneEntity& entity, const Ref<Animation>& anim)
-	{
-		XYZ_ASSERT(entity.IsValid() && anim.Raw(), "Entity must be valid");
-	
-		m_Animation = anim;
-		if (!Compatible(entity))
-		{
-			m_IsCreated = false;
-			return false;
-		}
-		m_Entity = entity;
 
-		m_Properties.clear();
-		const ECSManager& ecs    = *m_Entity.GetECS();
-		const Relationship& rel  =  m_Entity.GetComponent<Relationship>();
-		std::vector<Entity> tree =  rel.GetTree(ecs);
-		tree.insert(tree.begin(), entity);
-
-		for (const Entity node : tree)
-		{
-			SceneEntity nodeEntity(node, m_Entity.GetScene());
-			const auto& name = nodeEntity.GetComponent<SceneTagComponent>().Name;
-			for (auto& prop : m_Animation->m_QuatProperties)
-			{
-				if (prop.GetPath() == name)
-					m_Properties.push_back({ nodeEntity, &prop });
-			}
-			for (auto& prop : m_Animation->m_Vec4Properties)
-			{
-				if (prop.GetPath() == name)
-					m_Properties.push_back({ nodeEntity, &prop });
-			}
-			for (auto& prop : m_Animation->m_Vec3Properties)
-			{
-				if (prop.GetPath() == name)
-					m_Properties.push_back({ nodeEntity, &prop });
-			}
-			for (auto& prop : m_Animation->m_Vec2Properties)
-			{
-				if (prop.GetPath() == name)
-					m_Properties.push_back({ nodeEntity, &prop });
-			}
-			for (auto& prop : m_Animation->m_FloatProperties)
-			{
-				if (prop.GetPath() == name)
-					m_Properties.push_back({ nodeEntity, &prop });
-			}
-			for (auto& prop : m_Animation->m_PointerProperties)
-			{
-				if (prop.GetPath() == name)
-					m_Properties.push_back({ nodeEntity, &prop });
-			}
-		}
-		m_IsCreated = true;
-		return true;
-	}
 	void AnimationPlayer::Reset()
 	{
 		m_CurrentTime = 0.0f;
-		for (auto& node : m_Properties)
-			node.Key = 0;
+		for (size_t i = 0; i < NumTransformTracks; ++i)
+		{
+			for (auto& track : m_TransformTracks[i])
+				track.Key = 0;
+		}
+	}
+	void AnimationPlayer::Clear()
+	{
+		m_CurrentTime = 0.0f;
+		for (size_t i = 0; i < NumTransformTracks; ++i)
+		{
+			m_TransformTracks[i].clear();
+		}
 	}
 	void AnimationPlayer::SetCurrentFrame(uint32_t frame)
 	{
 		XYZ_ASSERT(m_Animation.Raw(), "");
-		m_CurrentTime = frame * m_Animation->GetFrameLength();
-		for (auto& node : m_Properties)
+		m_CurrentTime = frame * m_Animation->FrameLength();
+		for (auto& tv : m_TransformTracks[Translation])
 		{
-			node.Key = node.Property->FindKey(frame);
+			tv.Key = tv.Track->GetKey(frame);
+		}
+		for (auto& tv : m_TransformTracks[Rotation])
+		{
+			tv.Key = tv.Track->GetKey(frame);
+		}
+		for (auto& tv : m_TransformTracks[Scale])
+		{
+			tv.Key = tv.Track->GetKey(frame);
 		}
 	}
-	bool AnimationPlayer::Valid() const
+	void AnimationPlayer::Create(const SceneEntity& entity, const Ref<Animation>& animation)
 	{
-		if (!m_Animation.Raw() || !m_Entity.IsValid())
-			return false;
+		Clear();
+		m_Entity = entity;
+		m_Animation = animation;
+		if (!m_Entity.IsValid() || !m_Animation.Raw())
+			return;
 
-		const ECSManager& ecs = *m_Entity.GetECS();
-		const Relationship& rel = m_Entity.GetComponent<Relationship>();
-		const std::vector<Entity> tree = rel.GetTree(ecs);
-
-		for (const auto& node : m_Properties)
+		auto& ecs = *m_Entity.GetECS();
+		auto tree = m_Entity.GetComponent<Relationship>().GetTree(ecs);
+		tree.push_back(m_Entity);
+		for (auto child : tree)
 		{
-			const auto& rel = node.Entity.GetComponent<Relationship>();
-			if (node.Property->GetPath() != rel.GetPath(*m_Entity.GetECS(), node.Entity, m_Entity))
-				return false;
+			for (auto& track : m_Animation->Vec3Tracks)
+			{
+				std::string name = ecs.GetComponent<SceneTagComponent>(child).Name;
+				if (name == track.GetName())
+				{
+					TrackView<glm::vec3> tr{ SceneEntity(child, m_Entity.GetScene()), &track, 0 };
+					if (track.GetTrackType() == TrackType::Translation)
+					{
+						m_TransformTracks[Translation].push_back(tr);
+					}
+					else if (track.GetTrackType() == TrackType::Rotation)
+					{
+						m_TransformTracks[Rotation].push_back(tr);
+					}
+					else if (track.GetTrackType() == TrackType::Scale)
+					{
+						m_TransformTracks[Scale].push_back(tr);
+					}
+				}
+			}
 		}
-		return true;
-	}
-	bool AnimationPlayer::Compatible(SceneEntity entity) const
-	{
-		XYZ_ASSERT(m_Animation.Raw() && entity.IsValid(), "");
-		const size_t numProperties = m_Animation->GetPropertyCount();
-		const auto& rel = entity.GetComponent<Relationship>();
-		const auto& ecs = *entity.GetECS();
-		std::vector<Entity> tree = rel.GetTree(ecs);
-		tree.insert(tree.begin(), entity);
-
-		size_t numCompatibles = 0;
-		for (const Entity node : tree)
-		{
-			SceneEntity nodeEntity(node, entity.GetScene());
-			std::string path = nodeEntity.GetComponent<Relationship>().GetPath(ecs, node, entity);
-			numCompatibles += PropertyCompatible(m_Animation->GetProperties<glm::quat>(), path);
-			numCompatibles += PropertyCompatible(m_Animation->GetProperties<glm::vec4>(), path);
-			numCompatibles += PropertyCompatible(m_Animation->GetProperties<glm::vec3>(), path);
-			numCompatibles += PropertyCompatible(m_Animation->GetProperties<glm::vec2>(), path);
-			numCompatibles += PropertyCompatible(m_Animation->GetProperties<float>(), path);
-			numCompatibles += PropertyCompatible(m_Animation->GetProperties<void*>(), path);
-		}
-
-		return numCompatibles == numProperties;
 	}
 	uint32_t AnimationPlayer::GetCurrentFrame() const
 	{
-		return static_cast<uint32_t>(std::floor(m_CurrentTime / m_Animation->GetFrameLength()));
+		return static_cast<uint32_t>(std::floor(m_CurrentTime / m_Animation->FrameLength()));
+	}
+	
+	void AnimationPlayer::updateVec3TrackView(TrackView<glm::vec3>& tv, glm::vec3& val, uint32_t frame)
+	{
+		if (tv.Key + 1 < tv.Track->Keys.size())
+		{
+			tv.Track->Update(tv.Key, frame, val);
+			if (tv.Track->Keys[tv.Key + 1].Frame <= frame)
+				tv.Key++;
+		}
 	}
 }

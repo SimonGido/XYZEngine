@@ -1,16 +1,12 @@
 #pragma once
 #include "Editor/EditorPanel.h"
-#include "AnimationClassMap.h"
-#include "EntityPropertyMap.h"
+#include "EntityTrackMap.h"
 
 #include "XYZ/Animation/Animation.h"
-#include "XYZ/Animation/AnimatorController.h"
-
-#include <imgui.h>
+#include "XYZ/Animation/AnimationPlayer.h"
 
 namespace XYZ {
 	namespace Editor {
-
 		class AnimationEditor : public EditorPanel
 		{
 		public:
@@ -21,58 +17,26 @@ namespace XYZ {
 			virtual void SetSceneContext(const Ref<Scene>& scene) override;
 
 			void SetContext(const Ref<Animation>& context);
-			
+
 		private:
-
-			void setEntity(const SceneEntity& entity);
-			void drawEntityTree(const SceneEntity& entity);
-			void drawEntityNode(const SceneEntity& entity);
-			void drawEntityTreeProperties(const SceneEntity& entity);
-
-
-
-			void onEntityChanged(ECSManager& ecs, Entity entity);
 			void propertySection();
 			void timelineSection();
-			
-			void handleEditKeyValues();
-			void handleAddKey(std::string_view path, std::string_view componentName, std::string_view valueName);
-			void handleRemoveKeys(std::string_view path, std::string_view componentName, std::string_view valueName, 
-				std::vector<ImNeoKeyFrame>& keyFrames, const ImVector<uint32_t>& selection
-			);
-			
-			bool checkFramesValid(std::string_view path, std::string_view componentName, std::string_view valueName, const std::vector<ImNeoKeyFrame>& neoKeyFrames);
 
 			template <typename T>
-			bool editKeyValueSpecialized(uint32_t frame, T& value, const std::string& valName);
-
-			template <uint16_t valIndex, typename ComponentType, typename T>
-			void addReflectedProperty(Reflection<ComponentType> refl, const T& val, const std::string& path, const std::string& valName);
+			void handleAddKey(SceneEntity entity, AnimationTrack<T>& track);
 
 			template <typename T>
-			void addKeyToProperty(std::string_view path, std::string_view componentName, std::string_view valName, uint32_t frame, const T& val);
+			AnimationTrack<T>* findTrack(const std::string& name, TrackType type);
 
-			template <typename T>
-			Property<T>* getProperty(const T& val, std::string_view path, std::string_view componentName, std::string_view valName);
-
-
-			template <typename Func, typename ...Args>
-			void execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func, Args&& ...args);
-
-			template <typename Func, typename ...Args>
-			void execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func, Args&& ...args) const;
-
-
-			SceneEntity findEntity(std::string_view path) const;
+			SceneEntity findEntity(const std::string& name);
 		private:
 			glm::vec2		   m_ButtonSize;
 			SceneEntity		   m_Entity;
 			Ref<Animation>	   m_Animation;
 			Ref<Scene>		   m_Scene;
 
-			AnimationPlayer		 m_Player;
-			AnimationClassMap    m_ClassMap;
-			EntityPropertyMap    m_EntityPropertyMap;
+			AnimationPlayer	   m_Player;
+			EntityTrackMap	   m_TrackMap;
 
 			bool		m_Playing;
 			float		m_SplitterWidth;
@@ -84,62 +48,38 @@ namespace XYZ {
 			float		m_Zoom = 1.0f;
 
 		};
-
-
-
-		template<uint16_t valIndex, typename ComponentType, typename T>
-		inline void AnimationEditor::addReflectedProperty(Reflection<ComponentType> refl, const T& val, const std::string& path, const std::string& valName)
-		{
-			m_Animation->AddProperty<ComponentType, T, valIndex>(path);
-		}
 		template<typename T>
-		inline void AnimationEditor::addKeyToProperty(std::string_view path, std::string_view componentName, std::string_view valName, uint32_t frame, const T& val)
+		inline void AnimationEditor::handleAddKey(SceneEntity entity, AnimationTrack<T>& track)
 		{
-			auto prop = m_Animation->GetProperty<T>(path, componentName, valName);
-			if (prop)
+			if (track.GetTrackType() == TrackType::Translation)
 			{
-				prop->AddKeyFrame({ val, frame });
+				track.Keys.push_back({
+					entity.GetComponent<TransformComponent>().Translation, m_CurrentFrame
+				});
+			}
+			else if (track.GetTrackType() == TrackType::Rotation)
+			{
+				track.Keys.push_back({
+					entity.GetComponent<TransformComponent>().Rotation, m_CurrentFrame
+					});
+			}
+			else if (track.GetTrackType() == TrackType::Scale)
+			{
+				track.Keys.push_back({
+					entity.GetComponent<TransformComponent>().Scale, m_CurrentFrame
+				});
 			}
 		}
-
 		template<typename T>
-		inline Property<T>* AnimationEditor::getProperty(const T& val, std::string_view path, std::string_view componentName, std::string_view valName)
+		inline AnimationTrack<T>* AnimationEditor::findTrack(const std::string& name, TrackType type)
 		{
-			return m_Animation->GetProperty<T>(path, componentName, valName);
-		}
-
-		template<typename Func, typename ...Args>
-		inline void AnimationEditor::execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func, Args && ...args)
-		{
-			Utils::For([&](auto j) {
-				if (ReflectedComponents::sc_ClassNames[j.value] == componentName)
-				{
-					auto reflClass = ReflectedComponents::Get<j.value>();
-					Utils::For([&](auto i) {
-						if (reflClass.sc_VariableNames[i.value] == valName)
-						{
-							func(j, i, std::forward<Args>(args)...);
-						}
-					}, std::make_index_sequence<reflClass.sc_NumVariables>());
-				}
-			}, std::make_index_sequence<ReflectedComponents::sc_NumClasses>());
-		}
-
-		template<typename Func, typename ...Args>
-		inline void AnimationEditor::execFor(std::string_view path, std::string_view componentName, std::string_view valName, Func func, Args && ...args) const
-		{
-			Utils::For([&](auto j) {
-				if (ReflectedComponents::sc_ClassNames[j.value] == componentName)
-				{
-					auto reflClass = ReflectedComponents::Get<j.value>();
-					Utils::For([&](auto i) {
-						if (reflClass.sc_VariableNames[i.value] == valName)
-						{
-							func(j, i, std::forward<Args>(args)... );
-						}
-					}, std::make_index_sequence<reflClass.sc_NumVariables>());
-				}
-			}, std::make_index_sequence<ReflectedComponents::sc_NumClasses>());
+			auto& tracks = m_Animation->GetTracks<T>();
+			for (auto& track : tracks)
+			{
+				if (track.GetName() == name && track.GetTrackType() == type)
+					return &track;
+			}
+			return nullptr;
 		}
 	}
 }

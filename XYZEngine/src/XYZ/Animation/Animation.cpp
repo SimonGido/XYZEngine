@@ -1,75 +1,46 @@
 #include "stdafx.h"
 #include "Animation.h"
-#include "XYZ/Renderer/SubTexture.h"
-#include "XYZ/Scene/Components.h"
 
-#include <glm/gtx/matrix_interpolation.hpp>
 
 namespace XYZ {
-
-	Animation::Animation()
-		:
-		m_NumFrames(0),
-		m_Frequency(0),
-		m_Repeat(true)
+	void Animation::AddTrack(TrackType type, const std::string& trackName)
 	{
-		SetFrequency(60);
+		TrackDataType dataType = TrackTypeToDataType(type);
+		if (dataType == TrackDataType::Vec4)
+			Vec4Tracks.emplace_back(type, trackName);
+		else if (dataType == TrackDataType::Vec3)
+			Vec3Tracks.emplace_back(type, trackName);
+		else if (dataType == TrackDataType::Vec2)
+			Vec2Tracks.emplace_back(type, trackName);
+		else if (dataType == TrackDataType::Float)
+			FloatTracks.emplace_back(type, trackName);
 	}
-
-	Animation::~Animation()
+	size_t Animation::TrackCount() const
 	{
+		return Vec4Tracks.size() + Vec3Tracks.size() + Vec2Tracks.size();
 	}
-
-
-	void Animation::SetFrequency(uint32_t framesPerSecond)
+	bool Animation::HasTrack(const std::string_view trackName, TrackType type) const
 	{
-		m_Frequency = framesPerSecond;
-		m_FrameLength = 1.0f / m_Frequency;
-	}
-	bool Animation::HasProperty(std::string_view componentName, std::string_view varName, std::string_view path) const
-	{
-		if (propertyContainerHasVariable(m_QuatProperties, componentName, varName, path))
-			return true;
-		if (propertyContainerHasVariable(m_Vec4Properties, componentName, varName, path))
-			return true;
-		if (propertyContainerHasVariable(m_Vec3Properties, componentName, varName, path))
-			return true;
-		if (propertyContainerHasVariable(m_Vec2Properties, componentName, varName, path))
-			return true;
-		if (propertyContainerHasVariable(m_FloatProperties, componentName, varName, path))
-			return true;
-		if (propertyContainerHasVariable(m_PointerProperties, componentName, varName, path))
-			return true;
+		for (auto& track : Vec4Tracks)
+		{
+			if (track.GetName() == trackName && track.GetTrackType() == type)
+				return true;
+		}
+		for (auto& track : Vec3Tracks)
+		{
+			if (track.GetName() == trackName && track.GetTrackType() == type)
+				return true;
+		}
+		for (auto& track : Vec2Tracks)
+		{
+			if (track.GetName() == trackName && track.GetTrackType() == type)
+				return true;
+		}
+		for (auto& track : FloatTracks)
+		{
+			if (track.GetName() == trackName && track.GetTrackType() == type)
+				return true;
+		}
 		return false;
-	}
-
-	bool Animation::Empty() const
-	{
-		return m_QuatProperties.empty()
-			&& m_Vec4Properties.empty() 
-			&& m_Vec3Properties.empty() 
-			&& m_Vec2Properties.empty() 
-			&& m_FloatProperties.empty() 
-			&& m_PointerProperties.empty();
-	}
-
-	size_t Animation::GetPropertyCount() const
-	{
-		return m_QuatProperties.size()
-			 + m_Vec4Properties.size()
-			 + m_Vec3Properties.size()
-			 + m_Vec2Properties.size()
-			 + m_FloatProperties.size()
-			 + m_PointerProperties.size();
-	}
-
-	void Animation::clearProperties()
-	{
-		m_QuatProperties.clear();
-		m_Vec4Properties.clear();
-		m_Vec3Properties.clear();
-		m_Vec2Properties.clear();
-		m_FloatProperties.clear();
-		m_PointerProperties.clear();
 	}
 }

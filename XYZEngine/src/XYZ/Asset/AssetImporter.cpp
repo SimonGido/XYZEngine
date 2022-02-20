@@ -7,7 +7,6 @@
 #include "XYZ/Renderer/Font.h"
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"
-#include "XYZ/Animation/Animation.h"
 #include "XYZ/Renderer/Renderer.h"
 
 #include "XYZ/Scene/SceneSerializer.h"
@@ -30,7 +29,6 @@ namespace XYZ {
 	{
 		s_Serializers[ToUnderlying(AssetType::Scene)] = CreateScope<SceneAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::Texture)] = CreateScope<TextureAssetSerializer>();
-		s_Serializers[ToUnderlying(AssetType::Animation)] = CreateScope<AnimationAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::Material)] = CreateScope<MaterialAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::Shader)] = CreateScope<ShaderAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::MeshSource)] = CreateScope<MeshSourceAssetSerializer>();

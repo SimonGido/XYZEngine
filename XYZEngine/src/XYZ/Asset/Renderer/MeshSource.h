@@ -1,8 +1,7 @@
 #pragma once
-#include "Asset.h"
+#include "XYZ/Asset/Asset.h"
 
 #include "XYZ/Renderer/Buffer.h"
-#include "XYZ/Scene/Scene.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
@@ -40,15 +39,11 @@ namespace XYZ {
 	};
 	struct BoneInfo
 	{
-		glm::vec3 Translation;
-		glm::quat Rotation;
-		glm::vec3 Scale;
-
 		glm::mat4 BoneOffset;
 		glm::mat4 Transformation;
 		glm::mat4 FinalTransformation;
 	};
-	class Animation;
+
 	class MeshSource : public Asset
 	{
 	public:
@@ -59,8 +54,7 @@ namespace XYZ {
 		const std::vector<AnimatedVertex>& GetAnimatedVertices() const { return m_AnimatedVertices; }
 		const std::vector<Vertex>&		   GetVertices() const { return m_StaticVertices; }
 		const std::vector<uint32_t>&	   GetIndices() const { return m_Indices; }
-		const std::vector<Ref<Animation>>& GetAnimations() const;
-
+		
 		const std::unordered_map<std::string, uint32_t> GetBoneMapping() const { return m_BoneMapping; }
 		const std::vector<BoneInfo>						GetBoneInfo() const { return m_BoneInfo; }
 
@@ -74,16 +68,13 @@ namespace XYZ {
 
 		static AssetType	GetStaticType() { return AssetType::MeshSource; }
 
-		SceneEntity CreateBoneHierarchy(Ref<Scene> scene);
-
 	private:
 		void loadMeshes(const aiScene* scene);
 		void loadBones(const aiScene* scene);
 		void loadAnimations(const aiScene* scene);
 
-		void readNodeHierarchy(const aiNode* node, const aiAnimation* aiAnim, Ref<Animation>& animation, const std::string& parentPath);
+		void readNodeHierarchy(const aiNode* node, const aiAnimation* aiAnim);
 		void readNodeHierarchyTransforms(const aiNode* node, const aiAnimation* aiAnim, const glm::mat4& parentTransform);
-		void createNodeHierarchy(const aiNode* node, SceneEntity parentEntity, Ref<Scene>& scene, SceneEntity& root);
 
 		const aiNodeAnim* findNodeAnim(const aiAnimation* animation, const std::string& nodeName) const;
 	private:
@@ -94,7 +85,6 @@ namespace XYZ {
 		std::vector<Vertex>			m_StaticVertices;
 		std::vector<uint32_t>		m_Indices;
 
-		std::vector<Ref<Animation>> m_Animations;
 
 		std::unordered_map<std::string, uint32_t> m_BoneMapping;
 		glm::mat4								  m_InverseTransform;

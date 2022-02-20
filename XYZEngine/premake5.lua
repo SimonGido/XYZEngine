@@ -60,6 +60,7 @@ project "XYZEngine"
 			"vendor/stb_image",		
 			"vendor/assimp/include",
 			"vendor/spdlog/include",
+			"%{IncludeDir.ozz_animation}",
 			"%{IncludeDir.Assimp}",
 			"%{IncludeDir.delaunator}",
 			"%{IncludeDir.ImGui}",
@@ -90,6 +91,9 @@ project "XYZEngine"
 			"ImGui",
 			"box2d",
 			"optick",
+			"ozz_base",
+			"ozz_animation",
+			"ozz_animation_offline",   
 			"%{LibraryDir.mono}",
 			"%{Library.Vulkan}",
 			"%{Library.VulkanUtils}"

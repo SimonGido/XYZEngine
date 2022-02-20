@@ -5,7 +5,7 @@
 #include "XYZ/Renderer/VertexArray.h"
 #include "XYZ/Renderer/Buffer.h"
 
-#include "XYZ/Asset/MeshSource.h"
+#include "XYZ/Asset/Renderer/MeshSource.h"
 
 #include <glm/glm.hpp>
 

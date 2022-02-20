@@ -1,5 +1,5 @@
 #pragma once
-#include "Asset.h"
+#include "XYZ/Asset/Asset.h"
 
 #include "XYZ/Renderer/Buffer.h"
 #include "XYZ/Renderer/Shader.h"

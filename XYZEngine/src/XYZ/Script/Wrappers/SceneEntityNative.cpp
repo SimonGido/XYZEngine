@@ -2,11 +2,10 @@
 #include "SceneEntityNative.h"
 #include "XYZ/Scene/SceneEntity.h"
 
-#include "XYZ/Animation/AnimatorController.h"
-
-
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
+
+#include "XYZ/Scene/Components.h"
 
 
 
@@ -94,7 +93,6 @@ namespace XYZ {
 			REGISTER_COMPONENT_TYPE(SpriteRenderer);
 			REGISTER_COMPONENT_TYPE(ScriptComponent);
 			REGISTER_COMPONENT_TYPE(CameraComponent);
-			REGISTER_COMPONENT_TYPE(AnimatorComponent);
 			REGISTER_COMPONENT_TYPE(ParticleComponent);
 			REGISTER_COMPONENT_TYPE(Relationship);
 			REGISTER_COMPONENT_TYPE(PointLight2D);

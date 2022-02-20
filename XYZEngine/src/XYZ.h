@@ -27,9 +27,8 @@
 #include "XYZ/Renderer/MeshFactory.h"
 
 //-----Animation-----//
-#include "XYZ/Animation/Animation.h"
-
-
+#include "XYZ/Asset/Animation/SkeletonAsset.h"
+#include "XYZ/Asset/Animation/AnimationAsset.h"
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"

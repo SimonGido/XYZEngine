@@ -19,6 +19,7 @@ project "XYZEditor"
 			"%{wks.location}/XYZEngine/vendor/spdlog/include",
 			"%{wks.location}/XYZEngine/vendor",
 			"%{wks.location}/XYZEngine/src",
+			"%{IncludeDir.ozz_animation}",
 			"%{IncludeDir.ImGui}",
 			"%{IncludeDir.ImGuizmo}",
 			"%{IncludeDir.yaml}",

@@ -58,11 +58,15 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::AnimationEditor>("AnimationEditor");
 
 
+			auto animation = Ref<Animation>::Create();
+			//animation->Vec3Tracks.emplace_back(TrackType::Translation, "Havko");
+			//animation->Vec3Tracks.emplace_back(TrackType::Rotation, "Havko");
+			//animation->Vec3Tracks.emplace_back(TrackType::Scale, "Havko");
+			m_EditorManager.GetPanel<Editor::AnimationEditor>("AnimationEditor")->SetContext(animation);
+
 			SceneEntity newEntity = m_Scene->CreateEntity("Havko", GUID());
 			SceneEntity childEntity = m_Scene->CreateEntity("Child", newEntity, GUID());
 
-			Ref<Animator> animator = Ref<Animator>::Create();
-			Ref<Animation> animation = AssetManager::GetAsset<Animation>("Assets/Animations/HavkoAnim.anim");
 			
 			ParticleRenderer& particleRenderer = newEntity.AddComponent<ParticleRenderer>(
 				ParticleRenderer
@@ -78,17 +82,13 @@ namespace XYZ {
 			spriteRenderer.Material = spriteMaterial;
 			spriteRenderer.SubTexture = Ref<SubTexture>::Create(Texture2D::Create("Assets/Textures/1_ORK_head.png"));
 
-			auto& animatorComp = newEntity.EmplaceComponent<AnimatorComponent>();
-			animatorComp.Animator = animator;
-	
-			animator->SetSceneEntity(newEntity);
-			animator->AddAnimation("Default", animation);
 
 
 			auto meshSource = Ref<MeshSource>::Create("Resources/Meshes/man.fbx");
-			SceneEntity entity = meshSource->CreateBoneHierarchy(m_Scene);
-			m_EditorManager.GetPanel<Editor::AnimationEditor>("AnimationEditor")->SetContext(meshSource->GetAnimations()[0]);
+			auto skeleton = Ref<SkeletonAsset>::Create("Resources/Meshes/man.fbx");
+			auto animationAsset = Ref<AnimationAsset>::Create("Resources/Meshes/man.fbx", "Armature|Walk", skeleton);
 
+			SceneEntity entity = m_Scene->CreateEntity("Anim", GUID());
 
 			Ref<ShaderAsset> meshAnimShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/AnimMeshShader.shader");
 			auto animMeshMaterialAsset = Ref<MaterialAsset>::Create(meshAnimShaderAsset);
@@ -102,8 +102,7 @@ namespace XYZ {
 			scenePanel->SetSceneRenderer(m_SceneRenderer);
 			m_EditorCamera = &scenePanel->GetEditorCamera();
 			
-			
-
+		
 			Renderer::WaitAndRenderAll();
 		}
 

@@ -8,6 +8,7 @@ group "Dependencies"
 		include "XYZEngine/vendor/imgui"
 		include "XYZEngine/vendor/box2d"
 		include "XYZEngine/vendor/optick"
+		include "XYZEngine/vendor/ozz-animation"
 group ""
 
 include "XYZEngine"

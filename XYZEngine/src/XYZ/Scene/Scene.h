@@ -32,7 +32,7 @@ namespace XYZ {
     class Renderer2D;
     class SceneRenderer;
     class SceneEntity;
-    class SpriteRenderer;
+    struct SpriteRenderer;
     class TransformComponent;
 
     namespace Editor {
@@ -77,7 +77,6 @@ namespace XYZ {
         void onScriptComponentDestruct(ECSManager& ecs, Entity entity);
 
         void updateHierarchy();
-        void updateBones();
         void setupPhysics();
 
         void sortSpriteRenderers();

@@ -8,7 +8,7 @@
 #include "PipelineCompute.h"
 #include "MaterialInstance.h"
 
-#include "XYZ/Asset/MaterialAsset.h"
+#include "XYZ/Asset/Renderer/MaterialAsset.h"
 
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"

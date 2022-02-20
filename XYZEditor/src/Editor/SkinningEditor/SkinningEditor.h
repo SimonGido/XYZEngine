@@ -7,7 +7,7 @@
 #include "XYZ/Renderer/StorageBufferSet.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Mesh.h"
-#include "XYZ/Asset/MaterialAsset.h"
+#include "XYZ/Asset/Renderer/MaterialAsset.h"
 
 namespace XYZ {
 	namespace Editor {

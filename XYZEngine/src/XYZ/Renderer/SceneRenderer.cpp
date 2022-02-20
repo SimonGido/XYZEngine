@@ -740,7 +740,8 @@ namespace XYZ {
 		FramebufferSpecification framebufferSpec;
 		framebufferSpec.Attachments = {
 				FramebufferTextureSpecification(ImageFormat::RGBA32F),
-				FramebufferTextureSpecification(ImageFormat::RGBA32F)
+				FramebufferTextureSpecification(ImageFormat::RGBA32F),
+				FramebufferTextureSpecification(ImageFormat::DEPTH24STENCIL8)
 		};
 		framebufferSpec.Samples = 1;
 		framebufferSpec.ClearOnLoad = false;
@@ -921,6 +922,8 @@ namespace XYZ {
 		spec.RenderPass = m_GeometryPass;
 		spec.Shader = shader;
 		spec.Topology = PrimitiveTopology::Triangles;
+		spec.DepthTest = true;
+		spec.DepthWrite = true;
 
 		auto& pipeline = m_GeometryPipelines[shader->GetHash()];
 		pipeline = Pipeline::Create(spec);

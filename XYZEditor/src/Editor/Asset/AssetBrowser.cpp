@@ -8,7 +8,6 @@
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Renderer/Font.h"
-#include "XYZ/Animation/Animation.h"
 #include "XYZ/ImGui/ImGui.h"
 
 #include "XYZ/Debug/Profiler.h"
@@ -141,12 +140,6 @@ namespace XYZ {
 				const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Scene", ".xyz");
 				Ref<XYZ::Scene> scene = Ref<XYZ::Scene>::Create("");
 
-				ImGui::CloseCurrentPopup();
-			}
-			else if (ImGui::MenuItem("Create Animation"))
-			{
-				const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Animation", ".anim");
-				Ref<XYZ::Animation> animation = Ref<XYZ::Animation>::Create();
 				ImGui::CloseCurrentPopup();
 			}
 		}

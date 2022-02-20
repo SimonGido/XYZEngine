@@ -23,6 +23,7 @@ namespace XYZ {
 		MeshSource,
 		Animation,
 		Animator,
+		Skeleton,
 		NumTypes
 	};
 
@@ -52,6 +53,7 @@ namespace XYZ {
 			if (assetType == "MeshSource")		  return AssetType::MeshSource;
 			if (assetType == "Animation")		  return AssetType::Animation;
 			if (assetType == "Animator")		  return AssetType::Animator;
+			if (assetType == "Skeleton")		  return AssetType::Skeleton;
 			
 
 			XYZ_ASSERT(false, "Unknown Asset Type");
@@ -75,6 +77,7 @@ namespace XYZ {
 			case XYZ::AssetType::MeshSource:		return "MeshSource";
 			case XYZ::AssetType::Animation:			return "Animation";
 			case XYZ::AssetType::Animator:			return "Animator";
+			case XYZ::AssetType::Skeleton:			return "Skeleton";
 			default:
 				break;
 			}
@@ -91,7 +94,10 @@ namespace XYZ {
 	public:
 		virtual ~Asset() = default;
 	
+		virtual AssetType GetAssetType() const { return AssetType::None; }
 		const AssetHandle& GetHandle() const { return m_Handle; }
+		
+		bool IsValid() const { return ((m_Flags & (uint16_t)AssetFlag::Missing) | (m_Flags & (uint16_t)AssetFlag::Invalid)) == 0; }
 
 		static AssetType GetStaticType() { return AssetType::None; }
 
@@ -103,9 +109,11 @@ namespace XYZ {
 			else
 				m_Flags &= ~(uint16_t)flag;
 		}
+
+		
 	private:
 		AssetHandle m_Handle;
-		uint16_t    m_Flags;
+		uint16_t    m_Flags = 0;
 
 		friend class AssetManager;
 		friend class AssetImporter;

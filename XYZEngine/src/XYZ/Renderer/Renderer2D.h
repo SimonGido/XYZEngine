@@ -7,7 +7,7 @@
 #include "RenderCommandBuffer.h"
 #include "UniformBufferSet.h"
 #include "SubTexture.h"
-#include "XYZ/Asset/MaterialAsset.h"
+#include "XYZ/Asset/Renderer/MaterialAsset.h"
 
 #include <glm/glm.hpp>
 

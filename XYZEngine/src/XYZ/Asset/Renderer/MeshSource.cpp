@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "MeshSource.h"
-
-#include "XYZ/Animation/Animation.h"
+#include "XYZ/Asset/AssimpImporter.h"
+#include "XYZ/Asset/AssimpLog.h"
 
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -38,22 +38,6 @@ namespace XYZ {
 		aiProcess_GlobalScale |             // e.g. convert cm to m for fbx import (and other formats where cm is native)
 		aiProcess_ValidateDataStructure;    // Validation
 
-	struct LogStream : public Assimp::LogStream
-	{
-		static void Initialize()
-		{
-			if (Assimp::DefaultLogger::isNullLogger())
-			{
-				Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE);
-				Assimp::DefaultLogger::get()->attachStream(new LogStream, Assimp::Logger::Err | Assimp::Logger::Warn);
-			}
-		}
-
-		virtual void write(const char* message) override
-		{
-			XYZ_ERROR("Assimp error: {0}", message);
-		}
-	};
 
 	MeshSource::MeshSource(const std::string& filepath)
 		:
@@ -108,16 +92,7 @@ namespace XYZ {
 		m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), static_cast<uint32_t>(m_AnimatedVertices.size() * sizeof(AnimatedVertex)));
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), static_cast<uint32_t>(m_Indices.size()));
 	}
-	const std::vector<Ref<Animation>>& MeshSource::GetAnimations() const
-	{
-		return m_Animations;
-	}
-	SceneEntity MeshSource::CreateBoneHierarchy(Ref<Scene> scene)
-	{
-		SceneEntity root;
-		createNodeHierarchy(m_Scene->mRootNode, SceneEntity(), scene, root);
-		return root;
-	}
+
 	void MeshSource::loadMeshes(const aiScene* scene)
 	{
 		for (unsigned m = 0; m < scene->mNumMeshes; m++)
@@ -201,73 +176,51 @@ namespace XYZ {
 		for (uint32_t i = 0; i < scene->mNumAnimations; ++i)
 		{
 			const aiAnimation* aiAnim = scene->mAnimations[i];
-			Ref<Animation> animation = m_Animations.emplace_back(Ref<Animation>::Create());
-			readNodeHierarchy(scene->mRootNode, aiAnim, animation, "");
+			readNodeHierarchy(scene->mRootNode, aiAnim);
 			readNodeHierarchyTransforms(scene->mRootNode, aiAnim, glm::mat4(1.0f));
 		}
 	}
 
-	void MeshSource::readNodeHierarchy(const aiNode* node, const aiAnimation* aiAnim, Ref<Animation>& animation, const std::string& parentPath)
+	void MeshSource::readNodeHierarchy(const aiNode* node, const aiAnimation* aiAnim)
 	{
 		std::string name(node->mName.data);
 		glm::mat4 nodeTransform(Utils::Mat4FromAssimpMat4(node->mTransformation));
 		const aiNodeAnim* nodeAnim = findNodeAnim(aiAnim, name);
 
-		std::string path;
 		if (m_BoneMapping.find(name) != m_BoneMapping.end())
 		{
-			path = name;
-
-			if (!parentPath.empty())
-				path = parentPath + "/" + path;
-
 			if (nodeAnim)
 			{
 				if (nodeAnim->mNumPositionKeys > 1)
 				{
-					auto prop = animation->AddProperty<BoneComponent, glm::vec3, 0>(path);
 					for (uint32_t key = 0; key < nodeAnim->mNumPositionKeys; ++key)
 					{
-						const uint32_t frame = nodeAnim->mPositionKeys[key].mTime / animation->GetFrameLength();
 						const auto val = nodeAnim->mPositionKeys[key].mValue;
 						glm::vec3 value = { val.x , val.y , val.z };
-						prop->AddKeyFrame({ value, frame });
 					}
 				}
 				if (nodeAnim->mNumRotationKeys > 1)
 				{
-					auto prop = animation->AddProperty<BoneComponent, glm::quat, 1>(path);
 					for (uint32_t key = 0; key < nodeAnim->mNumRotationKeys; ++key)
 					{
-						const uint32_t frame = nodeAnim->mRotationKeys[key].mTime / animation->GetFrameLength();
 						auto rotV = nodeAnim->mRotationKeys[key].mValue;
 						glm::quat value = glm::quat(rotV.w, rotV.x, rotV.y, rotV.z);
-						prop->AddKeyFrame({ value, frame });
+						
 					}
 				}
 				if (nodeAnim->mNumPositionKeys > 1)
 				{
-					auto prop = animation->AddProperty<BoneComponent, glm::vec3, 2>(path);
 					for (uint32_t key = 0; key < nodeAnim->mNumScalingKeys; ++key)
 					{
-						const uint32_t frame = nodeAnim->mScalingKeys[key].mTime / animation->GetFrameLength();
 						const auto val = nodeAnim->mScalingKeys[key].mValue;
 						glm::vec3 value = { val.x , val.y , val.z };
-						prop->AddKeyFrame({ value, frame });
 					}
 				}
 			}
 		}
-		if (node != m_Scene->mRootNode)
-		{
-			for (uint32_t i = 0; i < node->mNumChildren; i++)
-				readNodeHierarchy(node->mChildren[i], aiAnim, animation, path);
-		}
-		else
-		{
-			for (uint32_t i = 0; i < node->mNumChildren; i++)
-				readNodeHierarchy(node->mChildren[i], aiAnim, animation, "");
-		}
+
+		for (uint32_t i = 0; i < node->mNumChildren; i++)
+			readNodeHierarchy(node->mChildren[i], aiAnim);
 	}
 
 	void MeshSource::readNodeHierarchyTransforms(const aiNode* node, const aiAnimation* aiAnim, const glm::mat4& parentTransform)
@@ -295,10 +248,6 @@ namespace XYZ {
 		if (m_BoneMapping.find(name) != m_BoneMapping.end() && nodeAnim)
 		{
 			uint32_t BoneIndex = m_BoneMapping[name];
-			m_BoneInfo[BoneIndex].Translation = translation;
-			m_BoneInfo[BoneIndex].Rotation = rotation;
-			m_BoneInfo[BoneIndex].Scale = scale;
-
 			m_BoneInfo[BoneIndex].Transformation = nodeTransform * m_BoneInfo[BoneIndex].BoneOffset;
 			m_BoneInfo[BoneIndex].FinalTransformation = m_InverseTransform * transform * m_BoneInfo[BoneIndex].BoneOffset;
 		}
@@ -306,34 +255,7 @@ namespace XYZ {
 			readNodeHierarchyTransforms(node->mChildren[i], aiAnim, transform);
 	}
 
-	void MeshSource::createNodeHierarchy(const aiNode* node, SceneEntity parentEntity, Ref<Scene>& scene, SceneEntity& root)
-	{
-		std::string name(node->mName.data);
-		glm::mat4 nodeTransform(Utils::Mat4FromAssimpMat4(node->mTransformation));
-		SceneEntity newEntity;
-
-		if (m_BoneMapping.find(name) != m_BoneMapping.end())
-		{
-			if (parentEntity.IsValid())
-			{
-				newEntity = scene->CreateEntity(name, parentEntity, GUID());
-			}
-			else
-			{
-				newEntity = scene->CreateEntity(name, GUID());
-				root = newEntity;
-			}
-			auto& boneComponent = newEntity.EmplaceComponent<BoneComponent>();
-			uint32_t BoneIndex = m_BoneMapping[name];
-			boneComponent.DecomposeTransform(m_BoneInfo[BoneIndex].Transformation);
-			boneComponent.Scale = m_BoneInfo[BoneIndex].Scale;
-			boneComponent.BoneIndex = BoneIndex;
-			boneComponent.WorldTransform = m_BoneInfo[BoneIndex].FinalTransformation;
-		}
-		
-		for (uint32_t i = 0; i < node->mNumChildren; i++)
-			createNodeHierarchy(node->mChildren[i], newEntity, scene, root);
-	}
+	
 
 	const aiNodeAnim* MeshSource::findNodeAnim(const aiAnimation* animation, const std::string& nodeName) const
 	{
