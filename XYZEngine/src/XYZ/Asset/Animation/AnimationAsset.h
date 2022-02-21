@@ -24,6 +24,8 @@ namespace XYZ {
 	{
 	public:
 		AnimationAsset(const std::string& filename, const std::string& animationName, Ref<SkeletonAsset> skeleton);
+		AnimationAsset(const aiScene* scene, const std::string& filename, const std::string& animationName, Ref<SkeletonAsset> skeleton);
+
 		virtual ~AnimationAsset() = default;
 
 		const std::string& GetFilePath() const { return m_FilePath; }
@@ -34,16 +36,12 @@ namespace XYZ {
 
 		const ozz::animation::Animation& GetAnimation() const { XYZ_ASSERT(m_Animation, "Attempted to access null animation!"); return *m_Animation; }
 
-	private:
-		AnimationAsset(const aiScene* scene, const std::string& filename, const std::string& animationName, Ref<SkeletonAsset> skeleton);
-
+	private:	
 		void load(const aiScene* scene, const std::string& animationName, Ref<SkeletonAsset> skeleton);
 
 	private:
 		ozz::unique_ptr<ozz::animation::Animation> m_Animation;
 		std::string m_FilePath;
 		std::string m_AnimationName;
-
-		friend class AssimpModelSerializer;
 	};
 }

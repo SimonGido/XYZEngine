@@ -106,6 +106,10 @@ namespace XYZ
 		return s_Registry.GetMetadata(handle) != nullptr;
 	}
 
+	bool AssetManager::Exist(const std::filesystem::path& filepath)
+	{
+		return s_Registry.GetMetadata(filepath) != nullptr;
+	}
 
 	void AssetManager::loadAssetMetadata(const std::filesystem::path& filepath)
 	{

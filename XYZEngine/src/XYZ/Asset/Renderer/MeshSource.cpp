@@ -66,29 +66,43 @@ namespace XYZ {
 		m_IsAnimated = scene->mAnimations != nullptr;
 		m_InverseTransform = glm::inverse(Utils::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
 		loadMeshes(m_Scene);
-		
-		ozz::animation::offline::RawSkeleton rawSkeleton;
-		if (AssimpImporter::ExtractRawSkeleton(scene, rawSkeleton))
-		{
-			ozz::animation::offline::SkeletonBuilder builder;
-			m_Skeleton = builder(rawSkeleton);
-			if (!m_Skeleton)
-				XYZ_ERROR("Failed to build runtime skeleton from file {0}", filepath);
-		}
-		else
-		{
-			XYZ_ERROR("No skeleton in file {0}", filepath);
-		}
-		loadBones(m_Scene);
+		loadSkeleton(m_Scene);
+		loadBoneInfo(m_Scene);
+		traverseNodes(scene->mRootNode, glm::mat4(1.0f));
 
 		if (m_IsAnimated)
-		{
-			loadAnimations(m_Scene);		
 			m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), static_cast<uint32_t>(m_AnimatedVertices.size() * sizeof(AnimatedVertex)));
-		}
 		else
 			m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), static_cast<uint32_t>(m_StaticVertices.size() * sizeof(Vertex)));
 		
+		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), static_cast<uint32_t>(m_Indices.size()));
+	}
+	MeshSource::MeshSource(const aiScene* scene, const std::string& filepath)
+		:
+		m_SourceFilePath(filepath)
+	{
+		m_Scene = scene;
+		if (!scene || !scene->HasMeshes() || scene->mNumMeshes > 1)
+		{
+			XYZ_ERROR("Failed to load mesh file: {0}", m_SourceFilePath);
+			SetFlag(AssetFlag::Invalid);
+			return;
+		}
+
+		m_Scene = scene;
+
+		m_IsAnimated = scene->mAnimations != nullptr;
+		m_InverseTransform = glm::inverse(Utils::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
+		loadMeshes(m_Scene);
+		loadSkeleton(m_Scene);
+		loadBoneInfo(m_Scene);
+		traverseNodes(scene->mRootNode, glm::mat4(1.0f));
+
+		if (m_IsAnimated)
+			m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), static_cast<uint32_t>(m_AnimatedVertices.size() * sizeof(AnimatedVertex)));
+		else
+			m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), static_cast<uint32_t>(m_StaticVertices.size() * sizeof(Vertex)));
+
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), static_cast<uint32_t>(m_Indices.size()));
 	}
 	MeshSource::MeshSource(std::vector<Vertex> vertices, std::vector<uint32_t> indices)
@@ -112,6 +126,23 @@ namespace XYZ {
 	{
 		m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), static_cast<uint32_t>(m_AnimatedVertices.size() * sizeof(AnimatedVertex)));
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), static_cast<uint32_t>(m_Indices.size()));
+	}
+	
+
+	void MeshSource::loadSkeleton(const aiScene* scene)
+	{
+		ozz::animation::offline::RawSkeleton rawSkeleton;
+		if (AssimpImporter::ExtractRawSkeleton(scene, rawSkeleton))
+		{
+			ozz::animation::offline::SkeletonBuilder builder;
+			m_Skeleton = builder(rawSkeleton);
+			if (!m_Skeleton)
+				XYZ_ERROR("Failed to build runtime skeleton from file {0}", m_SourceFilePath);
+		}
+		else
+		{
+			XYZ_ERROR("No skeleton in file {0}", m_SourceFilePath);
+		}
 	}
 
 	void MeshSource::loadMeshes(const aiScene* scene)
@@ -153,7 +184,7 @@ namespace XYZ {
 		}
 	}
 
-	void MeshSource::loadBones(const aiScene* scene)
+	void MeshSource::loadBoneInfo(const aiScene* scene)
 	{
 		if (m_IsAnimated)
 		{
@@ -172,18 +203,9 @@ namespace XYZ {
 						boneIndex = m_BoneCount;
 						m_BoneCount++;
 						BoneInfo bi;
-						uint32_t jointIndex = ~0;
-						for (size_t j = 0; j < m_Skeleton->joint_names().size(); ++j)
-						{
-							if (boneName == m_Skeleton->joint_names()[j])
-							{
-								jointIndex = static_cast<int>(j);
-								break;
-							}
-						}
-						bi.JointIndex = jointIndex;
+						bi.BoneOffset = Utils::Mat4FromAssimpMat4(bone->mOffsetMatrix);
+						bi.JointIndex = findJointIndex(boneName);
 						m_BoneInfo.push_back(bi);
-						m_BoneInfo[boneIndex].BoneOffset = Utils::Mat4FromAssimpMat4(bone->mOffsetMatrix);
 						m_BoneMapping[boneName] = boneIndex;
 					}
 					else
@@ -201,104 +223,31 @@ namespace XYZ {
 			}
 		}
 	}
-
-	void MeshSource::loadAnimations(const aiScene* scene)
+	void MeshSource::traverseNodes(aiNode* node, const glm::mat4& parentTransform)
 	{
-		for (uint32_t i = 0; i < scene->mNumAnimations; ++i)
+		glm::mat4 localTransform = Utils::Mat4FromAssimpMat4(node->mTransformation);
+		glm::mat4 transform = parentTransform * localTransform;
+		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
-			const aiAnimation* aiAnim = scene->mAnimations[i];
-			readNodeHierarchy(scene->mRootNode, aiAnim);
-			readNodeHierarchyTransforms(scene->mRootNode, aiAnim, glm::mat4(1.0f));
+			// TODO: for every submesh
+			m_Transform = transform;
 		}
+		for (uint32_t i = 0; i < node->mNumChildren; i++)
+			traverseNodes(node->mChildren[i], transform);
 	}
-
-	void MeshSource::readNodeHierarchy(const aiNode* node, const aiAnimation* aiAnim)
+	uint32_t MeshSource::findJointIndex(const std::string& name) const
 	{
-		std::string name(node->mName.data);
-		glm::mat4 nodeTransform(Utils::Mat4FromAssimpMat4(node->mTransformation));
-		const aiNodeAnim* nodeAnim = findNodeAnim(aiAnim, name);
-
-		if (m_BoneMapping.find(name) != m_BoneMapping.end())
+		uint32_t jointIndex = ~0;
+		for (size_t j = 0; j < m_Skeleton->joint_names().size(); ++j)
 		{
-			if (nodeAnim)
+			if (name == m_Skeleton->joint_names()[j])
 			{
-				if (nodeAnim->mNumPositionKeys > 1)
-				{
-					for (uint32_t key = 0; key < nodeAnim->mNumPositionKeys; ++key)
-					{
-						const auto val = nodeAnim->mPositionKeys[key].mValue;
-						glm::vec3 value = { val.x , val.y , val.z };
-					}
-				}
-				if (nodeAnim->mNumRotationKeys > 1)
-				{
-					for (uint32_t key = 0; key < nodeAnim->mNumRotationKeys; ++key)
-					{
-						auto rotV = nodeAnim->mRotationKeys[key].mValue;
-						glm::quat value = glm::quat(rotV.w, rotV.x, rotV.y, rotV.z);
-						
-					}
-				}
-				if (nodeAnim->mNumPositionKeys > 1)
-				{
-					for (uint32_t key = 0; key < nodeAnim->mNumScalingKeys; ++key)
-					{
-						const auto val = nodeAnim->mScalingKeys[key].mValue;
-						glm::vec3 value = { val.x , val.y , val.z };
-					}
-				}
+				jointIndex = static_cast<int>(j);
+				break;
 			}
 		}
-
-		for (uint32_t i = 0; i < node->mNumChildren; i++)
-			readNodeHierarchy(node->mChildren[i], aiAnim);
+		return jointIndex;
 	}
-
-	void MeshSource::readNodeHierarchyTransforms(const aiNode* node, const aiAnimation* aiAnim, const glm::mat4& parentTransform)
-	{
-		std::string name(node->mName.data);
-		glm::mat4 nodeTransform(Utils::Mat4FromAssimpMat4(node->mTransformation));
-		const aiNodeAnim* nodeAnim = findNodeAnim(aiAnim, name);
-		
-		glm::vec3 translation{}, scale{};
-		glm::quat rotation{};
-		
-		if (nodeAnim)
-		{		
-			auto transV = nodeAnim->mPositionKeys[0].mValue;
-			auto rotV = nodeAnim->mRotationKeys[0].mValue;
-			auto scaleV = nodeAnim->mScalingKeys[0].mValue;
-
-			translation = { transV.x, transV.y, transV.z };
-			rotation = { rotV.w, rotV.x, rotV.y, rotV.z };
-			scale = { scaleV.x, scaleV.y, scaleV.z };
-			nodeTransform = glm::translate(glm::mat4(1.0f), translation) * glm::toMat4(rotation) * glm::scale(glm::mat4(1.0f), scale);
-		}
-		glm::mat4 transform = parentTransform * nodeTransform;
-
-		if (m_BoneMapping.find(name) != m_BoneMapping.end() && nodeAnim)
-		{
-			uint32_t BoneIndex = m_BoneMapping[name];
-			m_BoneInfo[BoneIndex].Transformation = nodeTransform * m_BoneInfo[BoneIndex].BoneOffset;
-			m_BoneInfo[BoneIndex].FinalTransformation = m_InverseTransform * transform * m_BoneInfo[BoneIndex].BoneOffset;
-		}
-		for (uint32_t i = 0; i < node->mNumChildren; i++)
-			readNodeHierarchyTransforms(node->mChildren[i], aiAnim, transform);
-	}
-
-	
-
-	const aiNodeAnim* MeshSource::findNodeAnim(const aiAnimation* animation, const std::string& nodeName) const
-	{
-		for (uint32_t i = 0; i < animation->mNumChannels; i++)
-		{
-			const aiNodeAnim* nodeAnim = animation->mChannels[i];
-			if (std::string(nodeAnim->mNodeName.data) == nodeName)
-				return nodeAnim;
-		}
-		return nullptr;
-	}
-
 	void AnimatedVertex::AddBoneData(uint32_t boneID, float weight)
 	{
 		for (size_t i = 0; i < 4; i++)

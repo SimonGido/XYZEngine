@@ -249,19 +249,7 @@ namespace XYZ {
 		glm::decompose(transform, Scale, rotation, Translation, skew, perspective);
 		Rotation = glm::eulerAngles(rotation);
 	}
-	glm::mat4 BoneComponent::GetTransform() const
-	{
-		return glm::translate(glm::mat4(1.0f), Translation)
-			* glm::toMat4(Rotation)
-			* glm::scale(glm::mat4(1.0f), Scale);
-	}
-	void BoneComponent::DecomposeTransform(const glm::mat4& transform)
-	{
-		glm::vec3 skew;
-		glm::vec4 perspective;
-
-		glm::decompose(transform, Scale, Rotation, Translation, skew, perspective);
-	}
+	
 	MeshComponent::MeshComponent(const Ref<XYZ::Mesh>& mesh, const Ref<XYZ::MaterialAsset>& materialAsset)
 		:
 		Mesh(mesh), MaterialAsset(materialAsset)

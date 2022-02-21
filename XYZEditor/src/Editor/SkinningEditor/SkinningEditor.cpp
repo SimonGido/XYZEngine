@@ -182,8 +182,7 @@ namespace XYZ {
 			const float height = m_Context->GetTexCoords().w - m_Context->GetTexCoords().y;
 
 			m_ContextAspectRatio = width / height;
-			m_Mesh = MeshFactory::CreateQuad(glm::vec2(m_ContextAspectRatio, 1.0f), m_Context->GetTexCoords());
-		
+
 			glm::mat4 bone(1.0f);
 			m_BoneTransformsStorageSet->Update(&bone, sizeof(glm::mat4), 0, 0, 2);
 			m_TransformsVertexBuffer->Update(&bone, sizeof(glm::mat4));

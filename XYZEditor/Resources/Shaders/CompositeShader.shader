@@ -1,6 +1,6 @@
 Name: CompositeShader
 FilePath: Resources/Shaders/CompositeShader.glsl
-SourceHash: 15880334818352445824
+SourceHash: 15880334818
 Layouts:
   - Instanced: false
     Elements:

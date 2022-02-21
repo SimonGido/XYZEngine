@@ -54,7 +54,6 @@ namespace XYZ {
 		m_ViewportWidth(0),
 		m_ViewportHeight(0)
 	{
-		m_ECS.CreateStorage<BoneComponent>();
 		m_ECS.CreateStorage<ScriptComponent>();
 		m_SceneEntity = m_ECS.CreateEntity();
 
@@ -337,7 +336,8 @@ namespace XYZ {
 			std::vector<glm::mat4> boneTransforms(boneInfo.size());
 			for (size_t i = 0; i < boneInfo.size(); ++i)
 			{
-				boneTransforms[i] = transforms[boneInfo[i].JointIndex] * boneInfo[i].BoneOffset;
+				const uint32_t jointIndex = boneInfo[i].JointIndex;
+				boneTransforms[i] = transforms[jointIndex] * boneInfo[i].BoneOffset;
 			}
 			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, boneTransforms, meshComponent.OverrideMaterial);
 		}

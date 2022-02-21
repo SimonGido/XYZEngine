@@ -87,7 +87,7 @@ namespace XYZ {
 		static const MemoryPool&    GetMemoryPool() { return s_Pool; }
 
 		static bool Exist(const AssetHandle& handle);
-
+		static bool Exist(const std::filesystem::path& filepath);
 
 		static std::shared_ptr<FileWatcher> GetFileWatcher() { return s_FileWatcher; }
 	private:

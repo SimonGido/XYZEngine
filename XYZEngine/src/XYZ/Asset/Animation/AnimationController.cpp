@@ -22,7 +22,6 @@ namespace XYZ {
 			ratio = 0.0f;
 		}
 
-		std::cout << ratio << std::endl;
 		ozz::animation::SamplingJob sampling_job;
 		sampling_job.animation = &Animation->GetAnimation();
 		sampling_job.context = &m_SamplingContext;

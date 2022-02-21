@@ -56,22 +56,6 @@ namespace XYZ {
 	};
 	
 
-	class BoneComponent
-	{
-	public:
-		glm::vec3 Translation = { 0.0f,0.0f,0.0f };
-		glm::quat Rotation = { 1.0f,0.0f,0.0f, 0.0f };
-		glm::vec3 Scale = { 1.0f,1.0f,1.0f };
-
-		glm::mat4 WorldTransform = glm::mat4(1.0f);
-		uint32_t BoneIndex = 0;
-		
-		glm::mat4 GetTransform() const;
-
-		void DecomposeTransform(const glm::mat4& transform);
-	};
-
-
 	struct SceneTagComponent 
 	{
 		std::string Name;

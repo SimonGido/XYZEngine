@@ -38,18 +38,19 @@ namespace XYZ {
 
 		void AddBoneData(uint32_t boneID, float weight);
 	};
+
 	struct BoneInfo
 	{
 		glm::mat4 BoneOffset;
-		glm::mat4 Transformation;
-		glm::mat4 FinalTransformation;
-		uint32_t JointIndex;
+		uint32_t  JointIndex;
 	};
+
 
 	class MeshSource : public Asset
 	{
 	public:
 		MeshSource(const std::string& filepath);
+		MeshSource(const aiScene* scene, const std::string& filepath);
 		MeshSource(std::vector<Vertex> vertices, std::vector<uint32_t> indices);
 		MeshSource(std::vector<AnimatedVertex> vertices, std::vector<uint32_t> indices);
 
@@ -62,6 +63,7 @@ namespace XYZ {
 
 		const std::string& GetSourceFilePath()   const { return m_SourceFilePath; }
 		const glm::mat4&   GetInverseTransform() const { return m_InverseTransform; }
+		const glm::mat4&   GetTransform()		 const { return m_Transform; }
 		bool			   IsAnimated()			 const { return m_IsAnimated; }
 
 
@@ -70,17 +72,15 @@ namespace XYZ {
 
 		static AssetType	GetStaticType() { return AssetType::MeshSource; }
 
-	private:
+	private:		
+		void loadSkeleton(const aiScene* scene);
 		void loadMeshes(const aiScene* scene);
-		void loadBones(const aiScene* scene);
-		void loadAnimations(const aiScene* scene);
+		void loadBoneInfo(const aiScene* scene);
+		void traverseNodes(aiNode* node, const glm::mat4& parentTransform);
 
-		void readNodeHierarchy(const aiNode* node, const aiAnimation* aiAnim);
-		void readNodeHierarchyTransforms(const aiNode* node, const aiAnimation* aiAnim, const glm::mat4& parentTransform);
-
-		const aiNodeAnim* findNodeAnim(const aiAnimation* animation, const std::string& nodeName) const;
+		uint32_t findJointIndex(const std::string& name) const;
 	private:
-		std::string m_SourceFilePath;
+		std::string						  m_SourceFilePath;
 		std::unique_ptr<Assimp::Importer> m_Importer;
 
 		std::vector<AnimatedVertex> m_AnimatedVertices;
@@ -98,5 +98,7 @@ namespace XYZ {
 
 		std::vector<BoneInfo> m_BoneInfo;
 		uint32_t			  m_BoneCount = 0;
+
+		glm::mat4			  m_Transform;
 	};
 }

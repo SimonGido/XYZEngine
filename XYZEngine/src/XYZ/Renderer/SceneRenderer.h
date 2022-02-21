@@ -369,7 +369,5 @@ namespace XYZ {
 		Ref<Mesh>			  m_TestMesh;
 		Ref<MaterialAsset>	  m_TestMaterial;
 
-		Ref<AnimatedMesh>  m_TestAnimMesh;
-		Ref<MaterialAsset> m_TestAnimMaterial;
 	};
 }

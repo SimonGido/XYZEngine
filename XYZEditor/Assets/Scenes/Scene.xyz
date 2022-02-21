@@ -1,25 +1,25 @@
 Scene: TestScene
 Entities:
-  - Entity: 54191a1a-146d-4964-8e09-692b54f15632
+  - Entity: be0e7d9e-659d-4136-ab27-dffa92b6cb1c
     SceneTagComponent:
       Name: Havko
     TransformComponent:
-      Position: [0, 0, 0]
+      Position: [-7.4000001, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteRenderer:
       Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
-      SubTexture: fa327009-dcb3-4f50-a319-2aea5e9e2435
+      SubTexture: d297fa07-dc79-48df-b836-e7bc69e9794d
       Color: [1, 1, 1, 1]
       SortLayer: 0
       Visible: true
     Relationship:
-      NextSibling: 4712cae4-2230-4e4f-942d-c95b0d3eb4e5
-      FirstChild: fd61f752-b6cc-4195-b534-ae4a22bedbb4
+      NextSibling: a85a11cb-d0e8-48e0-9398-8bb1208d8ca0
+      FirstChild: cb1b7ff6-201e-4712-94d4-27e8e98c3c28
       Depth: 1
     ParticleRenderer:
       Material: 2d5d0b92-0ea7-4b45-bd54-63521deafbda
-      Mesh: ba1ecd01-3f47-43ba-a310-9e9ee8203ff4
+      Mesh: c50069b5-102d-4427-895e-31d934876e3c
     ParticleComponent:
       MaxParticles: 50
       Speed: 1
@@ -38,9 +38,9 @@ Entities:
         Bursts:
           []
       LightUpdater:
-        LightColor: [1, 1, 1]
-        LightRadius: 1
-        LightIntensity: 1
+        LightColor: [0.0588235296, 1, 1]
+        LightRadius: 4.5
+        LightIntensity: 0.200000003
         MaxLights: 20
         Enabled: true
       TextureAnimationUpdater:
@@ -52,7 +52,7 @@ Entities:
         EulerAngles: [0, 0, 0]
         CycleLength: 5
         Enabled: true
-  - Entity: fd61f752-b6cc-4195-b534-ae4a22bedbb4
+  - Entity: cb1b7ff6-201e-4712-94d4-27e8e98c3c28
     SceneTagComponent:
       Name: Child
     TransformComponent:
@@ -60,15 +60,15 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 54191a1a-146d-4964-8e09-692b54f15632
+      Parent: be0e7d9e-659d-4136-ab27-dffa92b6cb1c
       Depth: 2
-  - Entity: 4712cae4-2230-4e4f-942d-c95b0d3eb4e5
+  - Entity: a85a11cb-d0e8-48e0-9398-8bb1208d8ca0
     SceneTagComponent:
       Name: Anim
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [100, 100, 100]
+      Scale: [1, 1, 1]
     Relationship:
-      PreviousSibling: 54191a1a-146d-4964-8e09-692b54f15632
+      PreviousSibling: be0e7d9e-659d-4136-ab27-dffa92b6cb1c
       Depth: 1

@@ -24,6 +24,7 @@ namespace XYZ {
 		Animation,
 		Animator,
 		Skeleton,
+		Prefab,
 		NumTypes
 	};
 
@@ -54,6 +55,7 @@ namespace XYZ {
 			if (assetType == "Animation")		  return AssetType::Animation;
 			if (assetType == "Animator")		  return AssetType::Animator;
 			if (assetType == "Skeleton")		  return AssetType::Skeleton;
+			if (assetType == "Prefab")			  return AssetType::Prefab;
 			
 
 			XYZ_ASSERT(false, "Unknown Asset Type");
@@ -78,6 +80,7 @@ namespace XYZ {
 			case XYZ::AssetType::Animation:			return "Animation";
 			case XYZ::AssetType::Animator:			return "Animator";
 			case XYZ::AssetType::Skeleton:			return "Skeleton";
+			case XYZ::AssetType::Prefab:			return "Prefab";
 			default:
 				break;
 			}

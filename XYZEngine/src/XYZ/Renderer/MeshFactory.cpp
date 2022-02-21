@@ -2,20 +2,7 @@
 #include "MeshFactory.h"
 
 namespace XYZ {
-	Ref<AnimatedMesh> MeshFactory::CreateQuad(const glm::vec2& size, const glm::vec4& texCoords)
-	{
-		std::vector<AnimatedVertex> quad = {
-			AnimatedVertex{glm::vec3(-size.x / 2.0f, -size.y / 2.0f, 0.0f), glm::vec2(texCoords.x, texCoords.y)},
-			AnimatedVertex{glm::vec3( size.x / 2.0f, -size.y / 2.0f, 0.0f), glm::vec2(texCoords.z, texCoords.y)},
-			AnimatedVertex{glm::vec3( size.x / 2.0f,  size.y / 2.0f, 0.0f), glm::vec2(texCoords.z, texCoords.w)},
-			AnimatedVertex{glm::vec3(-size.x / 2.0f,  size.y / 2.0f, 0.0f), glm::vec2(texCoords.x, texCoords.w)}
-		};
-		std::vector<uint32_t> indices = {
-			0, 1, 2, 2, 3, 0
-		};
-		
-		return Ref<AnimatedMesh>::Create(Ref<MeshSource>::Create(quad, indices));
-	}
+	
 	Ref<Mesh> MeshFactory::CreateQuad(const glm::vec2& size, const BufferLayout& layout)
     {
 	    //const Vertex quad[4] = {
@@ -36,42 +23,7 @@ namespace XYZ {
 		return result;
 	}
 
-	Ref<AnimatedMesh> MeshFactory::CreateAnimatedBox(const glm::vec3& size)
-	{
-		std::vector<AnimatedVertex> vertices = {
-			AnimatedVertex{{ -size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, {}},  // Front Down Left
-			AnimatedVertex{{  size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, {}},  // Front Down Right 
-			AnimatedVertex{{  size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f }, {}},  // Front Up   Right
-			AnimatedVertex{{ -size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f }, {}},	 // Front Up   Left
 
-			AnimatedVertex{{ -size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f }, {}},	// Back  Down Left
-			AnimatedVertex{{  size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f }, {}},	// Back  Down Right
-			AnimatedVertex{{  size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f }, {}},	// Back  Up	  Right
-			AnimatedVertex{{ -size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f }, {}}	// Back  Up	  Left
-		};
-
-		std::vector<uint32_t> indices = {
-			0, 1, 2,
-			2, 3, 0,
-
-			1, 5, 6,
-			6, 2, 1,
-
-			7, 6, 5,
-			5, 4, 7,
-
-			4, 0, 3,
-			3, 7, 4,
-
-			4, 5, 1,
-			1, 0, 4,
-
-			3, 2, 6,
-			6, 7, 3
-		};
-		Ref<AnimatedMesh> result = Ref<AnimatedMesh>::Create(Ref<MeshSource>::Create(vertices, indices));
-		return result;
-	}
 
 	Ref<Mesh> MeshFactory::CreateBox(const glm::vec3& size)
 	{
