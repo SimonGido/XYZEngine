@@ -71,7 +71,6 @@ namespace XYZ {
 		Ref<ShaderAsset> lightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
 		Ref<ShaderAsset> bloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
 		Ref<ShaderAsset> meshShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/MeshShader.shader");
-		Ref<ShaderAsset> meshAnimShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/AnimMeshShader.shader");
 
 		m_CompositeRenderPipeline.Init(m_CompositePass, compositeShaderAsset->GetShader());
 		m_LightRenderPipeline.Init(m_LightPass, lightShaderAsset->GetShader());
@@ -256,7 +255,7 @@ namespace XYZ {
 		{
 			dc.OverrideMaterial = material->GetMaterialInstance();
 			dc.TransformInstanceCount++;
-			dc.TransformData.push_back(Mat4ToTransformData(transform * mesh->GetMeshSource()->GetTransform()));
+			dc.TransformData.push_back(Mat4ToTransformData(transform));
 			auto& boneStorage = dc.BoneData.emplace_back();
 			copyToBoneStorage(boneStorage, boneTransforms);
 		}

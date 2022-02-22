@@ -60,10 +60,10 @@ namespace XYZ {
 		
 		const std::unordered_map<std::string, uint32_t> GetBoneMapping() const { return m_BoneMapping; }
 		const std::vector<BoneInfo>						GetBoneInfo() const { return m_BoneInfo; }
-
 		const std::string& GetSourceFilePath()   const { return m_SourceFilePath; }
 		const glm::mat4&   GetInverseTransform() const { return m_InverseTransform; }
 		const glm::mat4&   GetTransform()		 const { return m_Transform; }
+		const aiScene*	   GetScene()			 const { return m_Scene; }
 		bool			   IsAnimated()			 const { return m_IsAnimated; }
 
 

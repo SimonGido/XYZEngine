@@ -100,6 +100,12 @@ namespace XYZ {
 		Ref<Shader> shader = shaderAsset->GetShader();
 		const auto& layouts = shaderAsset->GetLayouts();
 
+		if (metadata.FilePath == "Resources/Shaders/CompositeShader.shader" && shader->GetName() == "AnimMeshShader")
+		{
+			std::cout << "WTF";
+			__debugbreak();
+		}
+
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "Name" << shader->GetName();

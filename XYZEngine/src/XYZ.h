@@ -26,9 +26,6 @@
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/MeshFactory.h"
 
-//-----Animation-----//
-#include "XYZ/Asset/Animation/SkeletonAsset.h"
-#include "XYZ/Asset/Animation/AnimationAsset.h"
 
 //-----Scene-----//
 #include "XYZ/Scene/SceneCamera.h"
@@ -65,7 +62,9 @@
 
 //------Asset---------//
 #include "XYZ/Asset/AssetManager.h"
-
+#include "XYZ/Asset/Animation/SkeletonAsset.h"
+#include "XYZ/Asset/Animation/AnimationAsset.h"
+#include "XYZ/Scene/Prefab.h"
 
 //------UI-----------//
 #include "XYZ/ImGui/ImGui.h"

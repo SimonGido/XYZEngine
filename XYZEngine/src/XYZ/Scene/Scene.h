@@ -15,6 +15,7 @@
 #include "XYZ/Asset/Asset.h"
 #include "XYZ/Asset/Animation/AnimationController.h"
 #include "XYZ/Asset/Renderer/MeshSource.h"
+#include "XYZ/Renderer/Mesh.h"
 
 #include "SceneCamera.h"
 
@@ -34,7 +35,7 @@ namespace XYZ {
     class Renderer2D;
     class SceneRenderer;
     class SceneEntity;
-    struct SpriteRenderer;
+    class SpriteRenderer;
     class TransformComponent;
 
     namespace Editor {
@@ -46,8 +47,10 @@ namespace XYZ {
         Scene(const std::string& name);
         ~Scene();
 
-        SceneEntity CreateEntity(const std::string& name, const GUID& guid);
-        SceneEntity CreateEntity(const std::string& name, SceneEntity parent, const GUID& guid);
+        SceneEntity CreateEntity(const std::string& name, const GUID& guid = GUID());
+        SceneEntity CreateEntity(const std::string& name, SceneEntity parent, const GUID& guid = GUID());
+   
+
         void DestroyEntity(SceneEntity entity);
         void SetState(SceneState state) { m_State = state; }
         void SetViewportSize(uint32_t width, uint32_t height);

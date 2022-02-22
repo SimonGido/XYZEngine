@@ -78,25 +78,19 @@ namespace XYZ {
 			spriteRenderer.SubTexture = Ref<SubTexture>::Create(Texture2D::Create("Assets/Textures/1_ORK_head.png"));
 
 
-
 			auto meshSource = Ref<MeshSource>::Create("Resources/Meshes/Character Running.fbx");
 			auto skeleton = Ref<SkeletonAsset>::Create("Resources/Meshes/Character Running.fbx");
-
-			SceneEntity entity = m_Scene->CreateEntity("Anim", GUID());
-
-			Ref<ShaderAsset> meshAnimShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/AnimMeshShader.shader");
-			auto animMeshMaterialAsset = Ref<MaterialAsset>::Create(meshAnimShaderAsset);
-			animMeshMaterialAsset->SetTexture("u_Texture", Renderer::GetDefaultResources().WhiteTexture);
-			entity.AddComponent<AnimatedMeshComponent>({
-					Ref<AnimatedMesh>::Create(meshSource),
-					animMeshMaterialAsset
-				});
+			auto animMesh = Ref<AnimatedMesh>::Create(meshSource);
+			auto animMeshMaterialAsset = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/AnimMeshMaterial.mat");
 
 			Ref<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
 			scenePanel->SetSceneRenderer(m_SceneRenderer);
 			m_EditorCamera = &scenePanel->GetEditorCamera();
 			
-		
+			auto prefab = Ref<Prefab>::Create();
+			prefab->Create(animMesh, "Test");
+			prefab->Instantiate(m_Scene);
+
 			Renderer::WaitAndRenderAll();
 		}
 

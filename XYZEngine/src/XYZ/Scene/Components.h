@@ -78,8 +78,9 @@ namespace XYZ {
 		operator const  std::string& () const { return Name; }
 	};
 
-	struct SpriteRenderer 
+	class SpriteRenderer 
 	{
+	public:
 		SpriteRenderer() = default;
 		SpriteRenderer(
 			const Ref<MaterialAsset>& material,
