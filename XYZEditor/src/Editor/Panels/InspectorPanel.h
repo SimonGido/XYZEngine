@@ -62,6 +62,9 @@ namespace XYZ {
 			BoxCollider2DInspector		  m_BoxCollider2DInspector;
 			CircleCollider2DInspector	  m_CircleCollider2DInspector;
 			ChainCollider2DInspector	  m_ChainCollider2DInspector;
+
+			MeshInspector				  m_MeshInspector;
+			AnimatedMeshInspector		  m_AnimatedMeshInspector;
 		};
 
 		template<typename T, typename ...Args>

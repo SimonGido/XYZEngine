@@ -14,9 +14,13 @@ namespace XYZ {
 		bool operator!=(const Entity& rhs) const;
 
 		operator uint32_t() const;	
-
+		
+		uint64_t GetHash() const;
 	private:
 		uint32_t m_ID;
+		uint16_t m_Version;
+
+		friend class EntityManager;
 	};
 }
 namespace std {
@@ -25,8 +29,7 @@ namespace std {
 	{
 		std::size_t operator()(XYZ::Entity entity) const noexcept
 		{
-			const std::hash<uint32_t> hasher;
-			return hasher(static_cast<uint32_t>(entity));
+			return entity.GetHash();
 		}
 	};
 }

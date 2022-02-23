@@ -9,3 +9,4 @@
 #include "ScriptComponentInspector.h"
 #include "SpriteRendererInspector.h"
 #include "TransformInspector.h"
+#include "MeshInspector.h"

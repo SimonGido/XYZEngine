@@ -329,8 +329,6 @@ namespace XYZ {
 			auto& [transform, meshComponent] = animMeshView.Get<TransformComponent, AnimatedMeshComponent>(entity);
 			auto tree = m_ECS.GetComponent<Relationship>(entity).GetTree(m_ECS);
 			
-			
-
 			const auto& boneInfo = meshComponent.Mesh->GetMeshSource()->GetBoneInfo();
 			std::vector<glm::mat4> transforms = m_Controller->GetTransforms();
 			std::vector<glm::mat4> boneTransforms(boneInfo.size());

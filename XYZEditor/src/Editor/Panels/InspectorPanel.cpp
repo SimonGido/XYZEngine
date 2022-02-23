@@ -227,6 +227,7 @@ namespace XYZ {
 						ImGui::CloseCurrentPopup();
 					}
 				}
+				
 				ImGui::EndPopup();
 			}
 		}
@@ -286,6 +287,14 @@ namespace XYZ {
 				if (m_SelectedEntity.HasComponent<ParticleComponent>())
 				{
 					m_EditablesInUse.push_back(&m_ParticleInspector);
+				}
+				if (m_SelectedEntity.HasComponent<MeshComponent>())
+				{
+					m_EditablesInUse.push_back(&m_MeshInspector);
+				}
+				if (m_SelectedEntity.HasComponent<AnimatedMeshComponent>())
+				{
+					m_EditablesInUse.push_back(&m_AnimatedMeshInspector);
 				}
 			}
 

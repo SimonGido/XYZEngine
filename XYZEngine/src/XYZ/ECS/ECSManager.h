@@ -97,8 +97,7 @@ namespace XYZ {
 		void RemoveOnDestruction(Type* instance);
 
 
-		uint32_t GetEntityVersion(Entity entity) const { return m_EntityManager.GetVersion(entity); }
-		uint32_t GetNumberOfEntities() const		   { return m_EntityManager.GetNumEntities(); }
+		uint32_t GetNumberOfEntities() const { return m_EntityManager.GetNumEntities(); }
 
 		static uint16_t GetNumberOfRegisteredComponents() { return ComponentManager::GetNextComponentID(); }
 	
@@ -207,16 +206,14 @@ namespace XYZ {
 	template<typename T>
 	inline Entity ECSManager::FindEntity(const T& component) const
 	{
+		// Note: it loops over unused entities but it is okay as they should not have any components
 		const auto& entities = m_EntityManager.m_Entities;
-		for (int32_t i = 0; i < entities.Range(); ++i)
+		for (int32_t i = 0; i < entities.size(); ++i)
 		{
-			if (entities.Valid(i))
+			if (HasComponent<T>(entities[i]))
 			{
-				if (HasComponent<T>(static_cast<uint32_t>(i)))
-				{
-					if (component == m_ComponentManager.GetComponent<T>(i))
-						return i;
-				}
+				if (component == m_ComponentManager.GetComponent<T>(entities[i]))
+					return entities[i];
 			}
 		}
 		return Entity();

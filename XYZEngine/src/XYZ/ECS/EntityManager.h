@@ -3,6 +3,8 @@
 #include "Entity.h"
 
 #include "XYZ/Utils/DataStructures/FreeList.h"
+
+#include <queue>
 namespace XYZ {
 
 	class EntityManager
@@ -18,7 +20,6 @@ namespace XYZ {
 
 		Entity CreateEntity();
 
-		uint32_t GetVersion(Entity entity) const;
 
 		void DestroyEntity(Entity entity);
 		void Clear();
@@ -29,8 +30,9 @@ namespace XYZ {
 	private:
 		uint32_t m_EntitiesInUse;
 
-		FreeList<Entity>   m_Entities;
-		FreeList<uint32_t> m_Versions;
+		std::vector<Entity> m_Entities;
+		std::queue<size_t>  m_Free;
+
 
 		static constexpr uint32_t sc_MaxEntity = UINT32_MAX - 1;
 		

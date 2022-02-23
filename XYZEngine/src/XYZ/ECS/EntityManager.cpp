@@ -6,35 +6,29 @@ namespace XYZ {
 		:
 		m_EntitiesInUse(0)
 	{
-		// Invalid
-		m_Entities.Insert({});
-		m_Versions.Insert({});
+		m_Entities.push_back({}); // Invalid entity
 	}
 	EntityManager::EntityManager(const EntityManager& other)
 		:
 		m_Entities(other.m_Entities),
-		m_Versions(other.m_Versions),
 		m_EntitiesInUse(other.m_EntitiesInUse)
 	{
 	}
 	EntityManager::EntityManager(EntityManager&& other) noexcept
 		:
 		m_Entities(std::move(other.m_Entities)),
-		m_Versions(std::move(other.m_Versions)),
 		m_EntitiesInUse(other.m_EntitiesInUse)
 	{
 	}
 	EntityManager& EntityManager::operator=(const EntityManager& other)
 	{
-		m_Entities		= other.m_Entities;
-		m_Versions		= other.m_Versions;
+		m_Entities = other.m_Entities;
 		m_EntitiesInUse = other.m_EntitiesInUse;
 		return *this;
 	}
 	EntityManager& EntityManager::operator=(EntityManager&& other) noexcept
 	{
 		m_Entities = std::move(other.m_Entities);
-		m_Versions = std::move(other.m_Versions);
 		m_EntitiesInUse = other.m_EntitiesInUse;
 		return *this;
 	}
@@ -42,41 +36,45 @@ namespace XYZ {
 	{
 		m_EntitiesInUse++;
 		XYZ_ASSERT(m_EntitiesInUse < sc_MaxEntity, "Too many entities in existence.");
-		
-		Entity entity = m_Entities.Insert({});
-		m_Entities[entity] = entity;
 
-		if (m_Versions.Range() > entity && m_Versions.Valid(entity))
-			m_Versions[entity]++;
+		if (m_Free.empty())
+		{
+			Entity entity(static_cast<uint32_t>(m_Entities.size()));
+			m_Entities.push_back(entity);
+			return entity;
+		}
 		else
 		{
-			int32_t versionIndex = m_Versions.Insert(0);
-			XYZ_ASSERT(versionIndex == entity, "");
+			const size_t index = m_Free.front();
+			m_Free.pop();
+			Entity entity(static_cast<uint32_t>(index));
+			return entity;
 		}
-		return entity;		
 	}
-	uint32_t EntityManager::GetVersion(Entity entity) const
-	{
-		return m_Versions[entity];
-	}
-	
+
 	void EntityManager::DestroyEntity(Entity entity)
 	{
-		XYZ_ASSERT(entity, "Invalid entity.");
+		const size_t index = static_cast<size_t>(entity.m_ID);
 
-		m_Entities.Erase(entity);
+		XYZ_ASSERT(IsValid(entity), "Invalid entity.");
+
+		// We increase version right after destroying, so old references will not be valid
+		m_Entities[index].m_Version++;
+		m_Free.push(index);
 		m_EntitiesInUse--;
 	}
 
-
 	void EntityManager::Clear()
 	{
-		m_Entities.Clear();
-		m_Versions.Clear();
+		m_Entities.clear();
 		m_EntitiesInUse = 0;
 	}
+
 	bool EntityManager::IsValid(Entity entity) const
 	{
-		return m_Entities.Range() > entity && m_Entities.Valid(entity) && entity != Entity(0);
+		const size_t index = static_cast<size_t>(entity.m_ID);
+		return m_Entities.size() > index
+			&& m_Entities[index] == entity
+			&& entity;
 	}
 }
