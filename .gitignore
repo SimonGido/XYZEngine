@@ -2,6 +2,7 @@
 **/bin/
 !vendor/premake/
 !XYZEngine/vendor/mono/bin
+!XYZEngine/vendor/assimp/bin
 bin-int/
 obj/
 **/cache/**
