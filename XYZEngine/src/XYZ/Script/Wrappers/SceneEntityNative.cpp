@@ -6,7 +6,7 @@
 #include <mono/metadata/assembly.h>
 
 #include "XYZ/Scene/Components.h"
-
+#include "XYZ/Utils/Delegate.h"
 
 
 #define REGISTER_COMPONENT_TYPE(Type) \
@@ -61,7 +61,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
 			MonoType* mType = mono_reflection_type_get_type(type);
 			return s_NativeEntityFuncs[mType].HasComponentFunc(ent);
@@ -71,7 +71,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
 			MonoType* mType = mono_reflection_type_get_type(type);
 			s_NativeEntityFuncs[mType].EmplaceComponentFunc(ent);
@@ -81,7 +81,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
 			MonoType* mType = mono_reflection_type_get_type(type);
 			s_NativeEntityFuncs[mType].RemoveComponentFunc(ent);
@@ -112,7 +112,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			return scene->CreateEntity("", GUID()).ID();
+			return scene->CreateEntity("", GUID());
 		}	
 	}
 }

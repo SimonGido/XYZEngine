@@ -227,7 +227,16 @@ namespace XYZ {
 						ImGui::CloseCurrentPopup();
 					}
 				}
-				
+				if (!m_SelectedEntity.HasComponent<AnimationComponent>())
+				{
+					if (ImGui::MenuItem("Animation Component"))
+					{
+						auto& component = m_SelectedEntity.EmplaceComponent<AnimationComponent>();
+						component.Playing = true;
+						if (m_SelectedEntity.HasComponent<AnimatedMeshComponent>())
+							component.BoneEntities = m_SelectedEntity.GetComponent<AnimatedMeshComponent>().BoneEntities;
+					}
+				}
 				ImGui::EndPopup();
 			}
 		}

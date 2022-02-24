@@ -21,7 +21,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 			const RigidBody2DComponent& rigidBody = ent.GetComponent<RigidBody2DComponent>();
 			static_cast<b2Body*>(rigidBody.RuntimeBody)->ApplyLinearImpulse({ impulse->x, impulse->y }, { point->x, point->y }, true);
 		}

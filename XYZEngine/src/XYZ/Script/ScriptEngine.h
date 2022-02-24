@@ -1,8 +1,10 @@
 #pragma once
 
-#include "XYZ/ECS/Entity.h"
 #include "XYZ/Scene/SceneEntity.h"
 #include "ScriptPublicField.h"
+
+
+#include "XYZ/Utils/DataStructures/SparseArray.h"
 
 extern "C" {
 

@@ -3,6 +3,8 @@
 #include "Scene.h"
 #include "XYZ/Reflection/Reflection.h"
 
+#include <entt/entt.hpp>
+
 namespace XYZ {
 
 	class SceneEntity
@@ -10,7 +12,7 @@ namespace XYZ {
 	public:
 		SceneEntity();
 		SceneEntity(const SceneEntity& other);	
-		SceneEntity(Entity id, Scene* scene);
+		SceneEntity(entt::entity id, Scene* scene);
 				
 		template<typename T>
 		T& GetComponent();
@@ -18,17 +20,6 @@ namespace XYZ {
 		template <typename T>
 		const T& GetComponent() const;
 		
-		template<typename T>
-		T& GetComponentFromReflection(Reflection<T> refl);
-
-		template<typename T>
-		const T& GetComponentFromReflection(Reflection<T> refl) const;
-
-		template <typename T, typename ...Args>
-		std::tuple<Args...> GetComponentTupleFromReflection(Reflection<T> refl);
-
-		template <typename T, typename ...Args>
-		const std::tuple<Args...> GetComponentTupleFromReflection(Reflection<T> refl) const;
 
 		template <typename T, typename ...Args>
 		T& EmplaceComponent(Args&&... args);
@@ -42,34 +33,27 @@ namespace XYZ {
 		template <typename T>
 		bool HasComponent() const;
 		
-		template <typename T>
-		bool HasComponentFromReflection(Reflection<T> refl) const;
-
 		void Destroy();
 		
 		bool IsValid() const;
 		
 
-		Entity		 ID() const { return m_ID; }
+		entt::entity ID() const { return m_ID; }
 
-		Scene*		 GetScene() { return m_Scene; }
-
-		const Scene* GetScene() const { return m_Scene; }
-
-		ECSManager*  GetECS();
-
-		const ECSManager* GetECS() const;
+		Scene*				  GetScene() { return m_Scene; }
+		const Scene*		  GetScene() const { return m_Scene; }
+		entt::registry*		  GetRegistry();
+		const entt::registry* GetRegistry() const;
 
 	
 		SceneEntity& operator =(const SceneEntity& other);
 		
 		bool operator ==(const SceneEntity& other) const;
 		
-		operator uint32_t () const { return m_ID; }
-		operator Entity() const { return Entity(m_ID); }
+		operator uint32_t () const { return static_cast<uint32_t>(m_ID); }
 	private:
-		Scene*   m_Scene;
-		Entity   m_ID;
+		Scene*		 m_Scene;
+		entt::entity m_ID;
 
 
 		friend class Scene;
@@ -79,57 +63,35 @@ namespace XYZ {
 	template<typename T>
 	inline T& SceneEntity::GetComponent()
 	{
-		return m_Scene->m_ECS.GetComponent<T>(m_ID);
+		return m_Scene->m_Registry.get<T>(m_ID);
 	}
 	template<typename T>
 	inline const T& SceneEntity::GetComponent() const
 	{
-		return m_Scene->m_ECS.GetComponent<T>(m_ID);
+		return m_Scene->m_Registry.get<T>(m_ID);
 	}
-	template<typename T>
-	inline T& SceneEntity::GetComponentFromReflection(Reflection<T> refl)
-	{
-		return m_Scene->m_ECS.GetComponent<T>(m_ID);
-	}
-	template<typename T>
-	inline const T& SceneEntity::GetComponentFromReflection(Reflection<T> refl) const
-	{
-		return m_Scene->m_ECS.GetComponent<T>(m_ID);
-	}
-	template<typename T, typename ...Args>
-	inline std::tuple<Args...> SceneEntity::GetComponentTupleFromReflection(Reflection<T> refl)
-	{
-		return Reflection<T>::ToReferenceTuple(m_Scene->m_ECS.GetComponent<T>(m_ID));
-	}
-	template<typename T, typename ...Args>
-	inline const std::tuple<Args...> SceneEntity::GetComponentTupleFromReflection(Reflection<T> refl) const
-	{
-		return Reflection<T>::ToReferenceTuple(m_Scene->m_ECS.GetComponent<T>(m_ID));
-	}
+	
 	template<typename T, typename ...Args>
 	inline T& SceneEntity::EmplaceComponent(Args && ...args)
 	{
-		return m_Scene->m_ECS.EmplaceComponent<T, Args...>(m_ID, std::forward<Args>(args)...);
+		return m_Scene->m_Registry.emplace<T>(m_ID, std::forward<Args>(args)...);
 	}
 	template<typename T>
 	inline T& SceneEntity::AddComponent(const T& component)
 	{
-		return m_Scene->m_ECS.AddComponent<T>(m_ID, component);
+		T& newComp = m_Scene->m_Registry.emplace<T>(m_ID);
+		newComp = component;
+		return newComp;
 	}
 	template<typename T>
 	inline void SceneEntity::RemoveComponent()
 	{
-		m_Scene->m_ECS.RemoveComponent<T>(m_ID);
+		m_Scene->m_Registry.remove<T>(m_ID);
 	}
 	template<typename T>
 	inline bool SceneEntity::HasComponent() const
 	{
-		return m_Scene->m_ECS.HasComponent<T>(m_ID);
-	}
-	template<typename T>
-	inline bool SceneEntity::HasComponentFromReflection(Reflection<T> refl) const
-	{
-		return m_Scene->m_ECS.HasComponent<T>(m_ID);
+		return m_Scene->m_Registry.any_of<T>(m_ID);
 	}
 }
 

@@ -16,19 +16,19 @@
 
 namespace XYZ {
 
-	static void SerializeRelationship(ECSManager& ecs, YAML::Emitter& out, const Relationship& val)
+	static void SerializeRelationship(entt::registry& reg, YAML::Emitter& out, const Relationship& val)
 	{
 		out << YAML::Key << "Relationship";
 		out << YAML::BeginMap;
 
-		if ((bool)val.GetParent())
-			out << YAML::Key << "Parent" << YAML::Value << ecs.GetComponent<IDComponent>(val.GetParent()).ID;
-		if ((bool)val.GetNextSibling())
-			out << YAML::Key << "NextSibling" << YAML::Value << ecs.GetComponent<IDComponent>(val.GetNextSibling()).ID;
-		if ((bool)val.GetPreviousSibling())
-			out << YAML::Key << "PreviousSibling" << YAML::Value << ecs.GetComponent<IDComponent>(val.GetPreviousSibling()).ID;
-		if ((bool)val.GetFirstChild())
-			out << YAML::Key << "FirstChild" << YAML::Value << ecs.GetComponent<IDComponent>(val.GetFirstChild()).ID;
+		if (reg.valid(val.GetParent()))
+			out << YAML::Key << "Parent" << YAML::Value << reg.get<IDComponent>(val.GetParent()).ID;
+		if (reg.valid(val.GetNextSibling()))
+			out << YAML::Key << "NextSibling" << YAML::Value << reg.get<IDComponent>(val.GetNextSibling()).ID;
+		if (reg.valid(val.GetPreviousSibling()))
+			out << YAML::Key << "PreviousSibling" << YAML::Value << reg.get<IDComponent>(val.GetPreviousSibling()).ID;
+		if (reg.valid(val.GetFirstChild()))
+			out << YAML::Key << "FirstChild" << YAML::Value << reg.get<IDComponent>(val.GetFirstChild()).ID;
 		out << YAML::Key << "Depth" << YAML::Value << val.GetDepth();
 		out << YAML::EndMap;
 	}
@@ -654,8 +654,8 @@ namespace XYZ {
 		{
 			SceneEntity entity(ent, scene.Raw());
 			auto& rel = entity.GetComponent<Relationship>();
-			if (rel.Parent == scene->GetSceneEntity())
-				rel.Parent = Entity();
+			if (rel.Parent == scene->GetSceneEntity().ID())
+				rel.Parent = entt::null;
 			serializeEntity(out, entity);
 		}
 		out << YAML::EndSeq;
@@ -664,6 +664,16 @@ namespace XYZ {
 		fout << out.c_str();
 	}
 
+	entt::entity FindByID(entt::registry& reg, const GUID& guid)
+	{
+		auto view = reg.view<IDComponent>();
+		for (auto entity : view)
+		{
+			if (view.get<IDComponent>(entity).ID == guid)
+				return entity;
+		}
+		return entt::null;
+	}
 
 	Ref<Scene> SceneSerializer::Deserialize(const std::string& filepath)
 	{
@@ -673,8 +683,9 @@ namespace XYZ {
 		YAML::Node data = YAML::Load(strStream.str());
 
 		Ref<Scene> scene = Ref<Scene>::Create(data["Scene"].as<std::string>());
-		ECSManager& ecs = scene->m_ECS;
-		ecs.GetComponent<SceneTagComponent>(scene->m_SceneEntity).Name = scene->m_Name;
+		entt::registry& reg = scene->m_Registry;
+
+		reg.get<SceneTagComponent>(scene->m_SceneEntity).Name = scene->m_Name;
 		auto entities = data["Entities"];
 		if (entities)
 		{
@@ -685,34 +696,35 @@ namespace XYZ {
 			for (auto data : entities)
 			{
 				GUID guid = data["Entity"].as<std::string>();
-				Entity entity = ecs.FindEntity<IDComponent>(IDComponent(guid));
-				Relationship& relationship = ecs.GetComponent<Relationship>(entity);
+				entt::entity entity = FindByID(reg, guid);
+
+				Relationship& relationship = reg.get<Relationship>(entity);
 				auto relComponent = data["Relationship"];
 				if (relComponent["Parent"])
 				{
-					std::string parent = relComponent["Parent"].as<std::string>();
-					Entity parentEntity = ecs.FindEntity<IDComponent>(IDComponent({ parent }));
-					if (ecs.IsValid(parentEntity))
+					GUID parent = relComponent["Parent"].as<std::string>();
+					entt::entity parentEntity = FindByID(reg, parent);
+					if (reg.valid(parentEntity))
 					{
 						// Remove relation with scene entity
-						Relationship::RemoveRelation(entity, ecs);
+						Relationship::RemoveRelation(entity, reg);
 						relationship.Parent = parentEntity;					
 					}
 				}
 				if (relComponent["NextSibling"])
 				{
-					std::string nextSibling = relComponent["NextSibling"].as<std::string>();
-					relationship.NextSibling = ecs.FindEntity<IDComponent>(IDComponent({ nextSibling }));
+					GUID nextSibling = relComponent["NextSibling"].as<std::string>();
+					relationship.NextSibling = FindByID(reg, nextSibling);
 				}
 				if (relComponent["PreviousSibling"])
 				{
-					std::string previousSibling = relComponent["PreviousSibling"].as<std::string>();
-					relationship.PreviousSibling = ecs.FindEntity<IDComponent>(IDComponent({ previousSibling }));
+					GUID previousSibling = relComponent["PreviousSibling"].as<std::string>();
+					relationship.PreviousSibling = FindByID(reg, previousSibling);
 				}
 				if (relComponent["FirstChild"])
 				{
-					std::string firstChild = relComponent["FirstChild"].as<std::string>();
-					relationship.FirstChild = ecs.FindEntity<IDComponent>(IDComponent({ firstChild }));
+					GUID firstChild = relComponent["FirstChild"].as<std::string>();
+					relationship.FirstChild = FindByID(reg, firstChild);
 				}
 				relationship.Depth = relComponent["Depth"].as<uint32_t>();
 			}
@@ -742,7 +754,7 @@ namespace XYZ {
 		}
 		if (entity.HasComponent<Relationship>())
 		{
-			SerializeRelationship(entity.m_Scene->m_ECS, out, entity.GetComponent<Relationship>());
+			SerializeRelationship(entity.m_Scene->m_Registry, out, entity.GetComponent<Relationship>());
 		}
 		if (entity.HasComponent<RigidBody2DComponent>())
 		{

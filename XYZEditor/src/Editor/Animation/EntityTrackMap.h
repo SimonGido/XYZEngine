@@ -1,6 +1,5 @@
 #pragma once
 
-#include "XYZ/Animation/Animation.h"
 #include "XYZ/ImGui/NeoSequencer/imgui_neo_sequencer.h"
 
 namespace XYZ {
@@ -11,7 +10,6 @@ namespace XYZ {
 			template <typename T>
 			struct TrackData
 			{
-				AnimationTrack<T>*		   Track;
 				std::vector<ImNeoKeyFrame> KeyFrames;
 				ImNeoKeyChangeFn		   KeyChangeFunc;
 				bool					   Open = true;
@@ -24,21 +22,11 @@ namespace XYZ {
 				bool Open = true;
 			};
 
-			void BuildMap(Ref<Animation>& anim);
-
+			
 
 			std::unordered_map<std::string, EntityData> DataMap;
 
-		private:
-			template <typename T>
-			static void keyChangeFunc(const ImNeoKeyFrame* key);
-
 		};
-		template<typename T>
-		inline void EntityTrackMap::keyChangeFunc(const ImNeoKeyFrame* key)
-		{
-			KeyFrame<T>* userKey = static_cast<KeyFrame<T>*>(key->UserData);
-			userKey->Frame = key->Frame;
-		}
+		
 	}
 }

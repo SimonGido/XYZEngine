@@ -22,7 +22,7 @@ namespace XYZ {
 		const std::vector<SceneEntity>& GetEntities() const { return m_Entities; }
 	private:
 		SceneEntity createPrefabFromEntity(SceneEntity entity);
-		void copyEntity(SceneEntity dst, SceneEntity src, std::unordered_map<Entity, Entity>& clones) const;
+		void copyEntity(SceneEntity dst, SceneEntity src, std::unordered_map<entt::entity, entt::entity>& clones) const;
 		void setupBoneEntities(SceneEntity entity);
 
 	private:

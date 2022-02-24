@@ -34,9 +34,6 @@
 #include "XYZ/Scene/SceneSerializer.h"
 
 
-//------ECS-----//
-#include "XYZ/ECS/ECSManager.h"
-#include "XYZ/ECS/Entity.h"
 
 //-----Audio-----//
 #include "XYZ/Audio/Audio.h"

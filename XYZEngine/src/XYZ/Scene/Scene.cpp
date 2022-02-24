@@ -28,12 +28,7 @@
 
 
 namespace XYZ {
-	static ECSManager s_ECSCopyEdit;
 
-	enum RenderSortFlags
-	{
-		MaterialFlag = 32
-	};
 	ozz::math::Float4x4 Float4x4FromMat4(const glm::mat4& mat)
 	{
 		ozz::math::Float4x4 result;
@@ -65,40 +60,39 @@ namespace XYZ {
 		m_ViewportWidth(0),
 		m_ViewportHeight(0)
 	{
-		m_ECS.CreateStorage<ScriptComponent>();
-		m_SceneEntity = m_ECS.CreateEntity();
+		m_SceneEntity = m_Registry.create();
 
-		m_ECS.EmplaceComponent<Relationship>(m_SceneEntity);
-		m_ECS.EmplaceComponent<IDComponent>(m_SceneEntity);
-		m_ECS.EmplaceComponent<TransformComponent>(m_SceneEntity);
-		m_ECS.EmplaceComponent<SceneTagComponent>(m_SceneEntity, name);	
+		m_Registry.emplace<Relationship>(m_SceneEntity);
+		m_Registry.emplace<IDComponent>(m_SceneEntity);
+		m_Registry.emplace<TransformComponent>(m_SceneEntity);
+		m_Registry.emplace<SceneTagComponent>(m_SceneEntity, name);	
 
 		ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
 		physicsWorld->SetContactListener(&m_ContactListener);
 
-		m_ECS.GetStorage<ScriptComponent>().AddOnConstruction<&Scene::onScriptComponentConstruct>(this);
-		m_ECS.GetStorage<ScriptComponent>().AddOnDestruction<&Scene::onScriptComponentDestruct>(this);
+		m_Registry.on_construct<ScriptComponent>().connect<&Scene::onScriptComponentConstruct>(this);
+		m_Registry.on_destroy<ScriptComponent>().connect<&Scene::onScriptComponentDestruct>(this);
 	}
 
 	Scene::~Scene()
 	{
-		m_ECS.GetStorage<ScriptComponent>().RemoveOnConstruction<&Scene::onScriptComponentConstruct>(this);
-		m_ECS.GetStorage<ScriptComponent>().RemoveOnDestruction<&Scene::onScriptComponentDestruct>(this);
+		m_Registry.on_construct<ScriptComponent>().disconnect<&Scene::onScriptComponentConstruct>(this);
+		m_Registry.on_destroy<ScriptComponent>().disconnect<&Scene::onScriptComponentDestruct>(this);
 	}
 
 	SceneEntity Scene::CreateEntity(const std::string& name, const GUID& guid)
 	{
-		const Entity id = m_ECS.CreateEntity();
+		XYZ_PROFILE_FUNC("Scene::CreateEntity");
+		entt::entity id = m_Registry.create();
 		SceneEntity entity(id, this);
-		IDComponent idComp;
-		idComp.ID = guid;
 
 		entity.EmplaceComponent<IDComponent>(guid);
-		entity.EmplaceComponent<Relationship>(m_SceneEntity);
+		entity.EmplaceComponent<Relationship>();
 		entity.EmplaceComponent<SceneTagComponent>(name);
 		entity.EmplaceComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 0.0f));
-		auto& sceneRelation = m_ECS.GetComponent<Relationship>(m_SceneEntity);
-		Relationship::SetupRelation(m_SceneEntity, id, m_ECS);
+
+		auto& sceneRelation = m_Registry.get<Relationship>(m_SceneEntity);
+		Relationship::SetupRelation(m_SceneEntity, id, m_Registry);
 
 		m_Entities.push_back(id);
 		return entity;
@@ -106,18 +100,17 @@ namespace XYZ {
 
 	SceneEntity Scene::CreateEntity(const std::string& name, SceneEntity parent, const GUID& guid)
 	{
+		XYZ_PROFILE_FUNC("Scene::CreateEntity Parent");
 		XYZ_ASSERT(parent.m_Scene == this, "");
-		const Entity id = m_ECS.CreateEntity();
+		const entt::entity id = m_Registry.create();
 		SceneEntity entity(id, this);
-		IDComponent idComp;
-		idComp.ID = guid;
 
 		entity.EmplaceComponent<IDComponent>(guid);
-		entity.EmplaceComponent<Relationship>((Entity)entity.m_ID);
+		entity.EmplaceComponent<Relationship>();
 		entity.EmplaceComponent<SceneTagComponent>(name);
 		entity.EmplaceComponent<TransformComponent>(glm::vec3(0.0f, 0.0f, 0.0f));
-		auto& sceneRelation = m_ECS.GetComponent<Relationship>(m_SceneEntity);
-		Relationship::SetupRelation(parent, id, m_ECS);
+		auto& sceneRelation = m_Registry.get<Relationship>(m_SceneEntity);
+		Relationship::SetupRelation(parent.ID(), id, m_Registry);
 
 		m_Entities.push_back(id);
 		return entity;
@@ -125,48 +118,50 @@ namespace XYZ {
 
 	void Scene::DestroyEntity(SceneEntity entity)
 	{
-		Relationship::RemoveRelation(entity.m_ID, m_ECS);
+		XYZ_PROFILE_FUNC("Scene::DestroyEntity");
+		Relationship::RemoveRelation(entity.m_ID, m_Registry);
 		if (entity.m_ID == m_SelectedEntity)
-			m_SelectedEntity = Entity();
+			m_SelectedEntity = entt::null;
 
-		std::stack<Entity> entities;
-		auto& parentRel = m_ECS.GetComponent<Relationship>(entity.m_ID);
-		if (parentRel.FirstChild)
+		std::stack<entt::entity> entities;
+		auto& parentRel = m_Registry.get<Relationship>(entity.m_ID);
+		if (m_Registry.valid(parentRel.FirstChild))
 			entities.push(parentRel.FirstChild);
 
 		while (!entities.empty())
 		{
-			Entity tmpEntity = entities.top();
+			entt::entity tmpEntity = entities.top();
 			entities.pop();
 			if (tmpEntity == m_SelectedEntity)
-				m_SelectedEntity = Entity();
+				m_SelectedEntity = entt::null;
 
-			const auto& rel = m_ECS.GetComponent<Relationship>(tmpEntity);
-			if (rel.FirstChild)
+			const auto& rel = m_Registry.get<Relationship>(tmpEntity);
+			if (m_Registry.valid(rel.FirstChild))
 				entities.push(rel.FirstChild);
-			if (rel.NextSibling)
+			if (m_Registry.valid(rel.NextSibling))
 				entities.push(rel.NextSibling);
 
-			m_ECS.DestroyEntity(tmpEntity);
+			m_Registry.destroy(tmpEntity);
 			EraseFromVector(m_Entities, tmpEntity);
 		}
 
 		
 		EraseFromVector(m_Entities, entity.m_ID);
-		m_ECS.DestroyEntity(entity.m_ID);
+	    m_Registry.destroy(entity.m_ID);
 	}
 
 	void Scene::OnPlay()
 	{
-		s_ECSCopyEdit = m_ECS;
+		// TODO:
+		//s_ECSCopyEdit = m_ECS;
 		
 		// Find Camera
-		m_ECS.CreateStorage<CameraComponent>();
-		auto& storage = m_ECS.GetStorage<CameraComponent>();
-		if (storage.Size())
+		
+		auto cameraView = m_Registry.view<CameraComponent>();
+		if (!cameraView.empty())
 		{
-			m_CameraEntity = storage.GetEntityAtIndex(0);
-			storage.GetComponent(m_CameraEntity).Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+			m_CameraEntity = cameraView.front();
+			m_Registry.get<CameraComponent>(m_CameraEntity).Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		}
 		else
 		{
@@ -178,19 +173,19 @@ namespace XYZ {
 		setupPhysics();
 
 		// Copy stored values to runtime
-		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();
-		for (size_t i = 0; i < scriptStorage.Size(); ++i)
+		auto scriptView = m_Registry.view<ScriptComponent>();
+		for (auto entity : scriptView)
 		{
-			ScriptComponent& script = scriptStorage.GetComponentAtIndex(i);
-			SceneEntity entity(scriptStorage.GetEntityAtIndex(i), this);
-			ScriptEngine::CopyPublicFieldsToRuntime(entity);
-			ScriptEngine::OnCreateEntity(entity);
+			ScriptComponent& script = scriptView.get<ScriptComponent>(entity);
+			SceneEntity sceneEntity(entity, this);
+			ScriptEngine::CopyPublicFieldsToRuntime(sceneEntity);
+			ScriptEngine::OnCreateEntity(sceneEntity);
 		}
-
-		auto& storageParticleCPU = m_ECS.GetStorage<ParticleComponent>();
-		for (auto &it : storageParticleCPU)
+	
+		auto particleView = m_Registry.view<ParticleComponent>();
+		for (auto entity : particleView)
 		{
-			it.System.Reset();
+			particleView.get<ParticleComponent>(entity).System.Reset();
 		}
 	}
 
@@ -198,30 +193,33 @@ namespace XYZ {
 	{
 		{
 			ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
-			auto& rigidStorage = m_ECS.GetStorage<RigidBody2DComponent>();
-			for (const auto& body : rigidStorage)
+			auto rigidBodyView = m_Registry.view<RigidBody2DComponent>();
+			for (const auto entity : rigidBodyView)
 			{
+				auto& body = rigidBodyView.get<RigidBody2DComponent>(entity);
 				physicsWorld->DestroyBody(static_cast<b2Body*>(body.RuntimeBody));
 			}
 		}
-		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();
-		for (size_t i = 0; i < scriptStorage.Size(); ++i)
+
+		auto scriptView = m_Registry.view<ScriptComponent>();
+		for (auto entity : scriptView)
 		{
-			ScriptComponent& script = scriptStorage.GetComponentAtIndex(i);
-			ScriptEngine::OnDestroyEntity({ scriptStorage.GetEntityAtIndex(i), this });
+			ScriptComponent& script = scriptView.get<ScriptComponent>(entity);
+			SceneEntity sceneEntity(entity, this);
+			ScriptEngine::OnDestroyEntity(sceneEntity);
 		}
 
-		auto& storageParticleCPU = m_ECS.GetStorage<ParticleComponent>();
-		for (auto& it : storageParticleCPU)
+		auto particleView = m_Registry.view<ParticleComponent>();
+		for (auto entity : particleView)
 		{
-			it.System.Reset();
+			particleView.get<ParticleComponent>(entity).System.Reset();
 		}
 
 		delete[]m_PhysicsEntityBuffer;
 		m_PhysicsEntityBuffer = nullptr;
 
-		m_ECS = std::move(s_ECSCopyEdit);
-		m_SelectedEntity = SceneEntity();
+		// m_ECS = std::move(s_ECSCopyEdit);
+		m_SelectedEntity = entt::null;
 	}
 
 	void Scene::OnUpdate(Timestep ts)
@@ -229,23 +227,23 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("Scene::OnUpdate");
 		m_PhysicsWorld.Step(ts);
 
-		m_ECS.CreateStorage<RigidBody2DComponent>();
-		auto rigidView = m_ECS.CreateView<TransformComponent, RigidBody2DComponent>();
+		auto rigidView = m_Registry.view<TransformComponent, RigidBody2DComponent>();
 		for (const auto entity : rigidView)
 		{
-			auto [transform, rigidBody] = rigidView.Get<TransformComponent, RigidBody2DComponent>(entity);
+			auto [transform, rigidBody] = rigidView.get<TransformComponent, RigidBody2DComponent>(entity);
 			const b2Body* body = static_cast<b2Body*>(rigidBody.RuntimeBody);
 			transform.Translation.x = body->GetPosition().x;
 			transform.Translation.y = body->GetPosition().y;
 			transform.Rotation.z = body->GetAngle();
 		}
 
-		auto& scriptStorage = m_ECS.GetStorage<ScriptComponent>();
-		for (size_t i = 0; i < scriptStorage.Size(); ++i)
+		auto scriptView = m_Registry.view<ScriptComponent>();
+		for (auto entity : scriptView)
 		{
-			ScriptComponent& scriptComponent = scriptStorage[i];
+			ScriptComponent& scriptComponent = scriptView.get<ScriptComponent>(entity);
+			SceneEntity sceneEntity(entity, this);
 			if (!scriptComponent.ModuleName.empty())
-				ScriptEngine::OnUpdateEntity({ scriptStorage.GetEntityAtIndex(i),this }, ts);
+				ScriptEngine::OnUpdateEntity(sceneEntity, ts);
 		}
 
 		updateHierarchy();
@@ -271,10 +269,10 @@ namespace XYZ {
 		sceneRenderer->BeginScene(renderCamera);
 
 
-		auto spriteView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
+		auto spriteView = m_Registry.view<TransformComponent, SpriteRenderer>();
 		for (auto entity : spriteView)
 		{
-			auto& [transform, spriteRenderer] = spriteView.Get<TransformComponent, SpriteRenderer>(entity);
+			auto& [transform, spriteRenderer] = spriteView.get<TransformComponent, SpriteRenderer>(entity);
 			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform.WorldTransform);
 		}
 
@@ -290,16 +288,17 @@ namespace XYZ {
 		
 		{
 			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor animStorage");
-			auto& animStorage = m_ECS.GetStorage<AnimationComponent>();
-			for (auto& anim : animStorage)
+			auto animView = m_Registry.view<AnimationComponent>();
+			for (auto& entity : animView)
 			{
-				if (anim.Playing)
+				auto& anim = animView.get<AnimationComponent>(entity);
+				if (anim.Playing && anim.Controller.Raw())
 				{
 					anim.Controller->Update(anim.AnimationTime);
 					anim.AnimationTime += ts;
 					for (size_t i = 0; i < anim.BoneEntities.size(); ++i)
 					{
-						auto& transform = m_ECS.GetComponent<TransformComponent>(anim.BoneEntities[i]);
+						auto& transform = m_Registry.get<TransformComponent>(anim.BoneEntities[i]);
 						transform.Translation = anim.Controller->GetTranslation(i);
 						transform.Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
 						transform.Scale = anim.Controller->GetScale(i);
@@ -307,14 +306,12 @@ namespace XYZ {
 				}
 			}
 		}
-		auto particleView = m_ECS.CreateView<ParticleComponent>();
 		{
-			XYZ_PROFILE_FUNC("Scene::OnRUpdateEditor particleView");
+			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor particleView");
+			auto particleView = m_Registry.view<ParticleComponent>();
 			for (auto entity : particleView)
 			{
-
-				auto& [particleComponent] = particleView.Get<ParticleComponent>(entity);
-				particleComponent.System.Update(ts);
+				particleView.get<ParticleComponent>(entity).System.Update(ts);
 			}
 		}
 	}
@@ -325,10 +322,10 @@ namespace XYZ {
 		sceneRenderer->BeginScene(viewProjection, view, camPos);
 		
 		
-		auto spriteView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
+		auto spriteView = m_Registry.view<TransformComponent, SpriteRenderer>();
 		for (auto entity : spriteView)
 		{
-			auto& [transform, spriteRenderer] = spriteView.Get<TransformComponent, SpriteRenderer>(entity);
+			auto& [transform, spriteRenderer] = spriteView.get<TransformComponent, SpriteRenderer>(entity);
 			// Assets could be reloaded by AssetManager, update references
 			if (AssetManager::Exist(spriteRenderer.Material->GetHandle()))
 			{
@@ -341,30 +338,30 @@ namespace XYZ {
 			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform.WorldTransform);
 		}
 		
-		auto meshView = m_ECS.CreateView<TransformComponent, MeshComponent>();
+		auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
 		for (auto entity : meshView)
 		{
-			auto& [transform, meshComponent] = meshView.Get<TransformComponent, MeshComponent>(entity);
+			auto& [transform, meshComponent] = meshView.get<TransformComponent, MeshComponent>(entity);
 			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.OverrideMaterial);
 		}
 
-		auto animMeshView = m_ECS.CreateView<TransformComponent,AnimatedMeshComponent>();
+		auto animMeshView = m_Registry.view<TransformComponent,AnimatedMeshComponent>();
 		for (auto entity : animMeshView)
 		{
-			auto& [transform, meshComponent] = animMeshView.Get<TransformComponent,  AnimatedMeshComponent>(entity);
+			auto& [transform, meshComponent] = animMeshView.get<TransformComponent,  AnimatedMeshComponent>(entity);
 			meshComponent.BoneTransforms.resize(meshComponent.BoneEntities.size());
 			for (size_t i = 0; i < meshComponent.BoneEntities.size(); ++i)
 			{
-				const Entity boneEntity = meshComponent.BoneEntities[i];
-				meshComponent.BoneTransforms[i] = Float4x4FromMat4(m_ECS.GetComponent<TransformComponent>(boneEntity).WorldTransform);
+				const entt::entity boneEntity = meshComponent.BoneEntities[i];
+				meshComponent.BoneTransforms[i] = Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity).WorldTransform);
 			}
 			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
 		}
 
-		auto particleView = m_ECS.CreateView<TransformComponent, ParticleRenderer, ParticleComponent>();
+		auto particleView = m_Registry.view<TransformComponent, ParticleRenderer, ParticleComponent>();
 		for (auto entity : particleView)
 		{
-			auto& [transform, renderer, particleComponent] = particleView.Get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
+			auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
 
 			auto moduleData = particleComponent.System.GetModuleDataRead();
 			const auto& lightModule = moduleData->LightUpdater;
@@ -405,7 +402,13 @@ namespace XYZ {
 	}
 	SceneEntity Scene::GetEntityByName(const std::string& name)
 	{
-		return { m_ECS.FindEntity<SceneTagComponent>(name), this };
+		auto view = m_Registry.view<SceneTagComponent>();
+		for (auto entity : view)
+		{
+			if (view.get<SceneTagComponent>(entity).Name == name)
+				return SceneEntity(entity, this);
+		}
+		return SceneEntity();
 	}
 
 	SceneEntity Scene::GetSceneEntity()
@@ -418,36 +421,36 @@ namespace XYZ {
 		return { m_SelectedEntity, this };
 	}
 
-	void Scene::onScriptComponentConstruct(ECSManager& ecs, Entity entity)
+	void Scene::onScriptComponentConstruct(entt::registry& reg, entt::entity ent)
 	{
-		ScriptEngine::CreateScriptEntityInstance({ entity, this });
+		ScriptEngine::CreateScriptEntityInstance({ ent, this });
 	}
 
-	void Scene::onScriptComponentDestruct(ECSManager& ecs, Entity entity)
+	void Scene::onScriptComponentDestruct(entt::registry& reg, entt::entity ent)
 	{
-		ScriptEngine::DestroyScriptEntityInstance({ entity, this });
+		ScriptEngine::DestroyScriptEntityInstance({ ent, this });
 	}
 
 	void Scene::updateHierarchy()
 	{
 		XYZ_PROFILE_FUNC("Scene::updateHierarchy");
-		std::stack<Entity> entities;
+		std::stack<entt::entity> entities;
 		entities.push(m_SceneEntity);
 		while (!entities.empty())
 		{
-			const Entity tmp = entities.top();
+			const entt::entity tmp = entities.top();
 			entities.pop();
 		
-			const Relationship& relation = m_ECS.GetComponent<Relationship>(tmp);
-			if (relation.NextSibling)
+			const Relationship& relation = m_Registry.get<Relationship>(tmp);
+			if (m_Registry.valid(relation.NextSibling))
 				entities.push(relation.NextSibling);
-			if (relation.FirstChild)
+			if (m_Registry.valid(relation.FirstChild))
 				entities.push(relation.FirstChild);
 			
-			TransformComponent& transform = m_ECS.GetComponent<TransformComponent>(tmp);
-			if (relation.Parent)
+			TransformComponent& transform = m_Registry.get<TransformComponent>(tmp);
+			if (m_Registry.valid(relation.Parent))
 			{
-				TransformComponent& parentTransform = m_ECS.GetComponent<TransformComponent>(relation.Parent);
+				TransformComponent& parentTransform = m_Registry.get<TransformComponent>(relation.Parent);
 				transform.WorldTransform = parentTransform.WorldTransform * transform.GetTransform();
 			}
 			else
@@ -459,8 +462,8 @@ namespace XYZ {
 	
 	void Scene::setupPhysics()
 	{
-		auto& storage = m_ECS.GetStorage<RigidBody2DComponent>();
-		m_PhysicsEntityBuffer = new SceneEntity[storage.Size()];
+		auto rigidBodyView = m_Registry.view<RigidBody2DComponent>();
+		m_PhysicsEntityBuffer = new SceneEntity[rigidBodyView.size()];
 		ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
 		const PhysicsWorld2D::Layer defaultLayer = m_PhysicsWorld.GetLayer(PhysicsWorld2D::DefaultLayer);
 		b2FixtureDef fixture;
@@ -468,9 +471,10 @@ namespace XYZ {
 		fixture.filter.maskBits = BIT(defaultLayer.m_ID);
 
 		size_t counter = 0;
-		for (auto& rigidBody : storage)
+		for (auto ent : rigidBodyView)
 		{
-			SceneEntity entity(storage.GetEntityAtIndex(counter), this);
+			SceneEntity entity(ent, this);
+			auto& rigidBody = rigidBodyView.get<RigidBody2DComponent>(ent);
 			const TransformComponent& transform = entity.GetComponent<TransformComponent>();
 			auto [translation, rotation, scale] = transform.GetWorldComponents();
 		

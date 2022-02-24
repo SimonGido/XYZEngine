@@ -23,19 +23,15 @@ namespace XYZ {
 	}
 
 	template<typename T>
-	static void CopyComponentIfExists(Entity dst, ECSManager& dstEcs, Entity src, ECSManager& srcEcs)
+	static void CopyComponentIfExists(entt::entity dst, entt::registry& dstReg, entt::entity src, entt::registry& srcReg)
 	{
-		if (srcEcs.IsValid(src) && srcEcs.HasComponent<T>(src))
+		if (srcReg.valid(src) && srcReg.any_of<T>(src))
 		{
-			auto& srcComponent = srcEcs.GetComponent<T>(src);
-			if (dstEcs.HasComponent<T>(dst))
-			{
-				dstEcs.GetComponent<T>(dst) = srcComponent;
-			}
-			else
-			{
-				dstEcs.AddComponent(dst, srcComponent);
-			}
+			auto& srcComponent = srcReg.get<T>(src);
+			if (!dstReg.any_of<T>(dst))
+				dstReg.emplace<T>(dst);
+			
+			dstReg.get<T>(dst) = srcComponent;
 		}
 	}
 
@@ -66,24 +62,24 @@ namespace XYZ {
 			BuildMeshEntityHierarchy(childEntity, scene, mesh, node->mChildren[i], entities);
 	}
 
-	static void CopyAllComponentsIfExist(Entity dst, ECSManager& dstEcs, Entity src, ECSManager& srcEcs)
+	static void CopyAllComponentsIfExist(entt::entity dst, entt::registry& dstReg, entt::entity src, entt::registry& srcReg)
 	{
-		CopyComponentIfExists<TransformComponent>(		  dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<SceneTagComponent>(		  dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<SpriteRenderer>(			  dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<MeshComponent>(			  dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<AnimatedMeshComponent>(	  dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<ParticleRenderer>(		  dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<CameraComponent>(			  dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<ParticleComponent>(		  dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<PointLight2D>(			  dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<SpotLight2D>(				  dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<ScriptComponent>(			  dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<RigidBody2DComponent>(	  dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<BoxCollider2DComponent>(	  dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<CircleCollider2DComponent>( dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<PolygonCollider2DComponent>(dst, dstEcs, src, srcEcs);
-		CopyComponentIfExists<ChainCollider2DComponent>(  dst, dstEcs, src, srcEcs);
+		CopyComponentIfExists<TransformComponent>(		  dst, dstReg, src, srcReg);
+		CopyComponentIfExists<SceneTagComponent>(		  dst, dstReg, src, srcReg);
+		CopyComponentIfExists<SpriteRenderer>(			  dst, dstReg, src, srcReg);
+		CopyComponentIfExists<MeshComponent>(			  dst, dstReg, src, srcReg);
+		CopyComponentIfExists<AnimatedMeshComponent>(	  dst, dstReg, src, srcReg);
+		CopyComponentIfExists<ParticleRenderer>(		  dst, dstReg, src, srcReg);
+		CopyComponentIfExists<CameraComponent>(			  dst, dstReg, src, srcReg);
+		CopyComponentIfExists<ParticleComponent>(		  dst, dstReg, src, srcReg);
+		CopyComponentIfExists<PointLight2D>(			  dst, dstReg, src, srcReg);
+		CopyComponentIfExists<SpotLight2D>(				  dst, dstReg, src, srcReg);
+		CopyComponentIfExists<ScriptComponent>(			  dst, dstReg, src, srcReg);
+		CopyComponentIfExists<RigidBody2DComponent>(	  dst, dstReg, src, srcReg);
+		CopyComponentIfExists<BoxCollider2DComponent>(	  dst, dstReg, src, srcReg);
+		CopyComponentIfExists<CircleCollider2DComponent>( dst, dstReg, src, srcReg);
+		CopyComponentIfExists<PolygonCollider2DComponent>(dst, dstReg, src, srcReg);
+		CopyComponentIfExists<ChainCollider2DComponent>(  dst, dstReg, src, srcReg);
 		// No Relationship and IDComponent
 	}
 
@@ -137,18 +133,18 @@ namespace XYZ {
 	SceneEntity Prefab::Instantiate(Ref<Scene> dstScene, SceneEntity parent, const glm::vec3* translation, const glm::vec3* rotation, const glm::vec3* scale)
 	{
 		SceneEntity newEntity;
-		if (parent)
+		if (parent.IsValid())
 			newEntity = dstScene->CreateEntity(m_Entity.GetComponent<SceneTagComponent>(), parent, GUID());
 		else
 			newEntity = dstScene->CreateEntity(m_Entity.GetComponent<SceneTagComponent>(), GUID());
 		newEntity.EmplaceComponent<PrefabComponent>(Ref<Prefab>(this), newEntity.ID());
 
-		std::unordered_map<Entity, Entity> clones;
+		std::unordered_map<entt::entity, entt::entity> clones;
 		copyEntity(newEntity, m_Entity, clones);
 		
 		for (auto& prefabEntity : m_Entities)
 		{
-			const Entity clone = clones[prefabEntity.ID()];
+			const entt::entity clone = clones[prefabEntity.ID()];
 			SceneEntity cloneEntity(clone, dstScene.Raw());
 			if (prefabEntity.HasComponent<AnimatedMeshComponent>())
 			{
@@ -177,15 +173,15 @@ namespace XYZ {
 
 		return newEntity;
 	}
-	void Prefab::copyEntity(SceneEntity dst, SceneEntity src, std::unordered_map<Entity, Entity>& clones) const
+	void Prefab::copyEntity(SceneEntity dst, SceneEntity src, std::unordered_map<entt::entity, entt::entity>& clones) const
 	{
-		CopyAllComponentsIfExist(dst, *dst.GetECS(), src, *src.GetECS());
-		clones[src] = dst;
+		CopyAllComponentsIfExist(dst.ID(), *dst.GetRegistry(), src.ID(), *src.GetRegistry());
+		clones[src.ID()] = dst.ID();
 
 		auto& srcRel = src.GetComponent<Relationship>();
 		auto& dstRel = dst.GetComponent<Relationship>();
-		std::stack<Entity> children;
-		if (srcRel.GetFirstChild())
+		std::stack<entt::entity> children;
+		if (srcRel.GetFirstChild() != entt::null)
 			children.push(srcRel.GetFirstChild());
 
 		while (!children.empty())
@@ -196,7 +192,7 @@ namespace XYZ {
 			auto& childRel = child.GetComponent<Relationship>();
 			SceneEntity newChild = dst.GetScene()->CreateEntity(src.GetComponent<SceneTagComponent>().Name, dst, GUID());
 			copyEntity(newChild, child, clones);
-			if (childRel.GetNextSibling())
+			if (childRel.GetNextSibling() != entt::null)
 				children.push(childRel.GetNextSibling());
 		}
 	}
@@ -212,7 +208,7 @@ namespace XYZ {
 			{
 				if (entity.GetComponent<SceneTagComponent>().Name == name)
 				{
-					animatedMeshComponent.BoneEntities[index] = entity;
+					animatedMeshComponent.BoneEntities[index] = entity.ID();
 					break;
 				}
 			}
@@ -222,13 +218,13 @@ namespace XYZ {
 	{
 		SceneEntity newEntity = m_Scene->CreateEntity("", GUID());
 		m_Entities.push_back(newEntity);
-		CopyAllComponentsIfExist(newEntity, m_Scene->GetECS(), entity, *entity.GetECS());
+		CopyAllComponentsIfExist(newEntity.ID(), m_Scene->GetRegistry(), entity.ID(), *entity.GetRegistry());
 	
-		std::stack<Entity> children;
+		std::stack<entt::entity> children;
 		auto& dstRel = newEntity.GetComponent<Relationship>();
 		auto& srcRel = entity.GetComponent<Relationship>();
 
-		if (dstRel.GetFirstChild())
+		if (dstRel.GetFirstChild() != entt::null)
 			children.push(dstRel.GetFirstChild());
 		
 		while (!children.empty())
@@ -238,8 +234,8 @@ namespace XYZ {
 
 			auto& childRel = child.GetComponent<Relationship>();
 			SceneEntity newChild = createPrefabFromEntity(child);
-			Relationship::SetupRelation(newEntity, newChild, m_Scene->GetECS());
-			if (childRel.GetNextSibling())
+			Relationship::SetupRelation(newEntity.ID(), newChild.ID(), m_Scene->GetRegistry());
+			if (childRel.GetNextSibling() != entt::null)
 				children.push(childRel.GetNextSibling());
 		}
 

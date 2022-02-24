@@ -40,7 +40,7 @@ namespace XYZ {
                     drawEntityNode(SceneEntity(m_Context->m_SceneEntity, m_Context.Raw()), true);
                     if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered())
                     {
-                        m_Context->SetSelectedEntity(Entity());
+                        m_Context->SetSelectedEntity(entt::null);
                         Application::Get().OnEvent(EntitySelectedEvent(SceneEntity()));
                     }
                     if (ImGui::BeginPopupContextWindow(0, 1, false))
@@ -76,7 +76,7 @@ namespace XYZ {
            
             if (defaultOpen)
                 flags |= ImGuiTreeNodeFlags_DefaultOpen;
-            if (!rel->GetFirstChild())
+            if (rel->GetFirstChild() == entt::null)
                 flags |= ImGuiTreeNodeFlags_Leaf;
 
             const bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag->c_str());
@@ -84,7 +84,7 @@ namespace XYZ {
             
             if (ImGui::IsItemClicked())
             {
-                m_Context->SetSelectedEntity(entity);
+                m_Context->SetSelectedEntity(entity.ID());
                 Application::Get().OnEvent(EntitySelectedEvent(entity));
             }
             
@@ -107,7 +107,7 @@ namespace XYZ {
             rel = &entity.GetComponent<Relationship>();
             if (opened)
             {
-                if (rel->GetFirstChild())
+                if (rel->GetFirstChild() != entt::null)
                     drawEntityNode(SceneEntity(rel->GetFirstChild(), m_Context.Raw()), false);
                 ImGui::TreePop();
             }
@@ -115,7 +115,7 @@ namespace XYZ {
             // it might be invalidated
             tag = &entity.GetComponent<SceneTagComponent>().Name;
             rel = &entity.GetComponent<Relationship>();
-            if (rel->GetNextSibling())
+            if (rel->GetNextSibling() != entt::null)
                 drawEntityNode(SceneEntity(rel->GetNextSibling(), m_Context.Raw()), false);
 
             if (entityDeleted)
@@ -128,22 +128,22 @@ namespace XYZ {
         {
             if (ImGui::BeginDragDropSource())
             {
-                Entity id = (Entity)entity;
-                ImGui::SetDragDropPayload("ENTITY_DRAG", (void*)&id, sizeof(Entity), ImGuiCond_Always);
+                entt::entity id = entity.ID();
+                ImGui::SetDragDropPayload("ENTITY_DRAG", (void*)&id, sizeof(entt::entity), ImGuiCond_Always);
                 ImGui::EndDragDropSource();
             }
             if (ImGui::BeginDragDropTarget())
             {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ENTITY_DRAG", 0))
                 {
-                    const Entity child = *(Entity*)payload->Data;
-                    if (child != (Entity)entity)
+                    const entt::entity child = *(entt::entity*)payload->Data;
+                    if (child != entity.ID())
                     {
-                        const auto& parentTransform = m_Context->m_ECS.GetComponent<TransformComponent>(entity);
-                        auto& transform = m_Context->m_ECS.GetComponent<TransformComponent>(child);
+                        const auto& parentTransform = m_Context->m_Registry.get<TransformComponent>(entity.ID());
+                        auto& transform = m_Context->m_Registry.get<TransformComponent>(child);
                       
                         transform.DecomposeTransform(transform.WorldTransform);      
-                        Relationship::SetupRelation(entity, child, m_Context->m_ECS);
+                        Relationship::SetupRelation(entity.ID(), child, m_Context->m_Registry);
                         transform.DecomposeTransform(glm::inverse(parentTransform.WorldTransform) * transform.GetTransform());
                     }
                 }

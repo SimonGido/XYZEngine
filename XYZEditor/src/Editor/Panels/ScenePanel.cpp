@@ -233,10 +233,9 @@ namespace XYZ {
 		std::deque<SceneEntity> ScenePanel::findSelection(const Ray& ray)
 		{
 			std::deque<SceneEntity> result;
-			for (const Entity entityID : m_Context->GetEntities())
+			for (const entt::entity entityID : m_Context->GetEntities())
 			{
 				SceneEntity entity(entityID, m_Context.Raw());
-				m_Context->GetECS();
 				if (ray.IntersectsAABB(Utils::SceneEntityAABB(entity)))
 				{
 					result.push_back(entity);
@@ -336,7 +335,7 @@ namespace XYZ {
 			{
 				auto [origin, direction] = castRay(mousePosition.x, mousePosition.y);
 				const Ray ray = { origin,direction };
-				m_Context->SetSelectedEntity(Entity());
+				m_Context->SetSelectedEntity(entt::null);
 
 				std::deque<SceneEntity> newSelection = findSelection(ray);
 				if (!Utils::CompareDeques(m_Selection, newSelection))
@@ -355,7 +354,7 @@ namespace XYZ {
 
 				if (!m_Selection.empty())
 				{
-					m_Context->SetSelectedEntity(m_Selection[m_SelectionIndex]);
+					m_Context->SetSelectedEntity(m_Selection[m_SelectionIndex].ID());
 					Application::Get().OnEvent(EntitySelectedEvent(m_Selection[m_SelectionIndex]));
 				}
 			}
@@ -370,7 +369,7 @@ namespace XYZ {
 			const glm::mat4& cameraProjection = m_EditorCamera.GetProjectionMatrix();
 			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
-			const ECSManager& ecs = m_Context->GetECS();
+			
 
 			SceneEntity selectedEntity = m_Context->GetSelectedEntity();
 			TransformComponent& tc = selectedEntity.GetComponent<TransformComponent>();
@@ -385,9 +384,10 @@ namespace XYZ {
 			if (ImGuizmo::IsUsing())
 			{
 				auto parent = rel.GetParent();
-				if (rel.GetParent())
+				if (rel.GetParent() != entt::null)
 				{
-					const glm::mat4& parentTransform = ecs.GetComponent<TransformComponent>(parent).WorldTransform;
+					auto& reg = *entity.GetRegistry();
+					const glm::mat4& parentTransform = reg.get<TransformComponent>(parent).WorldTransform;
 					transform = glm::inverse(parentTransform) * transform;
 				}
 				auto [translation, rotation, scale] = Math::DecomposeTransform(transform);

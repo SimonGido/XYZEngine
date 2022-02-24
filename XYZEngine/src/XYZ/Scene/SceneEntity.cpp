@@ -13,7 +13,7 @@ namespace XYZ {
 		m_Scene(other.m_Scene),
 		m_ID(other.m_ID)
 	{}
-	SceneEntity::SceneEntity(Entity id, Scene * scene)
+	SceneEntity::SceneEntity(entt::entity id, Scene * scene)
 		:
 		m_Scene(scene),
 		m_ID(id)
@@ -25,20 +25,21 @@ namespace XYZ {
 	}
 	bool SceneEntity::IsValid() const
 	{
-		return m_Scene && m_ID && m_Scene->m_ECS.IsValid(m_ID);
+		return m_Scene && GetRegistry()->valid(m_ID);
 	}
-	const ECSManager* SceneEntity::GetECS() const
+	const entt::registry* SceneEntity::GetRegistry() const
 	{
 		if (m_Scene)
-			return &m_Scene->m_ECS;
+			return &m_Scene->m_Registry;
 		return nullptr;
 	}
-	ECSManager* SceneEntity::GetECS()
+	entt::registry* SceneEntity::GetRegistry()
 	{
 		if (m_Scene)
-			return &m_Scene->m_ECS;
+			return &m_Scene->m_Registry;
 		return nullptr;
 	}
+
 	SceneEntity& SceneEntity::operator=(const SceneEntity& other)
 	{
 		m_Scene = other.m_Scene;

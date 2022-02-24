@@ -62,15 +62,14 @@ namespace XYZ {
 			SceneEntity newEntity = m_Scene->CreateEntity("Havko", GUID());
 			SceneEntity childEntity = m_Scene->CreateEntity("Child", newEntity, GUID());
 
-			
-			ParticleRenderer& particleRenderer = newEntity.AddComponent<ParticleRenderer>(
-				ParticleRenderer
-				{ 
-					MeshFactory::CreateBox(glm::vec3(0.5f)),
-					Renderer::GetDefaultResources().DefaultParticleMaterial,
-				}
+
+			ParticleRenderer& particleRenderer = newEntity.EmplaceComponent<ParticleRenderer>(
+				MeshFactory::CreateBox(glm::vec3(0.5f)),
+				Renderer::GetDefaultResources().DefaultParticleMaterial
 			);
-			newEntity.AddComponent<ParticleComponent>({ ParticleSystem(50) });
+			ParticleSystem system(50);
+			auto& particleComponent = newEntity.EmplaceComponent<ParticleComponent>();
+			particleComponent.System = system;
 
 			auto& spriteRenderer = newEntity.EmplaceComponent<SpriteRenderer>();
 			Ref<MaterialAsset> spriteMaterial = Renderer::GetDefaultResources().DefaultQuadMaterial;
@@ -178,11 +177,11 @@ namespace XYZ {
 		{
 			if (m_ShowColliders)
 			{
-				auto& ecs = m_Scene->GetECS();
-				auto box2DColliderView = ecs.CreateView<TransformComponent, BoxCollider2DComponent>();
+				auto& registry = m_Scene->GetRegistry();
+				auto box2DColliderView = registry.view<TransformComponent, BoxCollider2DComponent>();
 				for (auto entity : box2DColliderView)
 				{
-					auto [transformComp, boxCollider] = box2DColliderView.Get(entity);
+					auto &[transformComp, boxCollider] = box2DColliderView.get(entity);
 					auto [translation, rotation, scale] = transformComp.GetWorldComponents();
 					translation += glm::vec3(boxCollider.Offset, 0.0f);
 					scale *= glm::vec3(boxCollider.Size, 1.0f);
@@ -194,10 +193,10 @@ namespace XYZ {
 					m_OverlayRenderer2D->SubmitRect(transform, s_Data.Color[ED::Collider2D]);
 				}
 
-				auto circle2DColliderView = ecs.CreateView<TransformComponent, CircleCollider2DComponent>();
+				auto circle2DColliderView = registry.view<TransformComponent, CircleCollider2DComponent>();
 				for (auto entity : circle2DColliderView)
 				{
-					auto [transformComp, circleCollider] = circle2DColliderView.Get(entity);
+					auto &[transformComp, circleCollider] = circle2DColliderView.get(entity);
 					auto [translation, rotation, scale] = transformComp.GetWorldComponents();
 					translation += glm::vec3(circleCollider.Offset, 0.0f);
 					scale *= glm::vec3(circleCollider.Radius * 2.0f);
@@ -210,12 +209,11 @@ namespace XYZ {
 		{
 			if (m_ShowCameras)
 			{
-				auto& ecs = m_Scene->GetECS();
-
-				auto cameraView = ecs.CreateView<TransformComponent, CameraComponent>();
+				auto& registry = m_Scene->GetRegistry();
+				auto cameraView = registry.view<TransformComponent, CameraComponent>();
 				for (auto entity : cameraView)
 				{
-					auto [transform, camera] = cameraView.Get(entity);
+					auto &[transform, camera] = cameraView.get(entity);
 					auto [min, max] = cameraToAABB(transform, camera.Camera);
 					auto [translation, rotation, scale] = transform.GetWorldComponents();
 					m_OverlayRenderer2D->SubmitQuadBillboard(translation, glm::vec2(scale.x, scale.y), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 0);
@@ -227,19 +225,18 @@ namespace XYZ {
 		{
 			if (m_ShowLights)
 			{
-				auto& ecs = m_Scene->GetECS();
+				auto& registry = m_Scene->GetRegistry();
 
-				auto spotLight2DView = ecs.CreateView<TransformComponent, SpotLight2D>();
+				auto spotLight2DView = registry.view<TransformComponent, SpotLight2D>();
 
-
-				auto pointLight2DView = ecs.CreateView<TransformComponent, PointLight2D>();
+				auto pointLight2DView = registry.view<TransformComponent, PointLight2D>();
 			}
 		}
 
 		void EditorLayer::renderSelected()
 		{
 			const SceneEntity selected = m_Scene->GetSelectedEntity();
-			if (selected && selected != m_Scene->GetSceneEntity())
+			if (selected.IsValid() && selected != m_Scene->GetSceneEntity())
 			{
 				if (selected.HasComponent<CameraComponent>())
 				{

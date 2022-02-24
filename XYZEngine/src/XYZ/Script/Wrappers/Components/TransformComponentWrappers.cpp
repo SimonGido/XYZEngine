@@ -30,7 +30,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
 			const auto& transformComponent = ent.GetComponent<TransformComponent>();
 			memcpy(outTransform, glm::value_ptr(transformComponent.GetTransform()), sizeof(glm::mat4));
@@ -41,7 +41,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 			ent.GetComponent<TransformComponent>().DecomposeTransform(*inTransform);
 		}
 
@@ -50,7 +50,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 			memcpy(out, &ent.GetComponent<TransformComponent>().Translation, sizeof(glm::vec3));
 		}
 
@@ -59,7 +59,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
 			ent.GetComponent<TransformComponent>().Translation = *in;
 		}
@@ -69,7 +69,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 			memcpy(out, &ent.GetComponent<TransformComponent>().Rotation, sizeof(glm::vec3));
 		}
 
@@ -78,7 +78,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
 			ent.GetComponent<TransformComponent>().Rotation = *in;
 		}
@@ -88,7 +88,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 			memcpy(out, &ent.GetComponent<TransformComponent>().Scale, sizeof(glm::vec3));
 		}
 
@@ -97,7 +97,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
 			ent.GetComponent<TransformComponent>().Scale = *in;
 		}

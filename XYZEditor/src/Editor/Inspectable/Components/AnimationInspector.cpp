@@ -1,10 +1,9 @@
 #include "stdafx.h"
-#include "EntityTrackMap.h"
+#include "AnimationInspector.h"
+
 
 namespace XYZ {
 	namespace Editor {
-		
+
 	}
 }
-
-

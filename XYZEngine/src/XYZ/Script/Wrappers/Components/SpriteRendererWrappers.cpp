@@ -25,7 +25,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
 			ent.GetComponent<SpriteRenderer>().Color = *inColor;
 		}
@@ -34,7 +34,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
 			ent.GetComponent<SpriteRenderer>().SubTexture = *subTexture;
 		}
@@ -42,17 +42,17 @@ namespace XYZ {
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
-
-			SceneEntity ent(entity, scene.Raw());
+			
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 			XYZ_ASSERT(false, "");
-			// ent.GetComponent<SpriteRenderer>().Material = *material;
+			//ent.GetComponent<SpriteRenderer>().Material = *material;
 		}
 		Ref<SubTexture>* SpriteRendererNative::GetSubTexture(uint32_t entity)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 			return new Ref<SubTexture>(ent.GetComponent<SpriteRenderer>().SubTexture);
 		}
 		Ref<Material>* SpriteRendererNative::GetMaterial(uint32_t entity)
@@ -60,7 +60,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 			return new Ref<Material>(ent.GetComponent<SpriteRenderer>().Material->GetMaterial());
 		}
 		void SpriteRendererNative::GetColor(uint32_t entity, glm::vec4* outColor)
@@ -68,7 +68,7 @@ namespace XYZ {
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
-			SceneEntity ent(entity, scene.Raw());
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 			*outColor = ent.GetComponent<SpriteRenderer>().Color;
 		}
 	}

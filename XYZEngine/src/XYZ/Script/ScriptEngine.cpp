@@ -355,15 +355,16 @@ namespace XYZ {
 	{
 		Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 		XYZ_ASSERT(scene.Raw(), "No active scene!");
-		const ComponentStorage<ScriptComponent>& scriptStorage = scene->m_ECS.GetStorage<ScriptComponent>();
-		for (size_t i = 0; i < scriptStorage.Size(); ++i)
+		auto scriptView = scene->m_Registry.view<ScriptComponent>();
+		for (auto ent : scriptView)
 		{
-			DestroyScriptEntityInstance({ scriptStorage.GetEntityAtIndex(i), scene.Raw() });
+			DestroyScriptEntityInstance({ ent, scene.Raw() });
 		}
+
 		LoadRuntimeAssembly(path);
-		for (size_t i = 0; i < scriptStorage.Size(); ++i)
+		for (auto ent : scriptView)
 		{
-			CreateScriptEntityInstance({ scriptStorage.GetEntityAtIndex(i), scene.Raw() });
+			CreateScriptEntityInstance({ ent, scene.Raw() });
 		}
 	}
 
@@ -475,7 +476,7 @@ namespace XYZ {
 		instance.ScriptClass = &s_EntityClassMap[scriptComponent.ModuleName];
 		instance.Handle = Instantiate(*instance.ScriptClass);
 		
-		uint32_t id = entity.m_ID;
+		uint32_t id = static_cast<uint32_t>(entity.m_ID);
 		void* param[] = { &id };
 		CallMethod(instance.GetInstance(), instance.ScriptClass->Constructor, param);
 
@@ -530,7 +531,7 @@ namespace XYZ {
 
 	const std::vector<PublicField>& ScriptEngine::GetPublicFields(const SceneEntity& entity)
 	{
-		return s_ScriptEntityInstances.GetData(entity.ID()).Fields;
+		return s_ScriptEntityInstances.GetData(static_cast<size_t>(entity.ID())).Fields;
 	}
 
 	const SparseArray<ScriptEntityInstance>& ScriptEngine::GetScriptEntityInstances()

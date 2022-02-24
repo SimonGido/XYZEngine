@@ -60,6 +60,7 @@ project "XYZEngine"
 			"vendor/stb_image",		
 			"vendor/assimp/include",
 			"vendor/spdlog/include",
+			"%{IncludeDir.entt}",
 			"%{IncludeDir.ozz_animation}",
 			"%{IncludeDir.Assimp}",
 			"%{IncludeDir.delaunator}",

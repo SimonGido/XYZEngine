@@ -839,17 +839,17 @@ namespace XYZ {
 	void SceneRenderer::prepareLights()
 	{
 		// Prepare lights
-		auto& ecs = m_ActiveScene->GetECS();
+		auto& registry = m_ActiveScene->GetRegistry();
 
-		m_SpotLights.reserve(ecs.GetStorage<SpotLight2D>().Size());
-		m_PointLights.reserve(ecs.GetStorage<PointLight2D>().Size());
+		m_SpotLights.reserve(registry.storage<SpotLight2D>().size());
+		m_PointLights.reserve(registry.storage<PointLight2D>().size());
 
 		// Spot lights
-		auto spotLight2DView = ecs.CreateView<TransformComponent, SpotLight2D>();
+		auto spotLight2DView = registry.view<TransformComponent, SpotLight2D>();
 		for (auto entity : spotLight2DView)
 		{
 			// Render previous frame data
-			auto& [transform, light] = spotLight2DView.Get<TransformComponent, SpotLight2D>(entity);
+			auto& [transform, light] = spotLight2DView.get<TransformComponent, SpotLight2D>(entity);
 			auto [trans, rot, scale] = transform.GetWorldComponents();
 
 			SpotLight lightData;
@@ -864,10 +864,10 @@ namespace XYZ {
 		}
 
 		// Point Lights
-		auto pointLight2DView = ecs.CreateView<TransformComponent, PointLight2D>();
+		auto pointLight2DView = registry.view<TransformComponent, PointLight2D>();
 		for (auto entity : pointLight2DView)
 		{
-			auto& [transform, light] = pointLight2DView.Get<TransformComponent, PointLight2D>(entity);
+			auto& [transform, light] = pointLight2DView.get<TransformComponent, PointLight2D>(entity);
 			auto [trans, rot, scale] = transform.GetWorldComponents();
 			PointLight lightData;
 			lightData.Color = glm::vec4(light.Color, 1.0f);
