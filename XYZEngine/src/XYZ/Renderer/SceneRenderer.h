@@ -73,7 +73,7 @@ namespace XYZ {
 		{
 			glm::vec4 TransformRow[3];
 		};
-		using BoneTransforms = std::array<glm::mat4, 60>;
+		using BoneTransforms = std::array<ozz::math::Float4x4, 60>;
 
 		struct MeshDrawCommandOverride
 		{
@@ -208,7 +208,7 @@ namespace XYZ {
 
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial);
-		void SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<glm::mat4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial = nullptr);
+		void SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 
 		void SubmitLight(const PointLight2D& light, const glm::vec2& position);
 
@@ -241,7 +241,7 @@ namespace XYZ {
 		
 		Ref<Pipeline> getGeometryPipeline(const Ref<Material>& material);
 
-		void copyToBoneStorage(RenderQueue::BoneTransforms& storage, const std::vector<glm::mat4>& boneTransforms);
+		void copyToBoneStorage(RenderQueue::BoneTransforms& storage, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<AnimatedMesh>& mesh);
 	private:
 		struct PointLight
 		{

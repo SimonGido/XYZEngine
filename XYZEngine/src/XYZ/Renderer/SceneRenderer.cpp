@@ -236,7 +236,7 @@ namespace XYZ {
 		memcpy(dc.InstanceData.data() + offset, instanceData, instanceDataSize);
 	}
 
-	void SceneRenderer::SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<glm::mat4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial)
+	void SceneRenderer::SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial)
 	{
 		RenderQueue::BatchMeshKey key{ mesh->GetHandle(), material->GetHandle() };
 
@@ -249,7 +249,7 @@ namespace XYZ {
 			auto& dcOverride = dc.OverrideCommands.emplace_back();
 			dcOverride.OverrideMaterial = overrideMaterial;
 			dcOverride.Transform = transform * mesh->GetMeshSource()->GetTransform();
-			copyToBoneStorage(dcOverride.BoneTransforms, boneTransforms);
+			copyToBoneStorage(dcOverride.BoneTransforms, boneTransforms, mesh);
 		}
 		else
 		{
@@ -257,7 +257,7 @@ namespace XYZ {
 			dc.TransformInstanceCount++;
 			dc.TransformData.push_back(Mat4ToTransformData(transform));
 			auto& boneStorage = dc.BoneData.emplace_back();
-			copyToBoneStorage(boneStorage, boneTransforms);
+			copyToBoneStorage(boneStorage, boneTransforms, mesh);
 		}
 	}
 
@@ -914,17 +914,21 @@ namespace XYZ {
 		return pipeline;
 	}
 
-	void SceneRenderer::copyToBoneStorage(RenderQueue::BoneTransforms& storage, const std::vector<glm::mat4>& boneTransforms)
+	void SceneRenderer::copyToBoneStorage(RenderQueue::BoneTransforms& storage, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<AnimatedMesh>& mesh)
 	{
 		if (boneTransforms.empty())
 		{
 			for (auto& bone : storage)
-				bone = glm::mat4(1.0f);
+				bone = ozz::math::Float4x4::identity();
 		}
 		else
 		{
+			const auto& boneInfo = mesh->GetMeshSource()->GetBoneInfo();
 			for (size_t i = 0; i < boneTransforms.size(); ++i)
-				storage[i] = boneTransforms[i];
+			{
+				const uint32_t jointIndex = boneInfo[i].JointIndex;
+				storage[i] = boneInfo[i].InverseTransform * boneTransforms[jointIndex] * boneInfo[i].BoneOffset;
+			}
 		}
 	}
 

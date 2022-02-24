@@ -41,8 +41,13 @@ namespace XYZ {
 
 	struct BoneInfo
 	{
-		glm::mat4 BoneOffset;
-		uint32_t  JointIndex;
+		BoneInfo() = default;
+		BoneInfo(const ozz::math::Float4x4& offset, const ozz::math::Float4x4& invTransform, uint32_t jointIndex)
+			: BoneOffset(offset), InverseTransform(invTransform), JointIndex(jointIndex)
+		{}
+		ozz::math::Float4x4 BoneOffset;
+		ozz::math::Float4x4 InverseTransform;
+		uint32_t  JointIndex = 0;
 	};
 
 
@@ -89,7 +94,7 @@ namespace XYZ {
 
 		ozz::unique_ptr<ozz::animation::Skeleton> m_Skeleton;
 		std::unordered_map<std::string, uint32_t> m_BoneMapping;
-		glm::mat4								  m_InverseTransform;
+		
 		const aiScene*							  m_Scene;
 		bool									  m_IsAnimated;
 		
@@ -99,6 +104,8 @@ namespace XYZ {
 		std::vector<BoneInfo> m_BoneInfo;
 		uint32_t			  m_BoneCount = 0;
 
+		// TODO: Per submesh
 		glm::mat4			  m_Transform;
+		glm::mat4			  m_InverseTransform;
 	};
 }

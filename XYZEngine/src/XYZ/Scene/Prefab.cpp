@@ -40,7 +40,7 @@ namespace XYZ {
 	}
 
 
-	static void BuildMeshEntityHierarchy(SceneEntity parent, Ref<Scene>& scene, const Ref<AnimatedMesh>& mesh, aiNode* node)
+	static void BuildMeshEntityHierarchy(SceneEntity parent, Ref<Scene>& scene, const Ref<AnimatedMesh>& mesh, aiNode* node, std::vector<SceneEntity>& entities)
 	{
 		XYZ_ASSERT(node->mNumMeshes <= 1, "We support only one mesh per assimp scene now");
 		glm::mat4 transform = Utils::Mat4FromAIMatrix4x4(node->mTransformation);
@@ -52,6 +52,9 @@ namespace XYZ {
 		else
 			childEntity = scene->CreateEntity(nodeName);
 
+		entities.push_back(childEntity);
+
+
 		childEntity.GetComponent<TransformComponent>().DecomposeTransform(transform);
 		if (node->mNumMeshes == 1)
 		{
@@ -60,7 +63,7 @@ namespace XYZ {
 		}
 
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
-			BuildMeshEntityHierarchy(childEntity, scene, mesh, node->mChildren[i]);
+			BuildMeshEntityHierarchy(childEntity, scene, mesh, node->mChildren[i], entities);
 	}
 
 	static void CopyAllComponentsIfExist(Entity dst, ECSManager& dstEcs, Entity src, ECSManager& srcEcs)
@@ -117,11 +120,18 @@ namespace XYZ {
 		if (assimpScene->mRootNode->mNumMeshes == 0)
 		{
 			for (uint32_t i = 0; i < assimpScene->mRootNode->mNumChildren; i++)
-				BuildMeshEntityHierarchy(m_Entity, m_Scene, mesh, assimpScene->mRootNode->mChildren[i]);
+				BuildMeshEntityHierarchy(m_Entity, m_Scene, mesh, assimpScene->mRootNode->mChildren[i], m_Entities);
 		}
 		else
 		{
-			BuildMeshEntityHierarchy(m_Entity, m_Scene, mesh, assimpScene->mRootNode);
+			BuildMeshEntityHierarchy(m_Entity, m_Scene, mesh, assimpScene->mRootNode, m_Entities);
+		}
+
+		// Find in hierarchy animated mesh component and assign it's bones
+		for (auto &entity : m_Entities)
+		{
+			if (entity.HasComponent<AnimatedMeshComponent>())
+				setupBoneEntities(entity);
 		}
 	}
 	SceneEntity Prefab::Instantiate(Ref<Scene> dstScene, SceneEntity parent, const glm::vec3* translation, const glm::vec3* rotation, const glm::vec3* scale)
@@ -131,8 +141,31 @@ namespace XYZ {
 			newEntity = dstScene->CreateEntity(m_Entity.GetComponent<SceneTagComponent>(), parent, GUID());
 		else
 			newEntity = dstScene->CreateEntity(m_Entity.GetComponent<SceneTagComponent>(), GUID());
+		newEntity.EmplaceComponent<PrefabComponent>(Ref<Prefab>(this), newEntity.ID());
 
-		copyEntity(newEntity, m_Entity);
+		std::unordered_map<Entity, Entity> clones;
+		copyEntity(newEntity, m_Entity, clones);
+		
+		for (auto& prefabEntity : m_Entities)
+		{
+			const Entity clone = clones[prefabEntity.ID()];
+			SceneEntity cloneEntity(clone, dstScene.Raw());
+			if (prefabEntity.HasComponent<AnimatedMeshComponent>())
+			{
+				auto& animMeshComponent = cloneEntity.GetComponent<AnimatedMeshComponent>();
+				// Remap prefab entity to created clone entity
+				for (auto& boneEntity : animMeshComponent.BoneEntities)
+					boneEntity = clones[boneEntity];
+			}
+			if (prefabEntity.HasComponent<AnimationComponent>())
+			{
+				
+				auto& animComponent = cloneEntity.GetComponent<AnimationComponent>();
+				// Remap prefab entity to created clone entity
+				for (auto& boneEntity : animComponent.BoneEntities)
+					boneEntity = clones[boneEntity];
+			}
+		}
 
 		auto& transformComponent = newEntity.GetComponent<TransformComponent>();
 		if (translation)
@@ -144,9 +177,11 @@ namespace XYZ {
 
 		return newEntity;
 	}
-	void Prefab::copyEntity(SceneEntity dst, SceneEntity src) const
+	void Prefab::copyEntity(SceneEntity dst, SceneEntity src, std::unordered_map<Entity, Entity>& clones) const
 	{
 		CopyAllComponentsIfExist(dst, *dst.GetECS(), src, *src.GetECS());
+		clones[src] = dst;
+
 		auto& srcRel = src.GetComponent<Relationship>();
 		auto& dstRel = dst.GetComponent<Relationship>();
 		std::stack<Entity> children;
@@ -160,14 +195,33 @@ namespace XYZ {
 
 			auto& childRel = child.GetComponent<Relationship>();
 			SceneEntity newChild = dst.GetScene()->CreateEntity(src.GetComponent<SceneTagComponent>().Name, dst, GUID());
-			copyEntity(newChild, child);
+			copyEntity(newChild, child, clones);
 			if (childRel.GetNextSibling())
 				children.push(childRel.GetNextSibling());
+		}
+	}
+	void Prefab::setupBoneEntities(SceneEntity entity)
+	{
+		auto& animatedMeshComponent = entity.GetComponent<AnimatedMeshComponent>();
+		auto& bones = animatedMeshComponent.Mesh->GetMeshSource()->GetBoneMapping();
+		auto& boneInfo = animatedMeshComponent.Mesh->GetMeshSource()->GetBoneInfo();
+		animatedMeshComponent.BoneEntities.resize(boneInfo.size());
+		for (const auto& entity : m_Entities)
+		{
+			for (const auto& [name, index] : bones)
+			{
+				if (entity.GetComponent<SceneTagComponent>().Name == name)
+				{
+					animatedMeshComponent.BoneEntities[index] = entity;
+					break;
+				}
+			}
 		}
 	}
 	SceneEntity Prefab::createPrefabFromEntity(SceneEntity entity)
 	{
 		SceneEntity newEntity = m_Scene->CreateEntity("", GUID());
+		m_Entities.push_back(newEntity);
 		CopyAllComponentsIfExist(newEntity, m_Scene->GetECS(), entity, *entity.GetECS());
 	
 		std::stack<Entity> children;

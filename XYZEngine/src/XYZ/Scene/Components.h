@@ -122,6 +122,28 @@ namespace XYZ {
 		Ref<AnimatedMesh>	  Mesh;
 		Ref<MaterialAsset>    MaterialAsset;
 		Ref<MaterialInstance> OverrideMaterial;
+		
+		std::vector<ozz::math::Float4x4> BoneTransforms;
+		std::vector<Entity>   BoneEntities; //TODO: for sake of simplicity we are not going to use this for now
+	};
+
+	class AnimationController;
+	struct AnimationComponent
+	{
+		Ref<AnimationController> Controller;
+		std::vector<Entity>		 BoneEntities; //TODO: for sake of simplicity we are not going to use this for now
+		float					 AnimationTime = 0.0f;;
+		bool					 Playing = false;
+	};
+
+	class Prefab;
+	struct PrefabComponent
+	{
+		PrefabComponent() = default;
+		PrefabComponent(const Ref<Prefab>& prefabAsset, const Entity owner);
+
+		Ref<Prefab> PrefabAsset;
+		Entity		Owner;
 	};
 
 	struct ParticleRenderer
@@ -180,8 +202,6 @@ namespace XYZ {
 		Entity FindByName(const ECSManager& ecs, std::string_view name) const;
 
 		std::vector<Entity> GetTree(const ECSManager& ecs) const;
-		std::string			GetPath(const ECSManager& ecs, Entity entity, Entity end = Entity(0)) const;
-		bool			    IsInHierarchy(const ECSManager& ecs, Entity parent, std::string_view path) const;
 		bool				IsInHierarchy(const ECSManager& ecs, Entity child) const;
 
 		Entity GetParent() const { return Parent; }

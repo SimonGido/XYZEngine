@@ -9,46 +9,24 @@
 #include <ozz/animation/runtime/sampling_job.h>
 #include <ozz/base/span.h>
 
-#include <iostream>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace XYZ {
-	void AnimationController::Update(Timestep ts)
+	void AnimationController::Update(float& animationTime)
 	{
-		m_AnimationTime += ts;
-		float ratio = m_AnimationTime / Animation->GetAnimation().duration();
+		if (m_AnimationStates.empty())
+			return;
+
+		float ratio = animationTime / m_AnimationStates[m_StateIndex]->GetAnimation().duration();
 		if (ratio >= 1.0f)
 		{
-			m_AnimationTime = 0.0f;
+			animationTime = 0.0f;
 			ratio = 0.0f;
 		}
 
-		ozz::animation::SamplingJob sampling_job;
-		sampling_job.animation = &Animation->GetAnimation();
-		sampling_job.context = &m_SamplingContext;
-		sampling_job.ratio = ratio;
-		sampling_job.output = ozz::make_span(m_LocalSpaceSoaTransforms);
-		if (!sampling_job.Run())
-		{
-			XYZ_ERROR("ozz animation sampling job failed!");
-		}
-
-
-		ozz::vector<ozz::math::Float4x4> boneTransforms(m_SkeletonAsset->GetSkeleton().num_joints());   // Note (0x):  performance? can we avoid constructing this every frame, every mesh?
-		
-		ozz::animation::LocalToModelJob ltm_job;
-		ltm_job.skeleton = &m_SkeletonAsset->GetSkeleton();
-		ltm_job.input = ozz::make_span(m_LocalSpaceSoaTransforms);
-		ltm_job.output = ozz::make_span(boneTransforms);
-		if (!ltm_job.Run())
-		{
-			XYZ_ERROR("ozz animation convertion to model space failed!");
-		}
-		
-		m_Transforms.resize(boneTransforms.size());
-		for (size_t i = 0; i < m_Transforms.size(); ++i)
-		{
-			memcpy(&m_Transforms[i], &boneTransforms[i], sizeof(ozz::math::Float4x4));
-		}
+		updateSampling(ratio);
 	}
 	void AnimationController::SetSkeletonAsset(const Ref<SkeletonAsset>& skeletonAsset)
 	{
@@ -59,10 +37,63 @@ namespace XYZ {
 			m_LocalSpaceSoaTransforms.resize(m_SkeletonAsset->GetSkeleton().num_soa_joints());
 			m_LocalTranslations.resize(m_SkeletonAsset->GetSkeleton().num_joints());
 			m_LocalScales.resize(m_SkeletonAsset->GetSkeleton().num_joints());
+			m_LocalRotations.resize(m_SkeletonAsset->GetSkeleton().num_joints());
+			m_BoneTransforms.resize(m_SkeletonAsset->GetSkeleton().num_joints());
 		}	
 	}
-	std::vector<glm::mat4> AnimationController::GetTransforms() const
+	void AnimationController::AddState(const std::string_view name, const Ref<AnimationAsset>& animation)
 	{
-		return m_Transforms;
+		m_AnimationNames.push_back(std::string(name));
+		m_AnimationStates.push_back(animation);
+	}
+	const std::vector<ozz::math::Float4x4>& AnimationController::GetTransforms() const
+	{
+		return m_BoneTransforms;
+	}
+	void AnimationController::updateSampling(float ratio)
+	{
+		ozz::animation::SamplingJob sampling_job;
+		sampling_job.animation = &m_AnimationStates[m_StateIndex]->GetAnimation();
+		sampling_job.context = &m_SamplingContext;
+		sampling_job.ratio = ratio;
+		sampling_job.output = ozz::make_span(m_LocalSpaceSoaTransforms);
+		if (!sampling_job.Run())
+		{
+			XYZ_ERROR("ozz animation sampling job failed!");
+		}
+
+
+		for (int i = 0; i < m_LocalSpaceSoaTransforms.size(); ++i)
+		{
+			ozz::math::SimdFloat4 translations[4];
+			ozz::math::SimdFloat4 scales[4];
+			ozz::math::SimdFloat4 rotations[4];
+
+			ozz::math::Transpose3x4(&m_LocalSpaceSoaTransforms[i].translation.x, translations);
+			ozz::math::Transpose3x4(&m_LocalSpaceSoaTransforms[i].scale.x, scales);
+			ozz::math::Transpose4x4(&m_LocalSpaceSoaTransforms[i].rotation.x, rotations);
+
+			for (int j = 0; j < 4; ++j)
+			{
+				auto index = i * 4 + j;
+				if (index >= m_LocalTranslations.size())
+					break;
+
+				ozz::math::Store3PtrU(translations[j], glm::value_ptr(m_LocalTranslations[index]));
+				ozz::math::Store3PtrU(scales[j], glm::value_ptr(m_LocalScales[index]));
+				ozz::math::StorePtrU(rotations[j], glm::value_ptr(m_LocalRotations[index]));
+			}
+		}
+	}
+	void AnimationController::updateModel()
+	{
+		ozz::animation::LocalToModelJob ltm_job;
+		ltm_job.skeleton = &m_SkeletonAsset->GetSkeleton();
+		ltm_job.input = ozz::make_span(m_LocalSpaceSoaTransforms);
+		ltm_job.output = ozz::make_span(m_BoneTransforms);
+		if (!ltm_job.Run())
+		{
+			XYZ_ERROR("ozz animation convertion to model space failed!");
+		}
 	}
 }

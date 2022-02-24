@@ -376,19 +376,25 @@ namespace XYZ {
 			TransformComponent& tc = selectedEntity.GetComponent<TransformComponent>();
 			const Relationship& rel = selectedEntity.GetComponent<Relationship>();
 
-			glm::mat4 transform = tc.GetTransform();
-			// This is hack to translate the gizmo to the proper position based on hierarchy transformation
-			if (rel.GetParent())
-			{
-				cameraView *= ecs.GetComponent<TransformComponent>(rel.GetParent()).WorldTransform;
-			}
+			glm::mat4 transform = tc.WorldTransform;
+			
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
 				nullptr, nullptr);
 
 			if (ImGuizmo::IsUsing())
 			{
-				tc.DecomposeTransform(transform);
+				auto parent = rel.GetParent();
+				if (rel.GetParent())
+				{
+					const glm::mat4& parentTransform = ecs.GetComponent<TransformComponent>(parent).WorldTransform;
+					transform = glm::inverse(parentTransform) * transform;
+				}
+				auto [translation, rotation, scale] = Math::DecomposeTransform(transform);
+				glm::vec3 deltaRot = rotation - tc.Rotation;
+				tc.Translation = translation;
+				tc.Rotation += deltaRot;
+				tc.Scale = scale;
 			}
 		}
 	}

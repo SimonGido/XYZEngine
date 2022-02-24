@@ -35,8 +35,6 @@ namespace XYZ {
     class Renderer2D;
     class SceneRenderer;
     class SceneEntity;
-    class SpriteRenderer;
-    class TransformComponent;
 
     namespace Editor {
         class SceneHierarchyPanel;
@@ -83,17 +81,6 @@ namespace XYZ {
 
         void updateHierarchy();
         void setupPhysics();
-
-        void sortSpriteRenderers();
-
-        struct SpriteRenderData
-        {
-            SpriteRenderer*     Renderer;
-            TransformComponent* Transform;
-            uint64_t			SortKey;
-        };
-
-        std::vector<SpriteRenderData> m_SpriteRenderData;
     private:
         PhysicsWorld2D      m_PhysicsWorld;
         ContactListener     m_ContactListener;
@@ -120,14 +107,5 @@ namespace XYZ {
         friend class ScriptEngine;
         friend class LuaEntity;
         friend class Editor::SceneHierarchyPanel;
-
-
-
-
-
-        Ref<SkeletonAsset>       m_SkeletonAsset;
-        Ref<MeshSource>          m_MeshSource;
-        Ref<AnimationAsset>      m_AnimationAsset;
-        Ref<AnimationController> m_Controller;
     };
 }

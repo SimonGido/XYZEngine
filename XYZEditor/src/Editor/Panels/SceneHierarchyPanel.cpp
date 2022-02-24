@@ -12,7 +12,7 @@
 #include <imgui.h>
 
 namespace XYZ {
-    namespace Helper {
+    namespace Utils {
         static bool Collide(const glm::vec2& pos, const glm::vec2& size, const glm::vec2& point)
         {
             return (pos.x + size.x > point.x &&
@@ -20,6 +20,7 @@ namespace XYZ {
                 pos.y + size.y >  point.y &&
                 pos.y < point.y);
         }
+      
     }
     namespace Editor {
         SceneHierarchyPanel::SceneHierarchyPanel(std::string name)
@@ -72,8 +73,11 @@ namespace XYZ {
 
             ImGuiTreeNodeFlags flags = (m_Context->GetSelectedEntity() == entity ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
             flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+           
             if (defaultOpen)
                 flags |= ImGuiTreeNodeFlags_DefaultOpen;
+            if (!rel->GetFirstChild())
+                flags |= ImGuiTreeNodeFlags_Leaf;
 
             const bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag->c_str());
             dragAndDrop(entity);

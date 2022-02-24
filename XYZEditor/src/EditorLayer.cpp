@@ -81,7 +81,10 @@ namespace XYZ {
 			auto meshSource = Ref<MeshSource>::Create("Resources/Meshes/Character Running.fbx");
 			auto skeleton = Ref<SkeletonAsset>::Create("Resources/Meshes/Character Running.fbx");
 			auto animMesh = Ref<AnimatedMesh>::Create(meshSource);
+			auto anim = Ref<AnimationAsset>::Create("Resources/Meshes/Character Running.fbx", "Armature|ArmatureAction", skeleton);
 			auto animMeshMaterialAsset = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/AnimMeshMaterial.mat");
+
+
 
 			Ref<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
 			scenePanel->SetSceneRenderer(m_SceneRenderer);
@@ -89,14 +92,15 @@ namespace XYZ {
 			
 			auto prefab = Ref<Prefab>::Create();
 			prefab->Create(animMesh, "Test");
-			prefab->Instantiate(m_Scene);
+			SceneEntity animEntity = prefab->Instantiate(m_Scene);
+
 
 			Renderer::WaitAndRenderAll();
 		}
 
 		void EditorLayer::OnDetach()
 		{
-			AssetManager::SerializeAll();
+			// AssetManager::SerializeAll();
 			SceneSerializer serializer;
 			serializer.Serialize("Assets/Scenes/Scene.xyz", m_Scene);
 			ScriptEngine::Shutdown();

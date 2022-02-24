@@ -19,9 +19,12 @@
 #include "SceneEntity.h"
 #include "Components.h"
 
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 namespace XYZ {
@@ -31,7 +34,15 @@ namespace XYZ {
 	{
 		MaterialFlag = 32
 	};
-
+	ozz::math::Float4x4 Float4x4FromMat4(const glm::mat4& mat)
+	{
+		ozz::math::Float4x4 result;
+		result.cols[0] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[0]));
+		result.cols[1] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[1]));
+		result.cols[2] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[2]));
+		result.cols[3] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[3]));
+		return result;
+	}
 	template <typename T>
 	void EraseFromVector(std::vector<T>& vec, const T& val)
 	{
@@ -67,15 +78,6 @@ namespace XYZ {
 
 		m_ECS.GetStorage<ScriptComponent>().AddOnConstruction<&Scene::onScriptComponentConstruct>(this);
 		m_ECS.GetStorage<ScriptComponent>().AddOnDestruction<&Scene::onScriptComponentDestruct>(this);
-	
-	
-		m_MeshSource = Ref<MeshSource>::Create("Resources/Meshes/Character Running.fbx");
-		m_SkeletonAsset = Ref<SkeletonAsset>::Create("Resources/Meshes/Character Running.fbx");
-		m_AnimationAsset = Ref<AnimationAsset>::Create("Resources/Meshes/Character Running.fbx", "Armature|ArmatureAction", m_SkeletonAsset);
-		m_Controller = Ref<AnimationController>::Create();
-
-		m_Controller->Animation = m_AnimationAsset;
-		m_Controller->SetSkeletonAsset(m_SkeletonAsset);
 	}
 
 	Scene::~Scene()
@@ -268,10 +270,12 @@ namespace XYZ {
 		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		sceneRenderer->BeginScene(renderCamera);
 
-		sortSpriteRenderers();
-		for (const auto& data : m_SpriteRenderData)
+
+		auto spriteView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
+		for (auto entity : spriteView)
 		{
-			sceneRenderer->SubmitSprite(data.Renderer->Material, data.Renderer->SubTexture, data.Renderer->Color, data.Transform->WorldTransform);
+			auto& [transform, spriteRenderer] = spriteView.Get<TransformComponent, SpriteRenderer>(entity);
+			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform.WorldTransform);
 		}
 
 		sceneRenderer->EndScene();
@@ -283,17 +287,36 @@ namespace XYZ {
 		m_PhysicsWorld.Step(ts);
 
 		updateHierarchy();
-		sortSpriteRenderers();
-
-		auto particleView = m_ECS.CreateView<ParticleComponent>();
-		for (auto entity : particleView)
+		
 		{
-			XYZ_PROFILE_FUNC("Scene::OnRenderEditor particleView");
-			auto& [particleComponent] = particleView.Get<ParticleComponent>(entity);
-			particleComponent.System.Update(ts);
+			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor animStorage");
+			auto& animStorage = m_ECS.GetStorage<AnimationComponent>();
+			for (auto& anim : animStorage)
+			{
+				if (anim.Playing)
+				{
+					anim.Controller->Update(anim.AnimationTime);
+					anim.AnimationTime += ts;
+					for (size_t i = 0; i < anim.BoneEntities.size(); ++i)
+					{
+						auto& transform = m_ECS.GetComponent<TransformComponent>(anim.BoneEntities[i]);
+						transform.Translation = anim.Controller->GetTranslation(i);
+						transform.Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
+						transform.Scale = anim.Controller->GetScale(i);
+					}
+				}
+			}
 		}
+		auto particleView = m_ECS.CreateView<ParticleComponent>();
+		{
+			XYZ_PROFILE_FUNC("Scene::OnRUpdateEditor particleView");
+			for (auto entity : particleView)
+			{
 
-		m_Controller->Update(ts);
+				auto& [particleComponent] = particleView.Get<ParticleComponent>(entity);
+				particleComponent.System.Update(ts);
+			}
+		}
 	}
 	
 	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos)
@@ -302,18 +325,20 @@ namespace XYZ {
 		sceneRenderer->BeginScene(viewProjection, view, camPos);
 		
 		
-		for (auto& data : m_SpriteRenderData)
+		auto spriteView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
+		for (auto entity : spriteView)
 		{
+			auto& [transform, spriteRenderer] = spriteView.Get<TransformComponent, SpriteRenderer>(entity);
 			// Assets could be reloaded by AssetManager, update references
-			if (AssetManager::Exist(data.Renderer->Material->GetHandle()))
+			if (AssetManager::Exist(spriteRenderer.Material->GetHandle()))
 			{
-				data.Renderer->Material = AssetManager::GetAsset<MaterialAsset>(data.Renderer->Material->GetHandle());
+				spriteRenderer.Material = AssetManager::GetAsset<MaterialAsset>(spriteRenderer.Material->GetHandle());
 			}
-			if (AssetManager::Exist(data.Renderer->SubTexture->GetHandle()))
+			if (AssetManager::Exist(spriteRenderer.SubTexture->GetHandle()))
 			{
-				data.Renderer->SubTexture = AssetManager::GetAsset<SubTexture>(data.Renderer->SubTexture->GetHandle());
+				spriteRenderer.SubTexture = AssetManager::GetAsset<SubTexture>(spriteRenderer.SubTexture->GetHandle());
 			}
-			sceneRenderer->SubmitSprite(data.Renderer->Material, data.Renderer->SubTexture, data.Renderer->Color, data.Transform->WorldTransform);
+			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform.WorldTransform);
 		}
 		
 		auto meshView = m_ECS.CreateView<TransformComponent, MeshComponent>();
@@ -323,21 +348,17 @@ namespace XYZ {
 			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.OverrideMaterial);
 		}
 
-		auto animMeshView = m_ECS.CreateView<TransformComponent, AnimatedMeshComponent>();
+		auto animMeshView = m_ECS.CreateView<TransformComponent,AnimatedMeshComponent>();
 		for (auto entity : animMeshView)
 		{
-			auto& [transform, meshComponent] = animMeshView.Get<TransformComponent, AnimatedMeshComponent>(entity);
-			auto tree = m_ECS.GetComponent<Relationship>(entity).GetTree(m_ECS);
-			
-			const auto& boneInfo = meshComponent.Mesh->GetMeshSource()->GetBoneInfo();
-			std::vector<glm::mat4> transforms = m_Controller->GetTransforms();
-			std::vector<glm::mat4> boneTransforms(boneInfo.size());
-			for (size_t i = 0; i < boneInfo.size(); ++i)
+			auto& [transform, meshComponent] = animMeshView.Get<TransformComponent,  AnimatedMeshComponent>(entity);
+			meshComponent.BoneTransforms.resize(meshComponent.BoneEntities.size());
+			for (size_t i = 0; i < meshComponent.BoneEntities.size(); ++i)
 			{
-				const uint32_t jointIndex = boneInfo[i].JointIndex;
-				boneTransforms[i] = transforms[jointIndex] * boneInfo[i].BoneOffset;
+				const Entity boneEntity = meshComponent.BoneEntities[i];
+				meshComponent.BoneTransforms[i] = Float4x4FromMat4(m_ECS.GetComponent<TransformComponent>(boneEntity).WorldTransform);
 			}
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, boneTransforms, meshComponent.OverrideMaterial);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
 		}
 
 		auto particleView = m_ECS.CreateView<TransformComponent, ParticleRenderer, ParticleComponent>();
@@ -525,26 +546,5 @@ namespace XYZ {
 			counter++;
 		}
 	}
-	
-	void Scene::sortSpriteRenderers()
-	{
-		XYZ_PROFILE_FUNC("Scene::processSpriteRenderers");
-		m_SpriteRenderData.clear();
-		auto renderView = m_ECS.CreateView<TransformComponent, SpriteRenderer>();
-		for (auto entity : renderView)
-		{
-			auto [transform, renderer] = renderView.Get<TransformComponent, SpriteRenderer>(entity);
-			if (renderer.Visible)
-			{
-				SortKey<uint64_t, RenderSortFlags> sortKey;
-				sortKey.Set(RenderSortFlags::MaterialFlag, static_cast<uint64_t>(renderer.Material->GetMaterial()->GetID()));
-				m_SpriteRenderData.push_back({ &renderer, &transform, sortKey.GetKey() });
-			}
-		}
-		//TODO: sort based on different criteria ( sort layer / z position )
-		
-		//std::sort(m_SpriteRenderData.begin(), m_SpriteRenderData.end(), [](const SpriteRenderData& a, const SpriteRenderData& b) {
-		//	return a.SortKey < b.SortKey;
-		//});
-	}
+
 }

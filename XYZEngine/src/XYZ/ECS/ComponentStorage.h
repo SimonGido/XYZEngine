@@ -17,9 +17,7 @@ namespace XYZ {
 		virtual					  ~IComponentStorage() = default;
 		virtual void			   CopyEntity(Entity source, Entity target) = 0;
 		virtual void			   Clear() = 0;
-		virtual IComponentStorage* Move(uint8_t* buffer) = 0;
 		virtual IComponentStorage* Move() = 0;
-		virtual IComponentStorage* Copy(uint8_t* buffer) const = 0;
 		virtual IComponentStorage* Copy() const = 0;
 
 		virtual void			   EntityDestroyed(Entity entity) = 0;
@@ -74,9 +72,7 @@ namespace XYZ {
 			
 		virtual void			   CopyEntity(Entity source, Entity target) override;
 		virtual void			   Clear() override;	
-		virtual IComponentStorage* Move(uint8_t* buffer) override;
-		virtual IComponentStorage* Move() override;
-		virtual IComponentStorage* Copy(uint8_t* buffer) const override;		
+		virtual IComponentStorage* Move() override;	
 		virtual IComponentStorage* Copy() const override;
 
 		virtual void     EntityDestroyed(Entity entity) override;	
@@ -146,21 +142,13 @@ namespace XYZ {
 		m_OnConstruction.clear();
 		m_OnDestruction.clear();
 	}
-	template<typename T>
-	inline IComponentStorage* ComponentStorage<T>::Move(uint8_t* buffer)
-	{
-		return new (buffer)ComponentStorage<T>(std::move(*this));
-	}
+
 	template<typename T>
 	inline IComponentStorage* ComponentStorage<T>::Move()
 	{
 		return new ComponentStorage<T>(std::move(*this));
 	}
-	template<typename T>
-	inline IComponentStorage* ComponentStorage<T>::Copy(uint8_t* buffer) const
-	{
-		return new (buffer)ComponentStorage<T>(*this);
-	}
+
 	template<typename T>
 	inline IComponentStorage* ComponentStorage<T>::Copy() const
 	{

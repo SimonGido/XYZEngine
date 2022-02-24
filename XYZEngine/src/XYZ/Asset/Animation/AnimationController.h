@@ -21,13 +21,24 @@ namespace XYZ {
 	public:
 		virtual ~AnimationController() = default;
 
-		void Update(Timestep ts);
+		void Update(float& animationTime);
 
 		void SetSkeletonAsset(const Ref<SkeletonAsset>& skeletonAsset);
+		void SetCurrentState(size_t index) { m_StateIndex = index; };
+		void AddState(const std::string_view name, const Ref<AnimationAsset>& animation);
 
-		Ref<AnimationAsset> Animation;
-		
-		std::vector<glm::mat4> GetTransforms() const;
+		size_t GetCurrentState() const { return m_StateIndex; }
+
+		const glm::vec3& GetTranslation(size_t jointIndex) const { return m_LocalTranslations[jointIndex]; }
+		const glm::vec3& GetScale(size_t jointIndex)	   const { return m_LocalScales[jointIndex]; }
+		const glm::quat& GetRotation(size_t jointIndex)	   const { return m_LocalRotations[jointIndex]; }
+
+		const std::vector<std::string>&			GetStateNames()		 const { return m_AnimationNames; }
+		const std::vector<Ref<AnimationAsset>>& GetAnimationStates() const { return m_AnimationStates; }
+		const std::vector<ozz::math::Float4x4>& GetTransforms()		 const; 
+	private:
+		void updateSampling(float ratio);
+		void updateModel();
 
 	private:
 		Ref<SkeletonAsset> m_SkeletonAsset;
@@ -37,9 +48,12 @@ namespace XYZ {
 		std::vector<glm::vec3> m_LocalTranslations;
 		std::vector<glm::vec3> m_LocalScales;
 		std::vector<glm::quat> m_LocalRotations;
-		float m_AnimationTime = 0.0f;
 
+		std::vector<ozz::math::Float4x4> m_BoneTransforms;
 
-		std::vector<glm::mat4> m_Transforms;
+		std::vector<Ref<AnimationAsset>> m_AnimationStates;
+		std::vector<std::string>		 m_AnimationNames;
+		size_t							 m_StateIndex = 0;
+
 	};
 }

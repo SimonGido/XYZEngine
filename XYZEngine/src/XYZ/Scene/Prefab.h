@@ -14,22 +14,21 @@ namespace XYZ {
 		SceneEntity Instantiate(Ref<Scene> dstScene, SceneEntity parent = SceneEntity(), 
 			const glm::vec3* translation = nullptr, const glm::vec3* rotation = nullptr, const glm::vec3* scale = nullptr);
 
-		template <typename T>
-		void AddComponent(const T& component);
 
 		static AssetType GetStaticType() { return AssetType::Prefab; }
 		virtual AssetType GetAssetType() const override { return GetStaticType(); }
+
+
+		const std::vector<SceneEntity>& GetEntities() const { return m_Entities; }
 	private:
 		SceneEntity createPrefabFromEntity(SceneEntity entity);
-		void copyEntity(SceneEntity dst, SceneEntity src) const;
+		void copyEntity(SceneEntity dst, SceneEntity src, std::unordered_map<Entity, Entity>& clones) const;
+		void setupBoneEntities(SceneEntity entity);
+
 	private:
 		Ref<Scene>  m_Scene;
 		SceneEntity m_Entity;
+
+		std::vector<SceneEntity> m_Entities;
 	};
-	template<typename T>
-	inline void Prefab::AddComponent(const T& component)
-	{
-		if (!m_Entity.HasComponent<T>())
-			m_Entity.AddComponent<T>(component);
-	}
 }

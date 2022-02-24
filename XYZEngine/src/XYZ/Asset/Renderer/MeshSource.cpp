@@ -9,6 +9,12 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <ozz/animation/offline/skeleton_builder.h>
 
@@ -32,7 +38,25 @@ namespace XYZ {
 			result[0][3] = matrix.d1; result[1][3] = matrix.d2; result[2][3] = matrix.d3; result[3][3] = matrix.d4;
 			return result;
 		}
+		ozz::math::Float4x4 Float4x4FromMat4(const glm::mat4& mat)
+		{
+			ozz::math::Float4x4 result;
+			result.cols[0] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[0]));
+			result.cols[1] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[1]));
+			result.cols[2] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[2]));
+			result.cols[3] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[3]));
+			return result;
+		}
 
+		ozz::math::Float4x4 Float4x4FromAIMatrix4x4(const aiMatrix4x4& matrix)
+		{
+			ozz::math::Float4x4 result;
+			result.cols[0] = ozz::math::simd_float4::Load(matrix.a1, matrix.b1, matrix.c1, matrix.d1);
+			result.cols[1] = ozz::math::simd_float4::Load(matrix.a2, matrix.b2, matrix.c2, matrix.d2);
+			result.cols[2] = ozz::math::simd_float4::Load(matrix.a3, matrix.b3, matrix.c3, matrix.d3);
+			result.cols[3] = ozz::math::simd_float4::Load(matrix.a4, matrix.b4, matrix.c4, matrix.d4);
+			return result;
+		}
 	}
 
 	static const uint32_t s_MeshImportFlags =
@@ -67,8 +91,8 @@ namespace XYZ {
 		m_InverseTransform = glm::inverse(Utils::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
 		loadMeshes(m_Scene);
 		loadSkeleton(m_Scene);
-		loadBoneInfo(m_Scene);
 		traverseNodes(scene->mRootNode, glm::mat4(1.0f));
+		loadBoneInfo(m_Scene);
 
 		if (m_IsAnimated)
 			m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), static_cast<uint32_t>(m_AnimatedVertices.size() * sizeof(AnimatedVertex)));
@@ -92,11 +116,11 @@ namespace XYZ {
 		m_Scene = scene;
 
 		m_IsAnimated = scene->mAnimations != nullptr;
-		m_InverseTransform = glm::inverse(Utils::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
+
 		loadMeshes(m_Scene);
 		loadSkeleton(m_Scene);
-		loadBoneInfo(m_Scene);
 		traverseNodes(scene->mRootNode, glm::mat4(1.0f));
+		loadBoneInfo(m_Scene);
 
 		if (m_IsAnimated)
 			m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), static_cast<uint32_t>(m_AnimatedVertices.size() * sizeof(AnimatedVertex)));
@@ -202,10 +226,11 @@ namespace XYZ {
 						// Allocate an index for a new bone
 						boneIndex = m_BoneCount;
 						m_BoneCount++;
-						BoneInfo bi;
-						bi.BoneOffset = Utils::Mat4FromAssimpMat4(bone->mOffsetMatrix);
-						bi.JointIndex = findJointIndex(boneName);
-						m_BoneInfo.push_back(bi);
+						m_BoneInfo.emplace_back(
+							Utils::Float4x4FromAIMatrix4x4(bone->mOffsetMatrix),
+							ozz::math::Invert(Utils::Float4x4FromMat4(m_Transform)),
+							findJointIndex(boneName)
+						);
 						m_BoneMapping[boneName] = boneIndex;
 					}
 					else
@@ -231,6 +256,7 @@ namespace XYZ {
 		{
 			// TODO: for every submesh
 			m_Transform = transform;
+			m_InverseTransform = glm::inverse(transform);
 		}
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
 			traverseNodes(node->mChildren[i], transform);
