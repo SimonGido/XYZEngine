@@ -91,5 +91,46 @@ namespace XYZ {
 			mat->Set(mono_string_to_utf8(name), *value);
 		}
 		
+		void MaterialAssetNative::Register()
+		{
+			mono_add_internal_call("XYZ.MaterialAsset::Constructor_Native", Constructor);
+			mono_add_internal_call("XYZ.MaterialAsset::Destructor_Native", Destructor);
+			
+			mono_add_internal_call("XYZ.MaterialAsset::SetTexture_Native", SetTexture);
+			mono_add_internal_call("XYZ.MaterialAsset::SetTextureArr_Native", SetTextureArr);
+			mono_add_internal_call("XYZ.MaterialAsset::GetMaterial_Native", GetMaterial);
+			mono_add_internal_call("XYZ.MaterialAsset::GetMaterialInstance_Native", GetMaterialInstance);
+		}
+
+		Ref<MaterialAsset>* MaterialAssetNative::Constructor(Ref<ShaderAsset>* shaderAsset)
+		{
+			Ref<MaterialAsset> materialAsset = Ref<MaterialAsset>::Create(*shaderAsset);
+			return new Ref<MaterialAsset>(materialAsset);
+		}
+
+		void MaterialAssetNative::Destructor(Ref<MaterialAsset>* instance)
+		{
+			delete instance;
+		}
+
+		void MaterialAssetNative::SetTexture(Ref<MaterialAsset>* instance, MonoString* name, Ref<Texture2D>* texture)
+		{
+			(*instance)->SetTexture(mono_string_to_utf8(name), *texture);
+		}
+
+		void MaterialAssetNative::SetTextureArr(Ref<MaterialAsset>* instance, MonoString* name, Ref<Texture2D>* texture, uint32_t index)
+		{
+			(*instance)->SetTexture(mono_string_to_utf8(name), *texture, index);
+		}
+
+		Ref<Material>* MaterialAssetNative::GetMaterial(Ref<MaterialAsset>* instance)
+		{
+			return new Ref<Material>((*instance)->GetMaterial());
+		}
+
+		Ref<MaterialInstance>* MaterialAssetNative::GetMaterialInstance(Ref<MaterialAsset>* instance)
+		{
+			return new Ref<MaterialInstance>((*instance)->GetMaterialInstance());
+		}
 	}
 }

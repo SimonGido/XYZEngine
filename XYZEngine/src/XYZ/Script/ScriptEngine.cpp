@@ -480,7 +480,7 @@ namespace XYZ {
 		void* param[] = { &id };
 		CallMethod(instance.GetInstance(), instance.ScriptClass->Constructor, param);
 
-		instance.Fields.clear();
+		instance.FieldsData.Clear();
 
 		// Store public fields inside instance
 		MonoClassField* iter;
@@ -499,13 +499,9 @@ namespace XYZ {
 
 			// TODO: Attributes
 			MonoCustomAttrInfo* attr = mono_custom_attrs_from_field(instance.ScriptClass->Class, iter);
-
-			PublicField field = { name, xyzFieldType };
-			field.m_Handle = instance.Handle;
-			field.m_MonoClassField = iter;
-			field.StoreRuntimeValue();
-			instance.Fields.emplace_back(std::move(field));
+			instance.FieldsData.AddField(name, xyzFieldType, instance.Handle, iter);
 		}
+		instance.FieldsData.CreateBuffer();
 	}
 
 	void ScriptEngine::DestroyScriptEntityInstance(const SceneEntity& entity)
@@ -517,11 +513,9 @@ namespace XYZ {
 	void ScriptEngine::CopyPublicFieldsToRuntime(const SceneEntity& entity)
 	{
 		ScriptEntityInstance& instance = s_ScriptEntityInstances.GetData(entity);
-		for (auto& field : instance.Fields)
+		for (auto& field : instance.FieldsData.GetFields())
 			field.CopyStoredValueToRuntime();
 	}
-
-	
 
 
 	MonoDomain* ScriptEngine::GetMonoDomain()
@@ -531,7 +525,7 @@ namespace XYZ {
 
 	const std::vector<PublicField>& ScriptEngine::GetPublicFields(const SceneEntity& entity)
 	{
-		return s_ScriptEntityInstances.GetData(static_cast<size_t>(entity.ID())).Fields;
+		return s_ScriptEntityInstances.GetData(static_cast<size_t>(entity.ID())).FieldsData.GetFields();
 	}
 
 	const SparseArray<ScriptEntityInstance>& ScriptEngine::GetScriptEntityInstances()

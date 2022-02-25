@@ -9,17 +9,19 @@
 #include "Wrappers/Components/TransformComponentWrappers.h"
 #include "Wrappers/Components/SpriteRendererWrappers.h"
 #include "Wrappers/Components/RigidBody2DWrapper.h"
-#include "Wrappers/Components/SpriteRendererWrappers.h"
+#include "Wrappers/Components/MeshComponentWrapper.h"
+#include "Wrappers/Components/AnimationComponentWrapper.h"
 
 #include "Wrappers/Renderer/Texture2DWrapper.h"
 #include "Wrappers/Renderer/SubTextureWrapper.h"
 #include "Wrappers/Renderer/MaterialWrapper.h"
 #include "Wrappers/Renderer/ShaderWrapper.h"
+#include "Wrappers/Renderer/MeshWrapper.h"
 
 
 #include "Wrappers/SceneEntityNative.h"
 #include "Wrappers/InputNative.h"
-
+#include "Wrappers/AssetManagerNative.h"
 
 
 namespace XYZ {	
@@ -28,20 +30,31 @@ namespace XYZ {
 	{
 
 		Script::InputNative::Register();
+		Script::AssetManagerNative::Register();
 
 		// Components
 		Script::SceneEntityNative::Register();
 		Script::TransformComponentNative::Register();
 		Script::SpriteRendererNative::Register();
 		Script::RigidBody2DNative::Register();
+		Script::MeshComponentNative::Register();
+		Script::AnimatedMeshComponentNative::Register();
 		////////////////////////
 	
 		// Renderer
 		Script::Texture2DNative::Register();
 		Script::SubTextureNative::Register();
+		
 		Script::ShaderNative::Register();
+		Script::ShaderAssetNative::Register();
+		
 		Script::MaterialNative::Register();
 		Script::MaterialInstanceNative::Register();
+		Script::MaterialAssetNative::Register();
+		
+		Script::MeshSourceNative::Register();
+		Script::MeshNative::Register();
+		Script::AnimatedMeshNative::Register();
 		////////////////////////
 	}
 }

@@ -4,12 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Runtime.CompilerServices;
+
 namespace XYZ
 {
-    public abstract class UnmanagedResource
+    public class SkeletonAsset : UnmanagedResource
     {
-        internal IntPtr m_UnmanagedInstance;
+        public override void Destroy()
+        {
 
-        public abstract void Destroy();
+        }
     }
 }

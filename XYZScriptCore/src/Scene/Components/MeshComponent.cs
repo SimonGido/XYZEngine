@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 
 namespace XYZ
 {
-    public abstract class UnmanagedResource
+    public class MeshComponent : Component
     {
-        internal IntPtr m_UnmanagedInstance;
-
-        public abstract void Destroy();
     }
 }

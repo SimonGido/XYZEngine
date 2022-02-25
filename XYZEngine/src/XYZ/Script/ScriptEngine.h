@@ -27,7 +27,7 @@ namespace XYZ {
 		uint32_t				 Handle = 0;
 		Scene*					 SceneInstance = nullptr;
 		EntityScriptClass*		 ScriptClass = nullptr;
-		std::vector<PublicField> Fields;
+		PublicFieldData			 FieldsData;
 	};
 
 	class ScriptEngine

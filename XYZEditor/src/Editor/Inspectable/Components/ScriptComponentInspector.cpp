@@ -55,13 +55,14 @@ namespace XYZ {
 							}
 							else if (field.GetType() == PublicFieldType::String)
 							{
-								char* value = field.GetStoredValue<char*>();
-								const size_t size = strlen(value);
-								if (ImGui::InputText(id.c_str(), value, size))
+								std::string value = field.GetStoredValue<std::string>();
+								char buffer[1024];
+								memcpy(buffer, value.c_str(), value.size());
+
+								if (ImGui::InputText(id.c_str(), buffer, strlen(buffer)))
 								{
-									field.SetStoredValue<char*>(value);
+									field.SetStoredValue<std::string>(value);
 								}
-								delete[]value;
 							}
 							else if (field.GetType() == PublicFieldType::Vec2)
 							{

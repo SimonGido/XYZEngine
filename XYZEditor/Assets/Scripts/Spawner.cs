@@ -7,36 +7,39 @@ namespace Example
 {
     public class Spawner : Entity
     {
-        Texture2D texture;
-        SubTexture subTexture;
-        Shader shader;
-        Material material;
-
-        Entity entity;
+        //Texture2D texture;
+        //SubTexture subTexture;
+        //ShaderAsset shader;
+        //MaterialAsset material;
+        AnimatedMesh mesh;
 
         public float Speed = 2.0f;
         public Vector3 Velocity;
 
         public void OnCreate()
         {
-            texture = new Texture2D("Assets/Textures/scarychar.png");
-            subTexture = new SubTexture(texture);
-            shader = new Shader("Resources/Shaders/DefaultShader.glsl");
-            material = new Material(shader);
+            //texture = new Texture2D("Assets/Textures/scarychar.png");
+            //subTexture = new SubTexture(texture);
+            //shader = AssetManager.GetAsset<ShaderAsset>("Resources/Shaders/DefaultLitShader.shader");
+            //material = AssetManager.GetAsset<MaterialAsset>("Resources/Materials/DefaultLit.mat");
+      
+            mesh = new AnimatedMesh(new MeshSource("Resources/Meshes/Character Running.fbx"));
+            mesh.CreateBones(this);
 
-            entity = Create();
-            SpriteRenderer renderer = entity.CreateComponent<SpriteRenderer>();
-            renderer.Material = material;
-            renderer.Sprite = subTexture;
-            renderer.Color = new Vector4(0.0f, 0.0f, 1.0f, 1.0f);
+            //SpriteRenderer renderer = CreateComponent<SpriteRenderer>();
+            //
+            //renderer.MaterialAsset = material;
+            //renderer.Sprite = subTexture;
+            //renderer.Color = new Vector4(0.0f, 0.0f, 1.0f, 1.0f);
         }
 
         public void OnDestroy()
         {
-            texture.Destroy();
-            subTexture.Destroy();
-            shader.Destroy();
-            material.Destroy();
+            //texture.Destroy();
+            //subTexture.Destroy();
+            //shader.Destroy();
+            //material.Destroy();
+            mesh.Destroy();
         }
 
         public void OnUpdate(float ts)

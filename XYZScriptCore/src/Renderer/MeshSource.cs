@@ -6,11 +6,16 @@ using System.Threading.Tasks;
 
 using System.Runtime.CompilerServices;
 
+
 namespace XYZ
 {
-    public class Shader : UnmanagedResource
+    public class MeshSource : UnmanagedResource
     {
-        public Shader(string path)
+        public MeshSource()
+        {
+
+        }
+        public MeshSource(string path)
         {
             m_UnmanagedInstance = Constructor_Native(path);
         }

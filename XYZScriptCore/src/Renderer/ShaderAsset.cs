@@ -8,15 +8,24 @@ using System.Runtime.CompilerServices;
 
 namespace XYZ
 {
-    public class Shader : UnmanagedResource
+    public class ShaderAsset : UnmanagedResource
     {
-        public Shader(string path)
+        public ShaderAsset()
+        {
+
+        }
+        public ShaderAsset(string path)
         {
             m_UnmanagedInstance = Constructor_Native(path);
         }
         public override void Destroy()
         {
             Destructor_Native(m_UnmanagedInstance);
+        }
+
+        internal ShaderAsset(IntPtr instance)
+        {
+            m_UnmanagedInstance = instance;
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]

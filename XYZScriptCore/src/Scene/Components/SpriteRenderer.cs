@@ -28,9 +28,17 @@ namespace XYZ
             {
                 return new Material(GetMaterial_Native(Entity.ID));
             }
-            set
+        }
+
+        public MaterialAsset MaterialAsset
+        {
+            get 
             {
-                SetMaterial_Native(Entity.ID, value.m_UnmanagedInstance);
+                return new MaterialAsset(GetMaterialAsset_Native(Entity.ID)); 
+            }
+            set
+            { 
+                SetMaterialAsset_Native(Entity.ID, value.m_UnmanagedInstance); 
             }
         }
 
@@ -58,8 +66,11 @@ namespace XYZ
         internal static extern IntPtr GetMaterial_Native(uint entityID);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SetMaterial_Native(uint entityID, IntPtr material);
-
+        internal static extern void SetMaterialAsset_Native(uint entityID, IntPtr material);
+       
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern IntPtr GetMaterialAsset_Native(uint entityID);
+       
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void GetColor_Native(uint entityID, out Vector4 color);
 

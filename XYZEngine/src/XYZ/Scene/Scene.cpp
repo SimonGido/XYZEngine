@@ -275,7 +275,55 @@ namespace XYZ {
 			auto& [transform, spriteRenderer] = spriteView.get<TransformComponent, SpriteRenderer>(entity);
 			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform.WorldTransform);
 		}
+		auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
+		for (auto entity : meshView)
+		{
+			auto& [transform, meshComponent] = meshView.get<TransformComponent, MeshComponent>(entity);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.OverrideMaterial);
+		}
 
+		auto animMeshView = m_Registry.view<TransformComponent, AnimatedMeshComponent>();
+		for (auto entity : animMeshView)
+		{
+			auto& [transform, meshComponent] = animMeshView.get<TransformComponent, AnimatedMeshComponent>(entity);
+			meshComponent.BoneTransforms.resize(meshComponent.BoneEntities.size());
+			for (size_t i = 0; i < meshComponent.BoneEntities.size(); ++i)
+			{
+				const entt::entity boneEntity = meshComponent.BoneEntities[i];
+				meshComponent.BoneTransforms[i] = Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity).WorldTransform);
+			}
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
+		}
+
+		auto particleView = m_Registry.view<TransformComponent, ParticleRenderer, ParticleComponent>();
+		for (auto entity : particleView)
+		{
+			auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
+
+			auto moduleData = particleComponent.System.GetModuleDataRead();
+			const auto& lightModule = moduleData->LightUpdater;
+			for (const auto& lightPos : lightModule.Lights)
+			{
+				glm::mat4 lightTransform = glm::translate(transform.WorldTransform, lightPos);
+				glm::vec3 worldLightPos = Math::TransformToTranslation(lightTransform);
+				PointLight2D light{
+					lightModule.Light.Color,
+					lightModule.Light.Radius,
+					lightModule.Light.Intensity
+				};
+				sceneRenderer->SubmitLight(light, worldLightPos);
+			}
+
+			auto renderData = particleComponent.System.GetRenderDataRead();
+			sceneRenderer->SubmitMesh(
+				renderer.Mesh, renderer.MaterialAsset,
+				transform.WorldTransform,
+				renderData->Data.data(),
+				renderData->InstanceCount,
+				sizeof(ParticleRenderData),
+				renderer.OverrideMaterial
+			);
+		}
 		sceneRenderer->EndScene();
 	}
 

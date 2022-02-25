@@ -33,8 +33,7 @@ namespace XYZ
         {
             m_UnmanagedInstance = instance;
         }
-      
-        internal IntPtr m_UnmanagedInstance;
+
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern IntPtr Constructor_Native(uint width, uint height);

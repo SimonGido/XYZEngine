@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.Runtime.CompilerServices;
+
 namespace XYZ
 {
-    public abstract class UnmanagedResource
+    class AnimationController
     {
-        internal IntPtr m_UnmanagedInstance;
-
-        public abstract void Destroy();
     }
 }

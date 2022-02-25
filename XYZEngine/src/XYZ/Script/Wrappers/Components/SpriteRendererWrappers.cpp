@@ -14,11 +14,12 @@ namespace XYZ {
 		{
 			mono_add_internal_call("XYZ.SpriteRenderer::SetColor_Native", SetColor);
 			mono_add_internal_call("XYZ.SpriteRenderer::SetSubTexture_Native", SetSubTexture);
-			mono_add_internal_call("XYZ.SpriteRenderer::SetMaterial_Native", SetMaterial);
+			mono_add_internal_call("XYZ.SpriteRenderer::SetMaterialAsset_Native", SetMaterialAsset);
 
 			mono_add_internal_call("XYZ.SpriteRenderer::GetColor_Native", GetColor);
 			mono_add_internal_call("XYZ.SpriteRenderer::GetSubTexture_Native", GetSubTexture);
 			mono_add_internal_call("XYZ.SpriteRenderer::GetMaterial_Native", GetMaterial);
+			mono_add_internal_call("XYZ.SpriteRenderer::GetMaterialAsset_Native", GetMaterialAsset);
 		}
 		void SpriteRendererNative::SetColor(uint32_t entity, glm::vec4* inColor)
 		{
@@ -38,14 +39,14 @@ namespace XYZ {
 
 			ent.GetComponent<SpriteRenderer>().SubTexture = *subTexture;
 		}
-		void SpriteRendererNative::SetMaterial(uint32_t entity, Ref<Material>* material)
+		void SpriteRendererNative::SetMaterialAsset(uint32_t entity, Ref<MaterialAsset>* material)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 			
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
-			XYZ_ASSERT(false, "");
-			//ent.GetComponent<SpriteRenderer>().Material = *material;
+			
+			ent.GetComponent<SpriteRenderer>().Material = *material;
 		}
 		Ref<SubTexture>* SpriteRendererNative::GetSubTexture(uint32_t entity)
 		{
@@ -62,6 +63,14 @@ namespace XYZ {
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 			return new Ref<Material>(ent.GetComponent<SpriteRenderer>().Material->GetMaterial());
+		}
+		Ref<MaterialAsset>* SpriteRendererNative::GetMaterialAsset(uint32_t entity)
+		{
+			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+			XYZ_ASSERT(scene.Raw(), "No active scene!");
+
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
+			return new Ref<MaterialAsset>(ent.GetComponent<SpriteRenderer>().Material);
 		}
 		void SpriteRendererNative::GetColor(uint32_t entity, glm::vec4* outColor)
 		{

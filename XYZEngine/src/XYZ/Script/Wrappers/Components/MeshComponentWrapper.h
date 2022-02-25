@@ -1,0 +1,33 @@
+#pragma once
+
+#include "XYZ/Asset/Renderer/MaterialAsset.h"
+#include "XYZ/Renderer/Mesh.h"
+
+namespace XYZ {
+	namespace Script {
+
+		struct MeshComponentNative
+		{
+			static void Register();
+		private:
+			static Ref<MaterialAsset>* GetMaterial(uint32_t entity);
+			static Ref<Mesh>* GetMesh(uint32_t entity);
+
+			static void SetMaterial(uint32_t entity, Ref<MaterialAsset>* material);
+			static void SetMesh(uint32_t entity, Ref<Mesh>* mesh);
+		};
+
+
+		struct AnimatedMeshComponentNative
+		{
+			static void Register();
+		private:
+			static Ref<MaterialAsset>* GetMaterial(uint32_t entity);
+			static Ref<AnimatedMesh>*  GetMesh(uint32_t entity);
+
+
+			static void SetMaterial(uint32_t entity, Ref<MaterialAsset>* material);
+			static void SetMesh(uint32_t entity, Ref<AnimatedMesh>* mesh);
+		};
+	}
+}

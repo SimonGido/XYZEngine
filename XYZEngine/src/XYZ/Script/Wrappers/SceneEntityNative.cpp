@@ -1,12 +1,12 @@
 #include "stdafx.h"
 #include "SceneEntityNative.h"
 #include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Scene/Components.h"
+
+#include "XYZ/Utils/Delegate.h"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
-
-#include "XYZ/Scene/Components.h"
-#include "XYZ/Utils/Delegate.h"
 
 
 #define REGISTER_COMPONENT_TYPE(Type) \
@@ -52,7 +52,7 @@ namespace XYZ {
 			Delegate<void(SceneEntity&)> RemoveComponentFunc;
 		};
 
-		std::unordered_map<MonoType*, SceneEntityFunc> s_NativeEntityFuncs;
+		static std::unordered_map<MonoType*, SceneEntityFunc> s_NativeEntityFuncs;
 		
 		
 	
@@ -100,6 +100,8 @@ namespace XYZ {
 			REGISTER_COMPONENT_TYPE(BoxCollider2DComponent);
 			REGISTER_COMPONENT_TYPE(CircleCollider2DComponent);
 			REGISTER_COMPONENT_TYPE(PolygonCollider2DComponent);
+			REGISTER_COMPONENT_TYPE(MeshComponent);
+			REGISTER_COMPONENT_TYPE(AnimatedMeshComponent);
 
 			mono_add_internal_call("XYZ.Entity::HasComponent_Native",    HasComponent);
 			mono_add_internal_call("XYZ.Entity::CreateComponent_Native", EmplaceComponent);

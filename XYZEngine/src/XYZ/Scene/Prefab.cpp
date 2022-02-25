@@ -154,8 +154,7 @@ namespace XYZ {
 					boneEntity = clones[boneEntity];
 			}
 			if (prefabEntity.HasComponent<AnimationComponent>())
-			{
-				
+			{				
 				auto& animComponent = cloneEntity.GetComponent<AnimationComponent>();
 				// Remap prefab entity to created clone entity
 				for (auto& boneEntity : animComponent.BoneEntities)

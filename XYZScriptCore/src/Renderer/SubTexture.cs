@@ -10,8 +10,6 @@ namespace XYZ
 {
     public class SubTexture : UnmanagedResource
     {
-        internal IntPtr   m_UnmanagedInstance;
-
         public SubTexture(Texture2D texture)
         {
             m_UnmanagedInstance = Constructor_Native(texture.m_UnmanagedInstance);
