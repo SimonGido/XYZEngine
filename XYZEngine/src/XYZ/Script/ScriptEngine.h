@@ -11,6 +11,7 @@ extern "C" {
 	typedef struct _MonoObject MonoObject;
 	typedef struct _MonoClassField MonoClassField;
 	typedef struct _MonoDomain MonoDomain;
+	typedef struct _MonoClass MonoClass;
 }
 
 
@@ -46,6 +47,7 @@ namespace XYZ {
 		static void OnDestroyEntity(const SceneEntity& entity);
 		static void OnUpdateEntity(const SceneEntity& entity, Timestep ts);
 		static MonoObject* Construct(const std::string& fullName, bool callConstructor = true, void** parameters = nullptr);
+		static MonoClass* GetCoreClass(const std::string& fullName);
 
 		static void CreateModule(const std::string& moduleName);
 		static bool ModuleExists(const std::string& moduleName);

@@ -41,6 +41,17 @@ namespace XYZ {
 			m_BoneTransforms.resize(m_SkeletonAsset->GetSkeleton().num_joints());
 		}	
 	}
+	void AnimationController::SetCurrentState(const std::string& name)
+	{
+		for (size_t i = 0; i < m_AnimationNames.size(); ++i)
+		{
+			if (m_AnimationNames[i] == name)
+			{
+				m_StateIndex = i;
+				return;
+			}
+		}
+	}
 	void AnimationController::AddState(const std::string_view name, const Ref<AnimationAsset>& animation)
 	{
 		m_AnimationNames.push_back(std::string(name));
@@ -49,6 +60,17 @@ namespace XYZ {
 	const std::vector<ozz::math::Float4x4>& AnimationController::GetTransforms() const
 	{
 		return m_BoneTransforms;
+	}
+	void AnimationController::UpdateModel()
+	{
+		ozz::animation::LocalToModelJob ltm_job;
+		ltm_job.skeleton = &m_SkeletonAsset->GetSkeleton();
+		ltm_job.input = ozz::make_span(m_LocalSpaceSoaTransforms);
+		ltm_job.output = ozz::make_span(m_BoneTransforms);
+		if (!ltm_job.Run())
+		{
+			XYZ_ERROR("ozz animation convertion to model space failed!");
+		}
 	}
 	void AnimationController::updateSampling(float ratio)
 	{
@@ -83,17 +105,6 @@ namespace XYZ {
 				ozz::math::Store3PtrU(scales[j], glm::value_ptr(m_LocalScales[index]));
 				ozz::math::StorePtrU(rotations[j], glm::value_ptr(m_LocalRotations[index]));
 			}
-		}
-	}
-	void AnimationController::updateModel()
-	{
-		ozz::animation::LocalToModelJob ltm_job;
-		ltm_job.skeleton = &m_SkeletonAsset->GetSkeleton();
-		ltm_job.input = ozz::make_span(m_LocalSpaceSoaTransforms);
-		ltm_job.output = ozz::make_span(m_BoneTransforms);
-		if (!ltm_job.Run())
-		{
-			XYZ_ERROR("ozz animation convertion to model space failed!");
 		}
 	}
 }

@@ -34,12 +34,22 @@ namespace XYZ
             }
         }
 
+        public uint[] BoneEntities
+        {
+            get
+            {        
+                return GetBoneEntities_Native(Entity.ID);
+            }
+        }
+
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern IntPtr GetAnimatedMesh_Native(uint entityID);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern IntPtr SetAnimatedMesh_Native(uint entityID, IntPtr meshInstance);
 
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern uint[] GetBoneEntities_Native(uint entityID);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern IntPtr GetMaterialAsset_Native(uint entityID);

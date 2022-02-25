@@ -2,6 +2,7 @@ using XYZ;
 
 using System.IO;
 using System.Threading.Tasks;
+using System;
 
 namespace Example
 {
@@ -10,8 +11,11 @@ namespace Example
         //Texture2D texture;
         //SubTexture subTexture;
         //ShaderAsset shader;
-        //MaterialAsset material;
+        // MaterialAsset material;
         AnimatedMesh mesh;
+        AnimationController controller;
+        AnimationAsset animation;
+        SkeletonAsset skeleton;
 
         public float Speed = 2.0f;
         public Vector3 Velocity;
@@ -21,11 +25,24 @@ namespace Example
             //texture = new Texture2D("Assets/Textures/scarychar.png");
             //subTexture = new SubTexture(texture);
             //shader = AssetManager.GetAsset<ShaderAsset>("Resources/Shaders/DefaultLitShader.shader");
-            //material = AssetManager.GetAsset<MaterialAsset>("Resources/Materials/DefaultLit.mat");
-      
-            mesh = new AnimatedMesh(new MeshSource("Resources/Meshes/Character Running.fbx"));
-            mesh.CreateBones(this);
+            // material = AssetManager.GetAsset<MaterialAsset>("Resources/Materials/DefaultLit.mat");
 
+            string characterRunning = "Resources/Meshes/Character Running.fbx";
+            mesh = new AnimatedMesh(new MeshSource(characterRunning));
+            uint[] bones = mesh.CreateBones(this);
+           
+            controller = new AnimationController();
+            skeleton = new SkeletonAsset(characterRunning);
+            animation = new AnimationAsset(characterRunning, "Armature|ArmatureAction", skeleton);
+            controller.SetSkeletonAsset(skeleton);
+            controller.AddState("Run", animation);
+
+            AnimationController test = new AnimationController();
+
+            AnimationComponent animationComponent = CreateComponent<AnimationComponent>();
+            animationComponent.BoneEntities = bones;
+            animationComponent.Controller = controller;
+            animationComponent.Playing = true;
             //SpriteRenderer renderer = CreateComponent<SpriteRenderer>();
             //
             //renderer.MaterialAsset = material;
@@ -35,11 +52,7 @@ namespace Example
 
         public void OnDestroy()
         {
-            //texture.Destroy();
-            //subTexture.Destroy();
-            //shader.Destroy();
-            //material.Destroy();
-            mesh.Destroy();
+            GC.Collect();
         }
 
         public void OnUpdate(float ts)

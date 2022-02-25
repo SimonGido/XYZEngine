@@ -25,7 +25,7 @@ namespace XYZ {
 			static Ref<AnimatedMesh>* Constructor(Ref<MeshSource>* meshSource);
 			static void Destructor(Ref<AnimatedMesh>* instance);
 		
-			static void CreateBones(Ref<AnimatedMesh>* instance, uint32_t parent);
+			static MonoArray* CreateBones(Ref<AnimatedMesh>* instance, uint32_t parent);
 		};
 	}
 }

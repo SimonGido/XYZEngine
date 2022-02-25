@@ -19,11 +19,11 @@ namespace XYZ
             m_UnmanagedInstance = ConstructorPath_Native(path);
         }
   
-        public override void Destroy()
+        ~Texture2D()
         {
             Destructor_Native(m_UnmanagedInstance);
         }
-
+     
         public void SetData(Vector4[] data)
         {
             SetData_Native(m_UnmanagedInstance, data, data.Length);

@@ -9,7 +9,5 @@ namespace XYZ
     public abstract class UnmanagedResource
     {
         internal IntPtr m_UnmanagedInstance;
-
-        public abstract void Destroy();
     }
 }

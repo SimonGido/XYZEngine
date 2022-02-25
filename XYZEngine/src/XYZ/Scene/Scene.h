@@ -60,16 +60,15 @@ namespace XYZ {
         void OnUpdateEditor(Timestep ts);
         void OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos);
 
-        SceneEntity GetEntity(uint32_t index);
+
         SceneEntity GetEntityByName(const std::string& name);
         SceneEntity GetSceneEntity();
         SceneEntity GetSelectedEntity();
 
         entt::registry&       GetRegistry()       { return m_Registry; }
         const entt::registry& GetRegistry() const { return m_Registry; }
-        inline const std::vector<entt::entity>& GetEntities() const { return m_Entities; }
 
-        inline SceneState GetState() const { return m_State; }
+        inline SceneState  GetState() const { return m_State; }
         inline const GUID& GetUUID() const { return m_UUID; }
         inline const std::string& GetName() const { return m_Name; }
 
@@ -88,7 +87,6 @@ namespace XYZ {
         entt::registry            m_Registry;
         GUID                      m_UUID;
         entt::entity              m_SceneEntity;
-        std::vector<entt::entity> m_Entities;
 
         std::string m_Name;
         SceneState  m_State;

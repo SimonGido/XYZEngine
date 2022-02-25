@@ -140,7 +140,7 @@ namespace XYZ {
 
 		Ref<AnimationController>  Controller;
 		std::vector<entt::entity> BoneEntities; 
-		float					  AnimationTime = 0.0f;;
+		float					  AnimationTime = 0.0f;
 		bool					  Playing = false;
 	};
 
@@ -152,7 +152,7 @@ namespace XYZ {
 		PrefabComponent(const Ref<Prefab>& prefabAsset, const entt::entity owner);
 
 		Ref<Prefab>	 PrefabAsset;
-		entt::entity Owner;
+		entt::entity Owner = entt::null;
 	};
 
 	struct ParticleRenderer

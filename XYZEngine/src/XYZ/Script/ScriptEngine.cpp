@@ -27,6 +27,8 @@ namespace XYZ {
 	static MonoMethod* s_ExceptionMethod = nullptr;
 	static MonoClass*  s_EntityClass = nullptr;
 
+	static std::unordered_map<std::string, MonoClass*> s_Classes;
+
 	// Assembly images
 	MonoImage* s_AppAssemblyImage = nullptr;
 	MonoImage* s_CoreAssemblyImage = nullptr;
@@ -312,6 +314,7 @@ namespace XYZ {
 		for (auto& it : s_ScriptEntityInstances)
 			DestroyInstance(it.Handle);
 
+
 		s_ScriptEntityInstances.Clear();
 		s_EntityClassMap.clear();
 
@@ -425,9 +428,36 @@ namespace XYZ {
 			MonoMethod* constructor = mono_method_desc_search_in_class(desc, clazz);
 			MonoObject* exception = nullptr;
 			mono_runtime_invoke(constructor, obj, parameters, &exception);
+			XYZ_ASSERT(exception == nullptr, "");
 		}
 
 		return obj;
+	}
+	MonoClass* ScriptEngine::GetCoreClass(const std::string& fullName)
+	{
+		if (s_Classes.find(fullName) != s_Classes.end())
+			return s_Classes[fullName];
+
+		std::string namespaceName = "";
+		std::string className;
+
+		if (fullName.find('.') != std::string::npos)
+		{
+			namespaceName = fullName.substr(0, fullName.find_last_of('.'));
+			className = fullName.substr(fullName.find_last_of('.') + 1);
+		}
+		else
+		{
+			className = fullName;
+		}
+
+		MonoClass* monoClass = mono_class_from_name(s_CoreAssemblyImage, namespaceName.c_str(), className.c_str());
+		if (!monoClass)
+			XYZ_ERROR("mono_class_from_name failed");
+
+		s_Classes[fullName] = monoClass;
+
+		return monoClass;
 	}
 	void ScriptEngine::CreateModule(const std::string& moduleName)
 	{

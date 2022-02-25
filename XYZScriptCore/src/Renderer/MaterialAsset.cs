@@ -10,22 +10,19 @@ namespace XYZ
 {
     public class MaterialAsset : UnmanagedResource
     {
-        public MaterialAsset()
-        {
-
-        }
+        public MaterialAsset() { }
         public MaterialAsset(ShaderAsset shaderAsset)
         {
             m_UnmanagedInstance = Constructor_Native(shaderAsset.m_UnmanagedInstance);
         }
-        public override void Destroy()
-        {
-            Destructor_Native(m_UnmanagedInstance);
-        }
-
+   
         internal MaterialAsset(IntPtr instance)
         {
             m_UnmanagedInstance = instance;
+        }
+        ~MaterialAsset()
+        {
+            Destructor_Native(m_UnmanagedInstance);
         }
 
         public void SetTexture(string name, Texture2D texture)

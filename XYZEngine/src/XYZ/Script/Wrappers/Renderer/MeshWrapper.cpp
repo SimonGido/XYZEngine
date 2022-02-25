@@ -58,7 +58,7 @@ namespace XYZ {
 		{
 			delete instance;
 		}
-		void AnimatedMeshNative::CreateBones(Ref<AnimatedMesh>* instance, uint32_t parent)
+		MonoArray* AnimatedMeshNative::CreateBones(Ref<AnimatedMesh>* instance, uint32_t parent)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
@@ -67,6 +67,26 @@ namespace XYZ {
 			auto prefab = Ref<Prefab>::Create();
 			prefab->Create(*instance, "Bones");
 			SceneEntity root = prefab->Instantiate(scene, ent);
+			
+			auto& registry = scene->GetRegistry();
+			auto tree = root.GetComponent<Relationship>().GetTree(registry);
+			
+			
+			for (auto e : tree) // Go over the hierarchy
+			{
+				if (registry.any_of<AnimatedMeshComponent>(e)) // If has animated mesh component copy it's bone entities
+				{
+					auto& animatedMeshComponent = registry.get<AnimatedMeshComponent>(e);
+					MonoArray* result = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("XYZ.Entity"), animatedMeshComponent.BoneEntities.size());
+					uint32_t index = 0;
+					for (auto boneEntity : animatedMeshComponent.BoneEntities)
+					{		
+						mono_array_set(result, entt::entity, index++, boneEntity);
+					}
+					return result;
+				}
+			}
+			return nullptr;
 		}
 	}
 }

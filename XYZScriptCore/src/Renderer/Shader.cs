@@ -14,11 +14,11 @@ namespace XYZ
         {
             m_UnmanagedInstance = Constructor_Native(path);
         }
-        public override void Destroy()
+        ~Shader()
         {
             Destructor_Native(m_UnmanagedInstance);
         }
-
+ 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern IntPtr Constructor_Native(string path);
         [MethodImpl(MethodImplOptions.InternalCall)]
