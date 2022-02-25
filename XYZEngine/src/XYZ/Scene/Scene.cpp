@@ -15,6 +15,7 @@
 #include "XYZ/Script/ScriptEngine.h"
 #include "XYZ/Debug/Profiler.h"
 #include "XYZ/Utils/Math/Math.h"
+#include "XYZ/Scene/Prefab.h"
 
 #include "SceneEntity.h"
 #include "Components.h"
@@ -50,6 +51,47 @@ namespace XYZ {
 			}
 		}
 	}
+	template<typename T>
+	void Clone(entt::registry& src, entt::registry& dst) 
+	{
+		auto view = src.view<T>();
+		for (auto entity : view)
+		{
+			auto& component = dst.emplace<T>(entity);
+			component = view.get<T>(entity);
+		}
+	}
+	
+	void CloneRegistry(entt::registry& src, entt::registry& dst)
+	{
+		auto view = src.view<TransformComponent>();
+		dst = entt::registry();
+		dst.assign(src.data(), src.data() + src.size(), src.released()); // Copy entities
+
+		Clone<IDComponent>(src, dst);
+		Clone<TransformComponent>(src, dst);
+		Clone<SceneTagComponent>(src, dst);
+		Clone<SpriteRenderer>(src, dst);
+		Clone<MeshComponent>(src, dst);
+		Clone<AnimatedMeshComponent>(src, dst);
+		Clone<AnimationComponent>(src, dst);
+		Clone<PrefabComponent>(src, dst);
+		Clone<ParticleRenderer>(src, dst);
+		Clone<CameraComponent>(src, dst);
+		Clone<ParticleComponent>(src, dst);
+		Clone<PointLight2D>(src, dst);
+		Clone<SpotLight2D>(src, dst);
+		Clone<Relationship>(src, dst);
+		Clone<ScriptComponent>(src, dst);
+		Clone<RigidBody2DComponent>(src, dst);
+		Clone<BoxCollider2DComponent>(src, dst);
+		Clone<CircleCollider2DComponent>(src, dst);
+		Clone<PolygonCollider2DComponent>(src, dst);
+		Clone<ChainCollider2DComponent>(src, dst);
+	}
+
+
+	static entt::registry s_CopyRegistry;
 
 	Scene::Scene(const std::string& name)
 		:
@@ -152,11 +194,8 @@ namespace XYZ {
 
 	void Scene::OnPlay()
 	{
-		// TODO:
-		//s_ECSCopyEdit = m_ECS;
-		
-		// Find Camera
-		
+		CloneRegistry(m_Registry, s_CopyRegistry);
+		// Find Camera	
 		auto cameraView = m_Registry.view<CameraComponent>();
 		if (!cameraView.empty())
 		{
@@ -191,6 +230,7 @@ namespace XYZ {
 
 	void Scene::OnStop()
 	{
+		CloneRegistry(s_CopyRegistry, m_Registry);
 		{
 			ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
 			auto rigidBodyView = m_Registry.view<RigidBody2DComponent>();

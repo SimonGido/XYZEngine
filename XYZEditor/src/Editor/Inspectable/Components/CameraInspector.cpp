@@ -71,13 +71,21 @@ namespace XYZ {
 					}
 					else
 					{
-						ImGui::Text("Perspective");
 						CameraPerspectiveProperties props = camera.GetPerspectiveProperties();
-						ImGui::InputFloat("##FOV", &props.PerspectiveFOV);
 
-						ImGui::InputFloat("##Near", &props.PerspectiveNear);
+						UI::TableRow("FOV",
+							[]() {ImGui::Text("FOV"); },
+							[&]() { UI::FloatControl("##FOV", "##FovDrag", props.PerspectiveFOV, 1.0f, 0.05f); }
+						);
+						UI::TableRow("Near",
+							[]() {ImGui::Text("Near"); },
+							[&]() { UI::FloatControl("##Near", "##NearDrag", props.PerspectiveNear, 0.0f, 0.05f); }
+						);
+						UI::TableRow("Far",
+							[]() {ImGui::Text("Far"); },
+							[&]() { UI::FloatControl("##Far", "##FarDrag", props.PerspectiveFar, 1.0f, 0.05f); }
+						);
 
-						ImGui::InputFloat("##Far", &props.PerspectiveFar);
 						camera.SetPerspective(props);
 					}
 					ImGui::EndTable();
