@@ -10,16 +10,11 @@ namespace XYZ
 {
     public class Material : UnmanagedResource
     {
-        internal IntPtr m_UnmanagedInstance;
         public Material(Shader shader)
         {
             m_UnmanagedInstance = Constructor_Native(shader.m_UnmanagedInstance);
         }
 
-        public override void Destroy()
-        {
-            Destructor_Native(m_UnmanagedInstance);
-        }
 
         internal Material(IntPtr instance)
         {
@@ -34,16 +29,11 @@ namespace XYZ
 
     public class MaterialInstance : UnmanagedResource
     {
-        internal IntPtr m_UnmanagedInstance;
         public MaterialInstance(Material material)
         {
             m_UnmanagedInstance = Constructor_Native(material.m_UnmanagedInstance);
         }
 
-        public override void Destroy()
-        {
-            Destructor_Native(m_UnmanagedInstance);
-        }
 
         internal MaterialInstance(IntPtr instance)
         {

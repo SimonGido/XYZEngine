@@ -16,6 +16,9 @@
 #include "Editor/Script/ScriptPanel.h"
 #include "Editor/SkinningEditor/SkinningEditor.h"
 #include "Editor/Animation/AnimationEditor.h"
+#include "Editor/Logger/EditorConsolePanel.h"
+#include "Editor/Logger/EditorLogger.h"
+
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -69,7 +72,7 @@ namespace XYZ {
 			Ref<MaterialAsset>			m_QuadMaterial;
 			Ref<MaterialAsset>			m_LineMaterial;
 			Ref<MaterialAsset>			m_CircleMaterial;
-			EditorCamera* m_EditorCamera = nullptr;
+			EditorCamera*				m_EditorCamera = nullptr;
 
 			bool m_ShowColliders = true;
 			bool m_ShowCameras = true;

@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 
 namespace XYZ
 {
-    public abstract class UnmanagedResource
+    public class Core
     {
-        internal IntPtr m_UnmanagedInstance;
+        public static void CollectGarbage()
+        {
+            GC.Collect();
+        }
     }
 }

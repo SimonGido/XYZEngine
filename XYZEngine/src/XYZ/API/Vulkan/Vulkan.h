@@ -59,7 +59,7 @@ namespace XYZ {
 		{
 			if (result != VK_SUCCESS)
 			{
-				XYZ_ERROR("VkResult is '{0}' in {1}:{2}", VKResultToString(result), __FILE__, __LINE__);
+				XYZ_CORE_ERROR("VkResult is '{0}' in {1}:{2}", VKResultToString(result), __FILE__, __LINE__);
 				if (result == VK_ERROR_DEVICE_LOST)
 				{
 					using namespace std::chrono_literals;

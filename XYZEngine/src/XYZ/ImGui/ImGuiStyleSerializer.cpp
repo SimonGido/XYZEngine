@@ -93,7 +93,7 @@ namespace XYZ {
 		std::ifstream stream(filepath);
 		std::stringstream strStream;
 		if (!stream)
-			XYZ_ERROR("Could not load imgui style {0}", strerror(errno));
+			XYZ_CORE_ERROR("Could not load imgui style {0}", strerror(errno));
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 

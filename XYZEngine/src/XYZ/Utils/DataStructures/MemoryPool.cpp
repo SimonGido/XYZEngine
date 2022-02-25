@@ -36,13 +36,13 @@ namespace XYZ {
 	MemoryPool::~MemoryPool()
 	{
 		if (m_NumAllocations != 0 || m_MemoryUsed != 0)
-			XYZ_WARN("Memory not released, number of elements: {} not released memory: {}", m_NumAllocations, m_MemoryUsed);
+			XYZ_CORE_WARN("Memory not released, number of elements: {} not released memory: {}", m_NumAllocations, m_MemoryUsed);
 
 		#ifdef XYZ_DEBUG
 		for (int32_t i = 0; i < m_Allocations.Range(); ++i)
 		{
 			if (m_Allocations.Valid(i))
-				XYZ_WARN("Allocation with name {} not released", m_Allocations[i]);
+				XYZ_CORE_WARN("Allocation with name {} not released", m_Allocations[i]);
 		}
 		#endif //  XYZ_DEBUG
 

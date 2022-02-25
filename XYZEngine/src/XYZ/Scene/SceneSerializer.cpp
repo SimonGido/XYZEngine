@@ -650,14 +650,16 @@ namespace XYZ {
 		out << YAML::Key << "Scene" << scene->m_Name;
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
-		for (const auto ent : scene->m_Entities)
-		{
+
+		scene->m_Registry.each([&](const entt::entity ent) {
+
 			SceneEntity entity(ent, scene.Raw());
 			auto& rel = entity.GetComponent<Relationship>();
 			if (rel.Parent == scene->GetSceneEntity().ID())
 				rel.Parent = entt::null;
 			serializeEntity(out, entity);
-		}
+		});
+
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 		std::ofstream fout(filepath);

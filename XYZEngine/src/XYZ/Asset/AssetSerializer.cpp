@@ -217,7 +217,7 @@ namespace XYZ {
 			}
 			else
 			{
-				XYZ_WARN("Missing texture!");
+				XYZ_CORE_WARN("Missing texture!");
 				materialAsset->SetTexture(name, Renderer::GetDefaultResources().WhiteTexture);
 			}
 		}
@@ -235,7 +235,7 @@ namespace XYZ {
 				}
 				else
 				{
-					XYZ_WARN("Missing texture!");
+					XYZ_CORE_WARN("Missing texture!");
 					materialAsset->SetTexture(name, Renderer::GetDefaultResources().WhiteTexture, index);
 				}
 				index++;

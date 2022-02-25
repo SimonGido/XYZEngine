@@ -77,6 +77,23 @@ namespace XYZ {
 			return new Ref<AnimatedMesh>(ent.GetComponent<AnimatedMeshComponent>().Mesh);
 
 		}
+		MonoArray* AnimatedMeshComponentNative::GetBoneEntities(uint32_t entity)
+		{
+			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+			XYZ_ASSERT(scene.Raw(), "No active scene!");
+
+			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
+			auto& boneEntities = ent.GetComponent<AnimatedMeshComponent>().BoneEntities;
+
+			MonoArray* result = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("XYZ.Entity"), boneEntities.size());
+
+			uint32_t index = 0;
+			for (auto boneEntity : boneEntities)
+			{
+				mono_array_set(result, entt::entity, index++, boneEntity);
+			}
+			return result;
+		}
 		void AnimatedMeshComponentNative::SetMaterial(uint32_t entity, Ref<MaterialAsset>* material)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();

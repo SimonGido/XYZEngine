@@ -33,11 +33,11 @@ namespace XYZ {
 			//
 			//	uint32_t retrievedCount = checkpointCount;
 			//	vkGetQueueCheckpointDataNV(VulkanContext::GetCurrentDevice()->GetGraphicsQueue(), &retrievedCount, data);
-			//	XYZ_ERROR("RetrieveDiagnosticCheckpoints (Graphics Queue):");
+			//	XYZ_CORE_ERROR("RetrieveDiagnosticCheckpoints (Graphics Queue):");
 			//	for (uint32_t i = 0; i < retrievedCount; i++)
 			//	{
 			//		VulkanCheckpointData* checkpoint = (VulkanCheckpointData*)data[i].pCheckpointMarker;
-			//		XYZ_ERROR("Checkpoint: {0} (stage: {1})", checkpoint->Data, StageToString(data[i].stage));
+			//		XYZ_CORE_ERROR("Checkpoint: {0} (stage: {1})", checkpoint->Data, StageToString(data[i].stage));
 			//	}
 			//}
 			//{
@@ -48,11 +48,11 @@ namespace XYZ {
 			//
 			//	uint32_t retrievedCount = checkpointCount;
 			//	vkGetQueueCheckpointDataNV(::XYZ::VulkanContext::GetCurrentDevice()->GetComputeQueue(), &retrievedCount, data);
-			//	XYZ_ERROR("RetrieveDiagnosticCheckpoints (Compute Queue):");
+			//	XYZ_CORE_ERROR("RetrieveDiagnosticCheckpoints (Compute Queue):");
 			//	for (uint32_t i = 0; i < retrievedCount; i++)
 			//	{
 			//		VulkanCheckpointData* checkpoint = (VulkanCheckpointData*)data[i].pCheckpointMarker;
-			//		XYZ_ERROR("Checkpoint: {0} (stage: {1})", checkpoint->Data, StageToString(data[i].stage));
+			//		XYZ_CORE_ERROR("Checkpoint: {0} (stage: {1})", checkpoint->Data, StageToString(data[i].stage));
 			//	}
 			//}
 		}

@@ -40,7 +40,7 @@ namespace XYZ {
 	{
 		if (!s_Serializers[ToUnderlying(metadata.Type)])
 		{
-			XYZ_WARN("There is no importer for assets of type {0}", Utils::AssetTypeToString(metadata.Type));
+			XYZ_CORE_WARN("There is no importer for assets of type {0}", Utils::AssetTypeToString(metadata.Type));
 			return;
 		}
 		s_Serializers[ToUnderlying(metadata.Type)]->Serialize(metadata, asset);
@@ -56,7 +56,7 @@ namespace XYZ {
 	{
 		if (!s_Serializers[ToUnderlying(metadata.Type)])
 		{
-			XYZ_WARN("There is no importer for assets of type {0}", Utils::AssetTypeToString(metadata.Type));
+			XYZ_CORE_WARN("There is no importer for assets of type {0}", Utils::AssetTypeToString(metadata.Type));
 			return false;
 		}
 

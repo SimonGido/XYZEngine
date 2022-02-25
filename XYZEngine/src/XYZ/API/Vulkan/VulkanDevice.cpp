@@ -89,7 +89,7 @@ namespace XYZ {
 			if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
 				return device;
 		}
-		XYZ_WARN("Could not find any discrete GPU");
+		XYZ_CORE_WARN("Could not find any discrete GPU");
 		return devices.back();
 	}
 	static VkPhysicalDevice FindSuitableGPU(VkSurfaceKHR surface, const std::vector<VkPhysicalDevice>& devices)

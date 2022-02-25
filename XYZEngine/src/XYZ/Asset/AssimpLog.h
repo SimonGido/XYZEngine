@@ -17,6 +17,6 @@ struct LogStream : public Assimp::LogStream
 
 	virtual void write(const char* message) override
 	{
-		XYZ_ERROR("Assimp error: {0}", message);
+		XYZ_CORE_ERROR("Assimp error: {0}", message);
 	}
 };

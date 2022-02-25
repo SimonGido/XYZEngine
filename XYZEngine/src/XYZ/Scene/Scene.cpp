@@ -39,18 +39,7 @@ namespace XYZ {
 		result.cols[3] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[3]));
 		return result;
 	}
-	template <typename T>
-	void EraseFromVector(std::vector<T>& vec, const T& val)
-	{
-		for (auto it = vec.begin(); it != vec.end(); ++it)
-		{
-			if ((*it) == val)
-			{
-				vec.erase(it);
-				return;
-			}
-		}
-	}
+
 	template<typename T>
 	void Clone(entt::registry& src, entt::registry& dst) 
 	{
@@ -100,7 +89,9 @@ namespace XYZ {
 		m_Name(name),
 		m_State(SceneState::Edit),
 		m_ViewportWidth(0),
-		m_ViewportHeight(0)
+		m_ViewportHeight(0),
+		m_CameraEntity(entt::null),
+		m_SelectedEntity(entt::null)
 	{
 		m_SceneEntity = m_Registry.create();
 
@@ -136,7 +127,6 @@ namespace XYZ {
 		auto& sceneRelation = m_Registry.get<Relationship>(m_SceneEntity);
 		Relationship::SetupRelation(m_SceneEntity, id, m_Registry);
 
-		m_Entities.push_back(id);
 		return entity;
 	}
 
@@ -154,7 +144,6 @@ namespace XYZ {
 		auto& sceneRelation = m_Registry.get<Relationship>(m_SceneEntity);
 		Relationship::SetupRelation(parent.ID(), id, m_Registry);
 
-		m_Entities.push_back(id);
 		return entity;
 	}
 
@@ -184,11 +173,7 @@ namespace XYZ {
 				entities.push(rel.NextSibling);
 
 			m_Registry.destroy(tmpEntity);
-			EraseFromVector(m_Entities, tmpEntity);
 		}
-
-		
-		EraseFromVector(m_Entities, entity.m_ID);
 	    m_Registry.destroy(entity.m_ID);
 	}
 
@@ -231,6 +216,7 @@ namespace XYZ {
 	void Scene::OnStop()
 	{
 		CloneRegistry(s_CopyRegistry, m_Registry);
+		s_CopyRegistry = entt::registry();
 		{
 			ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
 			auto rigidBodyView = m_Registry.view<RigidBody2DComponent>();
@@ -275,6 +261,28 @@ namespace XYZ {
 			transform.Translation.x = body->GetPosition().x;
 			transform.Translation.y = body->GetPosition().y;
 			transform.Rotation.z = body->GetAngle();
+		}
+
+
+		{
+			XYZ_PROFILE_FUNC("Scene::OnUpdate animView");
+			auto animView = m_Registry.view<AnimationComponent>();
+			for (auto& entity : animView)
+			{
+				auto& anim = animView.get<AnimationComponent>(entity);
+				if (anim.Playing && anim.Controller.Raw())
+				{
+					anim.Controller->Update(anim.AnimationTime);
+					anim.AnimationTime += ts;
+					for (size_t i = 0; i < anim.BoneEntities.size(); ++i)
+					{
+						auto& transform = m_Registry.get<TransformComponent>(anim.BoneEntities[i]);
+						transform.Translation = anim.Controller->GetTranslation(i);
+						transform.Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
+						transform.Scale = anim.Controller->GetScale(i);
+					}
+				}
+			}
 		}
 
 		auto scriptView = m_Registry.view<ScriptComponent>();
@@ -484,10 +492,6 @@ namespace XYZ {
 		m_ViewportHeight = height;
 	}
 
-	SceneEntity Scene::GetEntity(uint32_t index)
-	{
-		return { m_Entities[index], this };
-	}
 	SceneEntity Scene::GetEntityByName(const std::string& name)
 	{
 		auto view = m_Registry.view<SceneTagComponent>();

@@ -17,14 +17,15 @@ namespace XYZ
         {
             m_UnmanagedInstance = Constructor_Native(meshSource.m_UnmanagedInstance);
         }
-        public override void Destroy()
+
+        ~AnimatedMesh()
         {
             Destructor_Native(m_UnmanagedInstance);
         }
 
-        public void CreateBones(Entity parent)
+        public uint[] CreateBones(Entity parent)
         {
-            CreateBones_Native(m_UnmanagedInstance, parent.ID);
+            return CreateBones_Native(m_UnmanagedInstance, parent.ID);
         }
 
         internal AnimatedMesh(IntPtr instance)
@@ -37,6 +38,6 @@ namespace XYZ
         internal static extern void Destructor_Native(IntPtr unmanagedInstance);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern IntPtr CreateBones_Native(IntPtr meshSourceInstance, uint parent);
+        internal static extern uint[] CreateBones_Native(IntPtr meshSourceInstance, uint parent);
     }
 }

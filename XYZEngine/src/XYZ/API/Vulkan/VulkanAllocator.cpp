@@ -89,15 +89,15 @@ namespace XYZ {
 		std::vector<VmaBudget> budgets(memoryProps.memoryHeapCount);
 		vmaGetBudget(s_Data->Allocator, budgets.data());
 
-		XYZ_WARN("-----------------------------------");
+		XYZ_CORE_WARN("-----------------------------------");
 		for (VmaBudget& b : budgets)
 		{
-			//XYZ_WARN("VmaBudget.allocationBytes = {0}", Utils::BytesToString(b.allocationBytes));
-			//XYZ_WARN("VmaBudget.blockBytes = {0}", Utils::BytesToString(b.blockBytes));
-			//XYZ_WARN("VmaBudget.usage = {0}", Utils::BytesToString(b.usage));
-			//XYZ_WARN("VmaBudget.budget = {0}", Utils::BytesToString(b.budget));
+			//XYZ_CORE_WARN("VmaBudget.allocationBytes = {0}", Utils::BytesToString(b.allocationBytes));
+			//XYZ_CORE_WARN("VmaBudget.blockBytes = {0}", Utils::BytesToString(b.blockBytes));
+			//XYZ_CORE_WARN("VmaBudget.usage = {0}", Utils::BytesToString(b.usage));
+			//XYZ_CORE_WARN("VmaBudget.budget = {0}", Utils::BytesToString(b.budget));
 		}
-		XYZ_WARN("-----------------------------------");
+		XYZ_CORE_WARN("-----------------------------------");
 	}
 
 	GPUMemoryStats VulkanAllocator::GetStats()

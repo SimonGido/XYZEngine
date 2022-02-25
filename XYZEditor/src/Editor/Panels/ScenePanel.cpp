@@ -233,14 +233,15 @@ namespace XYZ {
 		std::deque<SceneEntity> ScenePanel::findSelection(const Ray& ray)
 		{
 			std::deque<SceneEntity> result;
-			for (const entt::entity entityID : m_Context->GetEntities())
-			{
+
+			m_Context->GetRegistry().each([&](const entt::entity entityID) {
 				SceneEntity entity(entityID, m_Context.Raw());
 				if (ray.IntersectsAABB(Utils::SceneEntityAABB(entity)))
 				{
 					result.push_back(entity);
 				}
-			}
+			});
+
 			std::sort(result.begin(), result.end(), [&](const SceneEntity& a, const SceneEntity& b) {
 				auto& cameraPos = m_EditorCamera.GetPosition();
 				const TransformComponent& transformA = a.GetComponent<TransformComponent>();

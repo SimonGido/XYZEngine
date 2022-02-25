@@ -17,12 +17,12 @@
 #include "Wrappers/Renderer/MaterialWrapper.h"
 #include "Wrappers/Renderer/ShaderWrapper.h"
 #include "Wrappers/Renderer/MeshWrapper.h"
-
+#include "Wrappers/Animation/AnimationWrapper.h"
 
 #include "Wrappers/SceneEntityNative.h"
 #include "Wrappers/InputNative.h"
 #include "Wrappers/AssetManagerNative.h"
-
+#include "Wrappers/LoggerNative.h"
 
 namespace XYZ {	
 
@@ -31,6 +31,7 @@ namespace XYZ {
 
 		Script::InputNative::Register();
 		Script::AssetManagerNative::Register();
+		Script::LoggerNative::Register();
 
 		// Components
 		Script::SceneEntityNative::Register();
@@ -39,6 +40,7 @@ namespace XYZ {
 		Script::RigidBody2DNative::Register();
 		Script::MeshComponentNative::Register();
 		Script::AnimatedMeshComponentNative::Register();
+		Script::AnimationComponentNative::Register();
 		////////////////////////
 	
 		// Renderer
@@ -55,6 +57,11 @@ namespace XYZ {
 		Script::MeshSourceNative::Register();
 		Script::MeshNative::Register();
 		Script::AnimatedMeshNative::Register();
+
+
+		Script::AnimationAssetNative::Register();
+		Script::AnimationControllerNative::Register();
+		Script::SkeletonAssetNative::Register();
 		////////////////////////
 	}
 }

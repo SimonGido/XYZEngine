@@ -52,11 +52,11 @@ namespace XYZ {
 			ozz::animation::offline::SkeletonBuilder builder;
 			m_Skeleton = builder(rawSkeleton);
 			if (!m_Skeleton)
-				XYZ_ERROR("Failed to build runtime skeleton from file {0}", filename);
+				XYZ_CORE_ERROR("Failed to build runtime skeleton from file {0}", filename);
 		}
 		else
 		{
-			XYZ_ERROR("No skeleton in file {0}", filename);
+			XYZ_CORE_ERROR("No skeleton in file {0}", filename);
 		}
 	}
 
@@ -72,11 +72,11 @@ namespace XYZ {
 			ozz::animation::offline::SkeletonBuilder builder;
 			m_Skeleton = builder(rawSkeleton);
 			if (!m_Skeleton)
-				XYZ_ERROR("Failed to build runtime skeleton from file {0}", filename);
+				XYZ_CORE_ERROR("Failed to build runtime skeleton from file {0}", filename);
 		}
 		else
 		{
-			XYZ_ERROR("No skeleton in file {0}", filename);
+			XYZ_CORE_ERROR("No skeleton in file {0}", filename);
 		}
 	}
 

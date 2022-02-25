@@ -18,11 +18,12 @@ namespace XYZ
         {
             m_UnmanagedInstance = Constructor_Native(path);
         }
-        public override void Destroy()
+
+        ~ShaderAsset()
         {
             Destructor_Native(m_UnmanagedInstance);
         }
-
+  
         internal ShaderAsset(IntPtr instance)
         {
             m_UnmanagedInstance = instance;

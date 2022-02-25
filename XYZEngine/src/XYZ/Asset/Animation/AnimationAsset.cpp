@@ -39,11 +39,11 @@ namespace XYZ {
 	{
 		LogStream::Initialize();
 
-		XYZ_INFO("Loading animation: {0}", m_FilePath);
+		XYZ_CORE_INFO("Loading animation: {0}", m_FilePath);
 
 		if (!skeleton.Raw() || !skeleton->IsValid())
 		{
-			XYZ_ERROR("Invalid skeleton passed to animation asset for file '{0}'", m_FilePath);
+			XYZ_CORE_ERROR("Invalid skeleton passed to animation asset for file '{0}'", m_FilePath);
 			SetFlag(AssetFlag::Invalid);
 			return;
 		}
@@ -51,7 +51,7 @@ namespace XYZ {
 		const aiScene* scene = importer.ReadFile(m_FilePath, s_AnimationImportFlags);
 		if (!scene || !scene->HasAnimations())
 		{
-			XYZ_ERROR("Failed to load animation from file '{0}'", m_FilePath);
+			XYZ_CORE_ERROR("Failed to load animation from file '{0}'", m_FilePath);
 			SetFlag(AssetFlag::Invalid);
 			return;
 		}
@@ -64,7 +64,7 @@ namespace XYZ {
 	{
 		if (!scene || !scene->HasAnimations())
 		{
-			XYZ_ERROR("Failed to load animation from file '{0}'", m_FilePath);
+			XYZ_CORE_ERROR("Failed to load animation from file '{0}'", m_FilePath);
 			SetFlag(AssetFlag::Invalid);
 			return;
 		}
@@ -75,14 +75,14 @@ namespace XYZ {
 		auto animationNames = AssimpImporter::GetAnimationNames(scene);
 		if (animationNames.empty())
 		{
-			XYZ_ERROR("Failed to load animation from file: {0}", m_FilePath);
+			XYZ_CORE_ERROR("Failed to load animation from file: {0}", m_FilePath);
 			SetFlag(AssetFlag::Invalid);
 			return;
 		}
 		aiAnimation* animation = AssimpImporter::FindAnimation(scene, m_AnimationName);
 		if (animation == nullptr)
 		{
-			XYZ_ERROR("Failed to load animation from file: {0}", m_FilePath);
+			XYZ_CORE_ERROR("Failed to load animation from file: {0}", m_FilePath);
 			SetFlag(AssetFlag::Invalid);
 			return;
 		}
@@ -95,14 +95,14 @@ namespace XYZ {
 				m_Animation = builder(rawAnimation);
 				if (!m_Animation)
 				{
-					XYZ_ERROR("Failed to build runtime animation for '{}' from file '{}'", animationNames.front(), m_FilePath);
+					XYZ_CORE_ERROR("Failed to build runtime animation for '{}' from file '{}'", animationNames.front(), m_FilePath);
 					SetFlag(AssetFlag::Invalid);
 					return;
 				}
 			}
 			else
 			{
-				XYZ_ERROR("Failed validation for animation {} from file {}", m_AnimationName, m_FilePath);
+				XYZ_CORE_ERROR("Failed validation for animation {} from file {}", m_AnimationName, m_FilePath);
 				SetFlag(AssetFlag::Invalid);
 				return;
 			}

@@ -80,7 +80,7 @@ namespace XYZ {
 		const aiScene* scene = m_Importer->ReadFile(m_SourceFilePath, s_MeshImportFlags);
 		if (!scene || !scene->HasMeshes() || scene->mNumMeshes > 1)
 		{
-			XYZ_ERROR("Failed to load mesh file: {0}", m_SourceFilePath);
+			XYZ_CORE_ERROR("Failed to load mesh file: {0}", m_SourceFilePath);
 			SetFlag(AssetFlag::Invalid);
 			return;
 		}
@@ -108,7 +108,7 @@ namespace XYZ {
 		m_Scene = scene;
 		if (!scene || !scene->HasMeshes() || scene->mNumMeshes > 1)
 		{
-			XYZ_ERROR("Failed to load mesh file: {0}", m_SourceFilePath);
+			XYZ_CORE_ERROR("Failed to load mesh file: {0}", m_SourceFilePath);
 			SetFlag(AssetFlag::Invalid);
 			return;
 		}
@@ -161,11 +161,11 @@ namespace XYZ {
 			ozz::animation::offline::SkeletonBuilder builder;
 			m_Skeleton = builder(rawSkeleton);
 			if (!m_Skeleton)
-				XYZ_ERROR("Failed to build runtime skeleton from file {0}", m_SourceFilePath);
+				XYZ_CORE_ERROR("Failed to build runtime skeleton from file {0}", m_SourceFilePath);
 		}
 		else
 		{
-			XYZ_ERROR("No skeleton in file {0}", m_SourceFilePath);
+			XYZ_CORE_ERROR("No skeleton in file {0}", m_SourceFilePath);
 		}
 	}
 
@@ -285,7 +285,7 @@ namespace XYZ {
 				return;
 			}
 		}
-		XYZ_WARN("Vertex has more than four bones/weights affecting it, extra data will be discarded (BoneID={0}, Weight={1})", boneID, weight);
+		XYZ_CORE_WARN("Vertex has more than four bones/weights affecting it, extra data will be discarded (BoneID={0}, Weight={1})", boneID, weight);
 	}
 
 }

@@ -174,12 +174,12 @@ namespace XYZ {
 			}
 			else
 			{
-				XYZ_ERROR("Could not read from file '{0}'", filepath);
+				XYZ_CORE_ERROR("Could not read from file '{0}'", filepath);
 			}
 		}
 		else
 		{
-			XYZ_ERROR("Could not open file '{0}'", filepath);
+			XYZ_CORE_ERROR("Could not open file '{0}'", filepath);
 		}
 		return result;
 	}

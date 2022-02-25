@@ -18,10 +18,11 @@ namespace XYZ
         {
             m_UnmanagedInstance = ConstructorTexCoords_Native(texture.m_UnmanagedInstance, ref texCoords);
         }
-        public override void Destroy()
+        ~SubTexture()
         {
             Destructor_Native(m_UnmanagedInstance);
         }
+
         public Texture2D GetTexture()
         {
             return new Texture2D(GetTexture_Native(m_UnmanagedInstance));

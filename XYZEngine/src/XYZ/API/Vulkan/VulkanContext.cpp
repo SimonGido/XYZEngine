@@ -16,7 +16,7 @@ namespace XYZ {
 	static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
 	{
 		(void)flags; (void)object; (void)location; (void)messageCode; (void)pUserData; (void)pLayerPrefix; // Unused arguments
-		XYZ_WARN("VulkanDebugCallback:\n  Object Type: {0}\n  Message: {1}", objectType, pMessage);
+		XYZ_CORE_WARN("VulkanDebugCallback:\n  Object Type: {0}\n  Message: {1}", objectType, pMessage);
 
 		if (strstr(pMessage, "CoreValidation-DrawState-InvalidImageLayout"))
 			XYZ_ASSERT(false, "");
@@ -85,7 +85,7 @@ namespace XYZ {
 			}
 			else
 			{
-				XYZ_ERROR("Validation layer VK_LAYER_KHRONOS_validation not present, validation is disabled");
+				XYZ_CORE_ERROR("Validation layer VK_LAYER_KHRONOS_validation not present, validation is disabled");
 			}
 		}
 

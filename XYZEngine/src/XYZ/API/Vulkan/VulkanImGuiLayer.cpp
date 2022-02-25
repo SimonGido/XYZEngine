@@ -219,7 +219,7 @@ namespace XYZ {
 			{
 				if (font->ConfigData && font->ConfigData->SizePixels == config.SizePixels)
 				{
-					XYZ_WARN("Font with name {} and pixel size {} already exists", fontName.c_str(), config.SizePixels);
+					XYZ_CORE_WARN("Font with name {} and pixel size {} already exists", fontName.c_str(), config.SizePixels);
 					return;
 				}
 			}

@@ -8,7 +8,29 @@ using System.Runtime.CompilerServices;
 
 namespace XYZ
 {
-    class AnimationAsset
+    public class AnimationAsset : UnmanagedResource
     {
+        public AnimationAsset()
+        {
+
+        }
+        public AnimationAsset(string filename, string animationName, SkeletonAsset skeletonAsset)
+        {
+            m_UnmanagedInstance = Constructor_Native(filename, animationName, skeletonAsset.m_UnmanagedInstance);
+        }
+        ~AnimationAsset()
+        {
+            Destructor_Native(m_UnmanagedInstance);
+        }
+        internal AnimationAsset(IntPtr instance)
+        {
+            m_UnmanagedInstance = instance;
+        }
+  
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern IntPtr Constructor_Native(string filename, string animationName, IntPtr skeletonAssetInstance);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void Destructor_Native(IntPtr unmanagedInstance);
     }
 }

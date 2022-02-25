@@ -10,9 +10,23 @@ namespace XYZ
 {
     public class SkeletonAsset : UnmanagedResource
     {
-        public override void Destroy()
+        public SkeletonAsset()
         {
-
         }
+        public SkeletonAsset(string path)
+        {
+            m_UnmanagedInstance = Constructor_Native(path);
+        }
+
+        ~SkeletonAsset()
+        {
+            Destructor_Native(m_UnmanagedInstance);
+        }
+   
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern IntPtr Constructor_Native(string path);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void Destructor_Native(IntPtr unmanagedInstance);
     }
 }

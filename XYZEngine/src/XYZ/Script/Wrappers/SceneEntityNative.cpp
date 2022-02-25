@@ -102,6 +102,7 @@ namespace XYZ {
 			REGISTER_COMPONENT_TYPE(PolygonCollider2DComponent);
 			REGISTER_COMPONENT_TYPE(MeshComponent);
 			REGISTER_COMPONENT_TYPE(AnimatedMeshComponent);
+			REGISTER_COMPONENT_TYPE(AnimationComponent);
 
 			mono_add_internal_call("XYZ.Entity::HasComponent_Native",    HasComponent);
 			mono_add_internal_call("XYZ.Entity::CreateComponent_Native", EmplaceComponent);

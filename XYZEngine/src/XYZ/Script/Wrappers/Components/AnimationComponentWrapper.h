@@ -11,9 +11,14 @@ namespace XYZ {
 			static void Register();
 		private:
 			static Ref<AnimationController>* GetController(uint32_t entity);
-			static void                      GetBoneEntities(uint32_t entity, MonoArray* outputBoneEntities);
+			static  MonoArray*				 GetBoneEntities(uint32_t entity);
 			static float                     GetAnimationTime(uint32_t entity);
 			static bool                      GetPlaying(uint32_t entity);
+
+			static void						 SetController(uint32_t entity, Ref<AnimationController>* controllerInstance);
+			static void						 SetPlaying(uint32_t entity, bool play);
+			static void						 SetAnimationTime(uint32_t entity, float time);
+			static void						 SetBoneEntities(uint32_t entity, MonoArray* boneEntities);
 		};
 
 	}

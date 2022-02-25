@@ -25,6 +25,7 @@ namespace XYZ {
 
 		void SetSkeletonAsset(const Ref<SkeletonAsset>& skeletonAsset);
 		void SetCurrentState(size_t index) { m_StateIndex = index; };
+		void SetCurrentState(const std::string& name);
 		void AddState(const std::string_view name, const Ref<AnimationAsset>& animation);
 
 		size_t GetCurrentState() const { return m_StateIndex; }
@@ -36,9 +37,11 @@ namespace XYZ {
 		const std::vector<std::string>&			GetStateNames()		 const { return m_AnimationNames; }
 		const std::vector<Ref<AnimationAsset>>& GetAnimationStates() const { return m_AnimationStates; }
 		const std::vector<ozz::math::Float4x4>& GetTransforms()		 const; 
+	
+		void UpdateModel();
 	private:
 		void updateSampling(float ratio);
-		void updateModel();
+		
 
 	private:
 		Ref<SkeletonAsset> m_SkeletonAsset;

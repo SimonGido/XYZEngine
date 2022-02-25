@@ -395,7 +395,7 @@ namespace XYZ {
 
 		if (shaderDescriptorSet.WriteDescriptorSets.find(name) == shaderDescriptorSet.WriteDescriptorSets.end())
 		{
-			XYZ_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+			XYZ_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
 			return nullptr;
 		}
 		return &shaderDescriptorSet.WriteDescriptorSets.at(name);
@@ -410,7 +410,7 @@ namespace XYZ {
 			
 			return { &shaderDescriptorSet.WriteDescriptorSets.at(name), set };
 		}
-		XYZ_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+		XYZ_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
 		return { nullptr, 0 };
 	}
 	std::vector<VkDescriptorSetLayout> VulkanShader::GetAllDescriptorSetLayouts() const
@@ -425,7 +425,7 @@ namespace XYZ {
 	VulkanShader::DataMap VulkanShader::compileOrGetVulkanBinaries(const VulkanShader::SourceMap& shaderSources, bool forceCompile)
 	{
 		DataMap outputBinary;
-		XYZ_INFO("Compiling shader {}", m_Name);
+		XYZ_CORE_INFO("Compiling shader {}", m_Name);
 		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
 		for (auto [stage, source] : shaderSources)
 		{
@@ -467,7 +467,7 @@ namespace XYZ {
 
 					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 					{
-						XYZ_ERROR(module.GetErrorMessage());
+						XYZ_CORE_ERROR(module.GetErrorMessage());
 					}
 					outputBinary[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
 				}
@@ -625,7 +625,7 @@ namespace XYZ {
 			descriptorLayout.bindingCount = (uint32_t)(layoutBindings.size());
 			descriptorLayout.pBindings = layoutBindings.data();
 			
-			XYZ_INFO("Creating descriptor set {0} with {1} ubo's, {2} ssbo's, {3} samplers and {4} storage images", set,
+			XYZ_CORE_INFO("Creating descriptor set {0} with {1} ubo's, {2} ssbo's, {3} samplers and {4} storage images", set,
 				shaderDescriptorSet.UniformBuffers.size(),
 				shaderDescriptorSet.StorageBuffers.size(),
 				shaderDescriptorSet.ImageSamplers.size(),

@@ -14,7 +14,7 @@ namespace XYZ {
 			void SetSceneContext(const Ref<Scene>& scene);
 		
 			template <typename T>
-			void RegisterPanel(std::string name, bool open = true);
+			Ref<T> RegisterPanel(std::string name, bool open = true);
 
 			template <typename T>
 			Ref<T> GetPanel(const std::string& name) const;
@@ -38,7 +38,7 @@ namespace XYZ {
 			Ref<Scene>				 m_Scene;
 		};
 		template<typename T>
-		inline void EditorManager::RegisterPanel(std::string name, bool open)
+		inline Ref<T> EditorManager::RegisterPanel(std::string name, bool open)
 		{
 			static_assert(std::is_base_of_v<EditorPanel, T>, "Type T must inherit from EditorPanel");
 			XYZ_ASSERT(getPanel(name).Raw() == nullptr, "Panel with the same name already exists");
@@ -47,6 +47,7 @@ namespace XYZ {
 				panel->SetSceneContext(m_Scene);
 
 			m_EditorPanels.push_back({ panel, open });
+			return panel;
 		}
 
 		template<typename T>

@@ -62,7 +62,7 @@ namespace XYZ
 		}
 		else
 		{
-			XYZ_WARN("Trying to serialize asset that does not exist!");
+			XYZ_CORE_WARN("Trying to serialize asset that does not exist!");
 		}
 	}
 
@@ -75,7 +75,7 @@ namespace XYZ
 			bool loaded = AssetImporter::TryLoadData(*metadata, asset);
 			if (!loaded)
 			{
-				XYZ_WARN("Could not load asset {}", filepath);
+				XYZ_CORE_WARN("Could not load asset {}", filepath);
 				return;
 			}
 			s_LoadedAssets[asset->GetHandle()] = asset;
@@ -134,7 +134,7 @@ namespace XYZ
 		}
 		else
 		{
-			XYZ_WARN("Failed to load asset meta data {0}", filepath);
+			XYZ_CORE_WARN("Failed to load asset meta data {0}", filepath);
 		}
 	}
 

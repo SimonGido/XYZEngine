@@ -10,9 +10,6 @@ namespace XYZ
 {
     public class Mesh : UnmanagedResource
     {
-        public override void Destroy()
-        {
-           
-        }
+
     }
 }

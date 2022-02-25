@@ -20,12 +20,15 @@
 
 namespace XYZ {
 
-	static MonoDomain* s_MonoDomain = nullptr;
-	static std::string s_AssemblyPath;
-	static Ref<Scene>  s_SceneContext;
+	static MonoDomain*					   s_MonoDomain = nullptr;
+	static std::string					   s_AssemblyPath;
+	static Ref<Scene>					   s_SceneContext;
+	static std::shared_ptr<spdlog::logger> s_Logger;
 
 	static MonoMethod* s_ExceptionMethod = nullptr;
 	static MonoClass*  s_EntityClass = nullptr;
+
+	static std::unordered_map<std::string, MonoClass*> s_Classes;
 
 	// Assembly images
 	MonoImage* s_AppAssemblyImage = nullptr;
@@ -201,8 +204,8 @@ namespace XYZ {
 			std::string message = GetStringProperty("Message", exceptionClass, pException);
 			std::string stackTrace = GetStringProperty("StackTrace", exceptionClass, pException);
 
-			// TODO: console logging
-			XYZ_ERROR("{0}: {1}. Stack Trace: {2}", typeName, message, stackTrace);
+			
+			XYZ_CORE_ERROR("{0}: {1}. Stack Trace: {2}", typeName, message, stackTrace);
 
 			void* args[] = { pException };
 			MonoObject* result = mono_runtime_invoke(s_ExceptionMethod, nullptr, args, nullptr);
@@ -312,10 +315,15 @@ namespace XYZ {
 		for (auto& it : s_ScriptEntityInstances)
 			DestroyInstance(it.Handle);
 
+		auto garbageCollectMethod = GetMethod(s_CoreAssemblyImage, "XYZ.Core::CollectGarbage()");
+		MonoObject* result = mono_runtime_invoke(garbageCollectMethod, nullptr, nullptr, nullptr);
+
+
 		s_ScriptEntityInstances.Clear();
 		s_EntityClassMap.clear();
 
 		s_SceneContext.Reset();
+		s_Logger.reset();
 	}
 
 	void ScriptEngine::LoadRuntimeAssembly(const std::string& path)
@@ -376,6 +384,14 @@ namespace XYZ {
 	{
 		return s_SceneContext;
 	}
+	void ScriptEngine::SetLogger(const std::shared_ptr<spdlog::logger>& logger)
+	{
+		s_Logger = logger;
+	}
+	std::shared_ptr<spdlog::logger> ScriptEngine::GetLogger()
+	{
+		return s_Logger;
+	}
 	void ScriptEngine::OnCreateEntity(const SceneEntity& entity)
 	{
 		ScriptEntityInstance& instance = s_ScriptEntityInstances.GetData(entity);
@@ -425,9 +441,36 @@ namespace XYZ {
 			MonoMethod* constructor = mono_method_desc_search_in_class(desc, clazz);
 			MonoObject* exception = nullptr;
 			mono_runtime_invoke(constructor, obj, parameters, &exception);
+			XYZ_ASSERT(exception == nullptr, "");
 		}
 
 		return obj;
+	}
+	MonoClass* ScriptEngine::GetCoreClass(const std::string& fullName)
+	{
+		if (s_Classes.find(fullName) != s_Classes.end())
+			return s_Classes[fullName];
+
+		std::string namespaceName = "";
+		std::string className;
+
+		if (fullName.find('.') != std::string::npos)
+		{
+			namespaceName = fullName.substr(0, fullName.find_last_of('.'));
+			className = fullName.substr(fullName.find_last_of('.') + 1);
+		}
+		else
+		{
+			className = fullName;
+		}
+
+		MonoClass* monoClass = mono_class_from_name(s_CoreAssemblyImage, namespaceName.c_str(), className.c_str());
+		if (!monoClass)
+			XYZ_CORE_ERROR("mono_class_from_name failed");
+
+		s_Classes[fullName] = monoClass;
+
+		return monoClass;
 	}
 	void ScriptEngine::CreateModule(const std::string& moduleName)
 	{

@@ -48,6 +48,10 @@ namespace XYZ {
 			);
 
 			m_EditorManager.SetSceneContext(m_Scene);
+			auto consolePanel = m_EditorManager.RegisterPanel<Editor::EditorConsolePanel>("ConsolePanel");
+			EditorLogger::Init(consolePanel->GetStream());
+			ScriptEngine::SetLogger(EditorLogger::GetLogger());
+
 			m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
 			m_EditorManager.RegisterPanel<Editor::InspectorPanel>("InspectorPanel");
 			m_EditorManager.RegisterPanel<Editor::SceneHierarchyPanel>("SceneHierarchyPanel");
@@ -56,7 +60,6 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::AssetBrowser>("AssetBrowser");
 			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
 			//m_EditorManager.RegisterPanel<Editor::AnimationEditor>("AnimationEditor");
-
 
 
 			SceneEntity newEntity = m_Scene->CreateEntity("Havko", GUID());
@@ -110,7 +113,7 @@ namespace XYZ {
 			m_EditorManager.OnUpdate(ts);
 			if (m_Scene->GetState() == SceneState::Edit)
 				renderOverlay();
-	
+
 
 			if (m_SelectedEntity != m_Scene->GetSelectedEntity())
 			{

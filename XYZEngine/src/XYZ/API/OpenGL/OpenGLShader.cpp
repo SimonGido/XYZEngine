@@ -542,7 +542,7 @@ namespace XYZ {
 
 			std::vector<GLchar> infoLog(maxLength);
 			glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
-			XYZ_ERROR("Shader linking failed ({0}):\n{1}", m_AssetPath, infoLog.data());
+			XYZ_CORE_ERROR("Shader linking failed ({0}):\n{1}", m_AssetPath, infoLog.data());
 
 			glDeleteProgram(program);
 
@@ -599,7 +599,7 @@ namespace XYZ {
 				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_AssetPath.c_str());
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					XYZ_ERROR(module.GetErrorMessage());
+					XYZ_CORE_ERROR(module.GetErrorMessage());
 					XYZ_ASSERT(false, "");
 				}
 				shaderData[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
@@ -650,7 +650,7 @@ namespace XYZ {
 				shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(source, Utils::GLShaderStageToShaderC(stage), m_AssetPath.c_str(), options);
 				if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 				{
-					XYZ_ERROR(module.GetErrorMessage());
+					XYZ_CORE_ERROR(module.GetErrorMessage());
 					XYZ_ASSERT(false, "");
 				}
 
@@ -687,12 +687,12 @@ namespace XYZ {
 			}
 			else
 			{
-				XYZ_ERROR("Could not read from file '{0}'", filepath);
+				XYZ_CORE_ERROR("Could not read from file '{0}'", filepath);
 			}
 		}
 		else
 		{
-			XYZ_ERROR("Could not open file '{0}'", filepath);
+			XYZ_CORE_ERROR("Could not open file '{0}'", filepath);
 		}
 
 		return result;
