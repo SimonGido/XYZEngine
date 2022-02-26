@@ -36,19 +36,28 @@ namespace XYZ {
 					UI::Vec4Control({ "R", "G", "B", "A" }, component.Color, 1.0f); }
 					);
 
-					//UI::Utils::SetPathBuffer(component.Material->FileName);
-					//UI::TableRow("Material",
-					//	[]() { ImGui::Text("Material"); },
-					//	[&]() { UI::ScopedWidth w(100.0f);
-					//		    ImGui::InputText("##Material", UI::Utils::GetPathBuffer(), _MAX_PATH); }
-					//);
-					//
-					//UI::Utils::SetPathBuffer(component.SubTexture->FileName);
-					//UI::TableRow("SubTexture",
-					//	[]() { ImGui::Text("SubTexture"); },
-					//	[&]() { UI::ScopedWidth w(100.0f);
-					//			ImGui::InputText("##SubTexture", UI::Utils::GetPathBuffer(), _MAX_PATH); }
-					//);
+					std::string materialName = "None";
+					if (component.Material.Raw() && AssetManager::Exist(component.Material->GetHandle()))
+					{
+						materialName = Utils::GetFilename(AssetManager::GetMetadata(component.Material).FilePath.string());
+					}
+					UI::TableRow("Material",
+						[]() { ImGui::Text("Material"); },
+						[&]() { UI::ScopedWidth w(150.0f);
+							    ImGui::InputText("##Material", (char*)materialName.c_str(), materialName.size(), ImGuiInputTextFlags_ReadOnly); }
+					);
+			
+
+					std::string subTextureName = "None";
+					if (component.SubTexture.Raw() && AssetManager::Exist(component.SubTexture->GetHandle()))
+					{
+						subTextureName = Utils::GetFilename(AssetManager::GetMetadata(component.SubTexture).FilePath.string());
+					}
+					UI::TableRow("SubTexture",
+						[]() { ImGui::Text("SubTexture"); },
+						[&]() { UI::ScopedWidth w(150.0f);
+								ImGui::InputText("##SubTexture", (char*)subTextureName.c_str(), subTextureName.size(), ImGuiInputTextFlags_ReadOnly); }
+					);
 
 					UI::TableRow("SortLayer",
 						[]() { ImGui::Text("Sort Layer"); },
@@ -61,68 +70,6 @@ namespace XYZ {
 					);
 					ImGui::EndTable();
 				}
-				/*
-				EditorHelper::DrawColorControl("Color", component.Color);
-				// Material
-				{
-					EditorHelper::BeginColumns("Material");
-
-					ImGui::PushItemWidth(150.0f);
-
-					char materialPath[_MAX_PATH];
-					memcpy(materialPath, component.Material->FileName.c_str(), component.Material->FileName.size());
-					materialPath[component.Material->FileName.size()] = '\0';
-
-					ImGui::InputText("##Material", materialPath, _MAX_PATH);
-					if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-					{
-						m_Dialog = Hook(&SpriteRendererInspector::selectMaterialDialog, this);
-						m_DialogOpen = true;
-					}
-					ImGui::PopItemWidth();
-
-					EditorHelper::EndColumns();
-				}
-				/////////////////
-				// SubTexture
-				{
-					EditorHelper::BeginColumns("SubTexture");
-					ImGui::PushItemWidth(150.0f);
-
-					char subTexturePath[_MAX_PATH];
-					memcpy(subTexturePath, component.SubTexture->FileName.c_str(), component.SubTexture->FileName.size());
-					subTexturePath[component.SubTexture->FileName.size()] = '\0';
-
-					ImGui::InputText("##SubTexture", subTexturePath, _MAX_PATH);
-					if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-					{
-						m_Dialog = Hook(&SpriteRendererInspector::selectSubTextureDialog, this);
-						m_DialogOpen = true;
-					}
-
-					ImGui::PopItemWidth();
-					EditorHelper::EndColumns();
-				}
-				/////////////////
-				// Sort Layer
-				{
-					EditorHelper::BeginColumns("Sort Layer");
-
-					ImGui::PushItemWidth(75.0f);
-					ImGui::InputInt("##Sort", (int*)&component.SortLayer);
-					ImGui::PopItemWidth();
-
-					EditorHelper::EndColumns();
-				}
-				/////////////////
-				// Visible
-				{
-					EditorHelper::BeginColumns("Visible");
-					ImGui::Checkbox("##Visible", &component.Visible);
-					EditorHelper::EndColumns();
-				}
-				/////////////////
-				*/
 			});
 
 			if (m_Dialog && m_DialogOpen)

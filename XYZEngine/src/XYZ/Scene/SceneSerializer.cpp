@@ -83,8 +83,16 @@ namespace XYZ {
 		out << YAML::Key << "SpriteRenderer";
 		out << YAML::BeginMap; // SpriteRenderer
 
-		out << YAML::Key << "Material"	<< YAML::Value << val.Material->GetHandle();
-		out << YAML::Key << "SubTexture"<< YAML::Value << val.SubTexture->GetHandle();
+		AssetHandle materialHandle("0");
+		AssetHandle subTextureHandle("0");
+		
+		if (val.Material.Raw())
+			materialHandle = val.Material->GetHandle();
+		if (val.SubTexture.Raw())
+			subTextureHandle = val.SubTexture->GetHandle();
+		
+		out << YAML::Key << "Material" << YAML::Value << materialHandle;
+		out << YAML::Key << "SubTexture" << YAML::Value << subTextureHandle;
 		out << YAML::Key << "Color"		<< YAML::Value << val.Color;
 		out << YAML::Key << "SortLayer"	<< YAML::Value << val.SortLayer;
 		out << YAML::Key << "Visible"	<< YAML::Value << val.Visible;
