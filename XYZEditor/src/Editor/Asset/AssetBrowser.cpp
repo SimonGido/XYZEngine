@@ -13,6 +13,7 @@
 #include "XYZ/Debug/Profiler.h"
 
 #include "EditorLayer.h"
+#include "Editor/Event/EditorEvents.h"
 
 #include <imgui.h>
 
@@ -53,7 +54,6 @@ namespace XYZ {
 			XYZ_PROFILE_FUNC("AssetBrowser::OnImGuiRender");
 			if (ImGui::Begin("Asset Browser", &open))
 			{
-				std::scoped_lock lock(m_DirectoryTreeMutex);
 				renderTopPanel();
 
 				UI::SplitterV(&m_SplitterWidth, "##DirectoryTree", "##CurrentDirectory",
@@ -84,51 +84,21 @@ namespace XYZ {
 		{
 			if (!m_SelectedFile.empty())
 			{
-				std::string fullFilePath = m_DirectoryTree.GetCurrentNode().GetPath().string() + "/" + m_SelectedFile.string();
+				std::string fullFilePath = m_SelectedFile.string();
 				std::replace(fullFilePath.begin(), fullFilePath.end(), '\\', '/');
-				//const AssetType type = AssetManager::GetAssetTypeFromExtension(Utils::GetExtension(m_SelectedFile.string()));
-				//if (type == AssetType::None)
-				//	return Ref<Asset>();
-
-				//const auto assetHandle = AssetManager::GetAssetHandle(fullFilePath);			
-				//switch (type)
-				//{
-				//case XYZ::AssetType::Scene:
-				//	return AssetManager::GetAsset<XYZ::Scene>(assetHandle);
-				//	break;
-				//case XYZ::AssetType::Texture:
-				//	return AssetManager::GetAsset<XYZ::Texture>(assetHandle);
-				//	break;
-				//case XYZ::AssetType::SubTexture:
-				//	return AssetManager::GetAsset<XYZ::SubTexture>(assetHandle);
-				//	break;
-				//case XYZ::AssetType::Material:
-				//	return AssetManager::GetAsset<XYZ::Material>(assetHandle);
-				//	break;
-				//case XYZ::AssetType::Shader:
-				//	return AssetManager::GetAsset<XYZ::Shader>(assetHandle);
-				//	break;
-				//case XYZ::AssetType::Font:
-				//	return AssetManager::GetAsset<XYZ::Font>(assetHandle);
-				//	break;
-				//case XYZ::AssetType::Audio:				
-				//	break;
-				//case XYZ::AssetType::Script:		
-				//	break;
-				//case XYZ::AssetType::SkeletalMesh:
-				//	break;
-				//case XYZ::AssetType::None:
-				//	break;
-				//default:
-				//	break;
-				//}
+				if (Utils::GetExtension(m_SelectedFile.string()) == "mat")
+				{
+					return AssetManager::GetAsset<MaterialAsset>(std::filesystem::path(fullFilePath));
+				}
 			}
 			return Ref<Asset>();
 		}
 
-		void AssetBrowser::createAsset() const
+		void AssetBrowser::createAsset()
 		{
-			const std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPath().string();
+			std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPath().string();
+			std::replace(parentDir.begin(), parentDir.end(), '\\', '/');
+
 			if (ImGui::MenuItem("Create Folder"))
 			{
 				const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Folder", nullptr);
@@ -142,9 +112,16 @@ namespace XYZ {
 
 				ImGui::CloseCurrentPopup();
 			}
+			if (ImGui::MenuItem("Create Material"))
+			{
+				const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Material", ".mat");
+				Ref<ShaderAsset> defaultShader = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/DefaultLitShader.shader");
+				AssetManager::CreateAsset<MaterialAsset>(Utils::GetFilename(fullpath), parentDir, defaultShader);
+				m_RebuildDirectoryTree = true;
+			}
 		}
 		
-		void AssetBrowser::rightClickMenu() const
+		void AssetBrowser::rightClickMenu()
 		{		
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
 			{
@@ -177,7 +154,19 @@ namespace XYZ {
 							const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Texture", ".tex");
 							std::string fullImagePath = parentDir + "/" + fileName;
 							AssetManager::CreateAsset<Texture2D>(Utils::GetFilename(fullpath), parentDir, fullImagePath);
-							// TODO: rebuild tree node
+							ImGui::CloseCurrentPopup();
+						}
+					}
+					else if (ext == "fbx")
+					{
+						if (ImGui::MenuItem("Create Mesh Source"))
+						{
+							std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPath().string();
+							std::replace(parentDir.begin(), parentDir.end(), '\\', '/');
+
+							const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Texture", ".meshsrc");
+							std::string fullModelPath = parentDir + "/" + fileName;
+							AssetManager::CreateAsset<MeshSource>(Utils::GetFilename(fullpath), parentDir, fullModelPath);
 							ImGui::CloseCurrentPopup();
 						}
 					}
@@ -270,6 +259,8 @@ namespace XYZ {
 					if (pressed)
 					{
 						m_SelectedFile = node.GetPath();
+						auto asset = GetSelectedAsset();
+						Application::Get().OnEvent(AssetSelectedEvent(asset));
 					}
 					else if (ImGui::IsItemClicked(ImGuiMouseButton_Right))
 					{
@@ -279,11 +270,18 @@ namespace XYZ {
 					std::replace(path.begin(), path.end(), '\\', '/');
 					UI::DragDropSource("AssetDragAndDrop", path.c_str(), path.size() + 1);
 				}
-				rightClickMenu();
+				
 				ImGui::TextWrapped(node.GetName().c_str());
 				ImGui::NextColumn();
 			}
 			ImGui::Columns(1);
+
+			rightClickMenu();
+			if (m_RebuildDirectoryTree)
+			{
+				m_RebuildDirectoryTree = false;
+				m_DirectoryTree.Rebuild(s_AssetPath);
+			}
 		}
 
 		void AssetBrowser::processDirectoryTree(const DirectoryNode& parentNode)
@@ -318,29 +316,21 @@ namespace XYZ {
 		void AssetBrowser::onFileChange(const std::wstring& filePath)
 		{
 			XYZ_PROFILE_FUNC("AssetBrowser::onFileChange");
-			//TODO: It is quite inefficient to rebuild whole tree
-			std::scoped_lock lock(m_DirectoryTreeMutex);
-			m_DirectoryTree.Rebuild(s_AssetPath);
+			m_RebuildDirectoryTree = true;
 		}
 		void AssetBrowser::onFileAdded(const std::wstring& filePath)
 		{
 			XYZ_PROFILE_FUNC("AssetBrowser::onFileAdded");
-			//TODO: It is quite inefficient to rebuild whole tree
-			std::scoped_lock lock(m_DirectoryTreeMutex);
-			m_DirectoryTree.Rebuild(s_AssetPath);
+			m_RebuildDirectoryTree = true;
 		}
 		void AssetBrowser::onFileRemoved(const std::wstring& filePath)
 		{
 			XYZ_PROFILE_FUNC("AssetBrowser::onFileRemoved");
-			//TODO: It is quite inefficient to rebuild whole tree
-			std::scoped_lock lock(m_DirectoryTreeMutex);
 			m_DirectoryTree.Rebuild(s_AssetPath);
 		}
 		void AssetBrowser::onFileRenamed(const std::wstring& filePath)
 		{
 			XYZ_PROFILE_FUNC("AssetBrowser::onFileRenamed");
-			//TODO: It is quite inefficient to rebuild whole tree
-			std::scoped_lock lock(m_DirectoryTreeMutex);
 			m_DirectoryTree.Rebuild(s_AssetPath);
 		}
 	}

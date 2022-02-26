@@ -19,10 +19,7 @@ namespace Example
 
         public float Speed = 2.0f;
         public Vector3 Velocity;
-        ~Spawner()
-        {
-            Log.Warn("Destructor called");
-        }
+        public float Test = 4.0f;
         public void OnCreate()
         {
             Log.Info("OnCreate called");
@@ -38,14 +35,15 @@ namespace Example
             controller = new AnimationController();
             skeleton = new SkeletonAsset(characterRunning);
             animation = new AnimationAsset(characterRunning, "Armature|ArmatureAction", skeleton);
-            //controller.SetSkeletonAsset(skeleton);
-            //controller.AddState("Run", animation);
+            controller.SetSkeletonAsset(skeleton);
+            controller.AddState("Run", animation);
 
+            AnimationController test = new AnimationController();
 
-            //AnimationComponent animationComponent = CreateComponent<AnimationComponent>();
-            //animationComponent.BoneEntities = bones;
-            //animationComponent.Controller = controller;
-            //animationComponent.Playing = true;
+            AnimationComponent animationComponent = CreateComponent<AnimationComponent>();
+            animationComponent.BoneEntities = bones;
+            animationComponent.Controller = controller;
+            animationComponent.Playing = true;
             //SpriteRenderer renderer = CreateComponent<SpriteRenderer>();
             //
             //renderer.MaterialAsset = material;
@@ -56,12 +54,6 @@ namespace Example
         public void OnDestroy()
         {
             Log.Info("OnDestroy called");
-            controller = null;
-            skeleton = null;
-            animation = null;
-            mesh = null;
-            
-            GC.Collect();
         }
 
         public void OnUpdate(float ts)

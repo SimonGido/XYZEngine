@@ -30,5 +30,7 @@ namespace XYZ {
 		SceneEntity m_Entity;
 
 		std::vector<SceneEntity> m_Entities;
+
+		friend class PrefabAssetSerializer;
 	};
 }

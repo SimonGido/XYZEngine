@@ -303,16 +303,38 @@ namespace XYZ {
 		}
 		out << YAML::EndMap; // Particle Component
 	}
+	template <>
+	void SceneSerializer::serialize<MeshComponent>(YAML::Emitter& out, const MeshComponent& val, SceneEntity entity)
+	{
+		out << YAML::Key << "MeshComponent";
+		out << YAML::BeginMap;
+		out << YAML::Key << "Mesh" << val.Mesh->GetHandle();
+		out << YAML::Key << "Material" << val.MaterialAsset->GetHandle();
+		out << YAML::EndMap;
+	}
+	template <>
+	void SceneSerializer::serialize<AnimatedMeshComponent>(YAML::Emitter& out, const AnimatedMeshComponent& val, SceneEntity entity)
+	{
+	
+	}
+
+	template <>
+	void SceneSerializer::deserialize<MeshComponent>(YAML::Node& data, SceneEntity entity)
+	{
+		MeshComponent& component = entity.EmplaceComponent<MeshComponent>();
+		component.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
+		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
+	}
 
 	template <>
 	void SceneSerializer::deserialize<ParticleComponent>(YAML::Node& data, SceneEntity entity)
 	{
-		ParticleComponent component;
-		auto& moduleData = component.System.GetModuleData();
-
+		ParticleComponent& component = entity.EmplaceComponent<ParticleComponent>();;
+		
 		component.System.SetMaxParticles(data["MaxParticles"].as<uint32_t>());
 		component.System.SetSpeed(data["Speed"].as<float>());
-
+		
+		auto& moduleData = component.System.GetModuleData();
 		{ // Emitter
 			auto emitter = data["Emitter"];
 			moduleData->Emitter.Shape = static_cast<EmitShape>(emitter["Shape"].as<uint32_t>());
@@ -359,12 +381,18 @@ namespace XYZ {
 		}
 		{ // RotationOverLife
 			auto updater = data["RotationOverLife"];
-			moduleData->RotationOverLifeUpdater.EulerAngles = data["EulerAngles"].as<glm::vec3>();
-			moduleData->RotationOverLifeUpdater.CycleLength = data["CycleLength"].as<float>();
-			moduleData->RotationOverLifeUpdater.Enabled = data["Enabled"].as<bool>();
+			moduleData->RotationOverLifeUpdater.EulerAngles = updater["EulerAngles"].as<glm::vec3>();
+			moduleData->RotationOverLifeUpdater.CycleLength = updater["CycleLength"].as<float>();
+			moduleData->RotationOverLifeUpdater.Enabled = updater["Enabled"].as<bool>();
 		}
 	}
-
+	template <>
+	void SceneSerializer::deserialize<ParticleRenderer>(YAML::Node& data, SceneEntity entity)
+	{
+		auto& particleRenderer = entity.EmplaceComponent<ParticleRenderer>();
+		particleRenderer.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
+		particleRenderer.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
+	}
 	template <>
 	void SceneSerializer::deserialize<ScriptComponent>(YAML::Node& data, SceneEntity entity)
 	{
@@ -638,6 +666,18 @@ namespace XYZ {
 		{
 			deserialize<ParticleComponent>(particleComponent, entity);
 		}
+
+		auto particleRenderer = data["ParticleRenderer"];
+		if (particleRenderer)
+		{
+			deserialize<ParticleRenderer>(particleRenderer, entity);
+		}
+
+		auto meshComponent = data["MeshComponent"];
+		if (meshComponent)
+		{
+			deserialize<MeshComponent>(meshComponent, entity);
+		}
 	}
 
 
@@ -654,16 +694,20 @@ namespace XYZ {
 		scene->m_Registry.each([&](const entt::entity ent) {
 
 			SceneEntity entity(ent, scene.Raw());
-			auto& rel = entity.GetComponent<Relationship>();
-			if (rel.Parent == scene->GetSceneEntity().ID())
-				rel.Parent = entt::null;
-			serializeEntity(out, entity);
+			if (entity != scene->GetSceneEntity())
+			{
+				auto& rel = entity.GetComponent<Relationship>();
+				if (rel.Parent == scene->GetSceneEntity().ID())
+					rel.Parent = entt::null;
+				serializeEntity(out, entity);
+			}
 		});
 
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 		std::ofstream fout(filepath);
 		fout << out.c_str();
+		fout.flush();
 	}
 
 	entt::entity FindByID(entt::registry& reg, const GUID& guid)
@@ -793,6 +837,10 @@ namespace XYZ {
 		if (entity.HasComponent<ParticleComponent>())
 		{
 			serialize<ParticleComponent>(out, entity.GetComponent<ParticleComponent>(), entity);
+		}
+		if (entity.HasComponent<MeshComponent>())
+		{
+			serialize<MeshComponent>(out, entity.GetComponent<MeshComponent>(), entity);
 		}
 		out << YAML::EndMap; // Entity
 	}

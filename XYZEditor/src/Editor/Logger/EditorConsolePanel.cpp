@@ -3,6 +3,8 @@
 
 #include <imgui.h>
 
+#include "XYZ/Script/ScriptEngine.h"
+
 namespace XYZ {
 	namespace Editor {
 		EditorConsolePanel::EditorConsolePanel(std::string name)

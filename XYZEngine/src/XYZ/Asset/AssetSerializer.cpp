@@ -2,6 +2,8 @@
 #include "AssetSerializer.h"
 
 #include "XYZ/Scene/SceneSerializer.h"
+#include "XYZ/Scene/Prefab.h"
+
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Mesh.h"
 
@@ -100,11 +102,6 @@ namespace XYZ {
 		Ref<Shader> shader = shaderAsset->GetShader();
 		const auto& layouts = shaderAsset->GetLayouts();
 
-		if (metadata.FilePath == "Resources/Shaders/CompositeShader.shader" && shader->GetName() == "AnimMeshShader")
-		{
-			std::cout << "WTF";
-			__debugbreak();
-		}
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -129,6 +126,7 @@ namespace XYZ {
 		out << YAML::EndMap;
 		std::ofstream fout(metadata.FilePath);
 		fout << out.c_str();
+		fout.flush();
 	}
 	bool ShaderAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
@@ -169,10 +167,13 @@ namespace XYZ {
 		out << YAML::Key << "Textures" << YAML::BeginSeq;
 		for (const auto& texture : material->GetTextures())
 		{
-			out << YAML::BeginMap;
-			out << YAML::Key << "Name" << texture.Name;
-			out << YAML::Key << "Handle" << texture.Texture->GetHandle();
-			out << YAML::EndMap;
+			if (texture.Texture.Raw())
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Name" << texture.Name;
+				out << YAML::Key << "Handle" << texture.Texture->GetHandle();
+				out << YAML::EndMap;
+			}
 		}
 		out << YAML::EndSeq;
 
@@ -185,7 +186,8 @@ namespace XYZ {
 			out << YAML::Flow;
 			for (const auto& texture : textureArr.Textures)
 			{
-				out << texture->GetHandle();
+				if (texture.Raw())
+					out << texture->GetHandle();
 			}
 			out << YAML::EndSeq;
 			out << YAML::EndMap;
@@ -195,6 +197,7 @@ namespace XYZ {
 
 		std::ofstream fout(metadata.FilePath);
 		fout << out.c_str();
+		fout.flush();
 	}
 	bool MaterialAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
@@ -269,6 +272,7 @@ namespace XYZ {
 
 		std::ofstream fout(metadata.FilePath);
 		fout << out.c_str();
+		fout.flush();
 	}
 	bool TextureAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
@@ -341,7 +345,9 @@ namespace XYZ {
 
 		std::ofstream fout(metadata.FilePath);
 		fout << out.c_str();
+		fout.flush();
 	}
+
 
 	bool MeshSourceAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
@@ -396,7 +402,7 @@ namespace XYZ {
 			else
 				asset = Ref<MeshSource>::Create(animVertices, indices);
 		}
-		return false;
+		return true;
 	}
 
 	void MeshAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
@@ -412,6 +418,7 @@ namespace XYZ {
 
 		std::ofstream fout(metadata.FilePath);
 		fout << out.c_str();
+		fout.flush();
 	}
 
 	bool MeshAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
@@ -439,6 +446,7 @@ namespace XYZ {
 
 		std::ofstream fout(metadata.FilePath);
 		fout << out.c_str();
+		fout.flush();
 	}
 
 	bool AnimatedMeshAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
@@ -450,6 +458,25 @@ namespace XYZ {
 
 		AssetHandle meshSourceHandle(data["MeshSource"].as<std::string>());
 		asset = Ref<AnimatedMesh>::Create(AssetManager::GetAsset<MeshSource>(meshSourceHandle));
+		return true;
+	}
+	void PrefabAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+		WeakRef<Prefab> prefab = asset.As<Prefab>();
+
+		SceneSerializer serializer;
+		serializer.Serialize(metadata.FilePath.string(), prefab->m_Scene);
+	}
+	bool PrefabAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		Ref<Prefab> prefab = Ref<Prefab>::Create();
+
+		SceneSerializer serializer;
+		prefab->m_Scene = serializer.Deserialize(metadata.FilePath.string());
+		prefab->m_Scene->GetRegistry().each([&](const entt::entity entity) {
+			prefab->m_Entities.push_back({ entity, prefab->m_Scene.Raw() });
+		});
+		asset = prefab;
 		return true;
 	}
 }

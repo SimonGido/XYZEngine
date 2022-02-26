@@ -27,6 +27,7 @@ namespace XYZ {
 		MaterialAsset(Ref<ShaderAsset> shaderAsset);
 		virtual ~MaterialAsset() override;
 
+		void SetShaderAsset(Ref<ShaderAsset> shaderAsset);
 		void SetTexture(const std::string& name, Ref<Texture2D> texture);
 		void SetTexture(const std::string& name, Ref<Texture2D> texture, uint32_t index);
 
@@ -44,7 +45,11 @@ namespace XYZ {
 		const std::vector<TextureData>&		 GetTextures()	    const { return m_Textures; }
 		const std::vector<TextureArrayData>& GetTextureArrays() const { return m_TextureArrays; }
 
+		virtual AssetType GetAssetType() const override { return GetStaticType(); }
 		static AssetType GetStaticType() { return AssetType::Material; }
+	private:
+		void setupTextureBuffers();
+
 	private:
 		Ref<ShaderAsset>			  m_ShaderAsset;
 		Ref<Material>				  m_Material;

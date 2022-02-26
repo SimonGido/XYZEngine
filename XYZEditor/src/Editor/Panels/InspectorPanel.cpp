@@ -102,6 +102,8 @@ namespace XYZ {
 		}
 		void InspectorPanel::drawSelectedAsset()
 		{
+			for (auto& editable : m_EditablesInUse)
+				editable->OnEditorRender();
 		}
 		
 		void InspectorPanel::drawAddComponent()
@@ -237,6 +239,21 @@ namespace XYZ {
 							component.BoneEntities = m_SelectedEntity.GetComponent<AnimatedMeshComponent>().BoneEntities;
 					}
 				}
+				if (!m_SelectedEntity.HasComponent<ParticleComponent>())
+				{
+					if (ImGui::MenuItem("Particle Component"))
+					{
+						auto& component = m_SelectedEntity.EmplaceComponent<ParticleComponent>();
+						m_ParticleInspector.SetSceneEntity(m_SelectedEntity);
+						m_EditablesInUse.push_back(&m_ParticleInspector);
+						if (!m_SelectedEntity.HasComponent<ParticleRenderer>())
+						{
+							auto& particleRenderer = m_SelectedEntity.EmplaceComponent<ParticleRenderer>();
+							particleRenderer.Mesh = AssetManager::GetAsset<Mesh>("Resources/Meshes/Cube.mesh");
+							particleRenderer.MaterialAsset = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
+						}
+					}
+				}
 				ImGui::EndPopup();
 			}
 		}
@@ -246,6 +263,15 @@ namespace XYZ {
 			m_EditablesInUse.clear();
 			if (m_State == State::None)
 				return;
+
+			if (m_SelectedAsset.Raw() && m_State == State::Asset)
+			{
+				if (m_SelectedAsset->GetAssetType() == AssetType::Material)
+				{
+					m_EditablesInUse.push_back(&m_MaterialInspector);
+					m_MaterialInspector.SetAsset(m_SelectedAsset);
+				}
+			}
 
 			if (m_SelectedEntity && m_State == State::Entity)
 			{

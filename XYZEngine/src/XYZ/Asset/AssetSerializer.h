@@ -62,4 +62,11 @@ namespace XYZ {
 		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
 
+	class PrefabAssetSerializer : public AssetSerializer
+	{
+	public:
+		virtual void Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const override;
+		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
+	};
+
 }

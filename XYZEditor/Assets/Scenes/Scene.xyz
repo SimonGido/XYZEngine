@@ -1,77 +1,44 @@
 Scene: TestScene
 Entities:
-  - Entity: a7cfb9da-baff-4d78-8eb3-f79f7c9525cc
+  - Entity: cec8d61d-cb3f-4475-9e44-fef61cec9bd5
     SceneTagComponent:
       Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      ProjectionType: 0
-      PerspectiveFOV: 1
-      PerspectiveNear: 0.00999999978
-      PerspectiveFar: -10000
-      OrthographicSize: 1
-      OrthographicNear: 0
-      OrthographicFar: -1
-    Relationship:
-      PreviousSibling: 3b0420e9-6aa1-4538-b660-a911bff6f74e
-      Depth: 1
-    ScriptComponent:
-      ModuleName: Example.Spawner
-      Speed: 2
-      Velocity: [0, 0, 0]
-  - Entity: 3b0420e9-6aa1-4538-b660-a911bff6f74e
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      NextSibling: a7cfb9da-baff-4d78-8eb3-f79f7c9525cc
-      PreviousSibling: a6c6b7eb-9986-461f-a402-dc01b9a44d24
-      Depth: 1
-  - Entity: 15c34824-61e7-41a4-8448-5d117313da76
-    SceneTagComponent:
-      Name: Child
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: a6c6b7eb-9986-461f-a402-dc01b9a44d24
-      Depth: 2
-  - Entity: a6c6b7eb-9986-461f-a402-dc01b9a44d24
-    SceneTagComponent:
-      Name: Havko
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     SpriteRenderer:
       Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
-      SubTexture: af38b9dc-03f3-4310-bfe2-3b605504a4f0
+      SubTexture: d78bd09d-7b51-49eb-aec5-90f299efa992
       Color: [1, 1, 1, 1]
       SortLayer: 0
       Visible: true
     Relationship:
-      NextSibling: 3b0420e9-6aa1-4538-b660-a911bff6f74e
-      FirstChild: 15c34824-61e7-41a4-8448-5d117313da76
+      PreviousSibling: d71e77a6-cd8f-4433-b8f7-8a9b028d8251
+      Depth: 1
+  - Entity: d71e77a6-cd8f-4433-b8f7-8a9b028d8251
+    SceneTagComponent:
+      Name: Test Effect
+    TransformComponent:
+      Position: [-3.4000001, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      NextSibling: cec8d61d-cb3f-4475-9e44-fef61cec9bd5
+      FirstChild: 95a00e79-665b-40ba-9554-13225d2baefc
       Depth: 1
     ParticleRenderer:
       Material: 2d5d0b92-0ea7-4b45-bd54-63521deafbda
-      Mesh: 64cb0f00-8f6b-4119-b732-783fe26206a1
+      Mesh: fc3c04b3-e07f-4178-8d30-489a09c4ba30
     ParticleComponent:
-      MaxParticles: 50
+      MaxParticles: 100
       Speed: 1
       Emitter:
         Shape: 1
         BoxMin: [-5, -5, 0]
         BoxMax: [5, 5, 0]
         Radius: 7
-        EmitRate: 5
+        EmitRate: 12.3999996
         LifeTime: 5
         MinVelocity: [-1, -1, 0]
         MaxVelocity: [1, 1, 0]
@@ -95,13 +62,13 @@ Entities:
         EulerAngles: [0, 0, 0]
         CycleLength: 5
         Enabled: true
-  - Entity: 884013ea-5b5a-40ca-9866-01001ebbe2f2
+  - Entity: 95a00e79-665b-40ba-9554-13225d2baefc
     SceneTagComponent:
-      Name: TestScene
+      Name: Empty Entity
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      FirstChild: a6c6b7eb-9986-461f-a402-dc01b9a44d24
-      Depth: 0
+      Parent: d71e77a6-cd8f-4433-b8f7-8a9b028d8251
+      Depth: 2

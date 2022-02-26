@@ -80,6 +80,9 @@ namespace XYZ {
 		template <typename T>
 		static Ref<T> TryGetAsset(const std::filesystem::path& filepath);
 		
+		template <typename T>
+		static std::vector<Ref<T>> FindAllAssets(AssetType type);
+
 		static void   ReloadAsset(const std::filesystem::path& filepath);
 
 		static const AssetMetadata& GetMetadata(const AssetHandle& handle);
@@ -98,7 +101,6 @@ namespace XYZ {
 		static void writeAssetMetadata(const AssetMetadata& metadata);
 
 		static void processDirectory(const std::filesystem::path& path);
-		static void reloadAsset(const AssetMetadata& metadata, Ref<Asset>& asset);
 
 
 		static void onFileChange(const std::wstring& path);
@@ -192,5 +194,20 @@ namespace XYZ {
 			return Ref<T>();
 
 		return GetAsset<T>(metadata->Handle);
+	}
+
+	template<typename T>
+	inline std::vector<Ref<T>> AssetManager::FindAllAssets(AssetType type)
+	{
+		std::vector<Ref<T>> result;
+		for (auto&[handle, asset] : s_LoadedAssets)
+		{
+			auto metadata = s_Registry.GetMetadata(handle);
+			if (metadata->Type == type)
+			{
+				result.push_back(GetAsset<T>(handle));
+			}
+		}
+		return result;
 	}
 }

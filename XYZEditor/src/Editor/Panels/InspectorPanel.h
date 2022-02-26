@@ -1,6 +1,7 @@
 #pragma once
 #include "Editor/EditorPanel.h"
 #include "Editor/Inspectable/Components/ComponentInspectors.h"
+#include "Editor/Inspectable/Assets/MaterialInspector.h"
 
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Material.h"
@@ -65,6 +66,7 @@ namespace XYZ {
 
 			MeshInspector				  m_MeshInspector;
 			AnimatedMeshInspector		  m_AnimatedMeshInspector;
+			MaterialInspector			  m_MaterialInspector;
 		};
 
 		template<typename T, typename ...Args>

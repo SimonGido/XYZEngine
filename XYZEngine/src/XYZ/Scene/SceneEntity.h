@@ -79,8 +79,7 @@ namespace XYZ {
 	template<typename T>
 	inline T& SceneEntity::AddComponent(const T& component)
 	{
-		T& newComp = m_Scene->m_Registry.emplace<T>(m_ID);
-		newComp = component;
+		T& newComp = m_Scene->m_Registry.emplace<T>(m_ID, component);
 		return newComp;
 	}
 	template<typename T>

@@ -33,7 +33,8 @@ namespace XYZ {
 		None     = 0,
 		Missing  = BIT(0),
 		Invalid  = BIT(1),
-		ReadOnly = BIT(2)
+		Reloaded = BIT(2),
+		ReadOnly = BIT(3)
 	};
 
 	namespace Utils {
@@ -121,7 +122,6 @@ namespace XYZ {
 		friend class AssetManager;
 		friend class AssetImporter;
 	};
-
 
 	struct AssetMetadata
 	{

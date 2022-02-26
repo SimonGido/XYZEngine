@@ -422,15 +422,9 @@ namespace XYZ {
 		for (auto entity : spriteView)
 		{
 			auto& [transform, spriteRenderer] = spriteView.get<TransformComponent, SpriteRenderer>(entity);
-			// Assets could be reloaded by AssetManager, update references
-			if (AssetManager::Exist(spriteRenderer.Material->GetHandle()))
-			{
-				spriteRenderer.Material = AssetManager::GetAsset<MaterialAsset>(spriteRenderer.Material->GetHandle());
-			}
-			if (AssetManager::Exist(spriteRenderer.SubTexture->GetHandle()))
-			{
-				spriteRenderer.SubTexture = AssetManager::GetAsset<SubTexture>(spriteRenderer.SubTexture->GetHandle());
-			}
+			if (!spriteRenderer.Material.Raw() || !spriteRenderer.SubTexture.Raw())
+				continue;
+
 			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform.WorldTransform);
 		}
 		
@@ -445,6 +439,9 @@ namespace XYZ {
 		for (auto entity : animMeshView)
 		{
 			auto& [transform, meshComponent] = animMeshView.get<TransformComponent,  AnimatedMeshComponent>(entity);
+			if (!meshComponent.Mesh.Raw() || !meshComponent.MaterialAsset.Raw())
+				continue;
+
 			meshComponent.BoneTransforms.resize(meshComponent.BoneEntities.size());
 			for (size_t i = 0; i < meshComponent.BoneEntities.size(); ++i)
 			{
@@ -458,6 +455,8 @@ namespace XYZ {
 		for (auto entity : particleView)
 		{
 			auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
+			if (!renderer.Mesh.Raw() || !renderer.MaterialAsset.Raw())
+				continue;
 
 			auto moduleData = particleComponent.System.GetModuleDataRead();
 			const auto& lightModule = moduleData->LightUpdater;

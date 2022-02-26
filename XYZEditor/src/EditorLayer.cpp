@@ -20,14 +20,16 @@ namespace XYZ {
 
 		void EditorLayer::OnAttach()
 		{
-			s_Data.Init();
-			m_Scene = Ref<Scene>::Create("TestScene");
+			s_Data.Init();		
+			SceneSerializer serializer;
+			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
+			m_Scene = serializer.Deserialize("Assets/Scenes/Scene.xyz");
+			ScriptEngine::SetSceneContext(m_Scene);
+
 			m_Scene->SetViewportSize(
 				Application::Get().GetWindow().GetWidth(),
 				Application::Get().GetWindow().GetHeight()
 			);
-			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
-			ScriptEngine::SetSceneContext(m_Scene);
 
 			m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification());
 			m_CameraTexture = Texture2D::Create("Resources/Editor/Camera.png");
@@ -62,22 +64,22 @@ namespace XYZ {
 			//m_EditorManager.RegisterPanel<Editor::AnimationEditor>("AnimationEditor");
 
 
-			SceneEntity newEntity = m_Scene->CreateEntity("Havko", GUID());
-			SceneEntity childEntity = m_Scene->CreateEntity("Child", newEntity, GUID());
-
-
-			ParticleRenderer& particleRenderer = newEntity.EmplaceComponent<ParticleRenderer>(
-				MeshFactory::CreateBox(glm::vec3(0.5f)),
-				Renderer::GetDefaultResources().DefaultParticleMaterial
-			);
-			ParticleSystem system(50);
-			auto& particleComponent = newEntity.EmplaceComponent<ParticleComponent>();
-			particleComponent.System = system;
-
-			auto& spriteRenderer = newEntity.EmplaceComponent<SpriteRenderer>();
-			Ref<MaterialAsset> spriteMaterial = Renderer::GetDefaultResources().DefaultQuadMaterial;
-			spriteRenderer.Material = spriteMaterial;
-			spriteRenderer.SubTexture = Ref<SubTexture>::Create(Texture2D::Create("Assets/Textures/1_ORK_head.png"));
+			//SceneEntity newEntity = m_Scene->CreateEntity("Havko", GUID());
+			//SceneEntity childEntity = m_Scene->CreateEntity("Child", newEntity, GUID());
+			//
+			//
+			//ParticleRenderer& particleRenderer = newEntity.EmplaceComponent<ParticleRenderer>(
+			//	MeshFactory::CreateBox(glm::vec3(0.5f)),
+			//	Renderer::GetDefaultResources().DefaultParticleMaterial
+			//);
+			//ParticleSystem system(50);
+			//auto& particleComponent = newEntity.EmplaceComponent<ParticleComponent>();
+			//particleComponent.System = system;
+			//
+			//auto& spriteRenderer = newEntity.EmplaceComponent<SpriteRenderer>();
+			//Ref<MaterialAsset> spriteMaterial = Renderer::GetDefaultResources().DefaultQuadMaterial;
+			//spriteRenderer.Material = spriteMaterial;
+			//spriteRenderer.SubTexture = Ref<SubTexture>::Create(Texture2D::Create("Assets/Textures/1_ORK_head.png"));
 
 
 			//auto meshSource = Ref<MeshSource>::Create("Resources/Meshes/Character Running.fbx");

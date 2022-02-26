@@ -165,7 +165,7 @@ namespace XYZ {
 		}
 		else
 		{
-			XYZ_CORE_ERROR("No skeleton in file {0}", m_SourceFilePath);
+			XYZ_CORE_WARN("No skeleton in file {0}", m_SourceFilePath);
 		}
 	}
 

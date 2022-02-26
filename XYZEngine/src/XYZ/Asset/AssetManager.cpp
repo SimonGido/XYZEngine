@@ -78,6 +78,11 @@ namespace XYZ
 				XYZ_CORE_WARN("Could not load asset {}", filepath);
 				return;
 			}
+			auto it = s_LoadedAssets.find(metadata->Handle);
+			if (it != s_LoadedAssets.end())
+			{
+				it->second->SetFlag(AssetFlag::Reloaded);
+			}
 			s_LoadedAssets[asset->GetHandle()] = asset;
 		}
 	}
@@ -165,10 +170,7 @@ namespace XYZ
 			}
 		}
 	}
-	void AssetManager::reloadAsset(const AssetMetadata& metadata, Ref<Asset>& asset)
-	{
-		AssetImporter::TryLoadData(metadata, asset);
-	}
+
 	void AssetManager::onFileChange(const std::wstring& path)
 	{
 		std::string strPath(path.begin(), path.end());

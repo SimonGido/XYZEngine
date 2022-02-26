@@ -25,8 +25,8 @@ namespace XYZ {
 			Ref<Asset> GetSelectedAsset() const;
 
 		private:
-			void     createAsset() const;
-			void     rightClickMenu() const;
+			void     createAsset();
+			void     rightClickMenu();
 			void     dragAndDrop(const std::filesystem::path& path) const;
 
 
@@ -44,8 +44,8 @@ namespace XYZ {
 			std::filesystem::path m_RightClickedFile;
 			std::filesystem::path m_BaseDirectory;
 			
-			DirectoryTree		  m_DirectoryTree;
-			std::mutex			  m_DirectoryTreeMutex;
+			DirectoryTree		  m_DirectoryTree;	
+			std::atomic_bool	  m_RebuildDirectoryTree = false;
 		private:		
 			glm::vec2 m_IconSize;
 			glm::vec2 m_ArrowSize;

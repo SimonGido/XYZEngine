@@ -160,6 +160,8 @@ namespace XYZ {
 	void ParticleSystem::particleThreadUpdate(float timestep)
 	{
 		float speed = m_Speed;
+		if (m_MaxParticles == 0)
+			return;
 
 		Application::Get().GetThreadPool().PushJob<void>([this, timestep, speed]() {
 			XYZ_PROFILE_FUNC("ParticleSystem::particleThreadUpdate Job");

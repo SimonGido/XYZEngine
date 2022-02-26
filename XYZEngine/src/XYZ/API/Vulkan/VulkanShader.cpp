@@ -356,7 +356,7 @@ namespace XYZ {
 			imageSampler.ShaderStage = stage;
 			imageSampler.ArraySize = arraySize;
 
-			m_Resources[name] = ShaderResourceDeclaration(name, binding, 1);
+			m_Resources[name] = ShaderResourceDeclaration(name, binding, arraySize, ShaderResourceType::Sampler2D);
 
 			XYZ_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 		}
