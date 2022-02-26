@@ -83,8 +83,8 @@ namespace XYZ {
 		out << YAML::Key << "SpriteRenderer";
 		out << YAML::BeginMap; // SpriteRenderer
 
-		AssetHandle materialHandle("0");
-		AssetHandle subTextureHandle("0");
+		AssetHandle materialHandle;
+		AssetHandle subTextureHandle;
 		
 		if (val.Material.Raw())
 			materialHandle = val.Material->GetHandle();

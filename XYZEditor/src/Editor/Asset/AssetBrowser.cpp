@@ -62,6 +62,7 @@ namespace XYZ {
 					[&]() { XYZ_PROFILE_FUNC("AssetBrowser::processCurrentDirectory");
 							processCurrentDirectory(); });
 				
+				rightClickMenu();
 
 				if (ImGui::GetIO().MouseReleased[ImGuiMouseButton_Left]
 					&& ImGui::IsWindowFocused()
@@ -69,6 +70,11 @@ namespace XYZ {
 				{
 					m_RightClickedFile.clear();
 					m_SelectedFile.clear();
+				}
+				if (m_RebuildDirectoryTree)
+				{
+					m_RebuildDirectoryTree = false;
+					m_DirectoryTree.Rebuild(s_AssetPath);
 				}
 			}
 			ImGui::End();
@@ -132,17 +138,6 @@ namespace XYZ {
 				if (!m_RightClickedFile.empty())
 				{
 					const std::string fileName = m_RightClickedFile.string();
-					if (ImGui::MenuItem("Rename"))
-					{
-						ImGui::CloseCurrentPopup();
-					}
-					if (ImGui::MenuItem("Delete"))
-					{
-						const std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPath().string();
-						std::string fullPath  = parentDir + "\\" + fileName;
-						//FileSystem::DeleteFileAtPath(fullPath);
-						ImGui::CloseCurrentPopup();
-					}
 					std::string ext = Utils::GetExtension(fileName);
 					if (ext == "png" || ext == "jpg")
 					{
@@ -164,9 +159,23 @@ namespace XYZ {
 							std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPath().string();
 							std::replace(parentDir.begin(), parentDir.end(), '\\', '/');
 
-							const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Texture", ".meshsrc");
+							const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Mesh Source", ".meshsrc");
 							std::string fullModelPath = parentDir + "/" + fileName;
 							AssetManager::CreateAsset<MeshSource>(Utils::GetFilename(fullpath), parentDir, fullModelPath);
+							ImGui::CloseCurrentPopup();
+						}
+					}
+					else if (ext == "tex")
+					{
+						if (ImGui::MenuItem("Create SubTexture"))
+						{
+							std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPath().string();
+							std::replace(parentDir.begin(), parentDir.end(), '\\', '/');
+
+							const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New SubTexture", ".subtex");
+							std::string fullTexturePath = parentDir + "/" + fileName;
+							Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(std::filesystem::path(fullTexturePath));
+							AssetManager::CreateAsset<SubTexture>(Utils::GetFilename(fullpath), parentDir, texture);
 							ImGui::CloseCurrentPopup();
 						}
 					}
@@ -256,7 +265,7 @@ namespace XYZ {
 				}
 				else
 				{
-					if (pressed)
+					if (pressed && !ImGui::IsMouseDragging(ImGuiMouseButton_Left))
 					{
 						m_SelectedFile = node.GetPath();
 						auto asset = GetSelectedAsset();
@@ -269,19 +278,12 @@ namespace XYZ {
 					std::string path = node.GetPath().string();
 					std::replace(path.begin(), path.end(), '\\', '/');
 					UI::DragDropSource("AssetDragAndDrop", path.c_str(), path.size() + 1);
-				}
-				
+				}		
 				ImGui::TextWrapped(node.GetName().c_str());
 				ImGui::NextColumn();
 			}
 			ImGui::Columns(1);
 
-			rightClickMenu();
-			if (m_RebuildDirectoryTree)
-			{
-				m_RebuildDirectoryTree = false;
-				m_DirectoryTree.Rebuild(s_AssetPath);
-			}
 		}
 
 		void AssetBrowser::processDirectoryTree(const DirectoryNode& parentNode)
