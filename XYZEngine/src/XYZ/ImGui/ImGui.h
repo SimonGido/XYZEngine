@@ -20,7 +20,9 @@ namespace XYZ {
 			
 			ImVec4 ConvertToSRGB(const ImVec4& colour);
 			
-			ImVec4 ConvertToLinear(const ImVec4& colour);		
+			ImVec4 ConvertToLinear(const ImVec4& colour);	
+
+			bool IsItemDoubleClicked(ImGuiMouseButton button);
 		}
 
 		void HelpMarker(const char* desc);
@@ -105,11 +107,11 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		bool DragDropSource(const char* type, const T& data, size_t size, ImGuiCond flags = ImGuiCond_Once)
+		bool DragDropSource(const char* type, const T* data, size_t size, ImGuiDragDropFlags dragFlags = ImGuiDragDropFlags_SourceAllowNullID, ImGuiCond flags = ImGuiCond_Once)
 		{
-			if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+			if (ImGui::BeginDragDropSource(dragFlags))
 			{
-				ImGui::SetDragDropPayload(type,(const void*)&data, size, flags);
+				ImGui::SetDragDropPayload(type,(const void*)data, size, flags);
 				ImGui::EndDragDropSource();
 				return true;
 			}
@@ -117,15 +119,18 @@ namespace XYZ {
 		}
 
 		template <typename T>
-		bool DragDropTarget(const char* type, T& out, ImGuiDragDropFlags flags = 0)
+		bool DragDropTarget(const char* type, T* out, ImGuiDragDropFlags flags = 0)
 		{
 			bool result = false;
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(type, flags))
+			if (ImGui::BeginDragDropTarget())
 			{
-				out = *(T*)payload->Data;
-				result = true;
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(type, flags))
+				{
+					*out = (T)payload->Data;
+					result = true;
+				}
+				ImGui::EndDragDropTarget();
 			}
-			ImGui::EndDragDropTarget();
 			return result;
 		}
 

@@ -2,7 +2,7 @@ Scene: TestScene
 SceneEntity: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
 FirstChild: baec5ddd-3bee-4213-946b-78e0d0b3c1b5
 Entities:
-  - Entity: 83d1fb80-baf7-4034-9951-d61a9aee9691
+  - Entity: 712dcbe1-7066-4557-a58c-6f143ddf95f8
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
@@ -10,12 +10,10 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 9c8b851a-b206-4eba-b030-0a60c68f3a19
-      PreviousSibling: baec5ddd-3bee-4213-946b-78e0d0b3c1b5
-      FirstChild: cdf8ce0d-2955-41c5-901a-dd68008c582a
-      Depth: 1
-  - Entity: baec5ddd-3bee-4213-946b-78e0d0b3c1b5
+      Parent: 516f2f10-3a8e-4a18-999c-e8ac13b92719
+      PreviousSibling: f738c534-4fae-4108-8b26-ac9272d770e3
+      Depth: 4
+  - Entity: 93239c7f-f584-42d8-8612-ea60d82b6a22
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
@@ -23,10 +21,61 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 83d1fb80-baf7-4034-9951-d61a9aee9691
-      Depth: 1
-  - Entity: cdf8ce0d-2955-41c5-901a-dd68008c582a
+      Parent: bad252e3-c7c7-4070-9170-640e47ea6538
+      Depth: 2
+  - Entity: 66b3a51a-8a31-44ab-af89-47ce1d67c66c
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 20dc9d07-8f6d-41e6-b7fe-5f1afc9b5ecb
+      Depth: 2
+  - Entity: 3084c905-78bc-4cbd-9a16-0bc2031177f8
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 9c8b851a-b206-4eba-b030-0a60c68f3a19
+      Depth: 2
+  - Entity: f738c534-4fae-4108-8b26-ac9272d770e3
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 516f2f10-3a8e-4a18-999c-e8ac13b92719
+      NextSibling: 712dcbe1-7066-4557-a58c-6f143ddf95f8
+      Depth: 4
+  - Entity: c4ac3794-1a44-41f3-adf5-9ef367345d18
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 168a8881-999f-44f9-a54f-ab21bec8b668
+      Depth: 3
+  - Entity: 516f2f10-3a8e-4a18-999c-e8ac13b92719
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: cdf8ce0d-2955-41c5-901a-dd68008c582a
+      FirstChild: f738c534-4fae-4108-8b26-ac9272d770e3
+      Depth: 3
+  - Entity: 168a8881-999f-44f9-a54f-ab21bec8b668
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
@@ -35,10 +84,10 @@ Entities:
       Scale: [1, 1, 1]
     Relationship:
       Parent: 83d1fb80-baf7-4034-9951-d61a9aee9691
-      NextSibling: 168a8881-999f-44f9-a54f-ab21bec8b668
-      FirstChild: 516f2f10-3a8e-4a18-999c-e8ac13b92719
+      PreviousSibling: cdf8ce0d-2955-41c5-901a-dd68008c582a
+      FirstChild: c4ac3794-1a44-41f3-adf5-9ef367345d18
       Depth: 2
-  - Entity: 9c8b851a-b206-4eba-b030-0a60c68f3a19
+  - Entity: bad252e3-c7c7-4070-9170-640e47ea6538
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
@@ -47,9 +96,8 @@ Entities:
       Scale: [1, 1, 1]
     Relationship:
       Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 20dc9d07-8f6d-41e6-b7fe-5f1afc9b5ecb
-      PreviousSibling: 83d1fb80-baf7-4034-9951-d61a9aee9691
-      FirstChild: 3084c905-78bc-4cbd-9a16-0bc2031177f8
+      PreviousSibling: 20dc9d07-8f6d-41e6-b7fe-5f1afc9b5ecb
+      FirstChild: 93239c7f-f584-42d8-8612-ea60d82b6a22
       Depth: 1
   - Entity: 20dc9d07-8f6d-41e6-b7fe-5f1afc9b5ecb
     SceneTagComponent:
@@ -64,7 +112,7 @@ Entities:
       PreviousSibling: 9c8b851a-b206-4eba-b030-0a60c68f3a19
       FirstChild: 66b3a51a-8a31-44ab-af89-47ce1d67c66c
       Depth: 1
-  - Entity: bad252e3-c7c7-4070-9170-640e47ea6538
+  - Entity: 9c8b851a-b206-4eba-b030-0a60c68f3a19
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
@@ -73,10 +121,11 @@ Entities:
       Scale: [1, 1, 1]
     Relationship:
       Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      PreviousSibling: 20dc9d07-8f6d-41e6-b7fe-5f1afc9b5ecb
-      FirstChild: 93239c7f-f584-42d8-8612-ea60d82b6a22
+      NextSibling: 20dc9d07-8f6d-41e6-b7fe-5f1afc9b5ecb
+      PreviousSibling: 83d1fb80-baf7-4034-9951-d61a9aee9691
+      FirstChild: 3084c905-78bc-4cbd-9a16-0bc2031177f8
       Depth: 1
-  - Entity: 168a8881-999f-44f9-a54f-ab21bec8b668
+  - Entity: cdf8ce0d-2955-41c5-901a-dd68008c582a
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
@@ -85,10 +134,10 @@ Entities:
       Scale: [1, 1, 1]
     Relationship:
       Parent: 83d1fb80-baf7-4034-9951-d61a9aee9691
-      PreviousSibling: cdf8ce0d-2955-41c5-901a-dd68008c582a
-      FirstChild: c4ac3794-1a44-41f3-adf5-9ef367345d18
+      NextSibling: 168a8881-999f-44f9-a54f-ab21bec8b668
+      FirstChild: 516f2f10-3a8e-4a18-999c-e8ac13b92719
       Depth: 2
-  - Entity: 516f2f10-3a8e-4a18-999c-e8ac13b92719
+  - Entity: baec5ddd-3bee-4213-946b-78e0d0b3c1b5
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
@@ -96,10 +145,10 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: cdf8ce0d-2955-41c5-901a-dd68008c582a
-      FirstChild: f738c534-4fae-4108-8b26-ac9272d770e3
-      Depth: 3
-  - Entity: c4ac3794-1a44-41f3-adf5-9ef367345d18
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: 83d1fb80-baf7-4034-9951-d61a9aee9691
+      Depth: 1
+  - Entity: 83d1fb80-baf7-4034-9951-d61a9aee9691
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
@@ -107,57 +156,8 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 168a8881-999f-44f9-a54f-ab21bec8b668
-      Depth: 3
-  - Entity: f738c534-4fae-4108-8b26-ac9272d770e3
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: 516f2f10-3a8e-4a18-999c-e8ac13b92719
-      NextSibling: 712dcbe1-7066-4557-a58c-6f143ddf95f8
-      Depth: 4
-  - Entity: 3084c905-78bc-4cbd-9a16-0bc2031177f8
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: 9c8b851a-b206-4eba-b030-0a60c68f3a19
-      Depth: 2
-  - Entity: 66b3a51a-8a31-44ab-af89-47ce1d67c66c
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: 20dc9d07-8f6d-41e6-b7fe-5f1afc9b5ecb
-      Depth: 2
-  - Entity: 93239c7f-f584-42d8-8612-ea60d82b6a22
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: bad252e3-c7c7-4070-9170-640e47ea6538
-      Depth: 2
-  - Entity: 712dcbe1-7066-4557-a58c-6f143ddf95f8
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: 516f2f10-3a8e-4a18-999c-e8ac13b92719
-      PreviousSibling: f738c534-4fae-4108-8b26-ac9272d770e3
-      Depth: 4
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: 9c8b851a-b206-4eba-b030-0a60c68f3a19
+      PreviousSibling: baec5ddd-3bee-4213-946b-78e0d0b3c1b5
+      FirstChild: cdf8ce0d-2955-41c5-901a-dd68008c582a
+      Depth: 1

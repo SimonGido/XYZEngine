@@ -139,8 +139,8 @@ namespace XYZ {
 
 	std::string FileSystem::UniqueFilePath(const std::string& dir, const std::string& fileName, const char* extension)
 	{
-		char fileNameTmp[60];
-		std::string fullpath = dir + "\\" + fileName;
+		char fileNameTmp[_MAX_FNAME];
+		std::string fullpath = dir + "/" + fileName;
 		if (extension)
 			fullpath += extension;
 
@@ -148,10 +148,10 @@ namespace XYZ {
 		while (std::filesystem::exists(fullpath))
 		{
 			if (extension)
-				sprintf_s(fileNameTmp, "%s%d%s", fileName, counter, extension);
+				sprintf(fileNameTmp, "%s%d%s", fileName.c_str(), counter, extension);
 			else
-				sprintf_s(fileNameTmp, "%s%d", fileName, counter);
-			fullpath = dir + "\\" + fileNameTmp;
+				sprintf(fileNameTmp, "%s%d", fileName.c_str(), counter);
+			fullpath = dir + "/" + fileNameTmp;
 			counter++;
 		}
 		std::replace(fullpath.begin(), fullpath.end(), '\\', '/');

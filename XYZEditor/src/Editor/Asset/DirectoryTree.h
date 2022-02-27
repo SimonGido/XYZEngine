@@ -14,14 +14,16 @@ namespace XYZ {
 			DirectoryNode(std::filesystem::path path, const UV& texCoords, const Ref<Texture2D>& texture, const uint32_t depth);
 			
 			void SetPath(const std::filesystem::path& path);
-			bool OnImGuiRender(glm::vec2 size) const;
-			bool IsDirectory()				   const { return std::filesystem::is_directory(m_Path); }
+			void OnImGuiRender(const char* dragName, glm::vec2 size, bool& leftClick, bool& rightClick, bool& leftDoubleClick);
 
-			const std::filesystem::path& GetPath()  const { return m_Path; }
-			const std::string&			 GetName()  const { return m_Name; }
-			const uint32_t				 GetDepth() const { return m_Depth; }
-			std::string					 GetStrPath() const;
 
+			const std::filesystem::path& GetPath()     const { return m_Path; }
+			const std::string&			 GetName()     const { return m_Name; }
+			const uint32_t				 GetDepth()    const { return m_Depth; }
+			std::string					 GetPathString()  const;
+			bool						 IsDirectory() const { return std::filesystem::is_directory(m_Path); }
+			bool						 Empty()	   const { return m_Nodes.empty(); }
+			size_t						 Size()		   const { return m_Nodes.size(); }
 
 			std::vector<DirectoryNode>::iterator	   begin()	     { return m_Nodes.begin(); }
 			std::vector<DirectoryNode>::iterator	   end()		 { return m_Nodes.end(); }
@@ -36,6 +38,11 @@ namespace XYZ {
 			std::vector<DirectoryNode> m_Nodes;
 			uint32_t				   m_Depth;
 
+			bool m_EditingName = false;
+			bool m_FocusedEdit = false;
+
+			char m_NameBuffer[_MAX_FNAME];
+
 			friend class DirectoryTree;
 		};
 
@@ -47,8 +54,10 @@ namespace XYZ {
 			
 			void Rebuild(const std::filesystem::path& path);
 
-			void SetCurrentNode(const DirectoryNode& node);
+			void SetCurrentNode(DirectoryNode& node);
 			void SetCurrentNode(const std::filesystem::path& path);
+			void AddNode(DirectoryNode& node, const std::filesystem::path& path);
+			void RemoveNode(DirectoryNode& node, const std::filesystem::path& path);
 
 			void Undo();
 			void Redo();
@@ -56,37 +65,20 @@ namespace XYZ {
 			bool UndoEmpty() const { return m_UndoDirectories.empty(); }
 			bool RedoEmpty() const { return m_RedoDirectories.empty(); }
 
-			const DirectoryNode& GetRoot()		  const { return m_Root; }
-			const DirectoryNode& GetCurrentNode() const { return *m_CurrentNode; }
-
-			template <typename Func>
-			void Traverse(const Func& func);
-
+			DirectoryNode& GetRoot()		 { return m_Root; }
+			DirectoryNode& GetCurrentNode()  { return *m_CurrentNode; }
+			DirectoryNode* FindNode(const std::filesystem::path& path);
 		private:
-			void				 processDirectory(std::vector<DirectoryNode>& nodes, const std::filesystem::path& dirPath, const uint32_t depth);
-			const DirectoryNode* findNode(const std::filesystem::path& path, const DirectoryNode& node) const;
+			void		   processDirectory(std::vector<DirectoryNode>& nodes, const std::filesystem::path& dirPath, const uint32_t depth);
+			void		   processFile(const std::filesystem::path& path, std::vector<DirectoryNode>& nodes, const uint32_t depth);
+			DirectoryNode* findNode(const std::filesystem::path& path, DirectoryNode& node) const;
 		private:
-			DirectoryNode		 m_Root;
-			const DirectoryNode* m_CurrentNode;
+			DirectoryNode  m_Root;
+			DirectoryNode* m_CurrentNode;
 
-			std::deque<const DirectoryNode*> m_UndoDirectories;
-			std::deque<const DirectoryNode*> m_RedoDirectories;
+			std::deque<DirectoryNode*> m_UndoDirectories;
+			std::deque<DirectoryNode*> m_RedoDirectories;
 		};
-		template<typename Func>
-		inline void DirectoryTree::Traverse(const Func& func)
-		{
-			std::stack<const DirectoryNode*> nodes;
-			nodes.push(&m_Root);
-			while (!nodes.empty())
-			{
-				const DirectoryNode* node = nodes.top();
-				nodes.pop();
-				if (func(*node))
-				{
-					for (const auto& child : *node)
-						nodes.push(&child);
-				}
-			}
-		}
+	
 	}
 }

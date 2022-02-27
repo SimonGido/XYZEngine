@@ -3,7 +3,7 @@
 
 
 namespace XYZ {
-	FileWatcher::FileWatcher(const std::wstring& dir)
+	FileWatcher::FileWatcher(const std::filesystem::path& dir)
 		:
 		m_Directory(dir),
 		m_Running(false)
@@ -28,28 +28,33 @@ namespace XYZ {
 	{
 		return m_Running;
 	}
-	void FileWatcher::onFileChange(const std::wstring& fileName)
+	void FileWatcher::ProcessChanges()
 	{
-		std::scoped_lock lock(m_CallbacksMutex);
-		for (auto& callable : m_OnFileChange)
-			callable(fileName);
+		while (!m_FileChanges.Empty())
+		{
+			Change change = std::move(m_FileChanges.PopFront());
+			for (auto& callback : m_OnFileChange)
+				callback(change.Type, change.FilePath);
+		}
 	}
-	void FileWatcher::onFileAdded(const std::wstring& fileName)
+	void FileWatcher::onFileModified(const std::filesystem::path& fileName)
 	{
-		std::scoped_lock lock(m_CallbacksMutex);
-		for (auto& callable : m_OnFileAdded)
-			callable(fileName);
+		m_FileChanges.PushBack({ ChangeType::Modified, fileName });
 	}
-	void FileWatcher::onFileRemoved(const std::wstring& fileName)
+	void FileWatcher::onFileAdded(const std::filesystem::path& fileName)
 	{
-		std::scoped_lock lock(m_CallbacksMutex);
-		for (auto& callable : m_OnFileRemoved)
-			callable(fileName);
+		m_FileChanges.PushBack({ ChangeType::Added, fileName });
 	}
-	void FileWatcher::onFileRenamed(const std::wstring& fileName)
+	void FileWatcher::onFileRemoved(const std::filesystem::path& fileName)
 	{
-		std::scoped_lock lock(m_CallbacksMutex);
-		for (auto& callable : m_OnFileRenamed)
-			callable(fileName);
+		m_FileChanges.PushBack({ ChangeType::Removed, fileName });
+	}
+	void FileWatcher::onFileRenamedOld(const std::filesystem::path& fileName)
+	{
+		m_FileChanges.PushBack({ ChangeType::RenamedOld, fileName });
+	}
+	void FileWatcher::onFileRenamedNew(const std::filesystem::path& fileName)
+	{
+		m_FileChanges.PushBack({ ChangeType::RenamedNew, fileName });
 	}
 }

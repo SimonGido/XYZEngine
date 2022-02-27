@@ -16,7 +16,7 @@ namespace XYZ
 	std::unordered_map<AssetHandle, WeakRef<Asset>>			AssetManager::s_MemoryAssets;
 	std::shared_ptr<FileWatcher>							AssetManager::s_FileWatcher;
 	
-	static std::string s_Directory = "Assets";
+	static std::filesystem::path s_Directory = "Assets";
 
 	void AssetManager::Init()
 	{
@@ -24,13 +24,10 @@ namespace XYZ
 		processDirectory(s_Directory);
 		processDirectory("Resources");
 
-		std::wstring wdir = std::wstring(s_Directory.begin(), s_Directory.end());
+		std::wstring wdir = s_Directory.wstring();
 		s_FileWatcher = std::make_shared<FileWatcher>(wdir);
 		
-		s_FileWatcher->AddOnFileChange<&onFileChange>();
-		s_FileWatcher->AddOnFileAdded<&onFileAdded>();
-		s_FileWatcher->AddOnFileRemoved<&onFileRemoved>();
-		s_FileWatcher->AddOnFileRenamed<&onFileRenamed>();
+		s_FileWatcher->AddOnFileChanged<&onFileChange>();
 		s_FileWatcher->Start();
 	}
 	void AssetManager::Shutdown()
@@ -66,6 +63,23 @@ namespace XYZ
 		}
 	}
 
+	void AssetManager::Update(Timestep ts)
+	{
+		s_FileWatcher->ProcessChanges();
+	}
+	std::vector<AssetMetadata> AssetManager::FindAllMetadata(AssetType type)
+	{
+		std::vector<AssetMetadata> result;
+		for (auto& [handle, asset] : s_LoadedAssets)
+		{
+			auto metadata = s_Registry.GetMetadata(handle);
+			if (metadata->Type == type)
+			{
+				result.push_back(*metadata);
+			}
+		}
+		return result;
+	}
 	void AssetManager::ReloadAsset(const std::filesystem::path& filepath)
 	{
 		const auto metadata = s_Registry.GetMetadata(filepath);
@@ -101,7 +115,7 @@ namespace XYZ
 		return *metadata;
 	}
 
-	const std::string& AssetManager::GetDirectory()
+	const std::filesystem::path& AssetManager::GetAssetDirectory()
 	{
 		return s_Directory;
 	}
@@ -171,20 +185,48 @@ namespace XYZ
 		}
 	}
 
-	void AssetManager::onFileChange(const std::wstring& path)
+
+	static std::filesystem::path s_RenamedFileOldPath;
+
+	void AssetManager::onFileChange(FileWatcher::ChangeType type, const std::filesystem::path& path)
 	{
-		std::string strPath(path.begin(), path.end());
-		std::replace(strPath.begin(), strPath.end(), '\\', '/');
-		if (strPath.find(".meta") == std::string::npos)
-			AssetManager::ReloadAsset("Assets/" + strPath + ".meta");
-	}
-	void AssetManager::onFileAdded(const std::wstring& path)
-	{
-	}
-	void AssetManager::onFileRemoved(const std::wstring& path)
-	{
-	}
-	void AssetManager::onFileRenamed(const std::wstring& path)
-	{
+		if (type == FileWatcher::ChangeType::Modified)
+		{
+			if (AssetManager::Exist(path))
+			{
+				AssetManager::ReloadAsset(path);
+			}
+		}
+		else if (type == FileWatcher::ChangeType::Added)
+		{
+
+		}
+		else if (type == FileWatcher::ChangeType::Removed)
+		{
+			auto metadata = *s_Registry.GetMetadata(path);
+			s_Registry.RemoveMetadata(metadata.Handle);
+			auto it = s_LoadedAssets.find(metadata.Handle);
+			if (it != s_LoadedAssets.end())
+				s_LoadedAssets.erase(it);
+		}
+		else if (type == FileWatcher::ChangeType::RenamedOld)
+		{
+			s_RenamedFileOldPath = path;
+		}
+		else if (type == FileWatcher::ChangeType::RenamedNew)
+		{
+			const auto ptrMetadata = s_Registry.GetMetadata(s_RenamedFileOldPath);;
+			if (ptrMetadata)
+			{
+				auto metadata = *ptrMetadata;
+				s_Registry.RemoveMetadata(metadata.Handle);
+
+				FileSystem::Rename(s_RenamedFileOldPath.string() + ".meta", Utils::GetFilename(path.string()));
+
+				metadata.FilePath = path;
+				s_Registry.StoreMetadata(metadata);
+				writeAssetMetadata(metadata);
+			}
+		}
 	}
 }

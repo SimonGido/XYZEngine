@@ -6,6 +6,7 @@
 
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Mesh.h"
+#include "XYZ/Renderer/SubTexture.h"
 
 #include "Renderer/MeshSource.h"
 #include "Renderer/MaterialAsset.h"
@@ -477,6 +478,37 @@ namespace XYZ {
 			prefab->m_Entities.push_back({ entity, prefab->m_Scene.Raw() });
 		});
 		asset = prefab;
+		return true;
+	}
+	void SubTextureSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+		WeakRef<SubTexture> subTexture = asset.As<SubTexture>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Texture" << subTexture->GetTexture()->GetHandle();
+		out << YAML::Key << "TexCoords" << subTexture->GetTexCoords();
+
+		out << YAML::EndMap;
+
+		std::ofstream fout(metadata.FilePath);
+		fout << out.c_str();
+		fout.flush();
+	}
+	bool SubTextureSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+
+
+		AssetHandle textureHandle(data["Texture"].as<std::string>());
+		Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
+		glm::vec4 texCoords = data["TexCoords"].as<glm::vec4>();
+		asset = Ref<SubTexture>::Create(texture, texCoords);
+
 		return true;
 	}
 }

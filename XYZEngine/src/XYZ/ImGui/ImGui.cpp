@@ -91,7 +91,10 @@ namespace XYZ {
 					colour.w
 				);
 			}
-
+			bool IsItemDoubleClicked(ImGuiMouseButton button)
+			{
+				return ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(button);
+			}
 			static ImGuiID GetImageID(const Ref<Image2D>& image)
 			{
 				if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)

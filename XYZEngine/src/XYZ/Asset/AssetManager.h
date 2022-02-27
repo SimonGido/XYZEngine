@@ -1,5 +1,7 @@
 #pragma once
 #include "XYZ/Core/GUID.h"
+#include "XYZ/Core/Timestep.h"
+
 #include "XYZ/Utils/DataStructures/MemoryPool.h"
 
 #include "XYZ/Utils/StringUtils.h"
@@ -60,6 +62,7 @@ namespace XYZ {
 		static void SerializeAll();
 		static void Serialize(const AssetHandle& assetHandle);
 
+		static void Update(Timestep ts);
 
 		template<typename T, typename... Args>
 		static Ref<T> CreateMemoryAsset(const std::string& name, Args&&... args);
@@ -83,14 +86,16 @@ namespace XYZ {
 		template <typename T>
 		static std::vector<Ref<T>> FindAllAssets(AssetType type);
 
-		static void   ReloadAsset(const std::filesystem::path& filepath);
+		static std::vector<AssetMetadata> FindAllMetadata(AssetType type);
+
+		static void ReloadAsset(const std::filesystem::path& filepath);
 
 		static const AssetMetadata& GetMetadata(const AssetHandle& handle);
 		static const AssetMetadata& GetMetadata(const std::filesystem::path& filepath);
 		static const AssetMetadata& GetMetadata(const Ref<Asset>& asset) { return GetMetadata(asset->m_Handle); }
 		
-		static const std::string&	GetDirectory();
-		static const MemoryPool&    GetMemoryPool() { return s_Pool; }
+		static const std::filesystem::path&	GetAssetDirectory();
+		static const MemoryPool&			GetMemoryPool() { return s_Pool; }
 
 		static bool Exist(const AssetHandle& handle);
 		static bool Exist(const std::filesystem::path& filepath);
@@ -102,17 +107,15 @@ namespace XYZ {
 
 		static void processDirectory(const std::filesystem::path& path);
 
+		static void onFileChange(FileWatcher::ChangeType type, const std::filesystem::path& path);
 
-		static void onFileChange(const std::wstring& path);
-		static void onFileAdded(const std::wstring& path);
-		static void onFileRemoved(const std::wstring& path);
-		static void onFileRenamed(const std::wstring& path);
 	private:
 		static MemoryPool											  s_Pool;
 		static AssetRegistry										  s_Registry;
 		static std::unordered_map<AssetHandle, WeakRef<Asset>>		  s_LoadedAssets;
 		static std::unordered_map<AssetHandle, WeakRef<Asset>>        s_MemoryAssets;
 		static std::shared_ptr<FileWatcher>							  s_FileWatcher;
+	
 	private:
 		friend Editor::AssetBrowser;
 		friend Editor::AssetManagerViewPanel;

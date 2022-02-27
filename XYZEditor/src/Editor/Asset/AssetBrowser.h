@@ -5,6 +5,7 @@
 #include "Editor/EditorPanel.h"
 #include "Editor/Asset/DirectoryTree.h"
 
+#include "XYZ/FileWatcher/FileWatcher.h"
 
 #include <deque>
 #include <filesystem>
@@ -25,27 +26,22 @@ namespace XYZ {
 			Ref<Asset> GetSelectedAsset() const;
 
 		private:
-			void     createAsset();
-			void     rightClickMenu();
-			void     dragAndDrop(const std::filesystem::path& path) const;
+			void createAsset();
+			void rightClickMenu();
+	
+
+			void renderTopPanel();
+			void processCurrentDirectory();
+			void processDirectoryTree(DirectoryNode& parentNode, bool defaulOpen = false);
 
 
-			void	 renderTopPanel();
-			void	 processCurrentDirectory();
-			void	 processDirectoryTree(const DirectoryNode& parentNode);
-
-
-			void	 onFileChange(const std::wstring& filePath);
-			void	 onFileAdded(const std::wstring& filePath);
-			void	 onFileRemoved(const std::wstring& filePath);
-			void	 onFileRenamed(const std::wstring& filePath);
+			void onFileChange(FileWatcher::ChangeType type, const std::filesystem::path& filePath);
 		private:
 			std::filesystem::path m_SelectedFile;
 			std::filesystem::path m_RightClickedFile;
 			std::filesystem::path m_BaseDirectory;
 			
 			DirectoryTree		  m_DirectoryTree;	
-			std::atomic_bool	  m_RebuildDirectoryTree = false;
 		private:		
 			glm::vec2 m_IconSize;
 			glm::vec2 m_ArrowSize;

@@ -98,6 +98,7 @@ namespace XYZ {
 				Renderer::EndFrame();
 				m_Window->SwapBuffers();
 			}
+			AssetManager::Update(m_Timestep);
 		}
 		XYZ_PROFILER_SHUTDOWN;
 	}

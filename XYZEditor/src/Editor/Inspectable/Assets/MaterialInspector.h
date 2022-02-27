@@ -15,6 +15,11 @@ namespace XYZ {
 
 			virtual Type GetType() const { return Type::Asset; }
 		private:
+			void handleShader();
+			void handleTextures();
+			void handleTextureArrays();
+
+		private:
 			Ref<MaterialAsset> m_MaterialAsset;
 		};
 	}

@@ -3,6 +3,8 @@
 
 #include "XYZ/Asset/AssetManager.h"
 
+#include "XYZ/ImGui/ImGui.h"
+
 #include <imgui/imgui.h>
 
 #include <glm/gtc/type_ptr.hpp>
@@ -17,24 +19,14 @@ namespace XYZ {
 		}
 		bool MaterialInspector::OnEditorRender()
 		{		
-			std::string name = m_MaterialAsset->GetShader()->GetName();
-			ImGui::InputText("##ShaderName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
-			if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
-				ImGui::OpenPopup("Shader");
+			ImGui::Text("Shader");
+			handleShader();
 
-			if (ImGui::BeginPopup("Shader"))
-			{
-				std::vector<Ref<ShaderAsset>> shaderAssets = AssetManager::FindAllAssets<ShaderAsset>(AssetType::Shader);
-				for (auto& shaderAsset : shaderAssets)
-				{
-					if (ImGui::MenuItem(shaderAsset->GetShader()->GetName().c_str()))
-					{
-						m_MaterialAsset->SetShaderAsset(shaderAsset);
-						break;
-					}
-				}
-				ImGui::EndPopup();
-			}
+			ImGui::Text("Textures");
+			handleTextures();
+
+			ImGui::Text("Texture Arrays");
+			handleTextureArrays();
 
 			return false;
 		}
@@ -42,5 +34,112 @@ namespace XYZ {
 		{
 			m_MaterialAsset = asset.As<MaterialAsset>();
 		}
+		void MaterialInspector::handleShader()
+		{
+			const std::string& name = m_MaterialAsset->GetShader()->GetName();
+			ImGui::InputText("##ShaderName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
+
+			char* shaderAssetPath = nullptr;
+			if (UI::DragDropTarget("AssetDragAndDrop", &shaderAssetPath))
+			{
+				std::filesystem::path path(shaderAssetPath);
+				if (AssetManager::Exist(path))
+				{
+					auto& metadata = AssetManager::GetMetadata(path);
+					if (metadata.Type == AssetType::Shader)
+					{
+						Ref<ShaderAsset> shaderAsset = AssetManager::GetAsset<ShaderAsset>(metadata.Handle);
+						m_MaterialAsset->SetShaderAsset(shaderAsset);
+					}
+				}
+			}
+
+			if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+				ImGui::OpenPopup("Shader");
+
+			if (ImGui::BeginPopup("Shader"))
+			{
+				std::vector<AssetMetadata> shaderAssetsMeta = AssetManager::FindAllMetadata(AssetType::Shader);
+				for (auto& shaderMeta : shaderAssetsMeta)
+				{
+					auto name = shaderMeta.FilePath.filename().string();
+					if (ImGui::MenuItem(name.c_str()))
+					{
+						Ref<ShaderAsset> shaderAsset = AssetManager::GetAsset<ShaderAsset>(shaderMeta.Handle);
+						m_MaterialAsset->SetShaderAsset(shaderAsset);
+						break;
+					}
+				}
+				ImGui::EndPopup();
+			}
+		}
+
+		void MaterialInspector::handleTextures()
+		{
+			auto& textures = m_MaterialAsset->GetTextures();
+			for (auto& textureData : textures)
+			{
+				std::string name = "None";
+				if (textureData.Texture.Raw())
+					name = Utils::GetFilenameWithoutExtension(textureData.Texture->GetPath());
+				
+
+				UI::ScopedID id(name.c_str());
+				ImGui::InputText("##TextureName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
+				
+				char* textureAssetPath = nullptr;
+				if (UI::DragDropTarget("AssetDragAndDrop", &textureAssetPath))
+				{
+					std::filesystem::path path(textureAssetPath);
+					if (AssetManager::Exist(path))
+					{
+						auto& metadata = AssetManager::GetMetadata(path);
+						if (metadata.Type == AssetType::Texture)
+						{
+							Ref<Texture2D> textureAsset = AssetManager::GetAsset<Texture2D>(metadata.Handle);
+							m_MaterialAsset->SetTexture(textureData.Name, textureAsset);
+						}
+					}
+				}
+			}
+		}
+
+		void MaterialInspector::handleTextureArrays()
+		{
+			auto& textureArrays = m_MaterialAsset->GetTextureArrays();
+			for (auto& textureArrayData : textureArrays)
+			{
+				ImGui::Text(textureArrayData.Name.c_str());
+
+				uint32_t index = 0;
+				for (auto& texture : textureArrayData.Textures)
+				{
+					std::string name = "None";
+					if (texture.Raw())
+						name = Utils::GetFilenameWithoutExtension(texture->GetPath());
+
+
+					UI::ScopedID id(name.c_str());
+					ImGui::InputText("##TextureName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
+
+					char* textureAssetPath = nullptr;
+					if (UI::DragDropTarget("AssetDragAndDrop", &textureAssetPath))
+					{
+						std::filesystem::path path(textureAssetPath);
+						if (AssetManager::Exist(path))
+						{
+							auto& metadata = AssetManager::GetMetadata(path);
+							if (metadata.Type == AssetType::Texture)
+							{
+								Ref<Texture2D> textureAsset = AssetManager::GetAsset<Texture2D>(metadata.Handle);
+								m_MaterialAsset->SetTexture(textureArrayData.Name, textureAsset, index);
+							}
+						}
+					}
+					index++;
+				}
+			}
+		}
+
 	}
 }

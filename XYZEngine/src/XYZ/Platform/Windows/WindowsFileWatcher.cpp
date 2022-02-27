@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "XYZ/FileWatcher/FileWatcher.h"
 
+
+#include <filesystem>
+
 #ifdef XYZ_PLATFORM_WINDOWS
 
 #include <windows.h>
@@ -43,37 +46,47 @@ namespace XYZ {
 			NULL									 // completion routine
 		))
 		{
-			const int offset = 0;
 			FILE_NOTIFY_INFORMATION* pNotify;
-			pNotify = (FILE_NOTIFY_INFORMATION*)((char*)buffer + offset);
-			wcscpy_s(filename, L"");
+			pNotify = (FILE_NOTIFY_INFORMATION*)((char*)buffer);
+			while (pNotify)
+			{
+				DWORD length = pNotify->FileNameLength / sizeof(wchar_t);
+				wcscpy_s(filename, L"");
+				wcsncpy_s(filename, pNotify->FileName, length);
 
-			wcsncpy_s(filename, pNotify->FileName, pNotify->FileNameLength / 2);
+				filename[length] = NULL;
+				auto fullWPath = watcher->m_Directory.wstring() + L"\\" + filename;
+				
+				std::string strFullPath(fullWPath.begin(), fullWPath.end());
+				std::replace(strFullPath.begin(), strFullPath.end(), '\\', '/');
+				std::filesystem::path fullPath = strFullPath;
 
-			filename[pNotify->FileNameLength / 2] = NULL;
-
-			auto fullPath = watcher->m_Directory + L"/" + filename;
-			while (true)
-			{		
-				switch (buffer[0].Action)
+				while (true)
 				{
-				case FILE_ACTION_MODIFIED:			
-					watcher->onFileChange(filename);
-					break;
-				case FILE_ACTION_ADDED:
-					watcher->onFileAdded(filename);
-					break;
-				case FILE_ACTION_REMOVED:
-					watcher->onFileRemoved(filename);
-					break;
-				case FILE_ACTION_RENAMED_OLD_NAME:
-					watcher->onFileRenamed(filename);
-					break;
-				case FILE_ACTION_RENAMED_NEW_NAME:
-					watcher->onFileRenamed(filename);
+					switch (pNotify->Action)
+					{
+					case FILE_ACTION_MODIFIED:
+						watcher->onFileModified(fullPath);
+						break;
+					case FILE_ACTION_ADDED:
+						watcher->onFileAdded(fullPath);
+						break;
+					case FILE_ACTION_REMOVED:
+						watcher->onFileRemoved(fullPath);
+						break;
+					case FILE_ACTION_RENAMED_OLD_NAME:
+						watcher->onFileRenamedOld(fullPath);
+						break;
+					case FILE_ACTION_RENAMED_NEW_NAME:
+						watcher->onFileRenamedNew(fullPath);
+						break;
+					}
 					break;
 				}
-				break;
+				if (pNotify->NextEntryOffset != 0)
+					pNotify = (FILE_NOTIFY_INFORMATION*)((char*)buffer + pNotify->NextEntryOffset);
+				else
+					pNotify = nullptr;
 			}
 		}
 		CloseHandle(hDir);

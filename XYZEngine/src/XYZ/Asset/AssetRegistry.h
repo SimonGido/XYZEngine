@@ -18,6 +18,7 @@ namespace XYZ {
 	{
 	public:
 		void StoreMetadata(const AssetMetadata& metadata);
+		void RemoveMetadata(const AssetHandle& handle);
 
 		const AssetMetadata* GetMetadata(const AssetHandle& handle) const;
 		const AssetMetadata* GetMetadata(const std::filesystem::path& filepath) const;
