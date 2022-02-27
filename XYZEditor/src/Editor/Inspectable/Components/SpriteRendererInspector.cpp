@@ -43,8 +43,11 @@ namespace XYZ {
 					}
 					UI::TableRow("Material",
 						[]() { ImGui::Text("Material"); },
-						[&]() { UI::ScopedWidth w(150.0f);
-							    ImGui::InputText("##Material", (char*)materialName.c_str(), materialName.size(), ImGuiInputTextFlags_ReadOnly); }
+						[&]() { 
+							UI::ScopedWidth w(150.0f);					    
+							ImGui::InputText("##Material", (char*)materialName.c_str(), materialName.size(), ImGuiInputTextFlags_ReadOnly); 
+							acceptMaterialDragAndDrop(component);
+						}
 					);
 			
 
@@ -55,8 +58,11 @@ namespace XYZ {
 					}
 					UI::TableRow("SubTexture",
 						[]() { ImGui::Text("SubTexture"); },
-						[&]() { UI::ScopedWidth w(150.0f);
-								ImGui::InputText("##SubTexture", (char*)subTextureName.c_str(), subTextureName.size(), ImGuiInputTextFlags_ReadOnly); }
+						[&]() { 
+							UI::ScopedWidth w(150.0f);
+							ImGui::InputText("##SubTexture", (char*)subTextureName.c_str(), subTextureName.size(), ImGuiInputTextFlags_ReadOnly); 
+							acceptSubTextureDragAndDrop(component);
+						}
 					);
 
 					UI::TableRow("SortLayer",
@@ -129,6 +135,40 @@ namespace XYZ {
 				//}
 			}
 			ImGui::End();
+		}
+		void SpriteRendererInspector::acceptMaterialDragAndDrop(SpriteRenderer& component)
+		{
+			char* materialAssetPath = nullptr;
+			if (UI::DragDropTarget("AssetDragAndDrop", &materialAssetPath))
+			{
+				std::filesystem::path path(materialAssetPath);
+				if (AssetManager::Exist(path))
+				{
+					auto& metadata = AssetManager::GetMetadata(path);
+					if (metadata.Type == AssetType::Material)
+					{
+						Ref<MaterialAsset> materialAsset = AssetManager::GetAsset<MaterialAsset>(metadata.Handle);
+						component.Material = materialAsset;
+					}
+				}
+			}
+		}
+		void SpriteRendererInspector::acceptSubTextureDragAndDrop(SpriteRenderer& component)
+		{
+			char* subTextureAssetPath = nullptr;
+			if (UI::DragDropTarget("AssetDragAndDrop", &subTextureAssetPath))
+			{
+				std::filesystem::path path(subTextureAssetPath);
+				if (AssetManager::Exist(path))
+				{
+					auto& metadata = AssetManager::GetMetadata(path);
+					if (metadata.Type == AssetType::SubTexture)
+					{
+						Ref<SubTexture> subTextureAsset = AssetManager::GetAsset<SubTexture>(metadata.Handle);
+						component.SubTexture = subTextureAsset;
+					}
+				}
+			}
 		}
 	}
 }

@@ -141,9 +141,15 @@ Entities:
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
-      Position: [0, 0, 0]
+      Position: [-2.4000001, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
+    SpriteRenderer:
+      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
+      SubTexture: 10046a9e-c655-4e79-a633-9260c336bac8
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      Visible: true
     Relationship:
       Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
       NextSibling: 83d1fb80-baf7-4034-9951-d61a9aee9691
@@ -152,7 +158,7 @@ Entities:
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
-      Position: [0, 0, 0]
+      Position: [-3.25, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
@@ -161,3 +167,9 @@ Entities:
       PreviousSibling: baec5ddd-3bee-4213-946b-78e0d0b3c1b5
       FirstChild: cdf8ce0d-2955-41c5-901a-dd68008c582a
       Depth: 1
+    SpotLight2D:
+      Color: [1, 1, 1]
+      Radius: 2.04999995
+      Intensity: 1
+      OuterAngle: 180
+      InnerAngle: -180

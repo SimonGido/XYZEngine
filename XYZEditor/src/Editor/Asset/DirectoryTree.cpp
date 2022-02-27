@@ -261,7 +261,7 @@ namespace XYZ {
 			ED::Sprites type = ExtensionToFileType(Utils::GetExtension(path.filename().string()));
 			if (type == ED::TextureIcon)
 			{
-				const UV textureCoords = { glm::vec2(0.0f), glm::vec2(1.0f) };
+				const UV textureCoords = { glm::vec2(0.0f, 1.0f), glm::vec2(1.0f, 0.0f) };
 				Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(path);
 				nodes.emplace_back(path, textureCoords, texture, depth);
 			}

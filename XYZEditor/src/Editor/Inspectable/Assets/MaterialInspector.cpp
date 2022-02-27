@@ -109,17 +109,18 @@ namespace XYZ {
 			auto& textureArrays = m_MaterialAsset->GetTextureArrays();
 			for (auto& textureArrayData : textureArrays)
 			{
-				ImGui::Text(textureArrayData.Name.c_str());
-
 				uint32_t index = 0;
 				for (auto& texture : textureArrayData.Textures)
 				{
+					std::string textureArrayName = textureArrayData.Name + std::to_string(index);
+					UI::ScopedID id(textureArrayName.c_str());
+
 					std::string name = "None";
 					if (texture.Raw())
 						name = Utils::GetFilenameWithoutExtension(texture->GetPath());
 
-
-					UI::ScopedID id(name.c_str());
+					ImGui::Text(textureArrayName.c_str());
+					ImGui::SameLine();
 					ImGui::InputText("##TextureName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
 
 					char* textureAssetPath = nullptr;
