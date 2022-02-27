@@ -20,6 +20,7 @@ namespace XYZ {
 			const std::filesystem::path& GetPath()  const { return m_Path; }
 			const std::string&			 GetName()  const { return m_Name; }
 			const uint32_t				 GetDepth() const { return m_Depth; }
+			std::string					 GetStrPath() const;
 
 
 			std::vector<DirectoryNode>::iterator	   begin()	     { return m_Nodes.begin(); }

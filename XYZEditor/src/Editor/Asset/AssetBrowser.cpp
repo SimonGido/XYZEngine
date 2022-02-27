@@ -102,9 +102,7 @@ namespace XYZ {
 
 		void AssetBrowser::createAsset()
 		{
-			std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPath().string();
-			std::replace(parentDir.begin(), parentDir.end(), '\\', '/');
-
+			std::string parentDir = m_DirectoryTree.GetCurrentNode().GetStrPath();
 			if (ImGui::MenuItem("Create Folder"))
 			{
 				const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Folder", nullptr);
@@ -143,9 +141,7 @@ namespace XYZ {
 					{
 						if (ImGui::MenuItem("Create Texture"))
 						{
-							std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPath().string();
-							std::replace(parentDir.begin(), parentDir.end(), '\\', '/');
-
+							std::string parentDir = m_DirectoryTree.GetCurrentNode().GetStrPath();
 							const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Texture", ".tex");
 							std::string fullImagePath = parentDir + "/" + fileName;
 							AssetManager::CreateAsset<Texture2D>(Utils::GetFilename(fullpath), parentDir, fullImagePath);
@@ -156,9 +152,7 @@ namespace XYZ {
 					{
 						if (ImGui::MenuItem("Create Mesh Source"))
 						{
-							std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPath().string();
-							std::replace(parentDir.begin(), parentDir.end(), '\\', '/');
-
+							std::string parentDir = m_DirectoryTree.GetCurrentNode().GetStrPath();
 							const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Mesh Source", ".meshsrc");
 							std::string fullModelPath = parentDir + "/" + fileName;
 							AssetManager::CreateAsset<MeshSource>(Utils::GetFilename(fullpath), parentDir, fullModelPath);
@@ -169,9 +163,7 @@ namespace XYZ {
 					{
 						if (ImGui::MenuItem("Create SubTexture"))
 						{
-							std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPath().string();
-							std::replace(parentDir.begin(), parentDir.end(), '\\', '/');
-
+							std::string parentDir = m_DirectoryTree.GetCurrentNode().GetStrPath();
 							const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New SubTexture", ".subtex");
 							std::string fullTexturePath = parentDir + "/" + fileName;
 							Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(std::filesystem::path(fullTexturePath));
@@ -232,8 +224,7 @@ namespace XYZ {
 			if (frontArrowPressed && frontArrowAvailable)
 				m_DirectoryTree.Redo();
 
-			std::string path = m_DirectoryTree.GetCurrentNode().GetPath().string();
-			std::replace(path.begin(), path.end(), '\\', '/');
+			std::string path = m_DirectoryTree.GetCurrentNode().GetStrPath();
 			UI::Utils::SetPathBuffer(path);
 			if (ImGui::InputText("###", UI::Utils::GetPathBuffer(), _MAX_PATH))
 				m_DirectoryTree.SetCurrentNode(UI::Utils::GetPathBuffer());
@@ -275,8 +266,7 @@ namespace XYZ {
 					{
 						m_RightClickedFile = node.GetPath();
 					}
-					std::string path = node.GetPath().string();
-					std::replace(path.begin(), path.end(), '\\', '/');
+					std::string path = node.GetStrPath();
 					UI::DragDropSource("AssetDragAndDrop", path.c_str(), path.size() + 1);
 				}		
 				ImGui::TextWrapped(node.GetName().c_str());

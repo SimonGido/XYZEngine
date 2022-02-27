@@ -44,6 +44,14 @@ namespace XYZ {
 			m_Path = path;
 			m_Name = m_Path.filename().string();
 		}
+
+		std::string DirectoryNode::GetStrPath() const
+		{
+			std::string result = m_Path.string();
+			std::replace(result.begin(), result.end(), '\\', '/');
+			return result;
+		}
+
 		bool DirectoryNode::OnImGuiRender(glm::vec2 size) const
 		{
 			if (!m_Texture.Raw())
@@ -81,8 +89,21 @@ namespace XYZ {
 		}
 		void DirectoryTree::Rebuild(const std::filesystem::path& path)
 		{
-			m_Root = DirectoryNode(path, {}, nullptr, 0);
-			m_CurrentNode = &m_Root;
+			if (m_CurrentNode)
+			{
+				std::filesystem::path currentPath = m_CurrentNode->m_Path;
+				m_Root = DirectoryNode(path, {}, nullptr, 0);
+				if (auto currentNode = findNode(currentPath, m_Root))
+					m_CurrentNode = currentNode;
+				else
+					m_CurrentNode = &m_Root;
+			}
+			else
+			{
+				m_Root = DirectoryNode(path, {}, nullptr, 0);
+				m_CurrentNode = &m_Root;
+			}
+			
 			processDirectory(m_Root.m_Nodes, path, 1);
 			m_UndoDirectories.clear();
 			m_RedoDirectories.clear();

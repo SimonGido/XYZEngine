@@ -41,7 +41,7 @@ namespace XYZ {
     class Scene : public Asset
     {
     public:
-        Scene(const std::string& name);
+        Scene(const std::string& name, const GUID& guid = GUID());
         ~Scene();
 
         SceneEntity CreateEntity(const std::string& name, const GUID& guid = GUID());

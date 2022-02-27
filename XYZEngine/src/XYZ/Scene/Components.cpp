@@ -148,19 +148,20 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("Relationship::SetupRelation");
 		removeRelation(child, reg);
-		auto& parentRel = reg.get<Relationship>(parent);
-		auto& childRel = reg.get<Relationship>(child);
+		Relationship& parentRel = reg.get<Relationship>(parent);
+		Relationship& childRel = reg.get<Relationship>(child);
+		Relationship* lastChildRel = nullptr;
 
 		entt::entity lastChild = parentRel.FirstChild;
 		while (reg.valid(lastChild)) // Find last child
 		{
-			auto& lastChildRel = reg.get<Relationship>(lastChild);
-			if (!reg.valid(lastChildRel.NextSibling))
+			lastChildRel = &reg.get<Relationship>(lastChild);
+			if (!reg.valid(lastChildRel->NextSibling))
 				break;
-			lastChild = lastChildRel.NextSibling;
+			lastChild = lastChildRel->NextSibling;
 		}
 		if (reg.valid(lastChild))
-			reg.get<Relationship>(lastChild).NextSibling = child;
+			lastChildRel->NextSibling = child;
 		else
 			parentRel.FirstChild = child;
 

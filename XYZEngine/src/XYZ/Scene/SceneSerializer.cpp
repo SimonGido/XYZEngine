@@ -20,6 +20,7 @@ namespace XYZ {
 	{
 		out << YAML::Key << "Relationship";
 		out << YAML::BeginMap;
+	
 
 		if (reg.valid(val.GetParent()))
 			out << YAML::Key << "Parent" << YAML::Value << reg.get<IDComponent>(val.GetParent()).ID;
@@ -694,8 +695,17 @@ namespace XYZ {
 	{
 		YAML::Emitter out;
 		
+		SceneEntity sceneEntity = scene->GetSceneEntity();
+		const IDComponent& idComponent = sceneEntity.GetComponent<IDComponent>();
+		const Relationship& relationship = sceneEntity.GetComponent<Relationship>();
+		const auto& registry = scene->GetRegistry();
+
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << scene->m_Name;
+		out << YAML::Key << "SceneEntity" << idComponent.ID;
+		if (registry.valid(relationship.FirstChild))
+			out << YAML::Key << "FirstChild" << registry.get<IDComponent>(relationship.FirstChild).ID;
+
 		out << YAML::Key << "Entities";
 		out << YAML::Value << YAML::BeginSeq;
 
@@ -704,9 +714,6 @@ namespace XYZ {
 			SceneEntity entity(ent, scene.Raw());
 			if (entity != scene->GetSceneEntity())
 			{
-				auto& rel = entity.GetComponent<Relationship>();
-				if (rel.Parent == scene->GetSceneEntity().ID())
-					rel.Parent = entt::null;
 				serializeEntity(out, entity);
 			}
 		});
@@ -736,10 +743,14 @@ namespace XYZ {
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
-		Ref<Scene> scene = Ref<Scene>::Create(data["Scene"].as<std::string>());
-		entt::registry& reg = scene->m_Registry;
+		const std::string sceneName = data["Scene"].as<std::string>();
+		const GUID sceneEntityGuid = data["SceneEntity"].as<std::string>();
+		
 
-		reg.get<SceneTagComponent>(scene->m_SceneEntity).Name = scene->m_Name;
+		Ref<Scene> scene = Ref<Scene>::Create(sceneName, sceneEntityGuid);
+		entt::registry& reg = scene->m_Registry;
+		SceneEntity sceneEntity = scene->GetSceneEntity();
+
 		auto entities = data["Entities"];
 		if (entities)
 		{
@@ -747,24 +758,28 @@ namespace XYZ {
 			{
 				SceneSerializer::deserializeEntity(entity, scene);
 			}
-			for (auto data : entities)
+			if (data["FirstChild"])
 			{
-				GUID guid = data["Entity"].as<std::string>();
+				GUID firstChildID = data["FirstChild"].as<std::string>();
+				sceneEntity.GetComponent<Relationship>().FirstChild = FindByID(reg, firstChildID);
+			}
+			for (auto entityData : entities)
+			{
+				GUID guid = entityData["Entity"].as<std::string>();
 				entt::entity entity = FindByID(reg, guid);
 
 				Relationship& relationship = reg.get<Relationship>(entity);
-				auto relComponent = data["Relationship"];
-				if (relComponent["Parent"])
-				{
-					GUID parent = relComponent["Parent"].as<std::string>();
-					entt::entity parentEntity = FindByID(reg, parent);
-					if (reg.valid(parentEntity))
-					{
-						// Remove relation with scene entity
-						Relationship::RemoveRelation(entity, reg);
-						relationship.Parent = parentEntity;					
-					}
-				}
+				// Remove relations created by scene
+				relationship.Parent = entt::null;
+				relationship.NextSibling = entt::null;
+				relationship.PreviousSibling = entt::null;
+				relationship.FirstChild = entt::null;
+
+				auto relComponent = entityData["Relationship"];
+
+				GUID parent = relComponent["Parent"].as<std::string>();
+				relationship.Parent = FindByID(reg, parent);
+				
 				if (relComponent["NextSibling"])
 				{
 					GUID nextSibling = relComponent["NextSibling"].as<std::string>();

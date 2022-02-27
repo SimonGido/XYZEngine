@@ -82,7 +82,7 @@ namespace XYZ {
 
 	static entt::registry s_CopyRegistry;
 
-	Scene::Scene(const std::string& name)
+	Scene::Scene(const std::string& name, const GUID& guid)
 		:
 		m_PhysicsWorld({ 0.0f, -9.8f }),
 		m_PhysicsEntityBuffer(nullptr),
@@ -96,7 +96,7 @@ namespace XYZ {
 		m_SceneEntity = m_Registry.create();
 
 		m_Registry.emplace<Relationship>(m_SceneEntity);
-		m_Registry.emplace<IDComponent>(m_SceneEntity);
+		m_Registry.emplace<IDComponent>(m_SceneEntity, guid);
 		m_Registry.emplace<TransformComponent>(m_SceneEntity);
 		m_Registry.emplace<SceneTagComponent>(m_SceneEntity, name);	
 
