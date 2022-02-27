@@ -309,5 +309,63 @@ namespace XYZ {
 
 			}, enabledEmitter);
 		}
-	}
+		ParticleRendererInspector::ParticleRendererInspector()
+			:
+			Inspectable("Particle Renderer")
+		{
+		}
+		bool ParticleRendererInspector::OnEditorRender()
+		{
+			return EditorHelper::DrawComponent<ParticleRenderer>("Particle Renderer ", m_Context, [&](auto& component) {
+				UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
+				UI::ScopedColorStack color(true,
+					ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f },
+					ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f },
+					ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
+				);
+				const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+
+
+				if (ImGui::BeginTable("##ParticleRendererTable", 2, ImGuiTableFlags_SizingStretchProp))
+				{
+					std::string materialName = "None";
+					if (component.MaterialAsset.Raw() && AssetManager::Exist(component.MaterialAsset->GetHandle()))
+					{
+						materialName = Utils::GetFilename(AssetManager::GetMetadata(component.MaterialAsset).FilePath.string());
+					}
+					UI::TableRow("Material",
+						[]() { ImGui::Text("Material"); },
+						[&]() {
+						UI::ScopedWidth w(150.0f);
+						ImGui::InputText("##Material", (char*)materialName.c_str(), materialName.size(), ImGuiInputTextFlags_ReadOnly);
+						acceptMaterialDragAndDrop(component);
+					});
+
+					ImGui::EndTable();
+				}
+
+			});
+		}
+		void ParticleRendererInspector::SetSceneEntity(const SceneEntity& entity)
+		{
+			m_Context = entity;
+		}
+		void ParticleRendererInspector::acceptMaterialDragAndDrop(ParticleRenderer& component)
+		{
+			char* materialAssetPath = nullptr;
+			if (UI::DragDropTarget("AssetDragAndDrop", &materialAssetPath))
+			{
+				std::filesystem::path path(materialAssetPath);
+				if (AssetManager::Exist(path))
+				{
+					auto& metadata = AssetManager::GetMetadata(path);
+					if (metadata.Type == AssetType::Material)
+					{
+						Ref<MaterialAsset> materialAsset = AssetManager::GetAsset<MaterialAsset>(metadata.Handle);
+						component.MaterialAsset = materialAsset;
+					}
+				}
+			}
+		}
+}
 }

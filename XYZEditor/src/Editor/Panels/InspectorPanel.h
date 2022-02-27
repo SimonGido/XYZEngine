@@ -55,6 +55,7 @@ namespace XYZ {
 			PointLight2DInspector         m_PointLight2DInspector;
 			SpotLight2DInspector          m_SpotLight2DInspector;
 			ParticleComponentInspector	  m_ParticleInspector;
+			ParticleRendererInspector	  m_ParticleRendererInspector;
 			SceneTagInspector			  m_SceneTagInspector;
 			ScriptComponentInspector	  m_ScriptComponentInspector;
 			TransformInspector			  m_TransformInspector;

@@ -245,7 +245,9 @@ namespace XYZ {
 					{
 						auto& component = m_SelectedEntity.EmplaceComponent<ParticleComponent>();
 						m_ParticleInspector.SetSceneEntity(m_SelectedEntity);
+						m_ParticleRendererInspector.SetSceneEntity(m_SelectedEntity);
 						m_EditablesInUse.push_back(&m_ParticleInspector);
+						m_EditablesInUse.push_back(&m_ParticleRendererInspector);
 						if (!m_SelectedEntity.HasComponent<ParticleRenderer>())
 						{
 							auto& particleRenderer = m_SelectedEntity.EmplaceComponent<ParticleRenderer>();
@@ -322,6 +324,10 @@ namespace XYZ {
 				if (m_SelectedEntity.HasComponent<ParticleComponent>())
 				{
 					m_EditablesInUse.push_back(&m_ParticleInspector);
+				}
+				if (m_SelectedEntity.HasComponent<ParticleRenderer>())
+				{
+					m_EditablesInUse.push_back(&m_ParticleRendererInspector);
 				}
 				if (m_SelectedEntity.HasComponent<MeshComponent>())
 				{

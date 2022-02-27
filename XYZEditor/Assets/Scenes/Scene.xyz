@@ -116,9 +116,15 @@ Entities:
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
-      Position: [0, 0, 0]
+      Position: [-2.5999999, 0, -0.0500000007]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [8.85000038, 5.19999981, 1]
+    SpriteRenderer:
+      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
+      SubTexture: 85c78df2-9246-4f69-8dd9-3964417dedd7
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      Visible: true
     Relationship:
       Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
       NextSibling: 20dc9d07-8f6d-41e6-b7fe-5f1afc9b5ecb
@@ -154,6 +160,41 @@ Entities:
       Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
       NextSibling: 83d1fb80-baf7-4034-9951-d61a9aee9691
       Depth: 1
+    ParticleRenderer:
+      Material: a26336fe-dc1c-4e82-a500-b2101792a4d3
+      Mesh: fc3c04b3-e07f-4178-8d30-489a09c4ba30
+    ParticleComponent:
+      MaxParticles: 20
+      Speed: 1
+      Emitter:
+        Shape: 2
+        BoxMin: [-5, -5, 0]
+        BoxMax: [5, 5, 0]
+        Radius: 0.200000003
+        EmitRate: 5
+        LifeTime: 5
+        MinVelocity: [-1, -1, 0]
+        MaxVelocity: [1, 1, 0]
+        Size: [10, 10, 1]
+        Color: [1, 1, 1, 1]
+        BurstInterval: 5
+        Bursts:
+          []
+      LightUpdater:
+        LightColor: [0.443137258, 1, 1]
+        LightRadius: 0.200000003
+        LightIntensity: 1
+        MaxLights: 20
+        Enabled: true
+      TextureAnimationUpdater:
+        Tiles: [8, 8]
+        StartFrame: 0
+        CycleLength: 5
+        Enabled: true
+      RotationOverLife:
+        EulerAngles: [0, 0, 0]
+        CycleLength: 5
+        Enabled: true
   - Entity: 83d1fb80-baf7-4034-9951-d61a9aee9691
     SceneTagComponent:
       Name: Empty Entity

@@ -50,6 +50,7 @@ namespace XYZ {
 					{
 						Ref<ShaderAsset> shaderAsset = AssetManager::GetAsset<ShaderAsset>(metadata.Handle);
 						m_MaterialAsset->SetShaderAsset(shaderAsset);
+						AssetManager::Serialize(m_MaterialAsset->GetHandle());
 					}
 				}
 			}
@@ -67,6 +68,7 @@ namespace XYZ {
 					{
 						Ref<ShaderAsset> shaderAsset = AssetManager::GetAsset<ShaderAsset>(shaderMeta.Handle);
 						m_MaterialAsset->SetShaderAsset(shaderAsset);
+						AssetManager::Serialize(m_MaterialAsset->GetHandle());
 						break;
 					}
 				}
@@ -98,6 +100,7 @@ namespace XYZ {
 						{
 							Ref<Texture2D> textureAsset = AssetManager::GetAsset<Texture2D>(metadata.Handle);
 							m_MaterialAsset->SetTexture(textureData.Name, textureAsset);
+							AssetManager::Serialize(m_MaterialAsset->GetHandle());
 						}
 					}
 				}
@@ -134,6 +137,7 @@ namespace XYZ {
 							{
 								Ref<Texture2D> textureAsset = AssetManager::GetAsset<Texture2D>(metadata.Handle);
 								m_MaterialAsset->SetTexture(textureArrayData.Name, textureAsset, index);
+								AssetManager::Serialize(m_MaterialAsset->GetHandle());
 							}
 						}
 					}

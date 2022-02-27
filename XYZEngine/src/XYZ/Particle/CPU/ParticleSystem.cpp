@@ -35,6 +35,7 @@ namespace XYZ {
 
 	ParticleSystem::~ParticleSystem()
 	{
+		ScopedLock<ModuleData> moduleData = m_ModuleThreadPass.Get<ModuleData>();
 	}
 
 	ParticleSystem::ParticleSystem(const ParticleSystem& other)
