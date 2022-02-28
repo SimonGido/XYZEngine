@@ -1,7 +1,7 @@
 #pragma once
 #include "XYZ/Utils/DataStructures/ThreadPass.h"
 #include "XYZ/Physics/PhysicsWorld2D.h"
-#include "ParticleDataBuffer.h"
+#include "ParticlePool.h"
 
 
 #include <glm/glm.hpp>
@@ -13,7 +13,7 @@ namespace XYZ {
 	public:
 		LightUpdater();
 
-		void UpdateParticles(float ts, ParticleDataBuffer& data);
+		void UpdateParticles(float ts, ParticlePool& data);
 		void Reset();
 
 		struct Light
@@ -33,7 +33,7 @@ namespace XYZ {
 	public:
 		TextureAnimationUpdater();
 
-		void UpdateParticles(float ts, ParticleDataBuffer& data) const;
+		void UpdateParticles(float ts, ParticlePool& data) const;
 
 		glm::ivec2 Tiles;
 		uint32_t   StartFrame;
@@ -46,7 +46,7 @@ namespace XYZ {
 	public:
 		RotationOverLife();
 
-		void UpdateParticles(float ts, ParticleDataBuffer& data) const;
+		void UpdateParticles(float ts, ParticlePool& data) const;
 
 
 		glm::vec3 EulerAngles;

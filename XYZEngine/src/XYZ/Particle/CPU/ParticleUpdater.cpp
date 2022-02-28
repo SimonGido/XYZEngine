@@ -25,7 +25,7 @@ namespace XYZ {
 	{		
 	}
 
-	void LightUpdater::UpdateParticles(float ts, ParticleDataBuffer& data)
+	void LightUpdater::UpdateParticles(float ts, ParticlePool& data)
 	{
 		if (Enabled)
 		{
@@ -34,7 +34,7 @@ namespace XYZ {
 			
 			for (uint32_t i = 0; i < aliveParticles && i < MaxLights; ++i)
 			{
-				Lights.push_back(data.Particle[i].Position);
+				Lights.push_back(data.Particles[i].Position);
 			}
 		}
 	}
@@ -51,7 +51,7 @@ namespace XYZ {
 		CycleLength(5.0f)
 	{
 	}
-	void TextureAnimationUpdater::UpdateParticles(float ts, ParticleDataBuffer& data) const
+	void TextureAnimationUpdater::UpdateParticles(float ts, ParticlePool& data) const
 	{
 		if (Enabled)
 		{
@@ -62,14 +62,14 @@ namespace XYZ {
 			const uint32_t aliveParticles = data.GetAliveParticles();
 			for (uint32_t i = 0; i < aliveParticles; ++i)
 			{
-				const float ratio			= CalcRatio(CycleLength, data.Particle[i].LifeRemaining);
+				const float ratio			= CalcRatio(CycleLength, data.Particles[i].LifeRemaining);
 				const float stageProgress = ratio * stageCount;
 
 				const uint32_t index  = (uint32_t)floor(stageProgress);
 				const float column	= index % Tiles.x;
 				const float row		= index / Tiles.y;
 				
-				data.Particle[i].TexOffset = glm::vec2(column / Tiles.x, row / Tiles.y);
+				data.Particles[i].TexOffset = glm::vec2(column / Tiles.x, row / Tiles.y);
 			}
 		}
 	}
@@ -80,7 +80,7 @@ namespace XYZ {
 		CycleLength(5.0f)
 	{
 	}
-	void RotationOverLife::UpdateParticles(float ts, ParticleDataBuffer& data) const
+	void RotationOverLife::UpdateParticles(float ts, ParticlePool& data) const
 	{
 		if (Enabled)
 		{
@@ -88,8 +88,8 @@ namespace XYZ {
 			const glm::vec3 radians = glm::radians(EulerAngles);
 			for (uint32_t i = 0; i < aliveParticles; ++i)
 			{
-				const float ratio = CalcRatio(CycleLength, data.Particle[i].LifeRemaining);
-				data.Particle[i].Rotation = glm::quat(radians * ratio);
+				const float ratio = CalcRatio(CycleLength, data.Particles[i].LifeRemaining);
+				data.Particles[i].Rotation = glm::quat(radians * ratio);
 			}
 		}
 	}

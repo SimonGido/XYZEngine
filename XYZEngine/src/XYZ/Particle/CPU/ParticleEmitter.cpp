@@ -3,6 +3,9 @@
 
 #include "XYZ/Utils/Random.h"
 
+#include "XYZ/Debug/Profiler.h"
+
+
 #include <glm/common.hpp>
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/constants.hpp>
@@ -31,13 +34,19 @@ namespace XYZ {
 		Color(1.0f),
 
 		BurstInterval(5.0f),
-		
+	
+		MaxLights(20),
+		LightColor(1.0f),
+		LightRadius(1.0f),
+		LightIntensity(1.0f),
+
 		m_EmittedParticles(0.0f),
 		m_PassedTime(0.0f)
 	{
 	}
-	void ParticleEmitter::Emit(Timestep ts, ParticleDataBuffer& data)
+	void ParticleEmitter::Emit(Timestep ts, ParticlePool& data)
 	{
+		XYZ_PROFILE_FUNC("ParticleSystem::Emit");
 		m_EmittedParticles += EmitRate * ts;
 
 		const uint32_t newParticles = (uint32_t)m_EmittedParticles + burstEmit();
@@ -50,13 +59,24 @@ namespace XYZ {
 		for (uint32_t i = startId; i < endId; ++i)
 		{
 			data.Wake(i);
-			data.Particle[i].Color = Color;
-			data.Particle[i].TexOffset = glm::vec2(0.0f, 0.0f);
-			data.Particle[i].Size = Size;
-			data.Particle[i].Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-			data.Particle[i].LifeRemaining = LifeTime;
-			data.Particle[i].Velocity = glm::linearRand(MinVelocity, MaxVelocity);
-			data.Particle[i].Position = glm::vec3(0.0f);
+			data.Particles[i].Color = Color;
+			data.Particles[i].TexOffset = glm::vec2(0.0f, 0.0f);
+			data.Particles[i].Size = Size;
+			data.Particles[i].Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+			data.Particles[i].LifeRemaining = LifeTime;
+			data.Particles[i].Velocity = glm::linearRand(MinVelocity, MaxVelocity);
+			data.Particles[i].Position = glm::vec3(0.0f);
+		}
+
+		{
+			XYZ_PROFILE_FUNC("ParticleSystem::Emit Lights");
+			for (size_t i = startId; i < endId && m_AliveLights < MaxLights; ++i)
+			{
+				data.Particles[i].LightColor = LightColor;
+				data.Particles[i].LightRadius = LightRadius;
+				data.Particles[i].LightIntensity = LightIntensity;
+				m_AliveLights++;
+			}
 		}
 		if (Shape == EmitShape::Box)
 			generateBox(data, startId, endId);
@@ -89,7 +109,7 @@ namespace XYZ {
 		}
 		return count;
 	}
-	void ParticleEmitter::generateBox(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const
+	void ParticleEmitter::generateBox(ParticlePool& data, uint32_t startId, uint32_t endId) const
 	{
 		std::random_device dev;
 		std::mt19937 rng(dev());
@@ -97,10 +117,10 @@ namespace XYZ {
 
 		for (uint32_t i = startId; i < endId; i++)
 		{
-			data.Particle[i].Position = glm::linearRand(BoxMin, BoxMax);
+			data.Particles[i].Position = glm::linearRand(BoxMin, BoxMax);
 		}
 	}
-	void ParticleEmitter::generateCircle(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const
+	void ParticleEmitter::generateCircle(ParticlePool& data, uint32_t startId, uint32_t endId) const
 	{
 		std::random_device dev;
 		std::mt19937 rng(dev());
@@ -114,7 +134,7 @@ namespace XYZ {
 				Radius * cos(theta),
 				Radius * sin(theta)
 			);
-			data.Particle[i].Position = glm::vec3(point.x, point.y, 0.0f);
+			data.Particles[i].Position = glm::vec3(point.x, point.y, 0.0f);
 		}
 	}
 }

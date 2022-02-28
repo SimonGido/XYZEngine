@@ -32,11 +32,11 @@ namespace XYZ {
 			return EditorHelper::DrawComponent<ParticleComponent>("Particle Component ", m_Context, [&](auto& component) {
 
 				const float columnWidth = 200.0f;
-
+				
 				ParticleSystem& system = component.System;
 				if (ImGui::Button("Reset"))
 					system.Reset();
-
+				
 				if (ImGui::BeginTable("Particle Component Settings", 2, ImGuiTableFlags_SizingStretchProp))
 				{
 					int maxParticles = system.GetMaxParticles();
@@ -46,28 +46,54 @@ namespace XYZ {
 						if (ImGui::InputInt("##MaxParticles", &maxParticles))
 							system.SetMaxParticles(maxParticles);
 					});
-
-					float speed = system.GetSpeed();
+				
 					UI::TableRow("Simulation Speed",
 						[]() {ImGui::Text("Simulation Speed"); },
 						[&]() {
-						if (ImGui::DragFloat("##SimulationSpeed", &speed, sc_VSpeed))
-							system.SetSpeed(speed);
+						ImGui::DragFloat("##SimulationSpeed", &system.Speed, sc_VSpeed);
 					});
-
+				
 					UI::TableRow("Simulation Speed",
 						[]() {ImGui::Text("Alive Particles"); },
 						[&]() {ImGui::Text("%u", system.GetAliveParticles()); }
 					);
+
 					ImGui::EndTable();
 				}
+				bool enabled = true;
+				EditorHelper::DrawNodeControl("Modifiers", system, [](auto& system) {
 
-				ScopedLock<ParticleSystem::ModuleData> moduleData = system.GetModuleData();
-				drawRotationOverLifeUpdater(moduleData.As());
-				drawLightUpdater(moduleData.As());
-				drawTextureAnimationUpdater(moduleData.As());
+					if (ImGui::BeginTable("Modifiers table", 2, ImGuiTableFlags_SizingStretchProp))
+					{
+						UI::TableRow("Animation Tiles",
+							[]() {ImGui::Text("Animation Tiles"); },
+							[&]() { ImGui::InputInt2("##AnimationTiles", (int*)&system.AnimationTiles); }
+						);
 
-				drawEmitter(moduleData.As());
+						UI::TableRow("AnimationStartFrame",
+							[]() {ImGui::Text("Animation Start Frame"); },
+							[&]() { ImGui::InputInt("##AnimationStartFrame", (int*)&system.AnimationStartFrame); }
+						);
+
+						UI::TableRow("Animation Cycle Length",
+							[]() {ImGui::Text("Animation Cycle Length"); },
+							[&]() { ImGui::InputFloat("##AnimationCycleLength", &system.AnimationCycleLength); }
+						);
+
+						UI::TableRow("RotationEulerAngles",
+							[]() {ImGui::Text("Rotation Euler Angles"); },
+							[&]() { ImGui::DragFloat3("##RotationEulerAngles", glm::value_ptr(system.RotationEulerAngles)); }
+						);
+
+						UI::TableRow("Rotation Cycle Length",
+							[]() {ImGui::Text("Rotation Cycle Length"); },
+							[&]() { ImGui::DragFloat("##RotationCycleLength", &system.RotationCycleLength, sc_VSpeed); }
+						);
+						ImGui::EndTable();
+					}
+				}, enabled);
+		
+				drawEmitter(system.Emitter);
 			});
 		}
 		void ParticleComponentInspector::SetSceneEntity(const SceneEntity& entity)
@@ -76,95 +102,14 @@ namespace XYZ {
 			m_SelectedBurstIndex = sc_InvalidIndex;
 		}
 
-		void ParticleComponentInspector::drawRotationOverLifeUpdater(ParticleSystem::ModuleData& moduleData)
-		{
-			EditorHelper::DrawNodeControl("Rotation Over Life", moduleData.RotationOverLifeUpdater, [](auto& val) {
-
-				if (ImGui::BeginTable("TextureAnimationTable", 2, ImGuiTableFlags_SizingStretchProp))
-				{
-					UI::TableRow("EulerAngles",
-						[]() {ImGui::Text("Euler Angles"); },
-						[&]() { ImGui::DragFloat3("##EulerAngles", glm::value_ptr(val.EulerAngles)); }
-					);
-
-					UI::TableRow("Cycle Length",
-						[]() {ImGui::Text("Cycle Length"); },
-						[&]() { ImGui::DragFloat("##CycleLength", &val.CycleLength, sc_VSpeed); }
-					);
-
-					ImGui::EndTable();
-				}
-
-			}, moduleData.RotationOverLifeUpdater.Enabled);
-		}
-		void ParticleComponentInspector::drawLightUpdater(ParticleSystem::ModuleData& moduleData)
-		{
-			EditorHelper::DrawNodeControl("Light", moduleData.LightUpdater, [](auto& val) {
-
-				int maxLights = val.MaxLights;
-				if (ImGui::BeginTable("LightTable", 2, ImGuiTableFlags_SizingStretchProp))
-				{
-					UI::TableRow("Light Color",
-						[]() {ImGui::Text("Light Color"); },
-						[&]() { ImGui::ColorEdit3("##LightColor", glm::value_ptr(val.Light.Color)); }
-					);
-
-					UI::TableRow("Light Radius",
-						[]() {ImGui::Text("Light Radius"); },
-						[&]() { ImGui::DragFloat("##LightRadius", &val.Light.Radius, sc_VSpeed); }
-					);
-
-					UI::TableRow("Light Intensity",
-						[]() {ImGui::Text("Light Intensity"); },
-						[&]() { ImGui::DragFloat("##LightIntensity", &val.Light.Intensity, sc_VSpeed); }
-					);
-
-					UI::TableRow("Max Lights",
-						[]() {ImGui::Text("Max Lights"); },
-						[&]() { ImGui::InputInt("##MaxLights", (int*)&val.MaxLights); }
-					);
-					ImGui::EndTable();
-				}
-
-			}, moduleData.LightUpdater.Enabled);
-
-		}
-		void ParticleComponentInspector::drawTextureAnimationUpdater(ParticleSystem::ModuleData& moduleData)
-		{
-			EditorHelper::DrawNodeControl("Texture Animation", moduleData.TextureAnimationUpdater, [](auto& val) {
-
-				if (ImGui::BeginTable("TextureAnimationTable", 2, ImGuiTableFlags_SizingStretchProp))
-				{
-					UI::TableRow("Tiles",
-						[]() {ImGui::Text("Tiles"); },
-						[&]() { ImGui::InputInt2("##Tiles", (int*)&val.Tiles); }
-					);
-
-					UI::TableRow("StartFrame",
-						[]() {ImGui::Text("Start Frame"); },
-						[&]() { ImGui::InputInt("##StartFrame", (int*)&val.StartFrame); }
-					);
-
-					UI::TableRow("Cycle Length",
-						[]() {ImGui::Text("Cycle Length"); },
-						[&]() { ImGui::InputFloat("##CycleLength", &val.CycleLength); }
-					);
-
-					ImGui::EndTable();
-				}
-
-			}, moduleData.TextureAnimationUpdater.Enabled);
-
-		}
-
-		void ParticleComponentInspector::drawEmitter(ParticleSystem::ModuleData& moduleData)
+		void ParticleComponentInspector::drawEmitter(ParticleEmitter& emitter)
 		{
 			auto& colors = EditorLayer::GetData().Color;
 			
 			bool enabledEmitter = true;
-			EditorHelper::DrawNodeControl("Emitter", moduleData.Emitter, [=](auto& val) {
+			EditorHelper::DrawNodeControl("Emitter", emitter, [=](auto& val) {
 				UI::ScopedID id("Emitter");
-
+			
 				if (ImGui::BeginTable("Emitter", 2, ImGuiTableFlags_SizingStretchProp))
 				{
 					////////////////////////
@@ -187,7 +132,7 @@ namespace XYZ {
 							ImGui::EndPopup();
 						}
 					});
-
+			
 					UI::TableRow("Box Min",
 						[]() {ImGui::Text("Box Min"); },
 						[&]() { ImGui::DragFloat3("##BoxMin", glm::value_ptr(val.BoxMin), sc_VSpeed); }
@@ -200,7 +145,7 @@ namespace XYZ {
 						[]() {ImGui::Text("Radius"); },
 						[&]() { ImGui::DragFloat("##Radius", &val.Radius, sc_VSpeed); }
 					);
-
+			
 					////////////////////////
 					UI::TableRow("Emit Rate",
 						[]() {ImGui::Text("Emit Rate"); },
@@ -210,8 +155,8 @@ namespace XYZ {
 						[]() {ImGui::Text("Life Time"); },
 						[&]() { ImGui::DragFloat("##LifeTime", &val.LifeTime, sc_VSpeed); }
 					);
-
-
+			
+			
 					////////////////////////				
 					UI::TableRow("MinVelocity",
 						[]() {ImGui::Text("Min Velocity"); },
@@ -236,6 +181,25 @@ namespace XYZ {
 						[&]() { ImGui::DragFloat("##BurstInterval", &val.BurstInterval, sc_VSpeed); }
 					);
 
+					UI::TableRow("Max Lights",
+						[]() {ImGui::Text("Max Lights"); },
+						[&]() { ImGui::DragInt("##MaxLights", (int*)&val.MaxLights); }
+					);
+					
+					UI::TableRow("Light Color",
+						[]() {ImGui::Text("Light Color"); },
+						[&]() { ImGui::ColorEdit3("##LightColor", glm::value_ptr(val.LightColor), sc_VSpeed); }
+					);
+
+					UI::TableRow("Light Radius",
+						[]() {ImGui::Text("Light Radius"); },
+						[&]() { ImGui::DragFloat("##LightRadius", &val.LightRadius, sc_VSpeed); }
+					);
+
+					UI::TableRow("Light Intensity",
+						[]() {ImGui::Text("Light Intensity"); },
+						[&]() { ImGui::DragFloat("##LightIntensity", &val.LightIntensity, sc_VSpeed); }
+					);
 					ImGui::EndTable();
 				}
 				
@@ -248,7 +212,7 @@ namespace XYZ {
 					ImGui::TableSetupColumn("Time");
 					ImGui::TableSetupColumn("Probability");
 					ImGui::TableHeadersRow();
-
+			
 					uint32_t index = 0;
 					for (auto& burst : bursts)
 					{
@@ -256,10 +220,10 @@ namespace XYZ {
 						const std::string countID = "##Count" + indexStr;
 						const std::string timeID = "##Time" + indexStr;
 						const std::string probID = "##Probability" + indexStr;
-
+			
 						UI::ScopedColorStack color(m_SelectedBurstIndex == index,
 							ImGuiCol_FrameBg, colors[ED::ContainerSelectedItem]);
-
+			
 						bool selected = false;
 						UI::TableRow(indexStr.c_str(),
 							[&]() {
@@ -286,7 +250,7 @@ namespace XYZ {
 					}
 					ImGui::EndTable();
 				}
-
+			
 				UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, glm::vec2(0.0f));
 				if (ImGui::Button("+"))
 					bursts.push_back({});
@@ -306,7 +270,7 @@ namespace XYZ {
 				
 				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && !newSelected)
 					m_SelectedBurstIndex = sc_InvalidIndex;
-
+			
 			}, enabledEmitter);
 		}
 		ParticleRendererInspector::ParticleRendererInspector()

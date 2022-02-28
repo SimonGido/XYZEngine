@@ -9,23 +9,23 @@
 namespace XYZ {
 
     
-	class ParticleDataBuffer
+	class ParticlePool
 	{
 	public:
-        ParticleDataBuffer(uint32_t maxParticles);
-        ParticleDataBuffer(const ParticleDataBuffer& other);
-        ParticleDataBuffer(ParticleDataBuffer&& other) noexcept;
-        ~ParticleDataBuffer();
+        ParticlePool(const uint32_t maxParticles);
+        ParticlePool(const ParticlePool& other);
+        ParticlePool(ParticlePool&& other) noexcept;
+        ~ParticlePool();
 
-        ParticleDataBuffer& operator =(const ParticleDataBuffer& other);
-        ParticleDataBuffer& operator =(ParticleDataBuffer&& other) noexcept;
+        ParticlePool& operator =(const ParticlePool& other);
+        ParticlePool& operator =(ParticlePool&& other) noexcept;
 
         void SetMaxParticles(uint32_t maxParticles);
         void Wake(uint32_t id);
         void Kill(uint32_t id);
 
         // Default particle data
-        struct ParticleData
+        struct Particle
         {
             glm::vec4 Color;
             glm::vec3 Position;
@@ -36,10 +36,18 @@ namespace XYZ {
             glm::vec3 Size;
             glm::quat Rotation;
             float     LifeRemaining;
+
+
+            glm::vec3 LightColor;
+            float     LightRadius;
+            float     LightIntensity;
+
             bool      Alive;
         };
 
-        ParticleData*   Particle;
+
+
+        Particle* Particles;
 
         uint32_t GetMaxParticles() const { return m_MaxParticles; }
         uint32_t GetAliveParticles() const { return m_AliveParticles; }
@@ -47,10 +55,12 @@ namespace XYZ {
         void generateParticles(uint32_t particleCount);
         void deleteParticles();
         void swapData(uint32_t a, uint32_t b);
-        void copyData(const ParticleDataBuffer& source);
+        void copyData(const ParticlePool& source);
 
     private:
         uint32_t m_MaxParticles;
         uint32_t m_AliveParticles;
+
+        mutable std::mutex m_Mutex;
     };
 }

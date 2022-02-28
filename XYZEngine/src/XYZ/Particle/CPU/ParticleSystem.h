@@ -4,7 +4,7 @@
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/Core/Ref/Ref.h"
 
-#include "ParticleDataBuffer.h"
+#include "ParticlePool.h"
 #include "ParticleUpdater.h"
 #include "ParticleEmitter.h"
 
@@ -23,34 +23,30 @@ namespace XYZ {
 		glm::vec2 TexOffset;
 	};
 
+	struct ParticleLightData
+	{
+		glm::vec3 Color;
+		glm::vec3 Position;
+		float	  Radius;
+		float     Intensity;
+	};
+
 	class ParticleSystem
 	{
 	public:
-		struct ModuleData
-		{
-			ModuleData(uint32_t maxParticles);
-
-			ParticleEmitter					Emitter;
-			// Updaters
-			LightUpdater					LightUpdater;
-			TextureAnimationUpdater			TextureAnimationUpdater;
-			RotationOverLife				RotationOverLifeUpdater;
-
-			
-			ParticleDataBuffer				Particles;
-		};
 		struct RenderData
 		{
 			RenderData() = default;
 			RenderData(uint32_t maxParticles);
 
-			std::vector<ParticleRenderData> Data;
-			uint32_t						InstanceCount = 0;
+			std::vector<ParticleRenderData> ParticleData;
+			uint32_t						ParticleCount = 0;
+
+			std::vector<ParticleLightData>	LightData;
 		};
 
 	public:
-		ParticleSystem();
-		ParticleSystem(uint32_t maxParticles);	
+		ParticleSystem(uint32_t maxParticles = 20);	
 		ParticleSystem(const ParticleSystem& other);
 		ParticleSystem(ParticleSystem&& other) noexcept;
 		~ParticleSystem();
@@ -59,33 +55,36 @@ namespace XYZ {
 		ParticleSystem& operator=(ParticleSystem&& other) noexcept;
 
 		void Update(Timestep ts);	
-		void Play();
-		void Stop();
 		void Reset();
 		void SetMaxParticles(uint32_t maxParticles);
-		void SetSpeed(float speed);
 
 		uint32_t GetMaxParticles() const;
 		uint32_t GetAliveParticles() const;
-		float    GetSpeed() const;
-
-		ScopedLock<ModuleData>		GetModuleData();
-		ScopedLockRead<ModuleData>	GetModuleDataRead() const;
+		
 
 		ScopedLock<RenderData>		GetRenderData();
 		ScopedLockRead<RenderData>	GetRenderDataRead() const;
 
-	private:
-		void particleThreadUpdate(float timestep);
-		void update(Timestep timestep, ModuleData& data);
-		void buildRenderData(ModuleData& data);
+		ParticleEmitter	Emitter;
+		glm::ivec2		AnimationTiles;
+		uint32_t		AnimationStartFrame;
+		float			AnimationCycleLength;
+
+		glm::vec3		RotationEulerAngles;
+		float			RotationCycleLength;
+
+		float			Speed;
+		bool			Play;
 
 	private:
-		SingleThreadPass<ModuleData>		 m_ModuleThreadPass;
-		ThreadPass<RenderData>				 m_RenderThreadPass;
-		uint32_t							 m_MaxParticles;
-		bool								 m_Play;
-		float								 m_Speed;
+		void particleThreadUpdate(float timestep);
+		void update(Timestep timestep);
+		void buildRenderData();
+
+	private:
+		ParticlePool					m_Pool;
+		ThreadPass<RenderData>			m_RenderThreadPass;
+		uint32_t						m_MaxParticles;
 	};
 
 }

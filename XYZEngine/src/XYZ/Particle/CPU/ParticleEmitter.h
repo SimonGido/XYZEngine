@@ -1,7 +1,7 @@
 #pragma once
 
 #include "XYZ/Core/Timestep.h"
-#include "ParticleDataBuffer.h"
+#include "ParticlePool.h"
 #include "ParticleUpdater.h"
 
 namespace XYZ {
@@ -31,7 +31,7 @@ namespace XYZ {
 	public:
 		ParticleEmitter();
 		
-		void Emit(Timestep ts, ParticleDataBuffer& data);
+		void Emit(Timestep ts, ParticlePool& data);
 
 
 		EmitShape				  Shape;
@@ -49,13 +49,22 @@ namespace XYZ {
 
 		float					  BurstInterval;
 		std::vector<EmitterBurst> Bursts;
+
+		uint32_t				  MaxLights;
+		glm::vec3				  LightColor;
+		float					  LightRadius;
+		float					  LightIntensity;
 	private:
 		uint32_t burstEmit();
-		void	 generateBox(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
-		void	 generateCircle(ParticleDataBuffer& data, uint32_t startId, uint32_t endId) const;
+		void	 generateBox(ParticlePool& data, uint32_t startId, uint32_t endId) const;
+		void	 generateCircle(ParticlePool& data, uint32_t startId, uint32_t endId) const;
 
 	private:
 		float m_EmittedParticles;
 		float m_PassedTime;
+		
+		uint32_t m_AliveLights = 0;
+
+		friend class ParticleSystem;
 	};
 }

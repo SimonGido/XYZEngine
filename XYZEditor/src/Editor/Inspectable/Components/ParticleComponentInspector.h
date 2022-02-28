@@ -20,11 +20,8 @@ namespace XYZ {
 			virtual Type GetType() const override { return Inspectable::Type::Entity; }
 
 		private:
-			void drawRotationOverLifeUpdater(ParticleSystem::ModuleData& moduleData);
-			void drawLightUpdater(ParticleSystem::ModuleData& moduleData);
-			void drawTextureAnimationUpdater(ParticleSystem::ModuleData& moduleData);
-			
-			void drawEmitter(ParticleSystem::ModuleData& moduleData);
+			void drawEmitter(ParticleEmitter& emitter);
+
 		private:
 			static constexpr uint32_t sc_InvalidIndex = UINT32_MAX;
 

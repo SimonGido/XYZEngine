@@ -348,26 +348,25 @@ namespace XYZ {
 		{
 			auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
 
-			auto moduleData = particleComponent.System.GetModuleDataRead();
-			const auto& lightModule = moduleData->LightUpdater;
-			for (const auto& lightPos : lightModule.Lights)
+			auto renderData = particleComponent.System.GetRenderDataRead();
+
+			for (const auto& lightData : renderData->LightData)
 			{
-				glm::mat4 lightTransform = glm::translate(transform.WorldTransform, lightPos);
+				glm::mat4 lightTransform = glm::translate(transform.WorldTransform, lightData.Position);
 				glm::vec3 worldLightPos = Math::TransformToTranslation(lightTransform);
 				PointLight2D light{
-					lightModule.Light.Color,
-					lightModule.Light.Radius,
-					lightModule.Light.Intensity
+					lightData.Color,
+					lightData.Radius,
+					lightData.Intensity
 				};
 				sceneRenderer->SubmitLight(light, worldLightPos);
 			}
-
-			auto renderData = particleComponent.System.GetRenderDataRead();
+		
 			sceneRenderer->SubmitMesh(
 				renderer.Mesh, renderer.MaterialAsset,
 				transform.WorldTransform,
-				renderData->Data.data(),
-				renderData->InstanceCount,
+				renderData->ParticleData.data(),
+				renderData->ParticleCount,
 				sizeof(ParticleRenderData),
 				renderer.OverrideMaterial
 			);
@@ -451,36 +450,36 @@ namespace XYZ {
 			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
 		}
 
-		auto particleView = m_Registry.view<TransformComponent, ParticleRenderer, ParticleComponent>();
-		for (auto entity : particleView)
 		{
-			auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
-			if (!renderer.Mesh.Raw() || !renderer.MaterialAsset.Raw())
-				continue;
-
-			auto moduleData = particleComponent.System.GetModuleDataRead();
-			const auto& lightModule = moduleData->LightUpdater;
-			for (const auto& lightPos : lightModule.Lights)
+			XYZ_PROFILE_FUNC("Scene::OnRenderEditor particleView");
+			auto particleView = m_Registry.view<TransformComponent, ParticleRenderer, ParticleComponent>();
+			for (auto entity : particleView)
 			{
-				glm::mat4 lightTransform = glm::translate(transform.WorldTransform, lightPos);
-				glm::vec3 worldLightPos = Math::TransformToTranslation(lightTransform);
-				PointLight2D light{
-					lightModule.Light.Color,
-					lightModule.Light.Radius,
-					lightModule.Light.Intensity
-				};
-				sceneRenderer->SubmitLight(light, worldLightPos);
-			}
+				auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
 
-			auto renderData = particleComponent.System.GetRenderDataRead();
-			sceneRenderer->SubmitMesh(
-				renderer.Mesh, renderer.MaterialAsset,
-				transform.WorldTransform,
-				renderData->Data.data(),
-				renderData->InstanceCount,
-				sizeof(ParticleRenderData),
-				renderer.OverrideMaterial
-			);
+				auto renderData = particleComponent.System.GetRenderDataRead();
+
+				for (const auto& lightData : renderData->LightData)
+				{
+					glm::mat4 lightTransform = glm::translate(transform.WorldTransform, lightData.Position);
+					glm::vec3 worldLightPos = Math::TransformToTranslation(lightTransform);
+					PointLight2D light{
+						lightData.Color,
+						lightData.Radius,
+						lightData.Intensity
+					};
+					sceneRenderer->SubmitLight(light, worldLightPos);
+				}
+
+				sceneRenderer->SubmitMesh(
+					renderer.Mesh, renderer.MaterialAsset,
+					transform.WorldTransform,
+					renderData->ParticleData.data(),
+					renderData->ParticleCount,
+					sizeof(ParticleRenderData),
+					renderer.OverrideMaterial
+				);
+			}
 		}
 		sceneRenderer->EndScene();
 	}

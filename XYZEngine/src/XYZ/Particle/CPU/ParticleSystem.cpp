@@ -8,119 +8,126 @@
 #include "XYZ/Debug/Profiler.h"
 
 namespace XYZ {
-	ParticleSystem::ParticleSystem()
-		:
-		m_ModuleThreadPass(0),
-		m_MaxParticles(0),
-		m_Play(true),
-		m_Speed(1.0f)
-	{
-	}
+
 	ParticleSystem::ParticleSystem(uint32_t maxParticles)
 		:
-		m_ModuleThreadPass(maxParticles),
 		m_MaxParticles(maxParticles),
-		m_Play(true),
-		m_Speed(1.0f)
+		AnimationTiles(1, 1),
+		AnimationStartFrame(0),
+		AnimationCycleLength(0.0f),
+		RotationEulerAngles(0.0f),
+		RotationCycleLength(0.0f),
+		Play(true),
+		Speed(1.0f),
+		m_Pool(maxParticles)
 	{
 		{
 			ScopedLock<RenderData> write = m_RenderThreadPass.Write();
-			write->Data.resize(maxParticles);
+			write->ParticleData.resize(maxParticles);
 		}
 		{
 			ScopedLock<RenderData> read = m_RenderThreadPass.Read();
-			read->Data.resize(maxParticles);
+			read->ParticleData.resize(maxParticles);
 		}
 	}
 
 	ParticleSystem::~ParticleSystem()
 	{
-		ScopedLock<ModuleData> moduleData = m_ModuleThreadPass.Get<ModuleData>();
 	}
 
 	ParticleSystem::ParticleSystem(const ParticleSystem& other)
 		:
-		m_ModuleThreadPass(other.m_ModuleThreadPass),
+		Emitter(other.Emitter),
+		AnimationTiles(other.AnimationTiles),
+		AnimationStartFrame(other.AnimationStartFrame),
+		AnimationCycleLength(other.AnimationCycleLength),
+		RotationEulerAngles(other.RotationEulerAngles),
+		RotationCycleLength(other.RotationCycleLength),
+		Play(other.Play),
+		Speed(other.Speed),
+		m_Pool(other.m_Pool),
 		m_RenderThreadPass(other.m_RenderThreadPass),
-		m_MaxParticles(other.m_MaxParticles),
-		m_Play(other.m_Play),
-		m_Speed(other.m_Speed)
+		m_MaxParticles(other.m_MaxParticles)
 	{
 	}
 
 	ParticleSystem::ParticleSystem(ParticleSystem&& other) noexcept
 		:
-		m_ModuleThreadPass(std::move(other.m_ModuleThreadPass)),
+		Emitter(other.Emitter),
+		AnimationTiles(other.AnimationTiles),
+		AnimationStartFrame(other.AnimationStartFrame),
+		AnimationCycleLength(other.AnimationCycleLength),
+		RotationEulerAngles(other.RotationEulerAngles),
+		RotationCycleLength(other.RotationCycleLength),
+		Play(other.Play),
+		Speed(other.Speed),
+		m_Pool(std::move(other.m_Pool)),
 		m_RenderThreadPass(std::move(other.m_RenderThreadPass)),
-		m_MaxParticles(other.m_MaxParticles),
-		m_Play(other.m_Play),
-		m_Speed(other.m_Speed)
+		m_MaxParticles(other.m_MaxParticles)
 	{
 	}
 
 	ParticleSystem& ParticleSystem::operator=(const ParticleSystem& other)
-	{
-		m_ModuleThreadPass = other.m_ModuleThreadPass;
+	{	
+		Emitter = other.Emitter;
+		AnimationTiles = other.AnimationTiles;
+		AnimationStartFrame = other.AnimationStartFrame;
+		RotationEulerAngles = other.RotationEulerAngles;
+		RotationCycleLength = other.RotationCycleLength;
+		Play = other.Play;
+		Speed = other.Speed;
+
+		m_Pool = other.m_Pool;
 		m_RenderThreadPass = other.m_RenderThreadPass;
 		m_MaxParticles = other.m_MaxParticles;
-		m_Play = other.m_Play;
-		m_Speed = other.m_Speed;
+
 		return *this;
 	}
 
 	ParticleSystem& ParticleSystem::operator=(ParticleSystem&& other) noexcept
 	{
-		m_ModuleThreadPass = std::move(other.m_ModuleThreadPass);
+		Emitter = other.Emitter;
+		AnimationTiles = other.AnimationTiles;
+		AnimationStartFrame = other.AnimationStartFrame;
+		RotationEulerAngles = other.RotationEulerAngles;
+		RotationCycleLength = other.RotationCycleLength;
+		Play = other.Play;
+		Speed = other.Speed;
+
+		m_Pool = other.m_Pool;
 		m_RenderThreadPass = std::move(other.m_RenderThreadPass);
 		m_MaxParticles = other.m_MaxParticles;
-		m_Play = other.m_Play;
-		m_Speed = other.m_Speed;
 		return *this;
 	}
 
 	void ParticleSystem::Update(Timestep ts)
 	{	
 		XYZ_PROFILE_FUNC("ParticleSystem::Update");
-		if (m_Play)
+		if (Play)
 		{		
-			particleThreadUpdate(ts.GetSeconds() * m_Speed);
+			particleThreadUpdate(ts.GetSeconds() * Speed);
 		}
 	}
 
 	
-	void ParticleSystem::Play()
-	{
-		m_Play = true;
-	}
-	void ParticleSystem::Stop()
-	{
-		m_Play = false;
-	}
-
+	
 	void ParticleSystem::Reset()
 	{
-		auto moduleData = GetModuleData();
-		for (uint32_t i = 0; i < moduleData->Particles.GetAliveParticles(); ++i)
-			moduleData->Particles.Kill(i);
+		for (uint32_t i = 0; i < m_Pool.GetAliveParticles(); ++i)
+			m_Pool.Kill(i);
 	}
 
 	void ParticleSystem::SetMaxParticles(uint32_t maxParticles)
 	{
 		m_MaxParticles = maxParticles;
-		auto moduleData = GetModuleData();
-		moduleData->Particles.SetMaxParticles(maxParticles);
+		m_Pool.SetMaxParticles(maxParticles);
 		{
-			m_RenderThreadPass.Read()->Data.resize(maxParticles);
+			m_RenderThreadPass.Read()->ParticleData.resize(maxParticles);
 		}
 		m_RenderThreadPass.Swap();
 		{
-			m_RenderThreadPass.Read()->Data.resize(maxParticles);
+			m_RenderThreadPass.Read()->ParticleData.resize(maxParticles);
 		}
-	}
-
-	void ParticleSystem::SetSpeed(float speed)
-	{
-		m_Speed = speed;
 	}
 
 	uint32_t ParticleSystem::GetMaxParticles() const
@@ -130,23 +137,9 @@ namespace XYZ {
 
 	uint32_t ParticleSystem::GetAliveParticles() const
 	{
-		return GetModuleDataRead()->Particles.GetAliveParticles();
+		return m_Pool.GetAliveParticles();
 	}
 
-	float ParticleSystem::GetSpeed() const
-	{
-		return m_Speed;
-	}
-
-	ScopedLock<ParticleSystem::ModuleData> ParticleSystem::GetModuleData()
-	{
-		return m_ModuleThreadPass.Get<ModuleData>();
-	}
-
-	ScopedLockRead<ParticleSystem::ModuleData> ParticleSystem::GetModuleDataRead() const
-	{
-		return m_ModuleThreadPass.GetRead<ModuleData>();
-	}
 
 	ScopedLock<ParticleSystem::RenderData> ParticleSystem::GetRenderData()
 	{
@@ -160,59 +153,59 @@ namespace XYZ {
 
 	void ParticleSystem::particleThreadUpdate(float timestep)
 	{
-		float speed = m_Speed;
+		float speed = Speed;
 		if (m_MaxParticles == 0)
 			return;
 
 		Application::Get().GetThreadPool().PushJob<void>([this, timestep, speed]() {
 			XYZ_PROFILE_FUNC("ParticleSystem::particleThreadUpdate Job");
 			{			
-				ScopedLock<ModuleData> moduleData = m_ModuleThreadPass.Get<ModuleData>();
-				auto& particles = moduleData->Particles;
-				moduleData->Emitter.Emit(timestep, particles);
+				Emitter.Emit(timestep, m_Pool);
 		
-				update(timestep, moduleData.As());
-				buildRenderData(moduleData.As());
+				update(timestep);
+				buildRenderData();
 			}
-			m_RenderThreadPass.AttemptSwap();		
+			m_RenderThreadPass.Swap();
+			//m_RenderThreadPass.AttemptSwap();		
 		});
 	}
-	void ParticleSystem::update(Timestep timestep, ModuleData& data)
+	void ParticleSystem::update(Timestep timestep)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystem::update");
-		auto particles = data.Particles.Particle;
+		auto particles = m_Pool.Particles;
 
-		uint32_t aliveParticles = data.Particles.GetAliveParticles();
+		uint32_t aliveParticles = m_Pool.GetAliveParticles();
 		for (uint32_t i = 0; i < aliveParticles; ++i)
 		{
 			particles[i].Position += particles[i].Velocity * timestep.GetSeconds();
-			particles[i].LifeRemaining -= timestep.GetSeconds();
-			
+			particles[i].LifeRemaining -= timestep.GetSeconds();		
 		}
 
-		data.LightUpdater.UpdateParticles(timestep, data.Particles);
-		data.TextureAnimationUpdater.UpdateParticles(timestep, data.Particles);
-		data.RotationOverLifeUpdater.UpdateParticles(timestep, data.Particles);
+		
+		//data.TextureAnimationUpdater.UpdateParticles(timestep, data.Pool);
+		//data.RotationOverLifeUpdater.UpdateParticles(timestep, data.Pool);
 
 		for (uint32_t i = 0; i < aliveParticles; ++i)
 		{
 			if (particles[i].LifeRemaining <= 0.0f)
 			{
 				aliveParticles--;
-				data.Particles.Kill(i);
+				m_Pool.Kill(i);
+				if (Emitter.m_AliveLights != 0)
+					Emitter.m_AliveLights--;
 			}
 		}
 	}
-	void ParticleSystem::buildRenderData(ModuleData& data)
+	void ParticleSystem::buildRenderData()
 	{
 		XYZ_PROFILE_FUNC("ParticleSystem::buildRenderData");
 		ScopedLock<RenderData> val = m_RenderThreadPass.Write();
 		
-		const uint32_t endId = data.Particles.GetAliveParticles();
+		const uint32_t endId = m_Pool.GetAliveParticles();
 		for (uint32_t i = 0; i < endId; ++i)
 		{
-			const auto& particle = data.Particles.Particle[i];
-			val->Data[i] = ParticleRenderData{
+			const auto& particle = m_Pool.Particles[i];
+			val->ParticleData[i] = ParticleRenderData{
 				particle.Color,
 				particle.Position,
 				particle.Size,
@@ -220,16 +213,22 @@ namespace XYZ {
 				particle.TexOffset
 			};
 		}
-		val->InstanceCount = endId;
+		val->LightData.clear();
+		val->LightData.reserve(Emitter.MaxLights);
+		for (uint32_t i = 0; i < endId && i < Emitter.MaxLights; ++i)
+		{
+			const auto& particle = m_Pool.Particles[i];
+			auto& light = val->LightData.emplace_back();
+			light.Color = particle.LightColor;
+			light.Position = particle.Position;
+			light.Radius = particle.LightRadius;
+			light.Intensity = particle.LightIntensity;
+		}
+		val->ParticleCount = endId;
 	}
 
 	ParticleSystem::RenderData::RenderData(uint32_t maxParticles)
 	{
-		Data.resize(maxParticles);
-	}
-	ParticleSystem::ModuleData::ModuleData(uint32_t maxParticles)
-		:
-		Particles(maxParticles)
-	{
+		ParticleData.resize(maxParticles);
 	}
 }
