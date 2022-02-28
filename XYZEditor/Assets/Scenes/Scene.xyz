@@ -2,18 +2,3 @@ Scene: TestScene
 SceneEntity: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
 FirstChild: a1cf099e-8abb-443f-b131-5ab7c5311002
 Entities:
-  - Entity: a1cf099e-8abb-443f-b131-5ab7c5311002
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      Depth: 1
-    ParticleRenderer:
-      Material: 2d5d0b92-0ea7-4b45-bd54-63521deafbda
-      Mesh: fc3c04b3-e07f-4178-8d30-489a09c4ba30
-    ParticleComponent:
-      {}
