@@ -165,8 +165,7 @@ namespace XYZ {
 				update(timestep);
 				buildRenderData();
 			}
-			m_RenderThreadPass.Swap();
-			//m_RenderThreadPass.AttemptSwap();		
+			m_RenderThreadPass.Swap();	
 		});
 	}
 	void ParticleSystem::update(Timestep timestep)
