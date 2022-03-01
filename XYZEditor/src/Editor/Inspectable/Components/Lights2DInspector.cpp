@@ -29,8 +29,7 @@ namespace XYZ {
 				{
 					UI::TableRow("Color",
 						[]() {ImGui::Text("Color"); },
-						[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight);
-					UI::Vec3Control({ "R", "G", "B" }, component.Color); }
+						[&]() { ImGui::ColorEdit3("##LightColor", glm::value_ptr(component.Color)); }
 					);
 
 					UI::TableRow("Radius",
@@ -81,8 +80,7 @@ namespace XYZ {
 				{
 					UI::TableRow("Color",
 						[]() {ImGui::Text("Color"); },
-						[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight);
-					UI::Vec3Control({ "R", "G", "B" }, component.Color); }
+						[&]() {ImGui::ColorEdit3("##LightColor", glm::value_ptr(component.Color)); }
 					);
 
 					UI::TableRow("Radius",

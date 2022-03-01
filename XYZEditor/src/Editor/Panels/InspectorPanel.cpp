@@ -251,7 +251,7 @@ namespace XYZ {
 						if (!m_SelectedEntity.HasComponent<ParticleRenderer>())
 						{
 							auto& particleRenderer = m_SelectedEntity.EmplaceComponent<ParticleRenderer>();
-							particleRenderer.Mesh = AssetManager::GetAsset<Mesh>("Resources/Meshes/Cube.mesh");
+							particleRenderer.Mesh = AssetManager::GetAsset<Mesh>("Resources/Meshes/Quad.mesh");
 							particleRenderer.MaterialAsset = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
 						}
 					}

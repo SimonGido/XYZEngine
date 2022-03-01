@@ -8,7 +8,10 @@
 #include "XYZ/Debug/Profiler.h"
 
 namespace XYZ {
-
+	static float CalcRatio(float length, float value)
+	{
+		return (length - value) / length;
+	}
 	ParticleSystem::ParticleSystem(uint32_t maxParticles)
 		:
 		m_MaxParticles(maxParticles),
@@ -173,11 +176,25 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("ParticleSystem::update");
 		auto particles = m_Pool.Particles;
 
+
+		const uint32_t stageCount = AnimationTiles.x * AnimationTiles.y;
+		const float columnSize    = 1.0f / AnimationTiles.x;
+		const float rowSize		  = 1.0f / AnimationTiles.y;
+
 		uint32_t aliveParticles = m_Pool.GetAliveParticles();
 		for (uint32_t i = 0; i < aliveParticles; ++i)
 		{
 			particles[i].Position += particles[i].Velocity * timestep.GetSeconds();
 			particles[i].LifeRemaining -= timestep.GetSeconds();		
+		
+			const float ratio = CalcRatio(AnimationCycleLength, particles[i].LifeRemaining);
+			const float stageProgress = ratio * stageCount;
+		
+			const uint32_t index = (uint32_t)floor(stageProgress);
+			const float column = index % AnimationTiles.x;
+			const float row = index / AnimationTiles.y;
+
+			particles[i].TexOffset = glm::vec2(column / (float)AnimationTiles.x, row / (float)AnimationTiles.y);
 		}
 
 		

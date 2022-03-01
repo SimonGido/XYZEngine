@@ -63,7 +63,6 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
 			//m_EditorManager.RegisterPanel<Editor::AnimationEditor>("AnimationEditor");
 
-
 			//SceneEntity newEntity = m_Scene->CreateEntity("Havko", GUID());
 			//SceneEntity childEntity = m_Scene->CreateEntity("Child", newEntity, GUID());
 			//

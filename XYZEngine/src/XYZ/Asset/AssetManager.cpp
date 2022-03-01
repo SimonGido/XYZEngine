@@ -52,7 +52,7 @@ namespace XYZ
 	void AssetManager::Serialize(const AssetHandle& assetHandle)
 	{
 		auto it = s_LoadedAssets.find(assetHandle);
-		if (it != s_LoadedAssets.end() && it->second.Raw())
+		if (it != s_LoadedAssets.end() && it->second.IsValid() && it->second.Raw())
 		{
 			const auto& metadata = GetMetadata(assetHandle);
 			AssetImporter::Serialize(metadata, it->second);

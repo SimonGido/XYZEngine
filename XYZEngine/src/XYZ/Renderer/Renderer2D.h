@@ -196,6 +196,7 @@ namespace XYZ {
 		specification.Layouts = shader->GetLayouts();
 		specification.RenderPass = renderPass;
 		specification.Topology = topology;
+		specification.DepthTest = false;
 		this->Pipeline = Pipeline::Create(specification);
 		Reset();
 	}

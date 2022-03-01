@@ -3,20 +3,18 @@
 
 namespace XYZ {
 	
-	Ref<Mesh> MeshFactory::CreateQuad(const glm::vec2& size, const BufferLayout& layout)
-    {
-	    //const Vertex quad[4] = {
-		//	Vertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)},
-		//	Vertex{glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 0.0f)},
-		//	Vertex{glm::vec3( 0.5f,  0.5f, 0.0f), glm::vec2(1.0f, 1.0f)},
-		//	Vertex{glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec2(0.0f, 1.0f)}
-		//};
-		Ref<Mesh> result;
-		//result->AddVertexBuffer(layout, quad, 4 * sizeof(Vertex), BufferUsage::Static);
-		//uint32_t squareIndices[] = { 0, 1, 2, 2, 3, 0 };
-		//result->SetIndices(squareIndices, 6);
-		return result;
-    }
+
+	Ref<MeshSource> MeshFactory::CreateQuad(const glm::vec2& size)
+	{   
+		const std::vector<Vertex> vertices{
+			Vertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)},
+			Vertex{glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 0.0f)},
+			Vertex{glm::vec3( 0.5f,  0.5f, 0.0f), glm::vec2(1.0f, 1.0f)},
+			Vertex{glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec2(0.0f, 1.0f)}
+		};
+		const std::vector<uint32_t> indices { 0, 1, 2, 2, 3, 0 };
+		return Ref<MeshSource>::Create(vertices, indices);
+	}
 	Ref<Mesh> MeshFactory::CreateInstancedQuad(const glm::vec2& size, const BufferLayout& layout, const BufferLayout& instanceLayout, uint32_t count)
 	{
 		Ref<Mesh> result;

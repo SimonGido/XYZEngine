@@ -1,4 +1,59 @@
 Scene: TestScene
 SceneEntity: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-FirstChild: a1cf099e-8abb-443f-b131-5ab7c5311002
+FirstChild: 36905812-ac4e-4371-97a4-ba100c73abba
 Entities:
+  - Entity: 955c785a-6507-4c0f-9886-6d9b1828336e
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      PreviousSibling: 36905812-ac4e-4371-97a4-ba100c73abba
+      Depth: 1
+  - Entity: 36905812-ac4e-4371-97a4-ba100c73abba
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [-5.5, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: 955c785a-6507-4c0f-9886-6d9b1828336e
+      Depth: 1
+    PointLight2D:
+      Color: [1, 0.345132709, 0]
+      Radius: 1.04999995
+      Intensity: 9
+    ParticleRenderer:
+      Material: a26336fe-dc1c-4e82-a500-b2101792a4d3
+      Mesh: f8a2fc76-d8ba-48ac-85c0-54418b021786
+    ParticleComponent:
+      MaxParticles: 100
+      Speed: 1.5
+      AnimationTiles: [8, 8]
+      AnimationStartFrame: 0
+      AnimationCycleLength: 4
+      RotationEulerAngles: [0, 0, 0]
+      RotationCycleLength: 0
+      Emitter:
+        Shape: 2
+        BoxMin: [-3.5, -4.5999999, 0]
+        BoxMax: [2.9000001, 3.0999999, 0]
+        Radius: 0.100000001
+        EmitRate: 8.80000019
+        LifeTime: 4
+        MinVelocity: [0, 0, 0]
+        MaxVelocity: [0.100000001, 0.5, 0]
+        Size: [1, 1, 1]
+        Color: [1, 1, 1, 1]
+        LightColor: [1, 1, 1]
+        LightRadius: 1
+        LightIntensity: 1
+        MaxLights: 0
+        BurstInterval: 5
+        Bursts:
+          []
