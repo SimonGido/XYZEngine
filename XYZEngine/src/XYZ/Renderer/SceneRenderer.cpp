@@ -771,7 +771,7 @@ namespace XYZ {
 		uint32_t transformsCount = 0;
 		for (auto& [key, dc] : m_Queue.MeshDrawCommands)
 		{
-			dc.Pipeline = getGeometryPipeline(dc.MaterialAsset->GetMaterial());
+			dc.Pipeline = getGeometryPipeline(dc.MaterialAsset->GetMaterial(), dc.MaterialAsset->IsOpaque());
 			dc.TransformOffset = transformsCount * sizeof(RenderQueue::TransformData);
 			overrideCount += dc.OverrideCommands.size();
 			for (const auto& transform : dc.TransformData)
@@ -785,7 +785,8 @@ namespace XYZ {
 		uint32_t boneTransformsCount = 0;
 		for (auto& [key, dc] : m_Queue.AnimatedMeshDrawCommands)
 		{
-			dc.Pipeline = getGeometryPipeline(dc.MaterialAsset->GetMaterial());
+			auto material = 
+			dc.Pipeline = getGeometryPipeline(dc.MaterialAsset->GetMaterial(), dc.MaterialAsset->IsOpaque());
 			dc.TransformOffset = transformsCount * sizeof(RenderQueue::TransformData);
 			dc.BoneTransformsIndex = boneTransformsCount;
 			overrideCount += dc.OverrideCommands.size();
@@ -814,7 +815,7 @@ namespace XYZ {
 		uint32_t instanceOffset = 0;
 		for (auto& [key, group] : m_Queue.InstanceMeshDrawCommands)
 		{
-			key.Pipeline = getGeometryPipeline(key.Material->GetMaterial());
+			key.Pipeline = getGeometryPipeline(key.Material->GetMaterial(), key.Material->IsOpaque());
 			for (auto& dc : group)
 			{
 				dc.InstanceOffset = instanceOffset;
@@ -893,7 +894,7 @@ namespace XYZ {
 		m_RenderStatistics.PointLight2DCount = static_cast<uint32_t>(m_PointLights.size());
 		m_RenderStatistics.SpotLight2DCount = static_cast<uint32_t>(m_SpotLights.size());
 	}
-	Ref<Pipeline> SceneRenderer::getGeometryPipeline(const Ref<Material>& material)
+	Ref<Pipeline> SceneRenderer::getGeometryPipeline(const Ref<Material>& material, bool opaque)
 	{
 		Ref<Shader> shader = material->GetShader();
 		auto it = m_GeometryPipelines.find(shader->GetHash());
@@ -906,7 +907,7 @@ namespace XYZ {
 		spec.RenderPass = m_GeometryPass;
 		spec.Shader = shader;
 		spec.Topology = PrimitiveTopology::Triangles;
-		spec.DepthTest = true;
+		spec.DepthTest = opaque; // We do not want this for 
 		spec.DepthWrite = true;
 
 		auto& pipeline = m_GeometryPipelines[shader->GetHash()];

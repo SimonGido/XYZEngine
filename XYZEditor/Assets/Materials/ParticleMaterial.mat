@@ -1,4 +1,5 @@
 Shader: 49ce52b6-f823-4a8a-ab53-1a7b3a0a3928
+Opaque: false
 Textures:
   - Name: u_Texture
     Handle: 8dd5800e-5771-45b6-82c6-48d28584b23c

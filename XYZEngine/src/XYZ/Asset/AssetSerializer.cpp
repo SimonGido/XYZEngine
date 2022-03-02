@@ -165,6 +165,7 @@ namespace XYZ {
 		out << YAML::BeginMap;
 
 		out << YAML::Key << "Shader" << material->GetShaderAsset()->GetHandle();
+		out << YAML::Key << "Opaque" << material->IsOpaque();
 		out << YAML::Key << "Textures" << YAML::BeginSeq;
 		for (const auto& texture : material->GetTextures())
 		{
@@ -210,6 +211,12 @@ namespace XYZ {
 		AssetHandle shaderHandle = AssetHandle(data["Shader"].as<std::string>());
 		Ref<ShaderAsset> shaderAsset = AssetManager::GetAsset<ShaderAsset>(shaderHandle);
 		Ref<MaterialAsset> materialAsset = Ref<MaterialAsset>::Create(shaderAsset);
+
+		auto opaque = data["Opaque"];
+		if (opaque)
+		{
+			materialAsset->SetOpaque(opaque.as<bool>());
+		}
 
 		for (auto texture : data["Textures"])
 		{

@@ -17,7 +17,7 @@ Entities:
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
-      Position: [-5.5, 0, 0]
+      Position: [-3.95000005, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
@@ -27,7 +27,7 @@ Entities:
     PointLight2D:
       Color: [1, 0.345132709, 0]
       Radius: 1.04999995
-      Intensity: 9
+      Intensity: 8.30000019
     ParticleRenderer:
       Material: a26336fe-dc1c-4e82-a500-b2101792a4d3
       Mesh: f8a2fc76-d8ba-48ac-85c0-54418b021786

@@ -1,7 +1,6 @@
-Shader: 83564cd9-59d3-422c-b0e8-00b586280678
+Shader: 49ce52b6-f823-4a8a-ab53-1a7b3a0a3928
+Opaque: true
 Textures:
   []
 TextureArrays:
-  - Name: u_Texture
-    Textures:
-      []
+  []

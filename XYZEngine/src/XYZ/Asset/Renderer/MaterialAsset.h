@@ -31,6 +31,10 @@ namespace XYZ {
 		void SetTexture(const std::string& name, Ref<Texture2D> texture);
 		void SetTexture(const std::string& name, Ref<Texture2D> texture, uint32_t index);
 
+
+		void SetOpaque(bool opaque) { m_Opaque = opaque; }
+		bool IsOpaque() const { return m_Opaque; }
+
 		template <typename T>
 		void Set(const std::string_view name, const T& val);
 
@@ -56,6 +60,7 @@ namespace XYZ {
 		Ref<MaterialInstance>		  m_MaterialInstance;
 		std::vector<TextureData>	  m_Textures;
 		std::vector<TextureArrayData> m_TextureArrays;
+		bool						  m_Opaque = true;
 		// TODO: Probably flags
 	};
 

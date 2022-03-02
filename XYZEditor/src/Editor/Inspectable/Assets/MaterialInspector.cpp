@@ -38,7 +38,7 @@ namespace XYZ {
 		{
 			const std::string& name = m_MaterialAsset->GetShader()->GetName();
 			ImGui::InputText("##ShaderName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
-
+			
 			char* shaderAssetPath = nullptr;
 			if (UI::DragDropTarget("AssetDragAndDrop", &shaderAssetPath))
 			{
@@ -54,7 +54,7 @@ namespace XYZ {
 					}
 				}
 			}
-
+			
 			if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
 				ImGui::OpenPopup("Shader");
 
@@ -73,6 +73,13 @@ namespace XYZ {
 					}
 				}
 				ImGui::EndPopup();
+			}
+
+			bool opaque = m_MaterialAsset->IsOpaque();
+			if (ImGui::Checkbox("Opaque", &opaque))
+			{
+				m_MaterialAsset->SetOpaque(opaque);
+				AssetManager::Serialize(m_MaterialAsset->GetHandle());
 			}
 		}
 

@@ -239,7 +239,7 @@ namespace XYZ {
 		void prepareInstances();
 		void prepareLights();
 		
-		Ref<Pipeline> getGeometryPipeline(const Ref<Material>& material);
+		Ref<Pipeline> getGeometryPipeline(const Ref<Material>& material, bool opaque);
 
 		void copyToBoneStorage(RenderQueue::BoneTransforms& storage, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<AnimatedMesh>& mesh);
 	private:
@@ -284,6 +284,7 @@ namespace XYZ {
 			float FilterTreshold = 1.0f;
 			float FilterKnee = 0.1f;
 		};
+
 		BloomSettings			   m_BloomSettings;
 
 		SceneRendererSpecification m_Specification;

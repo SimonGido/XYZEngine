@@ -40,7 +40,7 @@ namespace XYZ {
 	class AssetSelectedEvent : public EditorEvent
 	{
 	public:
-		AssetSelectedEvent(const Ref<Asset>& asset)
+		AssetSelectedEvent(Ref<Asset> asset)
 			: m_Asset(asset)
 		{}
 
