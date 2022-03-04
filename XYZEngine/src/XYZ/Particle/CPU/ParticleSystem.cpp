@@ -32,8 +32,7 @@ namespace XYZ {
 		Speed(1.0f),
 		m_Pool(maxParticles),
 		m_RenderData(maxParticles),
-		m_MaxParticles(maxParticles),
-		m_AliveParticles(0)
+		m_MaxParticles(maxParticles)
 	{
 	}
 
@@ -54,8 +53,7 @@ namespace XYZ {
 		Speed(other.Speed),
 		m_Pool(other.m_Pool),
 		m_RenderData(other.m_RenderData),
-		m_MaxParticles(other.m_MaxParticles),
-		m_AliveParticles(other.m_AliveParticles)
+		m_MaxParticles(other.m_MaxParticles)
 	{
 
 	}
@@ -72,8 +70,7 @@ namespace XYZ {
 		Speed(other.Speed),
 		m_RenderData(std::move(other.m_RenderData)),
 		m_Pool(std::move(other.m_Pool)),
-		m_MaxParticles(other.m_MaxParticles),
-		m_AliveParticles(other.m_AliveParticles)
+		m_MaxParticles(other.m_MaxParticles)
 	{
 	}
 
@@ -92,7 +89,6 @@ namespace XYZ {
 		m_RenderData = other.m_RenderData;
 		m_Pool = other.m_Pool;
 		m_MaxParticles = other.m_MaxParticles;
-		m_AliveParticles = other.m_AliveParticles;
 
 		return *this;
 	}
@@ -111,7 +107,6 @@ namespace XYZ {
 		m_RenderData = std::move(other.m_RenderData);
 		m_Pool = std::move(other.m_Pool);
 		m_MaxParticles = other.m_MaxParticles;
-		m_AliveParticles = other.m_AliveParticles;
 		return *this;
 	}
 
@@ -138,7 +133,6 @@ namespace XYZ {
 		m_RenderData.ParticleData.resize(maxParticles);
 		m_Pool.SetMaxParticles(maxParticles);
 		m_MaxParticles = maxParticles;
-		m_AliveParticles = 0;
 	}
 
 	uint32_t ParticleSystem::GetMaxParticles() const
@@ -153,40 +147,29 @@ namespace XYZ {
 
 	void ParticleSystem::pushJobs(const glm::mat4& transform, Timestep ts)
 	{
+		XYZ_PROFILE_FUNC("ParticleSystem::pushJobs");
 		if (m_MaxParticles == 0)
 			return;
 
 
+		std::unique_lock lock(m_JobsMutex); // We must sync with main thread or it will keep filling thread pool
 		std::shared_ptr<ParticleSystem> instance = shared_from_this();
 		// Kill old and emit new job
-		Application::Get().GetThreadPool().PushJob<void>([instance, ts]() {
+		Application::Get().GetThreadPool().PushJob<void>([instance, ts, tr = transform]() {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushJobs emit");
 			std::unique_lock lock(instance->m_JobsMutex);
 
 			instance->Emitter.Kill(instance->m_Pool);
 			instance->Emitter.Emit(ts, instance->m_Pool);
-			instance->m_RenderData.ParticleCount = instance->m_Pool.GetAliveParticles();
-			instance->m_AliveParticles		     = instance->m_Pool.GetAliveParticles();
+
+			const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
+			instance->update(ts, 0, aliveParticles);
+			instance->buildRenderData(tr, 0, aliveParticles);
+			instance->m_RenderData.ParticleCount = aliveParticles;
 		});
-
-		// Update jobs and build render data
-		// m_AliveParticles might change, but it is not a problem because we calculate actual work group on different thread
-		for (uint32_t i = 0; i < m_AliveParticles; i += sc_WorkGroupSize)
-		{		
-			Application::Get().GetThreadPool().PushJob<void>([instance, i, ts, tr = transform]() {
-
-				XYZ_PROFILE_FUNC("ParticleSystem::pushJobs update");
-				std::shared_lock lock(instance->m_JobsMutex);
-				
-				const uint32_t startId = i;
-				const uint32_t endId = std::min(instance->m_AliveParticles, i + sc_WorkGroupSize);
-
-				instance->update(ts, startId, endId);
-				instance->buildRenderData(tr, startId, endId);
-			});
-		}
 	}
+
 
 	void ParticleSystem::update(Timestep ts, uint32_t startId, uint32_t endId)
 	{

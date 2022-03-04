@@ -10,12 +10,11 @@ namespace XYZ {
 
 		EditorLayer::EditorLayer()
 		{
-			s_Data.Init();
 		}
 
 		EditorLayer::~EditorLayer()
 		{
-			s_Data.Shutdown();
+			
 		}
 
 		void EditorLayer::OnAttach()
@@ -103,6 +102,7 @@ namespace XYZ {
 
 		void EditorLayer::OnDetach()
 		{
+			s_Data.Shutdown();
 			// AssetManager::SerializeAll();
 			SceneSerializer serializer;
 			serializer.Serialize("Assets/Scenes/Scene.xyz", m_Scene);

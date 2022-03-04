@@ -75,7 +75,6 @@ namespace XYZ {
 	private:
 		void pushJobs(const glm::mat4& transform, Timestep ts);
 		
-		void generate(uint32_t startId, uint32_t endId);
 		void update(Timestep ts, uint32_t startId, uint32_t endId);
 		void buildRenderData(const glm::mat4& transform, uint32_t startId, uint32_t endId);
 
@@ -83,10 +82,7 @@ namespace XYZ {
 		ParticlePool					m_Pool;
 		RenderData						m_RenderData;
 		uint32_t						m_MaxParticles;
-		uint32_t						m_AliveParticles;
 		std::shared_mutex			    m_JobsMutex;
-
-		static constexpr uint32_t sc_WorkGroupSize = 1000;
 	};
 
 }

@@ -119,8 +119,6 @@ namespace XYZ {
 	{
 		m_SceneCamera = camera;
 
-		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
-		updateViewportSize();
 		m_CameraBuffer.ViewProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix() * m_SceneCamera.ViewMatrix;
 		m_CameraBuffer.ViewMatrix = m_SceneCamera.ViewMatrix;
 		m_CameraBuffer.ViewPosition = glm::vec4(camera.ViewPosition, 0.0f);
@@ -129,9 +127,6 @@ namespace XYZ {
 	}
 	void SceneRenderer::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition)
 	{
-		// Viewport size is changed at the beginning of the frame, so we do not delete texture that is currently use for rendering
-		updateViewportSize();
-
 		m_CameraBuffer.ViewProjectionMatrix = viewProjectionMatrix;
 		m_CameraBuffer.ViewMatrix = viewMatrix;
 		m_CameraBuffer.ViewPosition = glm::vec4(viewPosition, 0.0f);
@@ -168,6 +163,8 @@ namespace XYZ {
 		m_Queue.InstanceMeshDrawCommands.clear();
 		m_PointLights.clear();
 		m_SpotLights.clear();
+
+		updateViewportSize();
 	}
 
 
