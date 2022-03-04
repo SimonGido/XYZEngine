@@ -4,10 +4,13 @@
 
 layout(location = 0) in vec3  a_Position;
 layout(location = 1) in vec2  a_TexCoord;
-layout(location = 2) in vec4  a_IColor;
-layout(location = 3) in vec3  a_IPosition;
-layout(location = 4) in vec3  a_ISize;
-layout(location = 5) in vec4  a_IAxis;
+
+
+
+layout(location = 2) in vec4  a_ITransformRow0;
+layout(location = 3) in vec4  a_ITransformRow1;
+layout(location = 4) in vec4  a_ITransformRow2;
+layout(location = 5) in vec4  a_IColor;
 layout(location = 6) in vec2  a_ITexOffset;
 
 
@@ -36,45 +39,22 @@ layout(push_constant) uniform Transform
 } u_Renderer;
 
 
-float GetRadians(float angleInDegrees)
-{
-	return angleInDegrees * 3.14 / 180.0;
-}
-
-vec4 QuatFromAxisAngle(vec3 axis, float angle)
-{
-	vec4 qr;
-	float half_angle = (angle * 0.5) * 3.14159 / 180.0;
-	qr.x = axis.x * sin(half_angle);
-	qr.y = axis.y * sin(half_angle);
-	qr.z = axis.z * sin(half_angle);
-	qr.w = cos(half_angle);
-	return qr;
-}
-
-vec3 RotateVertexPosition(vec3 position, vec3 axis, float angle)
-{
-	vec4 q = QuatFromAxisAngle(axis, angle);
-	vec3 v = position.xyz;
-	return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v);
-}
-
-vec3 RotateVertex(vec3 position, vec4 q)
-{
-	vec3 v = position.xyz;
-	return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v);
-}
-
 void main()
 {
-	vec3 instancePos = RotateVertex(a_Position * a_ISize, a_IAxis) + a_IPosition;
-	vec4 worldPos = u_Renderer.Transform * vec4(instancePos, 1.0);
+	mat4 transform = mat4(
+		vec4(a_ITransformRow0.x, a_ITransformRow1.x, a_ITransformRow2.x, 0.0),
+		vec4(a_ITransformRow0.y, a_ITransformRow1.y, a_ITransformRow2.y, 0.0),
+		vec4(a_ITransformRow0.z, a_ITransformRow1.z, a_ITransformRow2.z, 0.0),
+		vec4(a_ITransformRow0.w, a_ITransformRow1.w, a_ITransformRow2.w, 1.0)
+	);
+
+	vec4 instancePosition = transform * u_Renderer.Transform * vec4(a_Position, 1.0);
 
 	v_Output.Color = a_IColor;
-	v_Output.Position = worldPos.xyz;
+	v_Output.Position = instancePosition.xyz;
 	v_Output.TexCoord  = a_TexCoord;
 	v_Output.TexOffset = a_ITexOffset;
-	gl_Position = u_ViewProjection * worldPos;
+	gl_Position = u_ViewProjection * instancePosition;
 }
 
 

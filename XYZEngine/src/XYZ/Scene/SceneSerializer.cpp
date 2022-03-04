@@ -235,44 +235,44 @@ namespace XYZ {
 		out << YAML::Key << "ParticleComponent";
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "MaxParticles" << val.System.GetMaxParticles();
-		out << YAML::Key << "Speed" << val.System.Speed;
+		out << YAML::Key << "MaxParticles" << val.System->GetMaxParticles();
+		out << YAML::Key << "Speed" << val.System->Speed;
 		
-		out << YAML::Key << "AnimationTiles" << val.System.AnimationTiles;
-		out << YAML::Key << "AnimationStartFrame" << val.System.AnimationStartFrame;
-		out << YAML::Key << "AnimationCycleLength" << val.System.AnimationCycleLength;
+		out << YAML::Key << "AnimationTiles" << val.System->AnimationTiles;
+		out << YAML::Key << "AnimationStartFrame" << val.System->AnimationStartFrame;
+		out << YAML::Key << "AnimationCycleLength" << val.System->AnimationCycleLength;
 
-		out << YAML::Key << "RotationEulerAngles" << val.System.RotationEulerAngles;
-		out << YAML::Key << "RotationCycleLength" << val.System.RotationCycleLength;
+		out << YAML::Key << "RotationEulerAngles" << val.System->RotationEulerAngles;
+		out << YAML::Key << "RotationCycleLength" << val.System->RotationCycleLength;
 
 		{  // Emitter
 			out << YAML::Key << "Emitter";
 			out << YAML::BeginMap; // Emitter
 		
-			out << YAML::Key << "Shape" << static_cast<uint32_t>(val.System.Emitter.Shape);
-			out << YAML::Key << "BoxMin" <<  val.System.Emitter.BoxMin;
-			out << YAML::Key << "BoxMax" <<  val.System.Emitter.BoxMax;
-			out << YAML::Key << "Radius" <<  val.System.Emitter.Radius;
+			out << YAML::Key << "Shape" << static_cast<uint32_t>(val.System->Emitter.Shape);
+			out << YAML::Key << "BoxMin" <<  val.System->Emitter.BoxMin;
+			out << YAML::Key << "BoxMax" <<  val.System->Emitter.BoxMax;
+			out << YAML::Key << "Radius" <<  val.System->Emitter.Radius;
 		
-			out << YAML::Key << "EmitRate" << val.System.Emitter.EmitRate;
-			out << YAML::Key << "LifeTime" << val.System.Emitter.LifeTime;
+			out << YAML::Key << "EmitRate" << val.System->Emitter.EmitRate;
+			out << YAML::Key << "LifeTime" << val.System->Emitter.LifeTime;
 			
-			out << YAML::Key << "MinVelocity" << val.System.Emitter.MinVelocity;
-			out << YAML::Key << "MaxVelocity" << val.System.Emitter.MaxVelocity;
+			out << YAML::Key << "MinVelocity" << val.System->Emitter.MinVelocity;
+			out << YAML::Key << "MaxVelocity" << val.System->Emitter.MaxVelocity;
 			
-			out << YAML::Key << "Size" <<    val.System.Emitter.Size;
-			out << YAML::Key << "Color" <<   val.System.Emitter.Color;
+			out << YAML::Key << "Size" <<    val.System->Emitter.Size;
+			out << YAML::Key << "Color" <<   val.System->Emitter.Color;
 		
-			out << YAML::Key << "LightColor" << val.System.Emitter.LightColor;
-			out << YAML::Key << "LightRadius" << val.System.Emitter.LightRadius;
-			out << YAML::Key << "LightIntensity" << val.System.Emitter.LightIntensity;
-			out << YAML::Key << "MaxLights" << val.System.Emitter.MaxLights;
+			out << YAML::Key << "LightColor" << val.System->Emitter.LightColor;
+			out << YAML::Key << "LightRadius" << val.System->Emitter.LightRadius;
+			out << YAML::Key << "LightIntensity" << val.System->Emitter.LightIntensity;
+			out << YAML::Key << "MaxLights" << val.System->Emitter.MaxLights;
 
-			out << YAML::Key << "BurstInterval" << val.System.Emitter.BurstInterval;
+			out << YAML::Key << "BurstInterval" << val.System->Emitter.BurstInterval;
 			{
 				out << YAML::Key << "Bursts";
 				out << YAML::Value << YAML::BeginSeq;
-				for (const auto& burst : val.System.Emitter.Bursts)
+				for (const auto& burst : val.System->Emitter.Bursts)
 				{
 					out << YAML::Key << "Burst";
 					out << YAML::BeginMap; // Burst
@@ -314,41 +314,42 @@ namespace XYZ {
 	void SceneSerializer::deserialize<ParticleComponent>(YAML::Node& data, SceneEntity entity)
 	{
 		ParticleComponent& component = entity.EmplaceComponent<ParticleComponent>();;
-		
-		component.System.SetMaxParticles(data["MaxParticles"].as<uint32_t>());
-		component.System.Speed				  = data["Speed"].as<float>();
-		component.System.AnimationTiles		  = data["AnimationTiles"].as<glm::ivec2>();
-		component.System.AnimationStartFrame  = data["AnimationStartFrame"].as<uint32_t>();
-		component.System.AnimationCycleLength = data["AnimationCycleLength"].as<float>();
-		component.System.RotationEulerAngles  = data["RotationEulerAngles"].as<glm::vec3>();
-		component.System.RotationCycleLength  = data["RotationCycleLength"].as<float>();
+		component.System = std::make_shared<ParticleSystem>();
+
+		component.System->SetMaxParticles(data["MaxParticles"].as<uint32_t>());
+		component.System->Speed				  = data["Speed"].as<float>();
+		component.System->AnimationTiles		  = data["AnimationTiles"].as<glm::ivec2>();
+		component.System->AnimationStartFrame  = data["AnimationStartFrame"].as<uint32_t>();
+		component.System->AnimationCycleLength = data["AnimationCycleLength"].as<float>();
+		component.System->RotationEulerAngles  = data["RotationEulerAngles"].as<glm::vec3>();
+		component.System->RotationCycleLength  = data["RotationCycleLength"].as<float>();
 		{ // Emitter
 			auto emitter = data["Emitter"];
-			component.System.Emitter.Shape = static_cast<EmitShape>(emitter["Shape"].as<uint32_t>());
-			component.System.Emitter.BoxMin = emitter["BoxMin"].as<glm::vec3>();
-			component.System.Emitter.BoxMax = emitter["BoxMax"].as<glm::vec3>();
-			component.System.Emitter.Radius = emitter["Radius"].as<float>();
+			component.System->Emitter.Shape = static_cast<EmitShape>(emitter["Shape"].as<uint32_t>());
+			component.System->Emitter.BoxMin = emitter["BoxMin"].as<glm::vec3>();
+			component.System->Emitter.BoxMax = emitter["BoxMax"].as<glm::vec3>();
+			component.System->Emitter.Radius = emitter["Radius"].as<float>();
 		
-			component.System.Emitter.EmitRate = emitter["EmitRate"].as<float>();
-			component.System.Emitter.LifeTime = emitter["LifeTime"].as<float>();
+			component.System->Emitter.EmitRate = emitter["EmitRate"].as<float>();
+			component.System->Emitter.LifeTime = emitter["LifeTime"].as<float>();
 			
-			component.System.Emitter.MinVelocity = emitter["MinVelocity"].as<glm::vec3>();
-			component.System.Emitter.MaxVelocity = emitter["MaxVelocity"].as<glm::vec3>();
+			component.System->Emitter.MinVelocity = emitter["MinVelocity"].as<glm::vec3>();
+			component.System->Emitter.MaxVelocity = emitter["MaxVelocity"].as<glm::vec3>();
 			
-			component.System.Emitter.Size  = emitter["Size"].as<glm::vec3>();
-			component.System.Emitter.Color = emitter["Color"].as<glm::vec4>();
+			component.System->Emitter.Size  = emitter["Size"].as<glm::vec3>();
+			component.System->Emitter.Color = emitter["Color"].as<glm::vec4>();
 		
-			component.System.Emitter.LightColor     = emitter["LightColor"].as<glm::vec3>();
-			component.System.Emitter.LightRadius    = emitter["LightRadius"].as<float>();
-			component.System.Emitter.LightIntensity = emitter["LightIntensity"].as<float>();
-			component.System.Emitter.MaxLights		= emitter["MaxLights"].as<uint32_t>();
+			component.System->Emitter.LightColor     = emitter["LightColor"].as<glm::vec3>();
+			component.System->Emitter.LightRadius    = emitter["LightRadius"].as<float>();
+			component.System->Emitter.LightIntensity = emitter["LightIntensity"].as<float>();
+			component.System->Emitter.MaxLights		= emitter["MaxLights"].as<uint32_t>();
 
 
-			component.System.Emitter.BurstInterval = emitter["BurstInterval"].as<float>();
+			component.System->Emitter.BurstInterval = emitter["BurstInterval"].as<float>();
 			for (auto burst : emitter["Bursts"])
 			{
 				auto burstData = burst["Burst"];
-				component.System.Emitter.Bursts.push_back({
+				component.System->Emitter.Bursts.push_back({
 					burstData["Count"].as<uint32_t>(),
 					burstData["Time"].as<float>(),
 					burstData["Probability"].as<float>()

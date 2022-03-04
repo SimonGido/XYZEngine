@@ -9,7 +9,7 @@ Layouts:
   - Instanced: true
     Elements:
       - 4
-      - 3
-      - 3
+      - 4
+      - 4
       - 4
       - 2

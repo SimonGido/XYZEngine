@@ -12,9 +12,17 @@ namespace XYZ {
 	{
 		return (length - value) / length;
 	}
+
+	void Mat4ToTransformData(glm::vec4* transformRows, const glm::mat4& transform)
+	{
+		RenderQueue::TransformData data;
+		transformRows[0] = { transform[0][0], transform[1][0], transform[2][0], transform[3][0] };
+		transformRows[1] = { transform[0][1], transform[1][1], transform[2][1], transform[3][1] };
+		transformRows[2] = { transform[0][2], transform[1][2], transform[2][2], transform[3][2] };
+	}
+
 	ParticleSystem::ParticleSystem(uint32_t maxParticles)
 		:
-		m_MaxParticles(maxParticles),
 		AnimationTiles(1, 1),
 		AnimationStartFrame(0),
 		AnimationCycleLength(0.0f),
@@ -22,20 +30,16 @@ namespace XYZ {
 		RotationCycleLength(0.0f),
 		Play(true),
 		Speed(1.0f),
-		m_Pool(maxParticles)
+		m_Pool(maxParticles),
+		m_RenderData(maxParticles),
+		m_MaxParticles(maxParticles),
+		m_AliveParticles(0)
 	{
-		{
-			ScopedLock<RenderData> write = m_RenderThreadPass.Write();
-			write->ParticleData.resize(maxParticles);
-		}
-		{
-			ScopedLock<RenderData> read = m_RenderThreadPass.Read();
-			read->ParticleData.resize(maxParticles);
-		}
 	}
 
 	ParticleSystem::~ParticleSystem()
 	{
+	
 	}
 
 	ParticleSystem::ParticleSystem(const ParticleSystem& other)
@@ -49,9 +53,11 @@ namespace XYZ {
 		Play(other.Play),
 		Speed(other.Speed),
 		m_Pool(other.m_Pool),
-		m_RenderThreadPass(other.m_RenderThreadPass),
-		m_MaxParticles(other.m_MaxParticles)
+		m_RenderData(other.m_RenderData),
+		m_MaxParticles(other.m_MaxParticles),
+		m_AliveParticles(other.m_AliveParticles)
 	{
+
 	}
 
 	ParticleSystem::ParticleSystem(ParticleSystem&& other) noexcept
@@ -64,9 +70,10 @@ namespace XYZ {
 		RotationCycleLength(other.RotationCycleLength),
 		Play(other.Play),
 		Speed(other.Speed),
+		m_RenderData(std::move(other.m_RenderData)),
 		m_Pool(std::move(other.m_Pool)),
-		m_RenderThreadPass(std::move(other.m_RenderThreadPass)),
-		m_MaxParticles(other.m_MaxParticles)
+		m_MaxParticles(other.m_MaxParticles),
+		m_AliveParticles(other.m_AliveParticles)
 	{
 	}
 
@@ -79,10 +86,13 @@ namespace XYZ {
 		RotationCycleLength = other.RotationCycleLength;
 		Play = other.Play;
 		Speed = other.Speed;
-
+		
+		
+		std::unique_lock lock(m_JobsMutex);
+		m_RenderData = other.m_RenderData;
 		m_Pool = other.m_Pool;
-		m_RenderThreadPass = other.m_RenderThreadPass;
 		m_MaxParticles = other.m_MaxParticles;
+		m_AliveParticles = other.m_AliveParticles;
 
 		return *this;
 	}
@@ -97,40 +107,38 @@ namespace XYZ {
 		Play = other.Play;
 		Speed = other.Speed;
 
-		m_Pool = other.m_Pool;
-		m_RenderThreadPass = std::move(other.m_RenderThreadPass);
+		std::unique_lock lock(m_JobsMutex);
+		m_RenderData = std::move(other.m_RenderData);
+		m_Pool = std::move(other.m_Pool);
 		m_MaxParticles = other.m_MaxParticles;
+		m_AliveParticles = other.m_AliveParticles;
 		return *this;
 	}
 
-	void ParticleSystem::Update(Timestep ts)
+	void ParticleSystem::Update(const glm::mat4& transform, Timestep ts)
 	{	
 		XYZ_PROFILE_FUNC("ParticleSystem::Update");
 		if (Play)
 		{		
-			particleThreadUpdate(ts.GetSeconds() * Speed);
+			pushJobs(transform, ts * Speed);
 		}
 	}
 
-	
-	
 	void ParticleSystem::Reset()
 	{
+		std::unique_lock lock(m_JobsMutex);
 		for (uint32_t i = 0; i < m_Pool.GetAliveParticles(); ++i)
 			m_Pool.Kill(i);
 	}
 
 	void ParticleSystem::SetMaxParticles(uint32_t maxParticles)
 	{
-		m_MaxParticles = maxParticles;
+		std::unique_lock lock(m_JobsMutex);
+
+		m_RenderData.ParticleData.resize(maxParticles);
 		m_Pool.SetMaxParticles(maxParticles);
-		{
-			m_RenderThreadPass.Read()->ParticleData.resize(maxParticles);
-		}
-		m_RenderThreadPass.Swap();
-		{
-			m_RenderThreadPass.Read()->ParticleData.resize(maxParticles);
-		}
+		m_MaxParticles = maxParticles;
+		m_AliveParticles = 0;
 	}
 
 	uint32_t ParticleSystem::GetMaxParticles() const
@@ -143,53 +151,62 @@ namespace XYZ {
 		return m_Pool.GetAliveParticles();
 	}
 
-
-	ScopedLock<ParticleSystem::RenderData> ParticleSystem::GetRenderData()
+	void ParticleSystem::pushJobs(const glm::mat4& transform, Timestep ts)
 	{
-		return m_RenderThreadPass.Read();
-	}
-
-	ScopedLockRead<ParticleSystem::RenderData> ParticleSystem::GetRenderDataRead() const
-	{
-		return m_RenderThreadPass.ReadRead();
-	}
-
-	void ParticleSystem::particleThreadUpdate(float timestep)
-	{
-		float speed = Speed;
 		if (m_MaxParticles == 0)
 			return;
 
-		Application::Get().GetThreadPool().PushJob<void>([this, timestep, speed]() {
-			XYZ_PROFILE_FUNC("ParticleSystem::particleThreadUpdate Job");
-			{			
-				Emitter.Emit(timestep, m_Pool);
-		
-				update(timestep);
-				buildRenderData();
-			}
-			m_RenderThreadPass.Swap();	
+
+		std::shared_ptr<ParticleSystem> instance = shared_from_this();
+		// Kill old and emit new job
+		Application::Get().GetThreadPool().PushJob<void>([instance, ts]() {
+
+			XYZ_PROFILE_FUNC("ParticleSystem::pushJobs emit");
+			std::unique_lock lock(instance->m_JobsMutex);
+
+			instance->Emitter.Kill(instance->m_Pool);
+			instance->Emitter.Emit(ts, instance->m_Pool);
+			instance->m_RenderData.ParticleCount = instance->m_Pool.GetAliveParticles();
+			instance->m_AliveParticles		     = instance->m_Pool.GetAliveParticles();
 		});
+
+		// Update jobs and build render data
+		// m_AliveParticles might change, but it is not a problem because we calculate actual work group on different thread
+		for (uint32_t i = 0; i < m_AliveParticles; i += sc_WorkGroupSize)
+		{		
+			Application::Get().GetThreadPool().PushJob<void>([instance, i, ts, tr = transform]() {
+
+				XYZ_PROFILE_FUNC("ParticleSystem::pushJobs update");
+				std::shared_lock lock(instance->m_JobsMutex);
+				
+				const uint32_t startId = i;
+				const uint32_t endId = std::min(instance->m_AliveParticles, i + sc_WorkGroupSize);
+
+				instance->update(ts, startId, endId);
+				instance->buildRenderData(tr, startId, endId);
+			});
+		}
 	}
-	void ParticleSystem::update(Timestep timestep)
+
+	void ParticleSystem::update(Timestep ts, uint32_t startId, uint32_t endId)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystem::update");
 		auto particles = m_Pool.Particles;
 
 
 		const uint32_t stageCount = AnimationTiles.x * AnimationTiles.y;
-		const float columnSize    = 1.0f / AnimationTiles.x;
-		const float rowSize		  = 1.0f / AnimationTiles.y;
+		const float columnSize = 1.0f / AnimationTiles.x;
+		const float rowSize = 1.0f / AnimationTiles.y;
 
-		uint32_t aliveParticles = m_Pool.GetAliveParticles();
-		for (uint32_t i = 0; i < aliveParticles; ++i)
+
+		for (uint32_t i = startId; i < endId; ++i)
 		{
-			particles[i].Position += particles[i].Velocity * timestep.GetSeconds();
-			particles[i].LifeRemaining -= timestep.GetSeconds();		
-		
+			particles[i].Position += particles[i].Velocity * ts.GetSeconds();
+			particles[i].LifeRemaining -= ts.GetSeconds();
+
 			const float ratio = CalcRatio(AnimationCycleLength, particles[i].LifeRemaining);
 			const float stageProgress = ratio * stageCount;
-		
+
 			const uint32_t index = (uint32_t)floor(stageProgress);
 			const float column = index % AnimationTiles.x;
 			const float row = index / AnimationTiles.y;
@@ -197,50 +214,45 @@ namespace XYZ {
 			particles[i].TexOffset = glm::vec2(column / (float)AnimationTiles.x, row / (float)AnimationTiles.y);
 		}
 
-		
+
 		//data.TextureAnimationUpdater.UpdateParticles(timestep, data.Pool);
 		//data.RotationOverLifeUpdater.UpdateParticles(timestep, data.Pool);
 
-		for (uint32_t i = 0; i < aliveParticles; ++i)
-		{
-			if (particles[i].LifeRemaining <= 0.0f)
-			{
-				aliveParticles--;
-				m_Pool.Kill(i);
-				if (Emitter.m_AliveLights != 0)
-					Emitter.m_AliveLights--;
-			}
-		}
 	}
-	void ParticleSystem::buildRenderData()
+
+	void ParticleSystem::buildRenderData(const glm::mat4& transform, uint32_t startId, uint32_t endId)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystem::buildRenderData");
-		ScopedLock<RenderData> val = m_RenderThreadPass.Write();
+
+		for (uint32_t i = startId; i < endId; ++i)
+		{
+			const auto& particle = m_Pool.Particles[i];
+
+			const glm::mat4 particleTransform =
+				glm::translate(particle.Position)
+				* glm::toMat4(particle.Rotation)
+				* glm::scale(particle.Size);
+
+
+			const glm::mat4 worldParticleTransform = transform * particleTransform;
+
+
+			m_RenderData.ParticleData[i].Color = particle.Color;
+			Mat4ToTransformData(m_RenderData.ParticleData[i].Transform, worldParticleTransform);
+			m_RenderData.ParticleData[i].TexOffset = particle.TexOffset;
+		}
+		//val->LightData.clear();
+		//val->LightData.reserve(Emitter.MaxLights);
+		//for (uint32_t i = 0; i < endId && i < Emitter.MaxLights; ++i)
+		//{
+		//	const auto& particle = m_Pool.Particles[i];
+		//	auto& light = val->LightData.emplace_back();
+		//	light.Color = particle.LightColor;
+		//	light.Position = particle.Position;
+		//	light.Radius = particle.LightRadius;
+		//	light.Intensity = particle.LightIntensity;
+		//}
 		
-		const uint32_t endId = m_Pool.GetAliveParticles();
-		for (uint32_t i = 0; i < endId; ++i)
-		{
-			const auto& particle = m_Pool.Particles[i];
-			val->ParticleData[i] = ParticleRenderData{
-				particle.Color,
-				particle.Position,
-				particle.Size,
-				particle.Rotation,
-				particle.TexOffset
-			};
-		}
-		val->LightData.clear();
-		val->LightData.reserve(Emitter.MaxLights);
-		for (uint32_t i = 0; i < endId && i < Emitter.MaxLights; ++i)
-		{
-			const auto& particle = m_Pool.Particles[i];
-			auto& light = val->LightData.emplace_back();
-			light.Color = particle.LightColor;
-			light.Position = particle.Position;
-			light.Radius = particle.LightRadius;
-			light.Intensity = particle.LightIntensity;
-		}
-		val->ParticleCount = endId;
 	}
 
 	ParticleSystem::RenderData::RenderData(uint32_t maxParticles)

@@ -216,24 +216,29 @@ namespace XYZ {
 		}
 	}
 
-	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial)
+	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial)
 	{
-		RenderQueue::MeshKey key{ material };
+		RenderQueue::BatchMeshKey key{ mesh->GetHandle(), material->GetHandle() };
 
-		auto& dg = m_Queue.InstanceMeshDrawCommands[key];
-		auto& dc = dg.emplace_back();
-
+		auto& dc = m_Queue.InstanceMeshDrawCommands[key];
 		dc.Mesh = mesh;
 		dc.MaterialAsset = material;
-		dc.OverrideMaterial = overrideMaterial.Raw() ? overrideMaterial : material->GetMaterialInstance();
-		dc.Transform = transform;
-		
-		dc.InstanceCount += instanceCount;
+		dc.Transform = glm::mat4(1.0f);
 
-		size_t offset = dc.InstanceData.size();
-		size_t instanceDataSize = static_cast<size_t>(instanceCount) * instanceSize; 
-		dc.InstanceData.resize(offset + instanceDataSize);	
-		memcpy(dc.InstanceData.data() + offset, instanceData, instanceDataSize);
+		if (overrideMaterial.Raw())
+		{
+			XYZ_ASSERT(false, "Not implemented");
+		}
+		else
+		{
+			dc.OverrideMaterial = material->GetMaterialInstance();
+			dc.InstanceCount += instanceCount;
+		
+			size_t offset = dc.InstanceData.size();
+			size_t instanceDataSize = static_cast<size_t>(instanceCount) * instanceSize;
+			dc.InstanceData.resize(offset + instanceDataSize);
+			memcpy(dc.InstanceData.data() + offset, instanceData, instanceDataSize);
+		}
 	}
 
 	void SceneRenderer::SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial)
@@ -439,29 +444,27 @@ namespace XYZ {
 			}
 		}
 
-		for (auto& [key, group] : queue.InstanceMeshDrawCommands)
+		for (auto& [key, command] : queue.InstanceMeshDrawCommands)
 		{
 			Renderer::BindPipeline(
 				m_CommandBuffer,
-				key.Pipeline,
+				command.Pipeline,
 				m_Renderer2D->GetCameraBufferSet(),
 				nullptr,
-				key.Material->GetMaterial()
+				command.MaterialAsset->GetMaterial()
 			);
-			for (auto& command : group)
-			{
-				Renderer::RenderMesh(
-					m_CommandBuffer,
-					key.Pipeline,
-					command.OverrideMaterial,
-					command.Mesh->GetVertexBuffer(),
-					command.Mesh->GetIndexBuffer(),
-					command.Transform,
-					m_InstanceVertexBuffer,
-					command.InstanceOffset,
-					command.InstanceCount
-				);
-			}
+
+			Renderer::RenderMesh(
+				m_CommandBuffer,
+				command.Pipeline,
+				command.OverrideMaterial,
+				command.Mesh->GetVertexBuffer(),
+				command.Mesh->GetIndexBuffer(),
+				command.Transform,
+				m_InstanceVertexBuffer,
+				command.InstanceOffset,
+				command.InstanceCount
+			);
 		}
 		Renderer::EndRenderPass(m_CommandBuffer);
 	}
@@ -813,17 +816,14 @@ namespace XYZ {
 
 		// Prepare transforms and instance data
 		uint32_t instanceOffset = 0;
-		for (auto& [key, group] : m_Queue.InstanceMeshDrawCommands)
+		for (auto& [key, dc] : m_Queue.InstanceMeshDrawCommands)
 		{
-			key.Pipeline = getGeometryPipeline(key.Material->GetMaterial(), key.Material->IsOpaque());
-			for (auto& dc : group)
-			{
-				dc.InstanceOffset = instanceOffset;
-				// Copy instance data
-				memcpy(&m_InstanceData.data()[instanceOffset], dc.InstanceData.data(), dc.InstanceData.size());
-				instanceOffset += dc.InstanceData.size();
-			}
+			dc.Pipeline = getGeometryPipeline(dc.MaterialAsset->GetMaterial(), dc.MaterialAsset->IsOpaque());
+			dc.InstanceOffset = instanceOffset;
+			memcpy(&m_InstanceData.data()[instanceOffset], dc.InstanceData.data(), dc.InstanceData.size());
+			instanceOffset += dc.InstanceData.size();
 		}	
+
 		m_TransformVertexBuffer->Update(m_TransformData.data(), transformsCount * sizeof(RenderQueue::TransformData));
 		m_InstanceVertexBuffer->Update(m_InstanceData.data(), instanceOffset);
 		m_BoneTransformsStorageSet->Update(m_BoneTransformsData.data(), boneTransformsCount * sizeof(RenderQueue::BoneTransforms), 0, 0, 2);

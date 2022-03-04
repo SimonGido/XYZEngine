@@ -16,10 +16,8 @@ namespace XYZ {
 
 	struct ParticleRenderData
 	{
+		glm::vec4 Transform[3];
 		glm::vec4 Color;
-		glm::vec3 Position;
-		glm::vec3 Size;
-		glm::quat Axis;
 		glm::vec2 TexOffset;
 	};
 
@@ -31,7 +29,7 @@ namespace XYZ {
 		float     Intensity;
 	};
 
-	class ParticleSystem
+	class ParticleSystem : public std::enable_shared_from_this<ParticleSystem>
 	{
 	public:
 		struct RenderData
@@ -54,17 +52,15 @@ namespace XYZ {
 		ParticleSystem& operator=(const ParticleSystem& other);
 		ParticleSystem& operator=(ParticleSystem&& other) noexcept;
 
-		void Update(Timestep ts);	
+		void Update(const glm::mat4& transform, Timestep ts);	
 		void Reset();
 		void SetMaxParticles(uint32_t maxParticles);
 
 		uint32_t GetMaxParticles() const;
 		uint32_t GetAliveParticles() const;
 		
-
-		ScopedLock<RenderData>		GetRenderData();
-		ScopedLockRead<RenderData>	GetRenderDataRead() const;
-
+		const RenderData& GetRenderData() const { return m_RenderData; }
+		
 		ParticleEmitter	Emitter;
 		glm::ivec2		AnimationTiles;
 		uint32_t		AnimationStartFrame;
@@ -77,14 +73,20 @@ namespace XYZ {
 		bool			Play;
 
 	private:
-		void particleThreadUpdate(float timestep);
-		void update(Timestep timestep);
-		void buildRenderData();
+		void pushJobs(const glm::mat4& transform, Timestep ts);
+		
+		void generate(uint32_t startId, uint32_t endId);
+		void update(Timestep ts, uint32_t startId, uint32_t endId);
+		void buildRenderData(const glm::mat4& transform, uint32_t startId, uint32_t endId);
 
 	private:
 		ParticlePool					m_Pool;
-		ThreadPass<RenderData>			m_RenderThreadPass;
+		RenderData						m_RenderData;
 		uint32_t						m_MaxParticles;
+		uint32_t						m_AliveParticles;
+		std::shared_mutex			    m_JobsMutex;
+
+		static constexpr uint32_t sc_WorkGroupSize = 1000;
 	};
 
 }

@@ -46,12 +46,12 @@ namespace XYZ {
 	}
 	void ParticleEmitter::Emit(Timestep ts, ParticlePool& data)
 	{
-		XYZ_PROFILE_FUNC("ParticleSystem::Emit");
+		XYZ_PROFILE_FUNC("ParticleEmitter::Emit");
 		m_EmittedParticles += EmitRate * ts;
 
 		const uint32_t newParticles = (uint32_t)m_EmittedParticles + burstEmit();
 		const uint32_t startId = data.GetAliveParticles();
-		const uint32_t endId = std::min(startId + newParticles, data.GetMaxParticles() - 1);
+		const uint32_t endId = std::min(startId + newParticles, data.GetMaxParticles());
 		if (newParticles)
 			m_EmittedParticles = 0.0f;
 
@@ -84,6 +84,22 @@ namespace XYZ {
 			generateCircle(data, startId, endId);
 
 		m_PassedTime += ts;
+	}
+
+	void ParticleEmitter::Kill(ParticlePool& data)
+	{
+		XYZ_PROFILE_FUNC("ParticleEmitter::Kill");
+		uint32_t aliveParticles = data.GetAliveParticles();
+		for (uint32_t i = 0; i < aliveParticles; ++i)
+		{
+			if (data.Particles[i].LifeRemaining <= 0.0f)
+			{
+				aliveParticles--;
+				data.Kill(i);
+				if (m_AliveLights != 0)
+					m_AliveLights--;
+			}
+		}
 	}
 
 	uint32_t ParticleEmitter::burstEmit()

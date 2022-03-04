@@ -181,7 +181,7 @@ namespace XYZ {
 		ParticleComponent() = default;
 		ParticleComponent(const ParticleComponent& other);
 
-		ParticleSystem System;
+		std::shared_ptr<ParticleSystem> System;
 	};
 
 

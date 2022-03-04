@@ -33,67 +33,66 @@ namespace XYZ {
 
 				const float columnWidth = 200.0f;
 				
-				ParticleSystem& system = component.System;
 				if (ImGui::Button("Reset"))
-					system.Reset();
+					component.System->Reset();
 				
 				if (ImGui::BeginTable("Particle Component Settings", 2, ImGuiTableFlags_SizingStretchProp))
 				{
-					int maxParticles = system.GetMaxParticles();
+					int maxParticles = component.System->GetMaxParticles();
 					UI::TableRow("Max Particles",
 						[]() {ImGui::Text("Max Particles"); },
 						[&]() {
 						if (ImGui::InputInt("##MaxParticles", &maxParticles))
-							system.SetMaxParticles(maxParticles);
+							component.System->SetMaxParticles(maxParticles);
 					});
 				
 					UI::TableRow("Simulation Speed",
 						[]() {ImGui::Text("Simulation Speed"); },
 						[&]() {
-						ImGui::DragFloat("##SimulationSpeed", &system.Speed, sc_VSpeed);
+						ImGui::DragFloat("##SimulationSpeed", &component.System->Speed, sc_VSpeed);
 					});
 				
 					UI::TableRow("Simulation Speed",
 						[]() {ImGui::Text("Alive Particles"); },
-						[&]() {ImGui::Text("%u", system.GetAliveParticles()); }
+						[&]() {ImGui::Text("%u", component.System->GetAliveParticles()); }
 					);
 
 					ImGui::EndTable();
 				}
 				bool enabled = true;
-				EditorHelper::DrawNodeControl("Modifiers", system, [](auto& system) {
+				EditorHelper::DrawNodeControl("Modifiers", component, [](auto& component) {
 
 					if (ImGui::BeginTable("Modifiers table", 2, ImGuiTableFlags_SizingStretchProp))
 					{
 						UI::TableRow("Animation Tiles",
 							[]() {ImGui::Text("Animation Tiles"); },
-							[&]() { ImGui::InputInt2("##AnimationTiles", (int*)&system.AnimationTiles); }
+							[&]() { ImGui::InputInt2("##AnimationTiles", (int*)&component.System->AnimationTiles); }
 						);
 
 						UI::TableRow("AnimationStartFrame",
 							[]() {ImGui::Text("Animation Start Frame"); },
-							[&]() { ImGui::InputInt("##AnimationStartFrame", (int*)&system.AnimationStartFrame); }
+							[&]() { ImGui::InputInt("##AnimationStartFrame", (int*)&component.System->AnimationStartFrame); }
 						);
 
 						UI::TableRow("Animation Cycle Length",
 							[]() {ImGui::Text("Animation Cycle Length"); },
-							[&]() { ImGui::InputFloat("##AnimationCycleLength", &system.AnimationCycleLength); }
+							[&]() { ImGui::InputFloat("##AnimationCycleLength", &component.System->AnimationCycleLength); }
 						);
 
 						UI::TableRow("RotationEulerAngles",
 							[]() {ImGui::Text("Rotation Euler Angles"); },
-							[&]() { ImGui::DragFloat3("##RotationEulerAngles", glm::value_ptr(system.RotationEulerAngles)); }
+							[&]() { ImGui::DragFloat3("##RotationEulerAngles", glm::value_ptr(component.System->RotationEulerAngles)); }
 						);
 
 						UI::TableRow("Rotation Cycle Length",
 							[]() {ImGui::Text("Rotation Cycle Length"); },
-							[&]() { ImGui::DragFloat("##RotationCycleLength", &system.RotationCycleLength, sc_VSpeed); }
+							[&]() { ImGui::DragFloat("##RotationCycleLength", &component.System->RotationCycleLength, sc_VSpeed); }
 						);
 						ImGui::EndTable();
 					}
 				}, enabled);
 		
-				drawEmitter(system.Emitter);
+				drawEmitter(component.System->Emitter);
 			});
 		}
 		void ParticleComponentInspector::SetSceneEntity(const SceneEntity& entity)

@@ -125,6 +125,7 @@ namespace XYZ {
 			Ref<Mesh>			  Mesh;
 			Ref<MaterialAsset>	  MaterialAsset;
 			Ref<MaterialInstance> OverrideMaterial;
+			Ref<Pipeline>		  Pipeline;
 			glm::mat4			  Transform;
 
 			std::vector<std::byte> InstanceData;
@@ -161,26 +162,14 @@ namespace XYZ {
 				return (MeshHandle == other.MeshHandle) && (MaterialHandle < other.MaterialHandle);
 			}
 		};
-		struct MeshKey
-		{
-			MeshKey(const Ref<MaterialAsset>& material)
-				: Material(material)
-			{}
-			bool operator<(const MeshKey& other) const
-			{
-				return Material->GetHandle() < other.Material->GetHandle();
-			}
-			Ref<MaterialAsset>	  Material;
-			mutable Ref<Pipeline> Pipeline;
-		};
 
 
 		std::map<SpriteKey, SpriteDrawCommand> SpriteDrawCommands;
 		std::map<SpriteKey, SpriteDrawCommand> BillboardDrawCommands;			
 
-		std::map<BatchMeshKey,	  MeshDrawCommand>						MeshDrawCommands;
-		std::map<BatchMeshKey,	  AnimatedMeshDrawCommand>				AnimatedMeshDrawCommands;
-		std::map<MeshKey,		  std::vector<InstanceMeshDrawCommand>>	InstanceMeshDrawCommands;
+		std::map<BatchMeshKey,	  MeshDrawCommand>			MeshDrawCommands;
+		std::map<BatchMeshKey,	  AnimatedMeshDrawCommand>	AnimatedMeshDrawCommands;
+		std::map<BatchMeshKey,	  InstanceMeshDrawCommand>	InstanceMeshDrawCommands;
 	};
 
 	struct SceneRendererSpecification
@@ -207,7 +196,7 @@ namespace XYZ {
 		void SubmitSprite(const Ref<MaterialAsset>& material, const Ref<SubTexture>& subTexture, const glm::vec4& color, const glm::mat4& transform);
 
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial = nullptr);
-		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial);
+		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial);
 		void SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 
 		void SubmitLight(const PointLight2D& light, const glm::vec2& position);

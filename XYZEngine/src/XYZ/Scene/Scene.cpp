@@ -100,8 +100,8 @@ namespace XYZ {
 		m_Registry.emplace<TransformComponent>(m_SceneEntity);
 		m_Registry.emplace<SceneTagComponent>(m_SceneEntity, name);	
 
-		ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
-		physicsWorld->SetContactListener(&m_ContactListener);
+		b2World& physicsWorld = m_PhysicsWorld.GetWorld();
+		physicsWorld.SetContactListener(&m_ContactListener);
 
 		m_Registry.on_construct<ScriptComponent>().connect<&Scene::onScriptComponentConstruct>(this);
 		m_Registry.on_destroy<ScriptComponent>().connect<&Scene::onScriptComponentDestruct>(this);
@@ -209,7 +209,7 @@ namespace XYZ {
 		auto particleView = m_Registry.view<ParticleComponent>();
 		for (auto entity : particleView)
 		{
-			particleView.get<ParticleComponent>(entity).System.Reset();
+			particleView.get<ParticleComponent>(entity).System->Reset();
 		}
 	}
 
@@ -218,12 +218,12 @@ namespace XYZ {
 		CloneRegistry(s_CopyRegistry, m_Registry);
 		s_CopyRegistry = entt::registry();
 		{
-			ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
+			b2World& physicsWorld = m_PhysicsWorld.GetWorld();
 			auto rigidBodyView = m_Registry.view<RigidBody2DComponent>();
 			for (const auto entity : rigidBodyView)
 			{
 				auto& body = rigidBodyView.get<RigidBody2DComponent>(entity);
-				physicsWorld->DestroyBody(static_cast<b2Body*>(body.RuntimeBody));
+				physicsWorld.DestroyBody(static_cast<b2Body*>(body.RuntimeBody));
 			}
 		}
 
@@ -238,7 +238,7 @@ namespace XYZ {
 		auto particleView = m_Registry.view<ParticleComponent>();
 		for (auto entity : particleView)
 		{
-			particleView.get<ParticleComponent>(entity).System.Reset();
+			particleView.get<ParticleComponent>(entity).System->Reset();
 		}
 
 		delete[]m_PhysicsEntityBuffer;
@@ -348,9 +348,9 @@ namespace XYZ {
 		{
 			auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
 
-			auto renderData = particleComponent.System.GetRenderDataRead();
+			auto& renderData = particleComponent.System->GetRenderData();
 
-			for (const auto& lightData : renderData->LightData)
+			for (const auto& lightData : renderData.LightData)
 			{
 				glm::mat4 lightTransform = glm::translate(transform.WorldTransform, lightData.Position);
 				glm::vec3 worldLightPos = Math::TransformToTranslation(lightTransform);
@@ -364,9 +364,8 @@ namespace XYZ {
 		
 			sceneRenderer->SubmitMesh(
 				renderer.Mesh, renderer.MaterialAsset,
-				transform.WorldTransform,
-				renderData->ParticleData.data(),
-				renderData->ParticleCount,
+				renderData.ParticleData.data(),
+				renderData.ParticleCount,
 				sizeof(ParticleRenderData),
 				renderer.OverrideMaterial
 			);
@@ -403,10 +402,11 @@ namespace XYZ {
 		}
 		{
 			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor particleView");
-			auto particleView = m_Registry.view<ParticleComponent>();
+			auto particleView = m_Registry.view<ParticleComponent, TransformComponent>();
 			for (auto entity : particleView)
 			{
-				particleView.get<ParticleComponent>(entity).System.Update(ts);
+				auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
+				particleComponent.System->Update(transformComponent.WorldTransform, ts);
 			}
 		}
 	}
@@ -457,9 +457,9 @@ namespace XYZ {
 			{
 				auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
 
-				auto renderData = particleComponent.System.GetRenderDataRead();
+				auto& renderData = particleComponent.System->GetRenderData();
 
-				for (const auto& lightData : renderData->LightData)
+				for (const auto& lightData : renderData.LightData)
 				{
 					glm::mat4 lightTransform = glm::translate(transform.WorldTransform, lightData.Position);
 					glm::vec3 worldLightPos = Math::TransformToTranslation(lightTransform);
@@ -475,9 +475,8 @@ namespace XYZ {
 
 				sceneRenderer->SubmitMesh(
 					renderer.Mesh, renderer.MaterialAsset,
-					transform.WorldTransform,
-					renderData->ParticleData.data(),
-					renderData->ParticleCount,
+					renderData.ParticleData.data(),
+					renderData.ParticleCount,
 					sizeof(ParticleRenderData),
 					renderer.OverrideMaterial
 				);
@@ -556,7 +555,7 @@ namespace XYZ {
 	{
 		auto rigidBodyView = m_Registry.view<RigidBody2DComponent>();
 		m_PhysicsEntityBuffer = new SceneEntity[rigidBodyView.size()];
-		ScopedLock<b2World> physicsWorld = m_PhysicsWorld.GetWorld();
+		b2World& physicsWorld = m_PhysicsWorld.GetWorld();
 		const PhysicsWorld2D::Layer defaultLayer = m_PhysicsWorld.GetLayer(PhysicsWorld2D::DefaultLayer);
 		b2FixtureDef fixture;
 		fixture.filter.categoryBits = defaultLayer.m_CollisionMask.to_ulong();
@@ -584,7 +583,7 @@ namespace XYZ {
 			bodyDef.angle = transform.Rotation.z;
 			bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(&m_PhysicsEntityBuffer[counter]);
 			
-			b2Body* body = physicsWorld->CreateBody(&bodyDef);
+			b2Body* body = physicsWorld.CreateBody(&bodyDef);
 			rigidBody.RuntimeBody = body;
 			
 			if (entity.HasComponent<BoxCollider2DComponent>())

@@ -60,7 +60,5 @@ namespace XYZ {
     private:
         uint32_t m_MaxParticles;
         uint32_t m_AliveParticles;
-
-        mutable std::mutex m_Mutex;
     };
 }

@@ -13,9 +13,9 @@ namespace XYZ {
 	};
 
 
-	static unsigned int ShaderDataTypeSize(ShaderDataType Component)
+	static unsigned int ShaderDataTypeSize(ShaderDataType type)
 	{
-		switch (Component)
+		switch (type)
 		{
 		case ShaderDataType::Float:	return 4;
 		case ShaderDataType::Float2:	return 4 * 2;

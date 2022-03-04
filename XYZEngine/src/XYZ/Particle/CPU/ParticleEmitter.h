@@ -32,7 +32,7 @@ namespace XYZ {
 		ParticleEmitter();
 		
 		void Emit(Timestep ts, ParticlePool& data);
-
+		void Kill(ParticlePool& data);
 
 		EmitShape				  Shape;
 		glm::vec3				  BoxMin;

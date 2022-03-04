@@ -21,9 +21,6 @@ namespace XYZ {
 	}
 	ParticlePool::ParticlePool(ParticlePool&& other) noexcept
 	{
-		std::scoped_lock lock(m_Mutex);
-		std::scoped_lock otherLock(other.m_Mutex);
-
 		Particles = other.Particles;
 	
 		m_MaxParticles = other.m_MaxParticles;
@@ -43,9 +40,6 @@ namespace XYZ {
 		m_MaxParticles(other.m_MaxParticles),
 		m_AliveParticles(other.m_AliveParticles)
 	{
-		std::scoped_lock lock(m_Mutex);
-		std::scoped_lock otherLock(other.m_Mutex);
-
 		if (m_MaxParticles)
 		{
 			generateParticles(m_MaxParticles);
@@ -59,9 +53,6 @@ namespace XYZ {
 	
 	ParticlePool& ParticlePool::operator=(const ParticlePool& other)
 	{
-		std::scoped_lock lock(m_Mutex);
-		std::scoped_lock otherLock(other.m_Mutex);
-
 		m_MaxParticles = other.m_MaxParticles;
 		m_AliveParticles = other.m_AliveParticles;
 		
@@ -80,9 +71,6 @@ namespace XYZ {
 
 	ParticlePool& ParticlePool::operator=(ParticlePool&& other) noexcept
 	{
-		std::scoped_lock lock(m_Mutex);
-		std::scoped_lock otherLock(other.m_Mutex);
-
 		deleteParticles();
 		Particles = other.Particles;
 
@@ -96,8 +84,6 @@ namespace XYZ {
 	}
 	void ParticlePool::SetMaxParticles(uint32_t maxParticles)
 	{
-		std::scoped_lock lock(m_Mutex);
-
 		deleteParticles();
 		m_MaxParticles = maxParticles;
 		generateParticles(maxParticles);
@@ -106,6 +92,7 @@ namespace XYZ {
 
 	void ParticlePool::Wake(uint32_t id)
 	{
+		XYZ_ASSERT(m_AliveParticles < m_MaxParticles, "");
 		Particles[id].Alive = true;
 		m_AliveParticles++;
 	}
