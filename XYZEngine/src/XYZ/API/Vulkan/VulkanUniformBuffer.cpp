@@ -25,6 +25,8 @@ namespace XYZ {
 	}
 	void VulkanUniformBuffer::Update(const void* data, uint32_t size, uint32_t offset)
 	{
+		if (size == 0)
+			return;
 		m_LocalStorage.Write(data, size, offset);
 		Ref<VulkanUniformBuffer> instance = this;
 		Renderer::Submit([instance, size, offset]() mutable
@@ -34,6 +36,8 @@ namespace XYZ {
 	}
 	void VulkanUniformBuffer::RT_Update(const void* data, uint32_t size, uint32_t offset)
 	{
+		if (size == 0)
+			return;
 		VulkanAllocator allocator("VulkanUniformBuffer");
 		uint8_t* pData = allocator.MapMemory<uint8_t>(m_MemoryAlloc);
 		memcpy(pData, (const uint8_t*)data + offset, size);

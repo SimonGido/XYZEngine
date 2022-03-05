@@ -8,7 +8,7 @@ namespace XYZ {
 	VulkanRenderCommandBuffer::VulkanRenderCommandBuffer(uint32_t count, std::string debugName)
 		:
 		m_Name(std::move(debugName)),
-		m_CommandBuffers(VK_NULL_HANDLE),
+		m_CommandBuffers({ VK_NULL_HANDLE }),
 		m_CommandPool(VK_NULL_HANDLE),
 		m_OwnedBySwapchain(false),
 		m_TimestampQueryCount(0),

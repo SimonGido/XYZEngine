@@ -461,14 +461,12 @@ namespace XYZ {
 
 				for (const auto& lightData : renderData.LightData)
 				{
-					glm::mat4 lightTransform = glm::translate(transform.WorldTransform, lightData.Position);
-					glm::vec3 worldLightPos = Math::TransformToTranslation(lightTransform);
 					PointLight2D light{
 						lightData.Color,
 						lightData.Radius,
 						lightData.Intensity
 					};
-					sceneRenderer->SubmitLight(light, worldLightPos);
+					sceneRenderer->SubmitLight(light, lightData.Position);
 				}
 
 				renderer.MaterialAsset->GetMaterialInstance()->Set("u_Uniforms.Tiles", glm::vec2(8, 8));

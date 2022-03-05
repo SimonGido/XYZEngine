@@ -86,7 +86,12 @@ layout(binding = 1) uniform sampler2D u_Texture;
 void main()
 {
 	vec2 texCoord = v_Input.TexOffset + (v_Input.TexCoord / u_Uniforms.Tiles);
-	o_Color = texture(u_Texture, texCoord) * v_Input.Color;
+	vec4 color = texture(u_Texture, texCoord) * v_Input.Color;
+	if (color.a < 0.2)
+		discard;
+
+	o_Color = color;
 	o_Position = vec4(v_Input.Position, 1.0);
+	
 }
 

@@ -34,6 +34,8 @@ namespace XYZ {
 	}
 	void VulkanStorageBuffer::Update(const void* data, uint32_t size, uint32_t offset)
 	{
+		if (size == 0)
+			return;
 		XYZ_ASSERT(size + offset <= m_Size, "");
 		ByteBuffer buffer = GetBuffer();
 
@@ -46,6 +48,8 @@ namespace XYZ {
 	}
 	void VulkanStorageBuffer::RT_Update(const void* data, uint32_t size, uint32_t offset)
 	{
+		if (size == 0)
+			return;
 		VulkanAllocator allocator("VulkanStorageBuffer");
 		uint8_t* pData = allocator.MapMemory<uint8_t>(m_MemoryAllocation);
 		memcpy(pData, (uint8_t*)data + offset, size);
@@ -53,6 +57,8 @@ namespace XYZ {
 	}
 	void VulkanStorageBuffer::Update(ByteBuffer data, uint32_t size, uint32_t offset)
 	{
+		if (size == 0)
+			return;
 		XYZ_ASSERT(data.Size <= m_Size, "");
 		Ref<VulkanStorageBuffer> instance = this;
 		Renderer::Submit([instance, data, size, offset]() mutable {

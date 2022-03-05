@@ -7,6 +7,8 @@
 
 #include "XYZ/Debug/Profiler.h"
 
+#include "XYZ/Utils/Math/Math.h"
+
 namespace XYZ {
 	static float CalcRatio(float length, float value)
 	{
@@ -151,8 +153,8 @@ namespace XYZ {
 		if (m_MaxParticles == 0)
 			return;
 
-
-		std::unique_lock lock(m_JobsMutex); // We must sync with main thread or it will keep filling thread pool
+		// We must sync with main thread or it will keep filling thread pool, an alternative might be to have infinite loop, without any sync
+		std::unique_lock lock(m_JobsMutex);
 		std::shared_ptr<ParticleSystem> instance = shared_from_this();
 		// Kill old and emit new job
 		Application::Get().GetThreadPool().PushJob<void>([instance, ts, tr = transform]() {
@@ -206,7 +208,7 @@ namespace XYZ {
 	void ParticleSystem::buildRenderData(const glm::mat4& transform, uint32_t startId, uint32_t endId)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystem::buildRenderData");
-
+		m_RenderData.LightData.resize(Emitter.MaxLights);
 		for (uint32_t i = startId; i < endId; ++i)
 		{
 			const auto& particle = m_Pool.Particles[i];
@@ -223,19 +225,16 @@ namespace XYZ {
 			m_RenderData.ParticleData[i].Color = particle.Color;
 			Mat4ToTransformData(m_RenderData.ParticleData[i].Transform, worldParticleTransform);
 			m_RenderData.ParticleData[i].TexOffset = particle.TexOffset;
+			
+			if (i < Emitter.MaxLights)
+			{
+				auto& light = m_RenderData.LightData[i];
+				light.Color = particle.LightColor;
+				light.Position = Math::TransformToTranslation(worldParticleTransform);
+				light.Radius = particle.LightRadius;
+				light.Intensity = particle.LightIntensity;
+			}
 		}
-		//val->LightData.clear();
-		//val->LightData.reserve(Emitter.MaxLights);
-		//for (uint32_t i = 0; i < endId && i < Emitter.MaxLights; ++i)
-		//{
-		//	const auto& particle = m_Pool.Particles[i];
-		//	auto& light = val->LightData.emplace_back();
-		//	light.Color = particle.LightColor;
-		//	light.Position = particle.Position;
-		//	light.Radius = particle.LightRadius;
-		//	light.Intensity = particle.LightIntensity;
-		//}
-		
 	}
 
 	ParticleSystem::RenderData::RenderData(uint32_t maxParticles)

@@ -56,8 +56,10 @@ namespace XYZ {
 		float					  LightIntensity;
 	private:
 		uint32_t burstEmit();
-		void	 generateBox(ParticlePool& data, uint32_t startId, uint32_t endId) const;
-		void	 generateCircle(ParticlePool& data, uint32_t startId, uint32_t endId) const;
+
+		void	 generate(ParticlePool& data, uint32_t id) const;
+		void	 generateBox(ParticlePool& data, uint32_t id) const;
+		void	 generateCircle(ParticlePool& data, uint32_t id) const;
 
 	private:
 		float m_EmittedParticles;

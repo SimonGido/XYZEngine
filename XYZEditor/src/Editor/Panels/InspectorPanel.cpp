@@ -244,6 +244,7 @@ namespace XYZ {
 					if (ImGui::MenuItem("Particle Component"))
 					{
 						auto& component = m_SelectedEntity.EmplaceComponent<ParticleComponent>();
+						component.System = std::make_shared<ParticleSystem>();
 						m_ParticleInspector.SetSceneEntity(m_SelectedEntity);
 						m_ParticleRendererInspector.SetSceneEntity(m_SelectedEntity);
 						m_EditablesInUse.push_back(&m_ParticleInspector);

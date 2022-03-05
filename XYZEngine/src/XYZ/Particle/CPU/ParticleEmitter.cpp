@@ -56,33 +56,30 @@ namespace XYZ {
 			m_EmittedParticles = 0.0f;
 
 
-		for (uint32_t i = startId; i < endId; ++i)
-		{
-			data.Wake(i);
-			data.Particles[i].Color = Color;
-			data.Particles[i].TexOffset = glm::vec2(0.0f, 0.0f);
-			data.Particles[i].Size = Size;
-			data.Particles[i].Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-			data.Particles[i].LifeRemaining = LifeTime;
-			data.Particles[i].Velocity = glm::linearRand(MinVelocity, MaxVelocity);
-			data.Particles[i].Position = glm::vec3(0.0f);
-		}
 
+		if (Shape == EmitShape::Box)
 		{
-			XYZ_PROFILE_FUNC("ParticleSystem::Emit Lights");
-			for (size_t i = startId; i < endId && m_AliveLights < MaxLights; ++i)
+			for (uint32_t i = startId; i < endId; ++i)
 			{
-				data.Particles[i].LightColor = LightColor;
-				data.Particles[i].LightRadius = LightRadius;
-				data.Particles[i].LightIntensity = LightIntensity;
-				m_AliveLights++;
+				generate(data, i);
+				generateBox(data, i);
 			}
 		}
-		if (Shape == EmitShape::Box)
-			generateBox(data, startId, endId);
 		else if (Shape == EmitShape::Circle)
-			generateCircle(data, startId, endId);
-
+		{
+			for (uint32_t i = startId; i < endId; ++i)
+			{
+				generate(data, i);
+				generateCircle(data, i);
+			}
+		}
+		else
+		{
+			for (uint32_t i = startId; i < endId; ++i)
+			{
+				generate(data, i);
+			}
+		}
 		m_PassedTime += ts;
 	}
 
@@ -125,32 +122,40 @@ namespace XYZ {
 		}
 		return count;
 	}
-	void ParticleEmitter::generateBox(ParticlePool& data, uint32_t startId, uint32_t endId) const
+	void ParticleEmitter::generate(ParticlePool& data, uint32_t id) const
+	{
+		data.Wake(id);
+		data.Particles[id].Color = Color;
+		data.Particles[id].TexOffset = glm::vec2(0.0f, 0.0f);
+		data.Particles[id].Size = Size;
+		data.Particles[id].Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+		data.Particles[id].LifeRemaining = LifeTime;
+		data.Particles[id].Velocity = glm::linearRand(MinVelocity, MaxVelocity);
+		data.Particles[id].Position = glm::vec3(0.0f);
+		data.Particles[id].LightColor = LightColor;
+		data.Particles[id].LightIntensity = LightIntensity;
+		data.Particles[id].LightRadius = LightRadius;
+	}
+	void ParticleEmitter::generateBox(ParticlePool& data, uint32_t id) const
 	{
 		std::random_device dev;
 		std::mt19937 rng(dev());
 		std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
 
-		for (uint32_t i = startId; i < endId; i++)
-		{
-			data.Particles[i].Position = glm::linearRand(BoxMin, BoxMax);
-		}
+		data.Particles[id].Position = glm::linearRand(BoxMin, BoxMax);
 	}
-	void ParticleEmitter::generateCircle(ParticlePool& data, uint32_t startId, uint32_t endId) const
+	void ParticleEmitter::generateCircle(ParticlePool& data, uint32_t id) const
 	{
 		std::random_device dev;
 		std::mt19937 rng(dev());
 		const std::uniform_real_distribution<float> dist(0.0f, 1.0f);
 
-		for (uint32_t i = startId; i < endId; i++)
-		{
-			float r = Radius * (float)sqrt(dist(rng));
-			const float theta = dist(rng) * 2.0f * glm::pi<float>();
-			const glm::vec2 point(
-				Radius * cos(theta),
-				Radius * sin(theta)
-			);
-			data.Particles[i].Position = glm::vec3(point.x, point.y, 0.0f);
-		}
+		float r = Radius * (float)sqrt(dist(rng));
+		const float theta = dist(rng) * 2.0f * glm::pi<float>();
+		const glm::vec2 point(
+			Radius * cos(theta),
+			Radius * sin(theta)
+		);
+		data.Particles[id].Position = glm::vec3(point.x, point.y, 0.0f);
 	}
 }

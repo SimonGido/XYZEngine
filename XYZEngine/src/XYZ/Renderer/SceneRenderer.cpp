@@ -826,7 +826,6 @@ namespace XYZ {
 		m_BoneTransformsStorageSet->Update(m_BoneTransformsData.data(), boneTransformsCount * sizeof(RenderQueue::BoneTransforms), 0, 0, 2);
 	
 		
-
 		m_RenderStatistics.MeshDrawCommandCount = static_cast<uint32_t>(m_Queue.MeshDrawCommands.size());
 		m_RenderStatistics.MeshOverrideDrawCommandCount = static_cast<uint32_t>(overrideCount);
 		m_RenderStatistics.InstanceMeshDrawCommandCount = static_cast<uint32_t>(m_Queue.InstanceMeshDrawCommands.size());
@@ -904,7 +903,7 @@ namespace XYZ {
 		spec.RenderPass = m_GeometryPass;
 		spec.Shader = shader;
 		spec.Topology = PrimitiveTopology::Triangles;
-		spec.DepthTest = opaque; // We do not want this for 
+		spec.DepthTest = true;
 		spec.DepthWrite = true;
 
 		auto& pipeline = m_GeometryPipelines[shader->GetHash()];
