@@ -18,7 +18,7 @@ namespace XYZ {
 			void handleShader();
 			void handleTextures();
 			void handleTextureArrays();
-
+			void handleUniforms();
 		private:
 			Ref<MaterialAsset> m_MaterialAsset;
 		};

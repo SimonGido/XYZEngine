@@ -72,7 +72,7 @@ namespace XYZ {
 			m_DirectoryTree = DirectoryTree(path);
 		}
 
-		Ref<Asset> AssetBrowser::GetSelectedAsset() const
+		Ref<Asset> AssetBrowser::GetSelectedAsset()
 		{
 			if (!m_SelectedFile.empty())
 			{
@@ -80,7 +80,8 @@ namespace XYZ {
 				std::replace(fullFilePath.begin(), fullFilePath.end(), '\\', '/');
 				if (Utils::GetExtension(m_SelectedFile.string()) == "mat")
 				{
-					return AssetManager::GetAsset<MaterialAsset>(std::filesystem::path(fullFilePath));
+					m_SelectedAsset = AssetManager::GetAsset<MaterialAsset>(std::filesystem::path(fullFilePath));				
+					return m_SelectedAsset;
 				}
 			}
 			return Ref<Asset>();

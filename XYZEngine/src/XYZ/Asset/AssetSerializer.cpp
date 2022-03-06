@@ -195,6 +195,31 @@ namespace XYZ {
 			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;
+
+		out << YAML::Key << "MaterialData" << YAML::BeginSeq;
+		auto shader = material->GetShader();
+		for (auto& [name, buffer] : shader->GetBuffers())
+		{
+			for (auto& [uniName, uni] : buffer.Uniforms)
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Name" << uniName;
+				out << YAML::Key << "Type" << static_cast<uint32_t>(uni.GetDataType());
+				switch (uni.GetDataType())
+				{
+				case ShaderUniformDataType::Int:     out << YAML::Key << "Value" << material->Get<int>(uniName);  break;
+				case ShaderUniformDataType::UInt:    out << YAML::Key << "Value" << material->Get<uint32_t>(uniName);  break;
+				case ShaderUniformDataType::Float:   out << YAML::Key << "Value" << material->Get<float>(uniName);  break;
+				case ShaderUniformDataType::Vec2:    out << YAML::Key << "Value" << material->Get<glm::vec2>(uniName);  break;
+				case ShaderUniformDataType::Vec3:    out << YAML::Key << "Value" << material->Get<glm::vec3>(uniName);  break;
+				case ShaderUniformDataType::Vec4:    out << YAML::Key << "Value" << material->Get<glm::vec4>(uniName);  break;
+				//case ShaderUniformDataType::Mat3:    materialAsset->Set<glm::mat3>(name, uniform["Value"].as<glm::mat3>()); break;
+				//case ShaderUniformDataType::Mat4:    materialAsset->Set<glm::mat4>(name, uniform["Value"].as<glm::mat4>()); break;
+				}
+				out << YAML::EndMap;
+			}
+		}
+		out << YAML::EndSeq;+	
 		out << YAML::EndMap;
 
 		std::ofstream fout(metadata.FilePath);
@@ -250,6 +275,26 @@ namespace XYZ {
 					materialAsset->SetTexture(name, Renderer::GetDefaultResources().WhiteTexture, index);
 				}
 				index++;
+			}
+		}
+		auto materialData = data["MaterialData"];
+		if (materialData)
+		{
+			for (auto& uniform : materialData)
+			{
+				const std::string name = uniform["Name"].as<std::string>();
+				const ShaderUniformDataType type = static_cast<ShaderUniformDataType>(uniform["Type"].as<uint32_t>());
+				switch (type)
+				{
+				case ShaderUniformDataType::Int:     materialAsset->Set<int>(	   name, uniform["Value"].as<int>()); break;
+				case ShaderUniformDataType::UInt:    materialAsset->Set<uint32_t>( name, uniform["Value"].as<uint32_t>()); break;
+				case ShaderUniformDataType::Float:   materialAsset->Set<float>(	   name, uniform["Value"].as<float>()); break;
+				case ShaderUniformDataType::Vec2:    materialAsset->Set<glm::vec2>(name, uniform["Value"].as<glm::vec2>()); break;
+				case ShaderUniformDataType::Vec3:    materialAsset->Set<glm::vec3>(name, uniform["Value"].as<glm::vec3>()); break;
+				case ShaderUniformDataType::Vec4:    materialAsset->Set<glm::vec4>(name, uniform["Value"].as<glm::vec4>()); break;
+				//case ShaderUniformDataType::Mat3:    materialAsset->Set<glm::mat3>(name, uniform["Value"].as<glm::mat3>()); break;
+				//case ShaderUniformDataType::Mat4:    materialAsset->Set<glm::mat4>(name, uniform["Value"].as<glm::mat4>()); break;
+				}
 			}
 		}
 		asset = materialAsset;

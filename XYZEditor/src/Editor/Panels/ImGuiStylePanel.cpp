@@ -16,7 +16,7 @@
 namespace XYZ {
 	namespace Editor {
 	
-		bool ValueControl(const char* stringID, bool& value)
+		static bool ValueControl(const char* stringID, bool& value)
 		{
 			std::string valueID = "##";
 			valueID += stringID;
@@ -28,7 +28,7 @@ namespace XYZ {
 
 			return result;
 		}
-		bool ValueControl(const char* stringID, float& value)
+		static bool ValueControl(const char* stringID, float& value)
 		{
 			std::string valueID = "##";
 			valueID += stringID;
@@ -42,7 +42,7 @@ namespace XYZ {
 
 			return result;
 		}
-		bool ValueControl(const char* stringID, int& value)
+		static bool ValueControl(const char* stringID, int& value)
 		{
 			std::string valueID = "##";
 			valueID += stringID;
@@ -54,7 +54,7 @@ namespace XYZ {
 
 			return result;
 		}
-		bool ValueControl(const char* stringID, ImVec2& value)
+		static bool ValueControl(const char* stringID, ImVec2& value)
 		{
 			std::string valueID = "##";
 			valueID += stringID;
@@ -72,7 +72,7 @@ namespace XYZ {
 
 			return result;
 		}
-		bool ValueControl(const char* stringID, ImVec4(&values)[ImGuiCol_COUNT])
+		static bool ValueControl(const char* stringID, ImVec4(&values)[ImGuiCol_COUNT])
 		{
 			bool result = false;
 			for (uint32_t i = 0; i < ImGuiCol_COUNT; ++i)

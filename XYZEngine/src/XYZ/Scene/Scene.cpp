@@ -469,8 +469,7 @@ namespace XYZ {
 					sceneRenderer->SubmitLight(light, lightData.Position);
 				}
 
-				renderer.MaterialAsset->GetMaterialInstance()->Set("u_Uniforms.Tiles", glm::vec2(8, 8));
-
+		
 				sceneRenderer->SubmitMesh(
 					renderer.Mesh, renderer.MaterialAsset,
 					renderData.ParticleData.data(),

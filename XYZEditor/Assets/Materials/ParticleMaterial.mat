@@ -2,6 +2,12 @@ Shader: 49ce52b6-f823-4a8a-ab53-1a7b3a0a3928
 Opaque: false
 Textures:
   - Name: u_Texture
-    Handle: 8dd5800e-5771-45b6-82c6-48d28584b23c
+    Handle: e1992e8f-3339-49f4-8bc3-947fe102b6c4
 TextureArrays:
   []
+MaterialData:
+  - Name: u_Renderer.Transform
+    Type: 14
+  - Name: u_Uniforms.Tiles
+    Type: 5
+    Value: [4, 4]

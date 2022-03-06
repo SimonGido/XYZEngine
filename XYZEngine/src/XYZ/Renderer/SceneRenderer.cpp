@@ -745,16 +745,19 @@ namespace XYZ {
 		{
 			const uint32_t width = (uint32_t)m_ViewportSize.x;
 			const uint32_t height = (uint32_t)m_ViewportSize.y;
-			m_LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-			//m_CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
+			if (width != 0 && height != 0)
+			{		
+				m_LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+				//m_CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
 
-			TextureProperties props;
-			props.Storage = true;
-			props.SamplerWrap = TextureWrap::Clamp;
-			// TODO: resizing
-			m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
-			m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
-			m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
+				TextureProperties props;
+				props.Storage = true;
+				props.SamplerWrap = TextureWrap::Clamp;
+				// TODO: resizing
+				m_BloomTexture[0] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
+				m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
+				m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
+			}
 			m_ViewportSizeChanged = false;
 		}
 	}

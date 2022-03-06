@@ -73,7 +73,7 @@ namespace XYZ {
 	template<typename T>
 	inline T& MaterialAsset::Get(const std::string_view name)
 	{
-		return m_MaterialInstance->Get(name);
+		return m_MaterialInstance->Get<T>(name);
 	}
 
 }

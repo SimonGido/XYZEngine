@@ -23,7 +23,7 @@ namespace XYZ {
 
 			void SetBaseDirectory(const std::string& path);
 		
-			Ref<Asset> GetSelectedAsset() const;
+			Ref<Asset> GetSelectedAsset();
 
 		private:
 			void createAsset();
@@ -45,6 +45,7 @@ namespace XYZ {
 		private:		
 			glm::vec2 m_IconSize;
 			glm::vec2 m_ArrowSize;
+			Ref<Asset> m_SelectedAsset;
 
 			float m_SplitterWidth;
 		};
