@@ -271,7 +271,7 @@ namespace XYZ {
 		
 		const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
 		const uint32_t numJobs = aliveParticles / sc_PerJobCount;
-		for (uint32_t jobIndex = 0; jobIndex < numJobs; ++jobIndex)
+		for (uint32_t jobIndex = 0; jobIndex < numJobs + 1; ++jobIndex)
 		{
 			Application::Get().GetThreadPool().PushJob<void>([instance, jobIndex, tr = transform]() {
 
