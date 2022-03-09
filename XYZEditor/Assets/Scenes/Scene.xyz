@@ -2,23 +2,75 @@ Scene: TestScene
 SceneEntity: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
 FirstChild: 36905812-ac4e-4371-97a4-ba100c73abba
 Entities:
-  - Entity: 0a5a280d-f663-48c4-8d57-e15133f823e8
+  - Entity: 105df69b-c474-44be-a604-52ef9b557696
     SceneTagComponent:
-      Name: Empty Entity
+      Name: FireLight
     TransformComponent:
-      Position: [-2.1500001, 0, 1.64999998]
+      Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    SpriteRenderer:
-      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
-      SubTexture: 22d5a09f-8a78-4606-a915-0745f549388c
-      Color: [1, 1, 1, 1]
-      SortLayer: 1
-      Visible: true
+    Relationship:
+      Parent: 36905812-ac4e-4371-97a4-ba100c73abba
+      Depth: 2
+    PointLight2D:
+      Color: [1, 0.21238935, 0]
+      Radius: 0
+      Intensity: 0
+  - Entity: b773c09f-a892-46cf-ae7e-bfc855ea8db3
+    SceneTagComponent:
+      Name: MoonLight
+    TransformComponent:
+      Position: [-0.180000007, 0.121951215, -1.33962262]
+      Rotation: [0, -0, 0]
+      Scale: [0.11363636, 0.16260162, 0.377358466]
+    Relationship:
+      Parent: 955c785a-6507-4c0f-9886-6d9b1828336e
+      Depth: 2
+    PointLight2D:
+      Color: [1, 1, 1]
+      Radius: 2.75
+      Intensity: 0.449999988
+  - Entity: 36905812-ac4e-4371-97a4-ba100c73abba
+    SceneTagComponent:
+      Name: Fire
+    TransformComponent:
+      Position: [-4.3499999, 0, 3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
     Relationship:
       Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      PreviousSibling: 955c785a-6507-4c0f-9886-6d9b1828336e
+      NextSibling: 955c785a-6507-4c0f-9886-6d9b1828336e
+      FirstChild: 105df69b-c474-44be-a604-52ef9b557696
       Depth: 1
+    ParticleRenderer:
+      Material: a26336fe-dc1c-4e82-a500-b2101792a4d3
+      Mesh: f8a2fc76-d8ba-48ac-85c0-54418b021786
+    ParticleComponent:
+      MaxParticles: 4000
+      Speed: 1.70000005
+      AnimationTiles: [4, 4]
+      AnimationStartFrame: 0
+      AnimationCycleLength: 5
+      RotationEulerAngles: [0, 0, 0]
+      RotationCycleLength: 2
+      Emitter:
+        Shape: 1
+        BoxMin: [-9.19999981, -7.9000001, 0]
+        BoxMax: [7.19999981, 11.8999996, 0]
+        Radius: 0.300000012
+        EmitRate: 500
+        LifeTime: 5
+        MinVelocity: [-0.100000001, -0.400000006, 0]
+        MaxVelocity: [0.699999988, 1, 0]
+        Size: [1, 1, 1]
+        Color: [1, 1, 1, 1]
+        LightColor: [0, 0.292035401, 0.292035401]
+        LightRadius: 0.5
+        LightIntensity: 5.69999981
+        MaxLights: 0
+        BurstInterval: 5
+        Bursts:
+          []
   - Entity: 955c785a-6507-4c0f-9886-6d9b1828336e
     SceneTagComponent:
       Name: Background
@@ -38,72 +90,20 @@ Entities:
       PreviousSibling: 36905812-ac4e-4371-97a4-ba100c73abba
       FirstChild: b773c09f-a892-46cf-ae7e-bfc855ea8db3
       Depth: 1
-  - Entity: 36905812-ac4e-4371-97a4-ba100c73abba
+  - Entity: 0a5a280d-f663-48c4-8d57-e15133f823e8
     SceneTagComponent:
-      Name: Fire
+      Name: Empty Entity
     TransformComponent:
-      Position: [-4.3499999, 0, 3]
+      Position: [-2.1500001, 0, 1.64999998]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
+    SpriteRenderer:
+      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
+      SubTexture: 22d5a09f-8a78-4606-a915-0745f549388c
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      Visible: true
     Relationship:
       Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 955c785a-6507-4c0f-9886-6d9b1828336e
-      FirstChild: 105df69b-c474-44be-a604-52ef9b557696
+      PreviousSibling: 955c785a-6507-4c0f-9886-6d9b1828336e
       Depth: 1
-    ParticleRenderer:
-      Material: a26336fe-dc1c-4e82-a500-b2101792a4d3
-      Mesh: f8a2fc76-d8ba-48ac-85c0-54418b021786
-    ParticleComponent:
-      MaxParticles: 200
-      Speed: 3.29999995
-      AnimationTiles: [4, 4]
-      AnimationStartFrame: 0
-      AnimationCycleLength: 3
-      RotationEulerAngles: [0, 0, 0]
-      RotationCycleLength: 0
-      Emitter:
-        Shape: 1
-        BoxMin: [-2, -2, 0]
-        BoxMax: [2, 2, 0]
-        Radius: 0.300000012
-        EmitRate: 37.0999985
-        LifeTime: 5.4000001
-        MinVelocity: [-0.100000001, -0.400000006, 0]
-        MaxVelocity: [0.699999988, 1, 0]
-        Size: [1, 1, 1]
-        Color: [1, 1, 1, 1]
-        LightColor: [0, 0.292035401, 0.292035401]
-        LightRadius: 0.5
-        LightIntensity: 5.69999981
-        MaxLights: 0
-        BurstInterval: 5
-        Bursts:
-          []
-  - Entity: b773c09f-a892-46cf-ae7e-bfc855ea8db3
-    SceneTagComponent:
-      Name: MoonLight
-    TransformComponent:
-      Position: [-0.180000007, 0.121951215, -1.33962262]
-      Rotation: [0, -0, 0]
-      Scale: [0.11363636, 0.16260162, 0.377358466]
-    Relationship:
-      Parent: 955c785a-6507-4c0f-9886-6d9b1828336e
-      Depth: 2
-    PointLight2D:
-      Color: [1, 1, 1]
-      Radius: 2.75
-      Intensity: 0.449999988
-  - Entity: 105df69b-c474-44be-a604-52ef9b557696
-    SceneTagComponent:
-      Name: FireLight
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: 36905812-ac4e-4371-97a4-ba100c73abba
-      Depth: 2
-    PointLight2D:
-      Color: [1, 0.21238935, 0]
-      Radius: 0
-      Intensity: 0

@@ -411,6 +411,18 @@ namespace XYZ {
 		}
 	}
 	
+	template <typename T>
+	static bool CheckAsset(Ref<T>& asset)
+	{
+		if (!asset.Raw())
+			return false;
+		if (asset->IsFlagSet(AssetFlag::Missing))
+			return false;
+		if (asset->IsFlagSet(AssetFlag::Reloaded))
+			asset = AssetManager::GetAsset<T>(asset->GetHandle());
+		return true;
+	}
+
 	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos)
 	{
 		XYZ_PROFILE_FUNC("Scene::OnRenderEditor");
@@ -421,9 +433,9 @@ namespace XYZ {
 		for (auto entity : spriteView)
 		{
 			auto& [transform, spriteRenderer] = spriteView.get<TransformComponent, SpriteRenderer>(entity);
-			if (!spriteRenderer.Material.Raw() || !spriteRenderer.SubTexture.Raw())
+			
+			if (!CheckAsset(spriteRenderer.Material) || !CheckAsset(spriteRenderer.SubTexture))
 				continue;
-
 			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform.WorldTransform);
 		}
 		
@@ -431,6 +443,8 @@ namespace XYZ {
 		for (auto entity : meshView)
 		{
 			auto& [transform, meshComponent] = meshView.get<TransformComponent, MeshComponent>(entity);
+			if (!CheckAsset(meshComponent.MaterialAsset) || !CheckAsset(meshComponent.Mesh))
+				continue;
 			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.OverrideMaterial);
 		}
 
@@ -438,7 +452,7 @@ namespace XYZ {
 		for (auto entity : animMeshView)
 		{
 			auto& [transform, meshComponent] = animMeshView.get<TransformComponent,  AnimatedMeshComponent>(entity);
-			if (!meshComponent.Mesh.Raw() || !meshComponent.MaterialAsset.Raw())
+			if (!CheckAsset(meshComponent.Mesh) || !CheckAsset(meshComponent.MaterialAsset))
 				continue;
 
 			meshComponent.BoneTransforms.resize(meshComponent.BoneEntities.size());
@@ -456,9 +470,10 @@ namespace XYZ {
 			for (auto entity : particleView)
 			{
 				auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
-
-				auto& renderData = particleComponent.System->GetRenderData();
-
+				if (!CheckAsset(renderer.Mesh) || !CheckAsset(renderer.MaterialAsset))
+					continue;
+				
+				const auto& renderData = particleComponent.System->GetRenderData();
 				for (const auto& lightData : renderData.LightData)
 				{
 					PointLight2D light{
@@ -469,7 +484,6 @@ namespace XYZ {
 					sceneRenderer->SubmitLight(light, lightData.Position);
 				}
 
-		
 				sceneRenderer->SubmitMesh(
 					renderer.Mesh, renderer.MaterialAsset,
 					renderData.ParticleData.data(),

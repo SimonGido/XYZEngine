@@ -62,27 +62,62 @@ namespace XYZ {
 		const RenderData& GetRenderData() const { return m_RenderData; }
 		
 		ParticleEmitter	Emitter;
+
+		// Texture animation
 		glm::ivec2		AnimationTiles;
 		uint32_t		AnimationStartFrame;
 		float			AnimationCycleLength;
 
+		// Rotation over life
 		glm::vec3		RotationEulerAngles;
 		float			RotationCycleLength;
+
+		// Color over life
+		glm::vec4		StartColor;
+		glm::vec4		EndColor;
+
+		// Light over life
+		glm::vec3		LightStartColor;
+		glm::vec3	    LightEndColor;
+		float			LightStartIntensity;
+		float			LightEndIntensity;
+		float			LightStartRadius;
+		float			LightEndRadius;
 
 		float			Speed;
 		bool			Play;
 
+		// Enabled
+		bool			AnimationEnabled;
+		bool			RotationEnabled;
+		bool		    LightsEnabled;
+		bool			ColorOverLifeEnabled;
+		bool			LightOverLifeEnabled;
+
 	private:
 		void pushJobs(const glm::mat4& transform, Timestep ts);
-		
-		void update(Timestep ts, uint32_t startId, uint32_t endId);
+
+		void pushMainJob(Timestep ts);
+		void pushRotationJob();
+		void pushAnimationJob();
+		void pushColorOverLifeJob();
+		void pushSizeOverLifeJob();
+		void pushBuildLightsDataJob(const glm::mat4& transform);
+		void pushBuildRenderDataJobs(const glm::mat4& transform);
+
+		void updateAnimation(ParticlePool::Particle& particle, uint32_t stageCount);
+		void updateRotation(ParticlePool::Particle& particle);
+
 		void buildRenderData(const glm::mat4& transform, uint32_t startId, uint32_t endId);
 
 	private:
-		ParticlePool					m_Pool;
-		RenderData						m_RenderData;
-		uint32_t						m_MaxParticles;
-		std::shared_mutex			    m_JobsMutex;
+		ParticlePool		m_Pool;
+		RenderData			m_RenderData;
+		uint32_t			m_MaxParticles;
+		std::shared_mutex	m_JobsMutex;
+	
+	
+		static constexpr uint32_t sc_PerJobCount = 500;
 	};
 
 }

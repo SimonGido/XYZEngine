@@ -59,10 +59,9 @@ namespace XYZ {
 
 					ImGui::EndTable();
 				}
-				bool enabled = true;
-				EditorHelper::DrawNodeControl("Modifiers", component, [](auto& component) {
-
-					if (ImGui::BeginTable("Modifiers table", 2, ImGuiTableFlags_SizingStretchProp))
+	
+				EditorHelper::DrawNodeControl("Animation", component, [](auto& component) {
+					if (ImGui::BeginTable("Animation table", 2, ImGuiTableFlags_SizingStretchProp))
 					{
 						UI::TableRow("Animation Tiles",
 							[]() {ImGui::Text("Animation Tiles"); },
@@ -78,7 +77,13 @@ namespace XYZ {
 							[]() {ImGui::Text("Animation Cycle Length"); },
 							[&]() { ImGui::InputFloat("##AnimationCycleLength", &component.System->AnimationCycleLength); }
 						);
+						ImGui::EndTable();
+					}
+				}, component.System->AnimationEnabled);
 
+				EditorHelper::DrawNodeControl("Rotation", component, [](auto& component) {
+					if (ImGui::BeginTable("Rotation table", 2, ImGuiTableFlags_SizingStretchProp))
+					{
 						UI::TableRow("RotationEulerAngles",
 							[]() {ImGui::Text("Rotation Euler Angles"); },
 							[&]() { ImGui::DragFloat3("##RotationEulerAngles", glm::value_ptr(component.System->RotationEulerAngles)); }
@@ -90,8 +95,35 @@ namespace XYZ {
 						);
 						ImGui::EndTable();
 					}
-				}, enabled);
-		
+				}, component.System->RotationEnabled);
+
+				
+				EditorHelper::DrawNodeControl("Lights", component.System->Emitter, [](auto& val) {
+					if (ImGui::BeginTable("Lights table", 2, ImGuiTableFlags_SizingStretchProp))
+					{
+						UI::TableRow("Max Lights",
+							[]() {ImGui::Text("Max Lights"); },
+							[&]() { ImGui::DragInt("##MaxLights", (int*)&val.MaxLights); }
+						);
+
+						UI::TableRow("Light Color",
+							[]() {ImGui::Text("Light Color"); },
+							[&]() { ImGui::ColorEdit3("##LightColor", glm::value_ptr(val.LightColor), sc_VSpeed); }
+						);
+
+						UI::TableRow("Light Radius",
+							[]() {ImGui::Text("Light Radius"); },
+							[&]() { ImGui::DragFloat("##LightRadius", &val.LightRadius, sc_VSpeed); }
+						);
+
+						UI::TableRow("Light Intensity",
+							[]() {ImGui::Text("Light Intensity"); },
+							[&]() { ImGui::DragFloat("##LightIntensity", &val.LightIntensity, sc_VSpeed); }
+						);
+						ImGui::EndTable();
+					}
+					}, component.System->LightsEnabled);
+
 				drawEmitter(component.System->Emitter);
 			});
 		}
@@ -180,25 +212,7 @@ namespace XYZ {
 						[&]() { ImGui::DragFloat("##BurstInterval", &val.BurstInterval, sc_VSpeed); }
 					);
 
-					UI::TableRow("Max Lights",
-						[]() {ImGui::Text("Max Lights"); },
-						[&]() { ImGui::DragInt("##MaxLights", (int*)&val.MaxLights); }
-					);
 					
-					UI::TableRow("Light Color",
-						[]() {ImGui::Text("Light Color"); },
-						[&]() { ImGui::ColorEdit3("##LightColor", glm::value_ptr(val.LightColor), sc_VSpeed); }
-					);
-
-					UI::TableRow("Light Radius",
-						[]() {ImGui::Text("Light Radius"); },
-						[&]() { ImGui::DragFloat("##LightRadius", &val.LightRadius, sc_VSpeed); }
-					);
-
-					UI::TableRow("Light Intensity",
-						[]() {ImGui::Text("Light Intensity"); },
-						[&]() { ImGui::DragFloat("##LightIntensity", &val.LightIntensity, sc_VSpeed); }
-					);
 					ImGui::EndTable();
 				}
 				

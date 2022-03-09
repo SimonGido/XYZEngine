@@ -219,7 +219,7 @@ namespace XYZ {
 				out << YAML::EndMap;
 			}
 		}
-		out << YAML::EndSeq;+	
+		out << YAML::EndSeq;	
 		out << YAML::EndMap;
 
 		std::ofstream fout(metadata.FilePath);

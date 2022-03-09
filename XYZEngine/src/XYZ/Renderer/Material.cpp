@@ -25,9 +25,4 @@ namespace XYZ {
 		for (auto& instance : m_MaterialInstances)
 			instance->allocateStorage(GetShader()->GetBuffers());
 	}
-
-	
-
-	
-
 }

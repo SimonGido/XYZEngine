@@ -27,25 +27,21 @@ namespace XYZ {
         // Default particle data
         struct Particle
         {
-            glm::vec4 Color;
             glm::vec3 Position;
             glm::vec3 Velocity;
+            
+            glm::vec4 Color;
             glm::vec2 TexOffset;
-            glm::vec4 StartColor;
-            glm::vec4 EndColor;
             glm::vec3 Size;
             glm::quat Rotation;
-            float     LifeRemaining;
-
 
             glm::vec3 LightColor;
             float     LightRadius;
             float     LightIntensity;
 
+            float     LifeRemaining;
             bool      Alive;
         };
-
-
 
         Particle* Particles;
 

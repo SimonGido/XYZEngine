@@ -146,69 +146,173 @@ namespace XYZ {
 	{
 		return m_Pool.GetAliveParticles();
 	}
-
 	void ParticleSystem::pushJobs(const glm::mat4& transform, Timestep ts)
 	{
-		XYZ_PROFILE_FUNC("ParticleSystem::pushJobs");
+		XYZ_PROFILE_FUNC("ParticleSystem::pushJobsManyThreads");
 		if (m_MaxParticles == 0)
 			return;
 
 		// We must sync with main thread or it will keep filling thread pool, an alternative might be to have infinite loop, without any sync
 		std::unique_lock lock(m_JobsMutex);
-		std::shared_ptr<ParticleSystem> instance = shared_from_this();
-		// Kill old and emit new job
-		Application::Get().GetThreadPool().PushJob<void>([instance, ts, tr = transform]() {
+		
+	
+		pushMainJob(ts);
+		
+		if (RotationEnabled)
+			pushRotationJob();
+		if (AnimationEnabled)
+			pushAnimationJob();	
+		if (LightsEnabled)
+			pushBuildLightsDataJob(transform);
 
-			XYZ_PROFILE_FUNC("ParticleSystem::pushJobs emit");
+		pushBuildRenderDataJobs(transform);
+	}
+
+	void ParticleSystem::pushMainJob(Timestep ts)
+	{
+		std::shared_ptr<ParticleSystem> instance = shared_from_this();
+		Application::Get().GetThreadPool().PushJob<void>([instance, ts]() {
+
+			XYZ_PROFILE_FUNC("ParticleSystem::pushMainJob");
 			std::unique_lock lock(instance->m_JobsMutex);
 
 			instance->Emitter.Kill(instance->m_Pool);
 			instance->Emitter.Emit(ts, instance->m_Pool);
 
 			const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
-			instance->update(ts, 0, aliveParticles);
-			instance->buildRenderData(tr, 0, aliveParticles);
-			instance->m_RenderData.ParticleCount = aliveParticles;
+			for (uint32_t i = 0; i < aliveParticles; ++i)
+			{
+				instance->m_Pool.Particles[i].Position += instance->m_Pool.Particles[i].Velocity * ts.GetSeconds();
+				instance->m_Pool.Particles[i].LifeRemaining -= ts.GetSeconds();
+			}
 		});
 	}
 
-
-	void ParticleSystem::update(Timestep ts, uint32_t startId, uint32_t endId)
+	void ParticleSystem::pushRotationJob()
 	{
-		XYZ_PROFILE_FUNC("ParticleSystem::update");
-		auto particles = m_Pool.Particles;
+		std::shared_ptr<ParticleSystem> instance = shared_from_this();
+		Application::Get().GetThreadPool().PushJob<void>([instance]() {
 
+			XYZ_PROFILE_FUNC("ParticleSystem::pushRotationJob");
+			std::shared_lock lock(instance->m_JobsMutex);
 
-		const uint32_t stageCount = AnimationTiles.x * AnimationTiles.y;
-		const float columnSize = 1.0f / AnimationTiles.x;
-		const float rowSize = 1.0f / AnimationTiles.y;
+			auto particles = instance->m_Pool.Particles;
+			const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
 
+			for (uint32_t i = 0; i < aliveParticles; ++i)
+			{
+				instance->updateRotation(particles[i]);
+			}
+		});
+	}
 
-		for (uint32_t i = startId; i < endId; ++i)
+	void ParticleSystem::pushAnimationJob()
+	{
+		std::shared_ptr<ParticleSystem> instance = shared_from_this();
+		Application::Get().GetThreadPool().PushJob<void>([instance]() {
+
+			XYZ_PROFILE_FUNC("ParticleSystem::pushAnimationJob");
+			std::shared_lock lock(instance->m_JobsMutex);
+
+			auto particles = instance->m_Pool.Particles;
+			const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
+
+			const uint32_t stageCount = instance->AnimationTiles.x * instance->AnimationTiles.y;
+			for (uint32_t i = 0; i < aliveParticles; ++i)
+			{
+				instance->updateAnimation(particles[i], stageCount);
+			}
+		});
+	}
+
+	void ParticleSystem::pushColorOverLifeJob()
+	{
+	}
+
+	void ParticleSystem::pushSizeOverLifeJob()
+	{
+	}
+
+	void ParticleSystem::pushBuildLightsDataJob(const glm::mat4& transform)
+	{
+		std::shared_ptr<ParticleSystem> instance = shared_from_this();
+		Application::Get().GetThreadPool().PushJob<void>([instance,tr = transform]() {
+
+			XYZ_PROFILE_FUNC("ParticleSystem::pushBuildLightsDataJob");
+			std::shared_lock lock(instance->m_JobsMutex);
+
+			const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
+
+			const uint32_t maxLights = std::min(aliveParticles, instance->Emitter.MaxLights);
+			instance->m_RenderData.LightData.resize(maxLights);
+			for (uint32_t i = 0; i < maxLights; ++i)
+			{
+				const auto& particle = instance->m_Pool.Particles[i];
+
+				const glm::mat4 particleTransform =
+					glm::translate(particle.Position)
+				  * glm::toMat4(particle.Rotation)
+				  * glm::scale(particle.Size);
+
+				const glm::mat4 worldParticleTransform = tr * particleTransform;
+
+				auto& light = instance->m_RenderData.LightData[i];
+				light.Color = particle.LightColor;
+				light.Position = Math::TransformToTranslation(worldParticleTransform);
+				light.Radius = particle.LightRadius;
+				light.Intensity = particle.LightIntensity;
+			}
+		});
+	}
+
+	void ParticleSystem::pushBuildRenderDataJobs(const glm::mat4& transform)
+	{
+		std::shared_ptr<ParticleSystem> instance = shared_from_this();
+		
+		const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
+		const uint32_t numJobs = aliveParticles / sc_PerJobCount;
+		for (uint32_t jobIndex = 0; jobIndex < numJobs; ++jobIndex)
 		{
-			particles[i].Position += particles[i].Velocity * ts.GetSeconds();
-			particles[i].LifeRemaining -= ts.GetSeconds();
+			Application::Get().GetThreadPool().PushJob<void>([instance, jobIndex, tr = transform]() {
 
-			const float ratio = CalcRatio(AnimationCycleLength, particles[i].LifeRemaining);
-			const float stageProgress = ratio * stageCount;
+				XYZ_PROFILE_FUNC("ParticleSystem::pushBuildRenderDataJob");
+				std::shared_lock lock(instance->m_JobsMutex);
 
-			const uint32_t index = (uint32_t)floor(stageProgress);
-			const float column = index % AnimationTiles.x;
-			const float row = index / AnimationTiles.y;
+				const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
 
-			particles[i].TexOffset = glm::vec2(column / (float)AnimationTiles.x, row / (float)AnimationTiles.y);
+				const uint32_t startId = jobIndex * instance->sc_PerJobCount;
+				const uint32_t endId = std::min(startId + instance->sc_PerJobCount, aliveParticles);
+
+				instance->buildRenderData(tr, startId, endId);
+				instance->m_RenderData.ParticleCount = aliveParticles;
+			});
 		}
+	}
 
 
-		//data.TextureAnimationUpdater.UpdateParticles(timestep, data.Pool);
-		//data.RotationOverLifeUpdater.UpdateParticles(timestep, data.Pool);
 
+	void ParticleSystem::updateAnimation(ParticlePool::Particle& particle, uint32_t stageCount)
+	{
+		const float ratio = CalcRatio(AnimationCycleLength, particle.LifeRemaining);
+		const float stageProgress = ratio * stageCount;
+
+		const uint32_t index = (uint32_t)floor(stageProgress);
+		const float column = index % AnimationTiles.x;
+		const float row = index / AnimationTiles.y;
+
+		particle.TexOffset = glm::vec2(column / (float)AnimationTiles.x, row / (float)AnimationTiles.y);
+	}
+
+	void ParticleSystem::updateRotation(ParticlePool::Particle& particle)
+	{
+		const glm::vec3 radians = glm::radians(RotationEulerAngles);
+		const float ratio = CalcRatio(RotationCycleLength, particle.LifeRemaining);
+		particle.Rotation = glm::quat(radians * ratio);
 	}
 
 	void ParticleSystem::buildRenderData(const glm::mat4& transform, uint32_t startId, uint32_t endId)
 	{
 		XYZ_PROFILE_FUNC("ParticleSystem::buildRenderData");
-		m_RenderData.LightData.resize(Emitter.MaxLights);
 		for (uint32_t i = startId; i < endId; ++i)
 		{
 			const auto& particle = m_Pool.Particles[i];
@@ -225,15 +329,6 @@ namespace XYZ {
 			m_RenderData.ParticleData[i].Color = particle.Color;
 			Mat4ToTransformData(m_RenderData.ParticleData[i].Transform, worldParticleTransform);
 			m_RenderData.ParticleData[i].TexOffset = particle.TexOffset;
-			
-			if (i < Emitter.MaxLights)
-			{
-				auto& light = m_RenderData.LightData[i];
-				light.Color = particle.LightColor;
-				light.Position = Math::TransformToTranslation(worldParticleTransform);
-				light.Radius = particle.LightRadius;
-				light.Intensity = particle.LightIntensity;
-			}
 		}
 	}
 
