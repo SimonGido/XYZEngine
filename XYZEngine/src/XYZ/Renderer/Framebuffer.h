@@ -56,7 +56,7 @@ namespace XYZ {
 
 		virtual void BindTexture(uint32_t attachmentIndex, uint32_t slot) const {};
 		virtual void BindImage(uint32_t attachmentIndex, uint32_t slot, uint32_t miplevel, BindImageType type) const {};
-		virtual void SetSpecification(const FramebufferSpecification& specs) {};
+		virtual void SetSpecification(const FramebufferSpecification& specs, bool recreate = false) {};
 
 		virtual Ref<Image2D> GetImage(uint32_t attachmentIndex = 0) const { return Ref<Image2D>(); };
 		virtual Ref<Image2D> GetDepthImage() const { return Ref<Image2D>(); }

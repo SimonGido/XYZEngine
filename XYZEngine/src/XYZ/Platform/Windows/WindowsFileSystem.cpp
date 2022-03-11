@@ -161,7 +161,7 @@ namespace XYZ {
 	std::string FileSystem::ReadFile(const std::string_view filepath)
 	{
 		std::string result;
-		std::ifstream in(filepath, std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
+		std::ifstream in(std::string(filepath), std::ios::in | std::ios::binary); // ifstream closes itself due to RAII
 		if (in)
 		{
 			in.seekg(0, std::ios::end);

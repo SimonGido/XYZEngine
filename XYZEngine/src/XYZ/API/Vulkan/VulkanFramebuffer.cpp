@@ -70,6 +70,7 @@ namespace XYZ {
 		if (!forceRecreate && (m_Specification.Width == width && m_Specification.Height == height))
 			return;
 
+
 		if (!m_Specification.SwapChainTarget)
 		{
 			Invalidate();
@@ -88,6 +89,15 @@ namespace XYZ {
 	Ref<Image2D> VulkanFramebuffer::GetImage(uint32_t attachmentIndex) const
 	{	
 		return m_AttachmentImages[attachmentIndex];
+	}
+
+	void VulkanFramebuffer::SetSpecification(const FramebufferSpecification& specs, bool recreate)
+	{
+		m_Specification = specs;
+		if (recreate)
+		{
+			Resize(m_Specification.Width, m_Specification.Height, true);
+		}
 	}
 
 

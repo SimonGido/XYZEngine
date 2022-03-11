@@ -19,7 +19,7 @@ namespace XYZ {
 
 		virtual void BindTexture(uint32_t attachmentIndex, uint32_t slot) const override;
 		virtual void BindImage(uint32_t attachmentIndex, uint32_t slot, uint32_t miplevel, BindImageType type) const override;
-		virtual void SetSpecification(const FramebufferSpecification& specs) override;
+		virtual void SetSpecification(const FramebufferSpecification& specs, bool recreate = false) override;
 
 
 		virtual const uint32_t GetNumColorAttachments() const override { return (uint32_t)m_ColorAttachments.size(); }

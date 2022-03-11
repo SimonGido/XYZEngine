@@ -245,7 +245,7 @@ namespace XYZ {
 		});
 	}
 
-	void OpenGLFramebuffer::SetSpecification(const FramebufferSpecification& specs)
+	void OpenGLFramebuffer::SetSpecification(const FramebufferSpecification& specs, bool recreate)
 	{
 		Ref<OpenGLFramebuffer> instance = this;
 		Renderer::Submit([instance, specs]() mutable {
