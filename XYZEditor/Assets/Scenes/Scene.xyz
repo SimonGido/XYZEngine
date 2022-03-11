@@ -2,94 +2,129 @@ Scene: TestScene
 SceneEntity: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
 FirstChild: 36905812-ac4e-4371-97a4-ba100c73abba
 Entities:
-  - Entity: f8e6bf42-ab96-4a8e-b09f-bb759bb6afe7
+  - Entity: 105df69b-c474-44be-a604-52ef9b557696
     SceneTagComponent:
-      Name: Empty Entity
+      Name: FireLight
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      PreviousSibling: 89629d3d-4813-4ab5-b763-99240a52795f
-      Depth: 1
-  - Entity: 89629d3d-4813-4ab5-b763-99240a52795f
+      Parent: 36905812-ac4e-4371-97a4-ba100c73abba
+      Depth: 2
+    PointLight2D:
+      Color: [1, 0.21238935, 0]
+      Radius: 0
+      Intensity: 0
+  - Entity: b773c09f-a892-46cf-ae7e-bfc855ea8db3
     SceneTagComponent:
-      Name: Empty Entity
+      Name: MoonLight
     TransformComponent:
-      Position: [0, 0, 0]
+      Position: [-0.180000007, 0.121951215, -1.33962262]
+      Rotation: [0, -0, 0]
+      Scale: [0.11363636, 0.16260162, 0.377358466]
+    Relationship:
+      Parent: 955c785a-6507-4c0f-9886-6d9b1828336e
+      Depth: 2
+    PointLight2D:
+      Color: [1, 1, 1]
+      Radius: 2.75
+      Intensity: 0.449999988
+  - Entity: 36905812-ac4e-4371-97a4-ba100c73abba
+    SceneTagComponent:
+      Name: Fire
+    TransformComponent:
+      Position: [-4.3499999, 0, 3]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: f8e6bf42-ab96-4a8e-b09f-bb759bb6afe7
-      PreviousSibling: 4a13049d-d46a-4d4a-9dde-3eea177bf547
-      Depth: 1
-  - Entity: 4a13049d-d46a-4d4a-9dde-3eea177bf547
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 89629d3d-4813-4ab5-b763-99240a52795f
-      PreviousSibling: 32e85c3b-1841-43fb-be19-c43da864f89c
-      Depth: 1
-  - Entity: 32e85c3b-1841-43fb-be19-c43da864f89c
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 4a13049d-d46a-4d4a-9dde-3eea177bf547
-      PreviousSibling: fee78d9c-4b17-4816-8aa1-1176ae56a2a9
-      Depth: 1
-  - Entity: fee78d9c-4b17-4816-8aa1-1176ae56a2a9
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 32e85c3b-1841-43fb-be19-c43da864f89c
-      PreviousSibling: 7179bc0b-ae73-4443-90a0-e8d1fad64519
-      Depth: 1
-  - Entity: 7179bc0b-ae73-4443-90a0-e8d1fad64519
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: fee78d9c-4b17-4816-8aa1-1176ae56a2a9
-      PreviousSibling: 49d19c12-bee5-4d7e-ad51-f38b2244fc30
-      Depth: 1
-  - Entity: 49d19c12-bee5-4d7e-ad51-f38b2244fc30
-    SceneTagComponent:
-      Name: Empty Entity
-    TransformComponent:
-      Position: [32.6500015, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 7179bc0b-ae73-4443-90a0-e8d1fad64519
-      PreviousSibling: 35e38443-98a6-44db-9de0-051e28a03108
+      NextSibling: 955c785a-6507-4c0f-9886-6d9b1828336e
+      FirstChild: 105df69b-c474-44be-a604-52ef9b557696
       Depth: 1
     ParticleRenderer:
-      Material: 2d5d0b92-0ea7-4b45-bd54-63521deafbda
+      Material: a26336fe-dc1c-4e82-a500-b2101792a4d3
       Mesh: f8a2fc76-d8ba-48ac-85c0-54418b021786
     ParticleComponent:
-      MaxParticles: 5000
+      MaxParticles: 4000
+      Speed: 1.70000005
+      AnimationTiles: [4, 4]
+      AnimationStartFrame: 0
+      AnimationCycleLength: 5
+      RotationEulerAngles: [0, 0, 0]
+      RotationCycleLength: 2
+      Emitter:
+        Shape: 1
+        BoxMin: [-9.19999981, -7.9000001, 0]
+        BoxMax: [7.19999981, 11.8999996, 0]
+        Radius: 0.300000012
+        EmitRate: 20
+        LifeTime: 5
+        MinVelocity: [-0.100000001, -0.400000006, 0]
+        MaxVelocity: [0.699999988, 1, 0]
+        Size: [1, 1, 1]
+        Color: [1, 1, 1, 1]
+        LightColor: [0, 0.292035401, 0.292035401]
+        LightRadius: 0.5
+        LightIntensity: 5.69999981
+        MaxLights: 0
+        BurstInterval: 5
+        Bursts:
+          []
+  - Entity: 955c785a-6507-4c0f-9886-6d9b1828336e
+    SceneTagComponent:
+      Name: Background
+    TransformComponent:
+      Position: [-3.70000005, 0, 1.25]
+      Rotation: [0, 0, 0]
+      Scale: [8.80000019, 6.1500001, 2.6500001]
+    SpriteRenderer:
+      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
+      SubTexture: 85c78df2-9246-4f69-8dd9-3964417dedd7
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      Visible: true
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: 0a5a280d-f663-48c4-8d57-e15133f823e8
+      PreviousSibling: 36905812-ac4e-4371-97a4-ba100c73abba
+      FirstChild: b773c09f-a892-46cf-ae7e-bfc855ea8db3
+      Depth: 1
+  - Entity: 0a5a280d-f663-48c4-8d57-e15133f823e8
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [-2.1500001, 0, 1.64999998]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    SpriteRenderer:
+      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
+      SubTexture: 22d5a09f-8a78-4606-a915-0745f549388c
+      Color: [1, 1, 1, 1]
+      SortLayer: 1
+      Visible: true
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: 73613b50-7c86-4e8c-b143-603ff019def3
+      PreviousSibling: 955c785a-6507-4c0f-9886-6d9b1828336e
+      Depth: 1
+  - Entity: 73613b50-7c86-4e8c-b143-603ff019def3
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [13, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: 35e38443-98a6-44db-9de0-051e28a03108
+      PreviousSibling: 0a5a280d-f663-48c4-8d57-e15133f823e8
+      Depth: 1
+    ParticleRenderer:
+      Material: a26336fe-dc1c-4e82-a500-b2101792a4d3
+      Mesh: f8a2fc76-d8ba-48ac-85c0-54418b021786
+    ParticleComponent:
+      MaxParticles: 3000
       Speed: 1
       AnimationTiles: [1, 1]
       AnimationStartFrame: 0
@@ -98,10 +133,10 @@ Entities:
       RotationCycleLength: 0
       Emitter:
         Shape: 1
-        BoxMin: [-10, -8.5, 0]
-        BoxMax: [11.8000002, 15.6000004, 0]
+        BoxMin: [-5, -5, 0]
+        BoxMax: [5, 5, 0]
         Radius: 7
-        EmitRate: 400
+        EmitRate: 500
         LifeTime: 5
         MinVelocity: [-1, -1, 0]
         MaxVelocity: [1, 1, 0]
@@ -155,23 +190,23 @@ Entities:
         BurstInterval: 5
         Bursts:
           []
-  - Entity: 73613b50-7c86-4e8c-b143-603ff019def3
+  - Entity: 49d19c12-bee5-4d7e-ad51-f38b2244fc30
     SceneTagComponent:
       Name: Empty Entity
     TransformComponent:
-      Position: [13, 0, 0]
+      Position: [32.6500015, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 35e38443-98a6-44db-9de0-051e28a03108
-      PreviousSibling: 0a5a280d-f663-48c4-8d57-e15133f823e8
+      NextSibling: 7179bc0b-ae73-4443-90a0-e8d1fad64519
+      PreviousSibling: 35e38443-98a6-44db-9de0-051e28a03108
       Depth: 1
     ParticleRenderer:
-      Material: a26336fe-dc1c-4e82-a500-b2101792a4d3
+      Material: 2d5d0b92-0ea7-4b45-bd54-63521deafbda
       Mesh: f8a2fc76-d8ba-48ac-85c0-54418b021786
     ParticleComponent:
-      MaxParticles: 3000
+      MaxParticles: 5000
       Speed: 1
       AnimationTiles: [1, 1]
       AnimationStartFrame: 0
@@ -180,10 +215,10 @@ Entities:
       RotationCycleLength: 0
       Emitter:
         Shape: 1
-        BoxMin: [-5, -5, 0]
-        BoxMax: [5, 5, 0]
+        BoxMin: [-10, -8.5, 0]
+        BoxMax: [11.8000002, 15.6000004, 0]
         Radius: 7
-        EmitRate: 500
+        EmitRate: 400
         LifeTime: 5
         MinVelocity: [-1, -1, 0]
         MaxVelocity: [1, 1, 0]
@@ -196,109 +231,74 @@ Entities:
         BurstInterval: 5
         Bursts:
           []
-  - Entity: 0a5a280d-f663-48c4-8d57-e15133f823e8
+  - Entity: 7179bc0b-ae73-4443-90a0-e8d1fad64519
     SceneTagComponent:
       Name: Empty Entity
-    TransformComponent:
-      Position: [-2.1500001, 0, 1.64999998]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRenderer:
-      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
-      SubTexture: 22d5a09f-8a78-4606-a915-0745f549388c
-      Color: [1, 1, 1, 1]
-      SortLayer: 1
-      Visible: true
-    Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 73613b50-7c86-4e8c-b143-603ff019def3
-      PreviousSibling: 955c785a-6507-4c0f-9886-6d9b1828336e
-      Depth: 1
-  - Entity: 955c785a-6507-4c0f-9886-6d9b1828336e
-    SceneTagComponent:
-      Name: Background
-    TransformComponent:
-      Position: [-3.70000005, 0, 1.25]
-      Rotation: [0, 0, 0]
-      Scale: [8.80000019, 6.1500001, 2.6500001]
-    SpriteRenderer:
-      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
-      SubTexture: 85c78df2-9246-4f69-8dd9-3964417dedd7
-      Color: [1, 1, 1, 1]
-      SortLayer: 0
-      Visible: true
-    Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 0a5a280d-f663-48c4-8d57-e15133f823e8
-      PreviousSibling: 36905812-ac4e-4371-97a4-ba100c73abba
-      FirstChild: b773c09f-a892-46cf-ae7e-bfc855ea8db3
-      Depth: 1
-  - Entity: 36905812-ac4e-4371-97a4-ba100c73abba
-    SceneTagComponent:
-      Name: Fire
-    TransformComponent:
-      Position: [-4.3499999, 0, 3]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 955c785a-6507-4c0f-9886-6d9b1828336e
-      FirstChild: 105df69b-c474-44be-a604-52ef9b557696
-      Depth: 1
-    ParticleRenderer:
-      Material: a26336fe-dc1c-4e82-a500-b2101792a4d3
-      Mesh: f8a2fc76-d8ba-48ac-85c0-54418b021786
-    ParticleComponent:
-      MaxParticles: 4000
-      Speed: 1.70000005
-      AnimationTiles: [4, 4]
-      AnimationStartFrame: 0
-      AnimationCycleLength: 5
-      RotationEulerAngles: [0, 0, 0]
-      RotationCycleLength: 2
-      Emitter:
-        Shape: 1
-        BoxMin: [-9.19999981, -7.9000001, 0]
-        BoxMax: [7.19999981, 11.8999996, 0]
-        Radius: 0.300000012
-        EmitRate: 20
-        LifeTime: 5
-        MinVelocity: [-0.100000001, -0.400000006, 0]
-        MaxVelocity: [0.699999988, 1, 0]
-        Size: [1, 1, 1]
-        Color: [1, 1, 1, 1]
-        LightColor: [0, 0.292035401, 0.292035401]
-        LightRadius: 0.5
-        LightIntensity: 5.69999981
-        MaxLights: 0
-        BurstInterval: 5
-        Bursts:
-          []
-  - Entity: b773c09f-a892-46cf-ae7e-bfc855ea8db3
-    SceneTagComponent:
-      Name: MoonLight
-    TransformComponent:
-      Position: [-0.180000007, 0.121951215, -1.33962262]
-      Rotation: [0, -0, 0]
-      Scale: [0.11363636, 0.16260162, 0.377358466]
-    Relationship:
-      Parent: 955c785a-6507-4c0f-9886-6d9b1828336e
-      Depth: 2
-    PointLight2D:
-      Color: [1, 1, 1]
-      Radius: 2.75
-      Intensity: 0.449999988
-  - Entity: 105df69b-c474-44be-a604-52ef9b557696
-    SceneTagComponent:
-      Name: FireLight
     TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
-      Parent: 36905812-ac4e-4371-97a4-ba100c73abba
-      Depth: 2
-    PointLight2D:
-      Color: [1, 0.21238935, 0]
-      Radius: 0
-      Intensity: 0
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: fee78d9c-4b17-4816-8aa1-1176ae56a2a9
+      PreviousSibling: 49d19c12-bee5-4d7e-ad51-f38b2244fc30
+      Depth: 1
+  - Entity: fee78d9c-4b17-4816-8aa1-1176ae56a2a9
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: 32e85c3b-1841-43fb-be19-c43da864f89c
+      PreviousSibling: 7179bc0b-ae73-4443-90a0-e8d1fad64519
+      Depth: 1
+  - Entity: 32e85c3b-1841-43fb-be19-c43da864f89c
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: 4a13049d-d46a-4d4a-9dde-3eea177bf547
+      PreviousSibling: fee78d9c-4b17-4816-8aa1-1176ae56a2a9
+      Depth: 1
+  - Entity: 4a13049d-d46a-4d4a-9dde-3eea177bf547
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: 89629d3d-4813-4ab5-b763-99240a52795f
+      PreviousSibling: 32e85c3b-1841-43fb-be19-c43da864f89c
+      Depth: 1
+  - Entity: 89629d3d-4813-4ab5-b763-99240a52795f
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: f8e6bf42-ab96-4a8e-b09f-bb759bb6afe7
+      PreviousSibling: 4a13049d-d46a-4d4a-9dde-3eea177bf547
+      Depth: 1
+  - Entity: f8e6bf42-ab96-4a8e-b09f-bb759bb6afe7
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      PreviousSibling: 89629d3d-4813-4ab5-b763-99240a52795f
+      Depth: 1

@@ -70,9 +70,13 @@ namespace XYZ {
 		if (!forceRecreate && (m_Specification.Width == width && m_Specification.Height == height))
 			return;
 
-
+		Ref<VulkanFramebuffer> instance = this;
+		Renderer::Submit([instance, width, height]() mutable {
+			instance->m_Specification.Width = width;
+			instance->m_Specification.Height = height;
+		});
 		if (!m_Specification.SwapChainTarget)
-		{
+		{	
 			Invalidate();
 		}
 		else
@@ -93,11 +97,7 @@ namespace XYZ {
 
 	void VulkanFramebuffer::SetSpecification(const FramebufferSpecification& specs, bool recreate)
 	{
-		m_Specification = specs;
-		if (recreate)
-		{
-			Resize(m_Specification.Width, m_Specification.Height, true);
-		}
+
 	}
 
 
@@ -124,7 +124,7 @@ namespace XYZ {
 		m_ClearValues.resize(m_Specification.Attachments.size());
 
 		uint32_t attachmentIndex = 0;
-		for (auto attachmentSpec : m_Specification.Attachments)
+		for (const auto& attachmentSpec : m_Specification.Attachments)
 		{
 			VkAttachmentDescription& attachmentDescription = attachmentDescriptions.emplace_back();
 			attachmentDescription.flags = 0;
@@ -138,7 +138,7 @@ namespace XYZ {
 			if (Utils::IsDepthFormat(attachmentSpec.Format))
 			{
 				Ref<VulkanImage2D> depthAttachmentImage = m_DepthAttachmentImage.As<VulkanImage2D>();
-				auto& spec = depthAttachmentImage->GetSpecification();
+				ImageSpecification& spec = depthAttachmentImage->GetSpecification();
 				spec.Width = m_Specification.Width;
 				spec.Height = m_Specification.Height;
 				depthAttachmentImage->RT_Invalidate(); // Create immediately
@@ -159,12 +159,13 @@ namespace XYZ {
 			}
 			else
 			{
-				ImageSpecification spec;
+				Ref<VulkanImage2D> colorAttachment = m_AttachmentImages[attachmentIndex];
+				ImageSpecification& spec = colorAttachment->GetSpecification();
 				spec.Format = attachmentSpec.Format;
 				spec.Usage = ImageUsage::Attachment;
 				spec.Width = m_Specification.Width;
 				spec.Height = m_Specification.Height;
-				Ref<VulkanImage2D> colorAttachment = m_AttachmentImages[attachmentIndex];
+				
 				colorAttachment->RT_Invalidate();
 
 				attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;

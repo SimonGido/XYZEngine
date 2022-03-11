@@ -490,10 +490,8 @@ namespace XYZ {
 		{
 			m_RenderCommandBuffer->m_CommandBuffers = m_CommandBuffers;
 			m_Framebuffer->m_RenderPass = m_VulkanRenderPass;
-			auto specs = m_Framebuffer->GetSpecification();
-			specs.Width = m_Extent.width;
-			specs.Height = m_Extent.height;
-			m_Framebuffer->SetSpecification(specs);
+			m_Framebuffer->m_Specification.Width = m_Extent.width;
+			m_Framebuffer->m_Specification.Height = m_Extent.height;
 		}
 	}
 

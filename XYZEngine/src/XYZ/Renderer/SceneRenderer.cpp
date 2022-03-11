@@ -12,7 +12,6 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Asset/AssetManager.h"
 
-
 #include <glm/gtx/transform.hpp>
 
 #include <imgui/imgui.h>
@@ -746,9 +745,10 @@ namespace XYZ {
 			const uint32_t width = (uint32_t)m_ViewportSize.x;
 			const uint32_t height = (uint32_t)m_ViewportSize.y;
 			if (width != 0 && height != 0)
-			{		
+			{
+				m_GeometryPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 				m_LightPass->GetSpecification().TargetFramebuffer->Resize(width, height);
-				//m_CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
+				m_CompositePass->GetSpecification().TargetFramebuffer->Resize(width, height);
 
 				TextureProperties props;
 				props.Storage = true;
