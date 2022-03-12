@@ -242,8 +242,7 @@ namespace XYZ {
 		out << YAML::Key << "AnimationStartFrame" << val.System->AnimationStartFrame;
 		out << YAML::Key << "AnimationCycleLength" << val.System->AnimationCycleLength;
 
-		out << YAML::Key << "RotationEulerAngles" << val.System->RotationEulerAngles;
-		out << YAML::Key << "RotationCycleLength" << val.System->RotationCycleLength;
+		out << YAML::Key << "EndRotation" << val.System->EndRotation;
 
 		{  // Emitter
 			out << YAML::Key << "Emitter";
@@ -321,8 +320,8 @@ namespace XYZ {
 		component.System->AnimationTiles		  = data["AnimationTiles"].as<glm::ivec2>();
 		component.System->AnimationStartFrame  = data["AnimationStartFrame"].as<uint32_t>();
 		component.System->AnimationCycleLength = data["AnimationCycleLength"].as<float>();
-		component.System->RotationEulerAngles  = data["RotationEulerAngles"].as<glm::vec3>();
-		component.System->RotationCycleLength  = data["RotationCycleLength"].as<float>();
+		component.System->EndRotation		   = data["EndRotation"].as<glm::vec3>();
+		
 		{ // Emitter
 			auto emitter = data["Emitter"];
 			component.System->Emitter.Shape = static_cast<EmitShape>(emitter["Shape"].as<uint32_t>());

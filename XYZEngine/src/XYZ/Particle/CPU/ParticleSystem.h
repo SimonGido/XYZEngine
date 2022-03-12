@@ -69,30 +69,33 @@ namespace XYZ {
 		float			AnimationCycleLength;
 
 		// Rotation over life
-		glm::vec3		RotationEulerAngles;
-		float			RotationCycleLength;
+		glm::vec3		EndRotation; // Euler angles
+	
+		// Size over life
+		glm::vec3		EndSize;
 
 		// Color over life
-		glm::vec4		StartColor;
 		glm::vec4		EndColor;
 
 		// Light over life
-		glm::vec3		LightStartColor;
 		glm::vec3	    LightEndColor;
-		float			LightStartIntensity;
 		float			LightEndIntensity;
-		float			LightStartRadius;
 		float			LightEndRadius;
 
 		float			Speed;
 		bool			Play;
 
 		// Enabled
-		bool			AnimationEnabled;
-		bool			RotationEnabled;
-		bool		    LightsEnabled;
-		bool			ColorOverLifeEnabled;
-		bool			LightOverLifeEnabled;
+		enum Module
+		{
+			TextureAnimation,
+			RotationOverLife,
+			SizeOverLife,
+			ColorOverLife,
+			LightOverLife,
+			NumModules
+		};
+		bool ModuleEnabled[NumModules];
 
 	private:
 		void pushJobs(const glm::mat4& transform, Timestep ts);
@@ -102,11 +105,15 @@ namespace XYZ {
 		void pushAnimationJob();
 		void pushColorOverLifeJob();
 		void pushSizeOverLifeJob();
+		void pushLightOverLifeJob();
 		void pushBuildLightsDataJob(const glm::mat4& transform);
 		void pushBuildRenderDataJobs(const glm::mat4& transform);
 
-		void updateAnimation(ParticlePool::Particle& particle, uint32_t stageCount);
-		void updateRotation(ParticlePool::Particle& particle);
+		void updateAnimation(ParticlePool::Particle& particle, uint32_t stageCount) const;
+		void updateRotation(ParticlePool::Particle& particle) const;
+		void updateColorOverLife(ParticlePool::Particle& particle) const;
+		void updateSizeOverLife(ParticlePool::Particle& particle) const;
+		void updateLightOverLife(ParticlePool::Particle& particle) const;
 
 		void buildRenderData(const glm::mat4& transform, uint32_t startId, uint32_t endId);
 

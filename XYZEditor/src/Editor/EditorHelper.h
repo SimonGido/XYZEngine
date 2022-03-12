@@ -85,11 +85,12 @@ namespace XYZ {
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4, 4 });
 		const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 
-		const bool open = ImGui::TreeNodeEx((void*)name.c_str(), treeNodeFlags, name.c_str());
+		const bool open = ImGui::TreeNodeEx(name.c_str(), treeNodeFlags, name.c_str());
 		ImGui::PopStyleVar();
 	
 
 		ImGui::SameLine(contentRegionAvailable.x + lineHeight * 0.5f);
+	
 		
 		ImGui::PushID(name.c_str());
 		ImGui::Checkbox("##Enabled", &enabled);

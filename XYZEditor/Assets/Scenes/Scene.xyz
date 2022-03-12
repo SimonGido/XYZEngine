@@ -51,8 +51,7 @@ Entities:
       AnimationTiles: [4, 4]
       AnimationStartFrame: 0
       AnimationCycleLength: 5
-      RotationEulerAngles: [0, 0, 0]
-      RotationCycleLength: 2
+      EndRotation: [0, 0, 0]
       Emitter:
         Shape: 1
         BoxMin: [-9.19999981, -7.9000001, 0]
@@ -129,8 +128,7 @@ Entities:
       AnimationTiles: [1, 1]
       AnimationStartFrame: 0
       AnimationCycleLength: 0
-      RotationEulerAngles: [0, 0, 0]
-      RotationCycleLength: 0
+      EndRotation: [0, 0, 0]
       Emitter:
         Shape: 1
         BoxMin: [-5, -5, 0]
@@ -170,8 +168,7 @@ Entities:
       AnimationTiles: [1, 1]
       AnimationStartFrame: 0
       AnimationCycleLength: 0
-      RotationEulerAngles: [0, 0, 0]
-      RotationCycleLength: 0
+      EndRotation: [0, 0, 0]
       Emitter:
         Shape: 1
         BoxMin: [-5, -5, 0]
@@ -211,8 +208,7 @@ Entities:
       AnimationTiles: [1, 1]
       AnimationStartFrame: 0
       AnimationCycleLength: 0
-      RotationEulerAngles: [0, 0, 0]
-      RotationCycleLength: 0
+      EndRotation: [0, 0, 0]
       Emitter:
         Shape: 1
         BoxMin: [-10, -8.5, 0]

@@ -9,6 +9,10 @@
 
 #include "XYZ/Utils/Math/Math.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/compatibility.hpp>
+
 namespace XYZ {
 	static float CalcRatio(float length, float value)
 	{
@@ -28,14 +32,20 @@ namespace XYZ {
 		AnimationTiles(1, 1),
 		AnimationStartFrame(0),
 		AnimationCycleLength(0.0f),
-		RotationEulerAngles(0.0f),
-		RotationCycleLength(0.0f),
+		EndRotation(0.0f),
+		EndSize(1.0f),
+		EndColor(1.0f),
+		LightEndColor(1.0f),
+		LightEndIntensity(1.0f),
+		LightEndRadius(1.0f),
 		Play(true),
 		Speed(1.0f),
 		m_Pool(maxParticles),
 		m_RenderData(maxParticles),
 		m_MaxParticles(maxParticles)
 	{
+		for (auto& enabled : ModuleEnabled)
+			enabled = false;
 	}
 
 	ParticleSystem::~ParticleSystem()
@@ -49,15 +59,20 @@ namespace XYZ {
 		AnimationTiles(other.AnimationTiles),
 		AnimationStartFrame(other.AnimationStartFrame),
 		AnimationCycleLength(other.AnimationCycleLength),
-		RotationEulerAngles(other.RotationEulerAngles),
-		RotationCycleLength(other.RotationCycleLength),
+		EndRotation(other.EndRotation),
+		EndSize(other.EndSize),
+		EndColor(other.EndColor),
+		LightEndColor(other.LightEndColor),
+		LightEndIntensity(other.LightEndIntensity),
+		LightEndRadius(other.LightEndRadius),
 		Play(other.Play),
 		Speed(other.Speed),
 		m_Pool(other.m_Pool),
 		m_RenderData(other.m_RenderData),
 		m_MaxParticles(other.m_MaxParticles)
 	{
-
+		for (uint32_t i = 0; i < NumModules; ++i)
+			ModuleEnabled[i] = other.ModuleEnabled[i];
 	}
 
 	ParticleSystem::ParticleSystem(ParticleSystem&& other) noexcept
@@ -66,14 +81,20 @@ namespace XYZ {
 		AnimationTiles(other.AnimationTiles),
 		AnimationStartFrame(other.AnimationStartFrame),
 		AnimationCycleLength(other.AnimationCycleLength),
-		RotationEulerAngles(other.RotationEulerAngles),
-		RotationCycleLength(other.RotationCycleLength),
+		EndRotation(other.EndRotation),
+		EndSize(other.EndSize),
+		EndColor(other.EndColor),
+		LightEndColor(other.LightEndColor),
+		LightEndIntensity(other.LightEndIntensity),
+		LightEndRadius(other.LightEndRadius),
 		Play(other.Play),
 		Speed(other.Speed),
 		m_RenderData(std::move(other.m_RenderData)),
 		m_Pool(std::move(other.m_Pool)),
 		m_MaxParticles(other.m_MaxParticles)
 	{
+		for (uint32_t i = 0; i < NumModules; ++i)
+			ModuleEnabled[i] = other.ModuleEnabled[i];
 	}
 
 	ParticleSystem& ParticleSystem::operator=(const ParticleSystem& other)
@@ -81,11 +102,18 @@ namespace XYZ {
 		Emitter = other.Emitter;
 		AnimationTiles = other.AnimationTiles;
 		AnimationStartFrame = other.AnimationStartFrame;
-		RotationEulerAngles = other.RotationEulerAngles;
-		RotationCycleLength = other.RotationCycleLength;
+		EndRotation = other.EndRotation;
+		EndSize = other.EndSize;
+		EndColor = other.EndColor;
+		LightEndColor = other.LightEndColor;
+		LightEndIntensity = other.LightEndIntensity;
+		LightEndRadius = other.LightEndRadius;
+
 		Play = other.Play;
 		Speed = other.Speed;
 		
+		for (uint32_t i = 0; i < NumModules; ++i)
+			ModuleEnabled[i] = other.ModuleEnabled[i];
 		
 		std::unique_lock lock(m_JobsMutex);
 		m_RenderData = other.m_RenderData;
@@ -100,10 +128,16 @@ namespace XYZ {
 		Emitter = other.Emitter;
 		AnimationTiles = other.AnimationTiles;
 		AnimationStartFrame = other.AnimationStartFrame;
-		RotationEulerAngles = other.RotationEulerAngles;
-		RotationCycleLength = other.RotationCycleLength;
+		EndRotation = other.EndRotation;
+		EndSize = other.EndSize;
+		EndColor = other.EndColor;
+		LightEndColor = other.LightEndColor;
+		LightEndIntensity = other.LightEndIntensity;
+		LightEndRadius = other.LightEndRadius;
 		Play = other.Play;
 		Speed = other.Speed;
+		for (uint32_t i = 0; i < NumModules; ++i)
+			ModuleEnabled[i] = other.ModuleEnabled[i];
 
 		std::unique_lock lock(m_JobsMutex);
 		m_RenderData = std::move(other.m_RenderData);
@@ -158,13 +192,14 @@ namespace XYZ {
 	
 		pushMainJob(ts);
 		
-		if (RotationEnabled)
+		if (ModuleEnabled[RotationOverLife])
 			pushRotationJob();
-		if (AnimationEnabled)
+		if (ModuleEnabled[TextureAnimation])
 			pushAnimationJob();	
-		if (LightsEnabled)
-			pushBuildLightsDataJob(transform);
+		if (ModuleEnabled[LightOverLife])
+			pushLightOverLifeJob();
 
+		pushBuildLightsDataJob(transform);
 		pushBuildRenderDataJobs(transform);
 	}
 
@@ -233,6 +268,25 @@ namespace XYZ {
 	{
 	}
 
+	void ParticleSystem::pushLightOverLifeJob()
+	{
+		std::shared_ptr<ParticleSystem> instance = shared_from_this();
+		Application::Get().GetThreadPool().PushJob<void>([instance]() {
+
+			XYZ_PROFILE_FUNC("ParticleSystem::pushAnimationJob");
+			std::shared_lock lock(instance->m_JobsMutex);
+
+			auto particles = instance->m_Pool.Particles;
+			const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
+
+			const uint32_t stageCount = instance->AnimationTiles.x * instance->AnimationTiles.y;
+			for (uint32_t i = 0; i < aliveParticles; ++i)
+			{
+				instance->updateAnimation(particles[i], stageCount);
+			}
+		});
+	}
+
 	void ParticleSystem::pushBuildLightsDataJob(const glm::mat4& transform)
 	{
 		std::shared_ptr<ParticleSystem> instance = shared_from_this();
@@ -291,7 +345,7 @@ namespace XYZ {
 
 
 
-	void ParticleSystem::updateAnimation(ParticlePool::Particle& particle, uint32_t stageCount)
+	void ParticleSystem::updateAnimation(ParticlePool::Particle& particle, uint32_t stageCount) const
 	{
 		const float ratio = CalcRatio(AnimationCycleLength, particle.LifeRemaining);
 		const float stageProgress = ratio * stageCount;
@@ -303,11 +357,31 @@ namespace XYZ {
 		particle.TexOffset = glm::vec2(column / (float)AnimationTiles.x, row / (float)AnimationTiles.y);
 	}
 
-	void ParticleSystem::updateRotation(ParticlePool::Particle& particle)
+	void ParticleSystem::updateRotation(ParticlePool::Particle& particle) const
 	{
-		const glm::vec3 radians = glm::radians(RotationEulerAngles);
-		const float ratio = CalcRatio(RotationCycleLength, particle.LifeRemaining);
+		const glm::vec3 radians = glm::radians(EndRotation);
+		const float ratio = CalcRatio(Emitter.LifeTime, Emitter.LifeTime - particle.LifeRemaining);
 		particle.Rotation = glm::quat(radians * ratio);
+	}
+
+	void ParticleSystem::updateColorOverLife(ParticlePool::Particle& particle) const
+	{
+		const float ratio = CalcRatio(Emitter.LifeTime, Emitter.LifeTime - particle.LifeRemaining);
+		particle.Color = glm::lerp(Emitter.Color, EndColor, ratio);
+	}
+
+	void ParticleSystem::updateSizeOverLife(ParticlePool::Particle& particle) const
+	{
+		const float ratio = CalcRatio(Emitter.LifeTime, Emitter.LifeTime - particle.LifeRemaining);
+		particle.Size = glm::lerp(Emitter.Size, EndSize, ratio);
+	}
+
+	void ParticleSystem::updateLightOverLife(ParticlePool::Particle& particle) const
+	{
+		const float ratio = CalcRatio(Emitter.LifeTime, Emitter.LifeTime - particle.LifeRemaining);
+		particle.LightColor = glm::lerp(Emitter.LightColor, LightEndColor, ratio);
+		particle.LightIntensity = glm::lerp(Emitter.LightIntensity, LightEndIntensity, ratio);
+		particle.LightRadius = glm::lerp(Emitter.LightRadius, LightEndRadius, ratio);
 	}
 
 	void ParticleSystem::buildRenderData(const glm::mat4& transform, uint32_t startId, uint32_t endId)
