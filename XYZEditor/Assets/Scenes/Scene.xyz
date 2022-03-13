@@ -34,7 +34,7 @@ Entities:
     SceneTagComponent:
       Name: Fire
     TransformComponent:
-      Position: [-4.3499999, 0, 3]
+      Position: [-7.4000001, 0, 3]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
@@ -52,6 +52,17 @@ Entities:
       AnimationStartFrame: 0
       AnimationCycleLength: 5
       EndRotation: [0, 0, 0]
+      EndSize: [1, 1, 1]
+      EndColor: [1, 1, 1, 1]
+      LightEndColor: [1, 1, 1]
+      LightEndIntensity: 1
+      LightEndRadius: 1
+      ModulesEnabled:
+        - false
+        - false
+        - false
+        - false
+        - false
       Emitter:
         Shape: 1
         BoxMin: [-9.19999981, -7.9000001, 0]
@@ -129,12 +140,23 @@ Entities:
       AnimationStartFrame: 0
       AnimationCycleLength: 0
       EndRotation: [0, 0, 0]
+      EndSize: [1, 1, 1]
+      EndColor: [1, 1, 1, 1]
+      LightEndColor: [1, 1, 1]
+      LightEndIntensity: 1
+      LightEndRadius: 1
+      ModulesEnabled:
+        - false
+        - false
+        - false
+        - false
+        - false
       Emitter:
         Shape: 1
         BoxMin: [-5, -5, 0]
         BoxMax: [5, 5, 0]
         Radius: 7
-        EmitRate: 500
+        EmitRate: 200
         LifeTime: 5
         MinVelocity: [-1, -1, 0]
         MaxVelocity: [1, 1, 0]
@@ -169,6 +191,17 @@ Entities:
       AnimationStartFrame: 0
       AnimationCycleLength: 0
       EndRotation: [0, 0, 0]
+      EndSize: [1, 1, 1]
+      EndColor: [1, 1, 1, 1]
+      LightEndColor: [1, 1, 1]
+      LightEndIntensity: 1
+      LightEndRadius: 1
+      ModulesEnabled:
+        - false
+        - false
+        - false
+        - false
+        - false
       Emitter:
         Shape: 1
         BoxMin: [-5, -5, 0]
@@ -209,6 +242,17 @@ Entities:
       AnimationStartFrame: 0
       AnimationCycleLength: 0
       EndRotation: [0, 0, 0]
+      EndSize: [1, 1, 1]
+      EndColor: [1, 1, 1, 1]
+      LightEndColor: [1, 1, 1]
+      LightEndIntensity: 1
+      LightEndRadius: 1
+      ModulesEnabled:
+        - false
+        - false
+        - false
+        - false
+        - false
       Emitter:
         Shape: 1
         BoxMin: [-10, -8.5, 0]

@@ -251,7 +251,7 @@ namespace XYZ {
 
 	
 	void VulkanRendererAPI::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, 
-		Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
+		Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData, Ref<VertexBufferSet> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
 	{
 		XYZ_ASSERT(material.Raw(), "");
 		Renderer::Submit([renderCommandBuffer, pipeline, material, 
@@ -265,7 +265,7 @@ namespace XYZ {
 			Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = renderCommandBuffer;
 			
 			Ref<VulkanVertexBuffer>		   vulkanVertexBuffer = vertexBuffer.As<VulkanVertexBuffer>();
-			Ref<VulkanVertexBuffer>		   vulkanInstanceBuffer = instanceBuffer.As<VulkanVertexBuffer>();
+			Ref<VulkanVertexBuffer>		   vulkanInstanceBuffer = instanceBuffer->GetVertexBuffer(frameIndex).As<VulkanVertexBuffer>();
 			Ref<VulkanIndexBuffer>		   vulkanIndexBuffer = indexBuffer;
 
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
@@ -302,7 +302,7 @@ namespace XYZ {
 	}
 
 	void VulkanRendererAPI::RenderMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, 
-		Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount, Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
+		Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, Ref<VertexBufferSet> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount, Ref<VertexBufferSet> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount)
 	{
 		Renderer::Submit([renderCommandBuffer, pipeline, material,
 			vertexBuffer, indexBuffer,
@@ -316,8 +316,8 @@ namespace XYZ {
 			Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = renderCommandBuffer;
 
 			Ref<VulkanVertexBuffer>		   vulkanVertexBuffer = vertexBuffer.As<VulkanVertexBuffer>();
-			Ref<VulkanVertexBuffer>		   vulkanTransformBuffer = transformBuffer.As<VulkanVertexBuffer>();
-			Ref<VulkanVertexBuffer>		   vulkanInstanceBuffer = instanceBuffer.As<VulkanVertexBuffer>();
+			Ref<VulkanVertexBuffer>		   vulkanTransformBuffer = transformBuffer->GetVertexBuffer(frameIndex).As<VulkanVertexBuffer>();
+			Ref<VulkanVertexBuffer>		   vulkanInstanceBuffer = instanceBuffer->GetVertexBuffer(frameIndex).As<VulkanVertexBuffer>();
 			Ref<VulkanIndexBuffer>		   vulkanIndexBuffer = indexBuffer;
 
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;

@@ -5,6 +5,7 @@
 #include "Mesh.h"
 #include "RenderCommandBuffer.h"
 #include "StorageBufferSet.h"
+#include "VertexBufferSet.h"
 #include "PipelineCompute.h"
 #include "MaterialInstance.h"
 
@@ -293,8 +294,8 @@ namespace XYZ {
 		Ref<StorageBufferSet>      m_LightStorageBufferSet;
 		Ref<StorageBufferSet>	   m_BoneTransformsStorageSet;
 
-		Ref<VertexBuffer>		   m_InstanceVertexBuffer;
-		Ref<VertexBuffer>		   m_TransformVertexBuffer;
+		Ref<VertexBufferSet>	   m_InstanceVertexBufferSet;
+		Ref<VertexBufferSet>	   m_TransformVertexBufferSet;
 		
 
 		std::vector<RenderQueue::TransformData> m_TransformData;

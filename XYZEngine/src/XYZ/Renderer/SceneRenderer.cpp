@@ -86,8 +86,9 @@ namespace XYZ {
 		m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		
-		m_InstanceVertexBuffer = VertexBuffer::Create(sc_InstanceVertexBufferSize);
-		m_TransformVertexBuffer = VertexBuffer::Create(sc_TransformBufferCount * sizeof(RenderQueue::TransformData));
+		m_InstanceVertexBufferSet = Ref<VertexBufferSet>::Create(Renderer::GetConfiguration().FramesInFlight, sc_InstanceVertexBufferSize);
+
+		m_TransformVertexBufferSet = Ref<VertexBufferSet>::Create(Renderer::GetConfiguration().FramesInFlight, sc_TransformBufferCount * sizeof(RenderQueue::TransformData));
 		m_TransformData.resize(sc_TransformBufferCount);
 		m_InstanceData.resize(sc_InstanceVertexBufferSize);
 		m_BoneTransformsData.resize(sc_MaxBoneTransforms);
@@ -387,7 +388,7 @@ namespace XYZ {
 				command.Mesh->GetVertexBuffer(),
 				command.Mesh->GetIndexBuffer(),
 				glm::mat4(1.0f),
-				m_TransformVertexBuffer,
+				m_TransformVertexBufferSet,
 				command.TransformOffset,
 				command.TransformInstanceCount
 			);
@@ -420,7 +421,7 @@ namespace XYZ {
 				command.Mesh->GetVertexBuffer(),
 				command.Mesh->GetIndexBuffer(),
 				{ glm::mat4(1.0f), command.BoneTransformsIndex },
-				m_TransformVertexBuffer,
+				m_TransformVertexBufferSet,
 				command.TransformOffset,
 				command.TransformInstanceCount
 			);
@@ -433,13 +434,13 @@ namespace XYZ {
 					command.Mesh->GetVertexBuffer(),
 					command.Mesh->GetIndexBuffer(),
 					{ dcOverride.Transform, dcOverride.BoneTransformsIndex },
-					m_TransformVertexBuffer,
+					m_TransformVertexBufferSet,
 					command.TransformOffset,
 					command.TransformInstanceCount
 				);
 			}
 		}
-
+		uint32_t index = Renderer::GetCurrentFrame();
 		for (auto& [key, command] : queue.InstanceMeshDrawCommands)
 		{
 			Renderer::BindPipeline(
@@ -457,7 +458,7 @@ namespace XYZ {
 				command.Mesh->GetVertexBuffer(),
 				command.Mesh->GetIndexBuffer(),
 				command.Transform,
-				m_InstanceVertexBuffer,
+				m_InstanceVertexBufferSet,
 				command.InstanceOffset,
 				command.InstanceCount
 			);
@@ -823,9 +824,9 @@ namespace XYZ {
 			memcpy(&m_InstanceData.data()[instanceOffset], dc.InstanceData.data(), dc.InstanceData.size());
 			instanceOffset += dc.InstanceData.size();
 		}	
-
-		m_TransformVertexBuffer->Update(m_TransformData.data(), transformsCount * sizeof(RenderQueue::TransformData));
-		m_InstanceVertexBuffer->Update(m_InstanceData.data(), instanceOffset);
+		uint32_t index = Renderer::GetCurrentFrame();
+		m_TransformVertexBufferSet->Update(m_TransformData.data(), transformsCount * sizeof(RenderQueue::TransformData));
+		m_InstanceVertexBufferSet->Update(m_InstanceData.data(), instanceOffset);
 		m_BoneTransformsStorageSet->Update(m_BoneTransformsData.data(), boneTransformsCount * sizeof(RenderQueue::BoneTransforms), 0, 0, 2);
 	
 		

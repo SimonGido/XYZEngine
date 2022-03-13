@@ -7,6 +7,7 @@
 #include "XYZ/Renderer/RenderCommandBuffer.h"
 #include "XYZ/Renderer/UniformBufferSet.h"
 #include "XYZ/Renderer/StorageBufferSet.h"
+#include "XYZ/Renderer/VertexBufferSet.h"
 #include "XYZ/Renderer/Material.h"
 
 namespace XYZ {
@@ -111,13 +112,13 @@ namespace XYZ {
 		virtual void RenderMesh(
 			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material,
 			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData,
-			Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount
+			Ref<VertexBufferSet> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount
 		) {};
 		virtual void RenderMesh(
 			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material,
 			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer,
-			Ref<VertexBuffer> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount,
-			Ref<VertexBuffer> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount
+			Ref<VertexBufferSet> transformBuffer, uint32_t transformOffset, uint32_t transformInstanceCount,
+			Ref<VertexBufferSet> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount
 		) {};
 
 		virtual void BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material) {};

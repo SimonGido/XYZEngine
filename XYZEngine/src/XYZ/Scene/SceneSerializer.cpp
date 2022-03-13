@@ -243,6 +243,20 @@ namespace XYZ {
 		out << YAML::Key << "AnimationCycleLength" << val.System->AnimationCycleLength;
 
 		out << YAML::Key << "EndRotation" << val.System->EndRotation;
+		out << YAML::Key << "EndSize" << val.System->EndSize;
+		out << YAML::Key << "EndColor" << val.System->EndColor;
+		
+		out << YAML::Key << "LightEndColor" << val.System->LightEndColor;
+		out << YAML::Key << "LightEndIntensity" << val.System->LightEndIntensity;
+		out << YAML::Key << "LightEndRadius" << val.System->LightEndRadius;
+		
+		// Modules enabled
+		out << YAML::Key << "ModulesEnabled";
+		out << YAML::Value << YAML::BeginSeq;
+		out << YAML::Flow;
+		for (bool enabled : val.System->ModuleEnabled)
+			out << YAML::Value << enabled;
+		out << YAML::EndSeq;
 
 		{  // Emitter
 			out << YAML::Key << "Emitter";
@@ -316,8 +330,8 @@ namespace XYZ {
 		component.System = std::make_shared<ParticleSystem>();
 
 		component.System->SetMaxParticles(data["MaxParticles"].as<uint32_t>());
-		component.System->Speed				  = data["Speed"].as<float>();
-		component.System->AnimationTiles		  = data["AnimationTiles"].as<glm::ivec2>();
+		component.System->Speed				   = data["Speed"].as<float>();
+		component.System->AnimationTiles	   = data["AnimationTiles"].as<glm::ivec2>();
 		component.System->AnimationStartFrame  = data["AnimationStartFrame"].as<uint32_t>();
 		component.System->AnimationCycleLength = data["AnimationCycleLength"].as<float>();
 		component.System->EndRotation		   = data["EndRotation"].as<glm::vec3>();

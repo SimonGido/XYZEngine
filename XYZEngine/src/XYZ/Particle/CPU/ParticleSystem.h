@@ -123,7 +123,6 @@ namespace XYZ {
 		uint32_t			m_MaxParticles;
 		std::shared_mutex	m_JobsMutex;
 	
-	
 		static constexpr uint32_t sc_PerJobCount = 500;
 	};
 

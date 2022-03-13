@@ -186,18 +186,20 @@ namespace XYZ {
 		if (m_MaxParticles == 0)
 			return;
 
-		// We must sync with main thread or it will keep filling thread pool, an alternative might be to have infinite loop, without any sync
 		std::unique_lock lock(m_JobsMutex);
-		
-	
 		pushMainJob(ts);
 		
 		if (ModuleEnabled[RotationOverLife])
 			pushRotationJob();
+		if (ModuleEnabled[SizeOverLife])
+			pushSizeOverLifeJob();
+		if (ModuleEnabled[ColorOverLife])
+			pushColorOverLifeJob();
 		if (ModuleEnabled[TextureAnimation])
 			pushAnimationJob();	
 		if (ModuleEnabled[LightOverLife])
 			pushLightOverLifeJob();
+
 
 		pushBuildLightsDataJob(transform);
 		pushBuildRenderDataJobs(transform);
@@ -262,10 +264,38 @@ namespace XYZ {
 
 	void ParticleSystem::pushColorOverLifeJob()
 	{
+		std::shared_ptr<ParticleSystem> instance = shared_from_this();
+		Application::Get().GetThreadPool().PushJob<void>([instance]() {
+
+			XYZ_PROFILE_FUNC("ParticleSystem::pushColorOverLifeJob");
+			std::shared_lock lock(instance->m_JobsMutex);
+
+			auto particles = instance->m_Pool.Particles;
+			const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
+
+			for (uint32_t i = 0; i < aliveParticles; ++i)
+			{
+				instance->updateColorOverLife(particles[i]);
+			}
+		});
 	}
 
 	void ParticleSystem::pushSizeOverLifeJob()
 	{
+		std::shared_ptr<ParticleSystem> instance = shared_from_this();
+		Application::Get().GetThreadPool().PushJob<void>([instance]() {
+
+			XYZ_PROFILE_FUNC("ParticleSystem::pushSizeOverLifeJob");
+			std::shared_lock lock(instance->m_JobsMutex);
+
+			auto particles = instance->m_Pool.Particles;
+			const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
+
+			for (uint32_t i = 0; i < aliveParticles; ++i)
+			{
+				instance->updateSizeOverLife(particles[i]);
+			}
+		});
 	}
 
 	void ParticleSystem::pushLightOverLifeJob()
@@ -273,16 +303,17 @@ namespace XYZ {
 		std::shared_ptr<ParticleSystem> instance = shared_from_this();
 		Application::Get().GetThreadPool().PushJob<void>([instance]() {
 
-			XYZ_PROFILE_FUNC("ParticleSystem::pushAnimationJob");
+			XYZ_PROFILE_FUNC("ParticleSystem::pushLightOverLifeJob");
 			std::shared_lock lock(instance->m_JobsMutex);
 
 			auto particles = instance->m_Pool.Particles;
 			const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
 
-			const uint32_t stageCount = instance->AnimationTiles.x * instance->AnimationTiles.y;
-			for (uint32_t i = 0; i < aliveParticles; ++i)
+			const uint32_t aliveLights = std::min(aliveParticles, instance->Emitter.MaxLights);
+
+			for (uint32_t i = 0; i < aliveLights; ++i)
 			{
-				instance->updateAnimation(particles[i], stageCount);
+				instance->updateLightOverLife(particles[i]);
 			}
 		});
 	}
@@ -294,6 +325,7 @@ namespace XYZ {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushBuildLightsDataJob");
 			std::shared_lock lock(instance->m_JobsMutex);
+			
 
 			const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
 
@@ -331,7 +363,7 @@ namespace XYZ {
 
 				XYZ_PROFILE_FUNC("ParticleSystem::pushBuildRenderDataJob");
 				std::shared_lock lock(instance->m_JobsMutex);
-
+	
 				const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
 
 				const uint32_t startId = jobIndex * instance->sc_PerJobCount;
@@ -395,8 +427,8 @@ namespace XYZ {
 				glm::translate(particle.Position)
 				* glm::toMat4(particle.Rotation)
 				* glm::scale(particle.Size);
-
-
+			
+			
 			const glm::mat4 worldParticleTransform = transform * particleTransform;
 
 
