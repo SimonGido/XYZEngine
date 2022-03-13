@@ -87,7 +87,7 @@ namespace XYZ {
 					{
 						UI::TableRow("Rotation",
 							[]() {ImGui::Text("Rotation"); },
-							[&]() { ImGui::DragFloat3("##RotationDrag", glm::value_ptr(component.System->EndSize)); }
+							[&]() { ImGui::DragFloat3("##RotationDrag", glm::value_ptr(component.System->EndRotation)); }
 						);
 
 						ImGui::EndTable();
@@ -124,7 +124,7 @@ namespace XYZ {
 					{
 						UI::TableRow("End Color",
 							[]() {ImGui::Text("End Color"); },
-							[&]() { ImGui::DragFloat3("##EndColorDrag", glm::value_ptr(component.System->LightEndColor)); }
+							[&]() { ImGui::ColorEdit3("##EndColorDrag", glm::value_ptr(component.System->LightEndColor), sc_VSpeed); }
 						);
 						UI::TableRow("Light End Intensity",
 							[]() {ImGui::Text("End Intensity"); },
@@ -213,7 +213,7 @@ namespace XYZ {
 					);
 					UI::TableRow("Size",
 						[]() {ImGui::Text("Size"); },
-						[&]() { ImGui::DragFloat2("##Size", glm::value_ptr(val.Size), sc_VSpeed); }
+						[&]() { ImGui::DragFloat3("##Size", glm::value_ptr(val.Size), sc_VSpeed); }
 					);
 					UI::TableRow("Color",
 						[]() {ImGui::Text("Color"); },

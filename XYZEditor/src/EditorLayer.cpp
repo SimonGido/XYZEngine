@@ -206,6 +206,19 @@ namespace XYZ {
 					scale *= glm::vec3(circleCollider.Radius * 2.0f);
 					m_OverlayRenderer2D->SubmitFilledCircle(translation, glm::vec2(scale.x, scale.y), 0.01f, s_Data.Color[ED::Collider2D]);
 				}
+
+				auto chain2DColliderView = registry.view<TransformComponent, ChainCollider2DComponent>();
+				for (auto entity : chain2DColliderView)
+				{
+					auto& [transformComp, chainCollider] = chain2DColliderView.get(entity);
+					for (size_t i = 1; i < chainCollider.Points.size(); ++i)
+					{
+						glm::vec4 p0 = transformComp.WorldTransform * glm::vec4(chainCollider.Points[i - 1], 0.0f, 1.0f);
+						glm::vec4 p1 = transformComp.WorldTransform * glm::vec4(chainCollider.Points[i + 1], 0.0f, 1.0f);
+
+						m_OverlayRenderer2D->SubmitLine(glm::vec3(p0), glm::vec3(p1), s_Data.Color[ED::Collider2D]);
+					}
+				}
 			}
 		}
 

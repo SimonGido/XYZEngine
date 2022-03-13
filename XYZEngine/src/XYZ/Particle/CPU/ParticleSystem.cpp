@@ -392,25 +392,25 @@ namespace XYZ {
 	void ParticleSystem::updateRotation(ParticlePool::Particle& particle) const
 	{
 		const glm::vec3 radians = glm::radians(EndRotation);
-		const float ratio = CalcRatio(Emitter.LifeTime, Emitter.LifeTime - particle.LifeRemaining);
+		const float ratio = CalcRatio(Emitter.LifeTime, particle.LifeRemaining);
 		particle.Rotation = glm::quat(radians * ratio);
 	}
 
 	void ParticleSystem::updateColorOverLife(ParticlePool::Particle& particle) const
 	{
-		const float ratio = CalcRatio(Emitter.LifeTime, Emitter.LifeTime - particle.LifeRemaining);
+		const float ratio = CalcRatio(Emitter.LifeTime, particle.LifeRemaining);
 		particle.Color = glm::lerp(Emitter.Color, EndColor, ratio);
 	}
 
 	void ParticleSystem::updateSizeOverLife(ParticlePool::Particle& particle) const
 	{
-		const float ratio = CalcRatio(Emitter.LifeTime, Emitter.LifeTime - particle.LifeRemaining);
+		const float ratio = CalcRatio(Emitter.LifeTime, particle.LifeRemaining);
 		particle.Size = glm::lerp(Emitter.Size, EndSize, ratio);
 	}
 
 	void ParticleSystem::updateLightOverLife(ParticlePool::Particle& particle) const
 	{
-		const float ratio = CalcRatio(Emitter.LifeTime, Emitter.LifeTime - particle.LifeRemaining);
+		const float ratio = CalcRatio(Emitter.LifeTime, particle.LifeRemaining);
 		particle.LightColor = glm::lerp(Emitter.LightColor, LightEndColor, ratio);
 		particle.LightIntensity = glm::lerp(Emitter.LightIntensity, LightEndIntensity, ratio);
 		particle.LightRadius = glm::lerp(Emitter.LightRadius, LightEndRadius, ratio);
