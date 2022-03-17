@@ -214,7 +214,7 @@ namespace XYZ {
 					for (size_t i = 1; i < chainCollider.Points.size(); ++i)
 					{
 						glm::vec4 p0 = transformComp.WorldTransform * glm::vec4(chainCollider.Points[i - 1], 0.0f, 1.0f);
-						glm::vec4 p1 = transformComp.WorldTransform * glm::vec4(chainCollider.Points[i + 1], 0.0f, 1.0f);
+						glm::vec4 p1 = transformComp.WorldTransform * glm::vec4(chainCollider.Points[i], 0.0f, 1.0f);
 
 						m_OverlayRenderer2D->SubmitLine(glm::vec3(p0), glm::vec3(p1), s_Data.Color[ED::Collider2D]);
 					}

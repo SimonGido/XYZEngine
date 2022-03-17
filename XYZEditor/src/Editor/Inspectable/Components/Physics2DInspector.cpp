@@ -67,8 +67,7 @@ namespace XYZ {
 		{
 			return EditorHelper::DrawComponent<BoxCollider2DComponent>("Box Collider2D", m_Context, [&](auto& component) {
 
-
-				if (ImGui::BeginTable("##TransformTable", 2, ImGuiTableFlags_SizingStretchProp))
+				if (ImGui::BeginTable("##BoxCollider2DTable", 2, ImGuiTableFlags_SizingStretchProp))
 				{
 					UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
 					UI::ScopedColorStack color(true,
@@ -100,34 +99,6 @@ namespace XYZ {
 					);
 					ImGui::EndTable();
 				};
-
-
-				/*
-				auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
-				const glm::vec3 boxTranslation =
-					translation + glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
-				renderer->SubmitAABB(
-					boxTranslation - glm::vec3(component.Size / 2.0f, 0.0f),
-					boxTranslation + glm::vec3(component.Size / 2.0f, 0.0f),
-					sc_ColliderColor
-				);
-
-				EditorHelper::DrawVec2Control("Size", component.Size);
-				EditorHelper::DrawVec2Control("Offset", component.Offset);
-
-				EditorHelper::BeginColumns("Density");
-				ImGui::PushItemWidth(75.0f);
-				ImGui::InputFloat("##Density", &component.Density);
-				ImGui::PopItemWidth();
-				EditorHelper::EndColumns();
-
-
-				EditorHelper::BeginColumns("Friction");
-				ImGui::PushItemWidth(75.0f);
-				ImGui::InputFloat("##Friction", &component.Friction);
-				ImGui::PopItemWidth();
-				EditorHelper::EndColumns();
-				*/
 			});
 		}
 
@@ -146,33 +117,40 @@ namespace XYZ {
 		{
 			return EditorHelper::DrawComponent<CircleCollider2DComponent>("Circle Collider2D", m_Context, [&](auto& component) {
 
-				/*
-				auto [translation, rotation, scale] = m_Context.GetComponent<TransformComponent>().GetWorldComponents();
-				const glm::vec3 circleTranslation =
-					translation + glm::vec3(component.Offset.x, component.Offset.y, 0.0f);
+				if (ImGui::BeginTable("##CircleCollider2DTable", 2, ImGuiTableFlags_SizingStretchProp))
+				{
+					UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
+					UI::ScopedColorStack color(true,
+						ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f },
+						ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f },
+						ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
+					);
+					const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 
-				renderer->SubmitCircle(circleTranslation, component.Radius, 20, sc_ColliderColor);
-				EditorHelper::DrawVec2Control("Offset", component.Offset);
+					UI::TableRow("Offset",
+						[]() { ImGui::Text("Offset"); },
+						[&]() { UI::ScopedTableColumnAutoWidth scoped(2, lineHeight);
+					UI::Vec2Control({ "X", "Y" }, component.Offset); }
+					);
 
-				EditorHelper::BeginColumns("Radius");
-				ImGui::PushItemWidth(75.0f);
-				ImGui::InputFloat("##Radius", &component.Radius);
-				ImGui::PopItemWidth();
-				EditorHelper::EndColumns();
+					UI::TableRow("Radius",
+						[]() { ImGui::Text("Radius"); },
+						[&]() { UI::ScopedTableColumnAutoWidth scoped(2, lineHeight);
+					UI::FloatControl("##Radius", "##RadiusDrag", component.Radius, 1.0f, 0.05f); }
+					);
 
-				EditorHelper::BeginColumns("Density");
-				ImGui::PushItemWidth(75.0f);
-				ImGui::InputFloat("##Density", &component.Density);
-				ImGui::PopItemWidth();
-				EditorHelper::EndColumns();
-
-
-				EditorHelper::BeginColumns("Friction");
-				ImGui::PushItemWidth(75.0f);
-				ImGui::InputFloat("##Friction", &component.Friction);
-				ImGui::PopItemWidth();
-				EditorHelper::EndColumns();
-				*/
+					UI::TableRow("Density",
+						[]() { ImGui::Text("Density"); },
+						[&]() { UI::ScopedTableColumnAutoWidth scoped(1, lineHeight);
+					UI::FloatControl("##Density", "##DensityDrag", component.Density, 1.0f, 0.05f); }
+					);
+					UI::TableRow("Friction",
+						[]() { ImGui::Text("Friction"); },
+						[&]() { UI::ScopedTableColumnAutoWidth scoped(1, lineHeight);
+					UI::FloatControl("##Friction", "##FrictionDrag", component.Friction, 1.0f, 0.05f); }
+					);
+					ImGui::EndTable();
+				};
 			});
 		}
 

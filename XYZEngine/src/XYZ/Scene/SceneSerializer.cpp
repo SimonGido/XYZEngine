@@ -287,7 +287,6 @@ namespace XYZ {
 				out << YAML::Value << YAML::BeginSeq;
 				for (const auto& burst : val.System->Emitter.Bursts)
 				{
-					out << YAML::Key << "Burst";
 					out << YAML::BeginMap; // Burst
 					out << YAML::Key << "Count" << burst.Count;
 					out << YAML::Key << "Time" << burst.Time;
@@ -361,11 +360,10 @@ namespace XYZ {
 			component.System->Emitter.BurstInterval = emitter["BurstInterval"].as<float>();
 			for (auto burst : emitter["Bursts"])
 			{
-				auto burstData = burst["Burst"];
 				component.System->Emitter.Bursts.push_back({
-					burstData["Count"].as<uint32_t>(),
-					burstData["Time"].as<float>(),
-					burstData["Probability"].as<float>()
+					burst["Count"].as<uint32_t>(),
+					burst["Time"].as<float>(),
+					burst["Probability"].as<float>()
 				});	
 			}
 		}

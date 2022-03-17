@@ -44,7 +44,56 @@ namespace XYZ {
 		bool IVec3Control(const std::array<const char*, 3>& names, glm::ivec3& values, float resetValue = 0.0f, float speed = 0.05f);
 		bool IVec4Control(const std::array<const char*, 4>& names, glm::ivec4& values, float resetValue = 0.0f, float speed = 0.05f);
 		
-		
+
+
+		template <size_t numHeaders, typename T, typename Func>
+		void ContainerControl(const char* name, T& container, const std::array<const char*, numHeaders>& headerNames, size_t& selectedIndex, Func&& elementControl)
+		{
+			const size_t oldSelectedIndex = selectedIndex;
+			if (ImGui::TreeNode(name))
+			{
+				//ImGui::Text(name);
+				if (ImGui::BeginTable(name, numHeaders, ImGuiTableFlags_SizingStretchSame))
+				{
+					for (auto& header : headerNames)
+						ImGui::TableSetupColumn(header);
+					ImGui::TableHeadersRow();
+
+					size_t index = 0;
+					for (auto& el : container)
+					{
+						elementControl(el, selectedIndex, index);
+						index++;
+					}
+					ImGui::EndTable();
+				}
+
+				UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, glm::vec2(0.0f));
+				if (ImGui::Button("+"))
+					container.push_back({});
+				ImGui::SameLine();
+				if (ImGui::Button("-"))
+				{
+					if (selectedIndex < container.size())
+					{
+						container.erase(container.begin() + selectedIndex);
+						selectedIndex = SIZE_MAX;
+					}
+					else if (!container.empty())
+					{
+						container.pop_back();
+					}
+				}
+				// Mouse released and no new selection happend
+				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && oldSelectedIndex == selectedIndex)
+				{
+					selectedIndex = SIZE_MAX;
+				}
+				ImGui::TreePop();
+			}
+		}
+
+
 		template <typename Func0, typename Func1>
 		void SplitterV(float* size, const char* stringID0, const char* stringID1, const Func0& func0, const Func1& func1)
 		{

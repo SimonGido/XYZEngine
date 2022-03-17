@@ -248,28 +248,21 @@ namespace XYZ {
 					ImGui::EndTable();
 				}
 				
-				ImGui::Text("Bursts");
-				bool newSelected = false;
-				auto& bursts = val.Bursts;
-				if (ImGui::BeginTable("Bursts", 3, ImGuiTableFlags_SizingStretchSame))
-				{
-					ImGui::TableSetupColumn("Count");
-					ImGui::TableSetupColumn("Time");
-					ImGui::TableSetupColumn("Probability");
-					ImGui::TableHeadersRow();
-			
-					uint32_t index = 0;
-					for (auto& burst : bursts)
+				
+
+				UI::ContainerControl<3>("Bursts", val.Bursts, { "Count", "Time", "Probability" }, m_SelectedBurstIndex,
+					[](EmitterBurst& burst, size_t &selectedIndex, size_t index) 
 					{
+						bool selected = false;
+						auto& colors = EditorLayer::GetData().Color;
 						const std::string indexStr = std::to_string(index);
 						const std::string countID = "##Count" + indexStr;
 						const std::string timeID = "##Time" + indexStr;
 						const std::string probID = "##Probability" + indexStr;
-			
-						UI::ScopedColorStack color(m_SelectedBurstIndex == index,
+
+						UI::ScopedColorStack color(selectedIndex == index,
 							ImGuiCol_FrameBg, colors[ED::ContainerSelectedItem]);
-			
-						bool selected = false;
+
 						UI::TableRow(indexStr.c_str(),
 							[&]() {
 								UI::ScopedTableColumnAutoWidth width(1);
@@ -283,39 +276,12 @@ namespace XYZ {
 								UI::ScopedTableColumnAutoWidth width(1);
 								ImGui::DragFloat(probID.c_str(), &burst.Probability, sc_VSpeed, 0.0f, 1.0f);
 								selected |= ImGui::IsItemDeactivated(); }
-							);
-						
-					
+						);
 						if (selected)
-						{
-							m_SelectedBurstIndex = index;
-							newSelected = true;
-						}
-						index++;
+							selectedIndex = index;
 					}
-					ImGui::EndTable();
-				}
-			
-				UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, glm::vec2(0.0f));
-				if (ImGui::Button("+"))
-					bursts.push_back({});
-				ImGui::SameLine();
-				if (ImGui::Button("-"))
-				{
-					if (m_SelectedBurstIndex != sc_InvalidIndex)
-					{
-						bursts.erase(bursts.begin() + m_SelectedBurstIndex);
-						m_SelectedBurstIndex = sc_InvalidIndex;
-					}
-					else if (!bursts.empty())
-					{
-						bursts.pop_back();
-					}
-				}
-				
-				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && !newSelected)
-					m_SelectedBurstIndex = sc_InvalidIndex;
-			
+				);
+					
 			}, enabledEmitter);
 		}
 		ParticleRendererInspector::ParticleRendererInspector()

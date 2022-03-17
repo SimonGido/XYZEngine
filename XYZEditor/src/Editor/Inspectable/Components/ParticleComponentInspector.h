@@ -26,7 +26,7 @@ namespace XYZ {
 			static constexpr uint32_t sc_InvalidIndex = UINT32_MAX;
 
 			SceneEntity m_Context;
-			uint32_t	m_SelectedBurstIndex = sc_InvalidIndex;
+			size_t	    m_SelectedBurstIndex = sc_InvalidIndex;
 			static constexpr float sc_VSpeed = 0.1f;
 		};
 
