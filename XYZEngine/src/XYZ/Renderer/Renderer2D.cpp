@@ -142,9 +142,22 @@ namespace XYZ {
 		if (m_RenderPass.Raw() != renderPass.Raw())
 		{
 			m_RenderPass = renderPass;
-			updateRenderPass(m_QuadBuffer.Pipeline);
-			updateRenderPass(m_LineBuffer.Pipeline);
-			updateRenderPass(m_CircleBuffer.Pipeline);
+			for (auto& [hash, pipeline] : m_QuadPipelines)
+				updateRenderPass(pipeline);
+			for (auto& [hash, pipeline] : m_LinePipelines)
+				updateRenderPass(pipeline);
+			for (auto& [hash, pipeline] : m_CirclePipelines)
+				updateRenderPass(pipeline);
+
+			const size_t quadShaderHash = m_QuadBuffer.Pipeline->GetSpecification().Shader->GetHash();
+			m_QuadBuffer.Pipeline = m_QuadPipelines[quadShaderHash];
+
+			const size_t lineShaderHash = m_LineBuffer.Pipeline->GetSpecification().Shader->GetHash();
+			m_LineBuffer.Pipeline = m_LinePipelines[lineShaderHash];
+
+			const size_t circleShaderHash = m_CircleBuffer.Pipeline->GetSpecification().Shader->GetHash();
+			m_CircleBuffer.Pipeline = m_CirclePipelines[circleShaderHash];
+
 		}
 	}
 
