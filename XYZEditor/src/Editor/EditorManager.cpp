@@ -3,6 +3,9 @@
 
 #include "XYZ/Core/Application.h"
 
+#include "XYZ/Scene/SceneSerializer.h"
+#include "XYZ/Utils/FileSystem.h"
+
 #include <imgui.h>
 
 namespace XYZ {
@@ -72,7 +75,11 @@ namespace XYZ {
 					{}
 
 					if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
-					{}
+					{
+						std::string filepath = FileSystem::OpenFile(Application::Get().GetWindow().GetNativeWindow(), ".xyz");
+						SceneSerializer serializer;
+						serializer.Serialize(filepath, m_Scene);
+					}
 					if (ImGui::MenuItem("Exit"))
 					{
 						Application::Get().Stop();

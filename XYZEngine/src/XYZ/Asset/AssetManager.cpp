@@ -203,11 +203,14 @@ namespace XYZ
 		}
 		else if (type == FileWatcher::ChangeType::Removed)
 		{
-			auto metadata = *s_Registry.GetMetadata(path);
-			s_Registry.RemoveMetadata(metadata.Handle);
-			auto it = s_LoadedAssets.find(metadata.Handle);
-			if (it != s_LoadedAssets.end())
-				s_LoadedAssets.erase(it);
+			const auto metadata = s_Registry.GetMetadata(path);
+			if (metadata)
+			{
+				s_Registry.RemoveMetadata((*metadata).Handle);
+				auto it = s_LoadedAssets.find((*metadata).Handle);
+				if (it != s_LoadedAssets.end())
+					s_LoadedAssets.erase(it);
+			}
 		}
 		else if (type == FileWatcher::ChangeType::RenamedOld)
 		{

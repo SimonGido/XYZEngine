@@ -6,7 +6,6 @@ namespace Example
 {
     public class Script : Entity
     {
-        public string Test = "Pes";
         public float VerticalSpeed = 5.0f;
         public float ImpulseStrength = 0.5f;
         public float Rotation = 0.0f;
@@ -20,7 +19,6 @@ namespace Example
 
         public void OnDestroy()
         {
-
         }
 
         public void OnUpdate(float ts)
@@ -41,7 +39,7 @@ namespace Example
 
             if (XYZ.Input.IsKeyPressed(KeyCode.KEY_UP))
             {
-                RigidBody.ApplyForce(new Vector2(0.0f, impulse * 100.0f), point);
+                RigidBody.ApplyForce(new Vector2(0.0f, impulse * VerticalSpeed), point);
             }
             else if (XYZ.Input.IsKeyPressed(KeyCode.KEY_DOWN))
             {

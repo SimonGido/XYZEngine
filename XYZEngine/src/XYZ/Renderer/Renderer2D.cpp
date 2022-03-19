@@ -157,7 +157,6 @@ namespace XYZ {
 
 			const size_t circleShaderHash = m_CircleBuffer.Pipeline->GetSpecification().Shader->GetHash();
 			m_CircleBuffer.Pipeline = m_CirclePipelines[circleShaderHash];
-
 		}
 	}
 

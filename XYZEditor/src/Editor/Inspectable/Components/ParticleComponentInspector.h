@@ -23,7 +23,7 @@ namespace XYZ {
 			void drawEmitter(ParticleEmitter& emitter);
 
 		private:
-			static constexpr uint32_t sc_InvalidIndex = UINT32_MAX;
+			static constexpr size_t sc_InvalidIndex = SIZE_MAX;
 
 			SceneEntity m_Context;
 			size_t	    m_SelectedBurstIndex = sc_InvalidIndex;

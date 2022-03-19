@@ -179,7 +179,6 @@ namespace XYZ {
 
 	void Scene::OnPlay()
 	{
-		CloneRegistry(m_Registry, s_CopyRegistry);
 		// Find Camera	
 		auto cameraView = m_Registry.view<CameraComponent>();
 		if (!cameraView.empty())
@@ -211,6 +210,8 @@ namespace XYZ {
 		{
 			particleView.get<ParticleComponent>(entity).System->Reset();
 		}
+
+		CloneRegistry(m_Registry, s_CopyRegistry);
 	}
 
 	void Scene::OnStop()
@@ -244,7 +245,6 @@ namespace XYZ {
 		delete[]m_PhysicsEntityBuffer;
 		m_PhysicsEntityBuffer = nullptr;
 
-		// m_ECS = std::move(s_ECSCopyEdit);
 		m_SelectedEntity = entt::null;
 	}
 
@@ -262,7 +262,15 @@ namespace XYZ {
 			transform.Translation.y = body->GetPosition().y;
 			transform.Rotation.z = body->GetAngle();
 		}
-
+		{
+			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor particleView");
+			auto particleView = m_Registry.view<ParticleComponent, TransformComponent>();
+			for (auto entity : particleView)
+			{
+				auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
+				particleComponent.System->Update(transformComponent.WorldTransform, ts);
+			}
+		}
 
 		{
 			XYZ_PROFILE_FUNC("Scene::OnUpdate animView");
@@ -590,7 +598,7 @@ namespace XYZ {
 				bodyDef.type = b2_kinematicBody;
 			
 			
-			bodyDef.position.Set(transform.Translation.x, transform.Translation.y);
+			bodyDef.position.Set(translation.x, translation.y);
 			bodyDef.angle = transform.Rotation.z;
 			bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(&m_PhysicsEntityBuffer[counter]);
 			
@@ -602,7 +610,7 @@ namespace XYZ {
 				BoxCollider2DComponent& boxCollider = entity.GetComponent<BoxCollider2DComponent>();
 				b2PolygonShape poly;
 				
-				poly.SetAsBox( boxCollider.Size.x / 2.0f, boxCollider.Size.y / 2.0f, 
+				poly.SetAsBox( (boxCollider.Size.x / 2.0f) * scale.x, (boxCollider.Size.y / 2.0f) * scale.x,
 					   b2Vec2{ boxCollider.Offset.x, boxCollider.Offset.y }, 0.0f);
 				
 				fixture.shape = &poly;
@@ -616,7 +624,7 @@ namespace XYZ {
 				CircleCollider2DComponent& circleCollider = entity.GetComponent<CircleCollider2DComponent>();
 				b2CircleShape circle;
 		
-				circle.m_radius = circleCollider.Radius;
+				circle.m_radius = circleCollider.Radius * scale.x;
 				circle.m_p = b2Vec2(circleCollider.Offset.x, circleCollider.Offset.y);
 		
 				fixture.shape = &circle;
@@ -640,10 +648,16 @@ namespace XYZ {
 				ChainCollider2DComponent& chainCollider = entity.GetComponent<ChainCollider2DComponent>();
 				
 				b2ChainShape chain;
-				chain.CreateChain((const b2Vec2*)chainCollider.Points.data(), (int32_t)chainCollider.Points.size(),
-					{ chainCollider.Points[0].x, chainCollider.Points[0].y },
-					{ chainCollider.Points.back().x, chainCollider.Points.back().y });
-	
+				std::vector<b2Vec2> points;
+				points.reserve(chainCollider.Points.size());
+				for (const auto& p : chainCollider.Points)
+				{
+					points.push_back(b2Vec2{ p.x * scale.x, p.y * scale.y });
+				}
+				chain.CreateChain(points.data(), (int32_t)points.size(),
+					{ points[0].x,	   points[0].y },
+					{ points.back().x, points.back().y });
+			
 				fixture.shape = &chain;
 				fixture.density  = chainCollider.Density;
 				fixture.friction = chainCollider.Friction;

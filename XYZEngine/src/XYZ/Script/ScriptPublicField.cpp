@@ -110,6 +110,7 @@ namespace XYZ {
 		const auto instance = GetInstance(m_InstanceHandle);
 		XYZ_ASSERT(instance, "");
 		MonoString* string = nullptr;
+	
 		mono_field_get_value(instance, m_MonoClassField, &string);
 		outValue = mono_string_to_utf8(string);
 	}
@@ -129,6 +130,16 @@ namespace XYZ {
 	{
 		const uint32_t size = m_Fields.back().m_Size + m_Fields.back().m_Offset;
 		m_Data.Allocate(size);
+		m_Data.ZeroInitialize();
+
+		// We must construct strings before using them
+		for (auto& field : m_Fields)
+		{
+			if (field.m_Type == PublicFieldType::String)
+			{
+				new (field.getData())std::string();
+			}
+		}
 		for (auto& field : m_Fields)
 			field.StoreRuntimeValue();
 	}

@@ -54,7 +54,13 @@ namespace XYZ {
 
 			virtual Type GetType() const override { return Inspectable::Type::Entity; }
 		private:
+			static constexpr size_t sc_InvalidIndex = SIZE_MAX;
+
 			SceneEntity m_Context;
+
+			size_t	    m_SelectedPointIndex = sc_InvalidIndex;
+
+			static constexpr float sc_VSpeed = 0.01f;
 		};
 	}
 }

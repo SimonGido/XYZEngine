@@ -8,6 +8,8 @@
 
 #include "XYZ/ImGui/ImGui.h"
 
+#include "EditorLayer.h"
+
 namespace XYZ {
 	namespace Editor {
 		RigidBody2DInspector::RigidBody2DInspector()
@@ -168,46 +170,51 @@ namespace XYZ {
 		bool ChainCollider2DInspector::OnEditorRender()
 		{
 			return EditorHelper::DrawComponent<ChainCollider2DComponent>("Chain Collider2D", m_Context, [&](auto& component) {
-				/*
-				const TransformComponent& transform = m_Context.GetComponent<TransformComponent>();
-				auto [translation, rotation, scale] = transform.GetWorldComponents();
-				glm::vec3 p0(0.0f);
-				glm::vec3 p1(0.0f);
-				for (size_t i = 1; i < component.Points.size(); ++i)
+				
+				if (ImGui::BeginTable("##ChainCollider2DTable", 2, ImGuiTableFlags_SizingStretchProp))
 				{
-					p0 = { component.Points[i - 1].x, component.Points[i - 1].y, 0.0f };
-					p1 = { component.Points[i].x, component.Points[i].y, 0.0f };
-					p0 += translation;
-					p1 += translation;
-					glm::vec2 normal = glm::normalize(glm::vec2(p1.y - p0.y, -(p1.x - p0.x)));
-					glm::vec3 center = p0 + (p1 - p0) / 2.0f;
+					UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
+					UI::ScopedColorStack color(true,
+						ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f },
+						ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f },
+						ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
+					);
+					const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 
-					renderer->SubmitLine(center, center + glm::vec3(normal.x, normal.y, 0.0f), sc_ColliderColor);
-					renderer->SubmitLine(p0, p1, sc_ColliderColor);
+					UI::TableRow("Density",
+						[]() { ImGui::Text("Density"); },
+						[&]() { UI::ScopedTableColumnAutoWidth scoped(1, lineHeight);
+					UI::FloatControl("##Density", "##DensityDrag", component.Density, 1.0f, 0.05f); }
+					);
+					UI::TableRow("Friction",
+						[]() { ImGui::Text("Friction"); },
+						[&]() { UI::ScopedTableColumnAutoWidth scoped(1, lineHeight);
+					UI::FloatControl("##Friction", "##FrictionDrag", component.Friction, 1.0f, 0.05f); }
+					);
+
+					ImGui::EndTable();
 				}
+				UI::ContainerControl<1>("Points", component.Points, { "Position" }, m_SelectedPointIndex,
+					[](glm::vec2& point, size_t& selectedIndex, size_t index) {
 
-				EditorHelper::BeginColumns("Size");
-				ImGui::PushItemWidth(75.0f);
-				int size = (int)component.Points.size();
-				if (ImGui::InputInt("##Size", &size))
-				{
-					if (size < 2) size = 2;
-					if (size >= 0 && (size_t)size != component.Points.size())
-					{
-						component.Points.resize(size);
-					}
-				}
-				ImGui::PopItemWidth();
-				EditorHelper::EndColumns();
+						bool selected = false;
+						auto& colors = EditorLayer::GetData().Color;
+						const std::string indexStr = std::to_string(index);
+						const std::string countID = "##Point" + indexStr;
+
+						UI::ScopedColorStack color(selectedIndex == index,
+							ImGuiCol_FrameBg, colors[ED::ContainerSelectedItem]);
 
 
-				uint32_t counter = 0;
-				for (auto& point : component.Points)
-				{
-					EditorHelper::DrawVec2Control(std::to_string(counter), point);
-					counter++;
-				}
-				*/
+						UI::TableRow(indexStr.c_str(),
+							[&]() {
+								UI::ScopedTableColumnAutoWidth width(1);
+								ImGui::DragFloat2(countID.c_str(), glm::value_ptr(point), sc_VSpeed);
+								selected = ImGui::IsItemDeactivated(); 
+						});
+						if (selected)
+							selectedIndex = index;
+					});
 			});
 		}
 

@@ -335,6 +335,10 @@ namespace XYZ {
 		component.System->AnimationCycleLength = data["AnimationCycleLength"].as<float>();
 		component.System->EndRotation		   = data["EndRotation"].as<glm::vec3>();
 		
+		size_t counter = 0;
+		for (auto enabled : data["ModulesEnabled"])
+			component.System->ModuleEnabled[counter++] = enabled.as<bool>();
+
 		{ // Emitter
 			auto emitter = data["Emitter"];
 			component.System->Emitter.Shape = static_cast<EmitShape>(emitter["Shape"].as<uint32_t>());
