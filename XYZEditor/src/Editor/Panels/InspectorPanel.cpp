@@ -338,6 +338,10 @@ namespace XYZ {
 				{
 					m_EditablesInUse.push_back(&m_AnimatedMeshInspector);
 				}
+				if (m_SelectedEntity.HasComponent<AnimationComponent>())
+				{
+					m_EditablesInUse.push_back(&m_AnimationInspector);
+				}
 			}
 
 			for (auto& [name, editable] : m_Editables)

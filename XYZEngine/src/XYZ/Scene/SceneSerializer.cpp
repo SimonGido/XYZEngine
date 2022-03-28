@@ -172,6 +172,7 @@ namespace XYZ {
 		out << YAML::EndSeq;
 		out << YAML::Key << "Density" << val.Density;
 		out << YAML::Key << "Friction" << val.Friction;
+		out << YAML::Key << "InvertNormals" << val.InvertNormals;
 		out << YAML::EndMap; // ChainCollider2D;
 	}
 
@@ -575,6 +576,7 @@ namespace XYZ {
 		chain.Points = data["Points"].as<std::vector<glm::vec2>>();
 		chain.Density = data["Density"].as<float>();
 		chain.Friction = data["Friction"].as<float>();
+		chain.InvertNormals = data["InvertNormals"].as<bool>();
 
 		entity.AddComponent(chain);
 	}

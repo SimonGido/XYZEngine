@@ -10,3 +10,4 @@
 #include "SpriteRendererInspector.h"
 #include "TransformInspector.h"
 #include "MeshInspector.h"
+#include "AnimationInspector.h"

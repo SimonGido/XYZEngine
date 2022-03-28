@@ -191,7 +191,10 @@ namespace XYZ {
 						[&]() { UI::ScopedTableColumnAutoWidth scoped(1, lineHeight);
 					UI::FloatControl("##Friction", "##FrictionDrag", component.Friction, 1.0f, 0.05f); }
 					);
-
+					UI::TableRow("InvertNormals",
+						[]() { ImGui::Text("InvertNormals"); },
+						[&]() { ImGui::Checkbox("##InvertNormals", &component.InvertNormals); }
+					);
 					ImGui::EndTable();
 				}
 				UI::ContainerControl<1>("Points", component.Points, { "Position" }, m_SelectedPointIndex,

@@ -345,7 +345,7 @@ namespace XYZ {
 
 		float Density = 1.0f;
 		float Friction = 0.0f;
-
+		bool  InvertNormals = false;
 		void* RuntimeFixture = nullptr;
 	};
 }

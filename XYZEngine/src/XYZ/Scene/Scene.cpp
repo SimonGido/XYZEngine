@@ -650,9 +650,19 @@ namespace XYZ {
 				b2ChainShape chain;
 				std::vector<b2Vec2> points;
 				points.reserve(chainCollider.Points.size());
-				for (const auto& p : chainCollider.Points)
+				if (chainCollider.InvertNormals)
 				{
-					points.push_back(b2Vec2{ p.x * scale.x, p.y * scale.y });
+					for (auto it = chainCollider.Points.rbegin(); it != chainCollider.Points.rend(); ++it)
+					{
+						points.push_back(b2Vec2{ it->x * scale.x, it->y * scale.y });
+					}
+				}
+				else
+				{
+					for (const auto& p : chainCollider.Points)
+					{
+						points.push_back(b2Vec2{ p.x * scale.x, p.y * scale.y });
+					}
 				}
 				chain.CreateChain(points.data(), (int32_t)points.size(),
 					{ points[0].x,	   points[0].y },

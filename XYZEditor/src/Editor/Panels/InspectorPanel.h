@@ -67,6 +67,7 @@ namespace XYZ {
 
 			MeshInspector				  m_MeshInspector;
 			AnimatedMeshInspector		  m_AnimatedMeshInspector;
+			AnimationInspector			  m_AnimationInspector;
 			MaterialInspector			  m_MaterialInspector;
 		};
 
