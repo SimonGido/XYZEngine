@@ -130,7 +130,7 @@ namespace XYZ {
 		void flushFilledCircles();
 		void updateRenderPass(Ref<Pipeline>& pipeline) const;
 
-		Ref<Pipeline> setMaterial(std::map<size_t, Ref<Pipeline>>& pipelines, const Ref<Pipeline>& current, const Ref<Material>& material);
+		Ref<Pipeline> setMaterial(std::unordered_map<size_t, Ref<Pipeline>>& pipelines, const Ref<Pipeline>& current, const Ref<Material>& material);
 	
 	private:	
 		static constexpr uint32_t sc_MaxTextures = 32;
@@ -156,9 +156,9 @@ namespace XYZ {
 		Ref<MaterialAsset>		 m_CircleMaterial;
 								 
 
-		std::map<size_t, Ref<Pipeline>> m_QuadPipelines;
-		std::map<size_t, Ref<Pipeline>> m_LinePipelines;
-		std::map<size_t, Ref<Pipeline>> m_CirclePipelines;
+		std::unordered_map<size_t, Ref<Pipeline>> m_QuadPipelines;
+		std::unordered_map<size_t, Ref<Pipeline>> m_LinePipelines;
+		std::unordered_map<size_t, Ref<Pipeline>> m_CirclePipelines;
 
 		Renderer2DBuffer<QuadVertex>   m_QuadBuffer;
 		Renderer2DBuffer<LineVertex>   m_LineBuffer;

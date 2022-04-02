@@ -7,8 +7,57 @@
 namespace XYZ {
 
 	template <typename T>
+	class FreeListIterator
+	{
+	public:
+		using iterator_category = std::random_access_iterator_tag;
+		using value_type = T;
+		using difference_type = std::ptrdiff_t;
+		using pointer = T*;
+		using reference = T&;
+
+	public:
+		FreeListIterator(T* ptr = nullptr) { m_ptr = ptr; }
+		FreeListIterator(const FreeListIterator<T>& rawIterator) = default;
+		~FreeListIterator() {}
+
+		FreeListIterator<T>& operator=(const FreeListIterator<T>&rawIterator) = default;
+		FreeListIterator<T>& operator=(T * ptr) { m_ptr = ptr; return (*this); }
+
+		operator bool() const {return m_ptr != null; }
+
+		bool                 operator==(const FreeListIterator<T>&rawIterator) const { return (m_ptr == rawIterator.getConstPtr()); }
+		bool                 operator!=(const FreeListIterator<T>&rawIterator) const { return (m_ptr != rawIterator.getConstPtr()); }
+
+		FreeListIterator<T>& operator+=(const difference_type & movement) { m_ptr += movement; return (*this); }
+		FreeListIterator<T>& operator-=(const difference_type & movement) { m_ptr -= movement; return (*this); }
+		FreeListIterator<T>& operator++() { ++m_ptr; return (*this); }
+		FreeListIterator<T>& operator--() { --m_ptr; return (*this); }
+		FreeListIterator<T>                   operator++(int) { auto temp(*this); ++m_ptr; return temp; }
+		FreeListIterator<T>                   operator--(int) { auto temp(*this); --m_ptr; return temp; }
+		FreeListIterator<T>                   operator+(const difference_type & movement) { auto oldPtr = m_ptr; m_ptr += movement; auto temp(*this); m_ptr = oldPtr; return temp; }
+		FreeListIterator<T>                   operator-(const difference_type & movement) { auto oldPtr = m_ptr; m_ptr -= movement; auto temp(*this); m_ptr = oldPtr; return temp; }
+
+		difference_type                             operator-(const FreeListIterator<T>&rawIterator) { return std::distance(rawIterator.getPtr(), this->getPtr()); }
+
+		T& operator*() { return *m_ptr; }
+		const T& operator*()const { return *m_ptr; }
+		T* operator->() { return m_ptr; }
+
+		T* getPtr()const { return m_ptr; }
+		const T* getConstPtr()const { return m_ptr; }
+
+	protected:
+		T* m_ptr;
+	};
+
+	template <typename T>
 	class FreeList
 	{
+	public:
+		using iterator = FreeListIterator<T>;
+		using const_iterator = FreeListIterator<T>;
+
 	public:
 		FreeList(int32_t size = 0);
 		FreeList(const FreeList<T>& other);
@@ -32,6 +81,7 @@ namespace XYZ {
 		
 		T&	     operator[](int32_t index);
 		const T& operator[](int32_t index) const;
+
 	private:
 		std::vector<std::variant<int32_t, T>> m_Data;
 		int32_t m_FirstFree;

@@ -27,12 +27,59 @@ namespace XYZ {
 			EditorPanel(std::move(name)),
 			m_BaseDirectory(AssetManager::GetAssetDirectory()),
 			m_DirectoryTree(AssetManager::GetAssetDirectory()),
+			m_FileManager(AssetManager::GetAssetDirectory()),
 			m_SplitterWidth(200.0f)
 		{
 			m_IconSize = ImVec2(50.0f, 50.0f);
 			m_ArrowSize = ImVec2(25.0f, 25.0f);		
 
 			AssetManager::GetFileWatcher()->AddOnFileChanged<&AssetBrowser::onFileChange>(this);
+		
+
+			m_FileManager.RegisterExtension("dir", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::FolderIcon)
+			});
+			m_FileManager.RegisterExtension("tex", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::TextureIcon)
+			});
+			m_FileManager.RegisterExtension("subtex", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon)
+				});
+			m_FileManager.RegisterExtension("mat", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MaterialIcon)
+				});
+			m_FileManager.RegisterExtension("shader", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::ShaderIcon)
+				});
+			m_FileManager.RegisterExtension("cs", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::ScriptIcon)
+				});
+			m_FileManager.RegisterExtension("anim", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::AnimationIcon)
+				});
+			m_FileManager.RegisterExtension("png", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::PngIcon)
+				});
+			m_FileManager.RegisterExtension("jpg", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::JpgIcon)
+				});
+			m_FileManager.RegisterExtension("mesh", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon)
+				});
+			m_FileManager.RegisterExtension("fbx", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon)
+				});
 		}
 
 		AssetBrowser::~AssetBrowser()
@@ -48,20 +95,17 @@ namespace XYZ {
 				renderTopPanel();
 
 				UI::SplitterV(&m_SplitterWidth, "##DirectoryTree", "##CurrentDirectory",
-					[&]() { XYZ_PROFILE_FUNC("AssetBrowser::processDirectoryTree");
-							processDirectoryTree(m_DirectoryTree.GetRoot(), true); },
-					[&]() { XYZ_PROFILE_FUNC("AssetBrowser::processCurrentDirectory");
-							processCurrentDirectory(); });
-				
-				
-
-				if (ImGui::GetIO().MouseReleased[ImGuiMouseButton_Left]
-					&& ImGui::IsWindowFocused()
-					&& ImGui::IsWindowHovered())
-				{
-					m_RightClickedFile.clear();
-					m_SelectedFile.clear();
-				}
+					[&]() { 
+						XYZ_PROFILE_FUNC("AssetBrowser::processDirectoryTree");
+						processDirectoryTree(m_FileManager.GetRoot(), true); 
+						tryClearClickedFiles();
+					},
+					[&]() { 
+						XYZ_PROFILE_FUNC("AssetBrowser::processCurrentDirectory");
+						processCurrentDirectory(); 
+						tryClearClickedFiles();
+					});
+				tryClearClickedFiles();
 			}
 			ImGui::End();
 		}
@@ -153,6 +197,19 @@ namespace XYZ {
 			}
 		}
 
+		bool AssetBrowser::tryClearClickedFiles()
+		{
+			if (ImGui::GetIO().MouseReleased[ImGuiMouseButton_Left]
+				&& ImGui::IsWindowFocused()
+				&& ImGui::IsWindowHovered())
+			{
+				m_RightClickedFile.clear();
+				m_SelectedFile.clear();
+				return true;
+			}
+			return false;
+		}
+
 		void AssetBrowser::renderTopPanel()
 		{
 			const auto& preferences = EditorLayer::GetData();
@@ -242,7 +299,7 @@ namespace XYZ {
 			rightClickMenu();
 		}
 
-		void AssetBrowser::processDirectoryTree(DirectoryNode& parentNode, bool defaulOpen)
+		void AssetBrowser::processDirectoryTree(const File& file, bool defaulOpen)
 		{
 			const auto& preferences = EditorLayer::GetData();
 			const UV& folderTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::FolderIcon);
@@ -250,31 +307,33 @@ namespace XYZ {
 			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
 			if (defaulOpen)
 				flags |= ImGuiTreeNodeFlags_DefaultOpen;
-			if (parentNode.Empty())
+
+			if (file.Empty())
 				flags |= ImGuiTreeNodeFlags_Leaf;
 
 
-			if (parentNode.IsDirectory())
+			if (file.IsDirectory())
 			{
-				std::string folderID = "##" + parentNode.GetName();
+				std::string folderID = "##" + file.GetName();
 				const bool opened = ImGui::TreeNodeEx(folderID.c_str(), flags);
-			
+
 				if (UI::Utils::IsItemDoubleClicked(ImGuiMouseButton_Left))
-					m_DirectoryTree.SetCurrentNode(parentNode);
+					m_FileManager.SetCurrentFile(file.GetPath());
 
 				ImGui::SameLine();
 				UI::Image(preferences.IconsTexture->GetImage(), { GImGui->Font->FontSize , GImGui->Font->FontSize }, folderTexCoords[0], folderTexCoords[1]);
 				ImGui::SameLine();
-				ImGui::Text(parentNode.GetName().c_str());
+				ImGui::Text(file.GetName().c_str());
 
 				if (opened)
 				{
-					for (auto& node : parentNode)
+					for (auto& node : file)
 						processDirectoryTree(node);
 					ImGui::TreePop();
 				}
 			}
 		}
+		
 		void AssetBrowser::onFileChange(FileWatcher::ChangeType type, const std::filesystem::path& filePath)
 		{
 			if (type == FileWatcher::ChangeType::Added)

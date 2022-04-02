@@ -635,7 +635,7 @@ namespace XYZ {
 		pipeline = Pipeline::Create(spec);
 	}
 
-	Ref<Pipeline> Renderer2D::setMaterial(std::map<size_t, Ref<Pipeline>>& pipelines, const Ref<Pipeline>& current, const Ref<Material>& material)
+	Ref<Pipeline> Renderer2D::setMaterial(std::unordered_map<size_t, Ref<Pipeline>>& pipelines, const Ref<Pipeline>& current, const Ref<Material>& material)
 	{
 		const size_t shaderHash = material->GetShader()->GetHash();
 		auto it = pipelines.find(shaderHash);

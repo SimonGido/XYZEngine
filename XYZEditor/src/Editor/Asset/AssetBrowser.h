@@ -5,6 +5,8 @@
 #include "Editor/EditorPanel.h"
 #include "Editor/Asset/DirectoryTree.h"
 
+#include "Editor/Asset/File.h"
+
 #include "XYZ/FileWatcher/FileWatcher.h"
 
 #include <deque>
@@ -28,12 +30,12 @@ namespace XYZ {
 		private:
 			void createAsset();
 			void rightClickMenu();
-	
+			bool tryClearClickedFiles();
 
 			void renderTopPanel();
-			void processCurrentDirectory();
-			void processDirectoryTree(DirectoryNode& parentNode, bool defaulOpen = false);
 
+			void processCurrentDirectory();
+			void processDirectoryTree(const File& file, bool defaulOpen = false);
 
 			void onFileChange(FileWatcher::ChangeType type, const std::filesystem::path& filePath);
 		private:
@@ -42,6 +44,9 @@ namespace XYZ {
 			std::filesystem::path m_BaseDirectory;
 			
 			DirectoryTree		  m_DirectoryTree;	
+
+
+			FileManager			  m_FileManager;
 		private:		
 			glm::vec2 m_IconSize;
 			glm::vec2 m_ArrowSize;

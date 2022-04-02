@@ -365,6 +365,7 @@ namespace XYZ {
 		Points(other.Points),
 		Density(other.Density),
 		Friction(other.Friction),
+		InvertNormals(other.InvertNormals),
 		RuntimeFixture(other.RuntimeFixture)
 	{
 	}

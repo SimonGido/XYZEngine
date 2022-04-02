@@ -17,7 +17,8 @@ namespace XYZ {
 				{"anim",	ED::AnimationIcon},
 				{"png",		ED::PngIcon},
 				{"jpg",		ED::JpgIcon},
-				{"mesh",	ED::MeshIcon}
+				{"mesh",	ED::MeshIcon},
+				{"fbx",		ED::MeshIcon}
 		};
 
 		static ED::Sprites ExtensionToFileType(const std::string& extension)

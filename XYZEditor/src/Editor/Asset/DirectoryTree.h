@@ -8,6 +8,7 @@
 
 namespace XYZ {
 	namespace Editor {
+
 		class DirectoryNode
 		{
 		public:
@@ -17,13 +18,13 @@ namespace XYZ {
 			void OnImGuiRender(const char* dragName, glm::vec2 size, bool& leftClick, bool& rightClick, bool& leftDoubleClick);
 
 
-			const std::filesystem::path& GetPath()     const { return m_Path; }
-			const std::string&			 GetName()     const { return m_Name; }
-			const uint32_t				 GetDepth()    const { return m_Depth; }
+			const std::filesystem::path& GetPath()		  const { return m_Path; }
+			const std::string&			 GetName()		  const { return m_Name; }
+			const uint32_t				 GetDepth()		  const { return m_Depth; }
 			std::string					 GetPathString()  const;
-			bool						 IsDirectory() const { return std::filesystem::is_directory(m_Path); }
-			bool						 Empty()	   const { return m_Nodes.empty(); }
-			size_t						 Size()		   const { return m_Nodes.size(); }
+			bool						 IsDirectory()    const { return std::filesystem::is_directory(m_Path); }
+			bool						 Empty()	      const { return m_Nodes.empty(); }
+			size_t						 Size()		      const { return m_Nodes.size(); }
 
 			std::vector<DirectoryNode>::iterator	   begin()	     { return m_Nodes.begin(); }
 			std::vector<DirectoryNode>::iterator	   end()		 { return m_Nodes.end(); }
@@ -72,6 +73,7 @@ namespace XYZ {
 			void		   processDirectory(std::vector<DirectoryNode>& nodes, const std::filesystem::path& dirPath, const uint32_t depth);
 			void		   processFile(const std::filesystem::path& path, std::vector<DirectoryNode>& nodes, const uint32_t depth);
 			DirectoryNode* findNode(const std::filesystem::path& path, DirectoryNode& node) const;
+		
 		private:
 			DirectoryNode  m_Root;
 			DirectoryNode* m_CurrentNode;
