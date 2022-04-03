@@ -51,9 +51,9 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::Init");
 		m_ThreadIndex = s_ThreadPool.PushThread();
-		if (m_Specification.SwapChainTarget)
-			m_CommandBuffer = Renderer::GetAPIContext()->GetRenderCommandBuffer();
-		else
+		//if (m_Specification.SwapChainTarget)
+		//	m_CommandBuffer = Renderer::GetAPIContext()->GetRenderCommandBuffer();
+		//else
 			m_CommandBuffer = RenderCommandBuffer::Create(0, "SceneRenderer");
 
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
@@ -135,12 +135,6 @@ namespace XYZ {
 	}
 	void SceneRenderer::EndScene()
 	{
-		SubmitMesh(m_TestMesh, m_TestMaterial, glm::mat4(1.0f));
-		SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 0.0f, 0.0f)));
-
-		SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 10.0f, 0.0f)), m_TestMaterial->GetMaterialInstance());
-		SubmitMesh(m_TestMesh, m_TestMaterial, glm::translate(glm::mat4(1.0f), glm::vec3(7.0f, 10.0f, 0.0f)), m_TestMaterial->GetMaterialInstance());
-
 		preRender();
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();

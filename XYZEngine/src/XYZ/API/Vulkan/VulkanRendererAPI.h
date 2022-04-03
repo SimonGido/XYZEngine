@@ -8,6 +8,7 @@ namespace XYZ {
 	class VulkanRendererAPI : public RendererAPI
 	{
 	public:
+		virtual ~VulkanRendererAPI() override;
 		virtual void Init() override;
 		virtual void Shutdown() override;
 		virtual void BeginFrame() override;
@@ -75,6 +76,7 @@ namespace XYZ {
 				VkPipelineStageFlags srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
 				VkPipelineStageFlags dstStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT
 		);
+
 	private:
 		static void clearFramebuffer(Ref<VulkanFramebuffer> framebuffer, VkCommandBuffer commandBuffer);
 	};

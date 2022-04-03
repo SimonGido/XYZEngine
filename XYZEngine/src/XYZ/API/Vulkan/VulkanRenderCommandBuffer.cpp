@@ -141,12 +141,13 @@ namespace XYZ {
 		const uint32_t frameIndex = VulkanContext::Get()->GetCurrentFrame();
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;; // Optional
+		beginInfo.flags = 0; //VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT; // Optional
 		beginInfo.pInheritanceInfo = nullptr; // Optional
 
 		const VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
 		VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo));
-
+		XYZ_ASSERT(!m_Begin, "");
+		m_Begin = true;
 		if (!m_TimestampQueryPools.empty())
 		{
 			vkCmdResetQueryPool(commandBuffer, m_TimestampQueryPools[frameIndex], 0, m_TimestampQueryCount);
@@ -161,7 +162,7 @@ namespace XYZ {
 		const uint32_t frameIndex = VulkanContext::Get()->GetCurrentFrame();
      	const VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
 
-
+		m_Begin = false;
 		vkCmdEndQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0);
 		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 	}

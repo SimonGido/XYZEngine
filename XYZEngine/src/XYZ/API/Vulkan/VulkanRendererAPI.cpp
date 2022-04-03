@@ -36,6 +36,11 @@ namespace XYZ {
 
 	static Ref<VulkanDescriptorAllocator> s_DescriptorAllocator;
 
+	VulkanRendererAPI::~VulkanRendererAPI()
+	{
+		s_DescriptorAllocator.Reset();
+	}
+
 	void VulkanRendererAPI::Init()
 	{
 		s_DescriptorAllocator = Ref<VulkanDescriptorAllocator>::Create();
@@ -53,7 +58,7 @@ namespace XYZ {
 	void VulkanRendererAPI::Shutdown()
 	{
 		s_DescriptorAllocator->Shutdown();
-		s_DescriptorAllocator.Reset();
+		
 	}
 
 	void VulkanRendererAPI::BeginFrame()

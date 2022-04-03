@@ -19,6 +19,8 @@
 
 namespace XYZ {
 
+	static std::vector<VkCommandBuffer> s_ImGuiCommandBuffers;
+
 	static ImGuiID GetImageID(const Ref<VulkanImage2D>& image)
 	{
 		const auto& imageInfo = image->GetImageInfo();
@@ -48,11 +50,11 @@ namespace XYZ {
         //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 
 
-		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto/Roboto-Black.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
-		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto/Roboto-Light.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
-		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto/Roboto-Medium.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
-		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto/Roboto-Thin.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto/Roboto-Regular.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+		io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto/Roboto-Black.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+		io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto/Roboto-Light.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+		io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto/Roboto-Medium.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+		io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto/Roboto-Thin.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
+		io.FontDefault = io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto/Roboto-Regular.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
 
 		// Setup Dear ImGui style
         ImGui::StyleColorsDark();
@@ -69,8 +71,6 @@ namespace XYZ {
 
 		const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
 
-		m_CommandBuffer = swapChain.GetRenderCommandBuffer().As<VulkanRenderCommandBuffer>();
-		m_RenderPass = swapChain.GetRenderPass().As<VulkanRenderPass>();
 		m_DescriptorAllocator = Ref<VulkanDescriptorAllocator>::Create();
 		m_DescriptorAllocator->Init();
 		Renderer::Submit([this]()
@@ -125,6 +125,12 @@ namespace XYZ {
 			
 			// Upload Fonts
 			RT_uploadFonts();
+		
+			const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
+			s_ImGuiCommandBuffers.resize(framesInFlight);
+			for (uint32_t i = 0; i < framesInFlight; i++)
+				s_ImGuiCommandBuffers[i] = VulkanContext::GetCurrentDevice()->CreateSecondaryCommandBuffer();
+
 		});
     }
 
@@ -182,28 +188,24 @@ namespace XYZ {
 			ImGui::RenderPlatformWindowsDefault();
 		}
 
-	
-		m_CommandBuffer->Begin();
-		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, true);
-
-		Ref<VulkanRenderCommandBuffer> instance = m_CommandBuffer;
-		Renderer::Submit([this, copy, instance, descriptors = std::move(m_ImGuiImageDescriptors)]() mutable
+		Renderer::Submit([this, copy, descriptors = std::move(m_ImGuiImageDescriptors)]() mutable
 		{
+			RT_beginRender();
 			for (auto& [id, desc] : descriptors)
 			{
 				const auto& imageInfo = desc.Image->GetImageInfo();
 				ImGui_ImplVulkan_UpdateTextureInfo(desc.Descriptor, imageInfo.Sampler, imageInfo.ImageView, desc.Image->GetDescriptor().imageLayout);
 			}
 			const uint32_t currentFrame = Renderer::GetCurrentFrame();
-			auto drawCommandBuffer = instance->GetVulkanCommandBuffer(currentFrame);
-			ImGui_ImplVulkan_RenderDrawData(&copy, drawCommandBuffer);
+			ImGui_ImplVulkan_RenderDrawData(&copy, s_ImGuiCommandBuffers[currentFrame]);
+
+			RT_endRender();
+
 			for (int i = 0; i < copy.CmdListsCount; ++i)
 				IM_DELETE(copy.CmdLists[i]);
 			delete[]copy.CmdLists;
 			copy.Clear();
 		});
-		Renderer::EndRenderPass(m_CommandBuffer);
-		m_CommandBuffer->End();
     }
 
 	void VulkanImGuiLayer::AddFont(const ImGuiFontConfig& config)
@@ -273,5 +275,86 @@ namespace XYZ {
 		
 		VK_CHECK_RESULT(vkDeviceWaitIdle(device));
 		ImGui_ImplVulkan_DestroyFontUploadObjects();
+	}
+	void VulkanImGuiLayer::RT_beginRender()
+	{
+		VulkanSwapChain& swapChain = VulkanContext::Get()->GetSwapChain();
+		Ref<VulkanFramebuffer> framebuffer = swapChain.GetRenderPass()->GetSpecification().TargetFramebuffer;
+		
+		VkClearValue clearValues[2];
+		clearValues[0].color = { {0.1f, 0.1f,0.1f, 1.0f} };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		const uint32_t width = swapChain.GetWidth();
+		const uint32_t height = swapChain.GetHeight();
+	
+		const uint32_t commandBufferIndex = swapChain.GetCurrentBufferIndex();
+
+		VkCommandBufferBeginInfo drawCmdBufInfo = {};
+		drawCmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		drawCmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		drawCmdBufInfo.pNext = nullptr;
+
+		VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentCommandBuffer();
+		VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &drawCmdBufInfo));
+
+		VkRenderPassBeginInfo renderPassBeginInfo = {};
+		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBeginInfo.pNext = nullptr;
+		renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
+		renderPassBeginInfo.renderArea.offset.x = 0;
+		renderPassBeginInfo.renderArea.offset.y = 0;
+		renderPassBeginInfo.renderArea.extent.width = width;
+		renderPassBeginInfo.renderArea.extent.height = height;
+		renderPassBeginInfo.clearValueCount = 2; // Color + depth
+		renderPassBeginInfo.pClearValues = clearValues;
+		renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
+
+		vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
+		VkCommandBufferInheritanceInfo inheritanceInfo = {};
+		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+		inheritanceInfo.renderPass = framebuffer->GetRenderPass();
+		inheritanceInfo.framebuffer = swapChain.GetCurrentFramebuffer();
+
+		VkCommandBufferBeginInfo cmdBufInfo = {};
+		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		cmdBufInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+		cmdBufInfo.pInheritanceInfo = &inheritanceInfo;
+
+		VK_CHECK_RESULT(vkBeginCommandBuffer(s_ImGuiCommandBuffers[commandBufferIndex], &cmdBufInfo));
+
+		VkViewport viewport = {};
+		viewport.x = 0.0f;
+		viewport.y = (float)height;
+		viewport.height = -(float)height;
+		viewport.width = (float)width;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(s_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &viewport);
+
+		VkRect2D scissor = {};
+		scissor.extent.width = width;
+		scissor.extent.height = height;
+		scissor.offset.x = 0;
+		scissor.offset.y = 0;
+		vkCmdSetScissor(s_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &scissor);
+	}
+	void VulkanImGuiLayer::RT_endRender()
+	{
+		VulkanSwapChain& swapChain = VulkanContext::Get()->GetSwapChain();
+		VkCommandBuffer drawCommandBuffer = swapChain.GetCurrentCommandBuffer();
+		const uint32_t commandBufferIndex = swapChain.GetCurrentBufferIndex();
+
+		VK_CHECK_RESULT(vkEndCommandBuffer(s_ImGuiCommandBuffers[commandBufferIndex]));
+
+		std::vector<VkCommandBuffer> commandBuffers;
+		commandBuffers.push_back(s_ImGuiCommandBuffers[commandBufferIndex]);
+
+		vkCmdExecuteCommands(drawCommandBuffer, uint32_t(commandBuffers.size()), commandBuffers.data());
+
+		vkCmdEndRenderPass(drawCommandBuffer);
+
+		VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 	}
 }

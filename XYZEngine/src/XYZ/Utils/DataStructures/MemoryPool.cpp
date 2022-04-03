@@ -16,7 +16,6 @@ namespace XYZ {
 		m_NumAllocations(0),
 		m_MemoryUsed(0)
 	{
-		createBlock();
 	}
 	MemoryPool::MemoryPool(MemoryPool&& other) noexcept
 		:

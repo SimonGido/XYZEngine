@@ -30,12 +30,12 @@ namespace  XYZ
     private:
         void addWaitingFonts();
         static void RT_uploadFonts();
+        static void RT_beginRender();
+        static void RT_endRender();
 
     private:
         Ref<VulkanDescriptorAllocator> m_DescriptorAllocator;
         VkDescriptorPool               m_DescriptorPool;
-        Ref<VulkanRenderCommandBuffer> m_CommandBuffer;
-        Ref<VulkanRenderPass>          m_RenderPass;
 
 
         std::queue<ImGuiFontConfig>  m_AddFonts;

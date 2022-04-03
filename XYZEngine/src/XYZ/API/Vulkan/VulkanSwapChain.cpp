@@ -104,10 +104,8 @@ namespace XYZ {
 		Renderer::Submit([this]() {
 
 			const auto device = m_Device->GetVulkanDevice();
-			
 			Renderer::ExecuteResources();
 			VK_CHECK_RESULT(vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_Semaphores[m_CurrentBufferIndex].PresentComplete, VK_NULL_HANDLE, &m_CurrentImageIndex));
-	
 		});
 	}
 	void VulkanSwapChain::Present()
@@ -376,7 +374,7 @@ namespace XYZ {
 		// Color attachment
 		attachments[0].format = m_Format.format;
 		attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
-		attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -386,7 +384,7 @@ namespace XYZ {
 		// Depth attachment
 		attachments[1].format = depthFormat;
 		attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
-		attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 		attachments[1].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 		attachments[1].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -479,6 +477,7 @@ namespace XYZ {
 			specs.SwapChainTarget = true;
 			specs.Width = m_Extent.width;
 			specs.Height = m_Extent.height;
+			specs.ClearOnLoad = false;
 
 			m_Framebuffer = Ref<VulkanFramebuffer>::Create(specs);
 			RenderPassSpecification renderPassSpecs;

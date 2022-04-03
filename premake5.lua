@@ -1,6 +1,6 @@
 workspace "XYZEngine"
 		architecture "x64"
-		startproject "XYZEditor"
+		startproject "XYZGame"
 
 		configurations
 		{

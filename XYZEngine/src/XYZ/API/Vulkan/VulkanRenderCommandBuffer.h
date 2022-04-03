@@ -57,6 +57,8 @@ namespace XYZ {
 		std::vector<VkQueryPool>		   m_PipelineStatisticsQueryPools;
 		std::vector<PipelineStatistics>    m_PipelineStatisticsQueryResults;
 
+
+		bool							   m_Begin = false;
 		friend class VulkanSwapChain;
 	};
 }

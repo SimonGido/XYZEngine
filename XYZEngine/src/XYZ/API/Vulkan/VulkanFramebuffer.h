@@ -11,7 +11,7 @@ namespace XYZ {
 		virtual ~VulkanFramebuffer() override;
 
 		virtual void					Resize(uint32_t width, uint32_t height, bool forceRecreate = false) override;
-		virtual const uint32_t			GetNumColorAttachments()  const override { return m_Specification.SwapChainTarget ? 1 : m_AttachmentImages.size(); }
+		virtual const uint32_t			GetNumColorAttachments()  const override { return m_Specification.SwapChainTarget ? 1 : static_cast<uint32_t>(m_AttachmentImages.size()); }
 		virtual Ref<Image2D>			GetImage(uint32_t attachmentIndex = 0) const override;
 		virtual Ref<Image2D>			GetDepthImage() const override { return m_DepthAttachmentImage; }
 		virtual void				    SetSpecification(const FramebufferSpecification& specs, bool recreate = false) override;
