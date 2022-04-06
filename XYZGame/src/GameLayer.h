@@ -41,5 +41,20 @@ namespace XYZ {
 		EditorCamera			    m_Camera;
 	
 		SceneEntity m_TestQuadEntity;
+
+		Ref<RenderCommandBuffer> m_CommandBuffer;
+		Ref<RenderPass> m_RenderPass;
+		Ref<Pipeline> m_Pipeline;
+		Ref<Material> m_Material;
+		Ref<MaterialInstance> m_MaterialInstance;
+		Ref<StorageBufferSet> m_StorageBufferSet;
+
+		Ref<UniformBufferSet> m_UniformBufferSet;
+
+		struct UBCamera
+		{
+			glm::mat4 ViewProjection;
+			glm::mat4 InverseView;
+		};
 	};
 }
