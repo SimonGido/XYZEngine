@@ -3,7 +3,6 @@
 #include "XYZ/Renderer/SpriteSheet.h"
 
 #include "Editor/EditorPanel.h"
-#include "Editor/Asset/DirectoryTree.h"
 
 #include "Editor/Asset/File.h"
 
@@ -42,9 +41,6 @@ namespace XYZ {
 			std::filesystem::path m_SelectedFile;
 			std::filesystem::path m_RightClickedFile;
 			std::filesystem::path m_BaseDirectory;
-			
-			DirectoryTree		  m_DirectoryTree;	
-
 
 			FileManager			  m_FileManager;
 		private:		

@@ -26,7 +26,6 @@ namespace XYZ {
 			:
 			EditorPanel(std::move(name)),
 			m_BaseDirectory(AssetManager::GetAssetDirectory()),
-			m_DirectoryTree(AssetManager::GetAssetDirectory()),
 			m_FileManager(AssetManager::GetAssetDirectory()),
 			m_SplitterWidth(200.0f)
 		{
@@ -36,9 +35,12 @@ namespace XYZ {
 			AssetManager::GetFileWatcher()->AddOnFileChanged<&AssetBrowser::onFileChange>(this);
 		
 
-			m_FileManager.RegisterExtension("dir", {
+			m_FileManager.RegisterExtension(File::DirExtension(), {
 				EditorLayer::GetData().IconsTexture,
-				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::FolderIcon)
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::FolderIcon),
+				nullptr,
+				nullptr,
+				[this](const std::filesystem::path& path)->bool { m_FileManager.SetCurrentFile(path); return true; }
 			});
 			m_FileManager.RegisterExtension("tex", {
 				EditorLayer::GetData().IconsTexture,
@@ -80,6 +82,7 @@ namespace XYZ {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon)
 				});
+			m_FileManager.Init(AssetManager::GetAssetDirectory());
 		}
 
 		AssetBrowser::~AssetBrowser()
@@ -97,12 +100,12 @@ namespace XYZ {
 				UI::SplitterV(&m_SplitterWidth, "##DirectoryTree", "##CurrentDirectory",
 					[&]() { 
 						XYZ_PROFILE_FUNC("AssetBrowser::processDirectoryTree");
-						processDirectoryTree(m_FileManager.GetRoot(), true); 
+						m_FileManager.ImGuiRenderDirTree();
 						tryClearClickedFiles();
 					},
 					[&]() { 
 						XYZ_PROFILE_FUNC("AssetBrowser::processCurrentDirectory");
-						processCurrentDirectory(); 
+						m_FileManager.ImGuiRenderCurrentDir("AssetDragAndDrop", m_IconSize);
 						tryClearClickedFiles();
 					});
 				tryClearClickedFiles();
@@ -113,7 +116,7 @@ namespace XYZ {
 		void AssetBrowser::SetBaseDirectory(const std::string& path)
 		{
 			m_BaseDirectory = path;
-			m_DirectoryTree = DirectoryTree(path);
+			m_FileManager.Init(path);
 		}
 
 		Ref<Asset> AssetBrowser::GetSelectedAsset()
@@ -162,35 +165,35 @@ namespace XYZ {
 			{
 				if (!m_RightClickedFile.empty())
 				{
-					std::string ext = Utils::GetExtension(m_RightClickedFile.string());
-					if (ext == "png" || ext == "jpg")
-					{
-						if (ImGui::MenuItem("Create Texture"))
-						{
-							std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPathString();
-							const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Texture", ".tex");
-							AssetManager::CreateAsset<Texture2D>(Utils::GetFilename(fullpath), parentDir, m_RightClickedFile.string());
-						}
-					}
-					else if (ext == "fbx")
-					{
-						if (ImGui::MenuItem("Create Mesh Source"))
-						{
-							std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPathString();
-							const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Mesh Source", ".meshsrc");
-							AssetManager::CreateAsset<MeshSource>(Utils::GetFilename(fullpath), parentDir, m_RightClickedFile.string());
-						}
-					}
-					else if (ext == "tex")
-					{
-						if (ImGui::MenuItem("Create SubTexture"))
-						{
-							std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPathString();
-							const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New SubTexture", ".subtex");
-							Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(m_RightClickedFile);
-							AssetManager::CreateAsset<SubTexture>(Utils::GetFilename(fullpath), parentDir, texture);
-						}
-					}
+					//std::string ext = Utils::GetExtension(m_RightClickedFile.string());
+					//if (ext == "png" || ext == "jpg")
+					//{
+					//	if (ImGui::MenuItem("Create Texture"))
+					//	{
+					//		std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPathString();
+					//		const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Texture", ".tex");
+					//		AssetManager::CreateAsset<Texture2D>(Utils::GetFilename(fullpath), parentDir, m_RightClickedFile.string());
+					//	}
+					//}
+					//else if (ext == "fbx")
+					//{
+					//	if (ImGui::MenuItem("Create Mesh Source"))
+					//	{
+					//		std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPathString();
+					//		const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Mesh Source", ".meshsrc");
+					//		AssetManager::CreateAsset<MeshSource>(Utils::GetFilename(fullpath), parentDir, m_RightClickedFile.string());
+					//	}
+					//}
+					//else if (ext == "tex")
+					//{
+					//	if (ImGui::MenuItem("Create SubTexture"))
+					//	{
+					//		std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPathString();
+					//		const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New SubTexture", ".subtex");
+					//		Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(m_RightClickedFile);
+					//		AssetManager::CreateAsset<SubTexture>(Utils::GetFilename(fullpath), parentDir, texture);
+					//	}
+					//}
 				}
 				createAsset();			
 				ImGui::EndPopup();
@@ -213,8 +216,8 @@ namespace XYZ {
 		void AssetBrowser::renderTopPanel()
 		{
 			const auto& preferences = EditorLayer::GetData();
-			const bool backArrowAvailable = !m_DirectoryTree.UndoEmpty();
-			const bool frontArrowAvailable = !m_DirectoryTree.RedoEmpty();
+			const bool backArrowAvailable = !m_FileManager.IsUndoEmpty();
+			const bool frontArrowAvailable = !m_FileManager.IsRedoEmpty();
 
 			const ImVec4 backArrowColor = backArrowAvailable ? preferences.Color[ED::IconColor] : preferences.Color[ED::DisabledColor];
 			const ImVec4 frontArrowColor = frontArrowAvailable ? preferences.Color[ED::IconColor] : preferences.Color[ED::DisabledColor];
@@ -239,116 +242,28 @@ namespace XYZ {
 
 
 			if (backArrowPressed && backArrowAvailable)
-				m_DirectoryTree.Undo();
+				m_FileManager.Undo();
 			
 			if (frontArrowPressed && frontArrowAvailable)
-				m_DirectoryTree.Redo();
+				m_FileManager.Redo();
 
-			std::string path = m_DirectoryTree.GetCurrentNode().GetPathString();
+			const std::string& path = m_FileManager.GetCurrentFile().GetPathStr();
 			UI::Utils::SetPathBuffer(path);
 			if (ImGui::InputText("###", UI::Utils::GetPathBuffer(), _MAX_PATH))
-				m_DirectoryTree.SetCurrentNode(UI::Utils::GetPathBuffer());
+				m_FileManager.SetCurrentFile(UI::Utils::GetPathBuffer());
 		}
 
-		void AssetBrowser::processCurrentDirectory()
-		{
-			const auto&  preferences = EditorLayer::GetData();
-			static float padding = 32.0f;
-			const float  cellSize = m_IconSize.x + padding;
-
-			const float panelWidth = ImGui::GetContentRegionAvail().x;
-			int columnCount = (int)(panelWidth / cellSize);
-			columnCount = std::max(1, columnCount);
-			
-			ImGui::Columns(columnCount, 0, false);
-			for (auto& node : m_DirectoryTree.GetCurrentNode())
-			{
-				UI::ScopedID id(node.GetName().c_str());
-
-				bool leftClicked = false;
-				bool rightClicked = false;
-				bool leftDoubleClicked = false;
-				
-				node.OnImGuiRender("AssetDragAndDrop", m_IconSize, leftClicked, rightClicked, leftDoubleClicked);
-				
-				if (leftDoubleClicked)
-				{
-					if (node.IsDirectory())
-					{
-						m_DirectoryTree.SetCurrentNode(node);
-						break;
-					}
-					else
-					{
-						m_SelectedFile = node.GetPath();
-						auto asset = GetSelectedAsset();
-						Application::Get().OnEvent(AssetSelectedEvent(asset));
-					}
-				}
-				else if (leftClicked)
-				{
-				}
-				else if (rightClicked)
-				{
-					m_RightClickedFile = node.GetPath();
-				}
-						
-				ImGui::NextColumn();
-			}
-			ImGui::Columns(1);
-			rightClickMenu();
-		}
-
-		void AssetBrowser::processDirectoryTree(const File& file, bool defaulOpen)
-		{
-			const auto& preferences = EditorLayer::GetData();
-			const UV& folderTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::FolderIcon);
-
-			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
-			if (defaulOpen)
-				flags |= ImGuiTreeNodeFlags_DefaultOpen;
-
-			if (file.Empty())
-				flags |= ImGuiTreeNodeFlags_Leaf;
-
-
-			if (file.IsDirectory())
-			{
-				std::string folderID = "##" + file.GetName();
-				const bool opened = ImGui::TreeNodeEx(folderID.c_str(), flags);
-
-				if (UI::Utils::IsItemDoubleClicked(ImGuiMouseButton_Left))
-					m_FileManager.SetCurrentFile(file.GetPath());
-
-				ImGui::SameLine();
-				UI::Image(preferences.IconsTexture->GetImage(), { GImGui->Font->FontSize , GImGui->Font->FontSize }, folderTexCoords[0], folderTexCoords[1]);
-				ImGui::SameLine();
-				ImGui::Text(file.GetName().c_str());
-
-				if (opened)
-				{
-					for (auto& node : file)
-						processDirectoryTree(node);
-					ImGui::TreePop();
-				}
-			}
-		}
+		
 		
 		void AssetBrowser::onFileChange(FileWatcher::ChangeType type, const std::filesystem::path& filePath)
 		{
 			if (type == FileWatcher::ChangeType::Added)
 			{		
-				if (auto node = m_DirectoryTree.FindNode(filePath.parent_path()))
-				{
-					m_DirectoryTree.AddNode(*node, filePath);
-				}
+				m_FileManager.AddFile(filePath);
 			}
 			else if (type == FileWatcher::ChangeType::Removed)
 			{
-				if (auto node = m_DirectoryTree.FindNode(filePath.parent_path()))
-				{
-					m_DirectoryTree.RemoveNode(*node, filePath);
-				}
+				m_FileManager.RemoveFile(filePath);
 			}
 		}
 	}

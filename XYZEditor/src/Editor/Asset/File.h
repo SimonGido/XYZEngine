@@ -28,18 +28,21 @@ namespace XYZ {
 	
 			void Rename(std::filesystem::path path);
 			void Delete();
-			bool IsDirectory() const { return std::filesystem::is_directory(m_Path); }
-			bool Empty()	   const { return m_Files.empty(); }
-
+			bool IsDirectory()    const { return std::filesystem::is_directory(m_Path); }
+			bool Empty()	      const { return m_Files.empty(); }
+			bool HasDirectories() const { return m_NumDirectories != 0; }
 
 			const std::string&			 GetName() const { return m_Name; }
 			const std::filesystem::path& GetPath() const { return m_Path; }
+			const std::string&			 GetPathStr() const { return m_PathStr; }
 
 			std::vector<File>::iterator		  begin()		{ return m_Files.begin(); }
 			std::vector<File>::iterator		  end()		    { return m_Files.end(); }
 			std::vector<File>::const_iterator begin() const { return m_Files.begin(); }
 			std::vector<File>::const_iterator end()   const { return m_Files.end(); }
 
+
+			static constexpr const char* DirExtension() { return "dir"; }
 		private:
 			void finishEditing();
 
@@ -56,6 +59,7 @@ namespace XYZ {
 
 			bool m_EditingName = false;
 			bool m_FocusedEdit = false;
+			uint32_t m_NumDirectories = 0;
 
 			char m_NameBuffer[_MAX_FNAME];
 
@@ -78,6 +82,7 @@ namespace XYZ {
 		class FileManager
 		{
 		public:
+			FileManager();
 			FileManager(const std::filesystem::path& path);
 			FileManager(const FileManager& other) = delete;
 			FileManager(FileManager&& other)  noexcept;
@@ -86,8 +91,9 @@ namespace XYZ {
 			FileManager& operator=(const FileManager& other) = delete;
 			FileManager& operator=(FileManager&& other)  noexcept;
 
-			void AddFile(const std::filesystem::path& path);
-			void RemoveFile(const std::filesystem::path& path);
+			void Init(const std::filesystem::path& path);
+			bool AddFile(const std::filesystem::path& path);
+			bool RemoveFile(const std::filesystem::path& path);
 			void SetCurrentFile(const std::filesystem::path& path);
 
 			void ImGuiRenderCurrentDir(const char* dragName, glm::vec2 iconSize);
@@ -98,16 +104,18 @@ namespace XYZ {
 
 			bool IsUndoEmpty() const { return m_UndoDirectories.empty(); }
 			bool IsRedoEmpty() const { return m_RedoDirectories.empty(); }
-
+			bool HasFile(const std::filesystem::path& path) const;
 			void RegisterExtension(const std::string& ext, const FileExtensionInfo& extInfo);
 
 			const File& GetRoot() const { return m_Root; }
+			const File& GetCurrentFile() const { return *m_CurrentFile; }
 		private:
 			void					  imGuiRenderDirTree(File& file, const FileExtensionInfo& extInfo);
 			
 			void					  setCurrentFile(File& file);
-			void					  processDirectory(std::vector<File>& files, const std::filesystem::path& dirPath);
+			void					  processDirectory(File& parent);
 			File*					  findNode(const std::filesystem::path& path, File& file) const;
+			const File*				  findNode(const std::filesystem::path& path, const File& file) const;
 			const FileExtensionInfo*  findExtensionInfo(const std::filesystem::path& path) const;
 		
 		private:
