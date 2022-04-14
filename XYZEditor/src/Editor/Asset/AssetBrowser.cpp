@@ -39,7 +39,6 @@ namespace XYZ {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::FolderIcon),
 				nullptr,
-				nullptr,
 				[this](const std::filesystem::path& path)->bool { m_FileManager.SetCurrentFile(path); return true; }
 			});
 			m_FileManager.RegisterExtension("tex", {
@@ -68,7 +67,18 @@ namespace XYZ {
 				});
 			m_FileManager.RegisterExtension("png", {
 				EditorLayer::GetData().IconsTexture,
-				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::PngIcon)
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::PngIcon),
+				nullptr,
+				nullptr,
+				[this](const std::filesystem::path& path)->bool {
+					ImGui::OpenPopup("RightClickMenu");
+					if (ImGui::BeginPopup("RightClickMenu"))
+					{
+						const std::string& parentDir = m_FileManager.GetCurrentFile().GetPathStr();
+						const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Texture", ".tex");
+						AssetManager::CreateAsset<Texture2D>(Utils::GetFilename(fullpath), parentDir, parentDir);
+					}
+				}
 				});
 			m_FileManager.RegisterExtension("jpg", {
 				EditorLayer::GetData().IconsTexture,
@@ -121,22 +131,22 @@ namespace XYZ {
 
 		Ref<Asset> AssetBrowser::GetSelectedAsset()
 		{
-			if (!m_SelectedFile.empty())
-			{
-				std::string fullFilePath = m_SelectedFile.string();
-				std::replace(fullFilePath.begin(), fullFilePath.end(), '\\', '/');
-				if (Utils::GetExtension(m_SelectedFile.string()) == "mat")
-				{
-					m_SelectedAsset = AssetManager::GetAsset<MaterialAsset>(std::filesystem::path(fullFilePath));				
-					return m_SelectedAsset;
-				}
-			}
+			//if (!m_SelectedFile.empty())
+			//{
+			//	std::string fullFilePath = m_SelectedFile.string();
+			//	std::replace(fullFilePath.begin(), fullFilePath.end(), '\\', '/');
+			//	if (Utils::GetExtension(m_SelectedFile.string()) == "mat")
+			//	{
+			//		m_SelectedAsset = AssetManager::GetAsset<MaterialAsset>(std::filesystem::path(fullFilePath));				
+			//		return m_SelectedAsset;
+			//	}
+			//}
 			return Ref<Asset>();
 		}
 
 		void AssetBrowser::createAsset()
 		{
-			std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPathString();
+			const std::string& parentDir = m_FileManager.GetCurrentFile().GetPathStr();
 			if (ImGui::MenuItem("Create Folder"))
 			{
 				const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Folder", nullptr);
@@ -163,7 +173,7 @@ namespace XYZ {
 			}
 			if (ImGui::BeginPopup("RightClickMenu"))
 			{
-				if (!m_RightClickedFile.empty())
+				
 				{
 					//std::string ext = Utils::GetExtension(m_RightClickedFile.string());
 					//if (ext == "png" || ext == "jpg")
@@ -206,8 +216,8 @@ namespace XYZ {
 				&& ImGui::IsWindowFocused()
 				&& ImGui::IsWindowHovered())
 			{
-				m_RightClickedFile.clear();
-				m_SelectedFile.clear();
+				//m_RightClickedFile.clear();
+				//m_SelectedFile.clear();
 				return true;
 			}
 			return false;

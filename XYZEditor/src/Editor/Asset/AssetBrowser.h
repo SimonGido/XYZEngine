@@ -4,7 +4,7 @@
 
 #include "Editor/EditorPanel.h"
 
-#include "Editor/Asset/File.h"
+#include "Editor/Asset/FileManager.h"
 
 #include "XYZ/FileWatcher/FileWatcher.h"
 
@@ -33,13 +33,8 @@ namespace XYZ {
 
 			void renderTopPanel();
 
-			void processCurrentDirectory();
-			void processDirectoryTree(const File& file, bool defaulOpen = false);
-
 			void onFileChange(FileWatcher::ChangeType type, const std::filesystem::path& filePath);
 		private:
-			std::filesystem::path m_SelectedFile;
-			std::filesystem::path m_RightClickedFile;
 			std::filesystem::path m_BaseDirectory;
 
 			FileManager			  m_FileManager;

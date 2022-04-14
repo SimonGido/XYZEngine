@@ -73,7 +73,7 @@ namespace XYZ {
 			Ref<Texture2D> Texture;
 			UV			   TexCoords;
 
-			FileActionFn   HoverAction;
+			
 			FileActionFn   LeftClickAction;
 			FileActionFn   LeftDoubleClickAction;
 			FileActionFn   RightClickAction;
