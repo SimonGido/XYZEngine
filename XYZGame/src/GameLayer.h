@@ -33,28 +33,19 @@ namespace XYZ {
 	
 	private:
 		void displayStats();
+		Ref<Mesh> marchingMesh(size_t& count);
 
 	private:
-		Ref<Scene>					m_Scene;
-		Ref<SceneRenderer>			m_SceneRenderer;
+		Ref<Scene>			m_Scene;
+		Ref<SceneRenderer>	m_SceneRenderer;
 		
-		EditorCamera			    m_Camera;
+		EditorCamera		m_Camera;
 	
-		SceneEntity m_TestQuadEntity;
+		SceneEntity			m_TestQuadEntity;
 
-		Ref<RenderCommandBuffer> m_CommandBuffer;
-		Ref<RenderPass> m_RenderPass;
-		Ref<Pipeline> m_Pipeline;
-		Ref<Material> m_Material;
-		Ref<MaterialInstance> m_MaterialInstance;
-		Ref<StorageBufferSet> m_StorageBufferSet;
-
-		Ref<UniformBufferSet> m_UniformBufferSet;
-
-		struct UBCamera
-		{
-			glm::mat4 ViewProjection;
-			glm::mat4 InverseView;
-		};
+		glm::vec3 m_Min = glm::vec3(-50);
+		glm::vec3 m_Max = glm::vec3( 50);
+		uint32_t m_NumCellsX = 10, m_NumCellsY = 10, m_NumCellsZ = 10;
+		float m_IsoLevel = 0.2f;
 	};
 }

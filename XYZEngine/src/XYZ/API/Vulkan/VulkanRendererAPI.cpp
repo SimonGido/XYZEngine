@@ -80,8 +80,13 @@ namespace XYZ {
 		Renderer::Submit([renderCommandBuffer, renderPass, explicitClear]()
 		{
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::BeginRenderPass");
-			Ref<VulkanFramebuffer> framebuffer = renderPass->GetSpecification().TargetFramebuffer;
 			Ref<VulkanContext> vulkanContext = Renderer::GetAPIContext();
+			Ref<VulkanFramebuffer> framebuffer = renderPass->GetSpecification().TargetFramebuffer;
+			if (framebuffer->GetSpecification().SwapChainTarget)
+			{
+				const VulkanSwapChain& swapChain = vulkanContext->GetSwapChain();
+				framebuffer = swapChain.GetRenderPass()->GetSpecification().TargetFramebuffer.As<VulkanFramebuffer>();
+			}
 			const uint32_t frameIndex = vulkanContext->GetSwapChain().GetCurrentBufferIndex();
 			uint32_t width = framebuffer->GetSpecification().Width;
 			uint32_t height = framebuffer->GetSpecification().Height;
@@ -113,12 +118,14 @@ namespace XYZ {
 			if (framebuffer->GetSpecification().SwapChainTarget)
 			{
 				const VulkanSwapChain& swapChain = vulkanContext->GetSwapChain();
-				renderPassBeginInfo.renderArea.extent = swapChain.GetExtent();
+				const auto extent = swapChain.GetExtent();
+				renderPassBeginInfo.renderArea.extent = extent;
 				renderPassBeginInfo.framebuffer = swapChain.GetCurrentFramebuffer();
-
-				viewport = { 0.0f, static_cast<float>(height) };
-				viewport.width = static_cast<float>(width);
-				viewport.height = -static_cast<float>(height);
+				renderPassBeginInfo.renderPass = swapChain.GetVulkanRenderPass();
+				
+				viewport = { 0.0f, static_cast<float>(extent.height) };
+				viewport.width = static_cast<float>(extent.width);
+				viewport.height = -static_cast<float>(extent.height);
 				scissor.extent = swapChain.GetExtent();
 			}
 

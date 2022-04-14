@@ -7,24 +7,24 @@
 #include "Perlin.h"
 
 namespace XYZ {
-    void MarchingCubes::PerlinPolygonize(const glm::vec3& min, const glm::vec3& max, uint32_t a, uint32_t b, uint32_t c, std::vector<Triangle>& triangles)
+    void MarchingCubes::PerlinPolygonize(double isoLevel, const glm::vec3& min, const glm::vec3& max, uint32_t numCellsX, uint32_t numCellsY, uint32_t numCellsZ, std::vector<Triangle>& triangles)
     {
         const float width  = max.x - min.x;
         const float height = max.y - min.y;
         const float depth  = max.z - min.z;
       
-        const float cellWidth  = width / (float)a;
-        const float cellHeight = height / (float)b;
-        const float cellDepth  = depth / (float)c;
+        const float cellWidth  = width / (float)numCellsX;
+        const float cellHeight = height / (float)numCellsY;
+        const float cellDepth  = depth / (float)numCellsZ;
         const int32_t octaves = 5;
         const double frequency = 32.0;
 
         siv::PerlinNoise perlin{340 };
-        for (uint32_t i = 0; i < a - 1; ++i)
+        for (uint32_t i = 0; i < numCellsX - 1; ++i)
         {
-            for (uint32_t j = 0; j < b - 1; ++j)
+            for (uint32_t j = 0; j < numCellsY - 1; ++j)
             {
-                for (uint32_t k = 0; k < c - 1; ++k)
+                for (uint32_t k = 0; k < numCellsZ - 1; ++k)
                 {
                     double x = i; double y = j; double z = k;
                     GridCell cell;
@@ -37,21 +37,21 @@ namespace XYZ {
                     cell.Point[6] = min + glm::vec3((x + 1.0f) * cellWidth, (y + 1.0f) * cellHeight, (z + 1.0f) * cellDepth);
                     cell.Point[7] = min + glm::vec3((x)        * cellWidth, (y + 1.0f) * cellHeight, (z + 1.0f) * cellDepth);
                 
-                    x *= frequency;
-                    y *= frequency;
-                    z *= frequency;
+                    x -= 0.5;
+                    y -= 0.5;
+                    z -= 0.5;
 
-                    cell.Value[0] = perlin.octave2D_01(x,        y + z,       octaves) * 16.0f;
-                    cell.Value[1] = perlin.octave2D_01(x + 1.0,  y + z,       octaves) * 16.0f;
-                    cell.Value[2] = perlin.octave2D_01(x + 1.0,  y + z,       octaves) * 16.0f;
-                    cell.Value[3] = perlin.octave2D_01(x,        y + z,       octaves) * 16.0f;
-                    cell.Value[4] = perlin.octave2D_01(x,        y + z + 1.0, octaves) * 16.0f;
-                    cell.Value[5] = perlin.octave2D_01(x + 1.0,  y + z + 1.0, octaves) * 16.0f;
-                    cell.Value[6] = perlin.octave2D_01(x + 1.0,  y + z + 1.0, octaves) * 16.0f;
-                    cell.Value[7] = perlin.octave2D_01(x,        y + z + 1.0, octaves) * 16.0f;
+                    cell.Value[0] = perlin.noise3D(x,        y      ,z       );
+                    cell.Value[1] = perlin.noise3D(x + 1.0,  y      ,z       );
+                    cell.Value[2] = perlin.noise3D(x + 1.0,  y      ,z + 1.0f);
+                    cell.Value[3] = perlin.noise3D(x,        y      ,z + 1.0f);
+                    cell.Value[4] = perlin.noise3D(x,        y + 1.0,z       );
+                    cell.Value[5] = perlin.noise3D(x + 1.0,  y + 1.0,z       );
+                    cell.Value[6] = perlin.noise3D(x + 1.0,  y + 1.0,z + 1.0f);
+                    cell.Value[7] = perlin.noise3D(x,        y + 1.0,z + 1.0f);
                 
                     std::array<Triangle, 5> cellTriangles;
-                    const size_t count = Polygonize(cell, rand() * 16.0f, cellTriangles);
+                    const size_t count = Polygonize(cell, isoLevel, cellTriangles);
                     for (size_t i = 0; i < count; ++i)
                         triangles.push_back(cellTriangles[i]);
                 }

@@ -696,7 +696,7 @@ namespace XYZ {
 
 		RenderPassSpecification renderPassSpec;
 		renderPassSpec.TargetFramebuffer = framebuffer;
-		m_CompositePass = RenderPass::Create(renderPassSpec);;
+		m_CompositePass = RenderPass::Create(renderPassSpec);
 	}
 	void SceneRenderer::createLightPass()
 	{

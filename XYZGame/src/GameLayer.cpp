@@ -64,36 +64,7 @@ namespace XYZ {
 		m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification{ true });
 		m_Camera.SetViewportSize((float)windowWidth, (float)windowHeight);
 	
-		m_CommandBuffer = RenderCommandBuffer::Create(0, "GameCommandBuffer");
-		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
-		m_RenderPass = CreateRenderPass();
-
-		std::vector<BufferLayout> layouts = { {
-			{ ShaderDataType::Float3, "a_Position"},
-			{ ShaderDataType::Float2, "a_TexCoord"}
-		} };
-
-		m_Material = Material::Create(Shader::Create("Assets/Voxel.glsl", layouts));
-		m_MaterialInstance = Ref<MaterialInstance>::Create(m_Material);
-		m_Pipeline = CreatePipeline(m_Material->GetShader(), m_RenderPass);
-		m_StorageBufferSet = StorageBufferSet::Create(3);
-		m_StorageBufferSet->Create(32 * 32 * 32 * sizeof(int), 0, 3);
 		
-		int voxels[32][32][32];
-		for (int i = 0; i < 32; ++i)
-		{
-			for (int j = 0; j < 32; ++j)
-			{
-				for (int k = 0; k < 32; ++k)
-				{
-					voxels[i][j][k] = 1;
-				}
-			}
-		}
-		m_StorageBufferSet->Update(voxels, 32 * 32 * 32 * sizeof(int), 0, 3);
-		m_UniformBufferSet = UniformBufferSet::Create(3);
-		m_UniformBufferSet->Create(sizeof(UBCamera), 0, 0);
-
 		m_TestQuadEntity = m_Scene->CreateEntity("TestQuad");
 
 		m_TestQuadEntity.EmplaceComponent<SpriteRenderer>(
@@ -104,7 +75,14 @@ namespace XYZ {
 		);
 
 		m_TestQuadEntity.EmplaceComponent<PointLight2D>(glm::vec3(1.0f), 1.0f, 1.0f);
+		
+		size_t count = 0;
+		Ref<Mesh> mesh = marchingMesh(count);
 
+		Ref<ShaderAsset> meshShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/MeshShader.shader");
+		auto material = Ref<MaterialAsset>::Create(meshShaderAsset);
+		material->SetTexture("u_Texture", Renderer::GetDefaultResources().WhiteTexture);
+		m_TestQuadEntity.EmplaceComponent<MeshComponent>(mesh, material);
 		Renderer::WaitAndRenderAll();
 	}
 
@@ -114,26 +92,9 @@ namespace XYZ {
 	void GameLayer::OnUpdate(Timestep ts)
 	{
 		m_Camera.OnUpdate(ts);
-		m_CommandBuffer->Begin();
 
-		UBCamera ub;
-		ub.ViewProjection = m_Camera.GetViewProjection();
-		ub.InverseView = glm::inverse(m_Camera.GetViewMatrix());
-
-		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
-		m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&ub, sizeof(UBCamera), 0);
-
-		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, true);
-		
-		Renderer::BindPipeline(m_CommandBuffer, m_Pipeline, m_UniformBufferSet, m_StorageBufferSet, m_Material);
-		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_Pipeline, m_MaterialInstance);
-		Renderer::EndRenderPass(m_CommandBuffer);
-
-		m_CommandBuffer->End();
-		m_CommandBuffer->Submit();
-
-		//m_Scene->OnUpdate(ts);
-		//m_Scene->OnRenderEditor(m_SceneRenderer, m_Camera.GetViewProjection(), m_Camera.GetViewMatrix(), m_Camera.GetPosition());
+		m_Scene->OnUpdate(ts);
+		m_Scene->OnRenderEditor(m_SceneRenderer, m_Camera.GetViewProjection(), m_Camera.GetViewMatrix(), m_Camera.GetPosition());
 	}
 
 	void GameLayer::OnEvent(Event& event)
@@ -144,6 +105,121 @@ namespace XYZ {
 	void GameLayer::OnImGuiRender()
 	{
 		m_SceneRenderer->OnImGuiRender();
+
+		if (ImGui::Begin("Marching Cubes"))
+		{
+			if (ImGui::BeginTable("##MarchingCubesTable", 2, ImGuiTableFlags_SizingStretchProp))
+			{
+				UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
+				UI::ScopedColorStack color(true,
+					ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f },
+					ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f },
+					ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
+				);
+				const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * GImGui->Font->Scale * 2.0f;
+
+				UI::TableRow("Min",
+					[]() { ImGui::Text("Min"); },
+					[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight);
+							if (UI::Vec3Control({ "X", "Y", "Z" }, m_Min))
+							{
+								size_t count = 0;
+								auto mesh = marchingMesh(count);
+								if (count)
+								{
+									m_TestQuadEntity.GetComponent<MeshComponent>().Mesh = mesh;
+								}
+							}
+					}
+				);
+
+				UI::TableRow("Max",
+					[]() { ImGui::Text("Max"); },
+					[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight);
+							if (UI::Vec3Control({ "X", "Y", "Z" }, m_Max))
+							{
+								size_t count = 0;
+								auto mesh = marchingMesh(count);
+								if (count)
+								{
+									m_TestQuadEntity.GetComponent<MeshComponent>().Mesh = mesh;
+								}
+							}
+					}
+				);
+				UI::TableRow("CellsX",
+					[]() { ImGui::Text("CellsX"); },
+					[&]() {
+						UI::ScopedWidth w(100.0f);
+						if (ImGui::InputInt("##SortLayer", (int*)&m_NumCellsX))
+						{
+							if (m_NumCellsX != 0)
+							{
+								size_t count = 0;
+								auto mesh = marchingMesh(count);
+								if (count)
+								{
+									m_TestQuadEntity.GetComponent<MeshComponent>().Mesh = mesh;
+								}
+							}
+						}
+					}
+				);
+				UI::TableRow("CellsY",
+					[]() { ImGui::Text("CellsY"); },
+					[&]() { 
+						UI::ScopedWidth w(100.0f); 
+						if (ImGui::InputInt("##SortLayer", (int*)&m_NumCellsY))
+						{
+							if (m_NumCellsY != 0)
+							{
+								size_t count = 0;
+								auto mesh = marchingMesh(count);
+								if (count)
+								{
+									m_TestQuadEntity.GetComponent<MeshComponent>().Mesh = mesh;
+								}
+							}
+						}
+					}
+				);
+				UI::TableRow("CellsZ",
+					[]() { ImGui::Text("CellsZ"); },
+					[&]() { 
+						UI::ScopedWidth w(100.0f); 
+						if (ImGui::InputInt("##SortLayer", (int*)&m_NumCellsZ))
+						{
+							if (m_NumCellsZ != 0)
+							{
+								size_t count = 0;
+								auto mesh = marchingMesh(count);
+								if (count)
+								{
+									m_TestQuadEntity.GetComponent<MeshComponent>().Mesh = mesh;
+								}
+							}
+						}
+					}
+				);
+				UI::TableRow("IsoLevel",
+					[]() { ImGui::Text("IsoLevel"); },
+					[&]() {
+						UI::ScopedWidth w(100.0f);
+						if (ImGui::DragFloat("##IsoLevelDrag", &m_IsoLevel, 0.05f))
+						{			
+							size_t count = 0;
+							auto mesh = marchingMesh(count);
+							if (count)
+							{
+								m_TestQuadEntity.GetComponent<MeshComponent>().Mesh = mesh;
+							}					
+						}
+					}
+				);
+				ImGui::EndTable();
+			}
+			ImGui::End();
+		}
 	}
 
 	bool GameLayer::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -182,5 +258,27 @@ namespace XYZ {
 			ImGui::Text("Commands Count: %d", stats.CommandsCount);
 		}
 		ImGui::End();
+	}
+	Ref<Mesh> GameLayer::marchingMesh(size_t& count)
+	{
+		std::vector<Triangle> triangles;
+		MarchingCubes::PerlinPolygonize((double)m_IsoLevel, m_Min, m_Max, m_NumCellsX, m_NumCellsY, m_NumCellsZ, triangles);
+
+		std::vector<Vertex> vertices;
+		std::vector<uint32_t> indices;
+		uint32_t counter = 0;
+		for (const auto& tr : triangles)
+		{
+			vertices.push_back({ tr[0], glm::vec2(0.0f) });
+			vertices.push_back({ tr[1], glm::vec2(0.0f) });
+			vertices.push_back({ tr[2], glm::vec2(0.0f) });
+			indices.push_back(counter++);
+			indices.push_back(counter++);
+			indices.push_back(counter++);
+		}
+		count = indices.size();
+		Ref<MeshSource> meshSource = Ref<MeshSource>::Create(vertices, indices);
+		Ref<Mesh> mesh = Ref<Mesh>::Create(meshSource);
+		return mesh;
 	}
 }

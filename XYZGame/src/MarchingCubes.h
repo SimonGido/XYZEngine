@@ -18,7 +18,7 @@ namespace XYZ {
 	class MarchingCubes
 	{
 	public:
-		static void PerlinPolygonize(const glm::vec3& min, const glm::vec3& max, uint32_t a, uint32_t b, uint32_t c, std::vector<Triangle>& triangles);
+		static void PerlinPolygonize(double isoLevel, const glm::vec3& min, const glm::vec3& max, uint32_t a, uint32_t b, uint32_t c, std::vector<Triangle>& triangles);
 
 		static size_t Polygonize(const GridCell& cell, double isoLevel, std::array<Triangle, 5>& triangles);
 
