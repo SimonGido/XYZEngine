@@ -130,6 +130,12 @@ namespace XYZ {
 		}
 	}
 
+	glm::mat4 EditorCamera::GetTransform() const
+	{
+		const glm::mat4 rotation = glm::toMat4(GetOrientation());
+		return glm::translate(glm::mat4(1.0f), m_Position) * rotation;
+	}
+
 	glm::vec3 EditorCamera::GetUpDirection() const
 	{
 		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 1.0f, 0.0f));

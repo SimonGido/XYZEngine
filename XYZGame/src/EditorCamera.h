@@ -26,6 +26,7 @@ namespace XYZ {
 
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		glm::mat4 GetViewProjection() const { return m_ProjectionMatrix * m_ViewMatrix; }
+		glm::mat4 GetTransform() const;
 
 		glm::vec3 GetUpDirection() const;
 		glm::vec3 GetRightDirection() const;

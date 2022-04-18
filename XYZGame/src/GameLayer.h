@@ -64,7 +64,7 @@ namespace XYZ {
 
 		float m_MaxDistance = 2.0f;
 		float m_VoxelSize = 1.0f;
-		static constexpr int VOXEL_GRID_SIZE = 5;
+		static constexpr int VOXEL_GRID_SIZE = 32;
 
 		float m_Time = 0.0f;
 		int m_Voxels[VOXEL_GRID_SIZE][VOXEL_GRID_SIZE][VOXEL_GRID_SIZE];
