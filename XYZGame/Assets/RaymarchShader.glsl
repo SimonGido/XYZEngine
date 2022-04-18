@@ -120,19 +120,14 @@ bool IsInsideChunk(ivec3 voxel)
 		 && (current_voxel.z < float(Depth)  && current_voxel.z > 0));
 }
 
-uint extractInt(uint orig, uint from, uint to)
-{
-	uint mask = ((1 << (to - from + 1)) - 1) << from;
-	return (orig & mask) >> from;
-}
 
 vec4 VoxelToColor(uint voxel)
 {
 	vec4 color;
-	color.x = float(extractInt(voxel, 0,  8))  / 255.0;
-	color.y = float(extractInt(voxel, 8,  16)) / 255.0;
-	color.z = float(extractInt(voxel, 16, 24)) / 255.0;
-	color.w = float(extractInt(voxel, 24, 32)) / 255.0;
+	color.x = bitfieldExtract(voxel, 0, 8) / 255.0;
+	color.y = bitfieldExtract(voxel, 8, 8) / 255.0;
+	color.z = bitfieldExtract(voxel, 16, 8) / 255.0;
+	color.w = bitfieldExtract(voxel, 24, 8) / 255.0;
 
 	return color;
 }

@@ -36,6 +36,16 @@ namespace XYZ {
 	private:
 		void displayStats();
 
+		struct HitResult
+		{
+			enum Side { Top, Bottom, Left, Right, Front, Back, NumSides };
+			uint32_t HitVoxelIndex;
+			uint32_t X, Y, Z;
+			Side	 HitSide = NumSides;
+		};
+
+		bool rayMarch(const glm::vec3& rayOrig, const glm::vec3& rayDir, HitResult& result);
+		std::pair<glm::vec3, glm::vec3> castRay(float mx, float my) const;
 	private:
 		Ref<Scene>			m_Scene;
 		Ref<SceneRenderer>	m_SceneRenderer;
@@ -81,6 +91,7 @@ namespace XYZ {
 		int m_Height = 16;
 		float m_Frequency = 1.0f;
 
+		glm::vec4 m_Color = glm::vec4(1.0f);
 		std::atomic_bool m_Generating = false;
 		bool m_QueuedGenerate = true;
 	};

@@ -18,6 +18,20 @@ namespace XYZ {
 		static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
 	};
 
+
+	static std::pair<float, float> GetMouseViewportSpace()
+	{
+		auto [mx, my] = Input::GetMousePosition();
+		auto [winPosX, winPosY] = Input::GetWindowPosition();
+
+		mx += winPosX;
+		my += winPosY;
+
+		const auto viewportWidth = Input::GetWindowSize().first;
+		const auto viewportHeight = Input::GetWindowSize().second;
+
+		return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
+	}
 	static uint32_t RandomColor()
 	{
 		std::random_device rd; // obtain a random number from hardware
@@ -25,11 +39,22 @@ namespace XYZ {
 		std::uniform_int_distribution<> distr(0, 255); // define the range
 
 		uint32_t result = 0;
-		result |= static_cast<uint8_t>(distr(gen));		  // R
-		result |= static_cast<uint8_t>(distr(gen)) << 8;  // G
-		result |= static_cast<uint8_t>(distr(gen)) << 16; // B
-		result |= static_cast<uint8_t>(distr(gen)) << 24; // A
+		result |= static_cast<uint8_t>(0);		  // R
+		result |= static_cast<uint8_t>(255) << 8;  // G
+		result |= static_cast<uint8_t>(0) << 16; // B
+		result |= static_cast<uint8_t>(255) << 24; // A
 	
+		return result;
+	}
+
+	static uint32_t ColorToUINT(const glm::vec4& color)
+	{
+		uint32_t result = 0;
+		result |= static_cast<uint32_t>(color.x * 255.0f);	   // R
+		result |= static_cast<uint32_t>(color.y * 255.0f) << 8;  // G
+		result |= static_cast<uint32_t>(color.z * 255.0f) << 16; // B
+		result |= static_cast<uint32_t>(color.w * 255.0f) << 24; // A
+
 		return result;
 	}
 
@@ -210,6 +235,8 @@ namespace XYZ {
 	void GameLayer::OnEvent(Event& event)
 	{
 		m_Camera.OnEvent(event);
+		if (event.GetEventType() == EventType::MouseButtonPressed)
+			onMouseButtonPress((MouseButtonPressEvent&)event);
 	}
 
 	void GameLayer::OnImGuiRender()
@@ -238,6 +265,11 @@ namespace XYZ {
 			{
 
 			}
+			if (ImGui::ColorEdit3("Voxel Color", glm::value_ptr(m_Color)))
+			{
+
+			}
+		
 			if (ImGui::DragInt("Seed", &m_Seed))
 			{
 				generateVoxels();
@@ -267,6 +299,56 @@ namespace XYZ {
 
 	bool GameLayer::onMouseButtonPress(MouseButtonPressEvent& event)
 	{
+		if (!Input::IsKeyPressed(KeyCode::KEY_LEFT_CONTROL))
+		{
+			if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_LEFT))
+			{
+				auto [mx, my] = GetMouseViewportSpace();
+				auto [orig, dir] = castRay(mx, my);
+
+				HitResult result;
+				if (rayMarch(orig, dir, result))
+				{
+					m_Voxels[result.HitVoxelIndex] = 0;
+					return true;
+				}
+			}
+			else if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
+			{
+				auto [mx, my] = GetMouseViewportSpace();
+				auto [orig, dir] = castRay(mx, my);
+				HitResult result;
+				if (rayMarch(orig, dir, result))
+				{
+					if (result.HitSide == HitResult::Top)
+					{
+						if (result.Y + 1 < VOXEL_GRID_SIZE)
+							m_Voxels[Index3D(result.X, result.Y + 1, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = ColorToUINT(m_Color);
+					}
+					else if (result.HitSide == HitResult::Right)
+					{
+						if ((int)result.X - 1 >= 0)
+							m_Voxels[Index3D(result.X - 1, result.Y, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = ColorToUINT(m_Color);
+					}
+					else if (result.HitSide == HitResult::Left)
+					{
+						if (result.X + 1 < VOXEL_GRID_SIZE)
+							m_Voxels[Index3D(result.X + 1, result.Y, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = ColorToUINT(m_Color);
+					}
+					else if (result.HitSide == HitResult::Back)
+					{
+						if ((int)result.Z - 1 >= 0)
+							m_Voxels[Index3D(result.X, result.Y, result.Z - 1, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = ColorToUINT(m_Color);
+					}
+					else if (result.HitSide == HitResult::Front)
+					{
+						if (result.Z + 1 < VOXEL_GRID_SIZE)
+							m_Voxels[Index3D(result.X, result.Y, result.Z + 1, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = ColorToUINT(m_Color);
+					}
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 	bool GameLayer::onMouseButtonRelease(MouseButtonReleaseEvent& event)
@@ -335,5 +417,80 @@ namespace XYZ {
 			ImGui::Text("Commands Count: %d", stats.CommandsCount);
 		}
 		ImGui::End();
+	}
+	bool GameLayer::rayMarch(const glm::vec3& rayOrig, const glm::vec3& rayDir, HitResult& result)
+	{
+		glm::vec3 origin = rayOrig + glm::vec3(m_SceneUB.ChunkPosition);
+		glm::vec3 direction = rayDir;
+		glm::ivec3 current_voxel = glm::ivec3(floor(origin / m_SceneUB.VoxelSize));
+
+		glm::ivec3 step = glm::ivec3(
+			(direction.x > 0.0) ? 1 : -1,
+			(direction.y > 0.0) ? 1 : -1,
+			(direction.z > 0.0) ? 1 : -1
+		);
+		glm::vec3 next_boundary = glm::vec3(
+			float((step.x > 0) ? current_voxel.x + 1 : current_voxel.x) * m_SceneUB.VoxelSize,
+			float((step.y > 0) ? current_voxel.y + 1 : current_voxel.y) * m_SceneUB.VoxelSize,
+			float((step.z > 0) ? current_voxel.z + 1 : current_voxel.z) * m_SceneUB.VoxelSize
+		);
+
+		glm::vec3 t_max = (next_boundary - origin) / direction; // we will move along the axis with the smallest value
+		glm::vec3 t_delta = m_SceneUB.VoxelSize / direction * glm::vec3(step);
+		uint32_t voxel = 0;
+		uint32_t i = 0;
+		do
+		{
+			if (t_max.x < t_max.y && t_max.x < t_max.z)
+			{
+				t_max.x += t_delta.x;
+				current_voxel.x += step.x;
+				result.HitSide = (step.x < 0) ? HitResult::Left : HitResult::Right;
+			}
+			else if (t_max.y < t_max.z)
+			{
+				t_max.y += t_delta.y;
+				current_voxel.y += step.y;
+				result.HitSide = (step.y < 0) ? HitResult::Top : HitResult::Bottom;
+			}
+			else
+			{
+				t_max.z += t_delta.z;
+				current_voxel.z += step.z;
+				result.HitSide = (step.x < 0) ? HitResult::Front : HitResult::Back;
+			}
+
+
+			if (((  current_voxel.x < float(m_SceneUB.Width)  && current_voxel.x > 0)
+				&& (current_voxel.y < float(m_SceneUB.Height) && current_voxel.y > 0)
+				&& (current_voxel.z < float(m_SceneUB.Depth)  && current_voxel.z > 0)))
+			{
+				result.HitVoxelIndex = Index3D(current_voxel.x, current_voxel.y, current_voxel.z, m_SceneUB.Width, m_SceneUB.Height);
+				result.X = current_voxel.x;
+				result.Y = current_voxel.y;
+				result.Z = current_voxel.z;
+				voxel = m_Voxels[result.HitVoxelIndex];
+				if (voxel != 0)
+				{
+					return true;
+				}
+			}
+			i += 1;
+		} while (voxel == 0 && i < m_SceneUB.MaxTraverse);
+
+		return false;
+	}
+	std::pair<glm::vec3, glm::vec3> GameLayer::castRay(float mx, float my) const
+	{
+		const glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
+
+		const auto inverseProj = glm::inverse(m_Camera.GetProjectionMatrix());
+		const auto inverseView = glm::inverse(glm::mat3(m_Camera.GetViewMatrix()));
+
+		const glm::vec4 ray = inverseProj * mouseClipPos;
+		glm::vec3 rayPos = m_Camera.GetPosition();
+		glm::vec3 rayDir = inverseView * glm::vec3(ray);
+
+		return { rayPos, glm::normalize(rayDir) };
 	}
 }
