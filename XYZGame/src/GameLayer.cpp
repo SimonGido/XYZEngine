@@ -1,5 +1,8 @@
 #include "GameLayer.h"
 
+
+
+
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
@@ -14,6 +17,26 @@ namespace XYZ {
 
 		static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
 	};
+
+	static uint32_t RandomColor()
+	{
+		std::random_device rd; // obtain a random number from hardware
+		std::mt19937 gen(rd()); // seed the generator
+		std::uniform_int_distribution<> distr(0, 255); // define the range
+
+		uint32_t result = 0;
+		result |= static_cast<uint8_t>(distr(gen));		  // R
+		result |= static_cast<uint8_t>(distr(gen)) << 8;  // G
+		result |= static_cast<uint8_t>(distr(gen)) << 16; // B
+		result |= static_cast<uint8_t>(distr(gen)) << 24; // A
+	
+		return result;
+	}
+
+	static uint32_t Index3D(int x, int y, int z, int width, int height)
+	{
+		return x + width * (y + height * z);
+	}
 
 	static Ref<RenderPass> CreateRenderPass()
 	{
@@ -107,12 +130,15 @@ namespace XYZ {
 
 		m_Material = Material::Create(Shader::Create("Assets/RaymarchShader.glsl", layouts));
 		m_MaterialInstance = Ref<MaterialInstance>::Create(m_Material);
-		m_MaterialInstance->Set("u_Uniforms.MaxDistance", m_MaxDistance);
-		m_MaterialInstance->Set("u_Uniforms.VoxelSize", m_VoxelSize);
+
+
 		m_Pipeline = CreatePipeline(m_Material->GetShader(), m_RenderPass);
 		m_StorageBufferSet = StorageBufferSet::Create(3);
 		
-		m_StorageBufferSet->Create(VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * sizeof(int), 0, 3);
+
+		m_Voxels.resize(VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE);
+
+		m_StorageBufferSet->Create(m_Voxels.size() * sizeof(uint32_t), 0, 3);
 
 		for (int i = 0; i < VOXEL_GRID_SIZE; ++i)
 		{
@@ -120,13 +146,20 @@ namespace XYZ {
 			{
 				for (int k = 0; k < VOXEL_GRID_SIZE; ++k)
 				{
-					m_Voxels[i][j][k] = 255;
+					m_Voxels[Index3D(i, j, k, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = 0;
+					if (j == 0)
+						m_Voxels[Index3D(i, j, k, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = 1;
 				}
 			}
 		}
-		m_StorageBufferSet->Update(m_Voxels, VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * sizeof(int), 0, 3);
-		m_UniformBufferSet = UniformBufferSet::Create(3);
-		m_UniformBufferSet->Create(sizeof(UBScene), 0, 0);
+		siv::PerlinNoise perlin{ 340 };
+
+		
+		generateVoxels();
+		m_StorageBufferSet->Update(m_Voxels.data(), m_Voxels.size() * sizeof(uint32_t), 0, 3);
+		m_SceneBufferSet = UniformBufferSet::Create(3);
+		m_SceneBufferSet->Create(sizeof(UBScene), 0, 0);
+
 		
 		m_TestQuadEntity = m_Scene->CreateEntity("TestQuad");
 
@@ -148,6 +181,9 @@ namespace XYZ {
 	}
 	void GameLayer::OnUpdate(Timestep ts)
 	{
+		if (m_QueuedGenerate)
+			generateVoxels();
+
 		m_Camera.OnUpdate(ts);
 
 		m_CommandBuffer->Begin();
@@ -158,33 +194,12 @@ namespace XYZ {
 		m_SceneUB.CameraPosition = glm::vec4(m_Camera.GetPosition(), 0.0f);
 
 		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
-		m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&m_SceneUB, sizeof(UBScene), 0);
+		m_SceneBufferSet->Get(0, 0, currentFrame)->Update(&m_SceneUB, sizeof(UBScene), 0);
 
-		if (m_Time > 3.0f)
-		{
-			m_Time = 0.0f;
-			for (int i = 0; i < VOXEL_GRID_SIZE; ++i)
-			{
-				for (int j = 0; j < VOXEL_GRID_SIZE; ++j)
-				{
-					for (int k = 0; k < VOXEL_GRID_SIZE; ++k)
-					{
-						int num = rand() % 100;
-						if (num > 10)
-							m_Voxels[i][j][k] = 0;
-						else
-							m_Voxels[i][j][k] = 255;
-					}
-				}
-			}
-		}
-		m_Time += ts;
-
-
-		m_StorageBufferSet->Update(m_Voxels, VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * sizeof(int), 0, 3);
+		m_StorageBufferSet->Update(m_Voxels.data(), m_Voxels.size() * sizeof(uint32_t), 0, 3);
 		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, true);
 
-		Renderer::BindPipeline(m_CommandBuffer, m_Pipeline, m_UniformBufferSet, m_StorageBufferSet, m_Material);
+		Renderer::BindPipeline(m_CommandBuffer, m_Pipeline, m_SceneBufferSet, m_StorageBufferSet, m_Material);
 		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_Pipeline, m_MaterialInstance);
 		Renderer::EndRenderPass(m_CommandBuffer);
 
@@ -211,14 +226,31 @@ namespace XYZ {
 			{
 
 			}
-			if (ImGui::DragFloat("Max Distance", &m_MaxDistance))
+			if (ImGui::DragFloat3("Chunk Position", glm::value_ptr(m_SceneUB.ChunkPosition), 0.1f))
 			{
-				m_MaterialInstance->Set("u_Uniforms.MaxDistance", m_MaxDistance);
+
 			}
-			if (ImGui::DragFloat("Voxel Size", &m_VoxelSize, 0.1f))
+			if (ImGui::DragInt("Max Traverse", (int*)&m_SceneUB.MaxTraverse))
 			{
-				m_MaterialInstance->Set("u_Uniforms.VoxelSize", m_VoxelSize);
+				
 			}
+			if (ImGui::DragFloat("Voxel Size", &m_SceneUB.VoxelSize, 0.1f))
+			{
+
+			}
+			if (ImGui::DragInt("Seed", &m_Seed))
+			{
+				generateVoxels();
+			}
+			if (ImGui::DragInt("Octaves", &m_Octaves))
+			{
+				generateVoxels();
+			}
+			if (ImGui::DragFloat("Frequency", &m_Frequency, 0.05f))
+			{
+				generateVoxels();
+			}
+	
 			float fov = m_Camera.GetFOV();
 			if (ImGui::DragFloat("FOV", &fov))
 			{
@@ -227,6 +259,8 @@ namespace XYZ {
 			const float aspect = m_Camera.GetAspectRatio();
 			ImGui::Text("Aspect %f", aspect);
 			ImGui::Text("Camera Position %f %f %f", m_Camera.GetPosition().x, m_Camera.GetPosition().y, m_Camera.GetPosition().z);
+			if (m_Generating)
+				ImGui::Text("Generating Voxels!!!");
 		}
 		ImGui::End();
 	}
@@ -252,6 +286,40 @@ namespace XYZ {
 	bool GameLayer::onKeyRelease(KeyReleasedEvent& event)
 	{
 		return false;
+	}
+
+	void GameLayer::generateVoxels()
+	{
+		if (m_Generating)
+		{
+			m_QueuedGenerate = true;
+			return;
+		}
+
+		m_QueuedGenerate = false;
+		m_Generating = true;
+		Application::Get().GetThreadPool().PushJob([this]() {
+
+			siv::PerlinNoise m_Noise{ (uint32_t) m_Seed};
+			
+			const double fx = (m_Frequency / VOXEL_GRID_SIZE);
+			const double fy = (m_Frequency / VOXEL_GRID_SIZE);
+			for (int i = 0; i < VOXEL_GRID_SIZE; ++i)
+			{
+				for (int j = 0; j < VOXEL_GRID_SIZE; ++j)
+				{
+					double x = i;
+					double y = j;
+					double val = m_Noise.octave2D(x * fx, y * fy, m_Octaves);
+					int height = val * 16;
+					for (int k = -16; k < height; ++k)
+					{
+						m_Voxels[Index3D(i, k + 16, j, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = RandomColor();
+					}
+				}
+			}
+			m_Generating = false;
+		});	
 	}
 
 	void GameLayer::displayStats()

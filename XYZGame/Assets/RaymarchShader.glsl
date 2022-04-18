@@ -13,6 +13,15 @@ layout (std140, binding = 0) uniform Scene
 	vec4 u_CameraPosition;
 	vec4 u_LightDirection;
 	vec4 u_LightColor;
+
+	//Voxel chunk info
+	vec4  ChunkPosition;
+	uint  MaxTraverse;
+	uint  Width;
+	uint  Height;
+	uint  Depth;
+	float VoxelSize;
+	float Padding[3];
 };
 
 layout(push_constant) uniform Transform
@@ -54,8 +63,6 @@ void main()
 layout(location = 0) out vec4 o_Color;
 
 
-#define VOXEL_GRID_SIZE 32
-
 
 struct VertexOutput
 {
@@ -69,50 +76,74 @@ struct VertexOutput
 layout(location = 0) in VertexOutput v_Input;
 
 
-layout(std430, binding = 3) buffer buffer_Voxels
+layout(std140, binding = 0) uniform Scene
 {
-	int Voxels[VOXEL_GRID_SIZE][VOXEL_GRID_SIZE][VOXEL_GRID_SIZE];
+	mat4 u_ViewProjection;
+	mat4 u_InverseView;
+	mat4 u_CameraFrustum;
+	vec4 u_CameraPosition;
+	vec4 u_LightDirection;
+	vec4 u_LightColor;
+
+	//Voxel chunk info
+	vec4  ChunkPosition;
+	uint  MaxTraverse;
+	uint  Width;
+	uint  Height;
+	uint  Depth;
+	float VoxelSize;
+	float Padding[3];
 };
 
-layout(push_constant) uniform Uniforms
+layout(std430, binding = 3) buffer buffer_Voxels
 {
-	layout(offset = 64) 
-	float MaxDistance;
-	float VoxelSize;
-} u_Uniforms;
+	uint Voxels[];
+};
 
 
-float sdBox(vec3 p, vec3 b)
+uint Index3D(int x, int y, int z)
 {
-	vec3 d = abs(p) - b;
-	return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
+	return x + Width * (y + Depth * z);
 }
 
-float distanceField(vec3 position, vec3 boxPosition)
+uint Index3D(ivec3 index)
 {
-	float dist = sdBox(position - boxPosition, vec3(u_Uniforms.VoxelSize));
-	return dist;
+	return Index3D(index.x, index.y, index.z);
 }
 
-vec3 getNormal(vec3 position, vec3 boxPosition)
+
+bool IsInsideChunk(ivec3 voxel)
 {
-	const vec3 offset = vec3(0.001, 0.0, 0.0);
-	vec3 normal = vec3(
-		distanceField(position + offset.xyy, boxPosition) - distanceField(position - offset.xyy, boxPosition),
-		distanceField(position + offset.yxy, boxPosition) - distanceField(position - offset.yxy, boxPosition),
-		distanceField(position + offset.yyx, boxPosition) - distanceField(position - offset.yyx, boxPosition)
-	);
-	return normalize(normal);
+	vec3 current_voxel = vec3(voxel.x, voxel.y, voxel.z);
+	return ((current_voxel.x < float(Width ) && current_voxel.x > 0)
+		 && (current_voxel.y < float(Height) && current_voxel.y > 0)
+		 && (current_voxel.z < float(Depth)  && current_voxel.z > 0));
 }
 
-vec4 rayMarch(vec3 rayOrig, vec3 rayDir)
+uint extractInt(uint orig, uint from, uint to)
+{
+	uint mask = ((1 << (to - from + 1)) - 1) << from;
+	return (orig & mask) >> from;
+}
+
+vec4 VoxelToColor(uint voxel)
+{
+	vec4 color;
+	color.x = float(extractInt(voxel, 0,  8))  / 255.0;
+	color.y = float(extractInt(voxel, 8,  16)) / 255.0;
+	color.z = float(extractInt(voxel, 16, 24)) / 255.0;
+	color.w = float(extractInt(voxel, 24, 32)) / 255.0;
+
+	return color;
+}
+
+vec4 RayMarch(vec3 rayOrig, vec3 rayDir)
 {
 	vec4 defaultColor = vec4(0.3, 0.2, 0.7, 1.0);
-	const int maxIteration = 128;
 
-	vec3 origin = rayOrig;
+	vec3 origin = rayOrig + ChunkPosition.xyz;
 	vec3 direction = rayDir;
-	ivec3 current_voxel = ivec3(floor(origin / u_Uniforms.VoxelSize));
+	ivec3 current_voxel = ivec3(floor(origin / VoxelSize));
 
 	ivec3 step = ivec3(
 		(direction.x > 0.0) ? 1 : -1,
@@ -120,16 +151,16 @@ vec4 rayMarch(vec3 rayOrig, vec3 rayDir)
 		(direction.z > 0.0) ? 1 : -1
 	);
 	vec3 next_boundary = vec3(
-		float((step.x > 0) ? current_voxel.x + 1 : current_voxel.x) * u_Uniforms.VoxelSize,
-		float((step.y > 0) ? current_voxel.y + 1 : current_voxel.y) * u_Uniforms.VoxelSize,
-		float((step.z > 0) ? current_voxel.z + 1 : current_voxel.z) * u_Uniforms.VoxelSize
+		float((step.x > 0) ? current_voxel.x + 1 : current_voxel.x) * VoxelSize,
+		float((step.y > 0) ? current_voxel.y + 1 : current_voxel.y) * VoxelSize,
+		float((step.z > 0) ? current_voxel.z + 1 : current_voxel.z) * VoxelSize
 	);
 
 	vec3 t_max = (next_boundary - origin) / direction; // we will move along the axis with the smallest value
-	vec3 t_delta = u_Uniforms.VoxelSize / direction * vec3(step);
+	vec3 t_delta = VoxelSize / direction * vec3(step);
 	vec3 normal;
-	int voxel = 0;
-	int i = 0;
+	uint voxel = 0;
+	uint i = 0;
 	do 
 	{
 		if (t_max.x < t_max.y && t_max.x < t_max.z) 
@@ -142,33 +173,30 @@ vec4 rayMarch(vec3 rayOrig, vec3 rayDir)
 		{
 			normal = vec3(0.0, float(-step.y), 0.0);
 			t_max.y += t_delta.y;
-			current_voxel.y += step.y;
-			
+			current_voxel.y += step.y;			
 		}
 		else 
 		{
 			normal = vec3(0.0, 0.0, float(-step.z));
 			t_max.z += t_delta.z;
-			current_voxel.z += step.z;
-			
+			current_voxel.z += step.z;		
 		}
 		
 		// Is inside voxel area
-		if ((current_voxel.x < VOXEL_GRID_SIZE && current_voxel.x > 0)
-		 && (current_voxel.y < VOXEL_GRID_SIZE && current_voxel.y > 0)
-		 && (current_voxel.z < VOXEL_GRID_SIZE && current_voxel.z > 0))
+		if (IsInsideChunk(current_voxel))
 		{
-			voxel = Voxels[current_voxel.x][current_voxel.y][current_voxel.z];
+			voxel = Voxels[Index3D(current_voxel)];
 			if (voxel != 0)
 			{
 				float light = dot(-v_Input.LightDirection, normal);
-				vec3 color = v_Input.LightColor * light;
-				return vec4(color, 1.0);
+				vec4 voxelColor = VoxelToColor(voxel);
+				vec3 color = voxelColor.xyz * v_Input.LightColor * light;
+				return vec4(color, voxelColor.a);
 			}
 		}
 		i += 1;
 	} 
-	while (voxel == 0 && i < maxIteration);
+	while (voxel == 0 && i < MaxTraverse);
 	
 	return defaultColor;
 }
@@ -177,6 +205,6 @@ vec4 rayMarch(vec3 rayOrig, vec3 rayDir)
 
 void main() 
 {
-	vec4 color = rayMarch(v_Input.RayOrigin, v_Input.Ray);
+	vec4 color = RayMarch(v_Input.RayOrigin, v_Input.Ray);
 	o_Color = color;
 }

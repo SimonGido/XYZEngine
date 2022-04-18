@@ -9,6 +9,8 @@
 
 #include "EditorCamera.h"
 #include "MarchingCubes.h"
+#include "Perlin.h"
+
 
 namespace XYZ {
 	class GameLayer : public Layer
@@ -30,7 +32,7 @@ namespace XYZ {
 		bool onKeyPress(KeyPressedEvent& event);
 		bool onKeyRelease(KeyReleasedEvent& event);
 
-	
+		void generateVoxels();
 	private:
 		void displayStats();
 
@@ -49,7 +51,9 @@ namespace XYZ {
 		Ref<MaterialInstance>	 m_MaterialInstance;
 		Ref<StorageBufferSet>	 m_StorageBufferSet;
 
-		Ref<UniformBufferSet>	 m_UniformBufferSet;
+		Ref<UniformBufferSet>	 m_SceneBufferSet;
+
+		static constexpr int VOXEL_GRID_SIZE = 100;
 
 		struct UBScene
 		{
@@ -57,16 +61,27 @@ namespace XYZ {
 			glm::mat4 InverseView{};
 			glm::mat4 CameraFrustum{};
 			glm::vec4 CameraPosition{};
-			glm::vec4 LightDirection{};
-			glm::vec4 LightColor{};
+			glm::vec4 LightDirection{-0.2f, -1.4f, -1.5f, 1.0f};
+			glm::vec4 LightColor{0.2f, 0.5f, 0.5f, 1.0f};
+
+			glm::vec4 ChunkPosition = glm::vec4(0.0f);
+			uint32_t  MaxTraverse = 128;
+			uint32_t  Width = VOXEL_GRID_SIZE;
+			uint32_t  Height = VOXEL_GRID_SIZE;
+			uint32_t  Depth = VOXEL_GRID_SIZE;
+			float	  VoxelSize = 1.0f;
+			float	  Padding[3];
 		};
 		UBScene m_SceneUB;
 
-		float m_MaxDistance = 2.0f;
-		float m_VoxelSize = 1.0f;
-		static constexpr int VOXEL_GRID_SIZE = 32;
+		std::vector<uint32_t> m_Voxels;
 
-		float m_Time = 0.0f;
-		int m_Voxels[VOXEL_GRID_SIZE][VOXEL_GRID_SIZE][VOXEL_GRID_SIZE];
+		int m_Seed = 10;
+		int m_Octaves = 4;
+		int m_Height = 16;
+		float m_Frequency = 1.0f;
+
+		std::atomic_bool m_Generating = false;
+		bool m_QueuedGenerate = true;
 	};
 }
