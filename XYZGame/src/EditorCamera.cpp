@@ -92,6 +92,12 @@ namespace XYZ {
 		dispatcher.Dispatch<MouseScrollEvent>(Hook(&EditorCamera::onMouseScroll, this));
 	}
 
+	void EditorCamera::SetFOV(float fov)
+	{
+		m_FOV = fov;
+		updateProjection();
+	}
+
 	bool EditorCamera::onMouseScroll(MouseScrollEvent& e)
 	{
 		const float delta = (float)e.GetOffsetY() * 0.1f;

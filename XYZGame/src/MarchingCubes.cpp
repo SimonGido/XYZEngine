@@ -70,13 +70,14 @@ namespace XYZ {
         {
             if (sc_EdgeTable[cubeIndex] & (1 << i))
             {
-                const size_t indexA = sc_CornerIndexAFromEdge[i];
-                const size_t indexB = sc_CornerIndexBFromEdge[i];
+                const size_t indexA = sc_EdgeConnection[i][0];
+                const size_t indexB = sc_EdgeConnection[i][1];
                 vertices[i] = interpolateVertex(
                     isoLevel,
                     cell.Point[indexA], cell.Point[indexB],
                     cell.Value[indexA], cell.Value[indexB]
                 );
+                vertices[i] = glm::vec3(0.5f);
             }
         }
 

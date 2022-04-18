@@ -57,8 +57,7 @@ namespace XYZ {
 
 	void VulkanRendererAPI::Shutdown()
 	{
-		s_DescriptorAllocator->Shutdown();
-		
+		s_DescriptorAllocator->Shutdown();	
 	}
 
 	void VulkanRendererAPI::BeginFrame()
@@ -68,7 +67,6 @@ namespace XYZ {
 
 	void VulkanRendererAPI::EndFrame()
 	{
-		//s_DescriptorAllocator->TryResetFull();
 		Renderer::Submit([]()
 		{
 		});

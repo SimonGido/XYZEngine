@@ -20,7 +20,7 @@ layout(location = 0) out VertexOutput v_Output;
 void main()
 {
     v_Output.TexCoord = a_TexCoord;
-    gl_Position = u_Renderer.Transform * vec4(a_Position, 1.0);
+    gl_Position = u_Renderer.Transform * vec4(a_Position.xy, 0.0, 1.0);
 }
 
 

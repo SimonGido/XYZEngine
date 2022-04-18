@@ -46,6 +46,7 @@ namespace XYZ {
 		void displayPerformance();
 		void displayRenderer();
 
+		void onStop();
 	private:
 		LayerStack m_LayerStack;
 		ImGuiLayer* m_ImGuiLayer;

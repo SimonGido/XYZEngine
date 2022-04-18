@@ -96,8 +96,7 @@ namespace XYZ {
 			}
 			AssetManager::Update(m_Timestep);
 		}
-
-		XYZ_PROFILER_SHUTDOWN;
+		onStop();
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -214,6 +213,14 @@ namespace XYZ {
 				m_Window->SetVSync(vSync);
 		}
 		ImGui::End();
+	}
+
+	void Application::onStop()
+	{
+		// Make sure we actually finished all commands submitted last frame
+		Renderer::BlockRenderThread(); // Sync before new frame				
+		Renderer::Render();
+		XYZ_PROFILER_SHUTDOWN;
 	}
 
 

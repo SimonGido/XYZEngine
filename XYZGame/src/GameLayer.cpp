@@ -41,6 +41,36 @@ namespace XYZ {
 		return Pipeline::Create(specification);
 	}
 
+	static glm::mat4 CameraFrustum(const EditorCamera& camera)
+	{
+		glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
+		glm::vec3 Right = glm::vec3(1.0f, 0.0f, 0.0f);
+		glm::vec3 Forward = glm::vec3(0.0f, 0.0f, 1.0f);
+
+		//Forward = camera.GetForwardDirection();
+		//Up = camera.GetUpDirection();
+		//Right = camera.GetRightDirection();
+
+		const float aspect = camera.GetAspectRatio();
+		const float fov = glm::tan(glm::radians(camera.GetFOV() * 0.5f));
+
+		
+		const glm::vec3 goUp = Up * fov;
+		const glm::vec3 goRight = Right * fov * aspect;
+
+		const glm::vec3 topLeft		= -Forward - goRight + goUp;
+		const glm::vec3 topRight	= -Forward + goRight + goUp;
+		const glm::vec3 bottomRight = -Forward + goRight - goUp;
+		const glm::vec3 bottomLeft	= -Forward - goRight - goUp;
+
+		glm::mat4 frustum(1.0f);
+		frustum[0] = { topLeft.x,     topLeft.y,     topLeft.z, 0.0f };
+		frustum[1] = { topRight.x,    topRight.y,    topRight.z, 0.0f };
+		frustum[2] = { bottomRight.x, bottomRight.y, bottomRight.z, 0.0f };
+		frustum[3] = { bottomLeft.x,  bottomLeft.y,  bottomLeft.z, 0.0f };
+		return frustum;
+	}
+
 	GameLayer::GameLayer()
 		:
 		m_Camera(30.0f, 1.778f, 0.1f, 1000.0f)
@@ -64,6 +94,39 @@ namespace XYZ {
 		m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification{ true });
 		m_Camera.SetViewportSize((float)windowWidth, (float)windowHeight);
 	
+
+
+		m_CommandBuffer = RenderCommandBuffer::Create(0, "GameCommandBuffer");
+		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
+		m_RenderPass = CreateRenderPass();
+
+		std::vector<BufferLayout> layouts = { {
+			{ ShaderDataType::Float3, "a_Position"},
+			{ ShaderDataType::Float2, "a_TexCoord"}
+		} };
+
+		m_Material = Material::Create(Shader::Create("Assets/RaymarchShader.glsl", layouts));
+		m_MaterialInstance = Ref<MaterialInstance>::Create(m_Material);
+		m_MaterialInstance->Set("u_Uniforms.MaxDistance", m_MaxDistance);
+		m_MaterialInstance->Set("u_Uniforms.VoxelSize", m_VoxelSize);
+		m_Pipeline = CreatePipeline(m_Material->GetShader(), m_RenderPass);
+		m_StorageBufferSet = StorageBufferSet::Create(3);
+		
+		m_StorageBufferSet->Create(VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * sizeof(int), 0, 3);
+
+		for (int i = 0; i < VOXEL_GRID_SIZE; ++i)
+		{
+			for (int j = 0; j < VOXEL_GRID_SIZE; ++j)
+			{
+				for (int k = 0; k < VOXEL_GRID_SIZE; ++k)
+				{
+					m_Voxels[i][j][k] = 255;
+				}
+			}
+		}
+		m_StorageBufferSet->Update(m_Voxels, VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * sizeof(int), 0, 3);
+		m_UniformBufferSet = UniformBufferSet::Create(3);
+		m_UniformBufferSet->Create(sizeof(UBScene), 0, 0);
 		
 		m_TestQuadEntity = m_Scene->CreateEntity("TestQuad");
 
@@ -76,13 +139,7 @@ namespace XYZ {
 
 		m_TestQuadEntity.EmplaceComponent<PointLight2D>(glm::vec3(1.0f), 1.0f, 1.0f);
 		
-		size_t count = 0;
-		Ref<Mesh> mesh = marchingMesh(count);
 
-		Ref<ShaderAsset> meshShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/MeshShader.shader");
-		auto material = Ref<MaterialAsset>::Create(meshShaderAsset);
-		material->SetTexture("u_Texture", Renderer::GetDefaultResources().WhiteTexture);
-		m_TestQuadEntity.EmplaceComponent<MeshComponent>(mesh, material);
 		Renderer::WaitAndRenderAll();
 	}
 
@@ -93,8 +150,46 @@ namespace XYZ {
 	{
 		m_Camera.OnUpdate(ts);
 
-		m_Scene->OnUpdate(ts);
-		m_Scene->OnRenderEditor(m_SceneRenderer, m_Camera.GetViewProjection(), m_Camera.GetViewMatrix(), m_Camera.GetPosition());
+		m_CommandBuffer->Begin();
+	
+		m_SceneUB.ViewProjection = m_Camera.GetViewProjection();
+		m_SceneUB.InverseView = glm::inverse(m_Camera.GetViewMatrix());
+		m_SceneUB.CameraFrustum = CameraFrustum(m_Camera);
+		m_SceneUB.CameraPosition = glm::vec4(m_Camera.GetPosition(), 0.0f);
+
+		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
+		m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&m_SceneUB, sizeof(UBScene), 0);
+
+		if (m_Time > 3.0f)
+		{
+			m_Time = 0.0f;
+			for (int i = 0; i < VOXEL_GRID_SIZE; ++i)
+			{
+				for (int j = 0; j < VOXEL_GRID_SIZE; ++j)
+				{
+					for (int k = 0; k < VOXEL_GRID_SIZE; ++k)
+					{
+						int num = rand() % 100;
+						if (num > 10)
+							m_Voxels[i][j][k] = 0;
+						else
+							m_Voxels[i][j][k] = 255;
+					}
+				}
+			}
+		}
+		m_Time += ts;
+
+
+		m_StorageBufferSet->Update(m_Voxels, VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * sizeof(int), 0, 3);
+		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, true);
+
+		Renderer::BindPipeline(m_CommandBuffer, m_Pipeline, m_UniformBufferSet, m_StorageBufferSet, m_Material);
+		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_Pipeline, m_MaterialInstance);
+		Renderer::EndRenderPass(m_CommandBuffer);
+
+		m_CommandBuffer->End();
+		m_CommandBuffer->Submit();
 	}
 
 	void GameLayer::OnEvent(Event& event)
@@ -106,120 +201,34 @@ namespace XYZ {
 	{
 		m_SceneRenderer->OnImGuiRender();
 
-		if (ImGui::Begin("Marching Cubes"))
+		if (ImGui::Begin("Ray March"))
 		{
-			if (ImGui::BeginTable("##MarchingCubesTable", 2, ImGuiTableFlags_SizingStretchProp))
+			if (ImGui::DragFloat3("Light Direction", glm::value_ptr(m_SceneUB.LightDirection), 0.1f))
 			{
-				UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
-				UI::ScopedColorStack color(true,
-					ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f },
-					ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f },
-					ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
-				);
-				const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * GImGui->Font->Scale * 2.0f;
 
-				UI::TableRow("Min",
-					[]() { ImGui::Text("Min"); },
-					[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight);
-							if (UI::Vec3Control({ "X", "Y", "Z" }, m_Min))
-							{
-								size_t count = 0;
-								auto mesh = marchingMesh(count);
-								if (count)
-								{
-									m_TestQuadEntity.GetComponent<MeshComponent>().Mesh = mesh;
-								}
-							}
-					}
-				);
-
-				UI::TableRow("Max",
-					[]() { ImGui::Text("Max"); },
-					[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight);
-							if (UI::Vec3Control({ "X", "Y", "Z" }, m_Max))
-							{
-								size_t count = 0;
-								auto mesh = marchingMesh(count);
-								if (count)
-								{
-									m_TestQuadEntity.GetComponent<MeshComponent>().Mesh = mesh;
-								}
-							}
-					}
-				);
-				UI::TableRow("CellsX",
-					[]() { ImGui::Text("CellsX"); },
-					[&]() {
-						UI::ScopedWidth w(100.0f);
-						if (ImGui::InputInt("##SortLayer", (int*)&m_NumCellsX))
-						{
-							if (m_NumCellsX != 0)
-							{
-								size_t count = 0;
-								auto mesh = marchingMesh(count);
-								if (count)
-								{
-									m_TestQuadEntity.GetComponent<MeshComponent>().Mesh = mesh;
-								}
-							}
-						}
-					}
-				);
-				UI::TableRow("CellsY",
-					[]() { ImGui::Text("CellsY"); },
-					[&]() { 
-						UI::ScopedWidth w(100.0f); 
-						if (ImGui::InputInt("##SortLayer", (int*)&m_NumCellsY))
-						{
-							if (m_NumCellsY != 0)
-							{
-								size_t count = 0;
-								auto mesh = marchingMesh(count);
-								if (count)
-								{
-									m_TestQuadEntity.GetComponent<MeshComponent>().Mesh = mesh;
-								}
-							}
-						}
-					}
-				);
-				UI::TableRow("CellsZ",
-					[]() { ImGui::Text("CellsZ"); },
-					[&]() { 
-						UI::ScopedWidth w(100.0f); 
-						if (ImGui::InputInt("##SortLayer", (int*)&m_NumCellsZ))
-						{
-							if (m_NumCellsZ != 0)
-							{
-								size_t count = 0;
-								auto mesh = marchingMesh(count);
-								if (count)
-								{
-									m_TestQuadEntity.GetComponent<MeshComponent>().Mesh = mesh;
-								}
-							}
-						}
-					}
-				);
-				UI::TableRow("IsoLevel",
-					[]() { ImGui::Text("IsoLevel"); },
-					[&]() {
-						UI::ScopedWidth w(100.0f);
-						if (ImGui::DragFloat("##IsoLevelDrag", &m_IsoLevel, 0.05f))
-						{			
-							size_t count = 0;
-							auto mesh = marchingMesh(count);
-							if (count)
-							{
-								m_TestQuadEntity.GetComponent<MeshComponent>().Mesh = mesh;
-							}					
-						}
-					}
-				);
-				ImGui::EndTable();
 			}
-			ImGui::End();
+			if (ImGui::DragFloat3("Light Color", glm::value_ptr(m_SceneUB.LightColor), 0.1f))
+			{
+
+			}
+			if (ImGui::DragFloat("Max Distance", &m_MaxDistance))
+			{
+				m_MaterialInstance->Set("u_Uniforms.MaxDistance", m_MaxDistance);
+			}
+			if (ImGui::DragFloat("Voxel Size", &m_VoxelSize, 0.1f))
+			{
+				m_MaterialInstance->Set("u_Uniforms.VoxelSize", m_VoxelSize);
+			}
+			float fov = m_Camera.GetFOV();
+			if (ImGui::DragFloat("FOV", &fov))
+			{
+				m_Camera.SetFOV(fov);
+			}
+			const float aspect = m_Camera.GetAspectRatio();
+			ImGui::Text("Aspect %f", aspect);
+			ImGui::Text("Camera Position %f %f %f", m_Camera.GetPosition().x, m_Camera.GetPosition().y, m_Camera.GetPosition().z);
 		}
+		ImGui::End();
 	}
 
 	bool GameLayer::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -258,27 +267,5 @@ namespace XYZ {
 			ImGui::Text("Commands Count: %d", stats.CommandsCount);
 		}
 		ImGui::End();
-	}
-	Ref<Mesh> GameLayer::marchingMesh(size_t& count)
-	{
-		std::vector<Triangle> triangles;
-		MarchingCubes::PerlinPolygonize((double)m_IsoLevel, m_Min, m_Max, m_NumCellsX, m_NumCellsY, m_NumCellsZ, triangles);
-
-		std::vector<Vertex> vertices;
-		std::vector<uint32_t> indices;
-		uint32_t counter = 0;
-		for (const auto& tr : triangles)
-		{
-			vertices.push_back({ tr[0], glm::vec2(0.0f) });
-			vertices.push_back({ tr[1], glm::vec2(0.0f) });
-			vertices.push_back({ tr[2], glm::vec2(0.0f) });
-			indices.push_back(counter++);
-			indices.push_back(counter++);
-			indices.push_back(counter++);
-		}
-		count = indices.size();
-		Ref<MeshSource> meshSource = Ref<MeshSource>::Create(vertices, indices);
-		Ref<Mesh> mesh = Ref<Mesh>::Create(meshSource);
-		return mesh;
 	}
 }

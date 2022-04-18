@@ -297,33 +297,18 @@ namespace XYZ {
 		{-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1} 
 	};
 
-	constexpr size_t sc_CornerIndexAFromEdge[12] = {
-		0,
-		1,
-		2,
-		3,
-		4,
-		5,
-		6,
-		7,
-		0,
-		1,
-		2,
-		3
-	};
-
-	constexpr size_t sc_CornerIndexBFromEdge[12] = {
-		1,
-		2,
-		3,
-		0,
-		5,
-		6,
-		7,
-		4,
-		4,
-		5,
-		6,
-		7
+	constexpr size_t sc_EdgeConnection[12][2] = {
+		{0,1},
+		{1,2},
+		{2,3},
+		{3,0},
+		{4,5},
+		{5,6},
+		{6,7},
+		{7,4},
+		{0,4},
+		{1,5},
+		{2,6},
+		{3,7}
 	};
 }

@@ -17,6 +17,7 @@ namespace XYZ {
 		void OnUpdate(Timestep ts);
 		void OnEvent(Event& e);
 
+		void SetFOV(float fov);
 		inline float GetDistance() const { return m_Distance; }
 		inline void  SetDistance(float distance) { m_Distance = distance; }
 		inline void  SetViewportSize(float width, float height) { m_ViewportWidth = width; m_ViewportHeight = height; updateProjection(); }
@@ -34,7 +35,7 @@ namespace XYZ {
 
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
-
+		float GetFOV() const { return m_FOV; }
 	private:
 		void updateProjection();
 		void updateView();
