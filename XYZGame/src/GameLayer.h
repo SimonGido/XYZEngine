@@ -44,6 +44,7 @@ namespace XYZ {
 			Side	 HitSide = NumSides;
 		};
 
+		void voxelPreview();
 		bool rayMarch(const glm::vec3& rayOrig, const glm::vec3& rayDir, HitResult& result);
 		std::pair<glm::vec3, glm::vec3> castRay(float mx, float my) const;
 	private:
@@ -92,6 +93,9 @@ namespace XYZ {
 		float m_Frequency = 1.0f;
 
 		glm::vec4 m_Color = glm::vec4(1.0f);
+
+		uint32_t m_LastPreviewVoxel = VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE;
+
 		std::atomic_bool m_Generating = false;
 		bool m_QueuedGenerate = true;
 	};

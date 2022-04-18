@@ -95,10 +95,6 @@ namespace XYZ {
 		glm::vec3 Right = glm::vec3(1.0f, 0.0f, 0.0f);
 		glm::vec3 Forward = glm::vec3(0.0f, 0.0f, 1.0f);
 
-		//Forward = camera.GetForwardDirection();
-		//Up = camera.GetUpDirection();
-		//Right = camera.GetRightDirection();
-
 		const float aspect = camera.GetAspectRatio();
 		const float fov = glm::tan(glm::radians(camera.GetFOV() * 0.5f));
 
@@ -209,6 +205,7 @@ namespace XYZ {
 		if (m_QueuedGenerate)
 			generateVoxels();
 
+		voxelPreview();
 		m_Camera.OnUpdate(ts);
 
 		m_CommandBuffer->Begin();
@@ -315,37 +312,10 @@ namespace XYZ {
 			}
 			else if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
 			{
-				auto [mx, my] = GetMouseViewportSpace();
-				auto [orig, dir] = castRay(mx, my);
-				HitResult result;
-				if (rayMarch(orig, dir, result))
+				if (m_LastPreviewVoxel < m_Voxels.size())
 				{
-					if (result.HitSide == HitResult::Top)
-					{
-						if (result.Y + 1 < VOXEL_GRID_SIZE)
-							m_Voxels[Index3D(result.X, result.Y + 1, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = ColorToUINT(m_Color);
-					}
-					else if (result.HitSide == HitResult::Right)
-					{
-						if ((int)result.X - 1 >= 0)
-							m_Voxels[Index3D(result.X - 1, result.Y, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = ColorToUINT(m_Color);
-					}
-					else if (result.HitSide == HitResult::Left)
-					{
-						if (result.X + 1 < VOXEL_GRID_SIZE)
-							m_Voxels[Index3D(result.X + 1, result.Y, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = ColorToUINT(m_Color);
-					}
-					else if (result.HitSide == HitResult::Back)
-					{
-						if ((int)result.Z - 1 >= 0)
-							m_Voxels[Index3D(result.X, result.Y, result.Z - 1, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = ColorToUINT(m_Color);
-					}
-					else if (result.HitSide == HitResult::Front)
-					{
-						if (result.Z + 1 < VOXEL_GRID_SIZE)
-							m_Voxels[Index3D(result.X, result.Y, result.Z + 1, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = ColorToUINT(m_Color);
-					}
-					return true;
+					m_Voxels[m_LastPreviewVoxel] = ColorToUINT(m_Color);
+					m_LastPreviewVoxel = m_Voxels.size();
 				}
 			}
 		}
@@ -417,6 +387,56 @@ namespace XYZ {
 			ImGui::Text("Commands Count: %d", stats.CommandsCount);
 		}
 		ImGui::End();
+	}
+	void GameLayer::voxelPreview()
+	{
+		auto [mx, my] = GetMouseViewportSpace();
+		auto [orig, dir] = castRay(mx, my);
+		HitResult result;
+		if (rayMarch(orig, dir, result))
+		{
+			if (result.HitVoxelIndex == m_LastPreviewVoxel)
+				return;
+
+			if (m_LastPreviewVoxel < m_Voxels.size())
+			{
+				m_Voxels[m_LastPreviewVoxel] = 0;
+			}
+			m_LastPreviewVoxel = result.HitVoxelIndex;
+
+			if (result.HitSide == HitResult::Top)
+			{
+				if (result.Y + 1 < VOXEL_GRID_SIZE)
+					m_LastPreviewVoxel = Index3D(result.X, result.Y + 1, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
+			}
+			else if (result.HitSide == HitResult::Bottom)
+			{
+				if ((int)result.Y - 1 >= 0)
+					m_LastPreviewVoxel = Index3D(result.X, result.Y - 1, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
+			}
+			else if (result.HitSide == HitResult::Right)
+			{
+				if ((int)result.X - 1 >= 0)
+					m_LastPreviewVoxel = Index3D(result.X - 1, result.Y, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
+			}
+			else if (result.HitSide == HitResult::Left)
+			{
+				if (result.X + 1 < VOXEL_GRID_SIZE)
+					m_LastPreviewVoxel = Index3D(result.X + 1, result.Y, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
+			}
+			else if (result.HitSide == HitResult::Back)
+			{
+				if ((int)result.Z - 1 >= 0)
+					m_LastPreviewVoxel = Index3D(result.X, result.Y, result.Z - 1, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
+			}
+			else if (result.HitSide == HitResult::Front)
+			{
+				if (result.Z + 1 < VOXEL_GRID_SIZE)
+					m_LastPreviewVoxel = Index3D(result.X, result.Y, result.Z + 1, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
+			}
+
+			m_Voxels[m_LastPreviewVoxel] = ColorToUINT(m_Color);
+		}
 	}
 	bool GameLayer::rayMarch(const glm::vec3& rayOrig, const glm::vec3& rayDir, HitResult& result)
 	{
