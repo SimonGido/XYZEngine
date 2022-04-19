@@ -39,10 +39,10 @@ namespace XYZ {
 		std::uniform_int_distribution<> distr(0, 255); // define the range
 
 		uint32_t result = 0;
-		result |= static_cast<uint8_t>(0);		  // R
-		result |= static_cast<uint8_t>(255) << 8;  // G
-		result |= static_cast<uint8_t>(0) << 16; // B
-		result |= static_cast<uint8_t>(255) << 24; // A
+		result |= static_cast<uint8_t>(distr(gen));		  // R
+		result |= static_cast<uint8_t>(distr(gen)) << 8;  // G
+		result |= static_cast<uint8_t>(distr(gen)) << 16; // B
+		result |= static_cast<uint8_t>(distr(gen)) << 24; // A
 	
 		return result;
 	}
@@ -262,7 +262,7 @@ namespace XYZ {
 			{
 
 			}
-			if (ImGui::ColorEdit3("Voxel Color", glm::value_ptr(m_Color)))
+			if (ImGui::ColorEdit4("Voxel Color", glm::value_ptr(m_Color)))
 			{
 
 			}

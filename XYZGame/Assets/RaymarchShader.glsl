@@ -156,6 +156,9 @@ vec4 RayMarch(vec3 rayOrig, vec3 rayDir)
 	vec3 normal;
 	uint voxel = 0;
 	uint i = 0;
+
+	bool first = true;
+	vec4 result = defaultColor;
 	do 
 	{
 		if (t_max.x < t_max.y && t_max.x < t_max.z) 
@@ -185,14 +188,33 @@ vec4 RayMarch(vec3 rayOrig, vec3 rayDir)
 			{
 				float light = dot(-v_Input.LightDirection, normal);
 				vec4 voxelColor = VoxelToColor(voxel);
-				vec3 color = voxelColor.xyz * v_Input.LightColor * light;
-				return vec4(color, voxelColor.a);
+				vec3 color = voxelColor.rgb * v_Input.LightColor * light;
+					
+				if (voxelColor.a < 1.0)
+				{
+					voxel = 0;
+				}
+
+				if (first)
+				{
+					first = false;
+					result = vec4(color.rgb, voxelColor.a);
+				}
+				else
+				{
+					result.rgb = mix(result.rgb, color, 1.0 - result.a);
+				}
 			}
 		}
 		i += 1;
 	} 
 	while (voxel == 0 && i < MaxTraverse);
-	
+	if (voxel == 0 && first == false) // We did not hit opaque voxel => blend with background color
+	{
+		result.rgb = mix(result.rgb, defaultColor.rgb, 1.0 - result.a);
+	}
+	return result;
+
 	return defaultColor;
 }
 
