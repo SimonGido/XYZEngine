@@ -74,6 +74,7 @@ namespace XYZ {
 			glm::vec4 CameraPosition{};
 			glm::vec4 LightDirection{-0.2f, -1.4f, -1.5f, 1.0f};
 			glm::vec4 LightColor{0.2f, 0.5f, 0.5f, 1.0f};
+			glm::vec4 BackgroundColor{ 0.6f, 0.7f, 1.0f, 1.0f };
 
 			glm::vec4 ChunkPosition = glm::vec4(0.0f);
 			uint32_t  MaxTraverse = 128;
