@@ -19,6 +19,7 @@ namespace XYZ {
 
 		void EditorLayer::OnAttach()
 		{
+			Renderer::InitResources();
 			s_Data.Init();		
 			SceneSerializer serializer;
 			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");

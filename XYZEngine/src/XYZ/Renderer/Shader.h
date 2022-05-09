@@ -162,7 +162,7 @@ namespace XYZ {
 
 		static Ref<Shader> Create(const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile = true);
 		static Ref<Shader> Create(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile = true);
-	
+		static Ref<Shader> Create(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, std::vector<BufferLayout> layouts, bool forceCompile = true);
 	};
 
 }

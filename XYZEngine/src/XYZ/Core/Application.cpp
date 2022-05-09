@@ -42,7 +42,7 @@ namespace XYZ {
 		m_Window->SetVSync(false);
 
 		AssetManager::Init();
-		Renderer::InitResources();
+		
 
 		m_ImGuiLayer = nullptr;
 		m_ImGuiLayer = ImGuiLayer::Create();

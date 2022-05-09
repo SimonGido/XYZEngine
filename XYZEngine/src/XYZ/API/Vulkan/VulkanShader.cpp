@@ -135,6 +135,24 @@ namespace XYZ {
 	{
 		Reload(forceCompile);
 	}
+	VulkanShader::VulkanShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, std::vector<BufferLayout> layouts, bool forceCompile)
+		:
+		m_Compiled(false),
+		m_Name(name),
+		m_FilePath(Utils::GetDirectoryPath(vertexPath) + "/" + name + ".glsl"),
+		m_VertexBufferSize(0),
+		m_Layouts(std::move(layouts))
+	{
+		std::ofstream outfile(m_FilePath);
+		outfile << "#type vertex\n" << FileSystem::ReadFile(vertexPath);
+
+		outfile << "\n\r#type fragment\r";
+		outfile << FileSystem::ReadFile(fragmentPath);
+
+		outfile.close();
+
+		Reload(forceCompile);
+	}
 	VulkanShader::~VulkanShader()
 	{
 		Renderer::RemoveShaderDependency(GetHash());

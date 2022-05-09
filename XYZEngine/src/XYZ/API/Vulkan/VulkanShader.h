@@ -69,6 +69,8 @@ namespace XYZ {
 	public:
 		VulkanShader(const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile);
 		VulkanShader(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile);
+		VulkanShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, std::vector<BufferLayout> layouts, bool forceCompile);
+
 		virtual ~VulkanShader() override;
 
 		virtual void Reload(bool forceCompile = false) override;

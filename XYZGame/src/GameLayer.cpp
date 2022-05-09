@@ -19,6 +19,8 @@ namespace XYZ {
 	};
 
 
+	static GPUTimeQueries s_TimeQueries;
+
 	static std::pair<float, float> GetMouseViewportSpace()
 	{
 		auto [mx, my] = Input::GetMousePosition();
@@ -42,7 +44,7 @@ namespace XYZ {
 		result |= static_cast<uint8_t>(distr(gen));		  // R
 		result |= static_cast<uint8_t>(distr(gen)) << 8;  // G
 		result |= static_cast<uint8_t>(distr(gen)) << 16; // B
-		result |= static_cast<uint8_t>(distr(gen)) << 24; // A
+		result |= static_cast<uint8_t>(255) << 24; // A
 	
 		return result;
 	}
@@ -128,18 +130,14 @@ namespace XYZ {
 
 	void GameLayer::OnAttach()
 	{
+		Renderer::InitResources(false);
 		Application::Get().GetImGuiLayer()->EnableDockspace(false);
 		const uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 		const uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
 
-		
-		m_Scene = Ref<Scene>::Create("Game");
-		m_Scene->SetViewportSize(windowWidth, windowHeight);
-		m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification{ true });
+	
 		m_Camera.SetViewportSize((float)windowWidth, (float)windowHeight);
 	
-
-
 		m_CommandBuffer = RenderCommandBuffer::Create(0, "GameCommandBuffer");
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 		m_RenderPass = CreateRenderPass();
@@ -149,7 +147,7 @@ namespace XYZ {
 			{ ShaderDataType::Float2, "a_TexCoord"}
 		} };
 
-		m_Material = Material::Create(Shader::Create("Assets/RaymarchShader.glsl", layouts));
+		m_Material = Material::Create(Shader::Create("RaymarchShader", "Assets/RaymarchShader_Vertex.glsl", "Assets/RaymarchShader_Frag.glsl", layouts));
 		m_MaterialInstance = Ref<MaterialInstance>::Create(m_Material);
 
 
@@ -173,26 +171,11 @@ namespace XYZ {
 				}
 			}
 		}
-		siv::PerlinNoise perlin{ 340 };
 
-		
 		generateVoxels();
 		m_StorageBufferSet->Update(m_Voxels.data(), m_Voxels.size() * sizeof(uint32_t), 0, 3);
 		m_SceneBufferSet = UniformBufferSet::Create(3);
 		m_SceneBufferSet->Create(sizeof(UBScene), 0, 0);
-
-		
-		m_TestQuadEntity = m_Scene->CreateEntity("TestQuad");
-
-		m_TestQuadEntity.EmplaceComponent<SpriteRenderer>(
-			Renderer::GetDefaultResources().DefaultQuadMaterial,
-			Ref<SubTexture>::Create(Renderer::GetDefaultResources().WhiteTexture),
-			glm::vec4(1.0f),
-			0
-		);
-
-		m_TestQuadEntity.EmplaceComponent<PointLight2D>(glm::vec3(1.0f), 1.0f, 1.0f);
-		
 
 		Renderer::WaitAndRenderAll();
 	}
@@ -209,22 +192,24 @@ namespace XYZ {
 		m_Camera.OnUpdate(ts);
 
 		m_CommandBuffer->Begin();
+		s_TimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 	
 		m_SceneUB.ViewProjection = m_Camera.GetViewProjection();
 		m_SceneUB.InverseView = glm::inverse(m_Camera.GetViewMatrix());
 		m_SceneUB.CameraFrustum = CameraFrustum(m_Camera);
 		m_SceneUB.CameraPosition = glm::vec4(m_Camera.GetPosition(), 0.0f);
-
+		
 		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
 		m_SceneBufferSet->Get(0, 0, currentFrame)->Update(&m_SceneUB, sizeof(UBScene), 0);
-
 		m_StorageBufferSet->Update(m_Voxels.data(), m_Voxels.size() * sizeof(uint32_t), 0, 3);
+	
 		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, true);
 
 		Renderer::BindPipeline(m_CommandBuffer, m_Pipeline, m_SceneBufferSet, m_StorageBufferSet, m_Material);
 		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_Pipeline, m_MaterialInstance);
 		Renderer::EndRenderPass(m_CommandBuffer);
 
+		m_CommandBuffer->EndTimestampQuery(s_TimeQueries.GPUTime);
 		m_CommandBuffer->End();
 		m_CommandBuffer->Submit();
 	}
@@ -238,8 +223,6 @@ namespace XYZ {
 
 	void GameLayer::OnImGuiRender()
 	{
-		m_SceneRenderer->OnImGuiRender();
-
 		if (ImGui::Begin("Ray March"))
 		{
 			if (ImGui::DragFloat3("Light Direction", glm::value_ptr(m_SceneUB.LightDirection), 0.1f))
@@ -292,6 +275,7 @@ namespace XYZ {
 				ImGui::Text("Generating Voxels!!!");
 		}
 		ImGui::End();
+		displayStats();
 	}
 
 	bool GameLayer::onMouseButtonPress(MouseButtonPressEvent& event)
@@ -385,6 +369,7 @@ namespace XYZ {
 			ImGui::Text("Draw Fullscreen: %d", stats.DrawFullscreenCount);
 			ImGui::Text("Draw Indirect: %d", stats.DrawIndirectCount);
 			ImGui::Text("Commands Count: %d", stats.CommandsCount);
+			ImGui::Text("GPU Time: %f", m_CommandBuffer->GetExecutionGPUTime(Renderer::GetCurrentFrame(), s_TimeQueries.GPUTime));
 		}
 		ImGui::End();
 	}

@@ -39,6 +39,23 @@ namespace XYZ {
 		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 		return nullptr;
 	}
+
+	Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, std::vector<BufferLayout> layouts, bool forceCompile)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case RendererAPI::Type::None:
+		{
+			XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+			return nullptr;
+		}
+		//case RendererAPI::Type::OpenGL: return Ref<OpenGLShader>::Create(name, path);
+		case RendererAPI::Type::Vulkan: return Ref<VulkanShader>::Create(name, vertexPath, fragmentPath, std::move(layouts), forceCompile);
+		}
+
+		XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
+		return nullptr;
+	}
 	
 
 	ShaderUniform::ShaderUniform(std::string name, ShaderUniformDataType dataType, uint32_t size, uint32_t offset, uint32_t count)

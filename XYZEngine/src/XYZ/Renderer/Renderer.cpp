@@ -144,17 +144,18 @@ namespace XYZ {
 		s_Data.Configuration = config;
 	
 		s_Data.APIContext = APIContext::Create();
-		s_RendererAPI = CreateRendererAPI();		
+		s_RendererAPI = CreateRendererAPI();	
+		s_Data.QueueData.Init(s_Data.Configuration.FramesInFlight);
 	}
 
-	void Renderer::InitResources()
+	void Renderer::InitResources(bool initDefaultResources)
 	{
-		// It is called after window and context is created
-		s_Data.QueueData.Init(s_Data.Configuration.FramesInFlight);
+		// It is called after window and context is created	
 		s_RendererAPI->Init();
 		
 		SetupFullscreenQuad();	
-		s_Data.Resources.Init();
+		if (initDefaultResources)
+			s_Data.Resources.Init();
 		
 		WaitAndRenderAll();
 	}

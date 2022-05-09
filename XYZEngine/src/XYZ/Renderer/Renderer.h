@@ -63,7 +63,7 @@ namespace XYZ {
 	{
 	public:
 		static void Init(const RendererConfiguration& config = RendererConfiguration());
-		static void InitResources();
+		static void InitResources(bool initDefaultResources = true);
 		static void Shutdown();
 
 		// Old API

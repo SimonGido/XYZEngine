@@ -35,13 +35,13 @@ layout(std140, binding = 0) uniform Scene
 	vec4 u_BackgroundColor;
 
 	//Voxel chunk info
-	vec4  ChunkPosition;
-	uint  MaxTraverse;
-	uint  Width;
-	uint  Height;
-	uint  Depth;
-	float VoxelSize;
-	float Padding[3];
+	vec4  u_ChunkPosition;
+	uint  u_MaxTraverse;
+	uint  u_Width;
+	uint  u_Height;
+	uint  u_Depth;
+	float u_VoxelSize;
+	float u_Padding[3];
 };
 
 layout(std430, binding = 3) buffer buffer_Voxels
@@ -52,7 +52,7 @@ layout(std430, binding = 3) buffer buffer_Voxels
 
 uint Index3D(int x, int y, int z)
 {
-	return x + Width * (y + Depth * z);
+	return x + u_Width * (y + u_Depth * z);
 }
 
 uint Index3D(ivec3 index)
@@ -64,9 +64,9 @@ uint Index3D(ivec3 index)
 bool IsInsideChunk(ivec3 voxel)
 {
 	vec3 current_voxel = vec3(voxel.x, voxel.y, voxel.z);
-	return ((current_voxel.x < float(Width ) && current_voxel.x > 0)
-		 && (current_voxel.y < float(Height) && current_voxel.y > 0)
-		 && (current_voxel.z < float(Depth)  && current_voxel.z > 0));
+	return ((current_voxel.x < float(u_Width ) && current_voxel.x > 0)
+		 && (current_voxel.y < float(u_Height) && current_voxel.y > 0)
+		 && (current_voxel.z < float(u_Depth)  && current_voxel.z > 0));
 }
 
 
@@ -122,15 +122,14 @@ bool RayMarch(out HitResult result, inout ivec3 currentVoxel, ivec3 step, inout 
 		}
 		numTraverses += 1;
 	} 
-	while (result.Voxel == 0 && numTraverses < MaxTraverse);
+	while (result.Voxel == 0 && numTraverses < u_MaxTraverse);
 
 	return false;
 }
 
 vec4 HitColor(vec3 rayOrig, vec3 rayDir)
 {
-	vec3 origin = rayOrig + ChunkPosition.xyz;
-	ivec3 current_voxel = ivec3(floor(origin / VoxelSize));
+	ivec3 current_voxel = ivec3(floor(rayOrig / u_VoxelSize));
 
 	ivec3 step = ivec3(
 		(rayDir.x > 0.0) ? 1 : -1,
@@ -138,13 +137,13 @@ vec4 HitColor(vec3 rayOrig, vec3 rayDir)
 		(rayDir.z > 0.0) ? 1 : -1
 	);
 	vec3 next_boundary = vec3(
-		float((step.x > 0) ? current_voxel.x + 1 : current_voxel.x) * VoxelSize,
-		float((step.y > 0) ? current_voxel.y + 1 : current_voxel.y) * VoxelSize,
-		float((step.z > 0) ? current_voxel.z + 1 : current_voxel.z) * VoxelSize
+		float((step.x > 0) ? current_voxel.x + 1 : current_voxel.x) * u_VoxelSize,
+		float((step.y > 0) ? current_voxel.y + 1 : current_voxel.y) * u_VoxelSize,
+		float((step.z > 0) ? current_voxel.z + 1 : current_voxel.z) * u_VoxelSize
 	);
 
-	vec3 t_max = (next_boundary - origin) / rayDir; // we will move along the axis with the smallest value
-	vec3 t_delta = VoxelSize / rayDir * vec3(step);
+	vec3 t_max = (next_boundary - rayOrig) / rayDir; // we will move along the axis with the smallest value
+	vec3 t_delta = u_VoxelSize / rayDir * vec3(step);
 	uint numTraverses = 0U;
 
 	bool first = true;

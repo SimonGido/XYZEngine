@@ -48,13 +48,8 @@ namespace XYZ {
 		bool rayMarch(const glm::vec3& rayOrig, const glm::vec3& rayDir, HitResult& result);
 		std::pair<glm::vec3, glm::vec3> castRay(float mx, float my) const;
 	private:
-		Ref<Scene>			m_Scene;
-		Ref<SceneRenderer>	m_SceneRenderer;
-		
 		EditorCamera		m_Camera;
 	
-		SceneEntity			m_TestQuadEntity;
-
 		Ref<RenderCommandBuffer> m_CommandBuffer;
 		Ref<RenderPass>			 m_RenderPass;
 		Ref<Pipeline>			 m_Pipeline;
@@ -64,7 +59,7 @@ namespace XYZ {
 
 		Ref<UniformBufferSet>	 m_SceneBufferSet;
 
-		static constexpr int VOXEL_GRID_SIZE = 100;
+		static constexpr int VOXEL_GRID_SIZE = 150;
 
 		struct UBScene
 		{
