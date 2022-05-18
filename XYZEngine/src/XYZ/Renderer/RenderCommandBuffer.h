@@ -26,4 +26,10 @@ namespace XYZ {
 
 		static Ref<RenderCommandBuffer> Create(uint32_t count = 0, const std::string& debugName = "");
 	};
+
+
+	class SecondaryRenderCommandBuffer : public RefCount
+	{
+
+	};
 }

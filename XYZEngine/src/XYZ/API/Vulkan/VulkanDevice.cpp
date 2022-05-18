@@ -441,6 +441,7 @@ namespace XYZ {
 		cmdBufAllocateInfo.commandBufferCount = 1;
 
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(m_LogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
+		
 		return cmdBuffer;
 
 	}
