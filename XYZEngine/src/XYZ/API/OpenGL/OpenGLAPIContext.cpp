@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "OpenGLAPIContext.h"
 #include "XYZ/Renderer/Renderer.h"
-#include "OpenGLRenderCommandBuffer.h"
 
 #include <GLFW/glfw3.h>
 #include <GL/glew.h>
@@ -104,7 +103,6 @@ namespace XYZ {
 			glfwSetErrorCallback(GLFWErrorCallback);
 			#endif
 		});
-		m_RenderCommandBuffer = Ref<OpenGLRenderCommandBuffer>::Create(0, "SwapChainCommandBuffer");
 	}
 
 	void OpenGLAPIContext::SwapBuffers()
@@ -112,9 +110,5 @@ namespace XYZ {
 		glfwSwapBuffers(m_WindowHandle);
 	}
 
-	Ref<RenderCommandBuffer> OpenGLAPIContext::GetRenderCommandBuffer()
-	{
-		return m_RenderCommandBuffer;
-	}
 
 }

@@ -51,10 +51,7 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::Init");
 		m_ThreadIndex = s_ThreadPool.PushThread();
-		//if (m_Specification.SwapChainTarget)
-		//	m_CommandBuffer = Renderer::GetAPIContext()->GetRenderCommandBuffer();
-		//else
-			m_CommandBuffer = RenderCommandBuffer::Create(0, "SceneRenderer");
+		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "SceneRenderer");
 
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
@@ -315,7 +312,7 @@ namespace XYZ {
 				}
 				UI::EndTreeNode();
 			}
-			uint32_t frameIndex = Renderer::GetCurrentFrame();
+			const uint32_t frameIndex = Renderer::GetCurrentFrame();
 			if (UI::BeginTreeNode("GPU measurements"))
 			{
 				if (ImGui::BeginTable("##GPUTime", 2, ImGuiTableFlags_SizingFixedFit))

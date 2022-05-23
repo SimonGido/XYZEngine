@@ -310,7 +310,7 @@ namespace XYZ {
 		GridProperties			   m_GridProps;
 		glm::ivec2				   m_ViewportSize;
 
-		Ref<RenderCommandBuffer>   m_CommandBuffer;
+		Ref<PrimaryRenderCommandBuffer> m_CommandBuffer;
 		
 
 		Ref<UniformBuffer>		   m_CameraUniformBuffer;

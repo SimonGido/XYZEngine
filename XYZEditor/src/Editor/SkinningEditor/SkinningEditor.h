@@ -29,9 +29,9 @@ namespace XYZ {
 
 			glm::vec2 getMouseWorldPosition() const;
 		private:
-			Ref<Scene>				 m_Scene;
-			Ref<RenderCommandBuffer> m_CommandBuffer;
-			Ref<Renderer2D>			 m_Renderer2D;
+			Ref<Scene>						m_Scene;
+			Ref<PrimaryRenderCommandBuffer> m_CommandBuffer;
+			Ref<Renderer2D>				    m_Renderer2D;
 
 			Ref<SubTexture>    m_Context;
 			Ref<Texture2D>	   m_Texture;

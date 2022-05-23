@@ -4,14 +4,17 @@
 #include <vulkan/vulkan.h>
 
 namespace XYZ {
+
+
+
 	class VulkanSwapChain;
-	class VulkanRenderCommandBuffer : public RenderCommandBuffer
+	class VulkanPrimaryRenderCommandBuffer : public PrimaryRenderCommandBuffer
 	{
 	public:
-		VulkanRenderCommandBuffer(uint32_t count = 0, std::string debugName = "");
-		VulkanRenderCommandBuffer(std::string debugName);
+		VulkanPrimaryRenderCommandBuffer(uint32_t count = 0, std::string debugName = "");
+		VulkanPrimaryRenderCommandBuffer(std::string debugName);
 
-		~VulkanRenderCommandBuffer() override;
+		~VulkanPrimaryRenderCommandBuffer() override;
 
 		virtual void Begin() override;
 		virtual void End() override;
@@ -27,8 +30,11 @@ namespace XYZ {
 		virtual uint32_t BeginTimestampQuery() override;
 		virtual void EndTimestampQuery(uint32_t queryID) override;
 
-		VkResult		GetFenceStatus(uint32_t index) const;
-		VkCommandBuffer GetVulkanCommandBuffer(uint32_t index) const { return m_CommandBuffers[index]; }
+		virtual Ref<RenderCommandBuffer> CreateSecondaryCommandBuffer() override;
+
+		virtual void* CommandBufferHandle(uint32_t index) override { return m_CommandBuffers[index]; }
+
+		VkResult GetFenceStatus(uint32_t index) const;
 	private:
 		void createTimestampQueries(uint32_t count);
 		void createPipelineStatisticsQueries();
@@ -38,6 +44,7 @@ namespace XYZ {
 
 		void getTimestampQueryResults();
 		void getPipelineQueryResults();
+	
 	private:
 		std::string						   m_Name;
 		VkCommandPool					   m_CommandPool;
@@ -57,8 +64,33 @@ namespace XYZ {
 		std::vector<VkQueryPool>		   m_PipelineStatisticsQueryPools;
 		std::vector<PipelineStatistics>    m_PipelineStatisticsQueryResults;
 
+		vector2D<VkCommandBuffer>		   m_SecondaryVulkanCommandBuffers;
 
-		bool							   m_Begin = false;
+		bool m_Begin = false;
+		
 		friend class VulkanSwapChain;
+		friend class VulkanSecondaryRenderCommandBuffer;
+	};
+
+
+
+
+	class VulkanSecondaryRenderCommandBuffer : public RenderCommandBuffer
+	{
+	public:
+		VulkanSecondaryRenderCommandBuffer(Ref<RenderCommandBuffer> primaryCommandBuffer);
+		~VulkanSecondaryRenderCommandBuffer() override;
+
+		virtual void Begin() override;
+		virtual void End() override;
+
+		virtual void RT_Begin() override;
+		virtual void RT_End() override;
+
+		virtual void* CommandBufferHandle(uint32_t index) override { return m_CommandBuffers[index]; }
+
+	private:
+		std::vector<VkCommandBuffer>		  m_CommandBuffers;
+		Ref<VulkanPrimaryRenderCommandBuffer> m_PrimaryRenderCommandBuffer;
 	};
 }

@@ -12,6 +12,7 @@
 #include "Perlin.h"
 
 
+
 namespace XYZ {
 	class GameLayer : public Layer
 	{
@@ -50,16 +51,18 @@ namespace XYZ {
 	private:
 		EditorCamera		m_Camera;
 	
-		Ref<RenderCommandBuffer> m_CommandBuffer;
-		Ref<RenderPass>			 m_RenderPass;
-		Ref<Pipeline>			 m_Pipeline;
-		Ref<Material>			 m_Material;
-		Ref<MaterialInstance>	 m_MaterialInstance;
-		Ref<StorageBufferSet>	 m_StorageBufferSet;
+		Ref<PrimaryRenderCommandBuffer> m_CommandBuffer;
 
-		Ref<UniformBufferSet>	 m_SceneBufferSet;
 
-		static constexpr int VOXEL_GRID_SIZE = 150;
+		Ref<RenderPass>				    m_RenderPass;
+		Ref<Pipeline>				    m_Pipeline;
+		Ref<Material>				    m_Material;
+		Ref<MaterialInstance>		    m_MaterialInstance;
+		Ref<StorageBufferSet>		    m_StorageBufferSet;
+									    
+		Ref<UniformBufferSet>		    m_SceneBufferSet;
+
+		static constexpr int VOXEL_GRID_SIZE = 200;
 
 		struct UBScene
 		{
@@ -68,7 +71,7 @@ namespace XYZ {
 			glm::mat4 CameraFrustum{};
 			glm::vec4 CameraPosition{};
 			glm::vec4 LightDirection{-0.2f, -1.4f, -1.5f, 1.0f};
-			glm::vec4 LightColor{0.2f, 0.5f, 0.5f, 1.0f};
+			glm::vec4 LightColor{1.0f, 1.0f, 1.0f, 1.0f};
 			glm::vec4 BackgroundColor{ 0.6f, 0.7f, 1.0f, 1.0f };
 
 			glm::vec4 ChunkPosition = glm::vec4(0.0f);
@@ -82,6 +85,8 @@ namespace XYZ {
 		UBScene m_SceneUB;
 
 		std::vector<uint32_t> m_Voxels;
+
+		uint32_t m_NumUpdates = 3;
 
 		int m_Seed = 10;
 		int m_Octaves = 4;

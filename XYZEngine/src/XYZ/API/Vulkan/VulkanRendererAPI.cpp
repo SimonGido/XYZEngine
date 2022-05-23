@@ -75,7 +75,7 @@ namespace XYZ {
 	void VulkanRendererAPI::BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer,
 		Ref<RenderPass> renderPass, bool explicitClear)
 	{
-		Renderer::Submit([renderCommandBuffer, renderPass, explicitClear]()
+		Renderer::Submit([renderCommandBuffer, renderPass, explicitClear]() mutable
 		{
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::BeginRenderPass");
 			Ref<VulkanContext> vulkanContext = Renderer::GetAPIContext();
@@ -127,7 +127,7 @@ namespace XYZ {
 				scissor.extent = swapChain.GetExtent();
 			}
 
-			const VkCommandBuffer commandBuffer = renderCommandBuffer.As<VulkanRenderCommandBuffer>()->GetVulkanCommandBuffer(frameIndex);
+			const VkCommandBuffer commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 
 			vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 			if (explicitClear)
@@ -142,11 +142,13 @@ namespace XYZ {
 
 	void VulkanRendererAPI::EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer)
 	{
-		Renderer::Submit([renderCommandBuffer]()
+		Renderer::Submit([renderCommandBuffer]() mutable
 		{
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::EndRenderPass");
 			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
-			const VkCommandBuffer commandBuffer = renderCommandBuffer.As<VulkanRenderCommandBuffer>()->GetVulkanCommandBuffer(frameIndex);
+
+			const VkCommandBuffer commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
+		
 			vkCmdEndRenderPass(commandBuffer);
 		});
 	}
@@ -160,11 +162,12 @@ namespace XYZ {
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
 			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
-			Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = renderCommandBuffer;
+
 			Ref<VulkanIndexBuffer>		   vulkanIndexBuffer = indexBuffer;
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
-			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
+
+			const VkCommandBuffer		   commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 
 
@@ -197,11 +200,12 @@ namespace XYZ {
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
 			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
-			Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = renderCommandBuffer;
+			
 			Ref<VulkanIndexBuffer>		   vulkanIndexBuffer = indexBuffer;
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
-			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
+
+			const VkCommandBuffer		   commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 
 
@@ -229,12 +233,13 @@ namespace XYZ {
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
 			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
-			Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = renderCommandBuffer;
+			
 			Ref<VulkanVertexBuffer>		   vulkanVertexBuffer = vertexBuffer.As<VulkanVertexBuffer>();
 			Ref<VulkanIndexBuffer>		   vulkanIndexBuffer = indexBuffer;
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
-			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
+
+			const VkCommandBuffer commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 
 
@@ -272,7 +277,6 @@ namespace XYZ {
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
 			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
-			Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = renderCommandBuffer;
 			
 			Ref<VulkanVertexBuffer>		   vulkanVertexBuffer = vertexBuffer.As<VulkanVertexBuffer>();
 			Ref<VulkanVertexBuffer>		   vulkanInstanceBuffer = instanceBuffer->GetVertexBuffer(frameIndex).As<VulkanVertexBuffer>();
@@ -281,7 +285,8 @@ namespace XYZ {
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
 
-			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
+
+			const VkCommandBuffer		   commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 
 
@@ -323,8 +328,7 @@ namespace XYZ {
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::RenderGeometry");
 			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
-			Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = renderCommandBuffer;
-
+			
 			Ref<VulkanVertexBuffer>		   vulkanVertexBuffer = vertexBuffer.As<VulkanVertexBuffer>();
 			Ref<VulkanVertexBuffer>		   vulkanTransformBuffer = transformBuffer->GetVertexBuffer(frameIndex).As<VulkanVertexBuffer>();
 			Ref<VulkanVertexBuffer>		   vulkanInstanceBuffer = instanceBuffer->GetVertexBuffer(frameIndex).As<VulkanVertexBuffer>();
@@ -333,7 +337,8 @@ namespace XYZ {
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
 
-			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
+
+			const VkCommandBuffer		   commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 
 
@@ -375,13 +380,14 @@ namespace XYZ {
 			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
 
-			Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = renderCommandBuffer;
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
 			Ref<VulkanUniformBufferSet>	   vulkanUniformBufferSet = uniformBufferSet;
 			Ref<VulkanStorageBufferSet>    vulkanStorageBufferSet = storageBufferSet;
 			Ref<VulkanMaterial>			   vulkanMaterial = material;
-			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
+			
+
+			const VkCommandBuffer		   commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.As<VulkanPipeline>()->GetVulkanPipeline());
@@ -429,16 +435,17 @@ namespace XYZ {
 			const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
 
-			Ref<VulkanRenderCommandBuffer> vulkanCommandBuffer = renderCommandBuffer;
+			
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetShader();
 			Ref<VulkanPipelineCompute>	   vulkanPipeline = pipeline;
 			Ref<VulkanUniformBufferSet>	   vulkanUniformBufferSet = uniformBufferSet;
 			Ref<VulkanStorageBufferSet>    vulkanStorageBufferSet = storageBufferSet;
 			Ref<VulkanMaterial>			   vulkanMaterial = material;
-			const VkCommandBuffer		   commandBuffer = vulkanCommandBuffer->GetVulkanCommandBuffer(frameIndex);
+
+			const VkCommandBuffer		   commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 
-			vulkanPipeline->Begin(vulkanCommandBuffer);
+			vulkanPipeline->Begin(renderCommandBuffer);
 
 			if (vulkanUniformBufferSet.Raw() && vulkanStorageBufferSet.Raw())
 			{
@@ -545,9 +552,10 @@ namespace XYZ {
 
 	void VulkanRendererAPI::ClearImage(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Image2D> image)
 	{
-		Renderer::Submit([renderCommandBuffer, image = image.As<VulkanImage2D>()]
+		Renderer::Submit([renderCommandBuffer, image = image.As<VulkanImage2D>()]() mutable
 			{
-				const auto vulkanCommandBuffer = renderCommandBuffer.As<VulkanRenderCommandBuffer>()->GetVulkanCommandBuffer(Renderer::GetCurrentFrame());
+				const VkCommandBuffer commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(Renderer::GetCurrentFrame());
+
 				VkImageSubresourceRange subresourceRange{};
 				subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 				subresourceRange.baseMipLevel = 0;
@@ -555,7 +563,7 @@ namespace XYZ {
 				subresourceRange.layerCount = image->GetSpecification().Layers;
 
 				VkClearColorValue clearColor{ 0.f, 0.f, 0.f, 0.f };
-				vkCmdClearColorImage(vulkanCommandBuffer, image->GetImageInfo().Image, image->GetSpecification().Usage == ImageUsage::Storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &clearColor, 1, &subresourceRange);
+				vkCmdClearColorImage(commandBuffer, image->GetImageInfo().Image, image->GetSpecification().Usage == ImageUsage::Storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, &clearColor, 1, &subresourceRange);
 			});
 	}
 

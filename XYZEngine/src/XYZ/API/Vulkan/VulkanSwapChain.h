@@ -74,9 +74,9 @@ namespace XYZ {
 		Ref<VulkanDevice>			   m_Device;
 
 		// Default swap chain render pass
-		Ref<VulkanRenderCommandBuffer> m_RenderCommandBuffer;
-		Ref<VulkanFramebuffer>		   m_Framebuffer;
-		Ref<VulkanRenderPass>		   m_RenderPass;
+		Ref<VulkanPrimaryRenderCommandBuffer> m_RenderCommandBuffer;
+		Ref<VulkanFramebuffer>				  m_Framebuffer;
+		Ref<VulkanRenderPass>				  m_RenderPass;
 											
 
 		VkRenderPass				   m_VulkanRenderPass;

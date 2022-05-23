@@ -1,6 +1,5 @@
 #pragma once
 #include "XYZ/Renderer/APIContext.h"
-#include "OpenGLRenderCommandBuffer.h"
 
 struct GLFWwindow;
 namespace XYZ {
@@ -13,10 +12,9 @@ namespace XYZ {
 
 		virtual void Init(GLFWwindow* window) override;
 		virtual void SwapBuffers() override;
-		virtual Ref<RenderCommandBuffer> GetRenderCommandBuffer() override;
+		virtual Ref<RenderCommandBuffer> GetRenderCommandBuffer() override { return nullptr; }
 	private:
 		GLFWwindow* m_WindowHandle;
-		Ref<OpenGLRenderCommandBuffer> m_RenderCommandBuffer;
 	};
 
 }

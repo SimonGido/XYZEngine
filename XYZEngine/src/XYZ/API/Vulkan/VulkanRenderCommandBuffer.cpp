@@ -5,7 +5,7 @@
 #include "VulkanSwapChain.h"
 
 namespace XYZ {
-	VulkanRenderCommandBuffer::VulkanRenderCommandBuffer(uint32_t count, std::string debugName)
+	VulkanPrimaryRenderCommandBuffer::VulkanPrimaryRenderCommandBuffer(uint32_t count, std::string debugName)
 		:
 		m_Name(std::move(debugName)),
 		m_CommandBuffers({ VK_NULL_HANDLE }),
@@ -16,7 +16,8 @@ namespace XYZ {
 		m_PipelineQueryCount(PipelineStatistics::Count())
 	{
 		auto device = VulkanContext::GetCurrentDevice();
-		uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
+		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
+		m_SecondaryVulkanCommandBuffers.resize(framesInFlight);
 
 
 		VkCommandPoolCreateInfo cmdPoolInfo = {};
@@ -36,7 +37,6 @@ namespace XYZ {
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(device->GetVulkanDevice(), &commandBufferAllocateInfo, m_CommandBuffers.data()));
 
 
-
 		VkFenceCreateInfo fenceCreateInfo{};
 		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
@@ -48,7 +48,7 @@ namespace XYZ {
 		createPipelineStatisticsQueries();
 	}
 
-	VulkanRenderCommandBuffer::VulkanRenderCommandBuffer(std::string debugName)
+	VulkanPrimaryRenderCommandBuffer::VulkanPrimaryRenderCommandBuffer(std::string debugName)
 		:
 		m_Name(std::move(debugName)),
 		m_CommandPool(VK_NULL_HANDLE),
@@ -60,13 +60,14 @@ namespace XYZ {
 		const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
 		auto device = swapChain.GetDevice();
 		m_CommandBuffers.resize(swapChain.GetNumCommandsBuffers());
+		m_SecondaryVulkanCommandBuffers.resize(swapChain.GetNumCommandsBuffers());
 
 		for (size_t frame = 0; frame < swapChain.GetNumCommandsBuffers(); frame++)
 			m_CommandBuffers[frame] = swapChain.GetCommandBuffer(frame);
 
 		createPipelineStatisticsQueries();
 	}
-	VulkanRenderCommandBuffer::~VulkanRenderCommandBuffer()
+	VulkanPrimaryRenderCommandBuffer::~VulkanPrimaryRenderCommandBuffer()
 	{	
 		if (m_OwnedBySwapchain)
 		{
@@ -94,27 +95,27 @@ namespace XYZ {
 			vkDestroyCommandPool(device, commandPool, nullptr);
 		});
 	}
-	void VulkanRenderCommandBuffer::Begin()
+	void VulkanPrimaryRenderCommandBuffer::Begin()
 	{
 		m_NextTimestampQueryID = 0;
-		Ref<VulkanRenderCommandBuffer> instance = this;
+		Ref<VulkanPrimaryRenderCommandBuffer> instance = this;
 		Renderer::Submit([instance]() mutable {
 			instance->RT_Begin();
 		});
 	}
-	void VulkanRenderCommandBuffer::End()
+	void VulkanPrimaryRenderCommandBuffer::End()
 	{
-		Ref<VulkanRenderCommandBuffer> instance = this;
+		Ref<VulkanPrimaryRenderCommandBuffer> instance = this;
 		Renderer::Submit([instance]()mutable {
 			instance->RT_End();
 		});
 	}
-	void VulkanRenderCommandBuffer::Submit()
+	void VulkanPrimaryRenderCommandBuffer::Submit()
 	{
 		if (m_OwnedBySwapchain)
 			return;
 
-		Ref<VulkanRenderCommandBuffer> instance = this;
+		Ref<VulkanPrimaryRenderCommandBuffer> instance = this;
 		Renderer::Submit([instance]() mutable
 		{
 			auto device = VulkanContext::GetCurrentDevice();
@@ -136,7 +137,7 @@ namespace XYZ {
 		});
 	}
 
-	void VulkanRenderCommandBuffer::RT_Begin()
+	void VulkanPrimaryRenderCommandBuffer::RT_Begin()
 	{
 		const uint32_t frameIndex = VulkanContext::Get()->GetCurrentFrame();
 		VkCommandBufferBeginInfo beginInfo{};
@@ -157,32 +158,35 @@ namespace XYZ {
 		vkCmdBeginQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0, 0);
 	}
 
-	void VulkanRenderCommandBuffer::RT_End() 
+	void VulkanPrimaryRenderCommandBuffer::RT_End() 
 	{
 		const uint32_t frameIndex = VulkanContext::Get()->GetCurrentFrame();
      	const VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
-
+		if (!m_SecondaryVulkanCommandBuffers[frameIndex].empty())
+		{
+			vkCmdExecuteCommands(commandBuffer, m_SecondaryVulkanCommandBuffers[frameIndex].size(), m_SecondaryVulkanCommandBuffers[frameIndex].data());
+		}
 		m_Begin = false;
 		vkCmdEndQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0);
 		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 	}
 
-	void VulkanRenderCommandBuffer::CreateTimestampQueries(uint32_t count)
+	void VulkanPrimaryRenderCommandBuffer::CreateTimestampQueries(uint32_t count)
 	{
 		destroyTimestampQueries();
 		createTimestampQueries(count);
 	}
 
-	float VulkanRenderCommandBuffer::GetExecutionGPUTime(uint32_t frameIndex, uint32_t queryIndex) const
+	float VulkanPrimaryRenderCommandBuffer::GetExecutionGPUTime(uint32_t frameIndex, uint32_t queryIndex) const
 	{
 		return m_ExecutionGPUTimes[frameIndex][queryIndex / 2];
 	}
-	uint32_t VulkanRenderCommandBuffer::BeginTimestampQuery()
+	uint32_t VulkanPrimaryRenderCommandBuffer::BeginTimestampQuery()
 	{
 		XYZ_ASSERT(m_NextTimestampQueryID < m_TimestampQueryCount, "Using more queries than created");
 		uint32_t queryID = m_NextTimestampQueryID;
 		m_NextTimestampQueryID += 2;
-		Ref<VulkanRenderCommandBuffer> instance = this;
+		Ref<VulkanPrimaryRenderCommandBuffer> instance = this;
 		Renderer::Submit([instance, queryID]()
 		{
 			uint32_t frameIndex = Renderer::GetCurrentFrame();
@@ -191,9 +195,9 @@ namespace XYZ {
 		});
 		return queryID;
 	}
-	void VulkanRenderCommandBuffer::EndTimestampQuery(uint32_t queryID)
+	void VulkanPrimaryRenderCommandBuffer::EndTimestampQuery(uint32_t queryID)
 	{
-		Ref<VulkanRenderCommandBuffer> instance = this;
+		Ref<VulkanPrimaryRenderCommandBuffer> instance = this;
 		Renderer::Submit([instance, queryID]()
 		{
 			uint32_t frameIndex = Renderer::GetCurrentFrame();
@@ -202,7 +206,13 @@ namespace XYZ {
 		});
 	}
 
-	VkResult VulkanRenderCommandBuffer::GetFenceStatus(uint32_t index) const
+	Ref<RenderCommandBuffer> VulkanPrimaryRenderCommandBuffer::CreateSecondaryCommandBuffer()
+	{
+		Ref<VulkanSecondaryRenderCommandBuffer> secondaryBuffer = Ref<VulkanSecondaryRenderCommandBuffer>::Create(this);
+		return secondaryBuffer;
+	}
+
+	VkResult VulkanPrimaryRenderCommandBuffer::GetFenceStatus(uint32_t index) const
 	{
 		const VulkanSwapChain& swapChain = VulkanContext::GetSwapChain();
 		if (m_OwnedBySwapchain)
@@ -213,7 +223,7 @@ namespace XYZ {
 		return vkGetFenceStatus(device, m_WaitFences[index]);
 	}
 
-	void VulkanRenderCommandBuffer::createTimestampQueries(uint32_t count)
+	void VulkanPrimaryRenderCommandBuffer::createTimestampQueries(uint32_t count)
 	{
 		m_TimestampQueryCount = count * 2;
 		auto device = VulkanContext::GetCurrentDevice();
@@ -239,7 +249,7 @@ namespace XYZ {
 			executionGPUTimes.resize(m_TimestampQueryCount / 2);
 	}
 
-	void VulkanRenderCommandBuffer::createPipelineStatisticsQueries()
+	void VulkanPrimaryRenderCommandBuffer::createPipelineStatisticsQueries()
 	{
 		auto device = VulkanContext::GetCurrentDevice();
 		uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
@@ -267,7 +277,7 @@ namespace XYZ {
 		m_PipelineStatisticsQueryResults.resize(framesInFlight);
 	}
 
-	void VulkanRenderCommandBuffer::destroyTimestampQueries()
+	void VulkanPrimaryRenderCommandBuffer::destroyTimestampQueries()
 	{
 		if (m_TimestampQueryPools.empty())
 			return;
@@ -282,13 +292,13 @@ namespace XYZ {
 		});
 	}
 
-	void VulkanRenderCommandBuffer::destroyPipelineStatisticsQueries()
+	void VulkanPrimaryRenderCommandBuffer::destroyPipelineStatisticsQueries()
 	{
 		if (m_PipelineStatisticsQueryPools.empty())
 			return;
 
 		auto pipelineStatisticsQueryPools = m_PipelineStatisticsQueryPools;
-		Renderer::SubmitResource([ pipelineStatisticsQueryPools]()
+		Renderer::SubmitResource([pipelineStatisticsQueryPools]()
 		{
 			auto device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 			for (const auto query : pipelineStatisticsQueryPools)
@@ -296,7 +306,7 @@ namespace XYZ {
 		});
 	}
 
-	void VulkanRenderCommandBuffer::getTimestampQueryResults()
+	void VulkanPrimaryRenderCommandBuffer::getTimestampQueryResults()
 	{
 		auto device = VulkanContext::GetCurrentDevice();
 		const uint32_t frameIndex = Renderer::GetCurrentFrame();
@@ -313,12 +323,71 @@ namespace XYZ {
 			m_ExecutionGPUTimes[frameIndex][i / 2] = nsTime * 0.000001f; // Time in ms
 		}
 	}
-	void VulkanRenderCommandBuffer::getPipelineQueryResults()
+	void VulkanPrimaryRenderCommandBuffer::getPipelineQueryResults()
 	{
 		auto device = VulkanContext::GetCurrentDevice();
 		const uint32_t frameIndex = Renderer::GetCurrentFrame();
 
 		vkGetQueryPoolResults(device->GetVulkanDevice(), m_PipelineStatisticsQueryPools[frameIndex], 0, 1,
 			sizeof(PipelineStatistics), &m_PipelineStatisticsQueryResults[frameIndex], sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+	}
+	VulkanSecondaryRenderCommandBuffer::VulkanSecondaryRenderCommandBuffer(Ref<RenderCommandBuffer> primaryCommandBuffer)
+		:
+		m_PrimaryRenderCommandBuffer(primaryCommandBuffer)
+	{
+		const uint32_t count = Renderer::GetConfiguration().FramesInFlight;
+		
+		m_CommandBuffers.resize(static_cast<size_t>(count));
+		auto device = VulkanContext::GetCurrentDevice();
+		for (uint32_t i = 0; i < count; ++i)
+		{
+			VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
+			cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+			cmdBufAllocateInfo.commandPool = m_PrimaryRenderCommandBuffer->m_CommandPool;
+			cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+			cmdBufAllocateInfo.commandBufferCount = 1;
+
+			VK_CHECK_RESULT(vkAllocateCommandBuffers(device->GetVulkanDevice(), &cmdBufAllocateInfo, &m_CommandBuffers[i]));
+		
+			m_PrimaryRenderCommandBuffer->m_SecondaryVulkanCommandBuffers[i].push_back(m_CommandBuffers[i]);
+		}
+	}
+	VulkanSecondaryRenderCommandBuffer::~VulkanSecondaryRenderCommandBuffer()
+	{
+	}
+	void VulkanSecondaryRenderCommandBuffer::Begin()
+	{
+		Ref<VulkanSecondaryRenderCommandBuffer> instance = this;
+		Renderer::Submit([instance]() mutable {
+			instance->RT_Begin();
+
+		});
+	}
+	void VulkanSecondaryRenderCommandBuffer::End()
+	{
+		Ref<VulkanSecondaryRenderCommandBuffer> instance = this;
+		Renderer::Submit([instance]() mutable {
+			instance->RT_End();
+
+			});
+	}
+
+	void VulkanSecondaryRenderCommandBuffer::RT_Begin()
+	{
+		const uint32_t frameIndex = VulkanContext::Get()->GetCurrentFrame();
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags = 0; // Optional
+		beginInfo.pInheritanceInfo = nullptr; // Optional
+
+		const VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
+		VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo));
+	}
+	void VulkanSecondaryRenderCommandBuffer::RT_End()
+	{
+		const uint32_t frameIndex = VulkanContext::Get()->GetCurrentFrame();
+		const VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
+
+		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
 	}
 }

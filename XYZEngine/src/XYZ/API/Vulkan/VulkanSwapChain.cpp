@@ -471,7 +471,7 @@ namespace XYZ {
 	{
 		if (!m_RenderPassCreated)
 		{
-			m_RenderCommandBuffer = Ref<VulkanRenderCommandBuffer>::Create("SwapChainCommandBuffer");
+			m_RenderCommandBuffer = Ref<VulkanPrimaryRenderCommandBuffer>::Create("SwapChainCommandBuffer");
 			FramebufferSpecification specs;
 			specs.Attachments = { ImageFormat::RGBA };
 			specs.SwapChainTarget = true;

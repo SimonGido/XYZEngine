@@ -77,10 +77,7 @@ struct HitResult
 	uint Voxel;
 };
 
-
-
 layout(location = 0) in VertexOutput v_Input;
-
 
 layout(std140, binding = 0) uniform Scene
 {
@@ -102,6 +99,8 @@ layout(std140, binding = 0) uniform Scene
 	float u_Padding[3];
 };
 
+
+// Voxel colors
 layout(std430, binding = 3) buffer buffer_Voxels
 {
 	uint Voxels[];
@@ -117,7 +116,6 @@ uint Index3D(ivec3 index)
 {
 	return Index3D(index.x, index.y, index.z);
 }
-
 
 bool IsInsideChunk(ivec3 voxel)
 {
@@ -190,9 +188,9 @@ vec4 HitColor(vec3 rayOrig, vec3 rayDir)
 	ivec3 current_voxel = ivec3(floor(rayOrig / u_VoxelSize));
 
 	ivec3 step = ivec3(
-		(rayDir.x > 0.0) ? 2 : -2,
-		(rayDir.y > 0.0) ? 2 : -2,
-		(rayDir.z > 0.0) ? 2 : -2
+		(rayDir.x > 0.0) ? 1 : -1,
+		(rayDir.y > 0.0) ? 1 : -1,
+		(rayDir.z > 0.0) ? 1 : -1
 	);
 	vec3 next_boundary = vec3(
 		float((step.x > 0) ? current_voxel.x + 1 : current_voxel.x) * u_VoxelSize,

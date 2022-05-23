@@ -1,12 +1,12 @@
 #include "GameLayer.h"
 
 
-
-
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
 #include <random>
+
+#include "vendor/vox/ogt_vox.h"
 
 namespace XYZ {
 
@@ -56,6 +56,17 @@ namespace XYZ {
 		result |= static_cast<uint32_t>(color.y * 255.0f) << 8;  // G
 		result |= static_cast<uint32_t>(color.z * 255.0f) << 16; // B
 		result |= static_cast<uint32_t>(color.w * 255.0f) << 24; // A
+
+		return result;
+	}
+
+	static uint32_t ColorToUINT(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+	{
+		uint32_t result = 0;
+		result |= static_cast<uint32_t>(r);	   // R
+		result |= static_cast<uint32_t>(g) << 8;  // G
+		result |= static_cast<uint32_t>(b) << 16; // B
+		result |= static_cast<uint32_t>(a) << 24; // A
 
 		return result;
 	}
@@ -138,7 +149,7 @@ namespace XYZ {
 	
 		m_Camera.SetViewportSize((float)windowWidth, (float)windowHeight);
 	
-		m_CommandBuffer = RenderCommandBuffer::Create(0, "GameCommandBuffer");
+		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "GameCommandBuffer");
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 		m_RenderPass = CreateRenderPass();
 
@@ -173,11 +184,41 @@ namespace XYZ {
 		}
 
 		generateVoxels();
+		std::ifstream output("chr_knight.vox", std::ios::binary);
+		std::vector<uint8_t> data(std::istreambuf_iterator<char>(output), {});
+		auto scene = ogt_vox_read_scene(data.data(), data.size());
+
+		for (uint32_t i = 0; i < scene->num_models; ++i)
+		{
+			for (uint32_t x = 0; x < scene->models[i]->size_x; ++x)
+			{
+				for (uint32_t y = 0; y < scene->models[i]->size_y; ++y)
+				{
+					for (uint32_t z = 0; z < scene->models[i]->size_z; ++z)
+					{
+						const uint32_t index = Index3D(x, z, y, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
+						const uint32_t modelIndex = Index3D(x, y, z, scene->models[i]->size_x, scene->models[i]->size_y);
+						const uint8_t colorIndex = scene->models[i]->voxel_data[modelIndex];
+						const auto color = scene->palette.color[colorIndex];
+
+						if (index < m_Voxels.size())
+							m_Voxels[index] = ColorToUINT(color.r, color.g, color.b, color.a);
+					}
+				}
+			}
+		}
+
 		m_StorageBufferSet->Update(m_Voxels.data(), m_Voxels.size() * sizeof(uint32_t), 0, 3);
 		m_SceneBufferSet = UniformBufferSet::Create(3);
 		m_SceneBufferSet->Create(sizeof(UBScene), 0, 0);
 
 		Renderer::WaitAndRenderAll();
+
+
+
+
+
+		
 	}
 
 	void GameLayer::OnDetach()
@@ -199,10 +240,15 @@ namespace XYZ {
 		m_SceneUB.CameraFrustum = CameraFrustum(m_Camera);
 		m_SceneUB.CameraPosition = glm::vec4(m_Camera.GetPosition(), 0.0f);
 		
+		
 		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
 		m_SceneBufferSet->Get(0, 0, currentFrame)->Update(&m_SceneUB, sizeof(UBScene), 0);
-		m_StorageBufferSet->Update(m_Voxels.data(), m_Voxels.size() * sizeof(uint32_t), 0, 3);
-	
+		
+		if (m_NumUpdates)
+		{
+			m_StorageBufferSet->Update(m_Voxels.data(), m_Voxels.size() * sizeof(uint32_t), 0, 3);
+			m_NumUpdates--;
+		}
 		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, true);
 
 		Renderer::BindPipeline(m_CommandBuffer, m_Pipeline, m_SceneBufferSet, m_StorageBufferSet, m_Material);
@@ -223,6 +269,13 @@ namespace XYZ {
 
 	void GameLayer::OnImGuiRender()
 	{
+		if (ImGui::Begin("Performance"))
+		{
+			const uint32_t frameIndex = Renderer::GetCurrentFrame();
+			ImGui::Text("GPU Time: %f", m_CommandBuffer->GetExecutionGPUTime(frameIndex, s_TimeQueries.GPUTime));
+		}
+		ImGui::End();
+
 		if (ImGui::Begin("Ray March"))
 		{
 			if (ImGui::DragFloat3("Light Direction", glm::value_ptr(m_SceneUB.LightDirection), 0.1f))
@@ -355,6 +408,7 @@ namespace XYZ {
 				}
 			}
 			m_Generating = false;
+			m_NumUpdates = Renderer::GetConfiguration().FramesInFlight;
 		});	
 	}
 

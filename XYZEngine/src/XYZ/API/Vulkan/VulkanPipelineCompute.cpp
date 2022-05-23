@@ -99,10 +99,11 @@ namespace XYZ {
 	{
 		XYZ_ASSERT(!m_ActiveComputeCommandBuffer, "");
 
+
 		if (renderCommandBuffer.Raw())
 		{
 			const uint32_t frameIndex = Renderer::GetCurrentFrame();
-			m_ActiveComputeCommandBuffer = renderCommandBuffer.As<VulkanRenderCommandBuffer>()->GetVulkanCommandBuffer(frameIndex);
+			m_ActiveComputeCommandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 			m_UsingGraphicsQueue = true;
 		}
 		else
