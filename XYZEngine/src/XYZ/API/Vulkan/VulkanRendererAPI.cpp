@@ -485,11 +485,14 @@ namespace XYZ {
 			Ref<VulkanPipelineCompute> vulkanPipeline = pipeline;
 
 			ByteBuffer vsUniformStorage = material->GetVSUniformsBuffer();
-			vkCmdPushConstants(
-				vulkanPipeline->GetActiveCommandBuffer(),
-				vulkanPipeline->GetVulkanPipelineLayout(),
-				VK_SHADER_STAGE_COMPUTE_BIT, 0, vsUniformStorage.Size, vsUniformStorage.Data
-			);
+			if (vsUniformStorage.Size != 0)
+			{
+				vkCmdPushConstants(
+					vulkanPipeline->GetActiveCommandBuffer(),
+					vulkanPipeline->GetVulkanPipelineLayout(),
+					VK_SHADER_STAGE_COMPUTE_BIT, 0, vsUniformStorage.Size, vsUniformStorage.Data
+				);
+			}
 			vulkanPipeline->Dispatch(groupCountX, groupCountY, groupCountZ);
 		});
 	}

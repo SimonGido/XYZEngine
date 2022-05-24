@@ -56,6 +56,13 @@ namespace XYZ {
 
 		Ref<RenderPass>				    m_RenderPass;
 		Ref<Pipeline>				    m_Pipeline;
+
+
+		Ref<PipelineCompute>			m_SDFPipeline;
+		Ref<Material>					m_SDFMaterial;
+		Ref<MaterialInstance>			m_SDFMaterialInstance;
+
+
 		Ref<Material>				    m_Material;
 		Ref<MaterialInstance>		    m_MaterialInstance;
 		Ref<StorageBufferSet>		    m_StorageBufferSet;
@@ -84,7 +91,12 @@ namespace XYZ {
 		};
 		UBScene m_SceneUB;
 
-		std::vector<uint32_t> m_Voxels;
+		struct Voxel
+		{
+			uint32_t Color;
+		};
+
+		std::vector<Voxel> m_Voxels;
 
 		uint32_t m_NumUpdates = 3;
 

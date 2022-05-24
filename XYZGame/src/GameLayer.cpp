@@ -168,7 +168,7 @@ namespace XYZ {
 
 		m_Voxels.resize(VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE);
 
-		m_StorageBufferSet->Create(m_Voxels.size() * sizeof(uint32_t), 0, 3);
+		m_StorageBufferSet->Create(m_Voxels.size() * sizeof(Voxel), 0, 3);
 
 		for (int i = 0; i < VOXEL_GRID_SIZE; ++i)
 		{
@@ -176,14 +176,12 @@ namespace XYZ {
 			{
 				for (int k = 0; k < VOXEL_GRID_SIZE; ++k)
 				{
-					m_Voxels[Index3D(i, j, k, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = 0;
-					if (j == 0)
-						m_Voxels[Index3D(i, j, k, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = 1;
+					m_Voxels[Index3D(i, j, k, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)].Color = 0;
 				}
 			}
 		}
 
-		generateVoxels();
+		//generateVoxels();
 		std::ifstream output("chr_knight.vox", std::ios::binary);
 		std::vector<uint8_t> data(std::istreambuf_iterator<char>(output), {});
 		auto scene = ogt_vox_read_scene(data.data(), data.size());
@@ -202,23 +200,31 @@ namespace XYZ {
 						const auto color = scene->palette.color[colorIndex];
 
 						if (index < m_Voxels.size())
-							m_Voxels[index] = ColorToUINT(color.r, color.g, color.b, color.a);
+							m_Voxels[index].Color = ColorToUINT(color.r, color.g, color.b, color.a);
 					}
 				}
 			}
 		}
 
-		m_StorageBufferSet->Update(m_Voxels.data(), m_Voxels.size() * sizeof(uint32_t), 0, 3);
+		m_StorageBufferSet->Update(m_Voxels.data(), m_Voxels.size() * sizeof(Voxel), 0, 3);
 		m_SceneBufferSet = UniformBufferSet::Create(3);
 		m_SceneBufferSet->Create(sizeof(UBScene), 0, 0);
 
-		Renderer::WaitAndRenderAll();
-
-
-
-
-
+		Ref<Shader> sdfShader = Shader::Create("Assets/SDF.glsl", {});
+		m_SDFPipeline = PipelineCompute::Create(sdfShader);
+		m_SDFMaterial = Material::Create(sdfShader);
+		m_SDFMaterialInstance = Ref<MaterialInstance>::Create(m_SDFMaterial);
 		
+
+		m_CommandBuffer->Begin();
+
+		Renderer::BeginPipelineCompute(m_CommandBuffer, m_SDFPipeline, m_SceneBufferSet, m_StorageBufferSet, m_SDFMaterial);
+		Renderer::DispatchCompute(m_SDFPipeline, m_SDFMaterialInstance, 32, 32, 1);
+
+		m_CommandBuffer->End();
+		m_CommandBuffer->Submit();
+
+		Renderer::WaitAndRenderAll();		
 	}
 
 	void GameLayer::OnDetach()
@@ -233,6 +239,7 @@ namespace XYZ {
 		m_Camera.OnUpdate(ts);
 
 		m_CommandBuffer->Begin();
+
 		s_TimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 	
 		m_SceneUB.ViewProjection = m_Camera.GetViewProjection();
@@ -246,7 +253,7 @@ namespace XYZ {
 		
 		if (m_NumUpdates)
 		{
-			m_StorageBufferSet->Update(m_Voxels.data(), m_Voxels.size() * sizeof(uint32_t), 0, 3);
+			m_StorageBufferSet->Update(m_Voxels.data(), m_Voxels.size() * sizeof(Voxel), 0, 3);
 			m_NumUpdates--;
 		}
 		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, true);
@@ -343,7 +350,7 @@ namespace XYZ {
 				HitResult result;
 				if (rayMarch(orig, dir, result))
 				{
-					m_Voxels[result.HitVoxelIndex] = 0;
+					m_Voxels[result.HitVoxelIndex].Color = 0;
 					return true;
 				}
 			}
@@ -351,7 +358,7 @@ namespace XYZ {
 			{
 				if (m_LastPreviewVoxel < m_Voxels.size())
 				{
-					m_Voxels[m_LastPreviewVoxel] = ColorToUINT(m_Color);
+					m_Voxels[m_LastPreviewVoxel].Color = ColorToUINT(m_Color);
 					m_LastPreviewVoxel = m_Voxels.size();
 				}
 			}
@@ -379,6 +386,7 @@ namespace XYZ {
 
 	void GameLayer::generateVoxels()
 	{
+		return;
 		if (m_Generating)
 		{
 			m_QueuedGenerate = true;
@@ -403,7 +411,7 @@ namespace XYZ {
 					int height = val * 16;
 					for (int k = -16; k < height; ++k)
 					{
-						m_Voxels[Index3D(i, k + 16, j, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = RandomColor();
+						m_Voxels[Index3D(i, k + 16, j, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)].Color = RandomColor();
 					}
 				}
 			}
@@ -439,7 +447,7 @@ namespace XYZ {
 
 			if (m_LastPreviewVoxel < m_Voxels.size())
 			{
-				m_Voxels[m_LastPreviewVoxel] = 0;
+				m_Voxels[m_LastPreviewVoxel].Color = 0;
 			}
 			m_LastPreviewVoxel = result.HitVoxelIndex;
 
@@ -474,7 +482,7 @@ namespace XYZ {
 					m_LastPreviewVoxel = Index3D(result.X, result.Y, result.Z + 1, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
 			}
 
-			m_Voxels[m_LastPreviewVoxel] = ColorToUINT(m_Color);
+			m_Voxels[m_LastPreviewVoxel].Color = ColorToUINT(m_Color);
 		}
 	}
 	bool GameLayer::rayMarch(const glm::vec3& rayOrig, const glm::vec3& rayDir, HitResult& result)
@@ -528,7 +536,7 @@ namespace XYZ {
 				result.X = current_voxel.x;
 				result.Y = current_voxel.y;
 				result.Z = current_voxel.z;
-				voxel = m_Voxels[result.HitVoxelIndex];
+				voxel = m_Voxels[result.HitVoxelIndex].Color;
 				if (voxel != 0)
 				{
 					return true;
