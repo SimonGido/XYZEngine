@@ -47,7 +47,7 @@ namespace XYZ {
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-        //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 
 
 		io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto/Roboto-Black.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
@@ -117,7 +117,7 @@ namespace XYZ {
 			init_info.Allocator = nullptr;
 
 			const VulkanSwapChain& swapChain = vulkanContext->GetSwapChain();
-			init_info.MinImageCount = swapChain.GetImageCount();
+			init_info.MinImageCount = 2;
 			init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 			init_info.ImageCount = swapChain.GetImageCount();
 			init_info.CheckVkResultFn = Utils::VulkanCheckResult;
@@ -180,32 +180,33 @@ namespace XYZ {
 		ImDrawData copy;
 		CopyImDrawData(copy, ImGui::GetDrawData());
 
-		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		
+			
+		RT_beginRender();
+		for (auto& [id, desc] : m_ImGuiImageDescriptors)
+		{
+			const auto& imageInfo = desc.Image->GetImageInfo();
+			ImGui_ImplVulkan_UpdateTextureInfo(desc.Descriptor, imageInfo.Sampler, imageInfo.ImageView, desc.Image->GetDescriptor().imageLayout);
+		}
+		const uint32_t currentFrame = Renderer::GetCurrentFrame();
+		ImGui_ImplVulkan_RenderDrawData(&copy, s_ImGuiCommandBuffers[currentFrame]);
+		
+		
+		RT_endRender();
+
+		for (int i = 0; i < copy.CmdListsCount; ++i)
+			IM_DELETE(copy.CmdLists[i]);
+		delete[]copy.CmdLists;
+		copy.Clear();
+
+		ImGuiIO& io = ImGui::GetIO();
 		// Update and Render additional Platform Windows
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
 		}
-
-		Renderer::Submit([this, copy, descriptors = std::move(m_ImGuiImageDescriptors)]() mutable
-		{
-			RT_beginRender();
-			for (auto& [id, desc] : descriptors)
-			{
-				const auto& imageInfo = desc.Image->GetImageInfo();
-				ImGui_ImplVulkan_UpdateTextureInfo(desc.Descriptor, imageInfo.Sampler, imageInfo.ImageView, desc.Image->GetDescriptor().imageLayout);
-			}
-			const uint32_t currentFrame = Renderer::GetCurrentFrame();
-			ImGui_ImplVulkan_RenderDrawData(&copy, s_ImGuiCommandBuffers[currentFrame]);
-
-			RT_endRender();
-
-			for (int i = 0; i < copy.CmdListsCount; ++i)
-				IM_DELETE(copy.CmdLists[i]);
-			delete[]copy.CmdLists;
-			copy.Clear();
-		});
+		m_ImGuiImageDescriptors.clear();
     }
 
 	void VulkanImGuiLayer::AddFont(const ImGuiFontConfig& config)
@@ -250,7 +251,7 @@ namespace XYZ {
 	{
 		if (!m_AddFonts.empty())
 		{
-			Renderer::SubmitAndWait([this]() {
+			//Renderer::SubmitAndWait([this]() {
 				while (!m_AddFonts.empty())
 				{
 					const auto fontConfig = m_AddFonts.back();
@@ -259,7 +260,7 @@ namespace XYZ {
 					m_FontsLoaded.push_back(fontConfig);
 				}
 				RT_uploadFonts();
-			});
+			//});
 		}
 	}
 	void VulkanImGuiLayer::RT_uploadFonts()
@@ -279,7 +280,6 @@ namespace XYZ {
 	void VulkanImGuiLayer::RT_beginRender()
 	{
 		VulkanSwapChain& swapChain = VulkanContext::Get()->GetSwapChain();
-		Ref<VulkanFramebuffer> framebuffer = swapChain.GetRenderPass()->GetSpecification().TargetFramebuffer;
 		
 		VkClearValue clearValues[2];
 		clearValues[0].color = { {0.1f, 0.1f,0.1f, 1.0f} };
@@ -301,7 +301,7 @@ namespace XYZ {
 		VkRenderPassBeginInfo renderPassBeginInfo = {};
 		renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassBeginInfo.pNext = nullptr;
-		renderPassBeginInfo.renderPass = framebuffer->GetRenderPass();
+		renderPassBeginInfo.renderPass = swapChain.GetVulkanRenderPass();
 		renderPassBeginInfo.renderArea.offset.x = 0;
 		renderPassBeginInfo.renderArea.offset.y = 0;
 		renderPassBeginInfo.renderArea.extent.width = width;
@@ -314,8 +314,9 @@ namespace XYZ {
 
 		VkCommandBufferInheritanceInfo inheritanceInfo = {};
 		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-		inheritanceInfo.renderPass = framebuffer->GetRenderPass();
+		inheritanceInfo.renderPass = swapChain.GetVulkanRenderPass();
 		inheritanceInfo.framebuffer = swapChain.GetCurrentFramebuffer();
+		
 
 		VkCommandBufferBeginInfo cmdBufInfo = {};
 		cmdBufInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

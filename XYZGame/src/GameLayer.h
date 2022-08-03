@@ -34,6 +34,11 @@ namespace XYZ {
 		bool onKeyRelease(KeyReleasedEvent& event);
 
 		void generateVoxels();
+
+
+		void setupScene();
+		void setupCharacter();
+
 	private:
 		void displayStats();
 
@@ -56,20 +61,22 @@ namespace XYZ {
 
 		Ref<RenderPass>				    m_RenderPass;
 		Ref<Pipeline>				    m_Pipeline;
-
-
-		Ref<PipelineCompute>			m_SDFPipeline;
-		Ref<Material>					m_SDFMaterial;
-		Ref<MaterialInstance>			m_SDFMaterialInstance;
+		Ref<Pipeline>					m_CharacterPipeline;
 
 
 		Ref<Material>				    m_Material;
 		Ref<MaterialInstance>		    m_MaterialInstance;
 		Ref<StorageBufferSet>		    m_StorageBufferSet;
-									    
+
+
+		Ref<Material>				    m_CharacterMaterial;
+		Ref<MaterialInstance>		    m_CharacterMaterialInstance;
+		Ref<StorageBufferSet>			m_CharacterBufferSet;
+
+
 		Ref<UniformBufferSet>		    m_SceneBufferSet;
 
-		static constexpr int VOXEL_GRID_SIZE = 200;
+		static constexpr int SCENE_VOXEL_GRID_SIZE = 200;
 
 		struct UBScene
 		{
@@ -83,9 +90,9 @@ namespace XYZ {
 
 			glm::vec4 ChunkPosition = glm::vec4(0.0f);
 			uint32_t  MaxTraverse = 128;
-			uint32_t  Width = VOXEL_GRID_SIZE;
-			uint32_t  Height = VOXEL_GRID_SIZE;
-			uint32_t  Depth = VOXEL_GRID_SIZE;
+			uint32_t  Width = SCENE_VOXEL_GRID_SIZE;
+			uint32_t  Height = SCENE_VOXEL_GRID_SIZE;
+			uint32_t  Depth = SCENE_VOXEL_GRID_SIZE;
 			float	  VoxelSize = 1.0f;
 			float	  Padding[3];
 		};
@@ -96,7 +103,8 @@ namespace XYZ {
 			uint32_t Color;
 		};
 
-		std::vector<Voxel> m_Voxels;
+		std::vector<Voxel> m_SceneVoxels;
+		std::vector<Voxel> m_CharacterVoxels;
 
 		uint32_t m_NumUpdates = 3;
 
@@ -107,7 +115,7 @@ namespace XYZ {
 
 		glm::vec4 m_Color = glm::vec4(1.0f);
 
-		uint32_t m_LastPreviewVoxel = VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE;
+		uint32_t m_LastPreviewVoxel = SCENE_VOXEL_GRID_SIZE * SCENE_VOXEL_GRID_SIZE * SCENE_VOXEL_GRID_SIZE;
 
 		std::atomic_bool m_Generating = false;
 		bool m_QueuedGenerate = true;

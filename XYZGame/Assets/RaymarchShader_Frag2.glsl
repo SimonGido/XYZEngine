@@ -16,13 +16,7 @@ struct VertexOutput
 struct HitResult
 {
 	vec3 Normal;
-	uint Color;
-};
-
-struct Voxel
-{
-	uint Color;
-	uint Distance;
+	uint Voxel;
 };
 
 layout(location = 0) in VertexOutput v_Input;
@@ -47,14 +41,11 @@ layout(std140, binding = 0) uniform Scene
 	float u_Padding[3];
 };
 
-
-float maxcomp(in vec3 p) { return max(p.x, max(p.y, p.z)); }
-double maxcomp(in dvec3 p) { return max(p.x, max(p.y, p.z)); }
-float maxcomp(in vec2 p) { return max(p.x, p.y); }
-double maxcomp(in dvec2 p) { return max(p.x, p.y); }
-
-float mincomp(in vec3 p) { return min(p.x, min(p.y, p.z)); }
-double mincomp(in dvec3 p) { return min(p.x, min(p.y, p.z)); }
+struct Voxel
+{
+	uint Color;
+	uint Distance;
+};
 
 // Voxel colors
 layout(std430, binding = 3) buffer buffer_Voxels
@@ -76,9 +67,9 @@ uint Index3D(ivec3 index)
 bool IsInsideChunk(ivec3 voxel)
 {
 	vec3 current_voxel = vec3(voxel.x, voxel.y, voxel.z);
-	return ((current_voxel.x < float(u_Width ) && current_voxel.x > 0)
-		 && (current_voxel.y < float(u_Height) && current_voxel.y > 0)
-		 && (current_voxel.z < float(u_Depth)  && current_voxel.z > 0));
+	return ((current_voxel.x < float(u_Width) && current_voxel.x > 0)
+		&& (current_voxel.y < float(u_Height) && current_voxel.y > 0)
+		&& (current_voxel.z < float(u_Depth) && current_voxel.z > 0));
 }
 
 
@@ -96,89 +87,94 @@ vec4 VoxelToColor(uint voxel)
 vec4 HitResultToColor(in HitResult hit)
 {
 	float light = dot(-v_Input.LightDirection, hit.Normal);
-	vec4 voxelColor = VoxelToColor(hit.Color);
+	vec4 voxelColor = VoxelToColor(hit.Voxel);
 	vec3 color = voxelColor.rgb * v_Input.LightColor * light;
 	return vec4(color, voxelColor.a);
 }
 
 bool RayMarch(out HitResult result, inout ivec3 currentVoxel, ivec3 step, inout vec3 tMax, inout vec3 tDelta, inout uint numTraverses)
 {
-	result.Color = 0;
-	do 
+	result.Voxel = 0;
+	do
 	{
-		if (tMax.x < tMax.y && tMax.x < tMax.z) 
+		if (tMax.x < tMax.y && tMax.x < tMax.z)
 		{
 			result.Normal = vec3(float(-step.x), 0.0, 0.0);
 			tMax.x += tDelta.x;
 			currentVoxel.x += step.x;
 		}
-		else if (tMax.y < tMax.z) 
+		else if (tMax.y < tMax.z)
 		{
 			result.Normal = vec3(0.0, float(-step.y), 0.0);
 			tMax.y += tDelta.y;
-			currentVoxel.y += step.y;			
+			currentVoxel.y += step.y;
 		}
-		else 
+		else
 		{
 			result.Normal = vec3(0.0, 0.0, float(-step.z));
 			tMax.z += tDelta.z;
-			currentVoxel.z += step.z;		
+			currentVoxel.z += step.z;
 		}
-		
+
 		// Is inside voxel area
 		if (IsInsideChunk(currentVoxel))
 		{
-			result.Color = Voxels[Index3D(currentVoxel)].Color;
-			if (result.Color != 0)
+			result.Voxel = Voxels[Index3D(currentVoxel)].Color;
+			if (result.Voxel != 0)
 				return true;
 		}
 		numTraverses += 1;
-	} 
-	while (result.Color == 0 && numTraverses < u_MaxTraverse);
+	} while (result.Voxel == 0 && numTraverses < u_MaxTraverse);
 
 	return false;
 }
 
-const float eps = 0.0005;
-
-vec4 HitColor(vec3 rayOrig, vec3 dir)
+vec4 HitColor(vec3 rayOrig, vec3 rayDir)
 {
-	uint voxelGridSize = u_Width;
-	ivec3 p0 = ivec3(floor(rayOrig / u_VoxelSize));
+	ivec3 current_voxel = ivec3(floor(rayOrig / u_VoxelSize));
+
+	ivec3 step = ivec3(
+		(rayDir.x > 0.0) ? 1 : -1,
+		(rayDir.y > 0.0) ? 1 : -1,
+		(rayDir.z > 0.0) ? 1 : -1
+	);
+	vec3 next_boundary = vec3(
+		float((step.x > 0) ? current_voxel.x + 1 : current_voxel.x) * u_VoxelSize,
+		float((step.y > 0) ? current_voxel.y + 1 : current_voxel.y) * u_VoxelSize,
+		float((step.z > 0) ? current_voxel.z + 1 : current_voxel.z) * u_VoxelSize
+	);
+
+	vec3 t_max = (next_boundary - rayOrig) / rayDir; // we will move along the axis with the smallest value
+	vec3 t_delta = u_VoxelSize / rayDir * vec3(step);
+	uint numTraverses = 0U;
+
+	bool first = true;
 	vec4 result = u_BackgroundColor;
 
-	float endT = mincomp(max((vec3(voxelGridSize) - p0) / dir, -p0 / dir));
-
-	vec3 p0abs = (1 - step(0, dir)) * voxelGridSize + sign(dir) * p0;
-	vec3 dirAbs = abs(dir);
-
-	uint numIter = 0;
-	float t = 0;
-	while (t <= endT && numIter < u_MaxTraverse)
+	HitResult hit;
+	if (RayMarch(hit, current_voxel, step, t_max, t_delta, numTraverses))
 	{
-		// Next point to check
-		vec3 p = p0 + dir * t;
-		ivec3 index = ivec3(floor(p / (u_VoxelSize * voxelGridSize)));
-		Voxel voxel = Voxels[Index3D(index)];
-
-		// Stop if voxel is solid
-		if (voxel.Color != 0) 
-		{
-			return VoxelToColor(voxel.Color);
-		}
-		vec3 pAbs = p0abs + dirAbs * t;
-		vec3 deltas = (1 - fract(p)) / dirAbs;
-		t += max(mincomp(deltas), eps) + voxel.Distance;
-
-		numIter++;
+		result = HitResultToColor(hit);
 	}
+	if (result.a < 1.0)
+	{
+		while (RayMarch(hit, current_voxel, step, t_max, t_delta, numTraverses))
+		{
+			vec4 color = HitResultToColor(hit);
+			result.rgb = mix(result.rgb, color.rgb, 1.0 - color.a);
 
+			if (!(color.a < 1.0)) // We hit solid object, stop marching
+			{
+				break;
+			}
+		}
+	}
 	return result;
 }
 
 
 
-void main() 
+void main()
 {
 	vec4 color = HitColor(v_Input.RayOrigin, v_Input.Ray);
 	o_Color = color;

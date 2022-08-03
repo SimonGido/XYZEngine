@@ -89,8 +89,11 @@ namespace XYZ {
 						layer->OnUpdate(m_Timestep);
 				}
 				if (m_Specification.EnableImGui)
-					onImGuiRender();
-							
+				{
+					Renderer::Submit([this]() {
+							onImGuiRender();
+						});
+				}
 				Renderer::EndFrame();
 				m_Window->SwapBuffers();
 			}

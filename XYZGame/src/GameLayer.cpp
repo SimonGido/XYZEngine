@@ -153,77 +153,18 @@ namespace XYZ {
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 		m_RenderPass = CreateRenderPass();
 
-		std::vector<BufferLayout> layouts = { {
-			{ ShaderDataType::Float3, "a_Position"},
-			{ ShaderDataType::Float2, "a_TexCoord"}
-		} };
-
-		m_Material = Material::Create(Shader::Create("RaymarchShader", "Assets/RaymarchShader_Vertex.glsl", "Assets/RaymarchShader_Frag.glsl", layouts));
-		m_MaterialInstance = Ref<MaterialInstance>::Create(m_Material);
-
-
-		m_Pipeline = CreatePipeline(m_Material->GetShader(), m_RenderPass);
-		m_StorageBufferSet = StorageBufferSet::Create(3);
+		
+		
 		
 
-		m_Voxels.resize(VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE);
-
-		m_StorageBufferSet->Create(m_Voxels.size() * sizeof(Voxel), 0, 3);
-
-		for (int i = 0; i < VOXEL_GRID_SIZE; ++i)
-		{
-			for (int j = 0; j < VOXEL_GRID_SIZE; ++j)
-			{
-				for (int k = 0; k < VOXEL_GRID_SIZE; ++k)
-				{
-					m_Voxels[Index3D(i, j, k, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)].Color = 0;
-				}
-			}
-		}
-
-		//generateVoxels();
-		std::ifstream output("chr_knight.vox", std::ios::binary);
-		std::vector<uint8_t> data(std::istreambuf_iterator<char>(output), {});
-		auto scene = ogt_vox_read_scene(data.data(), data.size());
-
-		for (uint32_t i = 0; i < scene->num_models; ++i)
-		{
-			for (uint32_t x = 0; x < scene->models[i]->size_x; ++x)
-			{
-				for (uint32_t y = 0; y < scene->models[i]->size_y; ++y)
-				{
-					for (uint32_t z = 0; z < scene->models[i]->size_z; ++z)
-					{
-						const uint32_t index = Index3D(x, z, y, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
-						const uint32_t modelIndex = Index3D(x, y, z, scene->models[i]->size_x, scene->models[i]->size_y);
-						const uint8_t colorIndex = scene->models[i]->voxel_data[modelIndex];
-						const auto color = scene->palette.color[colorIndex];
-
-						if (index < m_Voxels.size())
-							m_Voxels[index].Color = ColorToUINT(color.r, color.g, color.b, color.a);
-					}
-				}
-			}
-		}
-
-		m_StorageBufferSet->Update(m_Voxels.data(), m_Voxels.size() * sizeof(Voxel), 0, 3);
+		
 		m_SceneBufferSet = UniformBufferSet::Create(3);
 		m_SceneBufferSet->Create(sizeof(UBScene), 0, 0);
 
-		Ref<Shader> sdfShader = Shader::Create("Assets/SDF.glsl", {});
-		m_SDFPipeline = PipelineCompute::Create(sdfShader);
-		m_SDFMaterial = Material::Create(sdfShader);
-		m_SDFMaterialInstance = Ref<MaterialInstance>::Create(m_SDFMaterial);
-		
+		setupScene();
+		setupCharacter();
 
-		m_CommandBuffer->Begin();
-
-		Renderer::BeginPipelineCompute(m_CommandBuffer, m_SDFPipeline, m_SceneBufferSet, m_StorageBufferSet, m_SDFMaterial);
-		Renderer::DispatchCompute(m_SDFPipeline, m_SDFMaterialInstance, 32, 32, 1);
-
-		m_CommandBuffer->End();
-		m_CommandBuffer->Submit();
-
+	
 		Renderer::WaitAndRenderAll();		
 	}
 
@@ -253,13 +194,21 @@ namespace XYZ {
 		
 		if (m_NumUpdates)
 		{
-			m_StorageBufferSet->Update(m_Voxels.data(), m_Voxels.size() * sizeof(Voxel), 0, 3);
+			m_StorageBufferSet->Update(m_SceneVoxels.data(), m_SceneVoxels.size() * sizeof(Voxel), 0, 3);
 			m_NumUpdates--;
 		}
 		Renderer::BeginRenderPass(m_CommandBuffer, m_RenderPass, true);
 
+		// Scene pipeline
+
 		Renderer::BindPipeline(m_CommandBuffer, m_Pipeline, m_SceneBufferSet, m_StorageBufferSet, m_Material);
 		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_Pipeline, m_MaterialInstance);
+		
+		// Character pipeline
+
+		//Renderer::BindPipeline(m_CommandBuffer, m_CharacterPipeline, m_SceneBufferSet, m_CharacterBufferSet, m_CharacterMaterial);
+		//Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_CharacterPipeline, m_MaterialInstance);
+		
 		Renderer::EndRenderPass(m_CommandBuffer);
 
 		m_CommandBuffer->EndTimestampQuery(s_TimeQueries.GPUTime);
@@ -350,16 +299,16 @@ namespace XYZ {
 				HitResult result;
 				if (rayMarch(orig, dir, result))
 				{
-					m_Voxels[result.HitVoxelIndex].Color = 0;
+					m_SceneVoxels[result.HitVoxelIndex].Color = 0;
 					return true;
 				}
 			}
 			else if (event.IsButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
 			{
-				if (m_LastPreviewVoxel < m_Voxels.size())
+				if (m_LastPreviewVoxel < m_SceneVoxels.size())
 				{
-					m_Voxels[m_LastPreviewVoxel].Color = ColorToUINT(m_Color);
-					m_LastPreviewVoxel = m_Voxels.size();
+					m_SceneVoxels[m_LastPreviewVoxel].Color = ColorToUINT(m_Color);
+					m_LastPreviewVoxel = m_SceneVoxels.size();
 				}
 			}
 		}
@@ -386,7 +335,7 @@ namespace XYZ {
 
 	void GameLayer::generateVoxels()
 	{
-		return;
+
 		if (m_Generating)
 		{
 			m_QueuedGenerate = true;
@@ -399,11 +348,11 @@ namespace XYZ {
 
 			siv::PerlinNoise m_Noise{ (uint32_t) m_Seed};
 			
-			const double fx = (m_Frequency / VOXEL_GRID_SIZE);
-			const double fy = (m_Frequency / VOXEL_GRID_SIZE);
-			for (int i = 0; i < VOXEL_GRID_SIZE; ++i)
+			const double fx = (m_Frequency / SCENE_VOXEL_GRID_SIZE);
+			const double fy = (m_Frequency / SCENE_VOXEL_GRID_SIZE);
+			for (int i = 0; i < SCENE_VOXEL_GRID_SIZE; ++i)
 			{
-				for (int j = 0; j < VOXEL_GRID_SIZE; ++j)
+				for (int j = 0; j < SCENE_VOXEL_GRID_SIZE; ++j)
 				{
 					double x = i;
 					double y = j;
@@ -411,13 +360,88 @@ namespace XYZ {
 					int height = val * 16;
 					for (int k = -16; k < height; ++k)
 					{
-						m_Voxels[Index3D(i, k + 16, j, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)].Color = RandomColor();
+						m_SceneVoxels[Index3D(i, k + 16, j, SCENE_VOXEL_GRID_SIZE, SCENE_VOXEL_GRID_SIZE)].Color = RandomColor();
 					}
 				}
 			}
 			m_Generating = false;
 			m_NumUpdates = Renderer::GetConfiguration().FramesInFlight;
 		});	
+	}
+
+	void GameLayer::setupScene()
+	{
+		std::vector<BufferLayout> layouts = { {
+			   { ShaderDataType::Float3, "a_Position"},
+			   { ShaderDataType::Float2, "a_TexCoord"}
+		   } };
+
+		m_Material = Material::Create(Shader::Create("RaymarchShader", "Assets/RaymarchShader_Vertex.glsl", "Assets/RaymarchShader_Frag.glsl", layouts));
+		m_MaterialInstance = Ref<MaterialInstance>::Create(m_Material);
+		m_Pipeline = CreatePipeline(m_Material->GetShader(), m_RenderPass);
+		m_StorageBufferSet = StorageBufferSet::Create(3);
+
+		m_SceneVoxels.resize(SCENE_VOXEL_GRID_SIZE * SCENE_VOXEL_GRID_SIZE * SCENE_VOXEL_GRID_SIZE);
+
+		m_StorageBufferSet->Create(m_SceneVoxels.size() * sizeof(Voxel), 0, 3);
+
+		for (int i = 0; i < SCENE_VOXEL_GRID_SIZE; ++i)
+		{
+			for (int j = 0; j < SCENE_VOXEL_GRID_SIZE; ++j)
+			{
+				for (int k = 0; k < SCENE_VOXEL_GRID_SIZE; ++k)
+				{
+					m_SceneVoxels[Index3D(i, j, k, SCENE_VOXEL_GRID_SIZE, SCENE_VOXEL_GRID_SIZE)].Color = 0;
+				}
+			}
+		}
+
+		generateVoxels();
+		m_StorageBufferSet->Update(m_SceneVoxels.data(), m_SceneVoxels.size() * sizeof(Voxel), 0, 3);
+	}
+
+	void GameLayer::setupCharacter()
+	{
+		std::vector<BufferLayout> layouts = { {
+			   { ShaderDataType::Float3, "a_Position"},
+			   { ShaderDataType::Float2, "a_TexCoord"}
+		   } };
+
+		m_CharacterMaterial = Material::Create(Shader::Create("RaymarchShader", "Assets/RaymarchShader_Vertex.glsl", "Assets/RaymarchShader_Frag.glsl", layouts));
+		m_CharacterMaterialInstance = Ref<MaterialInstance>::Create(m_CharacterMaterial);
+		m_CharacterPipeline = CreatePipeline(m_CharacterMaterial->GetShader(), m_RenderPass);
+		m_CharacterBufferSet = StorageBufferSet::Create(3);
+
+
+		m_CharacterVoxels.resize(SCENE_VOXEL_GRID_SIZE * SCENE_VOXEL_GRID_SIZE * SCENE_VOXEL_GRID_SIZE);
+		memset(m_CharacterVoxels.data(), 0, m_CharacterVoxels.size() * sizeof(Voxel));
+
+		m_CharacterBufferSet->Create(m_CharacterVoxels.size() * sizeof(Voxel), 0, 3);
+
+		std::ifstream output("chr_knight.vox", std::ios::binary);
+		std::vector<uint8_t> data(std::istreambuf_iterator<char>(output), {});
+		auto scene = ogt_vox_read_scene(data.data(), data.size());
+
+		for (uint32_t i = 0; i < scene->num_models; ++i)
+		{
+			for (uint32_t x = 0; x < scene->models[i]->size_x; ++x)
+			{
+				for (uint32_t y = 0; y < scene->models[i]->size_y; ++y)
+				{
+					for (uint32_t z = 0; z < scene->models[i]->size_z; ++z)
+					{
+						const uint32_t index = Index3D(x, z, y, SCENE_VOXEL_GRID_SIZE, SCENE_VOXEL_GRID_SIZE);
+						const uint32_t modelIndex = Index3D(x, y, z, scene->models[i]->size_x, scene->models[i]->size_y);
+						const uint8_t colorIndex = scene->models[i]->voxel_data[modelIndex];
+						const auto color = scene->palette.color[colorIndex];
+
+						if (index < m_CharacterVoxels.size())
+							m_CharacterVoxels[index].Color = ColorToUINT(color.r, color.g, color.b, color.a);
+					}
+				}
+			}
+		}
+		m_CharacterBufferSet->Update(m_CharacterVoxels.data(), m_CharacterVoxels.size() * sizeof(Voxel), 0, 3);
 	}
 
 	void GameLayer::displayStats()
@@ -445,44 +469,44 @@ namespace XYZ {
 			if (result.HitVoxelIndex == m_LastPreviewVoxel)
 				return;
 
-			if (m_LastPreviewVoxel < m_Voxels.size())
+			if (m_LastPreviewVoxel < m_SceneVoxels.size())
 			{
-				m_Voxels[m_LastPreviewVoxel].Color = 0;
+				m_SceneVoxels[m_LastPreviewVoxel].Color = 0;
 			}
 			m_LastPreviewVoxel = result.HitVoxelIndex;
 
 			if (result.HitSide == HitResult::Top)
 			{
-				if (result.Y + 1 < VOXEL_GRID_SIZE)
-					m_LastPreviewVoxel = Index3D(result.X, result.Y + 1, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
+				if (result.Y + 1 < SCENE_VOXEL_GRID_SIZE)
+					m_LastPreviewVoxel = Index3D(result.X, result.Y + 1, result.Z, SCENE_VOXEL_GRID_SIZE, SCENE_VOXEL_GRID_SIZE);
 			}
 			else if (result.HitSide == HitResult::Bottom)
 			{
 				if ((int)result.Y - 1 >= 0)
-					m_LastPreviewVoxel = Index3D(result.X, result.Y - 1, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
+					m_LastPreviewVoxel = Index3D(result.X, result.Y - 1, result.Z, SCENE_VOXEL_GRID_SIZE, SCENE_VOXEL_GRID_SIZE);
 			}
 			else if (result.HitSide == HitResult::Right)
 			{
 				if ((int)result.X - 1 >= 0)
-					m_LastPreviewVoxel = Index3D(result.X - 1, result.Y, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
+					m_LastPreviewVoxel = Index3D(result.X - 1, result.Y, result.Z, SCENE_VOXEL_GRID_SIZE, SCENE_VOXEL_GRID_SIZE);
 			}
 			else if (result.HitSide == HitResult::Left)
 			{
-				if (result.X + 1 < VOXEL_GRID_SIZE)
-					m_LastPreviewVoxel = Index3D(result.X + 1, result.Y, result.Z, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
+				if (result.X + 1 < SCENE_VOXEL_GRID_SIZE)
+					m_LastPreviewVoxel = Index3D(result.X + 1, result.Y, result.Z, SCENE_VOXEL_GRID_SIZE, SCENE_VOXEL_GRID_SIZE);
 			}
 			else if (result.HitSide == HitResult::Back)
 			{
 				if ((int)result.Z - 1 >= 0)
-					m_LastPreviewVoxel = Index3D(result.X, result.Y, result.Z - 1, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
+					m_LastPreviewVoxel = Index3D(result.X, result.Y, result.Z - 1, SCENE_VOXEL_GRID_SIZE, SCENE_VOXEL_GRID_SIZE);
 			}
 			else if (result.HitSide == HitResult::Front)
 			{
-				if (result.Z + 1 < VOXEL_GRID_SIZE)
-					m_LastPreviewVoxel = Index3D(result.X, result.Y, result.Z + 1, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE);
+				if (result.Z + 1 < SCENE_VOXEL_GRID_SIZE)
+					m_LastPreviewVoxel = Index3D(result.X, result.Y, result.Z + 1, SCENE_VOXEL_GRID_SIZE, SCENE_VOXEL_GRID_SIZE);
 			}
 
-			m_Voxels[m_LastPreviewVoxel].Color = ColorToUINT(m_Color);
+			m_SceneVoxels[m_LastPreviewVoxel].Color = ColorToUINT(m_Color);
 		}
 	}
 	bool GameLayer::rayMarch(const glm::vec3& rayOrig, const glm::vec3& rayDir, HitResult& result)
@@ -536,7 +560,7 @@ namespace XYZ {
 				result.X = current_voxel.x;
 				result.Y = current_voxel.y;
 				result.Z = current_voxel.z;
-				voxel = m_Voxels[result.HitVoxelIndex].Color;
+				voxel = m_SceneVoxels[result.HitVoxelIndex].Color;
 				if (voxel != 0)
 				{
 					return true;
