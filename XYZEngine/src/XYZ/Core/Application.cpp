@@ -20,6 +20,7 @@
 #include <GLFW/glfw3native.h>
 
 #include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
 
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
@@ -90,9 +91,8 @@ namespace XYZ {
 				}
 				if (m_Specification.EnableImGui)
 				{
-					Renderer::Submit([this]() {
-							onImGuiRender();
-						});
+					Renderer::BlockRenderThread(); // Prevents calling VkSubmitQueue from multiple threads at once
+					onImGuiRender();
 				}
 				Renderer::EndFrame();
 				m_Window->SwapBuffers();

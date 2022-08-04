@@ -16,6 +16,7 @@
 #include <backends/imgui_impl_vulkan_with_textures.h>
 #include <backends/imgui_impl_glfw.h>
 
+#include <glfw/glfw3.h>
 
 namespace XYZ {
 
@@ -171,6 +172,14 @@ namespace XYZ {
 		 copy.CmdLists[i] = drawData->CmdLists[i]->CloneOutput();
 	}
 
+	static void DeleteImDrawData(ImDrawData& data)
+	{
+		for (int i = 0; i < data.CmdListsCount; ++i)
+			IM_DELETE(data.CmdLists[i]);
+		delete[]data.CmdLists;
+		data.Clear();
+	}
+
     void VulkanImGuiLayer::End()
     {
     	if (m_EnableDockspace)
@@ -179,26 +188,7 @@ namespace XYZ {
 		ImGui::Render();
 		ImDrawData copy;
 		CopyImDrawData(copy, ImGui::GetDrawData());
-
 		
-			
-		RT_beginRender();
-		for (auto& [id, desc] : m_ImGuiImageDescriptors)
-		{
-			const auto& imageInfo = desc.Image->GetImageInfo();
-			ImGui_ImplVulkan_UpdateTextureInfo(desc.Descriptor, imageInfo.Sampler, imageInfo.ImageView, desc.Image->GetDescriptor().imageLayout);
-		}
-		const uint32_t currentFrame = Renderer::GetCurrentFrame();
-		ImGui_ImplVulkan_RenderDrawData(&copy, s_ImGuiCommandBuffers[currentFrame]);
-		
-		
-		RT_endRender();
-
-		for (int i = 0; i < copy.CmdListsCount; ++i)
-			IM_DELETE(copy.CmdLists[i]);
-		delete[]copy.CmdLists;
-		copy.Clear();
-
 		ImGuiIO& io = ImGui::GetIO();
 		// Update and Render additional Platform Windows
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -206,7 +196,22 @@ namespace XYZ {
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
 		}
-		m_ImGuiImageDescriptors.clear();
+		
+		Renderer::Submit([this, copy, descriptors = std::move(m_ImGuiImageDescriptors)]() mutable {
+			
+			RT_beginRender();
+			for (auto& [id, desc] : descriptors)
+			{
+				const auto& imageInfo = desc.Image->GetImageInfo();
+				ImGui_ImplVulkan_UpdateTextureInfo(desc.Descriptor, imageInfo.Sampler, imageInfo.ImageView, desc.Image->GetDescriptor().imageLayout);
+			}
+			const uint32_t currentFrame = Renderer::GetCurrentFrame();
+			ImGui_ImplVulkan_RenderDrawData(&copy, s_ImGuiCommandBuffers[currentFrame]);
+
+			RT_endRender();
+			
+			DeleteImDrawData(copy);
+		});
     }
 
 	void VulkanImGuiLayer::AddFont(const ImGuiFontConfig& config)
@@ -251,7 +256,7 @@ namespace XYZ {
 	{
 		if (!m_AddFonts.empty())
 		{
-			//Renderer::SubmitAndWait([this]() {
+			Renderer::SubmitAndWait([this]() {
 				while (!m_AddFonts.empty())
 				{
 					const auto fontConfig = m_AddFonts.back();
@@ -260,7 +265,7 @@ namespace XYZ {
 					m_FontsLoaded.push_back(fontConfig);
 				}
 				RT_uploadFonts();
-			//});
+			});
 		}
 	}
 	void VulkanImGuiLayer::RT_uploadFonts()

@@ -236,12 +236,18 @@ namespace XYZ {
 	{
 		for (const auto& availableFormat : m_SwapChainDetails.Formats)
 		{
-			if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB
-				&& availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			// TODO: imgui is enforcing this
+			if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM)
 			{
 				m_Format = availableFormat;
 				return;
 			}
+			//if (availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB
+			//	&& availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			//{
+			//	m_Format = availableFormat;
+			//	return;
+			//}
 		}
 		// preferred combination is not available use first
 		m_Format = m_SwapChainDetails.Formats[0];

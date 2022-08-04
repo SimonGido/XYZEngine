@@ -34,7 +34,7 @@ namespace XYZ {
 			m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification());
 			m_CameraTexture = Texture2D::Create("Resources/Editor/Camera.png");
 
-			m_CommandBuffer = RenderCommandBuffer::Create(0, "Editor");
+			m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "Editor");
 			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
 			m_QuadMaterial	 = Renderer::GetDefaultResources().OverlayQuadMaterial;

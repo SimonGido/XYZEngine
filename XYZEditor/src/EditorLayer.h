@@ -66,7 +66,7 @@ namespace XYZ {
 			Ref<SceneRenderer>			m_SceneRenderer;
 
 			// Overlay rendering
-			Ref<RenderCommandBuffer>	m_CommandBuffer;
+			Ref<PrimaryRenderCommandBuffer>	m_CommandBuffer;
 			Ref<Renderer2D>				m_OverlayRenderer2D;
 			Ref<Texture2D>				m_CameraTexture;
 			Ref<MaterialAsset>			m_QuadMaterial;

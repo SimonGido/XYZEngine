@@ -14,7 +14,7 @@ layout(push_constant) uniform Transform
 
 void main()
 {
-	gl_Position = u_Renderer.Transform * vec4(a_Position, 1.0);
+	gl_Position = u_Renderer.Transform * vec4(a_Position.xy, 0.0, 1.0);
 	v_TexCoords = a_TexCoord;
 }
 
