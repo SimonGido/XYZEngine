@@ -3,6 +3,8 @@
 #include "Pipeline.h"
 
 namespace XYZ {
+
+	class SecondaryRenderCommandBuffer;
 	class RenderCommandBuffer : public RefCount
 	{
 	public:
@@ -15,14 +17,7 @@ namespace XYZ {
 		virtual void RT_End() {}
 
 		virtual void* CommandBufferHandle(uint32_t index) = 0;
-	};
 
-
-	class PrimaryRenderCommandBuffer : public RenderCommandBuffer
-	{
-	public:
-		virtual ~PrimaryRenderCommandBuffer() {}
-		
 		virtual void Submit() = 0;
 
 		virtual void CreateTimestampQueries(uint32_t count) = 0;
@@ -33,8 +28,24 @@ namespace XYZ {
 		virtual uint32_t BeginTimestampQuery() = 0;
 		virtual void EndTimestampQuery(uint32_t queryID) = 0;
 
-		virtual Ref<RenderCommandBuffer> CreateSecondaryCommandBuffer() = 0;
+		virtual Ref<SecondaryRenderCommandBuffer> CreateSecondaryCommandBuffer() = 0;
 
-		static Ref<PrimaryRenderCommandBuffer> Create(uint32_t count = 0, const std::string& debugName = "");
+		static Ref<RenderCommandBuffer> Create(uint32_t count = 0, const std::string& debugName = "");
 	};
+
+
+	class SecondaryRenderCommandBuffer : public RefCount
+	{
+	public:
+		virtual void Begin(Ref<Framebuffer> frameBuffer) = 0;
+		virtual void End() = 0;
+
+		virtual void RT_Begin(Ref<Framebuffer> frameBuffer) {};
+		virtual void RT_End() {}
+
+		virtual Ref<RenderCommandBuffer> GetPrimaryCommandBuffer() const = 0;
+
+		virtual void* CommandBufferHandle(uint32_t index) const = 0;
+	};
+
 }

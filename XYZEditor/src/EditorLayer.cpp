@@ -34,7 +34,7 @@ namespace XYZ {
 			m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification());
 			m_CameraTexture = Texture2D::Create("Resources/Editor/Camera.png");
 
-			m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "Editor");
+			m_CommandBuffer = RenderCommandBuffer::Create(0, "Editor");
 			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
 			m_QuadMaterial	 = Renderer::GetDefaultResources().OverlayQuadMaterial;
@@ -161,6 +161,7 @@ namespace XYZ {
 		{
 			m_CommandBuffer->Begin();
 			m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
+			
 			m_OverlayRenderer2D->BeginScene(m_EditorCamera->GetViewProjection(), m_EditorCamera->GetViewMatrix(), false);
 			
 			renderSelected();
@@ -169,10 +170,10 @@ namespace XYZ {
 			renderLights();
 
 			
-
 			m_OverlayRenderer2D->EndScene();
-			m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
 
+			m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
+			
 			m_CommandBuffer->End();
 			m_CommandBuffer->Submit();
 			Application::Get().GetPerformanceProfiler().PushMeasurement("EditorLayer::renderOverlay", static_cast<float>(m_GPUTimeQueries.GPUTime));

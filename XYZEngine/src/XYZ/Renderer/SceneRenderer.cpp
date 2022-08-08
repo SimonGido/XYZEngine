@@ -51,7 +51,7 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::Init");
 		m_ThreadIndex = s_ThreadPool.PushThread();
-		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "SceneRenderer");
+		m_CommandBuffer = RenderCommandBuffer::Create(0, "SceneRenderer");
 
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 

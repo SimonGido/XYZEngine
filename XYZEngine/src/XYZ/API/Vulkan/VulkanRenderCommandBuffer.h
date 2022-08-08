@@ -5,10 +5,8 @@
 
 namespace XYZ {
 
-
-
 	class VulkanSwapChain;
-	class VulkanPrimaryRenderCommandBuffer : public PrimaryRenderCommandBuffer
+	class VulkanPrimaryRenderCommandBuffer : public RenderCommandBuffer
 	{
 	public:
 		VulkanPrimaryRenderCommandBuffer(uint32_t count = 0, std::string debugName = "");
@@ -30,7 +28,7 @@ namespace XYZ {
 		virtual uint32_t BeginTimestampQuery() override;
 		virtual void EndTimestampQuery(uint32_t queryID) override;
 
-		virtual Ref<RenderCommandBuffer> CreateSecondaryCommandBuffer() override;
+		virtual Ref<SecondaryRenderCommandBuffer> CreateSecondaryCommandBuffer() override;
 
 		virtual void* CommandBufferHandle(uint32_t index) override { return m_CommandBuffers[index]; }
 
@@ -75,19 +73,21 @@ namespace XYZ {
 
 
 
-	class VulkanSecondaryRenderCommandBuffer : public RenderCommandBuffer
+	class VulkanSecondaryRenderCommandBuffer : public SecondaryRenderCommandBuffer
 	{
 	public:
 		VulkanSecondaryRenderCommandBuffer(Ref<RenderCommandBuffer> primaryCommandBuffer);
 		~VulkanSecondaryRenderCommandBuffer() override;
 
-		virtual void Begin() override;
+		virtual void Begin(Ref<Framebuffer> frameBuffer) override;
 		virtual void End() override;
 
-		virtual void RT_Begin() override;
+		virtual void RT_Begin(Ref<Framebuffer> frameBuffer) override;
 		virtual void RT_End() override;
 
-		virtual void* CommandBufferHandle(uint32_t index) override { return m_CommandBuffers[index]; }
+		virtual void* CommandBufferHandle(uint32_t index) const override { return m_CommandBuffers[index]; }
+		
+		virtual Ref<RenderCommandBuffer> GetPrimaryCommandBuffer() const { return m_PrimaryRenderCommandBuffer; };
 
 	private:
 		std::vector<VkCommandBuffer>		  m_CommandBuffers;

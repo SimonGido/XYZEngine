@@ -6,7 +6,8 @@
 
 namespace XYZ {
 
-	Ref<PrimaryRenderCommandBuffer> PrimaryRenderCommandBuffer::Create(uint32_t count, const std::string& debugName)
+
+	Ref<RenderCommandBuffer> RenderCommandBuffer::Create(uint32_t count, const std::string& debugName)
 	{
 		switch (RendererAPI::GetType())
 		{
