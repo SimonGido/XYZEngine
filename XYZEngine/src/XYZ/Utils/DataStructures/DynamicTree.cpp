@@ -16,7 +16,7 @@ namespace XYZ {
 		stack.push(m_RootIndex);
 		while (!stack.empty())
 		{
-			int32_t index = stack.top();
+			const int32_t index = stack.top();
 			stack.pop();
 			if (!ray.IntersectsAABB(m_Nodes[index].Box))
 			{
@@ -24,7 +24,7 @@ namespace XYZ {
 			}
 			if (m_Nodes[index].IsLeaf())
 			{
-				uint32_t objectIndex = m_Nodes[index].DataIndex;
+				const uint32_t objectIndex = m_Nodes[index].DataIndex;
 				if (ray.IntersectsAABB(m_Nodes[index].Box))
 				{
 					result = objectIndex;
@@ -45,7 +45,7 @@ namespace XYZ {
 		stack.push(m_RootIndex);
 		while (!stack.empty())
 		{
-			int32_t index = stack.top();
+			const int32_t index = stack.top();
 			stack.pop();
 			if (index == NULL_NODE)
 				continue;
@@ -55,7 +55,7 @@ namespace XYZ {
 			{
 				if (node.IsLeaf())
 				{
-					bool proceed = callback(index);
+					const bool proceed = callback(index);
 					if (proceed)
 						return;
 				}
@@ -69,7 +69,7 @@ namespace XYZ {
 	}
 	int32_t DynamicTree::Insert(uint32_t objectIndex, const AABB& box)
 	{
-		int32_t leaf = m_Nodes.Insert({ box , objectIndex });
+		const int32_t leaf = m_Nodes.Insert({ box , objectIndex });
 		
 		if (m_MovedNodes.size() < m_Nodes.Range())
 			m_MovedNodes.resize(m_Nodes.Range());
@@ -101,10 +101,10 @@ namespace XYZ {
 			stack.push(m_RootIndex);
 		while (!stack.empty())
 		{
-			int32_t index = stack.top();
+			const int32_t index = stack.top();
 			stack.pop();
 
-			AABB box = m_Nodes[index].Box;
+			const AABB box = m_Nodes[index].Box;
 
 			renderer2D->SubmitLine(glm::vec3(box.Min.x, box.Min.y, box.Max.z), glm::vec3(box.Max.x, box.Min.y, box.Max.z));
 			renderer2D->SubmitLine(glm::vec3(box.Max.x, box.Min.y, box.Max.z), glm::vec3(box.Max.x, box.Max.y, box.Max.z));
@@ -258,8 +258,8 @@ namespace XYZ {
 			m_RootIndex = NULL_NODE;
 			return;
 		}
-		int32_t parent = m_Nodes[index].ParentIndex;
-		int32_t grandParent = m_Nodes[parent].ParentIndex;
+		const int32_t parent = m_Nodes[index].ParentIndex;
+		const int32_t grandParent = m_Nodes[parent].ParentIndex;
 		int32_t sibling;
 		if (m_Nodes[parent].FirstChild == index)
 		{
@@ -283,8 +283,8 @@ namespace XYZ {
 			while (tmpIndex != NULL_NODE)
 			{
 				tmpIndex = balance(tmpIndex);
-				int32_t firstChild = m_Nodes[tmpIndex].FirstChild;
-				int32_t secondChild = m_Nodes[tmpIndex].SecondChild;
+				const int32_t firstChild = m_Nodes[tmpIndex].FirstChild;
+				const int32_t secondChild = m_Nodes[tmpIndex].SecondChild;
 			
 				m_Nodes[tmpIndex].Box = AABB::Union(m_Nodes[firstChild].Box, m_Nodes[secondChild].Box);
 				m_Nodes[tmpIndex].Height = 1 + std::max(m_Nodes[firstChild].Height, m_Nodes[secondChild].Height);
@@ -307,18 +307,18 @@ namespace XYZ {
 		{
 			return iA;
 		}
-		int32_t iB = A->FirstChild;
-		int32_t iC = A->SecondChild;
+		const int32_t iB = A->FirstChild;
+		const int32_t iC = A->SecondChild;
 
 		Node* B = &m_Nodes[iB];
 		Node* C = &m_Nodes[iC];
 
-		int32_t bal = C->Height - B->Height;
+		const int32_t bal = C->Height - B->Height;
 		// Rotate C up
 		if (bal > 1)
 		{
-			int32_t iF = C->FirstChild;
-			int32_t iG = C->SecondChild;
+			const int32_t iF = C->FirstChild;
+			const int32_t iG = C->SecondChild;
 			Node* F = &m_Nodes[iF];
 			Node* G = &m_Nodes[iG];
 
@@ -362,8 +362,8 @@ namespace XYZ {
 		
 		if (bal < -1)
 		{
-			int32_t iD = B->FirstChild;
-			int32_t iE = B->SecondChild;
+			const int32_t iD = B->FirstChild;
+			const int32_t iE = B->SecondChild;
 			Node* D = &m_Nodes[iD];
 			Node* E = &m_Nodes[iE];
 		

@@ -1,36 +1,48 @@
 #pragma once
-#include "XYZ/Core/Ref.h"
+#include "XYZ/Core/Ref/Ref.h"
+
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/VertexArray.h"
 #include "XYZ/Renderer/Buffer.h"
+
+#include "XYZ/Asset/Renderer/MeshSource.h"
 
 #include <glm/glm.hpp>
 
 namespace XYZ {
 
-
-	class Mesh : public RefCount
+	
+	class Mesh : public Asset
 	{
 	public:
-		Mesh();
-		Mesh(const Ref<Material>& material);
+		Mesh(const Ref<MeshSource>& meshSource);
+		
+		virtual ~Mesh() override;
 
-		void SetMaterial(const Ref<Material>& material);
-		void SetIndices(uint32_t* indices, uint32_t count);
-		void SetVertexBufferData(uint32_t index, const void* vertices, uint32_t size, uint32_t offset = 0);
-		void AddVertexBuffer(const BufferLayout& layout, const void* vertices, uint32_t size, BufferUsage usage);
-		void ClearVertexBuffers();
+		Ref<MeshSource>		GetMeshSource() const { return m_MeshSource; }
+		Ref<VertexBuffer>   GetVertexBuffer() const { return m_MeshSource->GetVertexBuffer(); }
+		Ref<IndexBuffer>    GetIndexBuffer()  const { return m_MeshSource->GetIndexBuffer(); }
 
-		const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
-		const Ref<Material>&    GetMaterial()    const { return m_Material; }
-		uint32_t				GetIndexCount()  const { return m_IndexBuffer->GetCount(); }
-	private:
-		void updateVertexArray();
+		static AssetType	GetStaticType() { return AssetType::Mesh; }
 
 	private:
-		Ref<Material>					m_Material;
-		Ref<VertexArray>				m_VertexArray;
-		Ref<IndexBuffer>				m_IndexBuffer;
-		std::vector<Ref<VertexBuffer>>	m_VertexBuffers;
+		Ref<MeshSource>   m_MeshSource;
+		// TODO: materials
+	};
+	
+	class AnimatedMesh : public Asset
+	{
+	public:
+		AnimatedMesh(const Ref<MeshSource>& meshSource);
+		
+		Ref<MeshSource>		GetMeshSource() const { return m_MeshSource; }
+		Ref<VertexBuffer>   GetVertexBuffer() const { return m_MeshSource->GetVertexBuffer(); }
+		Ref<IndexBuffer>    GetIndexBuffer()  const { return m_MeshSource->GetIndexBuffer(); }
+
+		static AssetType	GetStaticType() { return AssetType::AnimatedMesh; }
+
+	private:
+		Ref<MeshSource>   m_MeshSource;
+		// TODO: materials
 	};
 }

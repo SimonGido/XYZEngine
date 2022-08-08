@@ -204,7 +204,7 @@ public:
       const ConstBufferSequence& buffers)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().write_some_at(
+    const std::size_t s = this->impl_.get_service().write_some_at(
         this->impl_.get_implementation(), offset, buffers, ec);
     asio::detail::throw_error(ec, "write_some_at");
     return s;
@@ -324,7 +324,7 @@ public:
       const MutableBufferSequence& buffers)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().read_some_at(
+    const std::size_t s = this->impl_.get_service().read_some_at(
         this->impl_.get_implementation(), offset, buffers, ec);
     asio::detail::throw_error(ec, "read_some_at");
     return s;

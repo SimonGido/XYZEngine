@@ -141,7 +141,7 @@ public:
   {
     if (pending_exception_)
     {
-      std::exception_ptr ex = std::exchange(pending_exception_, nullptr);
+      const std::exception_ptr ex = std::exchange(pending_exception_, nullptr);
       std::rethrow_exception(ex);
     }
   }

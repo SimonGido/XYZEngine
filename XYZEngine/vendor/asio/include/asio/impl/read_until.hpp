@@ -83,8 +83,8 @@ inline std::size_t read_until(SyncReadStream& s,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read_until(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers), delim, ec);
+  const std::size_t bytes_transferred = read_until(s,
+                                                   ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers), delim, ec);
   asio::detail::throw_error(ec, "read_until");
   return bytes_transferred;
 }
@@ -153,8 +153,8 @@ inline std::size_t read_until(SyncReadStream& s,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read_until(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers), delim, ec);
+  const std::size_t bytes_transferred = read_until(s,
+                                                   ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers), delim, ec);
   asio::detail::throw_error(ec, "read_until");
   return bytes_transferred;
 }
@@ -320,9 +320,9 @@ inline std::size_t read_until(SyncReadStream& s,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read_until(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers),
-      match_condition, ec);
+  const std::size_t bytes_transferred = read_until(s,
+                                                   ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers),
+                                                   match_condition, ec);
   asio::detail::throw_error(ec, "read_until");
   return bytes_transferred;
 }
@@ -469,8 +469,8 @@ inline std::size_t read_until(SyncReadStream& s,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read_until(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers), delim, ec);
+  const std::size_t bytes_transferred = read_until(s,
+                                                   ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers), delim, ec);
   asio::detail::throw_error(ec, "read_until");
   return bytes_transferred;
 }
@@ -523,7 +523,7 @@ std::size_t read_until(SyncReadStream& s, DynamicBuffer_v2 buffers,
           std::min<std::size_t>(65536, b.max_size() - b.size()));
     std::size_t pos = b.size();
     b.grow(bytes_to_read);
-    std::size_t bytes_transferred = s.read_some(b.data(pos, bytes_to_read), ec);
+    const std::size_t bytes_transferred = s.read_some(b.data(pos, bytes_to_read), ec);
     b.shrink(bytes_to_read - bytes_transferred);
     if (ec)
       return 0;
@@ -538,8 +538,8 @@ inline std::size_t read_until(SyncReadStream& s,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read_until(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers), delim, ec);
+  const std::size_t bytes_transferred = read_until(s,
+                                                   ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers), delim, ec);
   asio::detail::throw_error(ec, "read_until");
   return bytes_transferred;
 }
@@ -601,7 +601,7 @@ std::size_t read_until(SyncReadStream& s, DynamicBuffer_v2 buffers,
           std::min<std::size_t>(65536, b.max_size() - b.size()));
     std::size_t pos = b.size();
     b.grow(bytes_to_read);
-    std::size_t bytes_transferred = s.read_some(b.data(pos, bytes_to_read), ec);
+    const std::size_t bytes_transferred = s.read_some(b.data(pos, bytes_to_read), ec);
     b.shrink(bytes_to_read - bytes_transferred);
     if (ec)
       return 0;
@@ -703,9 +703,9 @@ inline std::size_t read_until(SyncReadStream& s,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read_until(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers),
-      match_condition, ec);
+  const std::size_t bytes_transferred = read_until(s,
+                                                   ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers),
+                                                   match_condition, ec);
   asio::detail::throw_error(ec, "read_until");
   return bytes_transferred;
 }
@@ -765,7 +765,7 @@ std::size_t read_until(SyncReadStream& s, DynamicBuffer_v2 buffers,
           std::min<std::size_t>(65536, b.max_size() - b.size()));
     std::size_t pos = b.size();
     b.grow(bytes_to_read);
-    std::size_t bytes_transferred = s.read_some(b.data(pos, bytes_to_read), ec);
+    const std::size_t bytes_transferred = s.read_some(b.data(pos, bytes_to_read), ec);
     b.shrink(bytes_to_read - bytes_transferred);
     if (ec)
       return 0;

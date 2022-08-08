@@ -5,30 +5,13 @@
 #include "Renderer.h"
 
 #include <glm/gtc/type_ptr.hpp>
-#include <array>
-
 #include <glm/gtc/matrix_transform.hpp>
+
+#include <array>
 
 namespace XYZ {	
 
-
-
-	void Renderer2D::resetQuads()
-	{
-		m_QuadMaterial = m_DefaultQuadMaterial;
-		m_TextureSlotIndex = 0;
-		m_QuadBuffer.Reset();
-	}
 	
-	void Renderer2D::resetLines()
-	{
-		m_LineBuffer.Reset();
-	}
-
-	void Renderer2D::resetCollisions()
-	{
-		m_CollisionBuffer.Reset();
-	}
 
 	static uint32_t* GenerateQuadIndices(uint32_t count)
 	{
@@ -59,101 +42,139 @@ namespace XYZ {
 		return indices;
 	}
 
-	Renderer2D::Renderer2D()
+	Renderer2D::Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer)
+		:
+		m_RenderCommandBuffer(commandBuffer)
 	{
-		auto shaderLibrary	= Renderer::GetShaderLibrary();
-		m_DefaultQuadMaterial = Ref<Material>::Create(shaderLibrary->Get("DefaultShader"));
-		m_LineShader		  = shaderLibrary->Get("LineShader");
-		m_CollisionShader	  = shaderLibrary->Get("MousePicker");
-		m_CircleShader		  = shaderLibrary->Get("Circle");
-		m_WhiteTexture		  = Texture2D::Create(ImageFormat::RGBA8, 1, 1, {});
+		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
+			
+		createRenderPass();	
+		const auto& defaultResources = Renderer::GetDefaultResources();
 
-		uint32_t whiteTextureData = 0xffffffff;
-		m_WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
-		m_DefaultQuadMaterial->SetTexture("u_Texture", m_WhiteTexture);
-		m_DefaultQuadMaterial->Set("u_Color", glm::vec4(1.0f));
+		m_QuadMaterial = defaultResources.DefaultQuadMaterial;
+		m_LineMaterial = defaultResources.DefaultLineMaterial;
+		m_CircleMaterial = defaultResources.DefaultCircleMaterial;
+
+		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
+		m_UniformBufferSet->Create(sizeof(UBCamera), 0, 0);
 
 
-		uint32_t* quadIndices = GenerateQuadIndices(sc_MaxIndices);
-		m_QuadBuffer.Init(sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
-				{0, XYZ::ShaderDataComponent::Float4, "a_Color" },
-				{1, XYZ::ShaderDataComponent::Float3, "a_Position" },
-				{2, XYZ::ShaderDataComponent::Float2, "a_TexCoord" },
-				{3, XYZ::ShaderDataComponent::Float,  "a_TextureID" },
-				{4, XYZ::ShaderDataComponent::Float,  "a_TilingFactor" }
-		});
+		createDefaultPipelineBuckets();
+	}
 
-		uint32_t* lineIndices = GenerateLineIndices(sc_MaxLineIndices);
-		m_LineBuffer.Init(sc_MaxLineVertices, lineIndices, sc_MaxLineIndices, BufferLayout{
-				{0, XYZ::ShaderDataComponent::Float3, "a_Position" },
-				{1, XYZ::ShaderDataComponent::Float4, "a_Color" },
-		});
+	Renderer2D::Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer, 
+		const Ref<MaterialAsset>& quadMaterial, 
+		const Ref<MaterialAsset>& lineMaterial, 
+		const Ref<MaterialAsset>& circleMaterial,
+		const Ref<RenderPass>& renderPass
+	)
+		:
+		m_RenderCommandBuffer(commandBuffer),
+		m_QuadMaterial(quadMaterial),
+		m_LineMaterial(lineMaterial),
+		m_CircleMaterial(circleMaterial)
+	{
+		if (!renderPass.Raw())
+			createRenderPass();
+		else
+			m_RenderPass = renderPass;
 
-		m_CollisionBuffer.Init(sc_MaxCollisionVertices, quadIndices, sc_MaxIndices, BufferLayout{
-				{0, XYZ::ShaderDataComponent::Float3, "a_Position" },
-				{1, XYZ::ShaderDataComponent::Int,    "a_ObjectID" },
-			});
+		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
+		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
+		m_UniformBufferSet->Create(sizeof(UBCamera), 0, 0);
 
-		m_CircleBuffer.Init(sc_MaxVertices, quadIndices, sc_MaxIndices, BufferLayout{
-				{0, XYZ::ShaderDataComponent::Float3, "a_WorldPosition" },
-				{1, XYZ::ShaderDataComponent::Float,  "a_Thickness" },
-				{2, XYZ::ShaderDataComponent::Float2, "a_LocalPosition" },
-				{3, XYZ::ShaderDataComponent::Float4, "a_Color" }
-			});
-
-		delete[]quadIndices;
-		delete[]lineIndices;
-
+		createDefaultPipelineBuckets();
 	}
 
 	Renderer2D::~Renderer2D()
 	{
 	}
 
-
-	void Renderer2D::BeginScene()
+	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, bool clear)
 	{
-		m_QuadMaterial = m_DefaultQuadMaterial;
+		m_Stats.DrawCalls = 0;
+		m_Stats.LineDrawCalls = 0;
+		m_Stats.CollisionDrawCalls = 0;
+		m_Stats.FilledCircleDrawCalls = 0;
+
+		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
+		m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&viewProjectionMatrix, sizeof(UBCamera), 0);
+		m_ViewMatrix = viewMatrix;
+
+		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, clear);
 	}
 
-	uint32_t Renderer2D::SetTexture(const Ref<Texture>& texture)
+
+	void Renderer2D::SetQuadMaterial(const Ref<MaterialAsset>& material)
 	{
-		for (uint32_t i = 0; i < m_QuadMaterial->GetTextures().size(); ++i)
+		if (m_QuadMaterial.Raw() != material.Raw())
 		{
-			if (m_QuadMaterial->GetTextures()[i].Raw() && m_QuadMaterial->GetTextures()[i]->GetRendererID() == texture->GetRendererID())
-				return i;
+			m_QuadMaterial = material;
+			m_QuadBuffer.Pipeline = setMaterial(m_QuadPipelines, m_QuadBuffer.Pipeline, material->GetMaterial());
 		}
-		for (uint32_t i = 0; i < m_TextureSlotIndex; ++i)
-		{
-			if (m_TextureSlots[i]->GetRendererID() == texture->GetRendererID())
-				return i + (uint32_t)m_QuadMaterial->GetTextures().size();
-		}
-
-		if (m_QuadMaterial->GetTextures().size() + m_TextureSlotIndex >= sc_MaxTextures + 1)
-			Flush();
-		
-		m_TextureSlots[m_TextureSlotIndex++] = texture;
-		return m_TextureSlotIndex + (uint32_t)m_QuadMaterial->GetTextures().size() - 1;
 	}
 
-	void Renderer2D::SetMaterial(const Ref<Material>& material)
+	void Renderer2D::SetLineMaterial(const Ref<MaterialAsset>& material)
 	{
-		XYZ_ASSERT(material.Raw(), "Material can not be null");
-		if (*material.Raw() != *m_QuadMaterial.Raw())
-			Flush();
-		
-		m_QuadMaterial = material;
+		if (m_LineMaterial.Raw() != material.Raw())
+		{
+			m_LineMaterial = material;
+			m_LineBuffer.Pipeline = setMaterial(m_LinePipelines, m_LineBuffer.Pipeline, material->GetMaterial());
+		}
 	}
 
+	void Renderer2D::SetCircleMaterial(const Ref<MaterialAsset>& material)
+	{
+		if (m_CircleMaterial.Raw() != material.Raw())
+		{
+			m_CircleMaterial = material;
+			m_CircleBuffer.Pipeline = setMaterial(m_CirclePipelines, m_CircleBuffer.Pipeline, material->GetMaterial());
+		}
+	}
+
+	void Renderer2D::SetCommandBuffer(const Ref<RenderCommandBuffer>& commandBuffer)
+	{
+		m_RenderCommandBuffer = commandBuffer;
+	}
+
+	void Renderer2D::SetTargetRenderPass(const Ref<RenderPass>& renderPass)
+	{
+		if (m_RenderPass.Raw() != renderPass.Raw())
+		{
+			m_RenderPass = renderPass;
+			for (auto& [hash, pipeline] : m_QuadPipelines)
+				updateRenderPass(pipeline);
+			for (auto& [hash, pipeline] : m_LinePipelines)
+				updateRenderPass(pipeline);
+			for (auto& [hash, pipeline] : m_CirclePipelines)
+				updateRenderPass(pipeline);
+
+			const size_t quadShaderHash = m_QuadBuffer.Pipeline->GetSpecification().Shader->GetHash();
+			m_QuadBuffer.Pipeline = m_QuadPipelines[quadShaderHash];
+
+			const size_t lineShaderHash = m_LineBuffer.Pipeline->GetSpecification().Shader->GetHash();
+			m_LineBuffer.Pipeline = m_LinePipelines[lineShaderHash];
+
+			const size_t circleShaderHash = m_CircleBuffer.Pipeline->GetSpecification().Shader->GetHash();
+			m_CircleBuffer.Pipeline = m_CirclePipelines[circleShaderHash];
+		}
+	}
+
+	Ref<RenderPass> Renderer2D::GetTargetRenderPass() const
+	{
+		return m_RenderPass;
+	}
+	
 	void Renderer2D::SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color)
 	{
 		if (m_LineBuffer.IndexCount + (sides * 3) >= sc_MaxLineIndices)
-			FlushLines();
-		int step = 360 / sides;
+			XYZ_ASSERT(false, "");
+
+		const int step = 360 / sides;
 		for (int a = step; a < 360 + step; a += step)
 		{
-			float before = glm::radians((float)(a - step));
-			float heading = glm::radians((float)a);
+			const float before = glm::radians((float)(a - step));
+			const float heading = glm::radians((float)a);
 			
 			m_LineBuffer.BufferPtr->Position = glm::vec3(pos.x + std::cos(before) * radius, pos.y + std::sin(before) * radius, pos.z);
 			m_LineBuffer.BufferPtr->Color = color;
@@ -165,13 +186,13 @@ namespace XYZ {
 		}
 	}
 
-	void Renderer2D::SubmitFilledCircle(const glm::vec3& pos, float radius, float thickness, const glm::vec4& color)
+	void Renderer2D::SubmitFilledCircle(const glm::vec3& pos, const glm::vec2& size, float thickness, const glm::vec4& color)
 	{
 		if (m_CircleBuffer.IndexCount >= sc_MaxIndices)
-			FlushFilledCircles();
+			XYZ_ASSERT(false, "");
 
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
-			* glm::scale(glm::mat4(1.0f), { radius * 2.0f, radius * 2.0f, 1.0f });
+		const glm::mat4 transform = glm::translate(glm::mat4(1.0f), pos)
+			* glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
 		for (int i = 0; i < 4; i++)
 		{
@@ -185,11 +206,38 @@ namespace XYZ {
 	}
 
 
+	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, uint32_t textureIndex, const glm::vec4& color, float tilingFactor)
+	{
+		constexpr size_t quadVertexCount = 4;
+
+		if (m_QuadBuffer.IndexCount + 6 >= sc_MaxIndices)
+			XYZ_ASSERT(false, "");
+
+		const glm::vec2 texCoords[quadVertexCount] = {
+			{texCoord.x,texCoord.y},
+			{texCoord.z,texCoord.y},
+			{texCoord.z,texCoord.w},
+			{texCoord.x,texCoord.w}
+		};
+
+		for (size_t i = 0; i < quadVertexCount; ++i)
+		{
+			m_QuadBuffer.BufferPtr->Position = transform * sc_QuadVertexPositions[i];
+			m_QuadBuffer.BufferPtr->Color = color;
+			m_QuadBuffer.BufferPtr->TexCoord = texCoords[i];
+			m_QuadBuffer.BufferPtr->TextureID = (float)textureIndex;
+			m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+			m_QuadBuffer.BufferPtr++;
+		}
+		m_QuadBuffer.IndexCount += 6;
+	}
+
 	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec4& color, float tilingFactor)
 	{
 		constexpr size_t quadVertexCount = 4;
 		if (m_QuadBuffer.IndexCount >= sc_MaxIndices)
-			Flush();
+			XYZ_ASSERT(false, "");
+
 		for (size_t i = 0; i < quadVertexCount; ++i)
 		{
 			m_QuadBuffer.BufferPtr->Position = transform * sc_QuadVertexPositions[i];
@@ -202,59 +250,125 @@ namespace XYZ {
 		m_QuadBuffer.IndexCount += 6;
 	}
 
-	void Renderer2D::SubmitQuad(const glm::mat4& transform, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color, float tilingFactor)
+
+
+	void Renderer2D::SubmitQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureIndex, const glm::vec4& color, float tilingFactor)
 	{
 		constexpr size_t quadVertexCount = 4;
 
 		if (m_QuadBuffer.IndexCount + 6 >= sc_MaxIndices)
-			Flush();
+			XYZ_ASSERT(false, "");
 
-		glm::vec2 texCoords[quadVertexCount] = {
-			{texCoord.x,texCoord.y},
-			{texCoord.z,texCoord.y},
-			{texCoord.z,texCoord.w},
-			{texCoord.x,texCoord.w}
+		const glm::vec2 texCoords[quadVertexCount] = {
+			{texCoord.x, texCoord.y},
+			{texCoord.z, texCoord.y},
+			{texCoord.z, texCoord.w},
+			{texCoord.x, texCoord.w}
 		};
+		const glm::vec3 vertices[quadVertexCount] = {
+			{  position.x - size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
+			{  position.x + size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
+			{  position.x + size.x / 2.0f,  position.y + size.y / 2.0f, 0.0f},
+			{  position.x - size.x / 2.0f,  position.y + size.y / 2.0f, 0.0f}
+		};
+
 		for (size_t i = 0; i < quadVertexCount; ++i)
 		{
-			m_QuadBuffer.BufferPtr->Position = transform * sc_QuadVertexPositions[i];
+			m_QuadBuffer.BufferPtr->Position = vertices[i];
 			m_QuadBuffer.BufferPtr->Color = color;
 			m_QuadBuffer.BufferPtr->TexCoord = texCoords[i];
-			m_QuadBuffer.BufferPtr->TextureID = (float)textureID;
+			m_QuadBuffer.BufferPtr->TextureID = (float)textureIndex;
 			m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
 			m_QuadBuffer.BufferPtr++;
 		}
 		m_QuadBuffer.IndexCount += 6;
 	}
 
-	void Renderer2D::SubmitQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color, float tilingFactor)
+
+	void Renderer2D::SubmitQuadBillboard(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 	{
-		constexpr size_t quadVertexCount = 4;
+		if (m_QuadBuffer.IndexCount >= sc_MaxIndices)
+			XYZ_ASSERT(false, "");
 
-		if (m_QuadBuffer.IndexCount + 6 >= sc_MaxIndices)
-			Flush();
+		const float textureIndex = 0.0f; // White Texture
+		const float tilingFactor = 1.0f;
 
-		glm::vec2 texCoords[quadVertexCount] = {
-			{texCoord.x, texCoord.y},
-			{texCoord.z, texCoord.y},
-			{texCoord.z, texCoord.w},
-			{texCoord.x, texCoord.w}
+		glm::vec3 camRightWS = { m_ViewMatrix[0][0], m_ViewMatrix[1][0], m_ViewMatrix[2][0] };
+		glm::vec3 camUpWS = { m_ViewMatrix[0][1], m_ViewMatrix[1][1], m_ViewMatrix[2][1] };
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * (sc_QuadVertexPositions[0].x) * size.x + camUpWS * sc_QuadVertexPositions[0].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = { 0.0f, 0.0f };
+		m_QuadBuffer.BufferPtr->TextureID = textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * sc_QuadVertexPositions[1].x * size.x + camUpWS * sc_QuadVertexPositions[1].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = { 1.0f, 0.0f };
+		m_QuadBuffer.BufferPtr->TextureID = textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * sc_QuadVertexPositions[2].x * size.x + camUpWS * sc_QuadVertexPositions[2].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = { 1.0f, 1.0f };
+		m_QuadBuffer.BufferPtr->TextureID = textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * sc_QuadVertexPositions[3].x * size.x + camUpWS * sc_QuadVertexPositions[3].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = { 0.0f, 1.0f };
+		m_QuadBuffer.BufferPtr->TextureID = textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.IndexCount += 6;
+	}
+	void Renderer2D::SubmitQuadBillboard(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureIndex, const glm::vec4& color, float tilingFactor)
+	{
+		if (m_QuadBuffer.IndexCount >= sc_MaxIndices)
+			XYZ_ASSERT(false, "");
+
+		const glm::vec2 texCoords[4] = {
+			{texCoord.x,texCoord.y},
+			{texCoord.z,texCoord.y},
+			{texCoord.z,texCoord.w},
+			{texCoord.x,texCoord.w}
 		};
-		glm::vec3 vertices[quadVertexCount] = {
-			{  position.x - size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
-			{  position.x + size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
-			{  position.x + size.x / 2.0f,  position.y + size.y / 2.0f, 0.0f},
-			{  position.x - size.x / 2.0f,  position.y + size.y / 2.0f, 0.0f}
-		};
-		for (size_t i = 0; i < quadVertexCount; ++i)
-		{
-			m_QuadBuffer.BufferPtr->Position = vertices[i];
-			m_QuadBuffer.BufferPtr->Color = color;
-			m_QuadBuffer.BufferPtr->TexCoord = texCoords[i];
-			m_QuadBuffer.BufferPtr->TextureID = (float)textureID;
-			m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
-			m_QuadBuffer.BufferPtr++;
-		}
+
+		glm::vec3 camRightWS = { m_ViewMatrix[0][0], m_ViewMatrix[1][0], m_ViewMatrix[2][0] };
+		glm::vec3 camUpWS = { m_ViewMatrix[0][1], m_ViewMatrix[1][1], m_ViewMatrix[2][1] };
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * (sc_QuadVertexPositions[0].x) * size.x + camUpWS * sc_QuadVertexPositions[0].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = texCoords[0];
+		m_QuadBuffer.BufferPtr->TextureID = (float)textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * sc_QuadVertexPositions[1].x * size.x + camUpWS * sc_QuadVertexPositions[1].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = texCoords[1];
+		m_QuadBuffer.BufferPtr->TextureID = (float)textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * sc_QuadVertexPositions[2].x * size.x + camUpWS * sc_QuadVertexPositions[2].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = texCoords[2];
+		m_QuadBuffer.BufferPtr->TextureID = (float)textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
+		m_QuadBuffer.BufferPtr->Position = position + camRightWS * sc_QuadVertexPositions[3].x * size.x + camUpWS * sc_QuadVertexPositions[3].y * size.y;
+		m_QuadBuffer.BufferPtr->Color = color;
+		m_QuadBuffer.BufferPtr->TexCoord = texCoords[3];
+		m_QuadBuffer.BufferPtr->TextureID = (float)textureIndex;
+		m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
+		m_QuadBuffer.BufferPtr++;
+
 		m_QuadBuffer.IndexCount += 6;
 	}
 
@@ -262,9 +376,9 @@ namespace XYZ {
 	{
 		constexpr size_t quadVertexCount = 4;
 		if (m_QuadBuffer.IndexCount >= sc_MaxIndices)
-			Flush();
+			XYZ_ASSERT(false, "");
 
-		glm::vec3 vertices[quadVertexCount] = {
+		const glm::vec3 vertices[quadVertexCount] = {
 			{  position.x - size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
 			{  position.x + size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
 			{  position.x + size.x / 2.0f,  position.y + size.y / 2.0f, 0.0f},
@@ -285,7 +399,7 @@ namespace XYZ {
 	void Renderer2D::SubmitLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
 	{
 		if (m_LineBuffer.IndexCount >= sc_MaxLineIndices)
-			FlushLines();
+			XYZ_ASSERT(false, "");
 
 		m_LineBuffer.BufferPtr->Position = p0;
 		m_LineBuffer.BufferPtr->Color = color;
@@ -297,9 +411,9 @@ namespace XYZ {
 		m_LineBuffer.IndexCount += 2;
 	}
 
-	void Renderer2D::SubmitLineQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
+	void Renderer2D::SubmitRect(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
 	{
-		glm::vec3 p[4] = {
+		const glm::vec3 p[4] = {
 			position,
 			position + glm::vec3(size.x, 0.0f, 0.0f),
 			position + glm::vec3(size.x, size.y, 0.0f),
@@ -311,48 +425,81 @@ namespace XYZ {
 		SubmitLine(p[3], p[0], color);
 	}
 
-	void Renderer2D::SubmitCollisionQuad(const glm::mat4& transform, uint32_t id)
+	void Renderer2D::SubmitRect(const glm::mat4& transform, const glm::vec4& color)
 	{
-		constexpr size_t quadVertexCount = 4;
+		glm::vec3 lineVertices[4];
+		for (size_t i = 0; i < 4; i++)
+			lineVertices[i] = transform * sc_QuadVertexPositions[i];
 
-		if (m_CollisionBuffer.IndexCount + 6 >= sc_MaxIndices)
-			FlushCollisions();
-
-		for (size_t i = 0; i < quadVertexCount; ++i)
-		{
-			m_CollisionBuffer.BufferPtr->Position = transform * sc_QuadVertexPositions[i];
-			m_CollisionBuffer.BufferPtr->CollisionID = (int)id;
-			m_CollisionBuffer.BufferPtr++;
-		}
-		m_CollisionBuffer.IndexCount += 6;
+		SubmitLine(lineVertices[0], lineVertices[1], color);
+		SubmitLine(lineVertices[1], lineVertices[2], color);
+		SubmitLine(lineVertices[2], lineVertices[3], color);
+		SubmitLine(lineVertices[3], lineVertices[0], color);
 	}
 
-	void Renderer2D::SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureID, const glm::vec4& color, float tilingFactor)
+
+	void Renderer2D::SubmitAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color)
+	{
+		glm::vec3 topFrontLeft = { min.x, max.y, min.z };
+		glm::vec3 topFrontRight = { max.x, max.y, min.z };
+		glm::vec3 bottomFrontLeft = { min.x, min.y, min.z };
+		glm::vec3 bottomFrontRight = { max.x, min.y, min.z };
+
+
+		glm::vec3 topBackLeft = { min.x, max.y, max.z };
+		glm::vec3 topBackRight = { max.x, max.y, max.z };
+		glm::vec3 bottomBackLeft = { min.x, min.y, max.z };
+		glm::vec3 bottomBackRight = { max.x, min.y, max.z };
+
+
+		// Front
+		SubmitLine(topFrontLeft, topFrontRight, color);
+		SubmitLine(topFrontRight, bottomFrontRight, color);
+		SubmitLine(bottomFrontRight, bottomFrontLeft, color);
+		SubmitLine(bottomFrontLeft, topFrontLeft, color);
+
+
+		//Back
+		SubmitLine(topBackLeft, topBackRight, color);
+		SubmitLine(topBackRight, bottomBackRight, color);
+		SubmitLine(bottomBackRight, bottomBackLeft, color);
+		SubmitLine(bottomBackLeft, topBackLeft, color);
+
+		// Sides
+		SubmitLine(topFrontLeft, topBackLeft, color);
+		SubmitLine(topFrontRight, topBackRight, color);
+		SubmitLine(bottomFrontLeft,  bottomBackLeft, color);
+		SubmitLine(bottomFrontRight, bottomBackRight, color);
+	}
+
+
+	void Renderer2D::SubmitQuadNotCentered(const glm::vec3& position, const glm::vec2& size, const glm::vec4& texCoord, uint32_t textureIndex, const glm::vec4& color, float tilingFactor)
 	{
 		constexpr size_t quadVertexCount = 4;
 
 		if (m_QuadBuffer.IndexCount + 6 >= sc_MaxIndices)
-			Flush();
+			XYZ_ASSERT(false, "");
 
-		glm::vec2 texCoords[quadVertexCount] = {
+		const glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x, texCoord.y},
 			{texCoord.z, texCoord.y},
 			{texCoord.z, texCoord.w},
 			{texCoord.x, texCoord.w}
 		};
 
-		glm::vec3 vertices[quadVertexCount] = {
+		const glm::vec3 vertices[quadVertexCount] = {
 			{  position.x ,			 position.y, 0.0f},
 			{  position.x + size.x,  position.y, 0.0f},
 			{  position.x + size.x,  position.y + size.y, 0.0f},
 			{  position.x,			 position.y + size.y, 0.0f}
 		};
+
 		for (size_t i = 0; i < quadVertexCount; ++i)
 		{
 			m_QuadBuffer.BufferPtr->Position = vertices[i];
 			m_QuadBuffer.BufferPtr->Color = color;
 			m_QuadBuffer.BufferPtr->TexCoord = texCoords[i];
-			m_QuadBuffer.BufferPtr->TextureID = (float)textureID;
+			m_QuadBuffer.BufferPtr->TextureID = (float)textureIndex;
 			m_QuadBuffer.BufferPtr->TilingFactor = tilingFactor;
 			m_QuadBuffer.BufferPtr++;
 		}
@@ -360,86 +507,147 @@ namespace XYZ {
 	}
 
 
-	void Renderer2D::FlushAll()
-	{
-		Flush();
-		FlushLines();
-		FlushCollisions();
-		FlushFilledCircles();
-	}
-
 	void Renderer2D::Flush()
-	{	
-		uint32_t dataSize = (uint8_t*)m_QuadBuffer.BufferPtr - (uint8_t*)m_QuadBuffer.BufferBase;
-		if (dataSize)
-		{
-			XYZ_ASSERT(m_QuadMaterial.Raw(), "No material set");
-				
-			m_QuadMaterial->Bind();
-			uint32_t textureSlotOffset = (uint32_t)m_QuadMaterial->GetTextures().size();
-			for (uint32_t i = 0; i < m_TextureSlotIndex; ++i)
-				m_TextureSlots[i]->Bind(i + textureSlotOffset);
-			
-			m_QuadBuffer.VertexBuffer->Update(m_QuadBuffer.BufferBase, dataSize);
-			m_QuadBuffer.VertexArray->Bind();
-			Renderer::DrawIndexed(PrimitiveType::Triangles, m_QuadBuffer.IndexCount);
-			m_Stats.DrawCalls++;
-			m_QuadBuffer.Reset();
-		}	
-	}
-	void Renderer2D::FlushLines()
-	{	
-		uint32_t dataSize = (uint8_t*)m_LineBuffer.BufferPtr - (uint8_t*)m_LineBuffer.BufferBase;
-		if (dataSize)
-		{
-			m_LineShader->Bind();
-			m_LineBuffer.VertexBuffer->Update(m_LineBuffer.BufferBase, dataSize);
-			m_LineBuffer.VertexArray->Bind();
-			Renderer::DrawIndexed(PrimitiveType::Lines, m_LineBuffer.IndexCount);
-
-			m_Stats.LineDrawCalls++;
-			m_LineBuffer.Reset();;
-		}	
-	}
-
-	void Renderer2D::FlushCollisions()
 	{
-		uint32_t dataSize = (uint8_t*)m_CollisionBuffer.BufferPtr - (uint8_t*)m_CollisionBuffer.BufferBase;
-		if (dataSize)
-		{
-			m_CollisionShader->Bind();
-			m_CollisionBuffer.VertexBuffer->Update(m_CollisionBuffer.BufferBase, dataSize);
-			m_CollisionBuffer.VertexArray->Bind();
-			Renderer::DrawIndexed(PrimitiveType::Triangles, m_CollisionBuffer.IndexCount);
-
-			m_Stats.CollisionDrawCalls++;
-			m_CollisionBuffer.Reset();
-		}
+		flush();
+		flushLines();
+		flushFilledCircles();
 	}
-
-	void Renderer2D::FlushFilledCircles()
-	{
-		uint32_t dataSize = (uint8_t*)m_CircleBuffer.BufferPtr - (uint8_t*)m_CircleBuffer.BufferBase;
-		if (dataSize)
-		{
-			m_CircleShader->Bind();
-			m_CircleBuffer.VertexBuffer->Update(m_CircleBuffer.BufferBase, dataSize);
-			m_CircleBuffer.VertexArray->Bind();
-			Renderer::DrawIndexed(PrimitiveType::Triangles, m_CircleBuffer.IndexCount);
-
-			m_Stats.FilledCircleDrawCalls++;
-			m_CircleBuffer.Reset();
-		}
-	}
-
 
 	void Renderer2D::EndScene()
-	{
-		m_Stats.DrawCalls = 0;
-		m_Stats.LineDrawCalls = 0;
-		m_Stats.CollisionDrawCalls = 0;
-		m_Stats.FilledCircleDrawCalls = 0;
+	{	
+		Flush();
+		m_QuadBuffer.Reset();
+		m_LineBuffer.Reset();
+		m_CircleBuffer.Reset();
+		Renderer::EndRenderPass(m_RenderCommandBuffer);
 	}
+	void Renderer2D::resetQuads()
+	{
+		m_QuadBuffer.Reset();
+	}
+
+	void Renderer2D::resetLines()
+	{
+		m_LineBuffer.Reset();
+	}
+
+	void Renderer2D::createRenderPass()
+	{
+		FramebufferSpecification framebufferSpec;
+		framebufferSpec.Attachments = {
+				FramebufferTextureSpecification(ImageFormat::RGBA32F),
+				FramebufferTextureSpecification(ImageFormat::RGBA32F)
+		};
+		framebufferSpec.Samples = 1;
+		framebufferSpec.ClearOnLoad = false;
+		framebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+		Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
+
+		RenderPassSpecification renderPassSpec;
+		renderPassSpec.TargetFramebuffer = framebuffer;
+		m_RenderPass = RenderPass::Create(renderPassSpec);
+	}
+
+	void Renderer2D::createDefaultPipelineBuckets()
+	{
+		uint32_t* quadIndices = GenerateQuadIndices(sc_MaxIndices);
+		
+		auto quadMaterial = m_QuadMaterial->GetMaterial();
+		auto lineMaterial = m_LineMaterial->GetMaterial();
+		auto circleMaterial = m_CircleMaterial->GetMaterial();
+
+		m_QuadBuffer.Init(m_RenderPass, quadMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices);
+		const size_t quadShaderHash = quadMaterial->GetShader()->GetHash();
+		m_QuadPipelines.emplace(quadShaderHash, m_QuadBuffer.Pipeline);
+
+		uint32_t* lineIndices = GenerateLineIndices(sc_MaxLineIndices);
+		m_LineBuffer.Init(m_RenderPass, lineMaterial->GetShader(), sc_MaxLineVertices, lineIndices, sc_MaxLineIndices, PrimitiveTopology::Lines);
+		const size_t lineShaderHash = lineMaterial->GetShader()->GetHash();
+		m_LinePipelines.emplace(lineShaderHash, m_LineBuffer.Pipeline);
+
+
+		m_CircleBuffer.Init(m_RenderPass, circleMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices);
+		const size_t circleShaderHash = circleMaterial->GetShader()->GetHash();
+		m_CirclePipelines.emplace(circleShaderHash, m_CircleBuffer.Pipeline);
+
+		delete[]quadIndices;
+		delete[]lineIndices;
+	}
+	void Renderer2D::flush()
+	{
+		const uint32_t dataSize = m_QuadBuffer.DataSize();
+		if (dataSize)
+		{
+			XYZ_ASSERT(dataSize + m_QuadBuffer.Offset < m_QuadBuffer.VertexBuffer->GetSize(), "");
+			XYZ_ASSERT(m_QuadMaterial.Raw(), "No material set");
+			m_QuadBuffer.VertexBuffer->Update(m_QuadBuffer.DataPtr(), dataSize, m_QuadBuffer.Offset);
+
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_UniformBufferSet, nullptr, m_QuadMaterial->GetMaterial());
+			Renderer::RenderGeometry(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_QuadMaterial->GetMaterialInstance(), m_QuadBuffer.VertexBuffer, m_QuadBuffer.IndexBuffer, glm::mat4(1.0f), m_QuadBuffer.IndexCount, m_QuadBuffer.Offset);
+			m_Stats.DrawCalls++;
+			
+			m_QuadBuffer.IndexCount = 0;
+			m_QuadBuffer.Offset += dataSize;
+		}		
+	}
+	void Renderer2D::flushLines()
+	{
+		const uint32_t dataSize = m_LineBuffer.DataSize();
+		if (dataSize)
+		{
+			XYZ_ASSERT(dataSize + m_LineBuffer.Offset < m_LineBuffer.VertexBuffer->GetSize(), "");
+			m_LineBuffer.VertexBuffer->Update(m_LineBuffer.DataPtr(), dataSize, m_LineBuffer.Offset);
+			
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_UniformBufferSet, nullptr, m_LineMaterial->GetMaterial());
+			Renderer::RenderGeometry(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_LineMaterial->GetMaterialInstance(), m_LineBuffer.VertexBuffer, m_LineBuffer.IndexBuffer, glm::mat4(1.0f), m_LineBuffer.IndexCount, m_LineBuffer.Offset);
+
+			m_Stats.LineDrawCalls++;
+			m_LineBuffer.IndexCount = 0;
+			m_LineBuffer.Offset += dataSize;
+		}	
+	}
+
+
+	void Renderer2D::flushFilledCircles()
+	{
+		const uint32_t dataSize = m_CircleBuffer.DataSize();
+		if (dataSize)
+		{
+			XYZ_ASSERT(dataSize + m_CircleBuffer.Offset < m_CircleBuffer.VertexBuffer->GetSize(), "");
+			m_CircleBuffer.VertexBuffer->Update(m_CircleBuffer.DataPtr(), dataSize, m_CircleBuffer.Offset);
+			
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_UniformBufferSet, nullptr, m_CircleMaterial->GetMaterial());
+			Renderer::RenderGeometry(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_CircleMaterial->GetMaterialInstance(), m_CircleBuffer.VertexBuffer, m_CircleBuffer.IndexBuffer, glm::mat4(1.0f), m_CircleBuffer.IndexCount, m_CircleBuffer.Offset);
+
+			m_Stats.FilledCircleDrawCalls++;
+
+			m_CircleBuffer.IndexCount = 0;
+			m_CircleBuffer.Offset += dataSize;
+		}
+	}
+
+	void Renderer2D::updateRenderPass(Ref<Pipeline>& pipeline) const
+	{
+		auto spec = pipeline->GetSpecification();
+		spec.RenderPass = m_RenderPass;
+		pipeline = Pipeline::Create(spec);
+	}
+
+	Ref<Pipeline> Renderer2D::setMaterial(std::unordered_map<size_t, Ref<Pipeline>>& pipelines, const Ref<Pipeline>& current, const Ref<Material>& material)
+	{
+		const size_t shaderHash = material->GetShader()->GetHash();
+		auto it = pipelines.find(shaderHash);
+		if (it != pipelines.end())
+			return it->second;
+		
+		auto spec = current->GetSpecification();
+		spec.Shader = material->GetShader();
+		return Pipeline::Create(spec);
+	}
+
+
 	const Renderer2DStats& Renderer2D::GetStats()
 	{
 		return m_Stats;

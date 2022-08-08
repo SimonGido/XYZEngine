@@ -623,7 +623,7 @@ public:
   std::size_t write_some(const ConstBufferSequence& buffers)
   {
     asio::error_code ec;
-    std::size_t s = impl_.get_service().write_some(
+    const std::size_t s = impl_.get_service().write_some(
         impl_.get_implementation(), buffers, ec);
     asio::detail::throw_error(ec, "write_some");
     return s;
@@ -736,7 +736,7 @@ public:
   std::size_t read_some(const MutableBufferSequence& buffers)
   {
     asio::error_code ec;
-    std::size_t s = impl_.get_service().read_some(
+    const std::size_t s = impl_.get_service().read_some(
         impl_.get_implementation(), buffers, ec);
     asio::detail::throw_error(ec, "read_some");
     return s;

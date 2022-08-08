@@ -162,7 +162,7 @@ namespace XYZ {
 	inline void SparseArray<T>::Emplace(uint32_t entity, Args && ...args)
 	{
 		if (m_EntityDataMap.size() <= entity)
-			m_EntityDataMap.resize(entity + 1);
+			m_EntityDataMap.resize(static_cast<size_t>(entity) + 1);
 
 
 		if (m_EntityDataMap[entity].IsValid())

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Logger.h"
 
+#include <ozz/base/log.h>
 
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
@@ -11,6 +12,9 @@ namespace XYZ {
 
 	void Logger::Init()
 	{
+		// turn off ozz logging
+		ozz::log::SetLevel(ozz::log::kSilent);
+
 		std::vector<spdlog::sink_ptr> logSinks;
 		logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
 		logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("XYZ.log", true));

@@ -54,7 +54,7 @@ void select_reactor::schedule_timer(timer_queue<Time_Traits>& queue,
     return;
   }
 
-  bool earliest = queue.enqueue_timer(time, timer, op);
+  const bool earliest = queue.enqueue_timer(time, timer, op);
   scheduler_.work_started();
   if (earliest)
     interrupter_.interrupt();
@@ -67,7 +67,7 @@ std::size_t select_reactor::cancel_timer(timer_queue<Time_Traits>& queue,
 {
   asio::detail::mutex::scoped_lock lock(mutex_);
   op_queue<operation> ops;
-  std::size_t n = queue.cancel_timer(timer, ops, max_cancelled);
+  const std::size_t n = queue.cancel_timer(timer, ops, max_cancelled);
   lock.unlock();
   scheduler_.post_deferred_completions(ops);
   return n;

@@ -1,6 +1,6 @@
 workspace "XYZEngine"
 		architecture "x64"
-		startproject "XYZEditor"
+		startproject "XYZGame"
 
 		configurations
 		{
@@ -15,5 +15,5 @@ workspace "XYZEngine"
 		
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
-include "Dependencies"
-include "Projects"
+
+include "Projects.lua"

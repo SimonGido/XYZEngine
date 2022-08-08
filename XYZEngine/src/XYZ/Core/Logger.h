@@ -1,9 +1,8 @@
 #pragma once
 #include "Core.h"
-#include "Ref.h"
+#include "XYZ/Core/Ref/Ref.h"
+#include "XYZ/Core/Ref/WeakRef.h"
 
-#include <fstream>
-#include <iostream>
 
 // This ignores all warnings raised inside External headers
 #pragma warning(push, 0)

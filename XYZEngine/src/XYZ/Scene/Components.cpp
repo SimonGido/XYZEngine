@@ -2,12 +2,16 @@
 #include "stdafx.h"
 #include "Components.h"
 
+#include "Prefab.h"
+
+#include "XYZ/Debug/Profiler.h"
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
 namespace XYZ {
 
-	SpriteRenderer::SpriteRenderer(const XYZ::Ref<XYZ::Material>& material, const Ref<XYZ::SubTexture>& subTexture, const glm::vec4& color, uint32_t sortLayer, bool isVisible)
+	SpriteRenderer::SpriteRenderer(const XYZ::Ref<XYZ::MaterialAsset>& material, const Ref<XYZ::SubTexture>& subTexture, const glm::vec4& color, uint32_t sortLayer, bool isVisible)
 		:
 		Material(material),
 		SubTexture(subTexture),
@@ -49,111 +53,164 @@ namespace XYZ {
 
 	Relationship::Relationship()
 		: 
+		Parent(entt::null),
+		FirstChild(entt::null),
+		PreviousSibling(entt::null),
+		NextSibling(entt::null),
 		Depth(0)
+	
 	{
 	}
 
-	Relationship::Relationship(Entity parent)
+	Relationship::Relationship(const Relationship& other)
 		:
-		Parent(parent),
-		Depth(0)
+		Parent(other.Parent),
+		FirstChild(other.FirstChild),
+		PreviousSibling(other.PreviousSibling),
+		NextSibling(other.NextSibling),
+		Depth(other.Depth)
 	{
 	}
 
-	Entity Relationship::FindByName(const ECSManager& ecs, std::string_view name) const
+
+	entt::entity Relationship::FindByName(const entt::registry& reg, std::string_view name) const
 	{
-		std::stack<Entity> temp;
-		temp.push(FirstChild);
+		std::stack<entt::entity> temp;
+		if (reg.valid(FirstChild))
+			temp.push(FirstChild);
+
 		while (!temp.empty())
 		{
-			Entity entity = temp.top();
+			entt::entity entity = temp.top();
 			temp.pop();
 
-			if (ecs.GetComponent<SceneTagComponent>(entity).Name == name)
-					return entity;
+			if (reg.get<SceneTagComponent>(entity).Name == name)
+				return entity;
 
-			const auto& relationship = ecs.GetComponent<Relationship>(entity);
-			if (relationship.NextSibling)
+			const auto& relationship = reg.get<Relationship>(entity);
+			if (reg.valid(relationship.NextSibling))
 				temp.push(relationship.NextSibling);
-			if (relationship.FirstChild)
+			if (reg.valid(relationship.FirstChild))
 				temp.push(relationship.FirstChild);
 		}
-		return Entity();
+		return entt::entity();
 	}
 
-	std::vector<Entity> Relationship::GetTree(const ECSManager& ecs) const
+
+	std::vector<entt::entity> Relationship::GetTree(const entt::registry& reg) const
 	{
-		std::vector<Entity> result;
-		std::stack<Entity> temp;
-		temp.push(FirstChild);
+		std::vector<entt::entity> result;
+		std::stack<entt::entity> temp;
+		if (reg.valid(FirstChild))
+			temp.push(FirstChild);
 		while (!temp.empty())
 		{
-			Entity entity = temp.top();
+			const entt::entity entity = temp.top();
+			result.push_back(entity);
 			temp.pop();
 			
-			const auto& relationship = ecs.GetComponent<Relationship>(entity);
-			if (relationship.NextSibling)
-			{
+			const auto& relationship = reg.get<Relationship>(entity);
+			if (reg.valid(relationship.NextSibling))
 				temp.push(relationship.NextSibling);
-				result.push_back(relationship.NextSibling);
-			}
-			if (relationship.FirstChild)
-			{
+			
+			if (reg.valid(relationship.FirstChild))
 				temp.push(relationship.FirstChild);
-				result.push_back(relationship.FirstChild);
-			}
 		}
 		return result;
 	}
 
-	void Relationship::SetupRelation(Entity parent, Entity child, ECSManager& ecs)
+
+	
+	bool Relationship::IsInHierarchy(const entt::registry& reg, entt::entity child) const
 	{
-		removeRelation(child, ecs);
-		auto& parentRel = ecs.GetComponent<Relationship>(parent);
-		auto& childRel = ecs.GetComponent<Relationship>(child);
-
-		if (parentRel.FirstChild)
+		std::stack<entt::entity> temp;
+		if (reg.valid(FirstChild))
+			temp.push(FirstChild);
+		while (!temp.empty())
 		{
-			auto& firstChildRel = ecs.GetComponent<Relationship>(parentRel.FirstChild);
-			firstChildRel.PreviousSibling = child;
-			childRel.NextSibling = parentRel.FirstChild;
-		}
-		childRel.Parent = parent;
-		parentRel.FirstChild = child;
+			const entt::entity entity = temp.top();
+			temp.pop();
 
+			if (entity == child)
+				return true;
+
+			const auto& relationship = reg.get<Relationship>(entity);
+			if (reg.valid(relationship.NextSibling))
+				temp.push(relationship.NextSibling);
+
+			if (reg.valid(relationship.FirstChild))
+				temp.push(relationship.FirstChild);
+		}
+		return false;
+	}
+
+	void Relationship::SetupRelation(entt::entity parent, entt::entity child, entt::registry& reg)
+	{
+		XYZ_PROFILE_FUNC("Relationship::SetupRelation");
+		removeRelation(child, reg);
+		Relationship& parentRel = reg.get<Relationship>(parent);
+		Relationship& childRel = reg.get<Relationship>(child);
+		Relationship* lastChildRel = nullptr;
+
+		entt::entity lastChild = parentRel.FirstChild;
+		while (reg.valid(lastChild)) // Find last child
+		{
+			lastChildRel = &reg.get<Relationship>(lastChild);
+			if (!reg.valid(lastChildRel->NextSibling))
+				break;
+			lastChild = lastChildRel->NextSibling;
+		}
+		if (reg.valid(lastChild))
+			lastChildRel->NextSibling = child;
+		else
+			parentRel.FirstChild = child;
+
+		childRel.PreviousSibling = lastChild;
+		childRel.Parent = parent;
 		childRel.Depth = parentRel.Depth + 1;
 	}
 
-	void Relationship::RemoveRelation(Entity child, ECSManager& ecs)
+	void Relationship::RemoveRelation(entt::entity child, entt::registry& reg)
 	{
-		removeRelation(child, ecs);
+		removeRelation(child, reg);
 	}
-	void Relationship::removeRelation(Entity child, ECSManager& ecs)
+	void Relationship::removeRelation(entt::entity child, entt::registry& reg)
 	{
-		auto& childRel = ecs.GetComponent<Relationship>(child);
+		XYZ_PROFILE_FUNC("Relationship::removeRelation");
+		auto& childRel = reg.get<Relationship>(child);
+		
+		reg.storage<Relationship>().contains(child);
 
-		if (childRel.Parent)
+		if (reg.valid(childRel.Parent))
 		{
-			auto& parentRel = ecs.GetComponent<Relationship>(childRel.Parent);
+			auto& parentRel = reg.get<Relationship>(childRel.Parent);
 			if (child == parentRel.FirstChild)
 				parentRel.FirstChild = childRel.NextSibling;
 
-			if (childRel.NextSibling)
+			if (reg.valid(childRel.NextSibling))
 			{
-				auto& nextSiblingRel = ecs.GetComponent<Relationship>(childRel.NextSibling);
+				auto& nextSiblingRel = reg.get<Relationship>(childRel.NextSibling);
 				nextSiblingRel.PreviousSibling = childRel.PreviousSibling;
 			}
-			if (childRel.PreviousSibling)
+			if (reg.valid(childRel.PreviousSibling))
 			{
-				auto& previousSiblingRel = ecs.GetComponent<Relationship>(childRel.PreviousSibling);
+				auto& previousSiblingRel = reg.get<Relationship>(childRel.PreviousSibling);
 				previousSiblingRel.NextSibling = childRel.NextSibling;
 			}
 			
-			childRel.NextSibling = Entity();
-			childRel.PreviousSibling = Entity();
-			childRel.Parent = Entity();		
+			childRel.NextSibling = entt::null;
+			childRel.PreviousSibling = entt::null;
+			childRel.Parent = entt::null;
 			childRel.Depth = 0;
 		}
+	}
+	TransformComponent::TransformComponent(const TransformComponent& other)
+		:
+		Translation(other.Translation),
+		Rotation(other.Rotation),
+		Scale(other.Scale),
+		WorldTransform(other.WorldTransform)
+	{
 	}
 	std::tuple<glm::vec3, glm::vec3, glm::vec3> TransformComponent::GetWorldComponents() const
 	{
@@ -168,7 +225,7 @@ namespace XYZ {
 	}
 	glm::mat4 TransformComponent::GetTransform() const
 	{
-		glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+		const glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
 		return glm::translate(glm::mat4(1.0f), Translation)
 			* rotation
 			* glm::scale(glm::mat4(1.0f), Scale);
@@ -181,5 +238,135 @@ namespace XYZ {
 
 		glm::decompose(transform, Scale, rotation, Translation, skew, perspective);
 		Rotation = glm::eulerAngles(rotation);
+	}
+	
+	MeshComponent::MeshComponent(const MeshComponent& other)
+		:
+		Mesh(other.Mesh),
+		MaterialAsset(other.MaterialAsset),
+		OverrideMaterial(other.OverrideMaterial)
+	{
+	}
+
+	MeshComponent::MeshComponent(const Ref<XYZ::Mesh>& mesh, const Ref<XYZ::MaterialAsset>& materialAsset)
+		:
+		Mesh(mesh), MaterialAsset(materialAsset)
+	{
+	}
+
+	ParticleRenderer::ParticleRenderer(const ParticleRenderer& other)
+		:
+		Mesh(other.Mesh),
+		MaterialAsset(other.MaterialAsset),
+		OverrideMaterial(other.OverrideMaterial)
+	{
+	}
+
+	ParticleRenderer::ParticleRenderer(const Ref<XYZ::Mesh>& mesh, const Ref<XYZ::MaterialAsset>& materialAsset)
+		:
+		Mesh(mesh), MaterialAsset(materialAsset)
+	{
+	}
+	AnimatedMeshComponent::AnimatedMeshComponent(const AnimatedMeshComponent& other)
+	{
+	}
+	AnimatedMeshComponent::AnimatedMeshComponent(const Ref<AnimatedMesh>& mesh, const Ref<XYZ::MaterialAsset>& materialAsset)
+		:
+		Mesh(mesh), MaterialAsset(materialAsset)
+	{
+	}
+	
+	PrefabComponent::PrefabComponent(const Ref<Prefab>& prefabAsset, const entt::entity owner)
+		:
+		PrefabAsset(prefabAsset),
+		Owner(owner)
+	{
+	}
+	PrefabComponent::PrefabComponent(const PrefabComponent& other)
+		:
+		PrefabAsset(other.PrefabAsset),
+		Owner(other.Owner)
+	{
+	}
+	CameraComponent::CameraComponent(const CameraComponent& other)
+		:
+		Camera(other.Camera)
+	{
+	}
+	ParticleComponent::ParticleComponent(const ParticleComponent& other)
+		:
+		System(other.System)
+	{
+	}
+	IDComponent::IDComponent(const IDComponent& other)
+		:
+		ID(other.ID)
+	{
+	}
+	AnimationComponent::AnimationComponent(const AnimationComponent& other)
+		:
+		Controller(other.Controller),
+		BoneEntities(other.BoneEntities),
+		AnimationTime(other.AnimationTime),
+		Playing(other.Playing)
+	{
+	}
+	PointLight2D::PointLight2D(const glm::vec3& color, float radius, float intensity)
+		:
+		Color(color),
+		Radius(radius),
+		Intensity(intensity)
+	{
+	}
+	PointLight2D::PointLight2D(const PointLight2D& other)
+		:
+		Color(other.Color),
+		Radius(other.Radius),
+		Intensity(other.Intensity)
+	{
+	}
+	SpotLight2D::SpotLight2D(const SpotLight2D& other)
+		:
+		Color(other.Color),
+		Radius(other.Radius),
+		Intensity(other.Intensity),
+		InnerAngle(other.InnerAngle),
+		OuterAngle(other.OuterAngle)
+	{
+	}
+	BoxCollider2DComponent::BoxCollider2DComponent(const BoxCollider2DComponent& other)
+		:
+		Size(other.Size),
+		Offset(other.Offset),
+		Density(other.Density),
+		Friction(other.Friction),
+		RuntimeFixture(other.RuntimeFixture)
+	{
+	}
+	CircleCollider2DComponent::CircleCollider2DComponent(const CircleCollider2DComponent& other)
+		:
+		Offset(other.Offset),
+		Radius(other.Radius),
+		Density(other.Density),
+		Friction(other.Friction),
+		RuntimeFixture(other.RuntimeFixture)
+	{
+	}
+	PolygonCollider2DComponent::PolygonCollider2DComponent(const PolygonCollider2DComponent& other)
+		:
+		Vertices(other.Vertices),
+		Density(other.Density),
+		Friction(other.Friction),
+		RuntimeFixture(other.RuntimeFixture)
+	{
+	}
+	ChainCollider2DComponent::ChainCollider2DComponent(const ChainCollider2DComponent& other)
+		:
+		Points(other.Points),
+		Density(other.Density),
+		Friction(other.Friction),
+		InvertNormals(other.InvertNormals),
+		RuntimeFixture(other.RuntimeFixture)
+	{
 	}
 }

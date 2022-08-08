@@ -80,7 +80,7 @@ public:
   // Release ownership of the socket.
   socket_type release()
   {
-    socket_type tmp = socket_;
+    const socket_type tmp = socket_;
     socket_ = invalid_socket;
     return tmp;
   }

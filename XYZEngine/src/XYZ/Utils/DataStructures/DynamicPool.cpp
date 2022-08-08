@@ -20,7 +20,7 @@ namespace XYZ {
 		destroy();
 		m_Handles = other.m_Handles;
 		m_Data = new uint8_t[m_Capacity];
-		for (size_t handle : m_Handles)
+		for (const size_t handle : m_Handles)
 		{
 			Base* base = reinterpret_cast<Base*>(&other.m_Data[m_Capacity]);
 			base->OnCopy(&m_Data[handle]);
@@ -49,11 +49,11 @@ namespace XYZ {
 		base->~Base();
 		if (index + 1 < m_Handles.size())
 		{
-			size_t elementSize = m_Handles[index + 1] - handle;
+			const size_t elementSize = m_Handles[index + 1] - handle;
 			m_Size -= elementSize;
 			for (size_t i = index + 1; i < m_Handles.size(); ++i)
 			{
-				size_t nextHandle = m_Handles[i];
+				const size_t nextHandle = m_Handles[i];
 				m_Handles[i] -= elementSize;
 				Base* next = reinterpret_cast<Base*>(&m_Data[nextHandle]);
 				next->OnCopy(&m_Data[handle]);
@@ -82,7 +82,7 @@ namespace XYZ {
 	{
 		if (m_Data)
 		{
-			for (size_t handle : m_Handles)
+			for (const size_t handle : m_Handles)
 			{
 				Base* base = reinterpret_cast<Base*>(&m_Data[handle]);
 				base->~Base();
@@ -96,7 +96,7 @@ namespace XYZ {
 		uint8_t* tmp = new uint8_t[m_Capacity];
 		if (m_Data)
 		{
-			for (size_t handle : m_Handles)
+			for (const size_t handle : m_Handles)
 			{
 				Base* base = reinterpret_cast<Base*>(&m_Data[handle]);
 				base->OnCopy(&tmp[handle]);

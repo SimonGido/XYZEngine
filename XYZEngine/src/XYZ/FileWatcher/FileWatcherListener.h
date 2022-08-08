@@ -1,10 +1,13 @@
 #pragma once
 
-#include<string>
+#include <string>
 
 namespace XYZ {
-	class IFileWatcherListener
+	class FileWatcherListener
 	{
+	public:
+		virtual ~FileWatcherListener() = default;
+
 	protected:
 		virtual void OnFileChange(const std::wstring& path) = 0;
 		virtual void OnFileAdded(const std::wstring& path) = 0;

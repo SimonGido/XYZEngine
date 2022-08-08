@@ -78,34 +78,19 @@ namespace XYZ {
 	}
 	uint32_t CustomRenderer2D::SetTexture(const Ref<Texture>& texture)
 	{
-		for (uint32_t i = 0; i < s_Data.QuadMaterial->GetTextures().size(); ++i)
-		{
-			if (s_Data.QuadMaterial->GetTextures()[i].Raw() && s_Data.QuadMaterial->GetTextures()[i]->GetRendererID() == texture->GetRendererID())
-				return i;
-		}
-		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; ++i)
-		{
-			if (s_Data.TextureSlots[i]->GetRendererID() == texture->GetRendererID())
-				return i + (uint32_t)s_Data.QuadMaterial->GetTextures().size();
-		}
-
-		if (s_Data.QuadMaterial->GetTextures().size() + s_Data.TextureSlotIndex >= s_Data.MaxTextures + 1)
-			Flush();
+	
+		Flush();
 
 		s_Data.TextureSlots[s_Data.TextureSlotIndex++] = texture;
-		return s_Data.TextureSlotIndex + (uint32_t)s_Data.QuadMaterial->GetTextures().size() - 1;
+		return 0;
 	}
 	void CustomRenderer2D::Flush()
 	{
-		uint32_t dataSize = s_Data.QuadBufferWriter.Ptr - s_Data.QuadBufferBase;
+		const uint32_t dataSize = s_Data.QuadBufferWriter.Ptr - s_Data.QuadBufferBase;
 		if (dataSize)
 		{
 			XYZ_ASSERT(s_Data.QuadMaterial.Raw(), "No material set");
-			
-			s_Data.QuadMaterial->Bind();
-			uint32_t textureSlotOffset = (uint32_t)s_Data.QuadMaterial->GetTextures().size();
-			for (uint32_t i = 0; i < s_Data.TextureSlotIndex; ++i)
-				s_Data.TextureSlots[i]->Bind(i + textureSlotOffset);
+
 
 		
 			s_Data.Layout.m_QuadVertexBuffer->Update(s_Data.QuadBufferBase, dataSize);
@@ -119,7 +104,7 @@ namespace XYZ {
 
 	void CustomRenderer2D::FlushLines()
 	{
-		uint32_t dataSize = s_Data.LineBufferWriter.Ptr - s_Data.LineBufferBase;
+		const uint32_t dataSize = s_Data.LineBufferWriter.Ptr - s_Data.LineBufferBase;
 		if (dataSize)
 		{
 			s_Data.LineShader->Bind();
@@ -133,11 +118,6 @@ namespace XYZ {
 	}
 	void CustomRenderer2D::FlushLast()
 	{
-		s_Data.QuadMaterial->Bind();
-		uint32_t textureSlotOffset = (uint32_t)s_Data.QuadMaterial->GetTextures().size();
-		for (uint32_t i = 0; i < s_Data.TextureSlotIndex; ++i)
-			s_Data.TextureSlots[i]->Bind(i + textureSlotOffset);
-
 		s_Data.Layout.m_QuadVertexArray->Bind();
 
 		Renderer::DrawIndexed(PrimitiveType::Triangles, s_Data.QuadIndexCount);
@@ -187,7 +167,7 @@ namespace XYZ {
 		m_QuadVertexBuffer->SetLayout(layout);
 		m_QuadVertexArray->AddVertexBuffer(m_QuadVertexBuffer);
 
-		uint32_t maxQuadIndices = ((CustomRenderer2DData::QuadBufferSize / layout.GetStride()) / 4) * 6;
+		const uint32_t maxQuadIndices = ((CustomRenderer2DData::QuadBufferSize / layout.GetStride()) / 4) * 6;
 		uint32_t* quadIndices = new uint32_t[maxQuadIndices];
 		uint32_t offset = 0;
 		for (uint32_t i = 0; i < maxQuadIndices; i += 6)
@@ -202,7 +182,7 @@ namespace XYZ {
 
 			offset += 4;
 		}
-		Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, maxQuadIndices);
+		const Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, maxQuadIndices);
 		m_QuadVertexArray->SetIndexBuffer(quadIB);
 		delete[] quadIndices;
 	}
@@ -214,12 +194,12 @@ namespace XYZ {
 		m_LineVertexBuffer->SetLayout(layout);
 		m_LineVertexArray->AddVertexBuffer(m_LineVertexBuffer);
 
-		uint32_t maxIndices = (CustomRenderer2DData::LineBufferSize / layout.GetStride()) / 2 * 6;
+		const uint32_t maxIndices = (CustomRenderer2DData::LineBufferSize / layout.GetStride()) / 2 * 6;
 		uint32_t* lineIndices = new uint32_t[maxIndices];
 		for (uint32_t i = 0; i < maxIndices; i++)
 			lineIndices[i] = i;
 
-		Ref<IndexBuffer> lineIndexBuffer = IndexBuffer::Create(lineIndices, maxIndices);
+		const Ref<IndexBuffer> lineIndexBuffer = IndexBuffer::Create(lineIndices, maxIndices);
 		m_LineVertexArray->SetIndexBuffer(lineIndexBuffer);
 		delete[] lineIndices;
 	}

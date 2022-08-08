@@ -8,6 +8,11 @@ namespace XYZ
     {
         public uint ID { get; private set; }
 
+        internal Entity(uint id)
+        {
+            ID = id;
+        }
+        protected Entity() { ID = 0; }
         ~Entity()
         {
         }
@@ -25,6 +30,10 @@ namespace XYZ
             return HasComponent_Native(ID, typeof(T));
         }
 
+        public void RemoveComponent<T>() where T : Component, new ()
+        {
+            RemoveComponent_Native(ID, typeof(T));
+        }
         public T GetComponent<T>() where T : Component, new()
         {
             if (HasComponent<T>())
@@ -36,16 +45,9 @@ namespace XYZ
             return null;
         }
 
-        public Matrix4 GetTransform()
+        public static Entity Create()
         {
-            Matrix4 mat4Instance;
-            GetTransform_Native(ID, out mat4Instance);
-            return mat4Instance;
-        }
-
-        public void SetTransform(Matrix4 transform)
-        {
-            SetTransform_Native(ID, ref transform);
+            return new Entity(Create_Native());
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -53,8 +55,9 @@ namespace XYZ
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern bool HasComponent_Native(uint entityID, Type type);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void GetTransform_Native(uint entityID, out Matrix4 matrix);
+        private static extern bool RemoveComponent_Native(uint entityID, Type type);
+
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void SetTransform_Native(uint entityID, ref Matrix4 matrix);
+        private static extern uint Create_Native();
     }
 }

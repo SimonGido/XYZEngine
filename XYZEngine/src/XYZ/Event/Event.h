@@ -1,16 +1,11 @@
 #pragma once 
 #include "XYZ/Core/Logger.h"
+#include "XYZ/Core/Assert.h"
 
-/*
-	Very simple event system, requires an update in the future.
-*/
 
 
 namespace XYZ {
 
-	/*! @class EventType
-	*	@brief Components of events that can be triggered in the engine. User-defined events are classified as 'Custom'
-	*/
 	enum class EventType
 	{		
 		#include "CoreEventTypes.def"
@@ -20,9 +15,7 @@ namespace XYZ {
 	template <typename Type>
 	using EventCallback = std::function<bool(Type&)>;
 
-	/*! @class Event
-	*	@brief Describes an event and its handlers
-	*/
+	
 	class Event
 	{
 	public:

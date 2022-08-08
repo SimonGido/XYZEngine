@@ -5,8 +5,6 @@
 
 namespace XYZ {
 
-	
-
 	template <typename Event>
 	class EventHandler
 	{

@@ -13,14 +13,14 @@ namespace XYZ {
 	{}
 	float AABB::CalculateArea() const
 	{
-		glm::vec3 diff = Max - Min;
+		const glm::vec3 diff = Max - Min;
 		return 2.0f * (diff.x * diff.y * diff.z + diff.z * diff.x);
 	}
 
 	float AABB::GetPerimeter() const
 	{
-		float wx = Max.x - Min.x;
-		float wy = Max.y - Min.y;
+		const float wx = Max.x - Min.x;
+		const float wy = Max.y - Min.y;
 		return 2.0f * (wx + wy);
 	}
 	bool AABB::Contains(const AABB& aabb) const
@@ -35,10 +35,10 @@ namespace XYZ {
 
 	bool AABB::Intersect(const AABB& aabb) const
 	{
-		float d1x = aabb.Min.x - Max.x;
-		float d1y = aabb.Min.y - Max.y;
-		float d2x = Min.x - aabb.Max.x;
-		float d2y = Min.y - aabb.Max.y;
+		const float d1x = aabb.Min.x - Max.x;
+		const float d1y = aabb.Min.y - Max.y;
+		const float d2x = Min.x - aabb.Max.x;
+		const float d2y = Min.y - aabb.Max.y;
 
 		if (d1x > 0.0f || d1y > 0.0f)
 			return false;

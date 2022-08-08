@@ -106,6 +106,9 @@ namespace XYZ {
 
 		m_Data0 = other.m_Data0;
 		m_Data1 = other.m_Data1;
+
+		m_Write = &m_Data0;
+		m_Read = &m_Data1;
 	}
 
 	template<typename T>
@@ -146,6 +149,9 @@ namespace XYZ {
 
 		m_Data0 = std::move(other.m_Data0);
 		m_Data1 = std::move(other.m_Data1);
+
+		m_Write = &m_Data0;
+		m_Read = &m_Data1;
 
 		return *this;
 	}

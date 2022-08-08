@@ -6,299 +6,321 @@
 #include <random>
 
 namespace XYZ {
+	namespace Editor {
 
-	EditorLayer::EditorLayer()
-		:
-		m_EditorOpen{ true, true }
-	{			
-	}
-
-	EditorLayer::~EditorLayer()
-	{
-	}
-
-	void EditorLayer::OnAttach()
-	{
-		ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
-		m_Scene = AssetManager::GetAsset<Scene>(AssetManager::GetAssetHandle("Assets/Scenes/NewScene.xyz"));
-		m_SceneRenderer   = Ref<SceneRenderer>::Create();
-		m_SceneRenderer2D = Ref<Renderer2D>::Create();
-		m_EditorRenderer  = Ref<EditorRenderer>::Create();
-		m_SceneRenderer->SetRenderer2D(m_SceneRenderer2D);
-
-		m_SceneHierarchy.SetContext(m_Scene);
-		m_ScenePanel.SetContext(m_Scene);	
-		ScriptEngine::SetSceneContext(m_Scene);
-
-		uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
-		uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
-		m_SceneRenderer->SetViewportSize(windowWidth, windowHeight);
-		m_Scene->SetViewportSize(windowWidth, windowHeight);		
-
-		m_AssetBrowser.SetAssetSelectedCallback([&](const Ref<Asset>& asset) {
-			 m_AssetInspectorContext.SetContext(asset);
-			 if (asset.Raw())
-			 {
-				 m_Inspector.SetContext(&m_AssetInspectorContext);
-			 }
-		});
-
-		m_ScenePanel.SetEntitySelectedCallback([&](SceneEntity entity) {
-			m_SceneEntityInspectorContext.SetContext(entity);
-			if (entity)
-			{
-				m_Inspector.SetContext(&m_SceneEntityInspectorContext);
-			}
-		});
-
-		m_SceneHierarchy.SetEntitySelectedCallback([&](SceneEntity entity) {
-			m_SceneEntityInspectorContext.SetContext(entity);
-			if (entity)
-			{
-				m_Inspector.SetContext(&m_SceneEntityInspectorContext);
-			}
-		});
-
-
-		m_SpriteEditor.SetContext(AssetManager::GetAsset<Texture2D>(AssetManager::GetAssetHandle("Assets/Textures/player_sprite.png.tex")));
-
-
-		auto entity = m_Scene->GetEntityByName("Body");
-		//gpuParticleExample(entity);
-		cpuParticleExample(entity);
-		animationExample(entity);
-
-		Renderer::WaitAndRender();
-	}
-	
-
-	void EditorLayer::OnDetach()
-	{
-		ScriptEngine::Shutdown();
-		AssetSerializer::SerializeAsset(m_Scene);		
-	}
-	void EditorLayer::OnUpdate(Timestep ts)
-	{				
-		if (m_Scene->GetState() == SceneState::Play)
+		EditorLayer::EditorLayer()
 		{
-			// We want render before updating, because render waits for threads 
-			m_Scene->OnRender(m_SceneRenderer);
-			m_Scene->OnUpdate(ts);
-		}
-		else
-		{
-			auto& editorCamera = m_ScenePanel.GetEditorCamera();
-			m_Scene->OnRenderEditor(m_SceneRenderer, m_EditorRenderer, editorCamera, ts);
-		
-			m_EditorRenderer->BeginPass(m_SceneRenderer->GetFinalRenderPass(), editorCamera.GetViewProjection(), editorCamera.GetPosition());		
-			m_EditorRenderer->EndPass(m_SceneRenderer2D);
 		}
 
-		m_ScenePanel.OnUpdate(ts);
-		m_SpriteEditor.OnUpdate(m_SceneRenderer2D, m_EditorRenderer, ts);
-		m_AnimationEditor.OnUpdate(ts);
-	}
-
-	void EditorLayer::OnEvent(Event& event)
-	{			
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<MouseButtonPressEvent>(Hook(&EditorLayer::onMouseButtonPress, this));
-		dispatcher.Dispatch<MouseButtonReleaseEvent>(Hook(&EditorLayer::onMouseButtonRelease, this));	
-		dispatcher.Dispatch<WindowResizeEvent>(Hook(&EditorLayer::onWindowResize, this));
-		dispatcher.Dispatch<KeyPressedEvent>(Hook(&EditorLayer::onKeyPress, this));
-
-		m_ScenePanel.OnEvent(event);
-		m_SpriteEditor.OnEvent(event);
-	}
-
-	void EditorLayer::OnImGuiRender()
-	{
-		if (ImGui::BeginMenuBar())
+		EditorLayer::~EditorLayer()
 		{
-			if (ImGui::BeginMenu("File"))
+			
+		}
+
+		void EditorLayer::OnAttach()
+		{
+			Renderer::InitResources();
+			s_Data.Init();		
+			SceneSerializer serializer;
+			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
+			m_Scene = serializer.Deserialize("Assets/Scenes/Scene.xyz");
+			ScriptEngine::SetSceneContext(m_Scene);
+
+			m_Scene->SetViewportSize(
+				Application::Get().GetWindow().GetWidth(),
+				Application::Get().GetWindow().GetHeight()
+			);
+
+			m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification());
+			m_CameraTexture = Texture2D::Create("Resources/Editor/Camera.png");
+
+			m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "Editor");
+			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
+
+			m_QuadMaterial	 = Renderer::GetDefaultResources().OverlayQuadMaterial;
+			m_LineMaterial	 = Renderer::GetDefaultResources().OverlayLineMaterial;
+			m_CircleMaterial = Renderer::GetDefaultResources().OverlayCircleMaterial;
+			m_QuadMaterial->SetTexture("u_Texture", m_CameraTexture, 0);
+
+
+			m_OverlayRenderer2D = Ref<Renderer2D>::Create(
+				m_CommandBuffer,
+				m_QuadMaterial, m_LineMaterial, m_CircleMaterial, 
+				m_SceneRenderer->GetFinalRenderPass()
+			);
+
+			m_EditorManager.SetSceneContext(m_Scene);
+			auto consolePanel = m_EditorManager.RegisterPanel<Editor::EditorConsolePanel>("ConsolePanel");
+			EditorLogger::Init(consolePanel->GetStream());
+			ScriptEngine::SetLogger(EditorLogger::GetLogger());
+
+			m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
+			m_EditorManager.RegisterPanel<Editor::InspectorPanel>("InspectorPanel");
+			m_EditorManager.RegisterPanel<Editor::SceneHierarchyPanel>("SceneHierarchyPanel");
+			m_EditorManager.RegisterPanel<Editor::ImGuiStylePanel>("ImGuiStylePanel");
+			m_EditorManager.RegisterPanel<Editor::AssetManagerViewPanel>("AssetManagerViewPanel");
+			m_EditorManager.RegisterPanel<Editor::AssetBrowser>("AssetBrowser");
+			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
+			//m_EditorManager.RegisterPanel<Editor::AnimationEditor>("AnimationEditor");
+
+			//SceneEntity newEntity = m_Scene->CreateEntity("Havko", GUID());
+			//SceneEntity childEntity = m_Scene->CreateEntity("Child", newEntity, GUID());
+			//
+			//
+			//ParticleRenderer& particleRenderer = newEntity.EmplaceComponent<ParticleRenderer>(
+			//	MeshFactory::CreateBox(glm::vec3(0.5f)),
+			//	Renderer::GetDefaultResources().DefaultParticleMaterial
+			//);
+			//ParticleSystem system(50);
+			//auto& particleComponent = newEntity.EmplaceComponent<ParticleComponent>();
+			//particleComponent.System = system;
+			//
+			//auto& spriteRenderer = newEntity.EmplaceComponent<SpriteRenderer>();
+			//Ref<MaterialAsset> spriteMaterial = Renderer::GetDefaultResources().DefaultQuadMaterial;
+			//spriteRenderer.Material = spriteMaterial;
+			//spriteRenderer.SubTexture = Ref<SubTexture>::Create(Texture2D::Create("Assets/Textures/1_ORK_head.png"));
+
+
+			//auto meshSource = Ref<MeshSource>::Create("Resources/Meshes/Character Running.fbx");
+			//auto skeleton = Ref<SkeletonAsset>::Create("Resources/Meshes/Character Running.fbx");
+			//auto animMesh = Ref<AnimatedMesh>::Create(meshSource);
+			//auto anim = Ref<AnimationAsset>::Create("Resources/Meshes/Character Running.fbx", "Armature|ArmatureAction", skeleton);
+			//auto animMeshMaterialAsset = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/AnimMeshMaterial.mat");
+
+
+
+			Ref<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
+			scenePanel->SetSceneRenderer(m_SceneRenderer);
+			m_EditorCamera = &scenePanel->GetEditorCamera();
+			
+			// auto prefab = Ref<Prefab>::Create();
+			// prefab->Create(animMesh, "Test");
+			// SceneEntity animEntity = prefab->Instantiate(m_Scene);
+
+
+			Renderer::WaitAndRenderAll();
+		}
+
+		void EditorLayer::OnDetach()
+		{
+			s_Data.Shutdown();
+			// AssetManager::SerializeAll();
+			SceneSerializer serializer;
+			serializer.Serialize("Assets/Scenes/Scene.xyz", m_Scene);
+			ScriptEngine::Shutdown();
+			m_EditorManager.Clear();
+		}
+		void EditorLayer::OnUpdate(Timestep ts)
+		{
+			m_EditorManager.OnUpdate(ts);
+			if (m_Scene->GetState() == SceneState::Edit)
+				renderOverlay();
+
+
+			if (m_SelectedEntity != m_Scene->GetSelectedEntity())
 			{
-				if (ImGui::MenuItem("Open...", "Ctrl+O"))
+				m_SelectedEntity = m_Scene->GetSelectedEntity();
+			}
+		}
+
+		void EditorLayer::OnEvent(Event& event)
+		{
+			m_EditorManager.OnEvent(event);
+		}
+
+		void EditorLayer::OnImGuiRender()
+		{
+			m_SceneRenderer->OnImGuiRender();
+			m_EditorManager.OnImGuiRender();
+		}
+
+		bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
+		{
+			return false;
+		}
+		bool EditorLayer::onMouseButtonRelease(MouseButtonReleaseEvent& event)
+		{
+			return false;
+		}
+		bool EditorLayer::onWindowResize(WindowResizeEvent& event)
+		{
+			return false;
+		}
+
+		bool EditorLayer::onKeyPress(KeyPressedEvent& event)
+		{
+			return false;
+		}
+
+		bool EditorLayer::onKeyRelease(KeyReleasedEvent& event)
+		{
+			return false;
+		}
+
+		void EditorLayer::renderOverlay()
+		{
+			m_CommandBuffer->Begin();
+			m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
+			m_OverlayRenderer2D->BeginScene(m_EditorCamera->GetViewProjection(), m_EditorCamera->GetViewMatrix(), false);
+			
+			renderSelected();
+			renderColliders();
+			renderCameras();
+			renderLights();
+
+			
+
+			m_OverlayRenderer2D->EndScene();
+			m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
+
+			m_CommandBuffer->End();
+			m_CommandBuffer->Submit();
+			Application::Get().GetPerformanceProfiler().PushMeasurement("EditorLayer::renderOverlay", static_cast<float>(m_GPUTimeQueries.GPUTime));
+		}
+
+		void EditorLayer::renderColliders()
+		{
+			if (m_ShowColliders)
+			{
+				auto& registry = m_Scene->GetRegistry();
+				auto box2DColliderView = registry.view<TransformComponent, BoxCollider2DComponent>();
+				for (auto entity : box2DColliderView)
 				{
+					auto &[transformComp, boxCollider] = box2DColliderView.get(entity);
+					auto [translation, rotation, scale] = transformComp.GetWorldComponents();
+					translation += glm::vec3(boxCollider.Offset, 0.0f);
+					scale *= glm::vec3(boxCollider.Size, 1.0f);
+
+					glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
+						* glm::rotate(glm::mat4(1.0f), rotation.z, glm::vec3(0.0f, 0.0f, 1.0f))
+						* glm::scale(glm::mat4(1.0f), scale);
+
+					m_OverlayRenderer2D->SubmitRect(transform, s_Data.Color[ED::Collider2D]);
 				}
 
-				if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
+				auto circle2DColliderView = registry.view<TransformComponent, CircleCollider2DComponent>();
+				for (auto entity : circle2DColliderView)
 				{
+					auto &[transformComp, circleCollider] = circle2DColliderView.get(entity);
+					auto [translation, rotation, scale] = transformComp.GetWorldComponents();
+					translation += glm::vec3(circleCollider.Offset, 0.0f);
+					scale *= glm::vec3(circleCollider.Radius * 2.0f);
+					m_OverlayRenderer2D->SubmitFilledCircle(translation, glm::vec2(scale.x, scale.y), 0.01f, s_Data.Color[ED::Collider2D]);
 				}
 
-				if (ImGui::MenuItem("Exit"))
+				auto chain2DColliderView = registry.view<TransformComponent, ChainCollider2DComponent>();
+				for (auto entity : chain2DColliderView)
 				{
-					Application::Get().Stop();
+					auto& [transformComp, chainCollider] = chain2DColliderView.get(entity);
+					if (!chainCollider.Points.empty())
+					{
+						glm::vec4 p = transformComp.WorldTransform * glm::vec4(chainCollider.Points[0], 0.0f, 1.0f);
+						m_OverlayRenderer2D->SubmitFilledCircle(glm::vec3(p), glm::vec2(0.2f), 0.3f, s_Data.Color[ED::Collider2D]);
+					}
+					for (size_t i = 1; i < chainCollider.Points.size(); ++i)
+					{
+						glm::vec4 p0 = transformComp.WorldTransform * glm::vec4(chainCollider.Points[i - 1], 0.0f, 1.0f);
+						glm::vec4 p1 = transformComp.WorldTransform * glm::vec4(chainCollider.Points[i], 0.0f, 1.0f);
+
+						m_OverlayRenderer2D->SubmitLine(glm::vec3(p0), glm::vec3(p1), s_Data.Color[ED::Collider2D]);
+						m_OverlayRenderer2D->SubmitFilledCircle(glm::vec3(p1), glm::vec2(0.2f), 0.3f, s_Data.Color[ED::Collider2D]);
+					}
 				}
-				ImGui::EndMenu();
 			}
-
-			ImGui::EndMenuBar();
 		}
-		m_Inspector.OnImGuiRender(m_EditorRenderer);
-		m_SceneHierarchy.OnImGuiRender();
-		m_SpriteEditor.OnImGuiRender(m_EditorOpen[SpriteEditor]);
-		m_ScenePanel.OnImGuiRender(m_SceneRenderer->GetFinalColorBufferRendererID());
-		m_AnimationEditor.OnImGuiRender(m_EditorOpen[AnimationEditor]);
-		m_AssetBrowser.OnImGuiRender();
-		displayStats();
-		AssetManager::DisplayMemory();
-	}
-	
-	bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)
-	{	
-		return false;
-	}
-	bool EditorLayer::onMouseButtonRelease(MouseButtonReleaseEvent& event)
-	{
-		return false;
-	}
-	bool EditorLayer::onWindowResize(WindowResizeEvent& event)
-	{
-		return false;
-	}
 
-	bool EditorLayer::onKeyPress(KeyPressedEvent& event)
-	{
-		return false;
-	}
-
-	bool EditorLayer::onKeyRelease(KeyReleasedEvent& event)
-	{
-		return false;
-	}
-
-	void EditorLayer::displayStats()
-	{
-		if (ImGui::Begin("Stats"))
+		void EditorLayer::renderCameras()
 		{
-			const auto& stats = Renderer::GetStats();
-			ImGui::Text("Draw Arrays: %d", stats.DrawArraysCount);
-			ImGui::Text("Draw Indexed: %d", stats.DrawIndexedCount);
-			ImGui::Text("Draw Instanced: %d", stats.DrawInstancedCount);
-			ImGui::Text("Draw Fullscreen: %d", stats.DrawFullscreenCount);
-			ImGui::Text("Draw Indirect: %d", stats.DrawIndirectCount);
-			ImGui::Text("Commands Count: %d", stats.CommandsCount);
-		}
-		ImGui::End();
-	}
-
-	void EditorLayer::gpuParticleExample(SceneEntity entity)
-	{
-		auto &particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();	
-		auto particleMaterial = Ref<ParticleMaterial>::Create(50, Shader::Create("Assets/Shaders/Particle/ComputeParticleShader.glsl"));
-		
-		particleComponent.System = Ref<ParticleSystem>::Create(particleMaterial);
-		particleComponent.System->m_Renderer->m_Material = Ref<Material>::Create(Shader::Create("Assets/Shaders/Particle/ParticleShader.glsl"));
-		particleComponent.System->m_Renderer->m_Material->SetTexture("u_Texture", Texture2D::Create({}, "Assets/Textures/cosmic.png"));
-		particleComponent.System->m_Renderer->m_Material->SetRenderQueueID(1);
-		
-		std::vector<ParticleData> particleData;
-		std::vector<ParticleSpecification> particleSpecification;
-		
-		std::random_device dev;
-		std::mt19937 rng(dev());
-		std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
-		for (size_t i = 0; i < particleMaterial->GetMaxParticles(); ++i)
-		{
-			ParticleData data;
-			data.Color    = glm::vec4(1.0f);
-			data.Position = glm::vec2(0.0f, 0.0f);
-			data.Size	  = glm::vec2(0.2f);
-			data.Rotation = 0.0f;
-			particleData.push_back(data);
-		
-			ParticleSpecification specs;
-			specs.StartColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-			specs.StartPosition = glm::vec2(0.0f, 0.0f);
-			specs.StartSize		= glm::vec2(0.2f);
-			specs.StartVelocity = glm::vec2(dist(rng), 1.0f);
-		
-			particleSpecification.push_back(specs);
-		}
-		particleComponent.System->SetSpawnRate(3.0f);
-		
-		particleMaterial->Set("u_Force", glm::vec2(-1.0f, 0.0f));
-		
-		// Main module
-		particleMaterial->Set("u_MainModule.Repeat", 1);
-		particleMaterial->Set("u_MainModule.LifeTime", 3.0f);
-		particleMaterial->Set("u_MainModule.Speed", 1.0f);
-		// Color module
-		particleMaterial->Set("u_ColorModule.StartColor", glm::vec4(0.5f));
-		particleMaterial->Set("u_ColorModule.EndColor",   glm::vec4(1.0f));
-		// Size module
-		particleMaterial->Set("u_SizeModule.StartSize", glm::vec2(0.1f));
-		particleMaterial->Set("u_SizeModule.EndSize", glm::vec2(3.0f));
-		// Texture animation module
-		particleMaterial->Set("u_TextureModule.TilesX", 1);
-		particleMaterial->Set("u_TextureModule.TilesY", 1);
-		
-		particleMaterial->SetBufferData("buffer_Data", particleData.data(), (uint32_t)particleData.size(), (uint32_t)sizeof(ParticleData));
-		particleMaterial->SetBufferData("buffer_Specification", particleSpecification.data(), (uint32_t)particleSpecification.size(), (uint32_t)sizeof(ParticleSpecification));
-	}
-
-	void EditorLayer::cpuParticleExample(SceneEntity entity)
-	{	
-		uint32_t numParticles = 1000;
-		auto& meshComponent = entity.EmplaceComponent<MeshComponent>();
-		meshComponent.Mesh = MeshFactory::CreateInstancedQuad(
-			glm::vec3(1.0f), 
-			{ 
-				{ 0, XYZ::ShaderDataComponent::Float3, "a_Position" },
-				{ 1, XYZ::ShaderDataComponent::Float2, "a_TexCoord" }
-			},
+			if (m_ShowCameras)
 			{
-				{ 2, XYZ::ShaderDataComponent::Float4, "a_IColor",     1 },
-				{ 3, XYZ::ShaderDataComponent::Float3, "a_IPosition",  1 },
-				{ 4, XYZ::ShaderDataComponent::Float3, "a_ISize",      1 },
-				{ 5, XYZ::ShaderDataComponent::Float4, "a_IAxis",      1 },
-				{ 6, XYZ::ShaderDataComponent::Float2, "a_ITexOffset", 1 }
-			}, numParticles);
-
-		auto& particleComponentCPU = entity.EmplaceComponent<ParticleComponentCPU>();
-		particleComponentCPU.System.SetMaxParticles(numParticles);
-
-		auto shaderLibrary = Renderer::GetShaderLibrary();
-		Ref<Material> material = Ref<Material>::Create(shaderLibrary->Get("ParticleShaderCPU"));
-		material->SetTexture("u_Texture", Texture2D::Create({}, "Assets/Textures/checkerboard.png"));
-		material->Set("u_Tiles", glm::vec2(1.0f, 1.0f));
-		material->SetRenderQueueID(1);
-		meshComponent.Mesh->SetMaterial(material);
-
-		particleComponentCPU.System.SetSceneEntity(entity);
-		particleComponentCPU.System.Play();
-		auto& lightStorage = m_Scene->GetECS().GetStorage<PointLight2D>();
-		if (lightStorage.Size())
-		{
-			SceneEntity lightEntity(lightStorage.GetEntityAtIndex(0), m_Scene.Raw());
-			{
-				auto moduleData = particleComponentCPU.System.GetModuleData();
-				moduleData->m_LightModule.m_LightEntity = lightEntity;
-				moduleData->m_LightModule.m_TransformEntity = entity;
+				auto& registry = m_Scene->GetRegistry();
+				auto cameraView = registry.view<TransformComponent, CameraComponent>();
+				for (auto entity : cameraView)
+				{
+					auto &[transform, camera] = cameraView.get(entity);
+					auto [min, max] = cameraToAABB(transform, camera.Camera);
+					auto [translation, rotation, scale] = transform.GetWorldComponents();
+					m_OverlayRenderer2D->SubmitQuadBillboard(translation, glm::vec2(scale.x, scale.y), glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), 0);
+				}
 			}
-			//auto &newMeshComponent = lightEntity.EmplaceComponent<MeshComponent>();
-			//newMeshComponent.Mesh = entity.GetComponent<MeshComponent>().Mesh;
-			//auto &particleComponent = lightEntity.EmplaceComponent<ParticleComponentCPU>();
-			//particleComponent.System.SetMaxParticles(numParticles);
-			//particleComponent.System.Play();
-			//{
-			//	auto moduleData = particleComponent.System.GetModuleData();
-			//	moduleData->m_LightModule.m_LightEntity = lightEntity;
-			//	moduleData->m_LightModule.m_TransformEntity = entity;
-			//}
 		}
-	}
 
-	void EditorLayer::animationExample(SceneEntity entity)
-	{
-		auto& animator = entity.EmplaceComponent<AnimatorComponent>();
-		//animator.Animation = AssetManager::GetAsset<Animation>(AssetManager::GetAssetHandle("Assets/Animations/havko.anim"));
-		Ref<Animation> animation = AssetManager::CreateAsset<Animation>("havko.anim", AssetType::Animation, AssetManager::GetDirectoryHandle("Assets/Animations"));
-		animator.Animator = Ref<Animator>::Create();
-		animator.Animator->SetAnimation(animation);
-		animator.Animator->SetSceneEntity(entity);
+		void EditorLayer::renderLights()
+		{
+			if (m_ShowLights)
+			{
+				auto& registry = m_Scene->GetRegistry();
 
-		m_AnimationEditor.SetScene(m_Scene);
-		m_AnimationEditor.SetContext(animator.Animator);
+				auto spotLight2DView = registry.view<TransformComponent, SpotLight2D>();
+
+				auto pointLight2DView = registry.view<TransformComponent, PointLight2D>();
+			}
+		}
+
+		void EditorLayer::renderSelected()
+		{
+			const SceneEntity selected = m_Scene->GetSelectedEntity();
+			if (selected.IsValid() && selected != m_Scene->GetSceneEntity())
+			{
+				if (selected.HasComponent<CameraComponent>())
+				{
+					auto& transform = selected.GetComponent<TransformComponent>();
+					auto& camera = selected.GetComponent<CameraComponent>();
+					auto [min, max] = cameraToAABB(transform, camera.Camera);
+					m_OverlayRenderer2D->SubmitAABB(min, max, s_Data.Color[ED::BoundingBox]);
+				}
+				else
+				{
+					auto& transform = selected.GetComponent<TransformComponent>();
+					auto [min, max] = transformToAABB(transform);
+					
+					m_OverlayRenderer2D->SubmitAABB(min, max, s_Data.Color[ED::BoundingBox]);
+				}
+			}
+		}
+
+		std::pair<glm::vec3, glm::vec3> EditorLayer::cameraToAABB(const TransformComponent& transform, const SceneCamera& camera) const
+		{
+			auto [translation, rotation, scale] = transform.GetWorldComponents();
+			if (camera.GetProjectionType() == CameraProjectionType::Orthographic)
+			{
+				auto& orthoProps = camera.GetOrthographicProperties();
+				float size = orthoProps.OrthographicSize;
+				float aspect = (float)camera.GetViewportWidth() / (float)camera.GetViewportHeight();
+				float width = size * aspect;
+				float height = size;
+
+				glm::vec3 min = { translation.x - width / 2.0f,translation.y - height / 2.0f, translation.z + orthoProps.OrthographicNear };
+				glm::vec3 max = { translation.x + width / 2.0f,translation.y + height / 2.0f, translation.z + orthoProps.OrthographicFar };
+				return { min, max };
+			}
+			else
+			{
+
+			}
+			return std::pair<glm::vec3, glm::vec3>();
+		}
+
+		std::pair<glm::vec3, glm::vec3> EditorLayer::transformToAABB(const TransformComponent& transform) const
+		{
+			auto [translation, rotation, scale] = transform.GetWorldComponents();
+			scale.z = 0.0f; // 2D
+			return { translation - (scale / 2.0f),translation + (scale / 2.0f) };
+		}
+
+		void EditorLayer::displayStats()
+		{
+			if (ImGui::Begin("Stats"))
+			{
+				const auto& stats = Renderer::GetStats();
+				ImGui::Text("Draw Arrays: %d", stats.DrawArraysCount);
+				ImGui::Text("Draw Indexed: %d", stats.DrawIndexedCount);
+				ImGui::Text("Draw Instanced: %d", stats.DrawInstancedCount);
+				ImGui::Text("Draw Fullscreen: %d", stats.DrawFullscreenCount);
+				ImGui::Text("Draw Indirect: %d", stats.DrawIndirectCount);
+				ImGui::Text("Commands Count: %d", stats.CommandsCount);
+			}
+			ImGui::End();
+		}
 	}
 }

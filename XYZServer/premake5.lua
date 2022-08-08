@@ -2,10 +2,10 @@ project "XYZServer"
 		kind "ConsoleApp"
 		language "C++"
 		cppdialect "C++17"
-		staticruntime "on"
+		staticruntime "off"
 		
-		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+		targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+		objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 		
 		files
 		{
@@ -23,8 +23,6 @@ project "XYZServer"
 			"%{IncludeDir.yaml}",
 			"%{IncludeDir.glm}",
 			"%{IncludeDir.Asio}",
-			"%{IncludeDir.Lua}",
-			"%{IncludeDir.Sol}",
 			"%{IncludeDir.box2d}"
 		}
 		

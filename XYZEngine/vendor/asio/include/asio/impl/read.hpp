@@ -81,7 +81,7 @@ inline std::size_t read(SyncReadStream& s, const MutableBufferSequence& buffers,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read(s, buffers, transfer_all(), ec);
+  const std::size_t bytes_transferred = read(s, buffers, transfer_all(), ec);
   asio::detail::throw_error(ec, "read");
   return bytes_transferred;
 }
@@ -105,8 +105,8 @@ inline std::size_t read(SyncReadStream& s, const MutableBufferSequence& buffers,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read(s, buffers,
-      ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
+  const std::size_t bytes_transferred = read(s, buffers,
+                                             ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
   asio::detail::throw_error(ec, "read");
   return bytes_transferred;
 }
@@ -156,8 +156,8 @@ inline std::size_t read(SyncReadStream& s,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers), transfer_all(), ec);
+  const std::size_t bytes_transferred = read(s,
+                                             ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers), transfer_all(), ec);
   asio::detail::throw_error(ec, "read");
   return bytes_transferred;
 }
@@ -186,9 +186,9 @@ inline std::size_t read(SyncReadStream& s,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers),
-      ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
+  const std::size_t bytes_transferred = read(s,
+                                             ASIO_MOVE_CAST(DynamicBuffer_v1)(buffers),
+                                             ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
   asio::detail::throw_error(ec, "read");
   return bytes_transferred;
 }
@@ -256,7 +256,7 @@ std::size_t read(SyncReadStream& s, DynamicBuffer_v2 buffers,
   {
     std::size_t pos = b.size();
     b.grow(bytes_available);
-    std::size_t bytes_transferred = s.read_some(
+    const std::size_t bytes_transferred = s.read_some(
         b.data(pos, bytes_available), ec);
     b.shrink(bytes_available - bytes_transferred);
     total_transferred += bytes_transferred;
@@ -276,8 +276,8 @@ inline std::size_t read(SyncReadStream& s, DynamicBuffer_v2 buffers,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers), transfer_all(), ec);
+  const std::size_t bytes_transferred = read(s,
+                                             ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers), transfer_all(), ec);
   asio::detail::throw_error(ec, "read");
   return bytes_transferred;
 }
@@ -302,9 +302,9 @@ inline std::size_t read(SyncReadStream& s, DynamicBuffer_v2 buffers,
     >::type*)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read(s,
-      ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers),
-      ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
+  const std::size_t bytes_transferred = read(s,
+                                             ASIO_MOVE_CAST(DynamicBuffer_v2)(buffers),
+                                             ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
   asio::detail::throw_error(ec, "read");
   return bytes_transferred;
 }

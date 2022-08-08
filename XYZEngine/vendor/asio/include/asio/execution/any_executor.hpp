@@ -833,13 +833,13 @@ protected:
   static void execute_void(const any_executor_base&,
       ASIO_MOVE_ARG(function))
   {
-    bad_executor ex;
+    const bad_executor ex;
     asio::detail::throw_exception(ex);
   }
 
   static void blocking_execute_void(const any_executor_base&, function_view)
   {
-    bad_executor ex;
+    const bad_executor ex;
     asio::detail::throw_exception(ex);
   }
 
@@ -926,7 +926,7 @@ protected:
 
   static void query_fn_void(void*, const void*, const void*)
   {
-    bad_executor ex;
+    const bad_executor ex;
     asio::detail::throw_exception(ex);
   }
 
@@ -1054,7 +1054,7 @@ protected:
         is_same<Ex, void>::value
       >::type*)
   {
-    bad_executor ex;
+    const bad_executor ex;
     asio::detail::throw_exception(ex);
     return Poly();
   }
@@ -1087,7 +1087,7 @@ protected:
         is_same<Ex, void>::value
       >::type*)
   {
-    bad_executor ex;
+    const bad_executor ex;
     asio::detail::throw_exception(ex);
     return Poly();
   }

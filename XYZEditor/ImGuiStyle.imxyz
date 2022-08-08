@@ -1,0 +1,196 @@
+Colors:
+  - Index: 0
+    Color: [0.99999994, 0.99999994, 0.99999994, 1]
+  - Index: 1
+    Color: [0.5, 0.5, 0.5, 1]
+  - Index: 2
+    Color: [0.0494117588, 0.103016652, 0.131602138, 1]
+  - Index: 3
+    Color: [0, 0, 0, 0]
+  - Index: 4
+    Color: [0.0799999908, 0.0799999908, 0.0799999908, 0.939999998]
+  - Index: 5
+    Color: [0.430000007, 0.430000007, 0.5, 0.5]
+  - Index: 6
+    Color: [0, 0, 0, 0]
+  - Index: 7
+    Color: [0.0259612799, 0.0651503727, 0.0929367617, 1]
+  - Index: 8
+    Color: [0.123114593, 0.179386199, 0.222805053, 1]
+  - Index: 9
+    Color: [0.150000006, 0.1505, 0.150999993, 1]
+  - Index: 10
+    Color: [0.150000006, 0.1505, 0.150999993, 1]
+  - Index: 11
+    Color: [0.150000006, 0.1505, 0.150999993, 1]
+  - Index: 12
+    Color: [0.150000006, 0.1505, 0.150999993, 1]
+  - Index: 13
+    Color: [0.139999986, 0.139999986, 0.139999986, 1]
+  - Index: 14
+    Color: [0.0199999996, 0.0199999996, 0.0199999996, 0.529999971]
+  - Index: 15
+    Color: [0.144708514, 0.210955441, 0.261614293, 1]
+  - Index: 16
+    Color: [0.409999996, 0.409999996, 0.409999996, 1]
+  - Index: 17
+    Color: [0.50999999, 0.50999999, 0.50999999, 1]
+  - Index: 18
+    Color: [0.25999999, 0.589999974, 0.979999959, 1]
+  - Index: 19
+    Color: [0.23999998, 0.519999981, 0.879999995, 1]
+  - Index: 20
+    Color: [0.25999999, 0.589999974, 0.979999959, 1]
+  - Index: 21
+    Color: [0.199999988, 0.204999983, 0.209999979, 1]
+  - Index: 22
+    Color: [0.300000012, 0.305000007, 0.310000002, 1]
+  - Index: 23
+    Color: [0.150000006, 0.1505, 0.150999993, 1]
+  - Index: 24
+    Color: [0.199999988, 0.204999983, 0.209999979, 1]
+  - Index: 25
+    Color: [0.300000012, 0.305000007, 0.310000002, 1]
+  - Index: 26
+    Color: [0.150000006, 0.1505, 0.150999993, 1]
+  - Index: 27
+    Color: [0.430000007, 0.430000007, 0.5, 0.5]
+  - Index: 28
+    Color: [0.100000001, 0.400000006, 0.75, 0.779999971]
+  - Index: 29
+    Color: [0.100000001, 0.400000006, 0.75, 1]
+  - Index: 30
+    Color: [0.25999999, 0.589999974, 0.979999959, 0.200000003]
+  - Index: 31
+    Color: [0.25999999, 0.589999974, 0.979999959, 0.670000017]
+  - Index: 32
+    Color: [0.25999999, 0.589999974, 0.979999959, 0.949999988]
+  - Index: 33
+    Color: [0.150000006, 0.1505, 0.150999993, 1]
+  - Index: 34
+    Color: [0.379999965, 0.380499989, 0.381000012, 1]
+  - Index: 35
+    Color: [0.280000001, 0.280499995, 0.280999988, 1]
+  - Index: 36
+    Color: [0.150000006, 0.1505, 0.150999993, 1]
+  - Index: 37
+    Color: [0.199999988, 0.204999983, 0.209999979, 1]
+  - Index: 38
+    Color: [0.25999999, 0.589999974, 0.979999959, 0.699999988]
+  - Index: 39
+    Color: [0.199999988, 0.199999988, 0.199999988, 1]
+  - Index: 40
+    Color: [0.610000014, 0.610000014, 0.610000014, 1]
+  - Index: 41
+    Color: [0.99999994, 0.430000007, 0.349999994, 1]
+  - Index: 42
+    Color: [0.899999976, 0.699999988, 0, 1]
+  - Index: 43
+    Color: [0.99999994, 0.600000024, 0, 1]
+  - Index: 44
+    Color: [0.189999998, 0.189999998, 0.199999988, 1]
+  - Index: 45
+    Color: [0.310000002, 0.310000002, 0.349999994, 1]
+  - Index: 46
+    Color: [0.229999989, 0.229999989, 0.25, 1]
+  - Index: 47
+    Color: [0, 0, 0, 0]
+  - Index: 48
+    Color: [0.99999994, 0.99999994, 0.99999994, 0.0599999987]
+  - Index: 49
+    Color: [0.25999999, 0.589999974, 0.979999959, 0.349999994]
+  - Index: 50
+    Color: [0.99999994, 0.99999994, 0, 0.899999976]
+  - Index: 51
+    Color: [0.25999999, 0.589999974, 0.979999959, 1]
+  - Index: 52
+    Color: [0.99999994, 0.99999994, 0.99999994, 0.699999988]
+  - Index: 53
+    Color: [0.800000012, 0.800000012, 0.800000012, 0.200000003]
+  - Index: 54
+    Color: [0.800000012, 0.800000012, 0.800000012, 0.349999994]
+Variables:
+  - Index: 0
+    Alpha: 1
+  - Index: 1
+    DisabledAlpha: 0.600000024
+  - Index: 2
+    WindowPadding: [8, 8]
+  - Index: 3
+    WindowRounding: 0.100000001
+  - Index: 4
+    WindowBorderSize: 1
+  - Index: 5
+    WindowMinSize: [32, 32]
+  - Index: 6
+    WindowTitleAlign: [0.100000001, 0.5]
+  - Index: 7
+    WindowMenuButtonPosition: 0
+  - Index: 8
+    ChildRounding: 0.150000006
+  - Index: 9
+    ChildBorderSize: 1
+  - Index: 10
+    PopupRounding: 10.5500002
+  - Index: 11
+    PopupBorderSize: 5.5999999
+  - Index: 12
+    FramePadding: [8.60000038, 3]
+  - Index: 13
+    FrameRounding: 0.100000001
+  - Index: 14
+    FrameBorderSize: 0.100000001
+  - Index: 15
+    ItemSpacing: [4.05000019, 4]
+  - Index: 16
+    ItemInnerSpacing: [4, 4]
+  - Index: 17
+    CellPadding: [4, 2]
+  - Index: 18
+    TouchExtraPadding: [0.100000001, 0.100000001]
+  - Index: 19
+    IndentSpacing: 21
+  - Index: 20
+    ColumnsMinSpacing: 6
+  - Index: 21
+    ScrollbarSize: 12.5500002
+  - Index: 22
+    ScrollbarRounding: 9
+  - Index: 23
+    GrabMinSize: 9.75
+  - Index: 24
+    GrabRounding: 19.5499992
+  - Index: 25
+    LogSliderDeadzone: 4
+  - Index: 26
+    TabRounding: 4
+  - Index: 27
+    TabBorderSize: 0.100000001
+  - Index: 28
+    TabMinWidthForCloseButton: 0.100000001
+  - Index: 29
+    ColorButtonPosition: 1
+  - Index: 30
+    ButtonTextAlign: [0.5, 0.5]
+  - Index: 31
+    SelectableTextAlign: [0.100000001, 0.100000001]
+  - Index: 32
+    DisplayWindowPadding: [19, 19]
+  - Index: 33
+    DisplaySafeAreaPadding: [3, 3]
+  - Index: 34
+    MouseCursorScale: 1
+  - Index: 35
+    AntiAliasedLines: true
+  - Index: 36
+    AntiAliasedLinesUseTex: true
+  - Index: 37
+    AntiAliasedFill: true
+  - Index: 38
+    CurveTessellationTol: 1.25
+  - Index: 39
+    CircleTessellationMaxError: 0.300000012
+  - Index: 40
+    Colors
+Fonts:
+  []

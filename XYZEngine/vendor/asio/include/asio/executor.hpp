@@ -308,7 +308,7 @@ private:
   {
     if (!impl_)
     {
-      bad_executor ex;
+      const bad_executor ex;
       asio::detail::throw_exception(ex);
     }
     return impl_;

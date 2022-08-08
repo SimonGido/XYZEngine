@@ -708,7 +708,7 @@ public:
   bool at_mark() const
   {
     asio::error_code ec;
-    bool b = impl_.get_service().at_mark(impl_.get_implementation(), ec);
+    const bool b = impl_.get_service().at_mark(impl_.get_implementation(), ec);
     asio::detail::throw_error(ec, "at_mark");
     return b;
   }
@@ -741,7 +741,7 @@ public:
   std::size_t available() const
   {
     asio::error_code ec;
-    std::size_t s = impl_.get_service().available(
+    const std::size_t s = impl_.get_service().available(
         impl_.get_implementation(), ec);
     asio::detail::throw_error(ec, "available");
     return s;

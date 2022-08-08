@@ -1,13 +1,18 @@
 #include "stdafx.h"
 #include "Application.h"
 
-
-#include "XYZ/Debug/Timer.h"
 #include "XYZ/Debug/Profiler.h"
 
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Asset/AssetManager.h"
+#include "XYZ/Audio/Audio.h"
 
+
+#include "XYZ/API/Vulkan/VulkanContext.h"
+#include "XYZ/API/Vulkan/VulkanAllocator.h"
+#include "XYZ/API/Vulkan/VulkanRendererAPI.h"
+
+#include "XYZ/ImGui/ImGui.h"
 
 
 #include <GLFW/glfw3.h>
@@ -15,65 +20,86 @@
 #include <GLFW/glfw3native.h>
 
 #include <imgui.h>
+#include <backends/imgui_impl_glfw.h>
 
 namespace XYZ {
 	Application* Application::s_Application = nullptr;
 
-	Application::Application()
+
+	Application::Application(const ApplicationSpecification& specification)
 		:
 		m_LastFrameTime(0.0f),
 		m_Timestep(0.0f),
-		m_ThreadPool(12)
-	{
-		AssetManager::Init();
-		Renderer::Init();
+		m_ThreadPool(11),
+		m_Minimized(false),
+		m_Specification(specification)
+	{	
 		s_Application = this;
 		m_Running = true;
 
-		m_Window = Window::Create();
+		Renderer::Init();
+		m_Window = Window::Create(Renderer::GetAPIContext());
 		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
-		m_Window->SetVSync(0);
+		m_Window->SetVSync(false);
+
+		AssetManager::Init();
+		
+
+		m_ImGuiLayer = nullptr;
+		m_ImGuiLayer = ImGuiLayer::Create();
+		m_LayerStack.PushOverlay(m_ImGuiLayer);
+	
 
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);
 		std::wstring tmp(&NPath[0]);
-		m_ApplicationDir = std::string(tmp.begin(), tmp.end());
-
-		m_ImGuiLayer = new ImGuiLayer();
-		m_LayerStack.PushOverlay(m_ImGuiLayer);	
+		m_ApplicationDir = std::string(tmp.begin(), tmp.end());	
 	}
 
 	Application::~Application()
 	{
-		
+		for (const auto layer : m_LayerStack) // Make sure that layers are deleted before window
+		{
+			layer->OnDetach();
+			delete layer;
+		}
+		m_LayerStack.Clear();
+
+		AssetManager::Shutdown();
+		Audio::ShutDown();
+		Renderer::Shutdown();
 	}
 
 	void Application::Run()
 	{
-		float performance = 0.0f;
 		while (m_Running)
 		{				
-			updateTimestep();
-
 			XYZ_PROFILE_FRAME("MainThread");
-			m_Window->Update();
-			Renderer::WaitAndRender();
-			RefCollector::DeleteInstances();
+			updateTimestep();	
+			m_Window->ProcessEvents();
+			if (!m_Minimized)
+			{				
+				Renderer::BlockRenderThread(); // Sync before new frame				
+				Renderer::Render();
 
-			{
-				
-				for (Layer* layer : m_LayerStack)
-					layer->OnUpdate(m_Timestep);
+				m_Window->BeginFrame();
+				Renderer::BeginFrame();
+				{
+					XYZ_SCOPE_PERF("Application Layer::OnUpdate");
+					for (Layer* layer : m_LayerStack)
+						layer->OnUpdate(m_Timestep);
+				}
+				if (m_Specification.EnableImGui)
+				{
+					Renderer::BlockRenderThread(); // Prevents calling VkSubmitQueue from multiple threads at once
+					onImGuiRender();
+				}
+				Renderer::EndFrame();
+				m_Window->SwapBuffers();
 			}
-						
-			#ifdef IMGUI_BUILD
-			{
-				onImGuiRender();
-			}
-			#endif
-			
+			AssetManager::Update(m_Timestep);
 		}
-		XYZ_PROFILER_SHUTDOWN;
+		onStop();
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -98,7 +124,15 @@ namespace XYZ {
 
 	bool Application::onWindowResized(WindowResizeEvent& event)
 	{
+		const uint32_t width = event.GetWidth(), height = event.GetHeight();	
+		if (width == 0 || height == 0)
+		{
+			m_Minimized = true;
+			return false;
+		}
+		m_Minimized = false;
 		Renderer::SetViewPort(0, 0, event.GetWidth(), event.GetHeight());
+		Renderer::GetAPIContext()->OnResize(event.GetWidth(), event.GetHeight());	
 		return false;
 	}
 
@@ -110,25 +144,86 @@ namespace XYZ {
 
 	void Application::updateTimestep()
 	{
-		float time = (float)glfwGetTime();
+		const float time = static_cast<float>(glfwGetTime());
 		m_Timestep = time - m_LastFrameTime;
 		m_LastFrameTime = time;
 	}
 
 	void Application::onImGuiRender()
 	{
-		m_ImGuiLayer->Begin();
-		if (ImGui::Begin("Stats"))
+		XYZ_PROFILE_FUNC("Application::onImGuiRender");
+		XYZ_SCOPE_PERF("Application::onImGuiRender");
+		if (m_ImGuiLayer)
 		{
-			ImGui::Text("Performance: %.2f ms", m_Timestep.GetMilliseconds());
+			m_ImGuiLayer->Begin();
+			displayPerformance();
+			displayRenderer();
+			for (Layer* layer : m_LayerStack)
+				layer->OnImGuiRender();
+
+			m_ImGuiLayer->End();
+		}
+	}
+
+	void Application::displayPerformance()
+	{
+		if (ImGui::Begin("Performance"))
+		{
+			if (ImGui::BeginTable("##PerformanceTable", 2, ImGuiTableFlags_SizingFixedFit))
+			{
+				UI::TextTableRow("%s", "Frame Time:", "%.2f ms", m_Timestep.GetMilliseconds());
+				auto scopeLockedData = m_Profiler.GetPerformanceData();
+				for (const auto [name, time] : scopeLockedData.As())
+				{
+					UI::TextTableRow("%s:", name, "%.3f ms", time);
+				}
+				ImGui::EndTable();
+			}
 		}
 		ImGui::End();
+	}
 
-		for (Layer* layer : m_LayerStack)
-			layer->OnImGuiRender();
+	void Application::displayRenderer()
+	{
+		if (ImGui::Begin("Renderer"))
+		{
+			auto& caps = Renderer::GetCapabilities();
+			if (ImGui::BeginTable("##RendererTable", 2, ImGuiTableFlags_SizingFixedFit))
+			{
+				UI::TextTableRow("%s", "Vendor:", "%s", caps.Vendor.c_str());
+				UI::TextTableRow("%s", "Renderer:", "%s", caps.Device.c_str());
+				UI::TextTableRow("%s", "Version:", "%s", caps.Version.c_str());
 
-		m_ImGuiLayer->End();
+				ImGui::EndTable();
+			}
+			ImGui::Separator();
+			if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)
+			{
+				if (ImGui::BeginTable("##VulkanAllocatorTable", 2, ImGuiTableFlags_SizingFixedFit))
+				{
+					GPUMemoryStats memoryStats = VulkanAllocator::GetStats();
+					std::string used = Utils::BytesToString(memoryStats.Used);
+					std::string free = Utils::BytesToString(memoryStats.Free);
 
+					UI::TextTableRow("%s", "Used VRAM:", "%s", used.c_str());
+					UI::TextTableRow("%s", "Free VRAM:", "%s", free.c_str());
+					
+					ImGui::EndTable();
+				}
+			}
+			bool vSync = m_Window->IsVSync();
+			if (ImGui::Checkbox("Vsync", &vSync))
+				m_Window->SetVSync(vSync);
+		}
+		ImGui::End();
+	}
+
+	void Application::onStop()
+	{
+		// Make sure we actually finished all commands submitted last frame
+		Renderer::BlockRenderThread(); // Sync before new frame				
+		Renderer::Render();
+		XYZ_PROFILER_SHUTDOWN;
 	}
 
 

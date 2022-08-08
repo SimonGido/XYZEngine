@@ -8,7 +8,7 @@ namespace XYZ {
 		OpenGLShader(const std::string& path);
 		OpenGLShader(const std::string& name, const std::string& path);
 		virtual ~OpenGLShader();
-		virtual void Release() const override;
+		
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1, ComputeBarrierType barrierType = ComputeBarrierType::ShaderStorageBarrier) const override;
@@ -16,9 +16,8 @@ namespace XYZ {
 		virtual void SetFSUniforms(ByteBuffer buffer) const override;
 
 
-		virtual void Reload() override;
-		virtual void AddReloadCallback(std::function<void()> callback) override;
-
+		virtual void Reload(bool forceCompile = false) override;
+	
 		virtual void SetInt(const std::string& name, int value) override;
 		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetFloat2(const std::string& name, const glm::vec2& value) override;
@@ -26,27 +25,26 @@ namespace XYZ {
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 
-		virtual const UniformList& GetVSUniformList() const override { return m_VSUniformList; }
-		virtual const UniformList& GetFSUniformList() const override { return m_FSUniformList; }
+		virtual const UniformList&		  GetVSUniformList() const override { return m_VSUniformList; }
+		virtual const UniformList&		  GetFSUniformList() const override { return m_FSUniformList; }
 		virtual const TextureUniformList& GetTextureList() const override { return m_TextureList; }
 
 		inline virtual const std::string& GetPath() const override { return m_AssetPath; };
 		inline virtual const std::string& GetName() const override { return m_Name; }
-
-		virtual uint32_t GetRendererID() const override { return m_RendererID; }
+		virtual size_t					  GetHash() const override;
+		virtual uint32_t				  GetRendererID() const override { return m_RendererID; }
 	private:
-		void parse();
-		void load(const std::string& source);
-		void parseUniform(const std::string& statement, ShaderType type, const std::vector<ShaderStruct>& structs);
-		void compileAndUpload();
+		void reflect(unsigned int stage, const std::vector<uint32_t>& shaderData);
+		void createProgram();
 		void resolveUniforms();
+		void compileOrGetOpenGLBinaries();
+		void compileOrGetVulkanBinaries();
+		void preProcess(const std::string& source);
+		std::string readFile(const std::string& filepath) const;
+	
 
-		std::unordered_map<uint32_t, std::string> preProcess(const std::string& source);
-
-		void parseSource(uint32_t component,const std::string& source);
-
-		void setUniform(const Uniform* uniform, ByteBuffer data) const;
-		void setUniformArr(const Uniform* uniform, ByteBuffer data) const;
+		void setUniform(const ShaderUniform* uniform, uint32_t location, ByteBuffer data) const;
+		void setUniformArr(const ShaderUniform* uniform, uint32_t location, ByteBuffer data) const;
 
 		void uploadInt (uint32_t loc, int value) const;
 		void uploadFloat(uint32_t loc, float value) const;
@@ -72,12 +70,17 @@ namespace XYZ {
 
 		uint32_t m_NumTakenTexSlots;
 		
-		UniformList m_VSUniformList;
-		UniformList m_FSUniformList;
+		std::vector<uint32_t> m_VSUniformLocations;
+		std::vector<uint32_t> m_FSUniformLocations;
+		UniformList		   m_VSUniformList;
+		UniformList		   m_FSUniformList;
 		TextureUniformList m_TextureList;
 
-		std::vector<std::function<void()>> m_ShaderReloadCallbacks;
-		std::unordered_map<uint32_t, std::string> m_ShaderSources;
+
+		std::unordered_map<uint32_t, std::vector<uint32_t>> m_VulkanSPIRV;
+		std::unordered_map<uint32_t, std::vector<uint32_t>> m_OpenGLSPIRV;
+		std::unordered_map<uint32_t, std::string>			m_OpenGLSourceCode;
+		std::unordered_map<uint32_t, std::string>		    m_ShaderSources;
 
 		// Temporary, in future we will get that information from the GPU
 		static constexpr uint32_t sc_MaxTextureSlots = 32;

@@ -8,11 +8,11 @@ namespace XYZ {
 	namespace Math {
 		std::pair<glm::vec2, glm::vec2> CalculateVelocitiesAfterContact(const glm::vec2& firstVelocity, const glm::vec2& secondVelocity, float firstMass, float secondMass)
 		{
-			glm::vec2 firstMomentum = firstMass * firstVelocity;
-			glm::vec2 secondMomentum = secondMass * secondVelocity;
+			const glm::vec2 firstMomentum = firstMass * firstVelocity;
+			const glm::vec2 secondMomentum = secondMass * secondVelocity;
 
 			glm::vec2 momentum = firstMomentum + secondMomentum;
-			glm::vec2 totalVelocity = firstVelocity + secondVelocity;
+			const glm::vec2 totalVelocity = firstVelocity + secondVelocity;
 
 			glm::vec2 secondFinal = (firstMass * totalVelocity) / (firstMass + secondMass);
 			glm::vec2 firstFinal = secondFinal - totalVelocity;
@@ -35,6 +35,16 @@ namespace XYZ {
 
 			glm::decompose(transform, scale, rotq, translation, skew, perspective);
 			rotation = glm::eulerAngles(rotq);
+		}
+		glm::vec3 TransformToTranslation(const glm::mat4& transform)
+		{
+			glm::vec3 translation, scale;
+			glm::quat rotq;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+
+			glm::decompose(transform, scale, rotq, translation, skew, perspective);
+			return translation;
 		}
 		std::tuple<glm::vec3, glm::vec3, glm::vec3> DecomposeTransform(const glm::mat4& transform)
 		{

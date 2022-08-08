@@ -3,7 +3,6 @@
 #include "Camera.h"
 #include "Material.h"
 #include "Mesh.h"
-#include "SkeletalMesh.h"
 #include "Buffer.h"
 
 namespace XYZ {
@@ -44,7 +43,7 @@ namespace XYZ {
 			template <typename T>
 			Writer& operator << (const T& val)
 			{
-				size_t size = sizeof(T);
+				const size_t size = sizeof(T);
 				memcpy((void*)Ptr, (void*)&val, size);
 				Ptr += size;
 				return *this;
@@ -145,7 +144,7 @@ namespace XYZ {
 		if (s_Data.QuadIndexCount >= s_Data.MaxQuadIndices)
 			Flush();
 
-		glm::vec2 texCoords[quadVertexCount] = {
+		const glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x,texCoord.y},
 			{texCoord.z,texCoord.y},
 			{texCoord.z,texCoord.w},
@@ -168,13 +167,13 @@ namespace XYZ {
 		if (s_Data.QuadIndexCount >= s_Data.MaxQuadIndices)
 			Flush();
 
-		glm::vec2 texCoords[quadVertexCount] = {
+		const glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x,texCoord.y},
 			{texCoord.z,texCoord.y},
 			{texCoord.z,texCoord.w},
 			{texCoord.x,texCoord.w}
 		};
-		glm::vec3 vertices[quadVertexCount] = {
+		const glm::vec3 vertices[quadVertexCount] = {
 			{  position.x - size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
 			{  position.x + size.x / 2.0f,  position.y - size.y / 2.0f, 0.0f},
 			{  position.x + size.x / 2.0f,  position.y + size.y / 2.0f, 0.0f},
@@ -197,13 +196,13 @@ namespace XYZ {
 		if (s_Data.QuadIndexCount >= s_Data.MaxQuadIndices)
 			Flush();
 
-		glm::vec2 texCoords[quadVertexCount] = {
+		const glm::vec2 texCoords[quadVertexCount] = {
 			{texCoord.x,texCoord.y},
 			{texCoord.z,texCoord.y},
 			{texCoord.z,texCoord.w},
 			{texCoord.x,texCoord.w}
 		};
-		glm::vec3 vertices[quadVertexCount] = {
+		const glm::vec3 vertices[quadVertexCount] = {
 			{  position.x ,  position.y, 0.0f},
 			{  position.x + size.x ,  position.y , 0.0f},
 			{  position.x + size.x ,  position.y + size.y, 0.0f},

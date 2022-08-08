@@ -183,8 +183,8 @@ public:
     ASIO_ASSERT(num_buckets_ != 0);
 
     size_t bucket = calculate_hash_value(it->first) % num_buckets_;
-    bool is_first = (it == buckets_[bucket].first);
-    bool is_last = (it == buckets_[bucket].last);
+    const bool is_first = (it == buckets_[bucket].first);
+    const bool is_last = (it == buckets_[bucket].last);
     if (is_first && is_last)
       buckets_[bucket].first = buckets_[bucket].last = values_.end();
     else if (is_first)

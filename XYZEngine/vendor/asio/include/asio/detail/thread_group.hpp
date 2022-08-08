@@ -60,7 +60,7 @@ public:
     while (first_)
     {
       first_->thread_.join();
-      item* tmp = first_;
+      const item* tmp = first_;
       first_ = first_->next_;
       delete tmp;
     }

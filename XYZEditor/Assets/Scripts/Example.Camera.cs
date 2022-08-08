@@ -20,9 +20,8 @@ namespace Example
 
         public void OnUpdate(float ts)
         {
-            Matrix4 transform = GetTransform();
+            TransformComponent transform = GetComponent<TransformComponent>();
             Vector3 translation = transform.Translation;
-
             float speed = Speed * ts;
             if (XYZ.Input.IsKeyPressed(KeyCode.KEY_LEFT))
             {
@@ -42,7 +41,6 @@ namespace Example
                 translation.Y -= speed;
             }
             transform.Translation = translation;
-            SetTransform(transform);
         }
     }
 }

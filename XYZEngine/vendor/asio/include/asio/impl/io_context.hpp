@@ -95,7 +95,7 @@ std::size_t io_context::run_one_until(
       rel_time = chrono::seconds(1);
 
     asio::error_code ec;
-    std::size_t s = impl_.wait_one(
+    const std::size_t s = impl_.wait_one(
         static_cast<long>(chrono::duration_cast<
           chrono::microseconds>(rel_time).count()), ec);
     asio::detail::throw_error(ec);
@@ -175,7 +175,7 @@ struct io_context::initiate_post
 
     detail::non_const_lvalue<LegacyCompletionHandler> handler2(handler);
 
-    bool is_continuation =
+    const bool is_continuation =
       asio_handler_cont_helpers::is_continuation(handler2.value);
 
     // Allocate and construct an operation to wrap the handler.

@@ -13,15 +13,18 @@ namespace XYZ {
 		buffer.Allocate(size);
 		if (vertices)
 			buffer.Write(vertices, size, 0);
-		Renderer::Submit([=]() {
-			glCreateBuffers(1, &m_RendererID);
-			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+
+		Ref<OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance, buffer, size, usage]() mutable {
+			glCreateBuffers(1, &instance->m_RendererID);
+			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
 			switch (usage)
 			{
 			case BufferUsage::Static:    glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW); break;
 			case BufferUsage::Dynamic:   glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_DYNAMIC_DRAW); break;
 			}
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			instance->m_Buffers.EmplaceBack(std::move(buffer));
 		});
 	}
 
@@ -30,12 +33,13 @@ namespace XYZ {
 	{
 		ByteBuffer buffer;
 		buffer.Allocate(size);
-		Renderer::Submit([this, buffer]() mutable {
-			glCreateBuffers(1, &m_RendererID);
-			glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-			glBufferData(GL_ARRAY_BUFFER, m_Size, nullptr, GL_DYNAMIC_DRAW);
+		Ref<OpenGLVertexBuffer> instance = this;
+		Renderer::Submit([instance, buffer]() mutable {
+			glCreateBuffers(1, &instance->m_RendererID);
+			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
+			glBufferData(GL_ARRAY_BUFFER, instance->m_Size, nullptr, GL_DYNAMIC_DRAW);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
-			m_Buffers.EmplaceBack(std::move(buffer));
+			instance->m_Buffers.EmplaceBack(std::move(buffer));
 		});
 	}
 
@@ -45,11 +49,7 @@ namespace XYZ {
 		{
 			ByteBuffer buffer = m_Buffers.PopBack();
 			delete[]buffer;
-		}		
-	}
-
-	void OpenGLVertexBuffer::Release() const
-	{
+		}	
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {
 			glDeleteBuffers(1, &rendererID);
@@ -112,16 +112,32 @@ namespace XYZ {
 		});
 	}
 
-	OpenGLIndexBuffer::OpenGLIndexBuffer(const uint32_t* indices, uint32_t count)
-		: m_Count(count)
+	static uint32_t IndexTypeToSize(IndexType type)
 	{
-		m_LocalData = ByteBuffer::Copy(indices, count * sizeof(uint32_t));
+		switch (type)
+		{
+		case XYZ::IndexType::Uint8:
+			return sizeof(uint8_t);
+		case XYZ::IndexType::Uint16:
+			return sizeof(uint16_t);
+		case XYZ::IndexType::Uint32:
+			return sizeof(uint32_t);
+		}
+		return 0;
+	}
+
+	OpenGLIndexBuffer::OpenGLIndexBuffer(const void* indices, uint32_t count, IndexType type)
+		: 
+		m_Size(count * IndexTypeToSize(type)),
+		m_Count(count)
+	{
+		m_LocalData = ByteBuffer::Copy(indices, m_Size);
 		
 		Ref<OpenGLIndexBuffer> instance = this;
 		Renderer::Submit([instance]() mutable {
 			glCreateBuffers(1, &instance->m_RendererID);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, instance->m_RendererID);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, instance->m_Count * sizeof(unsigned int), instance->m_LocalData, GL_STATIC_DRAW);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, instance->m_Size, instance->m_LocalData, GL_STATIC_DRAW);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		});
 	}
@@ -129,16 +145,12 @@ namespace XYZ {
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	{
 		delete[]m_LocalData;
-		
-	}
-
-	void OpenGLIndexBuffer::Release() const
-	{
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {
 			glDeleteBuffers(1, &rendererID);
 		});
 	}
+
 
 	void OpenGLIndexBuffer::Bind() const
 	{
@@ -157,7 +169,7 @@ namespace XYZ {
 
 
 
-	OpenGLShaderStorageBuffer::OpenGLShaderStorageBuffer(const void* data, uint32_t size, uint32_t binding, BufferUsage usage)
+	OpenGLStorageBuffer::OpenGLStorageBuffer(const void* data, uint32_t size, uint32_t binding, BufferUsage usage)
 		:m_Size(size), m_Binding(binding), m_Usage(usage)
 	{
 		ByteBuffer buffer;
@@ -165,7 +177,7 @@ namespace XYZ {
 		if (data)
 			buffer.Write(data, size, 0);
 
-		Ref<OpenGLShaderStorageBuffer> instance = this;
+		Ref<OpenGLStorageBuffer> instance = this;
 		Renderer::Submit([instance, size, binding, buffer]() mutable {
 			glGenBuffers(1, &instance->m_RendererID);
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, instance->m_RendererID);
@@ -179,26 +191,22 @@ namespace XYZ {
 		});
 	}
 
-	OpenGLShaderStorageBuffer::~OpenGLShaderStorageBuffer()
+	OpenGLStorageBuffer::~OpenGLStorageBuffer()
 	{
 		while (!m_Buffers.Empty())
 		{
 			ByteBuffer buffer = m_Buffers.PopBack();
 			delete[]buffer;
 		}
-	}
-
-	void OpenGLShaderStorageBuffer::Release() const
-	{
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {
 			glDeleteBuffers(1, &rendererID);
 		});
 	}
 
-	void OpenGLShaderStorageBuffer::BindBase(uint32_t binding) const
+	void OpenGLStorageBuffer::BindBase(uint32_t binding) const
 	{
-		Ref<const OpenGLShaderStorageBuffer> instance = this;
+		Ref<const OpenGLStorageBuffer> instance = this;
 		Renderer::Submit([instance, binding]() {
 			glBindBuffer(GL_SHADER_STORAGE_BUFFER, instance->m_RendererID);
 			glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, instance->m_RendererID);
@@ -206,21 +214,21 @@ namespace XYZ {
 	}
 
 
-	void OpenGLShaderStorageBuffer::BindRange(uint32_t offset, uint32_t size) const
+	void OpenGLStorageBuffer::BindRange(uint32_t offset, uint32_t size) const
 	{
-		Ref<const OpenGLShaderStorageBuffer> instance = this;
+		Ref<const OpenGLStorageBuffer> instance = this;
 		Renderer::Submit([instance, offset, size]() {
 			glBindBufferRange(GL_SHADER_STORAGE_BUFFER, instance->m_Binding, instance->m_RendererID, offset, size);
 
 		});
 	}
 
-	void OpenGLShaderStorageBuffer::Bind()const
+	void OpenGLStorageBuffer::Bind()const
 	{
 		Renderer::Submit([=]() {glBindBuffer(GL_ARRAY_BUFFER, m_RendererID); });
 	}
 
-	void OpenGLShaderStorageBuffer::Update(void* data, uint32_t size, uint32_t offset)
+	void OpenGLStorageBuffer::Update(const void* data, uint32_t size, uint32_t offset)
 	{
 		ByteBuffer buffer;
 		if (m_Buffers.Empty())
@@ -230,7 +238,7 @@ namespace XYZ {
 
 		buffer.Write(data, size, offset);
 
-		Ref<OpenGLShaderStorageBuffer> instance = this;
+		Ref<OpenGLStorageBuffer> instance = this;
 		Renderer::Submit([instance, size, offset, buffer]() mutable {
 			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
 			glBufferSubData(GL_ARRAY_BUFFER, offset, size, buffer);
@@ -238,7 +246,7 @@ namespace XYZ {
 		});
 	}
 
-	void OpenGLShaderStorageBuffer::Resize(void* data, uint32_t size)
+	void OpenGLStorageBuffer::Resize(const void* data, uint32_t size)
 	{
 		while (!m_Buffers.Empty())
 		{
@@ -248,7 +256,7 @@ namespace XYZ {
 		ByteBuffer buffer;
 		buffer = ByteBuffer::Copy(data, size);
 
-		Ref<OpenGLShaderStorageBuffer> instance = this;
+		Ref<OpenGLStorageBuffer> instance = this;
 		Renderer::Submit([instance, size, buffer]() mutable {
 			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
 			switch (instance->m_Usage)
@@ -259,10 +267,10 @@ namespace XYZ {
 			instance->m_Buffers.PushBack(buffer);
 		});
 	}
-	void OpenGLShaderStorageBuffer::GetSubData(void** buffer, uint32_t size, uint32_t offset)
+	void OpenGLStorageBuffer::GetSubData(void** buffer, uint32_t size, uint32_t offset)
 	{
 		XYZ_ASSERT(size + offset <= m_Size, "Accesing data out of range");
-		Ref<OpenGLShaderStorageBuffer> instance = this;
+		Ref<OpenGLStorageBuffer> instance = this;
 		Renderer::Submit([instance, buffer, size, offset]() {
 			*buffer = new uint8_t[size];
 			glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, offset, size, buffer);
@@ -286,17 +294,14 @@ namespace XYZ {
 	}
 	OpenGLAtomicCounter::~OpenGLAtomicCounter()
 	{
-		
-	}
-	void OpenGLAtomicCounter::Release() const
-	{
 		uint32_t rendererID = m_RendererID;
-		uint32_t* counters  = m_Counters;
+		uint32_t* counters = m_Counters;
 		Renderer::Submit([rendererID, counters]() {
 			glDeleteBuffers(1, &rendererID);
 			delete[]counters;
 		});
 	}
+
 	void OpenGLAtomicCounter::Reset()
 	{
 		Ref<OpenGLAtomicCounter> instance = this;
@@ -351,14 +356,12 @@ namespace XYZ {
 	}
 	OpenGLIndirectBuffer::~OpenGLIndirectBuffer()
 	{
-	}
-	void OpenGLIndirectBuffer::Release() const
-	{
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {
-			glDeleteBuffers(1, &rendererID); 
+			glDeleteBuffers(1, &rendererID);
 		});
 	}
+
 	void OpenGLIndirectBuffer::Bind()const
 	{
 		Renderer::Submit([this]() {glBindBuffer(GL_DRAW_INDIRECT_BUFFER, m_RendererID); });
@@ -373,6 +376,8 @@ namespace XYZ {
 
 
 	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t size, uint32_t binding)
+		:
+		m_Binding(binding)
 	{
 		Ref<OpenGLUniformBuffer> instance = this;
 		Renderer::Submit([instance, size, binding]() mutable {
@@ -383,10 +388,6 @@ namespace XYZ {
 	}
 
 	OpenGLUniformBuffer::~OpenGLUniformBuffer()
-	{
-	}
-
-	void OpenGLUniformBuffer::Release() const
 	{
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {

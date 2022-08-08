@@ -30,6 +30,8 @@ namespace XYZ {
 		const uint32_t GetPixelsize() const { return m_PixelSize; }
 		const uint32_t GetLineHeight() const { return m_LineHeight; }
 		const std::string& GetFilepath() const { return m_Filepath; }
+
+		static AssetType GetStaticType() { return AssetType::Font; }
 	private:
 		uint32_t m_PixelSize;
 		uint32_t m_LineHeight;

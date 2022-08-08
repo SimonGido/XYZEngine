@@ -60,10 +60,9 @@ namespace XYZ {
 	}
 #endif
 
-	OpenGLAPIContext::OpenGLAPIContext(GLFWwindow* windowHandle)
-		: m_WindowHandle(windowHandle)
+	OpenGLAPIContext::OpenGLAPIContext()
+		: m_WindowHandle(nullptr)
 	{
-		XYZ_ASSERT(windowHandle, "Window handle is null!");
 	}
 
 	OpenGLAPIContext::~OpenGLAPIContext()
@@ -71,39 +70,45 @@ namespace XYZ {
 		
 	}
 
-	void OpenGLAPIContext::Init()
-	{		
-		glfwMakeContextCurrent(m_WindowHandle);
-		
-		XYZ_CORE_INFO("OpenGL Info:");
-		XYZ_CORE_INFO("Vendor:   {0}", glGetString(GL_VENDOR));
-		XYZ_CORE_INFO("Renderer: {0}", glGetString(GL_RENDERER));
-		XYZ_CORE_INFO("Version:  {0}", glGetString(GL_VERSION));
+	void OpenGLAPIContext::Init(GLFWwindow* window)
+	{
+		XYZ_ASSERT(window, "Window handle is null!");
+		m_WindowHandle = window;
+		Ref<OpenGLAPIContext> instance = this;
+		Renderer::SubmitAndWait([instance]() {
+			glfwMakeContextCurrent(instance->m_WindowHandle);
 
-		if (glewInit() != GLEW_OK)
-		{
-			XYZ_CORE_ERROR("OpenGLContext: Could not initialize glew");
-		};
-		glLoadIdentity();
+			XYZ_CORE_INFO("OpenGL Info:");
+			XYZ_CORE_INFO("Vendor:   {0}", glGetString(GL_VENDOR));
+			XYZ_CORE_INFO("Device:   {0}", glGetString(GL_RENDERER));
+			XYZ_CORE_INFO("Version:  {0}", glGetString(GL_VERSION));
+
+			if (glewInit() != GLEW_OK)
+			{
+				XYZ_CORE_ERROR("OpenGLContext: Could not initialize glew");
+			};
+			glLoadIdentity();
 
 
-#ifdef XYZ_DEBUG
-		if (glDebugMessageCallback)
-		{
-			glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-			glEnable(GL_DEBUG_OUTPUT);
+			#ifdef XYZ_DEBUG
+			if (glDebugMessageCallback)
+			{
+				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+				glEnable(GL_DEBUG_OUTPUT);
 
-			glDebugMessageCallback(OpenglCallbackFunction, nullptr);
-			GLuint unusedIds = 0;
-			glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unusedIds, true);
-		}
-		glfwSetErrorCallback(GLFWErrorCallback);
-#endif
+				glDebugMessageCallback(OpenglCallbackFunction, nullptr);
+				const GLuint unusedIds = 0;
+				glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, &unusedIds, true);
+			}
+			glfwSetErrorCallback(GLFWErrorCallback);
+			#endif
+		});
 	}
 
 	void OpenGLAPIContext::SwapBuffers()
 	{
 		glfwSwapBuffers(m_WindowHandle);
 	}
+
 
 }

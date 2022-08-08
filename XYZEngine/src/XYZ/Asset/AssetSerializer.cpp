@@ -1,814 +1,566 @@
 #include "stdafx.h"
 #include "AssetSerializer.h"
 
-#include "XYZ/Renderer/Texture.h"
-#include "XYZ/Renderer/SubTexture.h"
-#include "XYZ/Renderer/Material.h"
-#include "XYZ/Renderer/Font.h"
-#include "XYZ/Renderer/SkeletalMesh.h"
-#include "XYZ/Scene/Scene.h"
-#include "XYZ/Scene/Components.h"
-#include "XYZ/Animation/Animation.h"
-
-
 #include "XYZ/Scene/SceneSerializer.h"
-#include "XYZ/Utils/FileSystem.h"
-#include "XYZ/Utils/YamlUtils.h"
+#include "XYZ/Scene/Prefab.h"
+
+#include "XYZ/Renderer/Renderer.h"
+#include "XYZ/Renderer/Mesh.h"
+#include "XYZ/Renderer/SubTexture.h"
+
+#include "Renderer/MeshSource.h"
+#include "Renderer/MaterialAsset.h"
+#include "Renderer/ShaderAsset.h"
+
 #include "AssetManager.h"
 
-#include <yaml-cpp/yaml.h>
-
-
-#include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
-
-
-namespace YAML {
-
-	template<>
-	struct convert<XYZ::TreeNode>
-	{
-		static Node encode(const XYZ::TreeNode& rhs)
-		{
-			Node node;
-			node.push_back(rhs.ID);
-			node.push_back(rhs.Parent);
-			node.push_back(rhs.FirstChild);
-			node.push_back(rhs.NextSibling);
-			node.push_back(rhs.PreviousSibling);
-	
-			return node;
-		}
-
-		static bool decode(const Node& node, XYZ::TreeNode& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 5)
-				return false;
-
-			rhs.ID = node[0].as<int32_t>();
-			rhs.Parent = node[1].as<int32_t>();
-			rhs.FirstChild = node[2].as<int32_t>();
-			rhs.NextSibling = node[3].as<int32_t>();
-			rhs.PreviousSibling = node[4].as<int32_t>();
-
-			return true;
-		}
-	};
-	template<>
-	struct convert<XYZ::AnimatedVertex>
-	{
-		static Node encode(const XYZ::AnimatedVertex& rhs)
-		{
-			Node node;
-			node.push_back(rhs.Position.x);
-			node.push_back(rhs.Position.y);
-			node.push_back(rhs.Position.z);
-			node.push_back(rhs.TexCoord.x);
-			node.push_back(rhs.TexCoord.y);
-			for (size_t i = 0; i < 4; ++i)
-			{
-				node.push_back(rhs.BoneData.Weights[i]);
-				node.push_back(rhs.BoneData.IDs[i]);
-			}
-		
-			return node;
-		}
-
-		static bool decode(const Node& node, XYZ::AnimatedVertex& rhs)
-		{
-			if (!node.IsSequence() || node.size() != 13)
-				return false;
-
-			rhs.Position.x = node[0].as<float>();
-			rhs.Position.y = node[1].as<float>();
-			rhs.Position.z = node[2].as<float>();
-			rhs.TexCoord.x = node[3].as<float>();
-			rhs.TexCoord.y = node[4].as<float>();
-
-			size_t counter = 5;
-			for (size_t i = 0; i < 4; ++i)
-			{
-				rhs.BoneData.Weights[i] = node[counter++].as<float>();
-				rhs.BoneData.IDs[i] = node[counter++].as<uint32_t>();
-			}
-			
-			return true;
-		}
-	};
-}
+#include "XYZ/Utils/YamlUtils.h"
 
 
 namespace XYZ {
-	YAML::Emitter& operator<<(YAML::Emitter& out, const TreeNode& node)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq
-			<< node.ID
-			<< node.Parent
-			<< node.FirstChild
-			<< node.NextSibling
-			<< node.PreviousSibling
-			<< YAML::EndSeq;
-		return out;
+	namespace Utils {
+		static std::string ImageFormatToString(ImageFormat format)
+		{
+			switch (format)
+			{
+			case XYZ::ImageFormat::None:
+				break;
+			case XYZ::ImageFormat::RED32F:
+				return "RED32F";
+				break;
+			case XYZ::ImageFormat::RGB:
+				return "RGB";
+				break;
+			case XYZ::ImageFormat::RGBA:
+				return "RGBA";
+				break;
+			case XYZ::ImageFormat::RGBA16F:
+				return "RGBA16F";
+				break;
+			case XYZ::ImageFormat::RGBA32F:
+				return "RGBA32F";
+				break;
+			case XYZ::ImageFormat::RG16F:
+				return "RG16F";
+				break;
+			case XYZ::ImageFormat::RG32F:
+				return "RG32F";
+				break;
+			case XYZ::ImageFormat::SRGB:
+				return "SRGB";
+				break;
+			case XYZ::ImageFormat::DEPTH32F:
+				return "DEPTH32F";
+				break;
+			case XYZ::ImageFormat::DEPTH24STENCIL8:
+				return "DEPTH24STENCIL8";
+				break;
+			}
+			XYZ_ASSERT(false, "");
+			return std::string();
+		}
+		static ImageFormat StringToImageFormat(const std::string& format)
+		{
+			if (format == "RED32F")
+				return ImageFormat::RED32F;
+			if (format == "RGB")
+				return ImageFormat::RGB;
+			if (format == "RGBA")
+				return ImageFormat::RGBA;
+			if (format == "RGBA16F")
+				return ImageFormat::RGBA16F;
+			if (format == "RGBA32F")
+				return ImageFormat::RGBA32F;
+			if (format == "RG16F")
+				return ImageFormat::RG16F;
+			if (format == "RG32F")
+				return ImageFormat::RG32F;
+			if (format == "SRGB")
+				return ImageFormat::SRGB;
+			if (format == "DEPTH32F")
+				return ImageFormat::DEPTH32F;
+			if (format == "DEPTH24STENCIL8")
+				return ImageFormat::DEPTH24STENCIL8;
+		}
 	}
 
-	YAML::Emitter& operator<<(YAML::Emitter& out, const Tree& tree)
-	{		
-		out << YAML::Value << YAML::BeginSeq;
-		for (int32_t i = 0; i < tree.GetFlatNodes().Range(); ++i)
+
+	void SceneAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+		SceneSerializer serializer;
+		serializer.Serialize(metadata.FilePath.string(), asset.As<Scene>());
+	}
+	bool SceneAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		SceneSerializer serializer;
+		asset = serializer.Deserialize(metadata.FilePath.string());
+		return true;
+	}
+
+	void ShaderAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+		WeakRef<ShaderAsset> shaderAsset = asset.As<ShaderAsset>();
+		Ref<Shader> shader = shaderAsset->GetShader();
+		const auto& layouts = shaderAsset->GetLayouts();
+
+
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "Name" << shader->GetName();
+		out << YAML::Key << "FilePath" << shader->GetPath();
+		out << YAML::Key << "SourceHash" << shaderAsset->GetSourceHash();
+		out << YAML::Key << "Layouts" << YAML::BeginSeq;
+		for (const auto& layout : layouts)
 		{
-			if (tree.IsNodeValid(i))
+			out << YAML::BeginMap;
+			out << YAML::Key << "Instanced" << layout.Instanced();
+			out << YAML::Key << "Elements" << YAML::BeginSeq;
+			out << YAML::Flow;
+			for (const auto& element : layout)
 			{
-				const TreeNode& node = tree.GetFlatNodes()[i];
-				out << node;
+				out << static_cast<uint32_t>(element.Type);
+			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
+		std::ofstream fout(metadata.FilePath);
+		fout << out.c_str();
+		fout.flush();
+	}
+	bool ShaderAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+		std::string name = data["Name"].as<std::string>();
+		std::string filePath = data["FilePath"].as<std::string>();
+		const size_t sourceHash = data["SourceHash"].as<size_t>();
+
+		std::vector<BufferLayout> layouts;
+		for (auto layoutData : data["Layouts"])
+		{
+			bool instanced = layoutData["Instanced"].as<bool>();
+			std::vector<BufferElement> elements;
+			for (auto elementData : layoutData["Elements"])
+			{
+				ShaderDataType type = static_cast<ShaderDataType>(elementData.as<uint32_t>());
+				elements.push_back({ type, "" });
+			}
+			layouts.emplace_back(elements, instanced);
+		}
+
+
+		asset = Ref<ShaderAsset>::Create(name, filePath, sourceHash, layouts);
+		return true;
+	}
+
+	void MaterialAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+		WeakRef<MaterialAsset> material = asset.As<MaterialAsset>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Shader" << material->GetShaderAsset()->GetHandle();
+		out << YAML::Key << "Opaque" << material->IsOpaque();
+		out << YAML::Key << "Textures" << YAML::BeginSeq;
+		for (const auto& texture : material->GetTextures())
+		{
+			if (texture.Texture.Raw())
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Name" << texture.Name;
+				out << YAML::Key << "Handle" << texture.Texture->GetHandle();
+				out << YAML::EndMap;
 			}
 		}
 		out << YAML::EndSeq;
-		return out;
-	}
 
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const AnimatedVertex& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq 
-			<< v.Position.x << v.Position.y << v.Position.z 
-			<< v.TexCoord.x << v.TexCoord.y
-			<< v.BoneData.Weights[0] << v.BoneData.IDs[0]
-			<< v.BoneData.Weights[1] << v.BoneData.IDs[1]
-			<< v.BoneData.Weights[2] << v.BoneData.IDs[2]
-			<< v.BoneData.Weights[3] << v.BoneData.IDs[3]
-			<< YAML::EndSeq;
-		return out;
-	}
-
-	// TODO: Temporary
-	static void CopyAsset(Ref<Asset> target, const Ref<Asset>& source)
-	{
-		target->DirectoryHandle = source->DirectoryHandle;
-		target->FileExtension = source->FileExtension;
-		target->FilePath = source->FilePath;
-		target->FileName = source->FileName;
-		target->Type = source->Type;
-		target->Handle = source->Handle;
-		target->IsLoaded = source->IsLoaded;
-	}
-	static YAML::Emitter& ToVec2(YAML::Emitter& out, const glm::vec2& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << YAML::EndSeq;
-		return out;
-	}
-	
-	static YAML::Emitter& ToVec3(YAML::Emitter& out, const glm::vec3& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
-		return out;
-	}
-	
-	static YAML::Emitter& ToVec4(YAML::Emitter& out, const glm::vec4& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
-		return out;
-	}
-
-	static YAML::Emitter& ToQuat(YAML::Emitter& out, const glm::quat& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.w << v.x << v.y << v.z << YAML::EndSeq;
-		return out;
-	}
-
-	enum class FieldType
-	{
-		Float,
-		Float2,
-		Float3,
-		Float4,
-		Int,
-		None
-	};
-
-	static FieldType FindType(const std::string& str)
-	{
-		char tokenComma = ',';
-		size_t numCommas = std::count(str.begin(), str.end(), tokenComma);
-		char tokenDot = '.';
-		size_t numDots = std::count(str.begin(), str.end(), tokenDot);
-
-		switch (numCommas)
+		out << YAML::Key << "TextureArrays" << YAML::BeginSeq;
+		for (const auto& textureArr : material->GetTextureArrays())
 		{
-		case 0:
-			if (numDots)
-				return FieldType::Float;
-			else
-				return FieldType::Int;
-		case 1:
-			return FieldType::Float2;
-		case 2:
-			return FieldType::Float3;
-		case 3:
-			return FieldType::Float4;
-		}
-
-		XYZ_ASSERT(false, "Wrong type");
-		return FieldType::None;
-	}
-	static TextureWrap IntToTextureWrap(int wrap)
-	{
-		if (wrap == ToUnderlying(TextureWrap::Clamp))
-			return TextureWrap::Clamp;
-		if (wrap == ToUnderlying(TextureWrap::Repeat))
-			return TextureWrap::Repeat;
-
-
-		return TextureWrap::None;
-	}
-	static TextureParam IntToTextureParam(int param)
-	{
-		if (param == ToUnderlying(TextureParam::Nearest))
-			return TextureParam::Nearest;
-		if (param == ToUnderlying(TextureParam::Linear))
-			return TextureParam::Linear;
-
-		return TextureParam::None;
-	}
-	static void SerializeUniformList(YAML::Emitter& out, const uint8_t* buffer, const std::vector<Uniform>& uniformList)
-	{
-		for (auto& uniform : uniformList)
-		{
-			switch (uniform.DataType)
-			{
-			case UniformDataType::Float:
-				out << YAML::BeginMap;
-				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(float*)&buffer[uniform.Offset];
-				out << YAML::EndMap;
-				break;
-			case UniformDataType::Vec2:
-				out << YAML::BeginMap;
-				out << YAML::Key << uniform.Name;
-				out << YAML::Value;
-				ToVec2(out, *(glm::vec2*)&buffer[uniform.Offset]);
-				out << YAML::EndMap;
-				break;
-			case UniformDataType::Vec3:
-				out << YAML::BeginMap;
-				out << YAML::Key << uniform.Name;
-				out << YAML::Value;
-				ToVec3(out, *(glm::vec3*)&buffer[uniform.Offset]);
-				out << YAML::EndMap;
-				break;
-			case UniformDataType::Vec4:
-				out << YAML::BeginMap;
-				out << YAML::Key << uniform.Name;
-				out << YAML::Value;
-				ToVec4(out, *(glm::vec4*)&buffer[uniform.Offset]);
-				out << YAML::EndMap;
-				break;
-			case UniformDataType::Int:
-				out << YAML::BeginMap;
-				out << YAML::Key << uniform.Name;
-				out << YAML::Value << *(int*)&buffer[uniform.Offset];
-				out << YAML::EndMap;
-				break;
-			case UniformDataType::Mat4:
-				break;
-			};
-		}
-	}
-
-
-
-	template<>
-	void AssetSerializer::serialize<Texture2D>(const Ref<Asset>& asset)
-	{
-		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<Texture2D> texture = Ref<Texture2D>((Texture2D*)asset.Raw());
-		
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		
-		out << YAML::Key << "Texture" << YAML::Value << asset->FileName;
-		out << YAML::Key << "TextureFilePath" << YAML::Value << texture->GetFilepath();
-		out << YAML::Key << "Width" << YAML::Value << texture->GetWidth();
-		out << YAML::Key << "Height" << YAML::Value << texture->GetHeight();
-		out << YAML::Key << "Channels" << YAML::Value << texture->GetChannelSize();
-		out << YAML::Key << "Wrap" << YAML::Value << ToUnderlying(texture->GetSpecification().Wrap);
-		out << YAML::Key << "Param Min" << YAML::Value << ToUnderlying(texture->GetSpecification().MinParam);
-		out << YAML::Key << "Param Max" << YAML::Value << ToUnderlying(texture->GetSpecification().MagParam);
-		
-		std::ofstream fout(asset->FilePath);
-		fout << out.c_str();
-	}
-
-
-	template <>
-	void AssetSerializer::serialize<SubTexture>(const Ref<Asset>& asset)
-	{
-		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<SubTexture> subTexture = Ref<SubTexture>((SubTexture*)asset.Raw());
-		
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "SubTexture" << YAML::Value << subTexture->FileName;
-		out << YAML::Key << "TextureAsset" << YAML::Value << subTexture->GetTexture()->Handle;
-		out << YAML::Key << "TexCoords" << YAML::Value << subTexture->GetTexCoords();
-		out << YAML::EndMap;
-		
-		std::ofstream fout(subTexture->FilePath);
-		fout << out.c_str();
-	}
-
-	template <>
-	void AssetSerializer::serialize<Shader>(const Ref<Asset>& asset)
-	{
-		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<Shader> shader = Ref<Shader>((Shader*)asset.Raw());
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Shader" << YAML::Value << asset->FileName;
-		out << YAML::Key << "ShaderFilePath" << YAML::Value << shader->GetPath();
-		std::ofstream fout(asset->FilePath);
-		fout << out.c_str();
-	}
-
-	template <>
-	void AssetSerializer::serialize<Material>(const Ref<Asset>& asset)
-	{
-		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<Material> material = Ref<Material>((Material*)asset.Raw());
-
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "Material" << YAML::Value << asset->FileName;
-		out << YAML::Key << "ShaderAsset" << YAML::Value << material->GetShader()->Handle;
-		out << YAML::Key << "RenderQueueID" << YAML::Value << material->GetRenderQueueID();
-		out << YAML::Key << "Textures";
-		out << YAML::Value << YAML::BeginSeq;
-		uint32_t counter = 0;
-		for (auto& texture : material->GetTextures())
-		{
-			if (!texture.Raw())
-			{
-				counter++;
-				continue;
-			}
 			out << YAML::BeginMap;
-			out << YAML::Key << "TextureAsset" << YAML::Value << texture->Handle; 
-			out << YAML::Key << "TextureIndex" << YAML::Value << counter++;
+			out << YAML::Key << "Name" << textureArr.Name;
+			out << YAML::Key << "Textures" << YAML::BeginSeq;
+			out << YAML::Flow;
+			for (const auto& texture : textureArr.Textures)
+			{
+				if (texture.Raw())
+					out << texture->GetHandle();
+			}
+			out << YAML::EndSeq;
 			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;
 
-		out << YAML::Key << "Values";
-		out << YAML::Value << YAML::BeginSeq;
-
-		SerializeUniformList(out, material->GetVSUniformBuffer(), material->GetShader()->GetVSUniformList().Uniforms);
-		SerializeUniformList(out, material->GetFSUniformBuffer(), material->GetShader()->GetFSUniformList().Uniforms);
-
-		out << YAML::EndSeq;
+		out << YAML::Key << "MaterialData" << YAML::BeginSeq;
+		auto shader = material->GetShader();
+		for (auto& [name, buffer] : shader->GetBuffers())
+		{
+			for (auto& [uniName, uni] : buffer.Uniforms)
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Name" << uniName;
+				out << YAML::Key << "Type" << static_cast<uint32_t>(uni.GetDataType());
+				switch (uni.GetDataType())
+				{
+				case ShaderUniformDataType::Int:     out << YAML::Key << "Value" << material->Get<int>(uniName);  break;
+				case ShaderUniformDataType::UInt:    out << YAML::Key << "Value" << material->Get<uint32_t>(uniName);  break;
+				case ShaderUniformDataType::Float:   out << YAML::Key << "Value" << material->Get<float>(uniName);  break;
+				case ShaderUniformDataType::Vec2:    out << YAML::Key << "Value" << material->Get<glm::vec2>(uniName);  break;
+				case ShaderUniformDataType::Vec3:    out << YAML::Key << "Value" << material->Get<glm::vec3>(uniName);  break;
+				case ShaderUniformDataType::Vec4:    out << YAML::Key << "Value" << material->Get<glm::vec4>(uniName);  break;
+				//case ShaderUniformDataType::Mat3:    materialAsset->Set<glm::mat3>(name, uniform["Value"].as<glm::mat3>()); break;
+				//case ShaderUniformDataType::Mat4:    materialAsset->Set<glm::mat4>(name, uniform["Value"].as<glm::mat4>()); break;
+				}
+				out << YAML::EndMap;
+			}
+		}
+		out << YAML::EndSeq;	
 		out << YAML::EndMap;
 
-		std::ofstream fout(material->FilePath);
+		std::ofstream fout(metadata.FilePath);
 		fout << out.c_str();
+		fout.flush();
 	}
-
-
-	template <>
-	void AssetSerializer::serialize<Font>(const Ref<Asset>& asset)
+	bool MaterialAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<Font> font = Ref<Font>((Font*)asset.Raw());
-		YAML::Emitter out;
-		out << YAML::BeginMap; // Font
-		
-		out << YAML::Key << "Font" << YAML::Value << font->FileName;
-		out << YAML::Key << "FontPath" << YAML::Value << font->GetFilepath();
-		out << YAML::Key << "PixelSize" << YAML::Value << font->GetPixelsize();
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
 
-		out << YAML::EndMap; // Font
+		AssetHandle shaderHandle = AssetHandle(data["Shader"].as<std::string>());
+		Ref<ShaderAsset> shaderAsset = AssetManager::GetAsset<ShaderAsset>(shaderHandle);
+		Ref<MaterialAsset> materialAsset = Ref<MaterialAsset>::Create(shaderAsset);
 
-		std::ofstream fout(asset->FilePath);
-		fout << out.c_str();
-	}
-
-	template <>
-	void AssetSerializer::serialize<SkeletalMesh>(const Ref<Asset>& asset)
-	{
-		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<SkeletalMesh> mesh = Ref<SkeletalMesh>((SkeletalMesh*)asset.Raw());
-		YAML::Emitter out;
-		out << YAML::BeginMap; // Skeletal Mesh
-
-		
-		out << YAML::Key << "SkeletalMesh" << YAML::Value << asset->FileName;
-		out << YAML::Key << "MaterialAsset" << YAML::Value << mesh->GetMaterial()->Handle;
-		out << YAML::Key << "AnimatedVertices" << YAML::Value << mesh->GetVertices();
-		out << YAML::Key << "Indices" << YAML::Value << mesh->GetIndicies();
-		//out << YAML::Key << "Hierarchy" << YAML::Value << mesh->GetBoneHierarchy();
-		//out << YAML::Key << "Bones" << YAML::Value << mesh->GetBones();
-
-		out << YAML::EndMap; // Skeletal Mesh
-
-		std::ofstream fout(asset->FilePath);
-		fout << out.c_str();	
-	}
-
-	template <>
-	void AssetSerializer::serialize<Scene>(const Ref<Asset>& asset)
-	{
-		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<Scene> scene = Ref<Scene>((Scene*)asset.Raw());
-		
-		SceneSerializer sceneSerializer(scene);
-		sceneSerializer.Serialize();
-	}
-
-	template <typename T>
-	static void SerializePropertyContainer(const std::vector<T>& properties, YAML::Emitter& out)
-	{
-		out << YAML::Value << YAML::BeginSeq;
-		for (const auto& it : properties)
+		auto opaque = data["Opaque"];
+		if (opaque)
 		{
-			out << YAML::BeginMap; // Property
-			out << YAML::Key << "ComponentName" << YAML::Value << it.GetComponentName();
-			out << YAML::Key << "ValueName" << YAML::Value << it.GetValueName();
-			out << YAML::Key << "Entity" << YAML::Value << it.GetSceneEntity().GetComponent<IDComponent>().ID;
-			out << YAML::Key << "KeyFrames";
-			out << YAML::BeginSeq;
-			for (const auto& key : it.GetKeyFrames())
+			materialAsset->SetOpaque(opaque.as<bool>());
+		}
+
+		for (auto texture : data["Textures"])
+		{
+			GUID handle(texture["Handle"].as<std::string>());
+			auto name = texture["Name"].as<std::string>();
+			if (AssetManager::Exist(handle))
 			{
-				out << YAML::BeginMap; // KeyFrame
-				out << YAML::Key << "Value" << YAML::Value << key.Value;
-				out << YAML::Key << "Frame" << YAML::Value << key.Frame;			
-				out << YAML::EndMap;   // KeyFrame
+				materialAsset->SetTexture(name, AssetManager::GetAsset<Texture2D>(handle));
 			}
-			out << YAML::EndSeq;
-			out << YAML::EndMap; // Property
-		}
-		out << YAML::EndSeq;
-	}
-	
-
-	template <>
-	void AssetSerializer::serialize<Animation>(const Ref<Asset>& asset)
-	{
-		XYZ_ASSERT(!asset->FilePath.empty(), "Filepath is empty");
-		Ref<Animation> anim = Ref<Animation>((Animation*)asset.Raw());
-		YAML::Emitter out;
-		out << YAML::BeginMap; // Animation
-		
-		out << YAML::Key << "NumFrames" << YAML::Value << anim->GetNumFrames();
-		out << YAML::Key << "Frequency" << YAML::Value << anim->GetFrequency();
-		out << YAML::Key << "Repeat" << YAML::Value << anim->GetRepeat();
-
-		out << YAML::Key << "Vec4Properties";
-		SerializePropertyContainer(anim->GetVec4Properties(), out);
-		out << YAML::Key << "Vec3Properties";
-		SerializePropertyContainer(anim->GetVec3Properties(), out);
-		out << YAML::Key << "Vec2Properties";
-		SerializePropertyContainer(anim->GetVec2Properties(), out);
-		out << YAML::Key << "FloatProperties";
-		SerializePropertyContainer(anim->GetFloatProperties(), out);
-		out << YAML::Key << "PointerProperties";
-		SerializePropertyContainer(anim->GetPointerProperties(), out);
-	
-		out << YAML::EndMap; // Animation
-
-		std::ofstream fout(asset->FilePath);
-		fout << out.c_str();	
-	}
-
-	template <>
-	Ref<Asset> AssetSerializer::deserialize<Texture2D>(const Ref<Asset>& asset)
-	{
-		std::ifstream stream(asset->FilePath);
-		TextureSpecs specs;
-		
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
-		YAML::Node data = YAML::Load(strStream.str());
-	
-		XYZ_ASSERT(data["Texture"], "Incorrect file format");
-
-		uint32_t width = data["Width"].as<uint32_t>();
-		uint32_t height = data["Height"].as<uint32_t>();
-		uint32_t channels = data["Channels"].as<uint32_t>();
-
-		specs.Wrap = IntToTextureWrap(data["Wrap"].as<int>());
-		specs.MinParam = IntToTextureParam(data["Param Min"].as<int>());
-		specs.MagParam = IntToTextureParam(data["Param Max"].as<int>());
-			
-		std::string textureFilePath = data["TextureFilePath"].as<std::string>();
-		Ref<Texture2D> texture;
-		if (!textureFilePath.empty())
-		{
-			texture = Texture2D::Create(specs, textureFilePath);			
-		}
-
-		CopyAsset(texture.As<Asset>(), asset);
-		return texture.As<Asset>();
-	}
-
-	template <>
-	Ref<Asset> AssetSerializer::deserialize<SubTexture>(const Ref<Asset>& asset)
-	{
-		std::ifstream stream(asset->FilePath);
-		std::stringstream strStream;
-		if (!stream)
-			XYZ_ERROR("Could not load asset {0}", strerror(errno));
-		strStream << stream.rdbuf();
-		YAML::Node data = YAML::Load(strStream.str());
-
-		XYZ_ASSERT(data["SubTexture"], "Incorrect file format ");
-		GUID textureHandle(data["TextureAsset"].as<std::string>());
-
-		auto texture = AssetManager::GetAsset<Texture2D>(textureHandle);
-		glm::vec4 texCoords = data["TexCoords"].as<glm::vec4>();
-		auto ref = Ref<SubTexture>::Create(texture, texCoords);
-		CopyAsset(ref.As<Asset>(), asset);
-		
-		return ref.As<Asset>();
-	}
-
-	template <>
-	Ref<Asset> AssetSerializer::deserialize<Shader>(const Ref<Asset>& asset)
-	{
-		std::ifstream stream(asset->FilePath);
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
-		YAML::Node data = YAML::Load(strStream.str());
-
-		Ref<Shader> shader =Shader::Create(data["ShaderFilePath"].as<std::string>());
-		CopyAsset(shader.As<Asset>(), asset);
-		return shader;
-	}
-
-	template <>
-	Ref<Asset> AssetSerializer::deserialize<Material>(const Ref<Asset>& asset)
-	{
-		std::ifstream stream(asset->FilePath);
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
-		YAML::Node data = YAML::Load(strStream.str());
-
-		GUID shaderHandle(data["ShaderAsset"].as<std::string>());
-		auto shader = AssetManager::GetAsset<Shader>(shaderHandle);
-
-		Ref<Material> material = Ref<Material>::Create(shader);
-		CopyAsset(material.As<Asset>(), asset);
-		material->SetRenderQueueID(data["RenderQueueID"].as<uint8_t>());
-		for (auto& seq : data["Textures"])
-		{
-			GUID textureHandle(seq["TextureAsset"].as<std::string>());
-			uint32_t index = seq["TextureIndex"].as<uint32_t>();
-			Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
-			material->SetTexture("u_Texture", texture, index);
-		}
-
-		for (auto& seq : data["Values"])
-		{
-			for (auto& val : seq)
+			else
 			{
-				std::stringstream ss;
-				ss << val.second;
-				auto type = FindType(ss.str());
+				XYZ_CORE_WARN("Missing texture!");
+				materialAsset->SetTexture(name, Renderer::GetDefaultResources().WhiteTexture);
+			}
+		}
+		auto textureArrays = data["TextureArrays"];
+		for (auto textureArr : textureArrays)
+		{
+			auto name = textureArr["Name"].as<std::string>();
+			uint32_t index = 0;
+			for (auto texture : textureArr["Textures"])
+			{
+				GUID handle(texture.as<std::string>());
+				if (AssetManager::Exist(handle))
+				{
+					materialAsset->SetTexture(name, AssetManager::GetAsset<Texture2D>(handle), index);
+				}
+				else
+				{
+					XYZ_CORE_WARN("Missing texture!");
+					materialAsset->SetTexture(name, Renderer::GetDefaultResources().WhiteTexture, index);
+				}
+				index++;
+			}
+		}
+		auto materialData = data["MaterialData"];
+		if (materialData)
+		{
+			for (auto& uniform : materialData)
+			{
+				const std::string name = uniform["Name"].as<std::string>();
+				const ShaderUniformDataType type = static_cast<ShaderUniformDataType>(uniform["Type"].as<uint32_t>());
 				switch (type)
 				{
-				case FieldType::Float:
-					material->Set(val.first.as<std::string>(), val.second.as<float>());
-					break;
-				case FieldType::Float2:
-					material->Set(val.first.as<std::string>(), val.second.as<glm::vec2>());
-					break;
-				case FieldType::Float3:
-					material->Set(val.first.as<std::string>(), val.second.as<glm::vec3>());
-					break;
-				case FieldType::Float4:
-					material->Set(val.first.as<std::string>(), val.second.as<glm::vec4>());
-					break;
-				case FieldType::None:
-					break;
+				case ShaderUniformDataType::Int:     materialAsset->Set<int>(	   name, uniform["Value"].as<int>()); break;
+				case ShaderUniformDataType::UInt:    materialAsset->Set<uint32_t>( name, uniform["Value"].as<uint32_t>()); break;
+				case ShaderUniformDataType::Float:   materialAsset->Set<float>(	   name, uniform["Value"].as<float>()); break;
+				case ShaderUniformDataType::Vec2:    materialAsset->Set<glm::vec2>(name, uniform["Value"].as<glm::vec2>()); break;
+				case ShaderUniformDataType::Vec3:    materialAsset->Set<glm::vec3>(name, uniform["Value"].as<glm::vec3>()); break;
+				case ShaderUniformDataType::Vec4:    materialAsset->Set<glm::vec4>(name, uniform["Value"].as<glm::vec4>()); break;
+				//case ShaderUniformDataType::Mat3:    materialAsset->Set<glm::mat3>(name, uniform["Value"].as<glm::mat3>()); break;
+				//case ShaderUniformDataType::Mat4:    materialAsset->Set<glm::mat4>(name, uniform["Value"].as<glm::mat4>()); break;
 				}
 			}
 		}
-		return material;
-	}
-	template <>
-	Ref<Asset> AssetSerializer::deserialize<Font>(const Ref<Asset>& asset)
-	{
-		std::ifstream stream(asset->FilePath);
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
-		YAML::Node data = YAML::Load(strStream.str());
-
-		XYZ_ASSERT(data["Font"], "Incorrect file format");
-		uint32_t pixelSize = data["PixelSize"].as<uint32_t>();
-		std::string fontPath = data["FontPath"].as<std::string>();
-
-		auto ref = Ref<Font>::Create(pixelSize, fontPath);
-		CopyAsset(ref.As<Asset>(), asset);
-		return ref.As<Font>();
+		asset = materialAsset;
+		return true;
 	}
 
 	
-	template <>
-	Ref<Asset> AssetSerializer::deserialize<SkeletalMesh>(const Ref<Asset>& asset)
+
+	void TextureAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
 	{
-		std::ifstream stream(asset->FilePath);
+		WeakRef<Texture2D> texture = asset.As<Texture2D>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+	
+		out << YAML::Key << "Image Path" << texture->GetPath();
+		out << YAML::Key << "Format" << static_cast<uint32_t>(texture->GetFormat());
+		out << YAML::Key << "Width" << texture->GetWidth();
+		out << YAML::Key << "Height" << texture->GetHeight();
+		out << YAML::Key << "MipLevelCount" << texture->GetMipLevelCount();
+		const auto& props = texture->GetProperties();
+		out << YAML::Key << "SamplerWrap" << static_cast<uint32_t>(props.SamplerWrap);
+		out << YAML::Key << "SamplerFilter" << static_cast<uint32_t>(props.SamplerFilter);
+		out << YAML::Key << "GenerateMips" << props.GenerateMips;
+		out << YAML::Key << "SRGB" << props.SRGB;
+		out << YAML::Key << "Storage" << props.Storage;
+
+		out << YAML::EndMap;
+
+		std::ofstream fout(metadata.FilePath);
+		fout << out.c_str();
+		fout.flush();
+	}
+	bool TextureAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		std::ifstream stream(metadata.FilePath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
-		GUID materialHandle(data["MaterialAsset"].as<std::string>());
-		Ref<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+		std::string imagePath = data["Image Path"].as<std::string>();
+		uint32_t width = data["Width"].as<uint32_t>();
+		uint32_t height = data["Height"].as<uint32_t>();
+		
+		TextureProperties props{};
+		ImageFormat format = static_cast<ImageFormat>(data["Format"].as<uint32_t>());
+		props.SamplerWrap = static_cast<TextureWrap>(data["SamplerWrap"].as<uint32_t>());
+		props.SamplerFilter = static_cast<TextureFilter>(data["SamplerFilter"].as<uint32_t>());
 
-		std::vector<AnimatedVertex> vertices = data["AnimatedVertices"].as<std::vector<AnimatedVertex>>();
-		std::vector<uint32_t> indices = data["Indices"].as<std::vector<uint32_t>>();
+		props.GenerateMips = data["GenerateMips"].as<bool>();
+		props.SRGB = data["SRGB"].as<bool>();
+		props.Storage = data["Storage"].as<bool>();
 
-		auto ref = Ref<SkeletalMesh>::Create(
-			std::move(vertices), 
-			std::move(indices), 
-			material
-		);
-		CopyAsset(ref.As<Asset>(), asset);
-		return ref.As<Font>();
+		
+		asset = Texture2D::Create(imagePath, props);
+		return true;
 	}
 
-	template <>
-	Ref<Asset> AssetSerializer::deserialize<Scene>(const Ref<Asset>& asset)
+	void MeshSourceAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
 	{
-		Ref<Scene> result = Ref<Scene>::Create("");
-		CopyAsset(result.As<Asset>(), asset);
+		WeakRef<MeshSource> meshSource = asset.As<MeshSource>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
 
-		SceneSerializer sceneSerializer(result);
-		sceneSerializer.Deserialize();
-
-		return result;
-	}
-
-	/*
-			out << YAML::BeginMap; // Property
-			out << YAML::Key << "ComponentName" << YAML::Value << it.GetComponentName();
-			out << YAML::Key << "ValueName" << YAML::Value << it.GetValueName();
-			out << YAML::Key << "KeyFrames";
-			out << YAML::BeginSeq;
-			for (const auto& key : it.GetKeyFrames())
+		if (!meshSource->GetSourceFilePath().empty())
+			out << YAML::Key << "SourceFilePath" << meshSource->GetSourceFilePath();
+		else
+		{
+			out << YAML::Key << "Vertices" << YAML::Value << YAML::BeginSeq;
+			for (auto& vertex : meshSource->GetVertices())
 			{
-				out << YAML::BeginMap; // KeyFrame
-				out << YAML::Key << "Value" << YAML::Value << key.Value;
-				out << YAML::Key << "Frame" << YAML::Value << key.Frame;			
-				out << YAML::EndMap;   // KeyFrame
+				out << YAML::BeginMap;
+				out << YAML::Key << "Position" << vertex.Position;
+				out << YAML::Key << "TexCoord" << vertex.TexCoord;
+				out << YAML::EndMap;
 			}
 			out << YAML::EndSeq;
-			out << YAML::EndMap; // Property
-	*/
 
-	template <typename T>
-	static void DeserializeProperties(Ref<Animation>& anim, YAML::Node& data)
-	{
-		for (auto& it : data)
-		{
-			anim->AddProperty()
+			out << YAML::Key << "AnimatedVertices" << YAML::Value << YAML::BeginSeq;
+			for (auto& vertex : meshSource->GetAnimatedVertices())
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Position" << vertex.Position;
+				out << YAML::Key << "TexCoord" << vertex.TexCoord;
+				out << YAML::Key << "BoneIDs" << glm::ivec4(vertex.IDs[0], vertex.IDs[1], vertex.IDs[2], vertex.IDs[3]);
+				out << YAML::Key << "Weights" << glm::vec4(vertex.Weights[0], vertex.Weights[1], vertex.Weights[2], vertex.Weights[3]);
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+
+			out << YAML::Key << "Indices" << YAML::Value << YAML::BeginSeq;
+			out << YAML::Flow;
+			for (auto index : meshSource->GetIndices())
+			{
+				out << index;
+			}
+			out << YAML::EndSeq;
 		}
+		
+
+		out << YAML::EndMap;
+
+		std::ofstream fout(metadata.FilePath);
+		fout << out.c_str();
+		fout.flush();
 	}
 
-	template <>
-	Ref<Asset> AssetSerializer::deserialize<Animation>(const Ref<Asset>& asset)
+
+	bool MeshSourceAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
-		std::ifstream stream(asset->FilePath);
+		std::ifstream stream(metadata.FilePath);
 		std::stringstream strStream;
 		strStream << stream.rdbuf();
 		YAML::Node data = YAML::Load(strStream.str());
 
-		Ref<Animation> result = Ref<Animation>::Create();
-		CopyAsset(result.As<Asset>(), asset);
-
-		result->SetNumFrames(data["NumFrames"].as<uint32_t>());
-		result->SetFrequency(data["Frequency"].as<uint32_t>());
-		result->SetRepeat(data["Repeat"].as<bool>());
-
-		auto& vec4Props    = data["Vec4Properties"];
-		auto& vec3Props    = data["Vec3Properties"];
-		auto& vec2Props    = data["Vec2Properties"];
-		auto& floatProps   = data["FloatProperties"];
-		auto& pointerProps = data["PointerProperties"];
-
-		return Ref<Asset>();
-	}
-
-	Ref<Asset> AssetSerializer::LoadAssetMeta(const std::string& filepath, const GUID& directoryHandle, AssetType type)
-	{
-		Ref<Asset> asset = Ref<Asset>::Create();
-
-		std::string extension = Utils::GetExtension(filepath);
-		asset->FilePath = filepath;
-		std::replace(asset->FilePath.begin(), asset->FilePath.end(), '\\', '/');
-
-		bool hasMeta = FileSystem::Exists(asset->FilePath + ".meta");
-		if (hasMeta)
+		auto sourceFilePath = data["SourceFilePath"];
+		if (sourceFilePath)
 		{
-			AssetSerializer::loadMetaFile(asset);
+			asset = Ref<MeshSource>::Create(sourceFilePath.as<std::string>());
 		}
 		else
 		{
-			asset->Handle = GUID();
-			asset->Type = type;
+			std::vector<Vertex> vertices;
+			std::vector<AnimatedVertex> animVertices;
+			std::vector<uint32_t> indices;
+
+			for (auto it : data["Vertices"])
+			{
+				Vertex vertex;
+				vertex.Position = it["Position"].as<glm::vec3>();
+				vertex.TexCoord = it["TexCoord"].as<glm::vec2>();
+				vertices.push_back(vertex);
+			}
+			for (auto it : data["AnimatedVertices"])
+			{
+				AnimatedVertex vertex;
+				vertex.Position = it["Position"].as<glm::vec3>();
+				vertex.TexCoord = it["TexCoord"].as<glm::vec2>();
+				glm::ivec4 ids = it["BoneIDs"].as<glm::ivec4>();
+				glm::vec4 weights = it["Weights"].as<glm::vec4>();
+				vertex.IDs[0] = ids.x;
+				vertex.IDs[1] = ids.y;
+				vertex.IDs[2] = ids.z;
+				vertex.IDs[3] = ids.w;
+
+				vertex.Weights[0] = weights.x;
+				vertex.Weights[1] = weights.y;
+				vertex.Weights[2] = weights.z;
+				vertex.Weights[3] = weights.w;
+
+				animVertices.push_back(vertex);
+			}
+			for (auto it : data["Indices"])
+			{
+				indices.push_back(it.as<uint32_t>());
+			}
+			if (!vertices.empty())
+				asset = Ref<MeshSource>::Create(vertices, indices);
+			else
+				asset = Ref<MeshSource>::Create(animVertices, indices);
 		}
-
-		asset->FileExtension = extension;
-		asset->FileName = Utils::RemoveExtension(Utils::GetFilename(filepath));
-		asset->DirectoryHandle = directoryHandle;
-		asset->IsLoaded = false;
-
-		if (!hasMeta)
-			createMetaFile(asset);
-
-		return asset;
-
+		return true;
 	}
-	void AssetSerializer::SerializeAsset(const Ref<Asset>& asset)
-	{
-		switch (asset->Type)
-		{
-		case AssetType::Scene:
-			serialize<Scene>(asset);
-			break;
-		case AssetType::Texture:
-			serialize<Texture2D>(asset);
-			break;
-		case AssetType::SubTexture:
-			serialize<SubTexture>(asset);
-			break;
-		case AssetType::Material:
-			serialize<Material>(asset);
-			break;
-		case AssetType::Shader:
-			serialize<Shader>(asset);
-			break;
-		case AssetType::Font:
-			serialize<Font>(asset);
-			break;
-		case AssetType::SkeletalMesh:
-			serialize<SkeletalMesh>(asset);
-			break;
-		case AssetType::Animation:
-			serialize<Animation>(asset);
-			break;
-		}
-		createMetaFile(asset);
-	}
-	Ref<Asset> AssetSerializer::LoadAsset(Ref<Asset>& asset)
-	{
-		switch (asset->Type)
-		{
-		case AssetType::Scene:
-			return deserialize<Scene>(asset);
-		case AssetType::Texture:
-			return deserialize<Texture2D>(asset);
-		case AssetType::SubTexture:
-			return deserialize<SubTexture>(asset);
-		case AssetType::Material:
-			return deserialize<Material>(asset);
-		case AssetType::Shader:
-			return deserialize<Shader>(asset);
-		case AssetType::Font:
-			return deserialize<Font>(asset);
-		case AssetType::SkeletalMesh:
-			return deserialize<SkeletalMesh>(asset);
-		case AssetType::Animation:
-			return deserialize<Animation>(asset);
-		}	
-		XYZ_ASSERT(false, "");
-		return Ref<Asset>();
-	}
-	void AssetSerializer::loadMetaFile(Ref<Asset>& asset)
-	{
-		std::ifstream stream(asset->FilePath + ".meta");
-		std::stringstream strStream;
-		strStream << stream.rdbuf();
 
-		YAML::Node data = YAML::Load(strStream.str());
-		XYZ_ASSERT(data["Asset"], "Invalid File Format");
-
-		asset->Handle = GUID(data["Asset"].as<std::string>());
-		asset->FilePath = data["FilePath"].as<std::string>();
-		asset->Type = (AssetType)data["Type"].as<int>();
-	}
-	void AssetSerializer::createMetaFile(const Ref<Asset>& asset)
+	void MeshAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
 	{
+		WeakRef<Mesh> mesh = asset.As<Mesh>();
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "Asset" << YAML::Value << (std::string)asset->Handle;
-		out << YAML::Key << "FilePath" << YAML::Value << asset->FilePath;
-		out << YAML::Key << "Type" << YAML::Value << (int)asset->Type;
+
+		out << YAML::Key << "MeshSource" << mesh->GetMeshSource()->GetHandle();
+
+
 		out << YAML::EndMap;
 
-		std::ofstream fout(asset->FilePath + ".meta");
+		std::ofstream fout(metadata.FilePath);
 		fout << out.c_str();
+		fout.flush();
+	}
 
+	bool MeshAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+		AssetHandle meshSourceHandle(data["MeshSource"].as<std::string>());
+		asset = Ref<Mesh>::Create(AssetManager::GetAsset<MeshSource>(meshSourceHandle));
+		return true;
+	}
+
+	void AnimatedMeshAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+		WeakRef<AnimatedMesh> mesh = asset.As<AnimatedMesh>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "MeshSource" << mesh->GetMeshSource()->GetHandle();
+
+
+		out << YAML::EndMap;
+
+		std::ofstream fout(metadata.FilePath);
+		fout << out.c_str();
+		fout.flush();
+	}
+
+	bool AnimatedMeshAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+		AssetHandle meshSourceHandle(data["MeshSource"].as<std::string>());
+		asset = Ref<AnimatedMesh>::Create(AssetManager::GetAsset<MeshSource>(meshSourceHandle));
+		return true;
+	}
+	void PrefabAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+		WeakRef<Prefab> prefab = asset.As<Prefab>();
+
+		SceneSerializer serializer;
+		serializer.Serialize(metadata.FilePath.string(), prefab->m_Scene);
+	}
+	bool PrefabAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		Ref<Prefab> prefab = Ref<Prefab>::Create();
+
+		SceneSerializer serializer;
+		prefab->m_Scene = serializer.Deserialize(metadata.FilePath.string());
+		prefab->m_Scene->GetRegistry().each([&](const entt::entity entity) {
+			prefab->m_Entities.push_back({ entity, prefab->m_Scene.Raw() });
+		});
+		asset = prefab;
+		return true;
+	}
+	void SubTextureSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+		WeakRef<SubTexture> subTexture = asset.As<SubTexture>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Texture" << subTexture->GetTexture()->GetHandle();
+		out << YAML::Key << "TexCoords" << subTexture->GetTexCoords();
+
+		out << YAML::EndMap;
+
+		std::ofstream fout(metadata.FilePath);
+		fout << out.c_str();
+		fout.flush();
+	}
+	bool SubTextureSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+
+
+		AssetHandle textureHandle(data["Texture"].as<std::string>());
+		Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
+		glm::vec4 texCoords = data["TexCoords"].as<glm::vec4>();
+		asset = Ref<SubTexture>::Create(texture, texCoords);
+
+		return true;
 	}
 }

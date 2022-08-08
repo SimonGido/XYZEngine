@@ -22,3 +22,9 @@
 [submodule "XYZEngine/vendor/optick"]
 	path = XYZEngine/vendor/optick
 	url = https://github.com/SimonGido/optick.git
+[submodule "XYZEngine/vendor/ozz-animation"]
+	path = XYZEngine/vendor/ozz-animation
+	url = https://github.com/SimonGido/ozz-animation.git
+[submodule "XYZEngine/vendor/entt"]
+	path = XYZEngine/vendor/entt
+	url = https://github.com/SimonGido/entt.git

@@ -392,7 +392,7 @@ private:
     {
       --iter;
       buffer_type buffer = *iter;
-      std::size_t buffer_size = buffer.size();
+      const std::size_t buffer_size = buffer.size();
       if (buffer_size > 0)
       {
         current_ = iter;
@@ -411,7 +411,7 @@ private:
       ASIO_ASSERT(current_ != end_ && "iterator out of bounds");
       for (;;)
       {
-        std::ptrdiff_t current_buffer_balance
+        const std::ptrdiff_t current_buffer_balance
           = current_buffer_.size() - current_buffer_position_;
 
         // Check if the advance can be satisfied by the current buffer.
@@ -471,7 +471,7 @@ private:
         {
           --iter;
           buffer_type buffer = *iter;
-          std::size_t buffer_size = buffer.size();
+          const std::size_t buffer_size = buffer.size();
           if (buffer_size > 0)
           {
             current_ = iter;

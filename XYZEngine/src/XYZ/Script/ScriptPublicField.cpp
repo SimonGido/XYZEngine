@@ -33,147 +33,132 @@ namespace XYZ {
 	}
 
 
-	PublicField::PublicField(const std::string& name, PublicFieldType type)
+
+	PublicField::PublicField(const std::string& name, PublicFieldType type, 
+		uint32_t offset, ByteBuffer* data, uint32_t instanceHandle, MonoClassField* monoClassField)
 		:
+		m_MonoClassField(monoClassField),
+		m_Size(GetFieldSize(type)),
+		m_Offset(offset),
+		m_Data(data),
+		m_InstanceHandle(instanceHandle),
 		m_Name(name),
 		m_Type(type)
 	{
-		m_StoredValueBuffer = allocateBuffer(GetFieldSize(type));
-	}
-
-	PublicField::PublicField(const PublicField& other)
-		:
-		m_Name(other.m_Name),
-		m_Type(other.m_Type),
-		m_Size(other.m_Size)
-	{
-		m_Handle = other.m_Handle;
-		m_MonoClassField = other.m_MonoClassField;
-
-		if (m_StoredValueBuffer && m_Type != PublicFieldType::String)
-			delete[]m_StoredValueBuffer;
-
-		m_StoredValueBuffer = allocateBuffer(other.m_Size);
-		memcpy(m_StoredValueBuffer, other.m_StoredValueBuffer, other.m_Size);
-	}
-
-	PublicField::PublicField(PublicField&& other) noexcept
-		:
-		m_Name(std::move(other.m_Name)),
-		m_Type(other.m_Type),
-		m_Size(other.m_Size)
-	{
-		m_Handle = other.m_Handle;
-		m_MonoClassField = other.m_MonoClassField;
-		m_StoredValueBuffer = other.m_StoredValueBuffer;
-
-		other.m_MonoClassField = nullptr;
-		other.m_StoredValueBuffer = nullptr;
-	}
-	PublicField::~PublicField()
-	{
-		if (m_StoredValueBuffer && m_Type != PublicFieldType::String)
-			delete[]m_StoredValueBuffer;
-	}
-
-	PublicField& PublicField::operator=(const PublicField& other)
-	{
-		if (m_StoredValueBuffer && m_Type != PublicFieldType::String)
-			delete[]m_StoredValueBuffer;
-		
-		m_Name = other.m_Name;
-		m_Type = other.m_Type;
-		m_Handle = other.m_Handle;
-		m_MonoClassField = other.m_MonoClassField;
-
-		m_StoredValueBuffer = allocateBuffer(GetFieldSize(m_Type));
-		memcpy(m_StoredValueBuffer, other.m_StoredValueBuffer, GetFieldSize(other.m_Type));
-		return *this;
 	}
 
 	void PublicField::CopyStoredValueToRuntime() const
 	{
-		mono_field_set_value(GetInstance(m_Handle), m_MonoClassField, m_StoredValueBuffer);
+		if (m_Type == PublicFieldType::String)
+		{
+			setRuntimeString_Internal(getStrData());
+		}
+		else
+		{
+			setRuntimeValue_Internal(getData());
+		}
 	}
 
 	void PublicField::StoreRuntimeValue()
 	{
 		if (m_Type != PublicFieldType::String)
-			getRuntimeValue_Internal(m_StoredValueBuffer);
+		{
+			getRuntimeValue_Internal(getData());
+		}
 		else
 		{
-			delete[]m_StoredValueBuffer;
-			getRuntimeString_Internal((char**)&m_StoredValueBuffer);
+			getRuntimeString_Internal(getStrData());
 		}
 	}
 
 	void PublicField::SetStoredValueRaw(void* src)
 	{
-		uint32_t size = GetFieldSize(m_Type);
-		memcpy(m_StoredValueBuffer, src, size);
-
+		memcpy(getData(), src, m_Size);
 	}
-	uint8_t* PublicField::allocateBuffer(uint32_t size) const
-	{
-		m_Size = size;
-		uint8_t* buffer = new uint8_t[m_Size];
-		memset(buffer, 0, size);
-		return buffer;
-	}
+	
 	void PublicField::setStoredValue_Internal(void* value) const
 	{
-		uint32_t size = GetFieldSize(m_Type);
-		memcpy(m_StoredValueBuffer, value, size);
+		memcpy(getData(), value, m_Size);
 	}
 	void PublicField::getStoredValue_Internal(void* outValue) const
 	{
-		uint32_t size = GetFieldSize(m_Type);
-		memcpy(outValue, m_StoredValueBuffer, size);
-	}
-	void PublicField::setStoredString_Internal(const char* value) const
-	{
-		size_t size = strlen(value) + 1;
-		if (m_Size < size)
-		{
-			delete[]m_StoredValueBuffer;
-			m_StoredValueBuffer = allocateBuffer((uint32_t)size);
-		}
-		memcpy(m_StoredValueBuffer, value, size);
-	}
-	void PublicField::getStoredString_Internal(char** outValue) const
-	{
-		size_t size = strlen((char*)m_StoredValueBuffer) + 1;
-		*outValue = new char[size];
-		memcpy(*outValue, m_StoredValueBuffer, size);
+		memcpy(outValue, getData(), m_Size);
 	}
 
 	void PublicField::setRuntimeValue_Internal(void* value) const
 	{
-		auto instance = GetInstance(m_Handle);
+		const auto instance = GetInstance(m_InstanceHandle);
 		XYZ_ASSERT(instance, "");
 		mono_field_set_value(instance, m_MonoClassField, value);
 
 	}
 	void PublicField::getRuntimeValue_Internal(void* outValue) const
 	{
-		auto instance = GetInstance(m_Handle);
+		const auto instance = GetInstance(m_InstanceHandle);
 		XYZ_ASSERT(instance, "");
 		mono_field_get_value(instance, m_MonoClassField, outValue);
 	}
-	void PublicField::setRuntimeString_Internal(const char* value) const
+	void PublicField::setRuntimeString_Internal(const std::string& value) const
 	{
-		MonoString* string = mono_string_new(ScriptEngine::GetMonoDomain(), value);
-		auto instance = GetInstance(m_Handle);
+		MonoString* string = mono_string_new(ScriptEngine::GetMonoDomain(), value.c_str());
+		const auto instance = GetInstance(m_InstanceHandle);
 		XYZ_ASSERT(instance, "");
 		mono_field_set_value(instance, m_MonoClassField, string);
 	}
-	void PublicField::getRuntimeString_Internal(char** outValue) const
+	void PublicField::getRuntimeString_Internal(std::string& outValue) const
 	{
-		auto instance = GetInstance(m_Handle);
+		const auto instance = GetInstance(m_InstanceHandle);
 		XYZ_ASSERT(instance, "");
 		MonoString* string = nullptr;
+	
 		mono_field_get_value(instance, m_MonoClassField, &string);
-		*outValue = mono_string_to_utf8(string);
+		outValue = mono_string_to_utf8(string);
+	}
+
+	void* PublicField::getData() const
+	{
+		return &m_Data->Data[m_Offset];
+	}
+
+	std::string& PublicField::getStrData() const
+	{
+		return *(std::string*)getData();
+	}
+
+
+	void PublicFieldData::CreateBuffer()
+	{
+		const uint32_t size = m_Fields.back().m_Size + m_Fields.back().m_Offset;
+		m_Data.Allocate(size);
+		m_Data.ZeroInitialize();
+
+		// We must construct strings before using them
+		for (auto& field : m_Fields)
+		{
+			if (field.m_Type == PublicFieldType::String)
+			{
+				new (field.getData())std::string();
+			}
+		}
+		for (auto& field : m_Fields)
+			field.StoreRuntimeValue();
+	}
+
+
+	void PublicFieldData::AddField(const std::string& name, PublicFieldType type, uint32_t instanceHandle, MonoClassField* monoClassField)
+	{
+		uint32_t offset = 0;
+		if (!m_Fields.empty())
+		{
+			auto& lastField = m_Fields.back();
+			offset = lastField.m_Offset + lastField.m_Size;
+		}
+		m_Fields.emplace_back(name, type, offset, &m_Data, instanceHandle, monoClassField);
+	}
+
+	void PublicFieldData::Clear()
+	{
+		m_Fields.clear();
 	}
 
 }

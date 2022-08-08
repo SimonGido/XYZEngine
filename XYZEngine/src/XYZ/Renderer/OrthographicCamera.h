@@ -12,15 +12,15 @@ namespace XYZ {
 		void SetProjection(float left, float right, float bottom, float top);
 
 		const glm::vec3& GetPosition() const { return m_Position; }
-		void SetPosition(const glm::vec3& position) { m_Position = position; recalculateViewMatrix(); }
+		void SetPosition(const glm::vec3& position) { m_Position = position; recalculate(); }
 
 		float GetRotation() const { return m_Rotation; }
-		void SetRotation(float rotation) { m_Rotation = rotation; recalculateViewMatrix(); }
+		void SetRotation(float rotation) { m_Rotation = rotation; recalculate(); }
 
 		const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
 		const glm::mat4& GetViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
 	private:
-		void recalculateViewMatrix();
+		void recalculate();
 	private:
 		glm::mat4 m_ViewMatrix;
 		glm::mat4 m_ViewProjectionMatrix;

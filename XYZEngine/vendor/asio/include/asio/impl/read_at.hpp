@@ -81,7 +81,7 @@ inline std::size_t read_at(SyncRandomAccessReadDevice& d,
     uint64_t offset, const MutableBufferSequence& buffers)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read_at(
+  const std::size_t bytes_transferred = read_at(
       d, offset, buffers, transfer_all(), ec);
   asio::detail::throw_error(ec, "read_at");
   return bytes_transferred;
@@ -102,8 +102,8 @@ inline std::size_t read_at(SyncRandomAccessReadDevice& d,
     CompletionCondition completion_condition)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read_at(d, offset, buffers,
-      ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
+  const std::size_t bytes_transferred = read_at(d, offset, buffers,
+                                                ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
   asio::detail::throw_error(ec, "read_at");
   return bytes_transferred;
 }
@@ -140,7 +140,7 @@ inline std::size_t read_at(SyncRandomAccessReadDevice& d,
     uint64_t offset, asio::basic_streambuf<Allocator>& b)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read_at(
+  const std::size_t bytes_transferred = read_at(
       d, offset, b, transfer_all(), ec);
   asio::detail::throw_error(ec, "read_at");
   return bytes_transferred;
@@ -161,8 +161,8 @@ inline std::size_t read_at(SyncRandomAccessReadDevice& d,
     CompletionCondition completion_condition)
 {
   asio::error_code ec;
-  std::size_t bytes_transferred = read_at(d, offset, b,
-      ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
+  const std::size_t bytes_transferred = read_at(d, offset, b,
+                                                ASIO_MOVE_CAST(CompletionCondition)(completion_condition), ec);
   asio::detail::throw_error(ec, "read_at");
   return bytes_transferred;
 }

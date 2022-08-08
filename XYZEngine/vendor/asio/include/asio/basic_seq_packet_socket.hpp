@@ -363,7 +363,7 @@ public:
       socket_base::message_flags flags)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().send(
+    const std::size_t s = this->impl_.get_service().send(
         this->impl_.get_implementation(), buffers, flags, ec);
     asio::detail::throw_error(ec, "send");
     return s;
@@ -478,7 +478,7 @@ public:
       socket_base::message_flags& out_flags)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().receive_with_flags(
+    const std::size_t s = this->impl_.get_service().receive_with_flags(
         this->impl_.get_implementation(), buffers, 0, out_flags, ec);
     asio::detail::throw_error(ec, "receive");
     return s;
@@ -525,7 +525,7 @@ public:
       socket_base::message_flags& out_flags)
   {
     asio::error_code ec;
-    std::size_t s = this->impl_.get_service().receive_with_flags(
+    const std::size_t s = this->impl_.get_service().receive_with_flags(
         this->impl_.get_implementation(), buffers, in_flags, out_flags, ec);
     asio::detail::throw_error(ec, "receive");
     return s;

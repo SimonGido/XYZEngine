@@ -2,10 +2,10 @@ project "XYZEngine"
 		kind "StaticLib"
 		language "C++"
 		cppdialect "C++17"
-		staticruntime "on"
+		staticruntime "off"
 
-		targetdir("bin/" .. outputdir .. "/%{prj.name}")
-		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+		targetdir("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+		objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
 		pchheader "stdafx.h"
 		pchsource "src/stdafx.cpp"
@@ -38,7 +38,11 @@ project "XYZEngine"
 			"vendor/ImGuizmo/ImCurveEdit.cpp",
 
 			"vendor/ImGuizmo/ImSequencer.h",
-			"vendor/ImGuizmo/ImSequencer.cpp"
+			"vendor/ImGuizmo/ImSequencer.cpp",
+
+			"vendor/VulkanMemoryAllocator/**.h",
+			"vendor/VulkanMemoryAllocator/**.cpp"
+
 		}
 
 		defines
@@ -52,9 +56,14 @@ project "XYZEngine"
 		includedirs
 		{
 			"src",
+			"vendor",
 			"vendor/stb_image",		
 			"vendor/assimp/include",
 			"vendor/spdlog/include",
+			"%{IncludeDir.entt}",
+			"%{IncludeDir.ozz_animation}",
+			"%{IncludeDir.Assimp}",
+			"%{IncludeDir.delaunator}",
 			"%{IncludeDir.ImGui}",
 			"%{IncludeDir.ImGuizmo}",
 			"%{IncludeDir.yaml}",
@@ -67,12 +76,10 @@ project "XYZEngine"
 			"%{IncludeDir.MiniMp3}",	
 			"%{IncludeDir.FreeType}/include",
 			"%{IncludeDir.Asio}",
-			"%{IncludeDir.Lua}",
-			"%{IncludeDir.Sol}",
 			"%{IncludeDir.mono}",
-			"%{IncludeDir.TrianglePP}",
 			"%{IncludeDir.box2d}",
-			"%{IncludeDir.optick}"
+			"%{IncludeDir.optick}",
+			"%{IncludeDir.VulkanSDK}"
 		}
 
 		links
@@ -81,13 +88,17 @@ project "XYZEngine"
 			"GLFW",
 			"OpenAL-Soft",
 			"FreeType",
-			"Lua",
 			"opengl32",
-			"TrianglePP",
-			"imgui",
+			"ImGui",
 			"box2d",
 			"optick",
-			"%{LibraryDir.mono}"
+			"ozz_base",
+			"ozz_animation",
+			"ozz_animation_offline",   
+			"%{LibraryDir.mono}",
+			"%{Library.Vulkan}",
+			"%{Library.VulkanUtils}"
+
 		}
 		
 		flags { "NoPCH" }
@@ -96,8 +107,8 @@ project "XYZEngine"
 				systemversion "latest"
 		files
 		{
-			"src/Platform/Windows/**.h",
-			"src/Platform/Windows/**.cpp",
+			"src/XYZ/Platform/Windows/**.h",
+			"src/XYZ/Platform/Windows/**.cpp",
 		}
 
 		filter "configurations:Debug"
@@ -105,8 +116,24 @@ project "XYZEngine"
 				runtime "Debug"
 				symbols "on"
 
+				links
+				{
+					"%{Library.Assimp_Debug}",
+					"%{Library.ShaderC_Debug}",
+					"%{Library.SPIRV_Cross_Debug}",
+					"%{Library.SPIRV_Cross_GLSL_Debug}"
+				}
+
 
 		filter "configurations:Release"
 				defines "XYZ_RELEASE"
 				runtime "Release"
 				optimize "on"
+				
+				links
+				{
+					"%{Library.Assimp_Release}",
+					"%{Library.ShaderC_Release}",
+					"%{Library.SPIRV_Cross_Release}",
+					"%{Library.SPIRV_Cross_GLSL_Release}"
+				}

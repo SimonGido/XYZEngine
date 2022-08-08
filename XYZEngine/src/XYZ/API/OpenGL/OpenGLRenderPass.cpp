@@ -11,8 +11,4 @@ namespace XYZ {
 	OpenGLRenderPass::~OpenGLRenderPass()
 	{
 	}
-
-	void OpenGLRenderPass::Release() const
-	{
-	}
 }

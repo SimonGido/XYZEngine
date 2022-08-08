@@ -140,7 +140,7 @@ public:
   /// Move the start of the buffer by the specified number of bytes.
   mutable_buffer& operator+=(std::size_t n) ASIO_NOEXCEPT
   {
-    std::size_t offset = n < size_ ? n : size_;
+    const std::size_t offset = n < size_ ? n : size_;
     data_ = static_cast<char*>(data_) + offset;
     size_ -= offset;
     return *this;
@@ -284,7 +284,7 @@ public:
   /// Move the start of the buffer by the specified number of bytes.
   const_buffer& operator+=(std::size_t n) ASIO_NOEXCEPT
   {
-    std::size_t offset = n < size_ ? n : size_;
+    const std::size_t offset = n < size_ ? n : size_;
     data_ = static_cast<const char*>(data_) + offset;
     size_ -= offset;
     return *this;
@@ -650,9 +650,9 @@ inline PointerToPodType buffer_cast(const const_buffer& b) ASIO_NOEXCEPT
 inline mutable_buffer operator+(const mutable_buffer& b,
     std::size_t n) ASIO_NOEXCEPT
 {
-  std::size_t offset = n < b.size() ? n : b.size();
+  const std::size_t offset = n < b.size() ? n : b.size();
   char* new_data = static_cast<char*>(b.data()) + offset;
-  std::size_t new_size = b.size() - offset;
+  const std::size_t new_size = b.size() - offset;
   return mutable_buffer(new_data, new_size
 #if defined(ASIO_ENABLE_BUFFER_DEBUGGING)
       , b.get_debug_check()
@@ -677,9 +677,9 @@ inline mutable_buffer operator+(std::size_t n,
 inline const_buffer operator+(const const_buffer& b,
     std::size_t n) ASIO_NOEXCEPT
 {
-  std::size_t offset = n < b.size() ? n : b.size();
+  const std::size_t offset = n < b.size() ? n : b.size();
   const char* new_data = static_cast<const char*>(b.data()) + offset;
-  std::size_t new_size = b.size() - offset;
+  const std::size_t new_size = b.size() - offset;
   return const_buffer(new_data, new_size
 #if defined(ASIO_ENABLE_BUFFER_DEBUGGING)
       , b.get_debug_check()
@@ -1715,7 +1715,7 @@ public:
   {
     if (size() > max_size() || max_size() - size() < n)
     {
-      std::length_error ex("dynamic_string_buffer too long");
+      const std::length_error ex("dynamic_string_buffer too long");
       asio::detail::throw_exception(ex);
     }
 
@@ -1758,7 +1758,7 @@ public:
   {
     if (size() > max_size() || max_size() - size() < n)
     {
-      std::length_error ex("dynamic_string_buffer too long");
+      const std::length_error ex("dynamic_string_buffer too long");
       asio::detail::throw_exception(ex);
     }
 
@@ -1988,7 +1988,7 @@ public:
   {
     if (size () > max_size() || max_size() - size() < n)
     {
-      std::length_error ex("dynamic_vector_buffer too long");
+      const std::length_error ex("dynamic_vector_buffer too long");
       asio::detail::throw_exception(ex);
     }
 
@@ -2031,7 +2031,7 @@ public:
   {
     if (size() > max_size() || max_size() - size() < n)
     {
-      std::length_error ex("dynamic_vector_buffer too long");
+      const std::length_error ex("dynamic_vector_buffer too long");
       asio::detail::throw_exception(ex);
     }
 
@@ -2174,9 +2174,9 @@ inline std::size_t buffer_copy_1(const mutable_buffer& target,
     const const_buffer& source)
 {
   using namespace std; // For memcpy.
-  std::size_t target_size = target.size();
-  std::size_t source_size = source.size();
-  std::size_t n = target_size < source_size ? target_size : source_size;
+  const std::size_t target_size = target.size();
+  const std::size_t source_size = source.size();
+  const std::size_t n = target_size < source_size ? target_size : source_size;
   if (n > 0)
     memcpy(target.data(), source.data(), n);
   return n;
@@ -2215,7 +2215,7 @@ std::size_t buffer_copy(one_buffer, multiple_buffers,
       target_buffer.size() && source_iter != source_end; ++source_iter)
   {
     const_buffer source_buffer(*source_iter);
-    std::size_t bytes_copied = (buffer_copy_1)(target_buffer, source_buffer);
+    const std::size_t bytes_copied = (buffer_copy_1)(target_buffer, source_buffer);
     total_bytes_copied += bytes_copied;
     target_buffer += bytes_copied;
   }
@@ -2238,7 +2238,7 @@ std::size_t buffer_copy(multiple_buffers, one_buffer,
       source_buffer.size() && target_iter != target_end; ++target_iter)
   {
     mutable_buffer target_buffer(*target_iter);
-    std::size_t bytes_copied = (buffer_copy_1)(target_buffer, source_buffer);
+    const std::size_t bytes_copied = (buffer_copy_1)(target_buffer, source_buffer);
     total_bytes_copied += bytes_copied;
     source_buffer += bytes_copied;
   }
@@ -2267,7 +2267,7 @@ std::size_t buffer_copy(multiple_buffers, multiple_buffers,
     const_buffer source_buffer =
       const_buffer(*source_iter) + source_buffer_offset;
 
-    std::size_t bytes_copied = (buffer_copy_1)(target_buffer, source_buffer);
+    const std::size_t bytes_copied = (buffer_copy_1)(target_buffer, source_buffer);
     total_bytes_copied += bytes_copied;
 
     if (bytes_copied == target_buffer.size())
@@ -2313,7 +2313,7 @@ std::size_t buffer_copy(multiple_buffers, multiple_buffers,
     const_buffer source_buffer =
       const_buffer(*source_iter) + source_buffer_offset;
 
-    std::size_t bytes_copied = (buffer_copy_1)(
+    const std::size_t bytes_copied = (buffer_copy_1)(
         target_buffer, asio::buffer(source_buffer,
           max_bytes_to_copy - total_bytes_copied));
     total_bytes_copied += bytes_copied;

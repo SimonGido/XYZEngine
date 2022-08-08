@@ -44,7 +44,7 @@ public:
       asio::error_code& ec,
       std::size_t& bytes_transferred) const
   {
-    asio::mutable_buffer buffer =
+    const asio::mutable_buffer buffer =
       asio::detail::buffer_sequence_adapter<asio::mutable_buffer,
         MutableBufferSequence>::first(buffers_);
 

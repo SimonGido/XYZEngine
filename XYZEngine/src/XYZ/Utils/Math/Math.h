@@ -17,6 +17,8 @@ namespace XYZ {
 
 		void DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale);
 	
+		glm::vec3 TransformToTranslation(const glm::mat4& transform);
+
 		inline float Sign(const glm::vec2& p1, const glm::vec2& p2, const glm::vec2& p3)
 		{
 			return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);

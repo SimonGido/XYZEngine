@@ -1,38 +1,28 @@
 #pragma once
-
-#include "VertexArray.h"
+#include "RenderCommandBuffer.h"
+#include "RenderPass.h"
 
 #include <glm/glm.hpp>
-#include <memory>
-#include <functional>
 
 
-/**
-* @interface APIContext
-* pure virtual (interface) class.
-*/
+struct GLFWwindow;
 namespace XYZ {
 	class APIContext : public RefCount
 	{
 	public:
 		virtual ~APIContext() = default;
-		/**	
-		* Initialize graphics API context
-		* @return void
-		*/
-		virtual void Init() = 0;
 
-		/*
-		* Swap window render buffer of the current graphics API
-		* @return void
-		*/
+		virtual void Init(GLFWwindow* window) = 0;
+		virtual void Shutdown() {};
+
+		virtual void CreateSwapChain(uint32_t* width, uint32_t* height, bool vSync) {};
 		virtual void SwapBuffers() = 0;
-
-		/*
-		* Creates APIContext dependent on the graphics API 
-		* param[in] window     Pointer to the window handler
-		* @return a unique pointer to APIContext
-		*/
-		static Ref<APIContext> Create(void* window);
+		virtual void BeginFrame() {}
+		virtual void OnResize(uint32_t width, uint32_t height) {};
+		virtual uint32_t GetCurrentFrame() const { return 0;}
+		
+		virtual Ref<RenderCommandBuffer> GetRenderCommandBuffer() = 0;
+		
+		static Ref<APIContext> Create();
 	};
 }

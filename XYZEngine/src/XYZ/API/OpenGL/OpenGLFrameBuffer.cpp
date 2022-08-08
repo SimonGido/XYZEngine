@@ -46,7 +46,7 @@ namespace XYZ {
 			{
 			case XYZ::ImageFormat::None:
 				break;
-			case XYZ::ImageFormat::RGBA8:
+			case XYZ::ImageFormat::RGBA:
 				return GL_RGBA8;
 				break;
 			case XYZ::ImageFormat::RGBA16F:
@@ -57,9 +57,6 @@ namespace XYZ {
 				break;
 			case XYZ::ImageFormat::RG32F:
 				return GL_RG32F;
-				break;
-			case XYZ::ImageFormat::R32I:
-				return GL_R32I;
 				break;
 			case XYZ::ImageFormat::DEPTH32F:
 				return GL_DEPTH32F_STENCIL8;
@@ -74,7 +71,7 @@ namespace XYZ {
 
 		static void AttachDepthTexture(uint32_t id, int samples, GLenum format, GLenum attachmentType, uint32_t width, uint32_t height)
 		{
-			bool multisampled = samples > 1;
+			const bool multisampled = samples > 1;
 			if (multisampled)
 			{
 				glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
@@ -91,45 +88,30 @@ namespace XYZ {
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
 		}
-
-		static bool IsDepthFormat(ImageFormat format)
-		{
-			switch (format)
-			{
-			case ImageFormat::DEPTH24STENCIL8:
-			case ImageFormat::DEPTH32F:
-				return true;
-			}
-			return false;
-		}
-
 	}
 
 
-	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecs& specs)
+	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecification& specs)
 		: m_Specification(specs)
 	{
-		for (auto format : m_Specification.Attachments.Attachments)
+		for (const auto& attachment : m_Specification.Attachments)
 		{
-			if (!Utils::IsDepthFormat(format.TextureFormat))
+			if (!Utils::IsDepthFormat(attachment.Format))
 			{
-				m_ColorAttachmentFormats.emplace_back(format.TextureFormat);
-				m_ColorAttachments.push_back({ 0, format.GenerateMips });
+				m_ColorAttachmentFormats.emplace_back(attachment.Format);
+				m_ColorAttachments.push_back({ 0, attachment.GenerateMips });
 			}
 			else
-				m_DepthAttachmentFormat = format.TextureFormat;
+				m_DepthAttachmentFormat = attachment.Format;
 		}
 		Resize(specs.Width, specs.Height, true);
 	}
 
 	OpenGLFramebuffer::~OpenGLFramebuffer()
-	{		
-	}
-	void OpenGLFramebuffer::Release() const
 	{
-		uint32_t rendererID		 = m_RendererID;
+		uint32_t rendererID = m_RendererID;
 		uint32_t depthAttachment = m_DepthAttachment;
-		auto colorAttachments	 = m_ColorAttachments;
+		auto colorAttachments = m_ColorAttachments;
 		Renderer::Submit([rendererID, depthAttachment, colorAttachments]() {
 
 			glDeleteFramebuffers(1, &rendererID);
@@ -138,6 +120,7 @@ namespace XYZ {
 				glDeleteTextures(1, &it.ID);
 		});
 	}
+
 	void OpenGLFramebuffer::Resize(uint32_t width, uint32_t height, bool forceResize)
 	{
 		if (width == 0 || height == 0)
@@ -162,7 +145,7 @@ namespace XYZ {
 			glGenFramebuffers(1, &instance->m_RendererID);
 			glBindFramebuffer(GL_FRAMEBUFFER, instance->m_RendererID);
 
-			bool multisample = instance->m_Specification.Samples > 1;
+			const bool multisample = instance->m_Specification.Samples > 1;
 			if (!instance->m_ColorAttachmentFormats.empty())
 			{
 				for (auto& attachment : instance->m_ColorAttachments)
@@ -192,7 +175,7 @@ namespace XYZ {
 
 			if (instance->m_ColorAttachmentFormats.size())
 			{
-				GLenum buffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+				const GLenum buffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 				glDrawBuffers((GLsizei)instance->m_ColorAttachmentFormats.size(), buffers);
 			}
 			else
@@ -224,8 +207,8 @@ namespace XYZ {
 	{
 		Ref<const OpenGLFramebuffer> instance = this;
 		Renderer::Submit([instance]() {
-			RendererAPI::SetClearColor(instance->GetSpecification().ClearColor);
-			RendererAPI::Clear();
+			Renderer::SetClearColor(instance->GetSpecification().ClearColor);
+			Renderer::Clear();
 		});
 	}
 
@@ -262,7 +245,7 @@ namespace XYZ {
 		});
 	}
 
-	void OpenGLFramebuffer::SetSpecification(const FramebufferSpecs& specs)
+	void OpenGLFramebuffer::SetSpecification(const FramebufferSpecification& specs, bool recreate)
 	{
 		Ref<OpenGLFramebuffer> instance = this;
 		Renderer::Submit([instance, specs]() mutable {
@@ -298,7 +281,7 @@ namespace XYZ {
 	}
 	void OpenGLFramebuffer::attachColorTexture(ColorAttachment& attachment, int samples, GLenum format, uint32_t width, uint32_t height, int index)
 	{
-		bool multisampled = samples > 1;
+		const bool multisampled = samples > 1;
 		if (multisampled)
 		{
 			glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);

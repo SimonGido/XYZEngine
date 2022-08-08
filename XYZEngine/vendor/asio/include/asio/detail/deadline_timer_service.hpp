@@ -156,7 +156,7 @@ public:
     ASIO_HANDLER_OPERATION((scheduler_.context(),
           "deadline_timer", &impl, 0, "cancel"));
 
-    std::size_t count = scheduler_.cancel_timer(timer_queue_, impl.timer_data);
+    const std::size_t count = scheduler_.cancel_timer(timer_queue_, impl.timer_data);
     impl.might_have_pending_waits = false;
     ec = asio::error_code();
     return count;
@@ -175,7 +175,7 @@ public:
     ASIO_HANDLER_OPERATION((scheduler_.context(),
           "deadline_timer", &impl, 0, "cancel_one"));
 
-    std::size_t count = scheduler_.cancel_timer(
+    const std::size_t count = scheduler_.cancel_timer(
         timer_queue_, impl.timer_data, 1);
     if (count == 0)
       impl.might_have_pending_waits = false;
@@ -205,7 +205,7 @@ public:
   std::size_t expires_at(implementation_type& impl,
       const time_type& expiry_time, asio::error_code& ec)
   {
-    std::size_t count = cancel(impl, ec);
+    const std::size_t count = cancel(impl, ec);
     impl.expiry = expiry_time;
     ec = asio::error_code();
     return count;

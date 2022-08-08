@@ -39,18 +39,9 @@ namespace XYZ {
 
 		const std::array<Layer, sc_NumCollisionLayers>& GetLayers() const { return m_Layers; }
 
-		ScopedLock<b2World>		GetWorld();
-		ScopedLockRead<b2World>	GetWorldRead() const;
-	
-	private:
-		void synchronize();
-
-	private:
-		
-		b2World					  m_World;
-		mutable std::shared_mutex m_Mutex;
-
-		
+		b2World& GetWorld();
+	private:		
+		b2World									 m_World;		
 		std::array<Layer, sc_NumCollisionLayers> m_Layers;
 	};
 }

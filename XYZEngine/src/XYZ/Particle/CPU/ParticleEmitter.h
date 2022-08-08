@@ -1,58 +1,72 @@
 #pragma once
 
 #include "XYZ/Core/Timestep.h"
-#include "ParticleDataBuffer.h"
-#include "ParticleGenerator.h"
+#include "ParticlePool.h"
+#include "ParticleUpdater.h"
 
 namespace XYZ {
 
-	
 
-	struct BurstEmitter
+	enum class EmitShape
 	{
-		struct Burst
-		{
-			Burst();
-			Burst(uint32_t count, float time);
+		None,
+		Box,
+		Circle
+	};
 
-			uint32_t m_Count;
-			float	 m_Time;
+	struct EmitterBurst
+	{
+		EmitterBurst() = default;
+		EmitterBurst(uint32_t count, float time, float probability);
 
-		private:
-			bool     m_Called;
-
-			friend struct BurstEmitter;
-		};
-
-		BurstEmitter();
-		uint32_t Update(Timestep ts);
-
-		std::vector<Burst> m_Bursts;
-		float			   m_Interval;
-	private:
-		void reset();
-
-	private:
-		float			   m_PassedTime;
+		uint32_t Count = 0;
+		float	 Time = 0.0f;
+		float    Probability = 1.0f;
+		bool	 Ready = true;
 	};
 
 
-	class ParticleEmitterCPU
+	class ParticleEmitter
 	{
 	public:
-		ParticleEmitterCPU();
+		ParticleEmitter();
+		
+		void Emit(Timestep ts, ParticlePool& data);
+		void Kill(ParticlePool& data);
 
-		void Emit(Timestep ts, ParticleDataBuffer& particles);
+		EmitShape				  Shape;
+		glm::vec3				  BoxMin;
+		glm::vec3				  BoxMax;
+		float					  Radius;
 
+		float					  EmitRate;
+		float					  LifeTime;
 
-		ParticleShapeGenerator		    m_ShapeGenerator;
-		ParticleLifeGenerator		    m_LifeGenerator;
-		ParticleRandomVelocityGenerator m_RandomVelGenerator;
-		BurstEmitter					m_BurstEmitter;
-		float							m_EmitRate;
+		glm::vec3				  MinVelocity;
+		glm::vec3				  MaxVelocity;
+		glm::vec3				  Size;
+		glm::vec4				  Color;
 
-		std::pair<uint32_t, uint32_t>	m_EmittedIDs;
+		float					  BurstInterval;
+		std::vector<EmitterBurst> Bursts;
+
+		uint32_t				  MaxLights;
+		glm::vec3				  LightColor;
+		float					  LightRadius;
+		float					  LightIntensity;
 	private:
-		float							m_EmittedParticles;
+		uint32_t burstEmit();
+
+		void	 generate(ParticlePool& data, uint32_t id) const;
+		void	 generateBox(ParticlePool& data, uint32_t id) const;
+		void	 generateCircle(ParticlePool& data, uint32_t id) const;
+
+	private:
+		float m_EmittedParticles;
+		float m_PassedTime;
+		
+		uint32_t m_AliveLights = 0;
+
+		friend class ParticleSystem;
 	};
 }

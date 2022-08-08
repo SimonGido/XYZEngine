@@ -48,7 +48,7 @@ public:
       asio::detail::buffer_sequence_adapter<asio::const_buffer,
         ConstBufferSequence>::linearisation_storage_size];
 
-    asio::const_buffer buffer =
+    const asio::const_buffer buffer =
       asio::detail::buffer_sequence_adapter<asio::const_buffer,
         ConstBufferSequence>::linearise(buffers_, asio::buffer(storage));
 

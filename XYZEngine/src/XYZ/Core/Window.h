@@ -3,6 +3,7 @@
 #include "XYZ/Event/InputEvent.h"
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/EventSystem.h"
+#include "XYZ/Renderer/APIContext.h"
 #include "WindowCodes.h"
 
 #include <functional>
@@ -35,22 +36,24 @@ namespace XYZ {
 	{
 	public:
 		virtual ~Window() = default;
-		virtual void Update() = 0;
+		virtual void SwapBuffers() = 0;
+		virtual void BeginFrame() = 0;
+		virtual void ProcessEvents() = 0;
 
 		virtual uint32_t GetWidth() const = 0;
 		virtual uint32_t GetHeight() const = 0;
 
 		// Window attributes
-		virtual void SetVSync(int32_t frames) = 0;
+		virtual void SetVSync(bool enable) = 0;
 		virtual void SetStandardCursor(uint8_t cursor) = 0;
 		virtual void SetCustomCursor(void* cursor) = 0;
 
 		virtual void* CreateCustomCursor(uint8_t* pixels, uint32_t width, uint32_t height, int32_t xOffset = 0, int32_t yOffset = 0) = 0;
-		virtual bool IsClosed() = 0;
+		virtual bool  IsClosed() const = 0;
+		virtual bool  IsVSync() const = 0;
 		virtual void* GetWindow() const = 0;
 		virtual void* GetNativeWindow() const = 0;
-
-		static std::unique_ptr<Window> Create(const WindowProperties& props = WindowProperties());
+		static std::unique_ptr<Window> Create(const Ref<APIContext>& context, const WindowProperties& props = WindowProperties());
 
 	};
 

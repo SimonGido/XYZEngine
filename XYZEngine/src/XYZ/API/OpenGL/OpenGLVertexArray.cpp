@@ -8,24 +8,24 @@
 
 
 namespace XYZ {
-	static GLenum ShaderDataComponentToOpenGLBaseComponent(ShaderDataComponent Component)
+	static GLenum ShaderDataTypeToOpenGLBaseComponent(ShaderDataType Component)
 	{
 		switch (Component)
 		{
-		case ShaderDataComponent::Bool:   return GL_BOOL;
-		case ShaderDataComponent::Float:  return GL_FLOAT;
-		case ShaderDataComponent::Float2: return GL_FLOAT;
-		case ShaderDataComponent::Float3: return GL_FLOAT;
-		case ShaderDataComponent::Float4: return GL_FLOAT;
-		case ShaderDataComponent::Int:    return GL_INT;
-		case ShaderDataComponent::Int2:   return GL_INT;
-		case ShaderDataComponent::Int3:   return GL_INT;
-		case ShaderDataComponent::Int4:   return GL_INT;
-		case ShaderDataComponent::Mat3:   return GL_FLOAT;
-		case ShaderDataComponent::Mat4:   return GL_FLOAT;
+		case ShaderDataType::Bool:   return GL_BOOL;
+		case ShaderDataType::Float:  return GL_FLOAT;
+		case ShaderDataType::Float2: return GL_FLOAT;
+		case ShaderDataType::Float3: return GL_FLOAT;
+		case ShaderDataType::Float4: return GL_FLOAT;
+		case ShaderDataType::Int:    return GL_INT;
+		case ShaderDataType::Int2:   return GL_INT;
+		case ShaderDataType::Int3:   return GL_INT;
+		case ShaderDataType::Int4:   return GL_INT;
+		case ShaderDataType::Mat3:   return GL_FLOAT;
+		case ShaderDataType::Mat4:   return GL_FLOAT;
 		}
 
-		XYZ_ASSERT(false, "ShaderDataComponentSize(ShaderDataComponent::None)");
+		XYZ_ASSERT(false, "ShaderDataTypeSize(ShaderDataType::None)");
 		return GL_NONE;
 	}
 
@@ -39,11 +39,6 @@ namespace XYZ {
 	}
 
 	OpenGLVertexArray::~OpenGLVertexArray()
-	{
-		
-	}
-
-	void OpenGLVertexArray::Release() const
 	{
 		uint32_t rendererID = m_RendererID;
 		Renderer::Submit([rendererID]() {
@@ -61,6 +56,7 @@ namespace XYZ {
 
 	void OpenGLVertexArray::AddVertexBuffer(Ref<VertexBuffer> vertexBuffer)
 	{
+		/*
 		if (vertexBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
 
@@ -73,14 +69,14 @@ namespace XYZ {
 			for (const auto& element : vbl)
 			{
 				glEnableVertexAttribArray(element.Index);
-				if (element.Component == ShaderDataComponent::Int 
-				 || element.Component == ShaderDataComponent::Int2
-				 || element.Component == ShaderDataComponent::Int3
-				 || element.Component == ShaderDataComponent::Int4)
+				if (element.Type == ShaderDataType::Int 
+				 || element.Type == ShaderDataType::Int2
+				 || element.Type == ShaderDataType::Int3
+				 || element.Type == ShaderDataType::Int4)
 				{
 					glVertexAttribIPointer(element.Index,
 						element.GetComponentCount(),
-						ShaderDataComponentToOpenGLBaseComponent(element.Component),
+						ShaderDataTypeToOpenGLBaseComponent(element.Component),
 						vbl.GetStride(),
 						(const void*)(uint64_t)element.Offset);
 				}
@@ -88,7 +84,7 @@ namespace XYZ {
 				{				
 					glVertexAttribPointer(element.Index,
 						element.GetComponentCount(),
-						ShaderDataComponentToOpenGLBaseComponent(element.Component),
+						ShaderDataTypeToOpenGLBaseComponent(element.Component),
 						//element.m_Normalized ? GL_TRUE : GL_FALSE,
 						GL_FALSE,
 						vbl.GetStride(),
@@ -99,10 +95,12 @@ namespace XYZ {
 
 			instance->m_VertexBuffers.push_back(vertexBuffer);
 		});
+		*/
 	}
 
-	void OpenGLVertexArray::AddShaderStorageBuffer(Ref<ShaderStorageBuffer> shaderBuffer)
+	void OpenGLVertexArray::AddStorageBuffer(Ref<StorageBuffer> shaderBuffer)
 	{
+		/*
 		if (shaderBuffer->GetLayout().GetElements().size() == 0)
 			XYZ_ASSERT(false, "vertexBuffer->GetLayout().GetElements().size() = 0");
 
@@ -115,11 +113,11 @@ namespace XYZ {
 			for (const auto& element : vbl)
 			{
 				glEnableVertexAttribArray(element.Index);
-				if (element.Component == ShaderDataComponent::Int)
+				if (element.Component == ShaderDataType::Int)
 				{		
 					glVertexAttribIPointer(element.Index,
 						element.GetComponentCount(),
-						ShaderDataComponentToOpenGLBaseComponent(element.Component),
+						ShaderDataTypeToOpenGLBaseComponent(element.Component),
 						//element.m_Normalized ? GL_TRUE : GL_FALSE,
 						vbl.GetStride(),
 						(const void*)(uint64_t)element.Offset);
@@ -128,7 +126,7 @@ namespace XYZ {
 				{
 					glVertexAttribPointer(element.Index,
 						element.GetComponentCount(),
-						ShaderDataComponentToOpenGLBaseComponent(element.Component),
+						ShaderDataTypeToOpenGLBaseComponent(element.Component),
 						//element.m_Normalized ? GL_TRUE : GL_FALSE,
 						GL_FALSE,
 						vbl.GetStride(),
@@ -137,8 +135,9 @@ namespace XYZ {
 				glVertexAttribDivisor(element.Index, element.Divisor);
 			}
 
-			instance->m_ShaderStorageBuffers.push_back(shaderBuffer);
+			instance->m_StorageBuffers.push_back(shaderBuffer);
 			});
+			*/
 	}
 
 	void OpenGLVertexArray::SetIndexBuffer(Ref<IndexBuffer> indexBuffer)

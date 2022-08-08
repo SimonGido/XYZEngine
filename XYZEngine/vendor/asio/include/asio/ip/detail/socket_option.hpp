@@ -140,7 +140,7 @@ public:
     {
       if (s != sizeof(ipv6_value_))
       {
-        std::length_error ex("multicast_enable_loopback socket option resize");
+        const std::length_error ex("multicast_enable_loopback socket option resize");
         asio::detail::throw_exception(ex);
       }
       ipv4_value_ = ipv6_value_ ? 1 : 0;
@@ -149,7 +149,7 @@ public:
     {
       if (s != sizeof(ipv4_value_))
       {
-        std::length_error ex("multicast_enable_loopback socket option resize");
+        const std::length_error ex("multicast_enable_loopback socket option resize");
         asio::detail::throw_exception(ex);
       }
       ipv6_value_ = ipv4_value_ ? 1 : 0;
@@ -236,7 +236,7 @@ public:
   {
     if (s != sizeof(value_))
     {
-      std::length_error ex("unicast hops socket option resize");
+      const std::length_error ex("unicast hops socket option resize");
       asio::detail::throw_exception(ex);
     }
 #if defined(__hpux)
@@ -273,7 +273,7 @@ public:
   {
     if (v < 0 || v > 255)
     {
-      std::out_of_range ex("multicast hops value out of range");
+      const std::out_of_range ex("multicast hops value out of range");
       asio::detail::throw_exception(ex);
     }
     ipv4_value_ = (ipv4_value_type)v;
@@ -285,7 +285,7 @@ public:
   {
     if (v < 0 || v > 255)
     {
-      std::out_of_range ex("multicast hops value out of range");
+      const std::out_of_range ex("multicast hops value out of range");
       asio::detail::throw_exception(ex);
     }
     ipv4_value_ = (ipv4_value_type)v;
@@ -352,7 +352,7 @@ public:
     {
       if (s != sizeof(ipv6_value_))
       {
-        std::length_error ex("multicast hops socket option resize");
+        const std::length_error ex("multicast hops socket option resize");
         asio::detail::throw_exception(ex);
       }
       if (ipv6_value_ < 0)
@@ -366,7 +366,7 @@ public:
     {
       if (s != sizeof(ipv4_value_))
       {
-        std::length_error ex("multicast hops socket option resize");
+        const std::length_error ex("multicast hops socket option resize");
         asio::detail::throw_exception(ex);
       }
       ipv6_value_ = ipv4_value_;
@@ -398,8 +398,8 @@ public:
     if (multicast_address.is_v6())
     {
       using namespace std; // For memcpy.
-      address_v6 ipv6_address = multicast_address.to_v6();
-      address_v6::bytes_type bytes = ipv6_address.to_bytes();
+      const address_v6 ipv6_address = multicast_address.to_v6();
+      const address_v6::bytes_type bytes = ipv6_address.to_bytes();
       memcpy(ipv6_value_.ipv6mr_multiaddr.s6_addr, bytes.data(), 16);
       ipv6_value_.ipv6mr_interface = ipv6_address.scope_id();
     }
@@ -434,7 +434,7 @@ public:
     : ipv4_value_() // Zero-initialisation gives the "any" address.
   {
     using namespace std; // For memcpy.
-    address_v6::bytes_type bytes = multicast_address.to_bytes();
+    const address_v6::bytes_type bytes = multicast_address.to_bytes();
     memcpy(ipv6_value_.ipv6mr_multiaddr.s6_addr, bytes.data(), 16);
     if (network_interface)
       ipv6_value_.ipv6mr_interface = network_interface;

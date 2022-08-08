@@ -15,14 +15,14 @@ namespace XYZ {
 	{
 		float PerspectiveFOV = 1.0f;
 		float PerspectiveNear = 0.01f;
-		float PerspectiveFar = 10000.0f;
+		float PerspectiveFar = -10000.0f;
 	};
 
 	struct CameraOrthographicProperties
 	{
 		float OrthographicSize = 1.0f;
-		float OrthographicNear = -1.0f;
-		float OrthographicFar = 1.0f;
+		float OrthographicNear = 0.0f;
+		float OrthographicFar = -1.0f;
 	};
 
 

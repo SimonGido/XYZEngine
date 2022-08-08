@@ -15,6 +15,8 @@ namespace XYZ {
 		void* Allocate(RenderCommandFn func, uint32_t size);
 
 		void Execute();
+
+		uint32_t GetCommandCount() const { return m_CommandCount; }
 	private:
 		uint8_t* m_CommandBuffer;
 		uint8_t* m_CommandBufferPtr;

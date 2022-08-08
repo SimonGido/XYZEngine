@@ -62,7 +62,7 @@ public:
   {
     ASIO_ASSERT(lock.locked());
     state_ |= 1;
-    bool have_waiters = (state_ > 1);
+    const bool have_waiters = (state_ > 1);
     lock.unlock();
     if (have_waiters)
       ::SetEvent(events_[1]);
@@ -74,7 +74,7 @@ public:
   {
     ASIO_ASSERT(lock.locked());
     state_ |= 1;
-    bool have_waiters = (state_ > 1);
+    const bool have_waiters = (state_ > 1);
     if (have_waiters)
       ::SetEvent(events_[1]);
     lock.unlock();
@@ -133,7 +133,7 @@ public:
     {
       state_ += 2;
       lock.unlock();
-      DWORD msec = usec > 0 ? (usec < 1000 ? 1 : usec / 1000) : 0;
+      const DWORD msec = usec > 0 ? (usec < 1000 ? 1 : usec / 1000) : 0;
 #if defined(ASIO_WINDOWS_APP)
       ::WaitForMultipleObjectsEx(2, events_, false, msec, false);
 #else // defined(ASIO_WINDOWS_APP)

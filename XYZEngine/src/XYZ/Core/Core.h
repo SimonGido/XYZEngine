@@ -4,7 +4,6 @@
 
 
 #define RENDER_THREAD_ENABLED
-#define IMGUI_BUILD
 
 #define _AMD64_
 
@@ -22,6 +21,12 @@
 
 #ifdef XYZ_DEBUG
 	#define XYZ_ENABLE_ASSERTS
+	#ifdef _MSC_VER
+		#define DEBUG_BREAK __debugbreak()
+	#elif __GNUC__
+		#include <signal.h>
+		#define DEBUG_BREAK raise(0); 
+	#endif
 #endif
 
 
@@ -31,29 +36,17 @@
 #define IS_SET(x, flag) ( x & (flag) )
 
 
-#ifdef XYZ_ENABLE_ASSERTS
-
-//#ifdef _MSC_VER
-//#define DEBUG_BREAK __debugbreak()
-//#elif __GNUC__
-#include <signal.h>
-#define DEBUG_BREAK raise(0); 
-//#endif
-
-#define XYZ_ASSERT(x, ...) { if(!(x)) { XYZ_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__ ); DEBUG_BREAK; } }
-#else
-#define XYZ_ASSERT(x, ...) 
-#endif
-
-
-
-#ifndef __FUNCTION__
-#define __FUNCTION__ "Function:"
-#endif
-
 
 
 namespace XYZ {
+	template<typename T>
+	using Scope = std::unique_ptr<T>;
+
+	template<typename T, typename ... Args>
+	constexpr Scope<T> CreateScope(Args&& ... args)
+	{
+		return std::make_unique<T>(std::forward<Args>(args)...);
+	}
 
 	template<typename R, typename T, typename U, typename... Args>
 	constexpr std::function<R(Args...)> Hook(R(T::* f)(Args...), U p)
@@ -75,4 +68,10 @@ namespace XYZ {
 		seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 		(HashCombine(seed, rest), ...);
 	}
+
+	template <typename T>
+	using vector2D = std::vector<std::vector<T>>;
+
+	template <typename T>
+	using vector3D = std::vector<vector2D<T>>;
 }

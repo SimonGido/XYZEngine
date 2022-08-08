@@ -41,10 +41,10 @@ namespace XYZ {
 		uint8_t* buffer = m_CommandBuffer;
 		for (uint32_t i = 0; i < m_CommandCount; i++)
 		{
-			RenderCommandFn function = *(RenderCommandFn*)buffer;
+			const RenderCommandFn function = *(RenderCommandFn*)buffer;
 			buffer += sizeof(RenderCommandFn);
 
-			uint32_t size = *(uint32_t*)buffer;
+			const uint32_t size = *(uint32_t*)buffer;
 			buffer += sizeof(uint32_t);
 			function(buffer);
 			buffer += size;

@@ -105,13 +105,13 @@ public:
     {
       this_->impl_->mutex_->lock();
       this_->impl_->ready_queue_.push(this_->impl_->waiting_queue_);
-      bool more_handlers = this_->impl_->locked_ =
+      const bool more_handlers = this_->impl_->locked_ =
         !this_->impl_->ready_queue_.empty();
       this_->impl_->mutex_->unlock();
 
       if (more_handlers)
       {
-        recycling_allocator<void> allocator;
+        const recycling_allocator<void> allocator;
         execution::execute(
             asio::prefer(
               asio::require(this_->executor_,
@@ -128,12 +128,12 @@ public:
     call_stack<strand_impl>::context ctx(impl_.get());
 
     // Ensure the next handler, if any, is scheduled on block exit.
-    on_invoker_exit on_exit = { this };
+    const on_invoker_exit on_exit = { this };
     (void)on_exit;
 
     // Run all ready handlers. No lock is required since the ready queue is
     // accessed only within the strand.
-    asio::error_code ec;
+    const asio::error_code ec;
     while (scheduler_operation* o = impl_->ready_queue_.front())
     {
       impl_->ready_queue_.pop();
@@ -190,7 +190,7 @@ public:
     {
       this_->impl_->mutex_->lock();
       this_->impl_->ready_queue_.push(this_->impl_->waiting_queue_);
-      bool more_handlers = this_->impl_->locked_ =
+      const bool more_handlers = this_->impl_->locked_ =
         !this_->impl_->ready_queue_.empty();
       this_->impl_->mutex_->unlock();
 
@@ -209,12 +209,12 @@ public:
     call_stack<strand_impl>::context ctx(impl_.get());
 
     // Ensure the next handler, if any, is scheduled on block exit.
-    on_invoker_exit on_exit = { this };
+    const on_invoker_exit on_exit = { this };
     (void)on_exit;
 
     // Run all ready handlers. No lock is required since the ready queue is
     // accessed only within the strand.
-    asio::error_code ec;
+    const asio::error_code ec;
     while (scheduler_operation* o = impl_->ready_queue_.front())
     {
       impl_->ready_queue_.pop();
@@ -281,7 +281,7 @@ void strand_executor_service::do_execute(const implementation_type& impl,
         "strand_executor", impl.get(), 0, "execute"));
 
   // Add the function to the strand and schedule the strand if required.
-  bool first = enqueue(impl, p.p);
+  const bool first = enqueue(impl, p.p);
   p.v = p.p = 0;
   if (first)
   {
@@ -315,7 +315,7 @@ void strand_executor_service::dispatch(const implementation_type& impl,
         "strand_executor", impl.get(), 0, "dispatch"));
 
   // Add the function to the strand and schedule the strand if required.
-  bool first = enqueue(impl, p.p);
+  const bool first = enqueue(impl, p.p);
   p.v = p.p = 0;
   if (first)
   {
@@ -341,7 +341,7 @@ void strand_executor_service::post(const implementation_type& impl,
         "strand_executor", impl.get(), 0, "post"));
 
   // Add the function to the strand and schedule the strand if required.
-  bool first = enqueue(impl, p.p);
+  const bool first = enqueue(impl, p.p);
   p.v = p.p = 0;
   if (first)
   {
@@ -367,7 +367,7 @@ void strand_executor_service::defer(const implementation_type& impl,
         "strand_executor", impl.get(), 0, "defer"));
 
   // Add the function to the strand and schedule the strand if required.
-  bool first = enqueue(impl, p.p);
+  const bool first = enqueue(impl, p.p);
   p.v = p.p = 0;
   if (first)
   {
