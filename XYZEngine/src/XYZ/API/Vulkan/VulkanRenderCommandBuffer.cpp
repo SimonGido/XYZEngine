@@ -206,7 +206,7 @@ namespace XYZ {
 		});
 	}
 
-	Ref<RenderCommandBuffer> VulkanPrimaryRenderCommandBuffer::CreateSecondaryCommandBuffer()
+	Ref<SecondaryRenderCommandBuffer> VulkanPrimaryRenderCommandBuffer::CreateSecondaryCommandBuffer()
 	{
 		Ref<VulkanSecondaryRenderCommandBuffer> secondaryBuffer = Ref<VulkanSecondaryRenderCommandBuffer>::Create(this);
 		return secondaryBuffer;
@@ -355,11 +355,11 @@ namespace XYZ {
 	VulkanSecondaryRenderCommandBuffer::~VulkanSecondaryRenderCommandBuffer()
 	{
 	}
-	void VulkanSecondaryRenderCommandBuffer::Begin()
+	void VulkanSecondaryRenderCommandBuffer::Begin(Ref<Framebuffer> frameBuffer)
 	{
 		Ref<VulkanSecondaryRenderCommandBuffer> instance = this;
-		Renderer::Submit([instance]() mutable {
-			instance->RT_Begin();
+		Renderer::Submit([instance, frameBuffer]() mutable {
+			instance->RT_Begin(frameBuffer);
 
 		});
 	}
@@ -372,9 +372,17 @@ namespace XYZ {
 			});
 	}
 
-	void VulkanSecondaryRenderCommandBuffer::RT_Begin()
+	void VulkanSecondaryRenderCommandBuffer::RT_Begin(Ref<Framebuffer> frameBuffer)
 	{
 		const uint32_t frameIndex = VulkanContext::Get()->GetCurrentFrame();
+
+		Ref<VulkanFramebuffer> vulkanFrameBuffer = frameBuffer.As<VulkanFramebuffer>();
+
+		VkCommandBufferInheritanceInfo inheritanceInfo = {};
+		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+		inheritanceInfo.renderPass = vulkanFrameBuffer->GetRenderPass();
+		inheritanceInfo.framebuffer = vulkanFrameBuffer->GetFramebuffer();
+
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags = 0; // Optional

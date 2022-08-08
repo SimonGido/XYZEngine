@@ -30,7 +30,7 @@ namespace XYZ {
 			glm::vec2 getMouseWorldPosition() const;
 		private:
 			Ref<Scene>						m_Scene;
-			Ref<PrimaryRenderCommandBuffer> m_CommandBuffer;
+			Ref<RenderCommandBuffer>		m_CommandBuffer; // TODO: use secondary, pass it somehow from editor layer
 			Ref<Renderer2D>				    m_Renderer2D;
 
 			Ref<SubTexture>    m_Context;
