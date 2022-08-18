@@ -31,8 +31,10 @@ namespace XYZ {
 		ThreadPool&						GetThreadPool()			  { return m_ThreadPool; }
 		ImGuiLayer*						GetImGuiLayer()	const	  { return m_ImGuiLayer; }
 		PerformanceProfiler&			GetPerformanceProfiler()  { return m_Profiler; }
+		
 		const std::string&				GetApplicationDir() const { return m_ApplicationDir; }
 		const ApplicationSpecification& GetSpecification() const  { return m_Specification;}
+		
 		inline static Application&		Get() { return *s_Application; }
 
 		static Application* CreateApplication();
