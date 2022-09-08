@@ -17,7 +17,7 @@ namespace XYZ {
 			auto serverEndpoint = *resolver.resolve(asio::ip::udp::v4(), host, std::to_string(port)).begin();
 			
 			m_Socket.open(asio::ip::udp::v4());
-			m_Socket.connect(serverEndpoint);
+			//m_Socket.connect(serverEndpoint);
 
 			m_Connection = std::make_shared<UDPConnection>(m_Context, serverEndpoint, m_Socket);
 		}
@@ -31,6 +31,11 @@ namespace XYZ {
 	void UDPClient::Send(const std::string& data)
 	{
 		m_Connection->Send(data);
+	}
+
+	void UDPClient::Receive()
+	{
+		m_Connection->Receive();
 	}
 
 }

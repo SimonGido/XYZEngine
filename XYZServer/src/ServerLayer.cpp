@@ -11,11 +11,12 @@ namespace XYZ {
 			m_Server->Start();
 			XYZ_INFO("UDP Server started at port {}", 60000);
 
-			const size_t numClients = 5;
+			const size_t numClients = 1;
 			for (size_t i = 0; i < numClients; ++i)
 			{
 				m_Clients.push_back(new UDPClient(m_AsioContext));
-				m_Clients.back()->Connect("172.22.208.1", 60000);
+				m_Clients.back()->Connect("192.168.0.227", 60000);
+				m_Clients.back()->Receive();
 			}
 
 

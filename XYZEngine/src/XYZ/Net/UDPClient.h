@@ -14,6 +14,7 @@ namespace XYZ {
 
 		bool Connect(const std::string_view host, const uint16_t port);
 		void Send(const std::string& data);
+		void Receive();
 
 	private:
 		std::shared_ptr<UDPConnection> m_Connection;
