@@ -9,7 +9,6 @@ namespace XYZ {
 		{
 		public:
 			Client()
-				: m_Socket(m_Context)
 			{}
 			virtual ~Client()
 			{
@@ -72,8 +71,6 @@ namespace XYZ {
 			asio::io_context m_Context;
 
 			std::thread m_ContextThread;
-
-			asio::ip::tcp::socket m_Socket;
 
 			std::unique_ptr<Connection<T>> m_Connection;
 

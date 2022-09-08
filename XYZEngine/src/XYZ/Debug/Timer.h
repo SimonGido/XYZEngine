@@ -41,6 +41,12 @@ namespace XYZ {
 		{
 			m_Start = std::chrono::high_resolution_clock::now();
 		}
+
+		void Restart()
+		{
+			m_Start = std::chrono::high_resolution_clock::now();
+		}
+
 		float Elapsed()
 		{
 			m_End = std::chrono::high_resolution_clock::now();

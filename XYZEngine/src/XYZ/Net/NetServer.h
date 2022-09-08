@@ -12,6 +12,7 @@ namespace XYZ {
 			Server(uint16_t port)
 				: m_AsioAcceptor(m_AsioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port))
 			{
+				asio::ip::udp::endpoint()
 			}
 
 			virtual ~Server()

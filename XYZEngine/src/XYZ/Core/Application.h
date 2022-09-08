@@ -12,6 +12,7 @@ namespace XYZ {
 	struct ApplicationSpecification
 	{
 		bool EnableImGui = true;
+		bool WindowCreate = false;
 	};
 	
 	class Application
@@ -49,6 +50,9 @@ namespace XYZ {
 		void displayRenderer();
 
 		void onStop();
+
+		void onRunWindow();
+		void onRunWindowless();
 	private:
 		LayerStack m_LayerStack;
 		ImGuiLayer* m_ImGuiLayer;
@@ -58,6 +62,7 @@ namespace XYZ {
 		bool       				 m_Running;
 		bool	   				 m_Minimized;
 		float      				 m_LastFrameTime;
+		Stopwatch				 m_Timer;
 		Timestep   				 m_Timestep;
 		ThreadPool 				 m_ThreadPool;
 		ApplicationSpecification m_Specification;

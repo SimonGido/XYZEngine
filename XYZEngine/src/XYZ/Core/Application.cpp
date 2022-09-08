@@ -36,20 +36,24 @@ namespace XYZ {
 	{	
 		s_Application = this;
 		m_Running = true;
+		m_ImGuiLayer = nullptr;
 
-		Renderer::Init();
-		m_Window = Window::Create(Renderer::GetAPIContext());
-		m_Window->RegisterCallback(Hook(&Application::OnEvent, this));	
-		m_Window->SetVSync(false);
+		if (specification.WindowCreate)
+		{
+			Renderer::Init();
+			m_Window = Window::Create(Renderer::GetAPIContext());
+			m_Window->RegisterCallback(Hook(&Application::OnEvent, this));
+			m_Window->SetVSync(false);
+			
+			if (specification.EnableImGui)
+			{			
+				m_ImGuiLayer = ImGuiLayer::Create();
+				m_LayerStack.PushOverlay(m_ImGuiLayer);
+			}
+		}
 
 		AssetManager::Init();
 		
-
-		m_ImGuiLayer = nullptr;
-		m_ImGuiLayer = ImGuiLayer::Create();
-		m_LayerStack.PushOverlay(m_ImGuiLayer);
-	
-
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);
 		std::wstring tmp(&NPath[0]);
@@ -67,37 +71,22 @@ namespace XYZ {
 
 		AssetManager::Shutdown();
 		Audio::ShutDown();
-		Renderer::Shutdown();
+		if (m_Specification.WindowCreate)
+		{
+			Renderer::Shutdown();
+		}
 	}
 
 	void Application::Run()
 	{
-		while (m_Running)
-		{				
-			XYZ_PROFILE_FRAME("MainThread");
-			updateTimestep();	
-			m_Window->ProcessEvents();
-			if (!m_Minimized)
-			{				
-				Renderer::BlockRenderThread(); // Sync before new frame				
-				Renderer::Render();
-
-				m_Window->BeginFrame();
-				Renderer::BeginFrame();
-				{
-					XYZ_SCOPE_PERF("Application Layer::OnUpdate");
-					for (Layer* layer : m_LayerStack)
-						layer->OnUpdate(m_Timestep);
-				}
-				if (m_Specification.EnableImGui)
-				{
-					Renderer::BlockRenderThread(); // Prevents calling VkSubmitQueue from multiple threads at once
-					onImGuiRender();
-				}
-				Renderer::EndFrame();
-				m_Window->SwapBuffers();
-			}
-			AssetManager::Update(m_Timestep);
+		m_Timer.Restart();
+		if (m_Specification.WindowCreate)
+		{
+			onRunWindow();
+		}
+		else
+		{
+			onRunWindowless();
 		}
 		onStop();
 	}
@@ -144,7 +133,8 @@ namespace XYZ {
 
 	void Application::updateTimestep()
 	{
-		const float time = static_cast<float>(glfwGetTime());
+		const float time = m_Timer.Elapsed() * 0.001f;
+		
 		m_Timestep = time - m_LastFrameTime;
 		m_LastFrameTime = time;
 	}
@@ -224,6 +214,54 @@ namespace XYZ {
 		Renderer::BlockRenderThread(); // Sync before new frame				
 		Renderer::Render();
 		XYZ_PROFILER_SHUTDOWN;
+	}
+
+	void Application::onRunWindow()
+	{
+		while (m_Running)
+		{
+			XYZ_PROFILE_FRAME("MainThread");
+			updateTimestep();
+			m_Window->ProcessEvents();
+			if (!m_Minimized)
+			{
+				Renderer::BlockRenderThread(); // Sync before new frame				
+				Renderer::Render();
+
+				m_Window->BeginFrame();
+				Renderer::BeginFrame();
+				{
+					XYZ_SCOPE_PERF("Application Layer::OnUpdate");
+					for (Layer* layer : m_LayerStack)
+						layer->OnUpdate(m_Timestep);
+				}
+				if (m_Specification.EnableImGui)
+				{
+					Renderer::BlockRenderThread(); // Prevents calling VkSubmitQueue from multiple threads at once
+					onImGuiRender();
+				}
+				Renderer::EndFrame();
+				m_Window->SwapBuffers();
+			}
+			AssetManager::Update(m_Timestep);
+		}
+	}
+
+	void Application::onRunWindowless()
+	{
+		while (m_Running)
+		{
+			XYZ_PROFILE_FRAME("MainThread");
+			updateTimestep();
+			
+			{
+				XYZ_SCOPE_PERF("Application Layer::OnUpdate");
+				for (Layer* layer : m_LayerStack)
+					layer->OnUpdate(m_Timestep);
+			}
+				
+			AssetManager::Update(m_Timestep);
+		}
 	}
 
 

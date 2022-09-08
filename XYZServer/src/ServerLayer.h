@@ -2,35 +2,15 @@
 
 #include <XYZ.h>
 
+#include "XYZ/Net/UDPServer.h"
+#include "XYZ/Net/UDPClient.h"
+
+
 #include "Player.h"
 
 namespace XYZ {
 
-	enum class MessageType : uint32_t
-	{
-		ServerAccept,
-		ServerDeny,
-		ServerPing,
-		MessageAll,
-		ServerMessage,
-		PlayerUpdate
-	};
-
-	class CustomServer : public Net::Server<MessageType>
-	{
-	public:
-		CustomServer(uint16_t port);
-			
-
-	protected:
-		virtual void onClientConnect(std::shared_ptr<Net::Connection<MessageType>> client) override;
-		virtual void onClientDisconnect(std::shared_ptr<Net::Connection<MessageType>> client);
-		virtual void onMessage(std::shared_ptr<Net::Connection<MessageType>> client, Net::Message<MessageType>& msg) override;
 	
-	private:
-		std::vector<Player> m_Players;
-	};
-
 	class ServerLayer : public Layer
 	{
 	public:
@@ -40,6 +20,11 @@ namespace XYZ {
 		virtual void OnEvent(Event& event) override;
 
 	private:
-		CustomServer* m_Server;		
+		std::shared_ptr<UDPServer> m_Server;	
+		std::vector<UDPClient*>    m_Clients;
+
+		asio::io_context m_AsioContext;
+
+		std::thread m_AsioThread;
 	};
 }
