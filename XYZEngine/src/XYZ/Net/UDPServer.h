@@ -1,12 +1,16 @@
 #pragma once
 #include "Core.h"
 
-#include "UDPConnection.h"
+#include "UDPClient.h"
 
-#include "XYZ/Utils/DataStructures/Queue.h"
 
 namespace XYZ {
 	
+	struct UDPServerConfiguration
+	{
+
+	};
+
 	class UDPServer : public std::enable_shared_from_this<UDPServer>
 	{
 	public:

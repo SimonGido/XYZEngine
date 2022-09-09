@@ -6,17 +6,17 @@ namespace XYZ {
 	{
 		try
 		{
-			m_Server = std::make_shared<UDPServer>(m_AsioContext, 60000);
+			m_Server = std::make_shared<MyServer>(m_AsioContext, 60000);
 
 			m_Server->Start();
+			m_Server->ReceiveAsync();
 			XYZ_INFO("UDP Server started at port {}", 60000);
 
 			const size_t numClients = 1;
 			for (size_t i = 0; i < numClients; ++i)
 			{
-				m_Clients.push_back(new UDPClient(m_AsioContext));
+				m_Clients.push_back(std::make_shared<MyClient>(m_AsioContext));
 				m_Clients.back()->Connect("192.168.0.227", 60000);
-				m_Clients.back()->Receive();
 			}
 
 
@@ -36,13 +36,15 @@ namespace XYZ {
 
 	void ServerLayer::OnUpdate(Timestep ts)
 	{
+		m_Server->ReceiveAsync();
 		timePassed += ts;
 		if (timePassed > 1.0f)
 		{
-			std::string message = "Hello World!";
 			for (size_t i = 0; i < m_Clients.size(); ++i)
 			{
-				m_Clients[i]->Send(message + std::to_string(i));
+				std::string message = "Hello World!" + std::to_string(i);
+				m_Clients[i]->SendAsync(m_Clients[i]->GetEndpoint(), message.data(), message.size());
+				m_Clients[i]->ReceiveAsync();
 			}
 			timePassed = 0.0f;
 		}

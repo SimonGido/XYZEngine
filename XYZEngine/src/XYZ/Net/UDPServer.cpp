@@ -19,7 +19,9 @@ namespace XYZ {
 		XYZ_ASSERT(!m_Running, "UDP Server already started!");
 
 		m_Running = true;
-		m_Socket.open(asio::ip::udp::endpoint(asio::ip::udp::v6(), m_Port).protocol());
+		auto endpoint = asio::ip::udp::endpoint(asio::ip::udp::v6(), m_Port);
+		m_Socket.open(endpoint.protocol());
+		m_Socket.bind(endpoint);
 		onStarted();
 	}
 	void UDPServer::Stop()
@@ -58,11 +60,11 @@ namespace XYZ {
 	}
 	bool UDPServer::SendAsync(const asio::ip::udp::endpoint& endpoint, const void* buffer, size_t size)
 	{
-		if (m_AsyncSending)
+		if (m_AsyncSending || size == 0)
 			return false;
 
 		m_AsyncSending = true;
-		const uint8_t* bytes = (const uint8_t*)buffer;
+		const std::byte* bytes = (const std::byte*)buffer;
 		m_SendBuffer.assign(bytes, bytes + size);
 
 
@@ -117,6 +119,7 @@ namespace XYZ {
 			m_ReceiveEndpoint,
 			[self = shared_from_this()](std::error_code ec, size_t read) {
 			
+				self->m_AsyncReceiving = false;
 				if (ec)
 				{
 					self->onError(ec);
