@@ -3,9 +3,8 @@
 #include "XYZ/Renderer/SpriteSheet.h"
 
 #include "Editor/EditorPanel.h"
-#include "Editor/Asset/DirectoryTree.h"
 
-#include "Editor/Asset/File.h"
+#include "Editor/Asset/ImGuiFile.h"
 
 #include "XYZ/FileWatcher/FileWatcher.h"
 
@@ -34,22 +33,15 @@ namespace XYZ {
 
 			void renderTopPanel();
 
-			void processCurrentDirectory();
-			void processDirectoryTree(const File& file, bool defaulOpen = false);
-
 			void onFileChange(FileWatcher::ChangeType type, const std::filesystem::path& filePath);
 		private:
 			std::filesystem::path m_SelectedFile;
 			std::filesystem::path m_RightClickedFile;
 			std::filesystem::path m_BaseDirectory;
-			
-			DirectoryTree		  m_DirectoryTree;	
-
-
-			FileManager			  m_FileManager;
+			ImGuiFileManager	  m_FileManager;
 		private:		
-			glm::vec2 m_IconSize;
-			glm::vec2 m_ArrowSize;
+			glm::vec2  m_IconSize;
+			glm::vec2  m_ArrowSize;
 			Ref<Asset> m_SelectedAsset;
 
 			float m_SplitterWidth;

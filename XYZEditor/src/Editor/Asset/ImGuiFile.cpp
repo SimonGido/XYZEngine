@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "File.h"
+#include "ImGuiFile.h"
 
 #include "EditorLayer.h"
 
@@ -7,7 +7,7 @@
 
 namespace XYZ {
 	namespace Editor {
-		File::File(std::filesystem::path path, const UV& texCoords, const Ref<Texture2D>& texture)
+		ImGuiFile::ImGuiFile(std::filesystem::path path, const UV& texCoords, const Ref<Texture2D>& texture)
 			:
 			m_Path(path),
 			m_TexCoords(texCoords),
@@ -18,7 +18,7 @@ namespace XYZ {
 			m_Extension = Utils::GetExtension(m_PathStr);
 			memset(m_NameBuffer, 0, _MAX_FNAME);
 		}
-		File::State File::OnImGuiRender(const char* dragName, glm::vec2 size)
+		ImGuiFile::State ImGuiFile::Render(const char* dragName, glm::vec2 size)
 		{
 			if (!m_Texture.Raw())
 				return State::None;
@@ -78,7 +78,39 @@ namespace XYZ {
 
 			return state;
 		}
-		void File::Rename(std::filesystem::path path)
+		void ImGuiFile::AddFile(const ImGuiFile& file)
+		{
+			m_Files.push_back(file);
+			if (file.IsDirectory())
+				m_SubdirectoryCount++;
+		}
+		void ImGuiFile::EmplaceFile(std::filesystem::path path, const UV& texCoords, const Ref<Texture2D>& texture)
+		{
+			m_Files.emplace_back(std::move(path), texCoords, texture);
+			if (std::filesystem::is_directory(path))
+				m_SubdirectoryCount++;
+		}
+		void ImGuiFile::RemoveFile(const std::filesystem::path& path)
+		{
+			for (size_t i = 0; i < m_Files.size(); ++i)
+			{
+				if (m_Files[i].m_Path == path)
+				{
+					if (m_Files[i].IsDirectory())
+						m_SubdirectoryCount--;
+
+					m_Files.erase(m_Files.begin() + i);
+					return;
+				}
+			}
+		}
+		void ImGuiFile::RemoveFile(std::vector<ImGuiFile>::const_iterator it)
+		{
+			if (it->IsDirectory())
+				m_SubdirectoryCount--;
+			m_Files.erase(it);
+		}
+		void ImGuiFile::Rename(std::filesystem::path path)
 		{
 			if (m_Path == path)
 				return;
@@ -96,7 +128,7 @@ namespace XYZ {
 				}
 			}
 		}
-		void File::Delete()
+		void ImGuiFile::Delete()
 		{
 			FileSystem::DeleteFileAtPath(m_PathStr);
 			if (IsDirectory())
@@ -107,7 +139,7 @@ namespace XYZ {
 				}
 			}
 		}
-		void File::finishEditing()
+		void ImGuiFile::finishEditing()
 		{
 			m_Name = m_NameBuffer;
 			auto newPath = m_Path.parent_path() / m_Name;
@@ -115,41 +147,41 @@ namespace XYZ {
 			m_EditingName = false;
 			m_FocusedEdit = false;
 		}
-		FileManager::FileManager(const std::filesystem::path& path)
+		ImGuiFileManager::ImGuiFileManager(const std::filesystem::path& path)
 			:
 			m_Root(path, {}, nullptr)
 		{
 			m_CurrentFile = &m_Root;
-			processDirectory(m_Root.m_Files, path);
+			processDirectory(m_Root, path);
 		}
 		
-		FileManager::FileManager(FileManager&& other) noexcept
+		ImGuiFileManager::ImGuiFileManager(ImGuiFileManager&& other) noexcept
 			:
 			m_Root(std::move(other.m_Root)),
 			m_UndoDirectories(std::move(other.m_UndoDirectories)),
 			m_RedoDirectories(std::move(other.m_RedoDirectories))
 		{
-			m_CurrentFile = findNode(other.m_CurrentFile->m_Path, m_Root);
+			m_CurrentFile = findFile(other.m_CurrentFile->GetPath(), m_Root);
 		}
 		
-		FileManager& FileManager::operator=(FileManager&& other) noexcept
+		ImGuiFileManager& ImGuiFileManager::operator=(ImGuiFileManager&& other) noexcept
 		{
 			m_Root = std::move(other.m_Root);
 			m_UndoDirectories = std::move(other.m_UndoDirectories);
 			m_RedoDirectories = std::move(other.m_RedoDirectories);
-			m_CurrentFile = findNode(other.m_CurrentFile->m_Path, m_Root);
+			m_CurrentFile = findFile(other.m_CurrentFile->GetPath(), m_Root);
 			return *this;
 		}
-		void FileManager::AddFile(const std::filesystem::path& path)
+		void ImGuiFileManager::AddFile(const std::filesystem::path& path)
 		{
-			std::filesystem::path currentNodePath = m_CurrentFile->m_Path;
+			std::filesystem::path currentNodePath = m_CurrentFile->GetPath();
 			auto ext = findExtensionInfo(path);
 			if (ext)
 			{
-				auto file = findNode(path.parent_path(), m_Root);
-				file->m_Files.emplace_back(path, ext->TexCoords, ext->Texture);
+				auto file = findFile(path.parent_path(), m_Root);
+				file->EmplaceFile(path, ext->TexCoords, ext->Texture);
 			}
-			m_CurrentFile = findNode(currentNodePath, m_Root);
+			m_CurrentFile = findFile(currentNodePath, m_Root);
 		}
 
 		template <typename TContainer, typename T>
@@ -164,30 +196,31 @@ namespace XYZ {
 			}
 		}
 
-		void FileManager::RemoveFile(const std::filesystem::path& path)
+		void ImGuiFileManager::RemoveFile(const std::filesystem::path& path)
 		{
-			std::filesystem::path currentNodePath = m_CurrentFile->m_Path;
-			auto parentFile = findNode(path.parent_path(), m_Root);
-			for (size_t i = 0; i < parentFile->m_Files.size(); ++i)
+			std::filesystem::path currentNodePath = m_CurrentFile->GetPath();
+			auto parentFile = findFile(path.parent_path(), m_Root);
+
+			auto& files = parentFile->GetFiles();
+			for (auto it = files.begin(); it != files.end(); ++it)
 			{
-				auto& files= parentFile->m_Files;
-				if (files[i].m_Path == path)
+				if (it->GetPath() == path)
 				{
-					eraseAll(m_UndoDirectories, files[i]);
-					eraseAll(m_RedoDirectories, files[i]);
-					files.erase(files.begin() + i);
-					return;
+					eraseAll(m_UndoDirectories, *it);
+					eraseAll(m_RedoDirectories, *it);
+					parentFile->RemoveFile(it);
+					break;
 				}
 			}
-			m_CurrentFile = findNode(currentNodePath, m_Root);
+			m_CurrentFile = findFile(currentNodePath, m_Root);
 		}
 
-		void FileManager::SetCurrentFile(const std::filesystem::path& path)
+		void ImGuiFileManager::SetCurrentFile(const std::filesystem::path& path)
 		{
-			setCurrentFile(*findNode(path, m_Root));
+			setCurrentFile(*findFile(path, m_Root));
 		}
 	
-		void FileManager::ImGuiRenderCurrentDir(const char* dragName, glm::vec2 iconSize)
+		void ImGuiFileManager::RenderCurrentDirectory(const char* dragName, glm::vec2 iconSize)
 		{
 			static float padding = 32.0f;
 			const float  cellSize = iconSize.x + padding;
@@ -200,79 +233,98 @@ namespace XYZ {
 			for (auto& file : *m_CurrentFile)
 			{			
 				UI::ScopedID id(file.GetName().c_str());
-				File::State state = file.OnImGuiRender(dragName, iconSize);
-				if (state == File::State::LeftDoubleClicked)
+				ImGuiFile::State state = file.Render(dragName, iconSize);
+				if (state == ImGuiFile::State::LeftDoubleClicked)
 				{
 					m_LeftDoubleClickedFile = &file;
 				}
-				else if (state == File::State::LeftClicked)
+				else if (state == ImGuiFile::State::LeftClicked)
 				{
 					m_LeftClickedFile = &file;
 				}
-				else if (state == File::State::RightClicked)
+				else if (state == ImGuiFile::State::RightClicked)
 				{
 					m_RightClickedFile = &file;
 				}
+				ImGui::NextColumn();
 			}
+			ImGui::Columns(1);
 
 			if (m_LeftDoubleClickedFile)
 			{
-				const auto& ext = m_Extensions[m_LeftDoubleClickedFile->m_Extension];
-				if (ext.LeftDoubleClickAction(m_LeftDoubleClickedFile->GetPath()))
-					m_LeftDoubleClickedFile = nullptr;
+				const auto& ext = m_Extensions[m_LeftDoubleClickedFile->GetExtension()];
+				if (ext.LeftDoubleClickAction)
+				{
+					if (ext.LeftDoubleClickAction(m_LeftDoubleClickedFile->GetPath()))
+						m_LeftDoubleClickedFile = nullptr;
+				}
 			}
 			else if (m_LeftClickedFile)
 			{
-				const auto& ext = m_Extensions[m_LeftClickedFile->m_Extension];
-				if (ext.LeftClickAction(m_LeftClickedFile->GetPath()))
-					m_LeftClickedFile = nullptr;
+				const auto& ext = m_Extensions[m_LeftClickedFile->GetExtension()];
+				if (ext.LeftClickAction)
+				{
+					if (ext.LeftClickAction(m_LeftClickedFile->GetPath()))
+						m_LeftClickedFile = nullptr;
+				}
 			}
 			else if (m_RightClickedFile)
 			{
-				const auto& ext = m_Extensions[m_RightClickedFile->m_Extension];
-				if (ext.RightClickAction(m_RightClickedFile->GetPath()))
-					m_RightClickedFile = nullptr;
+				const auto& ext = m_Extensions[m_RightClickedFile->GetExtension()];
+				if (ext.RightClickAction)
+				{
+					if (ext.RightClickAction(m_RightClickedFile->GetPath()))
+						m_RightClickedFile = nullptr;
+				}
 			}
 		}
 
-		void FileManager::ImGuiRenderDirTree()
+		void ImGuiFileManager::RenderDirectoryTree()
 		{
+			if (m_ExtensionsUpdated)
+			{
+				std::filesystem::path currentNodePath = m_CurrentFile->GetPath();
+				processDirectory(m_Root, m_Root.GetPath());
+				m_CurrentFile = findFile(currentNodePath, m_Root);
+				m_ExtensionsUpdated = false;
+			}
 			auto it = m_Extensions.find("dir");
 			if (it == m_Extensions.end())
 				return;
 
-			imGuiRenderDirTree(m_Root, it->second);
+			renderDirectoryTree(m_Root, it->second);
 		}
 
-		void FileManager::Undo()
+		void ImGuiFileManager::Undo()
 		{
 			m_RedoDirectories.push_back(m_CurrentFile);
 			m_CurrentFile = m_UndoDirectories.back();
 			m_UndoDirectories.pop_back();
 		}
-		void FileManager::Redo()
+		void ImGuiFileManager::Redo()
 		{
 			m_UndoDirectories.push_back(m_CurrentFile);
 			m_CurrentFile = m_RedoDirectories.back();
 			m_RedoDirectories.pop_back();
 		}
-		void FileManager::RegisterExtension(const std::string& ext, const FileExtensionInfo& extInfo)
+		void ImGuiFileManager::RegisterExtension(const std::string& ext, const FileExtensionInfo& extInfo)
 		{
 			m_Extensions[ext] = extInfo;
+			m_ExtensionsUpdated = true;
 		}
-		void FileManager::setCurrentFile(File& file)
+		void ImGuiFileManager::setCurrentFile(ImGuiFile& file)
 		{
 			m_UndoDirectories.push_back(m_CurrentFile);
 			m_RedoDirectories.clear();
 			m_CurrentFile = &file;
 		}
-		void FileManager::imGuiRenderDirTree(File& file, const FileExtensionInfo& extInfo)
+		void ImGuiFileManager::renderDirectoryTree(ImGuiFile& file, const FileExtensionInfo& extInfo)
 		{
 			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
 			if (&file == &m_Root)
 				flags |= ImGuiTreeNodeFlags_DefaultOpen;
 
-			if (file.Empty())
+			if (!file.HasSubdirectories())
 				flags |= ImGuiTreeNodeFlags_Leaf;
 
 
@@ -295,35 +347,36 @@ namespace XYZ {
 				if (opened)
 				{
 					for (auto& node : file)
-						imGuiRenderDirTree(node, extInfo);
+						renderDirectoryTree(node, extInfo);
 					ImGui::TreePop();
 				}
 			}
 		}
-		void FileManager::processDirectory(std::vector<File>& files, const std::filesystem::path& dirPath)
+		void ImGuiFileManager::processDirectory(ImGuiFile& file, const std::filesystem::path& dirPath)
 		{
 			for (auto& it : std::filesystem::directory_iterator(dirPath))
 			{
 				auto ext = findExtensionInfo(it.path());
 				if (ext)
 				{
-					files.emplace_back(it.path(), ext->TexCoords, ext->Texture);
+					ImGuiFile newFile(it.path(), ext->TexCoords, ext->Texture);
 					if (it.is_directory())
 					{
-						processDirectory(files.back().m_Files, it.path());
+						processDirectory(newFile, it.path());
 					}
+					file.AddFile(newFile);
 				}
 			}
 		}
-		File* FileManager::findNode(const std::filesystem::path& path, File& file) const
+		ImGuiFile* ImGuiFileManager::findFile(const std::filesystem::path& path, ImGuiFile& file) const
 		{
-			std::stack<File*> nodes;
+			std::stack<ImGuiFile*> nodes;
 			nodes.push(&file);
 			while (!nodes.empty())
 			{
-				File* tmp = nodes.top();
+				ImGuiFile* tmp = nodes.top();
 				nodes.pop();
-				if (tmp->m_Path == path)
+				if (tmp->GetPath() == path)
 					return tmp;
 
 				for (auto& child : *tmp)
@@ -331,7 +384,7 @@ namespace XYZ {
 			}
 			return nullptr;
 		}
-		const FileExtensionInfo* FileManager::findExtensionInfo(const std::filesystem::path& path) const
+		const FileExtensionInfo* ImGuiFileManager::findExtensionInfo(const std::filesystem::path& path) const
 		{
 			if (std::filesystem::is_directory(path))
 			{

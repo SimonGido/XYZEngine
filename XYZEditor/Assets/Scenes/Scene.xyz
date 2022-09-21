@@ -2,96 +2,21 @@ Scene: TestScene
 SceneEntity: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
 FirstChild: 36905812-ac4e-4371-97a4-ba100c73abba
 Entities:
-  - Entity: 3eafb4f0-efaf-4f3d-9f04-40ee22e42715
+  - Entity: b773c09f-a892-46cf-ae7e-bfc855ea8db3
     SceneTagComponent:
-      Name: Main Camera
+      Name: MoonLight
     TransformComponent:
-      Position: [-6.44999981, -0.5, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      ProjectionType: 0
-      PerspectiveFOV: 1
-      PerspectiveNear: 0.00999999978
-      PerspectiveFar: -10000
-      OrthographicSize: 4.6500001
-      OrthographicNear: 0
-      OrthographicFar: -1
-    Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      PreviousSibling: 946913f1-dd57-490f-87fd-c80fb5730f73
-      Depth: 1
-  - Entity: 946913f1-dd57-490f-87fd-c80fb5730f73
-    SceneTagComponent:
-      Name: Player
-    TransformComponent:
-      Position: [-9.61682415, -1.91555071, 0]
-      Rotation: [0, 0, 0.0838167667]
-      Scale: [1, 1, 1]
-    SpriteRenderer:
-      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
-      SubTexture: 10046a9e-c655-4e79-a633-9260c336bac8
-      Color: [1, 1, 1, 1]
-      SortLayer: 0
-      Visible: true
-    Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 3eafb4f0-efaf-4f3d-9f04-40ee22e42715
-      PreviousSibling: 955c785a-6507-4c0f-9886-6d9b1828336e
-      Depth: 1
-    RigidBody2D:
-      Type: 1
-    BoxCollider2D:
-      Size: [0.5, 0.850000024]
-      Offset: [0, 0]
-      Density: 2
-      Friction: 1
-    ScriptComponent:
-      ModuleName: Example.Script
-      VerticalSpeed: 9.99999975e-05
-      ImpulseStrength: 3.5
-      Rotation: 0
-      Velocity: [0, 0, 0]
-  - Entity: 51aa7453-60d0-4f08-80c3-4c5d66d250e1
-    SceneTagComponent:
-      Name: Ground
-    TransformComponent:
-      Position: [0, -0.0500000007, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Position: [-0.180000007, 0.121951215, 0]
+      Rotation: [0, -0, 0]
+      Scale: [0.11363636, 0.16260162, 0.377358466]
     Relationship:
       Parent: 955c785a-6507-4c0f-9886-6d9b1828336e
-      PreviousSibling: b773c09f-a892-46cf-ae7e-bfc855ea8db3
+      NextSibling: 51aa7453-60d0-4f08-80c3-4c5d66d250e1
       Depth: 2
-    RigidBody2D:
-      Type: 0
-    ChainCollider2D:
-      Points:
-        - [-0.519999981, -0.419999987]
-        - [0.0500000007, -0.340000004]
-        - [0.540000021, -0.360000014]
-      Density: 1
-      Friction: 0.0500000007
-      InvertNormals: true
-  - Entity: 955c785a-6507-4c0f-9886-6d9b1828336e
-    SceneTagComponent:
-      Name: Background
-    TransformComponent:
-      Position: [-6.29999924, 0, -0.100000001]
-      Rotation: [0, -0, 0]
-      Scale: [10, 6, 2.6500001]
-    SpriteRenderer:
-      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
-      SubTexture: 85c78df2-9246-4f69-8dd9-3964417dedd7
-      Color: [1, 1, 1, 1]
-      SortLayer: 0
-      Visible: true
-    Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 946913f1-dd57-490f-87fd-c80fb5730f73
-      PreviousSibling: 36905812-ac4e-4371-97a4-ba100c73abba
-      FirstChild: b773c09f-a892-46cf-ae7e-bfc855ea8db3
-      Depth: 1
+    PointLight2D:
+      Color: [0.0044247508, 0.920706511, 1]
+      Radius: 6.19999981
+      Intensity: 0.449999988
   - Entity: 36905812-ac4e-4371-97a4-ba100c73abba
     SceneTagComponent:
       Name: Bats
@@ -115,7 +40,7 @@ Entities:
       EndRotation: [0, 0, 0]
       EndSize: [1, 1, 1]
       EndColor: [1, 1, 1, 1]
-      LightEndColor: [0.995575249, 0.0264312122, 0.0264312122]
+      LightEndColor: [1, 1, 1]
       LightEndIntensity: 1
       LightEndRadius: 1
       ModulesEnabled:
@@ -150,18 +75,93 @@ Entities:
           - Count: 0
             Time: 0
             Probability: 1
-  - Entity: b773c09f-a892-46cf-ae7e-bfc855ea8db3
+  - Entity: 955c785a-6507-4c0f-9886-6d9b1828336e
     SceneTagComponent:
-      Name: MoonLight
+      Name: Background
     TransformComponent:
-      Position: [-0.180000007, 0.121951215, 0]
+      Position: [-6.29999924, 0, -0.100000001]
       Rotation: [0, -0, 0]
-      Scale: [0.11363636, 0.16260162, 0.377358466]
+      Scale: [10, 6, 2.6500001]
+    SpriteRenderer:
+      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
+      SubTexture: 85c78df2-9246-4f69-8dd9-3964417dedd7
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      Visible: true
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: 946913f1-dd57-490f-87fd-c80fb5730f73
+      PreviousSibling: 36905812-ac4e-4371-97a4-ba100c73abba
+      FirstChild: b773c09f-a892-46cf-ae7e-bfc855ea8db3
+      Depth: 1
+  - Entity: 51aa7453-60d0-4f08-80c3-4c5d66d250e1
+    SceneTagComponent:
+      Name: Ground
+    TransformComponent:
+      Position: [0, -0.0500000007, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
     Relationship:
       Parent: 955c785a-6507-4c0f-9886-6d9b1828336e
-      NextSibling: 51aa7453-60d0-4f08-80c3-4c5d66d250e1
+      PreviousSibling: b773c09f-a892-46cf-ae7e-bfc855ea8db3
       Depth: 2
-    PointLight2D:
-      Color: [0.0044247508, 0.920706511, 1]
-      Radius: 6.19999981
-      Intensity: 0.449999988
+    RigidBody2D:
+      Type: 0
+    ChainCollider2D:
+      Points:
+        - [-0.519999981, -0.419999987]
+        - [0.0500000007, -0.340000004]
+        - [0.540000021, -0.360000014]
+      Density: 1
+      Friction: 0.0500000007
+      InvertNormals: true
+  - Entity: 946913f1-dd57-490f-87fd-c80fb5730f73
+    SceneTagComponent:
+      Name: Player
+    TransformComponent:
+      Position: [-9.61682415, -1.91555071, 0]
+      Rotation: [0, 0, 0.0838167667]
+      Scale: [1, 1, 1]
+    SpriteRenderer:
+      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
+      SubTexture: 10046a9e-c655-4e79-a633-9260c336bac8
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      Visible: true
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: 3eafb4f0-efaf-4f3d-9f04-40ee22e42715
+      PreviousSibling: 955c785a-6507-4c0f-9886-6d9b1828336e
+      Depth: 1
+    RigidBody2D:
+      Type: 1
+    BoxCollider2D:
+      Size: [0.5, 0.850000024]
+      Offset: [0, 0]
+      Density: 2
+      Friction: 1
+    ScriptComponent:
+      ModuleName: Example.Script
+      VerticalSpeed: 9.99999975e-05
+      ImpulseStrength: 3.5
+      Rotation: 0
+      Velocity: [0, 0, 0]
+  - Entity: 3eafb4f0-efaf-4f3d-9f04-40ee22e42715
+    SceneTagComponent:
+      Name: Main Camera
+    TransformComponent:
+      Position: [-6.44999981, -0.5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      ProjectionType: 0
+      PerspectiveFOV: 1
+      PerspectiveNear: 0.00999999978
+      PerspectiveFar: -10000
+      OrthographicSize: 4.6500001
+      OrthographicNear: 0
+      OrthographicFar: -1
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      PreviousSibling: 946913f1-dd57-490f-87fd-c80fb5730f73
+      Depth: 1

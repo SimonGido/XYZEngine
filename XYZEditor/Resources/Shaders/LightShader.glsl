@@ -58,11 +58,14 @@ struct SpotLightData
 
 layout(std430, binding = 1) buffer buffer_PointLights
 {
+	uint NumberPointLights;
+	uint Offset[3];
 	PointLightData PointLights[];
 };
 
 layout(std430, binding = 2) buffer buffer_SpotLights
 {
+	uint NumberSpotLights;
 	SpotLightData SpotLights[];
 };
 
