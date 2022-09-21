@@ -7,7 +7,9 @@
 class ServerApp : public XYZ::Application
 {
 public:
-	ServerApp()	
+	ServerApp()
+		:
+		XYZ::Application(XYZ::ApplicationSpecification{ false, false })
 	{
 		PushLayer(new XYZ::ServerLayer());
 	}

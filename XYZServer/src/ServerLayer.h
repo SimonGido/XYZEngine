@@ -47,12 +47,12 @@ namespace XYZ {
 	protected:
 		virtual void onReceived(const asio::ip::udp::endpoint& endpoint, const void* buffer, size_t size) override
 		{
-			XYZ_INFO("Server received {} bytes", size);
-
+			XYZ_INFO("Server received {} bytes from address {} port {}", size, endpoint.address().to_string(), endpoint.port());
 			auto it = m_Clients.find(endpoint);
 			if (it == m_Clients.end())
 			{
 				m_Clients.insert(endpoint);
+				XYZ_INFO("New Client: address {} port {}", endpoint.address().to_string(), endpoint.port());
 			}
 			for (const auto& client : m_Clients)
 				SendAsync(client, buffer, size);

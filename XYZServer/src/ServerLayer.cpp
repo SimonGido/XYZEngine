@@ -12,11 +12,11 @@ namespace XYZ {
 			m_Server->ReceiveAsync();
 			XYZ_INFO("UDP Server started at port {}", 60000);
 
-			const size_t numClients = 1;
+			const size_t numClients = 5;
 			for (size_t i = 0; i < numClients; ++i)
 			{
 				m_Clients.push_back(std::make_shared<MyClient>(m_AsioContext));
-				m_Clients.back()->Connect("192.168.0.227", 60000);
+				m_Clients.back()->Connect("172.22.208.1", 60000);
 			}
 
 

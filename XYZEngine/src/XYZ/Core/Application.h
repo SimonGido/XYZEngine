@@ -12,7 +12,7 @@ namespace XYZ {
 	struct ApplicationSpecification
 	{
 		bool EnableImGui = true;
-		bool WindowCreate = false;
+		bool WindowCreate = true;
 	};
 	
 	class Application

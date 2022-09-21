@@ -2,119 +2,25 @@ Scene: TestScene
 SceneEntity: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
 FirstChild: 36905812-ac4e-4371-97a4-ba100c73abba
 Entities:
-  - Entity: b773c09f-a892-46cf-ae7e-bfc855ea8db3
+  - Entity: 3eafb4f0-efaf-4f3d-9f04-40ee22e42715
     SceneTagComponent:
-      Name: MoonLight
+      Name: Main Camera
     TransformComponent:
-      Position: [-0.180000007, 0.121951215, 0]
-      Rotation: [0, -0, 0]
-      Scale: [0.11363636, 0.16260162, 0.377358466]
-    Relationship:
-      Parent: 955c785a-6507-4c0f-9886-6d9b1828336e
-      NextSibling: 51aa7453-60d0-4f08-80c3-4c5d66d250e1
-      Depth: 2
-    PointLight2D:
-      Color: [0.0044247508, 0.920706511, 1]
-      Radius: 6.19999981
-      Intensity: 0.449999988
-  - Entity: 36905812-ac4e-4371-97a4-ba100c73abba
-    SceneTagComponent:
-      Name: Bats
-    TransformComponent:
-      Position: [-6.6500001, 0, 0]
+      Position: [-6.44999981, -0.5, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
+    CameraComponent:
+      ProjectionType: 0
+      PerspectiveFOV: 1
+      PerspectiveNear: 0.00999999978
+      PerspectiveFar: -10000
+      OrthographicSize: 4.6500001
+      OrthographicNear: 0
+      OrthographicFar: -1
     Relationship:
       Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 955c785a-6507-4c0f-9886-6d9b1828336e
+      PreviousSibling: 946913f1-dd57-490f-87fd-c80fb5730f73
       Depth: 1
-    ParticleRenderer:
-      Material: a26336fe-dc1c-4e82-a500-b2101792a4d3
-      Mesh: f8a2fc76-d8ba-48ac-85c0-54418b021786
-    ParticleComponent:
-      MaxParticles: 4000
-      Speed: 1.70000005
-      AnimationTiles: [4, 4]
-      AnimationStartFrame: 0
-      AnimationCycleLength: 5
-      EndRotation: [0, 0, 0]
-      EndSize: [1, 1, 1]
-      EndColor: [1, 1, 1, 1]
-      LightEndColor: [1, 1, 1]
-      LightEndIntensity: 1
-      LightEndRadius: 1
-      ModulesEnabled:
-        - true
-        - true
-        - false
-        - false
-        - false
-      Emitter:
-        Shape: 1
-        BoxMin: [-9.19999981, -7.9000001, 0]
-        BoxMax: [7.19999981, 11.8999996, 0]
-        Radius: 0.300000012
-        EmitRate: 20
-        LifeTime: 5
-        MinVelocity: [-0.100000001, -0.400000006, 0]
-        MaxVelocity: [0.699999988, 1, 0]
-        Size: [1, 1, 1]
-        Color: [1, 1, 1, 1]
-        LightColor: [0, 0.292035401, 0.292035401]
-        LightRadius: 0.5
-        LightIntensity: 5.69999981
-        MaxLights: 0
-        BurstInterval: 5
-        Bursts:
-          - Count: 0
-            Time: 0
-            Probability: 1
-          - Count: 0
-            Time: 0
-            Probability: 1
-          - Count: 0
-            Time: 0
-            Probability: 1
-  - Entity: 955c785a-6507-4c0f-9886-6d9b1828336e
-    SceneTagComponent:
-      Name: Background
-    TransformComponent:
-      Position: [-6.29999924, 0, -0.100000001]
-      Rotation: [0, -0, 0]
-      Scale: [10, 6, 2.6500001]
-    SpriteRenderer:
-      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
-      SubTexture: 85c78df2-9246-4f69-8dd9-3964417dedd7
-      Color: [1, 1, 1, 1]
-      SortLayer: 0
-      Visible: true
-    Relationship:
-      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      NextSibling: 946913f1-dd57-490f-87fd-c80fb5730f73
-      PreviousSibling: 36905812-ac4e-4371-97a4-ba100c73abba
-      FirstChild: b773c09f-a892-46cf-ae7e-bfc855ea8db3
-      Depth: 1
-  - Entity: 51aa7453-60d0-4f08-80c3-4c5d66d250e1
-    SceneTagComponent:
-      Name: Ground
-    TransformComponent:
-      Position: [0, -0.0500000007, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    Relationship:
-      Parent: 955c785a-6507-4c0f-9886-6d9b1828336e
-      PreviousSibling: b773c09f-a892-46cf-ae7e-bfc855ea8db3
-      Depth: 2
-    RigidBody2D:
-      Type: 0
-    ChainCollider2D:
-      Points:
-        - [-0.519999981, -0.419999987]
-        - [0.0500000007, -0.340000004]
-        - [0.540000021, -0.360000014]
-      Density: 1
-      Friction: 0.0500000007
-      InvertNormals: true
   - Entity: 946913f1-dd57-490f-87fd-c80fb5730f73
     SceneTagComponent:
       Name: Player
@@ -146,22 +52,116 @@ Entities:
       ImpulseStrength: 3.5
       Rotation: 0
       Velocity: [0, 0, 0]
-  - Entity: 3eafb4f0-efaf-4f3d-9f04-40ee22e42715
+  - Entity: 51aa7453-60d0-4f08-80c3-4c5d66d250e1
     SceneTagComponent:
-      Name: Main Camera
+      Name: Ground
     TransformComponent:
-      Position: [-6.44999981, -0.5, 0]
+      Position: [0, -0.0500000007, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    CameraComponent:
-      ProjectionType: 0
-      PerspectiveFOV: 1
-      PerspectiveNear: 0.00999999978
-      PerspectiveFar: -10000
-      OrthographicSize: 4.6500001
-      OrthographicNear: 0
-      OrthographicFar: -1
+    Relationship:
+      Parent: 955c785a-6507-4c0f-9886-6d9b1828336e
+      PreviousSibling: b773c09f-a892-46cf-ae7e-bfc855ea8db3
+      Depth: 2
+    RigidBody2D:
+      Type: 0
+    ChainCollider2D:
+      Points:
+        - [-0.519999981, -0.419999987]
+        - [0.0500000007, -0.340000004]
+        - [0.540000021, -0.360000014]
+      Density: 1
+      Friction: 0.0500000007
+      InvertNormals: true
+  - Entity: 955c785a-6507-4c0f-9886-6d9b1828336e
+    SceneTagComponent:
+      Name: Background
+    TransformComponent:
+      Position: [-6.29999924, 0, -0.100000001]
+      Rotation: [0, -0, 0]
+      Scale: [10, 6, 2.6500001]
+    SpriteRenderer:
+      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
+      SubTexture: 85c78df2-9246-4f69-8dd9-3964417dedd7
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      Visible: true
     Relationship:
       Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
-      PreviousSibling: 946913f1-dd57-490f-87fd-c80fb5730f73
+      NextSibling: 946913f1-dd57-490f-87fd-c80fb5730f73
+      PreviousSibling: 36905812-ac4e-4371-97a4-ba100c73abba
+      FirstChild: b773c09f-a892-46cf-ae7e-bfc855ea8db3
       Depth: 1
+  - Entity: 36905812-ac4e-4371-97a4-ba100c73abba
+    SceneTagComponent:
+      Name: Bats
+    TransformComponent:
+      Position: [-6.6500001, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: 955c785a-6507-4c0f-9886-6d9b1828336e
+      Depth: 1
+    ParticleRenderer:
+      Material: a26336fe-dc1c-4e82-a500-b2101792a4d3
+      Mesh: f8a2fc76-d8ba-48ac-85c0-54418b021786
+    ParticleComponent:
+      MaxParticles: 4000
+      Speed: 1.70000005
+      AnimationTiles: [4, 4]
+      AnimationStartFrame: 0
+      AnimationCycleLength: 5
+      EndRotation: [0, 0, 0]
+      EndSize: [1, 1, 1]
+      EndColor: [1, 1, 1, 1]
+      LightEndColor: [0.995575249, 0.0264312122, 0.0264312122]
+      LightEndIntensity: 1
+      LightEndRadius: 1
+      ModulesEnabled:
+        - true
+        - true
+        - false
+        - false
+        - true
+      Emitter:
+        Shape: 1
+        BoxMin: [-9.19999981, -7.9000001, 0]
+        BoxMax: [7.19999981, 11.8999996, 0]
+        Radius: 0.300000012
+        EmitRate: 20
+        LifeTime: 5
+        MinVelocity: [-0.100000001, -0.400000006, 0]
+        MaxVelocity: [0.699999988, 1, 0]
+        Size: [1, 1, 1]
+        Color: [1, 1, 1, 1]
+        LightColor: [0, 1, 1]
+        LightRadius: 4.5999999
+        LightIntensity: 4.4000001
+        MaxLights: 76
+        BurstInterval: 5
+        Bursts:
+          - Count: 0
+            Time: 0
+            Probability: 1
+          - Count: 0
+            Time: 0
+            Probability: 1
+          - Count: 0
+            Time: 0
+            Probability: 1
+  - Entity: b773c09f-a892-46cf-ae7e-bfc855ea8db3
+    SceneTagComponent:
+      Name: MoonLight
+    TransformComponent:
+      Position: [-0.180000007, 0.121951215, 0]
+      Rotation: [0, -0, 0]
+      Scale: [0.11363636, 0.16260162, 0.377358466]
+    Relationship:
+      Parent: 955c785a-6507-4c0f-9886-6d9b1828336e
+      NextSibling: 51aa7453-60d0-4f08-80c3-4c5d66d250e1
+      Depth: 2
+    PointLight2D:
+      Color: [0.0044247508, 0.920706511, 1]
+      Radius: 6.19999981
+      Intensity: 0.449999988
