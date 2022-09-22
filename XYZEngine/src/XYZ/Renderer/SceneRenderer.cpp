@@ -35,9 +35,7 @@ namespace XYZ {
 	SceneRenderer::SceneRenderer(Ref<Scene> scene, SceneRendererSpecification specification)
 		:
 		m_Specification(specification),
-		m_ActiveScene(scene),
-		m_PointLightCount(0),
-		m_SpotLightCount(0)
+		m_ActiveScene(scene)
 	{
 		m_ViewportSize = { 1280, 720 };
 		Init();
@@ -155,8 +153,8 @@ namespace XYZ {
 		m_Queue.AnimatedMeshDrawCommands.clear();
 		m_Queue.InstanceMeshDrawCommands.clear();
 		
-		m_PointLightCount = 0;
-		m_SpotLightCount = 0;
+		m_PointLights.clear();
+		m_SpotLights.clear();
 
 		updateViewportSize();
 	}
@@ -259,16 +257,13 @@ namespace XYZ {
 
 	void SceneRenderer::SubmitLight(const PointLight2D& light, const glm::vec2& position)
 	{
-		const uint32_t newSize = 4 * sizeof(m_PointLightCount) + (m_PointLightCount + 1) * sizeof(PointLight);
-		m_PointLightsBuffer.TryReallocate(newSize); // Make sure we can store data
-
-		uint32_t offset = 4 * sizeof(m_PointLightCount) + (m_PointLightCount * sizeof(PointLight));
-		offset += m_PointLightsBuffer.Write(glm::vec4(light.Color, 1.0f), offset);
-		offset += m_PointLightsBuffer.Write(position,					  offset);
-		offset += m_PointLightsBuffer.Write(light.Radius,				  offset);
-		offset += m_PointLightsBuffer.Write(light.Intensity,			  offset);
-
-		m_PointLightCount++;
+		PointLight pointLight{
+			glm::vec4(light.Color, 1.0f),
+			position,
+			light.Radius,
+			light.Intensity
+		};
+		m_PointLights.push_back(pointLight);
 	}
 
 
@@ -831,15 +826,6 @@ namespace XYZ {
 		// Prepare lights
 		auto& registry = m_ActiveScene->GetRegistry();
 
-		const uint32_t maxSpotLightBufferSizeReq  = 4 * sizeof(m_SpotLightCount) + (registry.storage<SpotLight2D>().size() + m_SpotLightCount) * sizeof(SpotLight);
-		const uint32_t maxPointLightBufferSizeReq = 4 * sizeof(m_PointLightCount) + (registry.storage<PointLight2D>().size() + m_PointLightCount) * sizeof(PointLight);
-
-		m_SpotLightsBuffer.TryReallocate(maxSpotLightBufferSizeReq);
-		m_PointLightsBuffer.TryReallocate(maxPointLightBufferSizeReq);
-
-		uint32_t spotLightOffset =  4 * sizeof(m_SpotLightCount)  + m_SpotLightCount  * sizeof(SpotLight);
-		uint32_t pointLightOffset = 4 * sizeof(m_PointLightCount) + m_PointLightCount * sizeof(PointLight);
-		
 		// Spot lights
 		auto spotLight2DView = registry.view<TransformComponent, SpotLight2D>();	
 		for (auto entity : spotLight2DView)
@@ -848,14 +834,15 @@ namespace XYZ {
 			auto& [transform, light] = spotLight2DView.get<TransformComponent, SpotLight2D>(entity);
 			auto [trans, rot, scale] = transform.GetWorldComponents();
 
-
-			spotLightOffset += m_SpotLightsBuffer.Write(glm::vec4(light.Color, 1.0f),  spotLightOffset);
-			spotLightOffset += m_SpotLightsBuffer.Write(glm::vec2(trans),			   spotLightOffset);
-			spotLightOffset += m_SpotLightsBuffer.Write(light.Radius,				   spotLightOffset);
-			spotLightOffset += m_SpotLightsBuffer.Write(light.Intensity,			   spotLightOffset);
-			spotLightOffset += m_SpotLightsBuffer.Write(light.InnerAngle,			   spotLightOffset);
-			spotLightOffset += m_SpotLightsBuffer.Write(light.OuterAngle,			   spotLightOffset);
-			spotLightOffset += sizeof(SpotLight::Alignment);
+			SpotLight spotLight{
+				glm::vec4(light.Color, 1.0f),
+				glm::vec2(trans),
+				light.Radius,
+				light.Intensity,
+				light.InnerAngle,
+				light.OuterAngle
+			};
+			m_SpotLights.push_back(spotLight);
 		}
 		
 		// Point Lights
@@ -864,43 +851,53 @@ namespace XYZ {
 		{
 			auto& [transform, light] = pointLight2DView.get<TransformComponent, PointLight2D>(entity);
 			auto [trans, rot, scale] = transform.GetWorldComponents();
-					
-			pointLightOffset += m_PointLightsBuffer.Write(glm::vec4(light.Color, 1.0f), pointLightOffset);
-			pointLightOffset += m_PointLightsBuffer.Write(glm::vec2(trans),			    pointLightOffset);
-			pointLightOffset += m_PointLightsBuffer.Write(light.Radius,					pointLightOffset);
-			pointLightOffset += m_PointLightsBuffer.Write(light.Intensity,				pointLightOffset);
+
+			PointLight pointLight{
+				glm::vec4(light.Color, 1.0f),
+				glm::vec2(trans),
+				light.Radius,
+				light.Intensity
+			};
+			m_PointLights.push_back(pointLight);
 		}
-		
-			
-		const uint32_t realNumPointLights = m_PointLightCount < sc_MaxNumberOfLights ? m_PointLightCount : sc_MaxNumberOfLights;
-		const uint32_t realNumSpotLights  = m_SpotLightCount  < sc_MaxNumberOfLights ? m_SpotLightCount  : sc_MaxNumberOfLights;
+				
+		if (m_SpotLights.size() > sc_MaxNumberOfLights)
+			m_SpotLights.resize(sc_MaxNumberOfLights);
 
-		const uint32_t pointLightsBufferSize = sizeof(uint32_t) + realNumPointLights * sizeof(PointLight);
-		const uint32_t spotLightsBufferSize = sizeof(uint32_t) + realNumSpotLights * sizeof(SpotLight);
+		if (m_PointLights.size() > sc_MaxNumberOfLights)
+			m_PointLights.resize(sc_MaxNumberOfLights);
 
-		m_PointLightsBuffer.Write(realNumPointLights, 0);
-		m_SpotLightsBuffer.Write(realNumSpotLights, 0);
+
+		constexpr uint32_t countOffset = 16;
+
+		ByteBuffer spotLightBuffer;
+		spotLightBuffer.Allocate(countOffset + (m_SpotLights.size() * sizeof(SpotLight)));
+		spotLightBuffer.Write(m_SpotLights.size(), 0);
+		spotLightBuffer.Write(m_SpotLights.data(), m_SpotLights.size() * sizeof(SpotLight), countOffset);
+
+		ByteBuffer pointLightBuffer;
+		pointLightBuffer.Allocate(countOffset + (m_PointLights.size() * sizeof(PointLight)));
+		pointLightBuffer.Write(m_PointLights.size(), 0);
+		pointLightBuffer.Write(m_PointLights.data(), m_PointLights.size() * sizeof(PointLight), countOffset);
 
 		Ref<StorageBufferSet> instance = m_LightStorageBufferSet;
 		Renderer::Submit([
 				instance, 
-				pLights = m_PointLightsBuffer.Copy(pointLightsBufferSize), 
-				sLights = m_SpotLightsBuffer.Copy(spotLightsBufferSize),
-				realNumPointLights, 
-				realNumSpotLights
+				pointLightBuffer,
+				spotLightBuffer
 			]() mutable 
 		{
 			const uint32_t frame = Renderer::GetCurrentFrame();
-			instance->Get(1, 0, frame)->RT_Update(pLights.Data, pLights.Size);
-			instance->Get(2, 0, frame)->RT_Update(sLights.Data, sLights.Size);
+			instance->Get(1, 0, frame)->RT_Update(pointLightBuffer.Data, pointLightBuffer.Size);
+			instance->Get(2, 0, frame)->RT_Update(spotLightBuffer.Data, spotLightBuffer.Size);
 
 			// TODO: recycle
-			pLights.Destroy();
-			sLights.Destroy();
+			pointLightBuffer.Destroy();
+			spotLightBuffer.Destroy();
 		});
 
-		m_RenderStatistics.PointLight2DCount = realNumPointLights;
-		m_RenderStatistics.SpotLight2DCount = realNumSpotLights;
+		m_RenderStatistics.PointLight2DCount = m_PointLights.size();
+		m_RenderStatistics.SpotLight2DCount = m_SpotLights.size();
 	}
 	Ref<Pipeline> SceneRenderer::getGeometryPipeline(const Ref<Material>& material, bool opaque)
 	{

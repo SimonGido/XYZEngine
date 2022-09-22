@@ -17,6 +17,7 @@
 
 namespace XYZ {
 
+	
 	struct GridProperties
 	{
 		glm::mat4 Transform;
@@ -302,11 +303,8 @@ namespace XYZ {
 
 		std::vector<std::byte>	   m_InstanceData;
 		
-		ByteBuffer				   m_PointLightsBuffer;
-		uint32_t				   m_PointLightCount;
-
-		ByteBuffer				   m_SpotLightsBuffer;
-		uint32_t				   m_SpotLightCount;
+		std::vector<PointLight>	   m_PointLights;
+		std::vector<SpotLight>	   m_SpotLights;
 
 		SceneRendererCamera		   m_SceneCamera;
 		SceneRendererOptions	   m_Options;

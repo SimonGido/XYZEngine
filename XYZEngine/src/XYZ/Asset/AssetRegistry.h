@@ -2,18 +2,16 @@
 
 #include "Asset.h"
 
-namespace std {
-	template <>
-	struct hash<std::filesystem::path>
+
+namespace XYZ {
+	struct PathHasher
 	{
 		std::size_t operator()(const std::filesystem::path& path) const
 		{
 			return hash_value(path);
 		}
 	};
-}
 
-namespace XYZ {
 	class AssetRegistry
 	{
 	public:
@@ -29,7 +27,7 @@ namespace XYZ {
 		std::unordered_map<AssetHandle, AssetMetadata>::const_iterator cbegin() const { return m_AssetMetadata.cbegin(); }
 		std::unordered_map<AssetHandle, AssetMetadata>::const_iterator cend()	const { return m_AssetMetadata.cend(); }
 	private:
-		std::unordered_map<AssetHandle, AssetMetadata>		   m_AssetMetadata;
-		std::unordered_map<std::filesystem::path, AssetHandle> m_AssetHandleMap;
+		std::unordered_map<AssetHandle, AssetMetadata>					   m_AssetMetadata;
+		std::unordered_map<std::filesystem::path, AssetHandle, PathHasher> m_AssetHandleMap;
 	};
 }

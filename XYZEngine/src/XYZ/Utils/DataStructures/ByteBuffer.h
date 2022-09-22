@@ -133,4 +133,44 @@ namespace XYZ {
 		uint32_t Size;
 		uint8_t* Data;
 	};
+
+
+	template <size_t Alignment>
+	class BufferWriter
+	{
+	public:
+		template <typename T>
+		void Write(const T& val)
+		{
+			constexpr size_t size = sizeof(T);
+			constexpr size_t missingBytes = size % Alignment;
+
+			m_Buffer.TryReallocate(m_Offset + size + missingBytes);
+			m_Buffer.Write(val, m_Offset);
+
+			m_Offset += size;
+			if constexpr (missingBytes != 0)
+			{
+				m_Offset += Alignment - missingBytes;
+			}
+		}
+
+		template <typename T>
+		void WriteOffset(uint32_t offset, const T& val)
+		{
+			m_Buffer.TryReallocate(m_Offset + sizeof(val));
+			m_Buffer.Write(val, offset);
+		}
+
+		void Reset(uint32_t offset = 0)
+		{
+			m_Offset = offset;
+		}
+
+		const ByteBuffer& GetBuffer() const { return m_Buffer; }
+		uint32_t		  GetOffset() const { return m_Offset; }
+	private:
+		ByteBuffer m_Buffer;
+		uint32_t   m_Offset = 0;
+	};
 }
