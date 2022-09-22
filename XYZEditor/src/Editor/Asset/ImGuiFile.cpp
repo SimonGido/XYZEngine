@@ -7,6 +7,8 @@
 
 namespace XYZ {
 	namespace Editor {
+		static constexpr const char* sc_DirectoryExtension = "dir";
+
 		ImGuiFile::ImGuiFile(std::filesystem::path path, const UV& texCoords, const Ref<Texture2D>& texture)
 			:
 			m_Path(path),
@@ -15,7 +17,10 @@ namespace XYZ {
 		{
 			m_PathStr = m_Path.string();
 			m_Name = m_Path.filename().string();
-			m_Extension = Utils::GetExtension(m_PathStr);
+			if (std::filesystem::is_directory(path))
+				m_Extension = sc_DirectoryExtension;
+			else
+				m_Extension = Utils::GetExtension(m_PathStr);
 			memset(m_NameBuffer, 0, _MAX_FNAME);
 		}
 		ImGuiFile::State ImGuiFile::Render(const char* dragName, glm::vec2 size)
@@ -388,7 +393,7 @@ namespace XYZ {
 		{
 			if (std::filesystem::is_directory(path))
 			{
-				auto ext = m_Extensions.find("dir");
+				auto ext = m_Extensions.find(sc_DirectoryExtension);
 				if (ext != m_Extensions.end())
 				{
 					return &ext->second;

@@ -34,10 +34,13 @@ namespace XYZ {
 
 			AssetManager::GetFileWatcher()->AddOnFileChanged<&AssetBrowser::onFileChange>(this);
 		
-
 			m_FileManager.RegisterExtension("dir", {
 				EditorLayer::GetData().IconsTexture,
-				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::FolderIcon)
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::FolderIcon),
+				nullptr, // Hover
+				nullptr, // Left click
+				[&](const std::filesystem::path& path) -> bool { m_FileManager.SetCurrentFile(path); return true; }, // Double left click
+				[&](const std::filesystem::path& path) -> bool { return false; } // Right click
 			});
 			m_FileManager.RegisterExtension("tex", {
 				EditorLayer::GetData().IconsTexture,

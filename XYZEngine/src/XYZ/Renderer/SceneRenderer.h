@@ -249,7 +249,6 @@ namespace XYZ {
 			float	  InnerAngle;
 			float	  OuterAngle;
 
-		private:
 			float Alignment[2];
 		};
 	
@@ -302,8 +301,12 @@ namespace XYZ {
 		std::vector<glm::mat4>					m_BoneTransformsData;
 
 		std::vector<std::byte>	   m_InstanceData;
-		std::vector<PointLight>	   m_PointLights;
-		std::vector<SpotLight>	   m_SpotLights;
+		
+		ByteBuffer				   m_PointLightsBuffer;
+		uint32_t				   m_PointLightCount;
+
+		ByteBuffer				   m_SpotLightsBuffer;
+		uint32_t				   m_SpotLightCount;
 
 		SceneRendererCamera		   m_SceneCamera;
 		SceneRendererOptions	   m_Options;

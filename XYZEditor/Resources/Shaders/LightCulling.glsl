@@ -6,7 +6,7 @@
 // - SIGGRAPH 2011 - Rendering in Battlefield 3
 // - Implementation mostly adapted from https://github.com/bcrusco/Forward-Plus-Renderer
 //
-#type compute
+// #type compute
 #version 450 core
 
 layout(std140, binding = 0) uniform Camera
@@ -54,7 +54,8 @@ layout(push_constant) uniform ScreenData
 	ivec2 u_ScreenSize;
 } u_ScreenData;
 
-layout(std430, binding = 14) writeonly buffer VisibleLightIndicesBuffer {
+layout(std430, binding = 14) writeonly buffer VisibleLightIndicesBuffer 
+{
 	int indices[];
 } visibleLightIndicesBuffer;
 

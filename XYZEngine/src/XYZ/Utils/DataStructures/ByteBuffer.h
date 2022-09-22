@@ -26,6 +26,21 @@ namespace XYZ {
 			Data = new uint8_t[size];
 			Size = size;
 		}
+
+		bool TryReallocate(uint32_t size)
+		{
+			if (size > Size)
+			{
+				uint8_t * newData = new uint8_t[size];
+				memcpy(newData, Data, std::min(Size, size));
+				Size = size;
+				delete[] Data;
+				Data = newData;
+				return true;
+			}
+			return false;
+		}
+
 		void Destroy()
 		{
 			Allocate(0);
@@ -42,6 +57,15 @@ namespace XYZ {
 			XYZ_ASSERT(offset + size <= Size, "Buffer overflow!");
 			memcpy(Data + offset, data, size);
 		}
+
+		template <typename T>
+		uint32_t Write(const T& data, uint32_t offset = 0)
+		{
+			XYZ_ASSERT(offset + sizeof(T) <= Size, "Buffer overflow!");
+			new (&Data[offset])T(data);
+			return static_cast<uint32_t>(sizeof(T));
+		}
+
 
 		template<typename T>
 		T& Read(uint32_t offset = 0)
@@ -85,6 +109,15 @@ namespace XYZ {
 		T* As()
 		{
 			return (T*)Data;
+		}
+
+		ByteBuffer Copy(uint32_t size) const
+		{
+			ByteBuffer buffer;
+			buffer.Allocate(size);
+
+			memcpy(buffer.Data, Data, size);
+			return buffer;
 		}
 
 		static ByteBuffer Copy(const void* data, uint32_t size)
