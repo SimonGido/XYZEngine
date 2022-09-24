@@ -8,6 +8,13 @@
 #include "VertexBufferSet.h"
 #include "PipelineCompute.h"
 #include "MaterialInstance.h"
+#include "GeometryRenderQueue.h"
+
+#include "RenderPasses/GeometryPass.h"
+#include "RenderPasses/DeferredLightPass.h"
+#include "RenderPasses/BloomPass.h"
+#include "RenderPasses/CompositePass.h"
+
 
 #include "XYZ/Asset/Renderer/MaterialAsset.h"
 
@@ -17,7 +24,6 @@
 
 namespace XYZ {
 
-	
 	struct GridProperties
 	{
 		glm::mat4 Transform;
@@ -36,142 +42,6 @@ namespace XYZ {
 		XYZ::Camera Camera;
 		glm::mat4 ViewMatrix{};
 		glm::vec3 ViewPosition{};
-	};
-
-
-	struct RenderQueue
-	{
-		struct SpriteDrawData
-		{
-			uint32_t  TextureIndex;
-			glm::vec4 TexCoords;
-			glm::vec4 Color;
-			glm::mat4 Transform;
-		};
-
-		struct BillboardDrawData
-		{
-			uint32_t  TextureIndex;
-			glm::vec4 TexCoords;
-			glm::vec4 Color;
-			glm::vec3 Position;
-			glm::vec2 Size;
-		};
-
-		struct SpriteDrawCommand
-		{
-			Ref<MaterialAsset>  Material;
-			std::array<Ref<Texture2D>, Renderer2D::GetMaxTextures()> Textures;
-
-			uint32_t       TextureCount = 0;
-
-			uint32_t setTexture(const Ref<Texture2D>& texture);
-
-			std::vector<SpriteDrawData>		SpriteData;
-			std::vector<BillboardDrawData>	BillboardData;
-		};
-
-		struct TransformData
-		{
-			glm::vec4 TransformRow[3];
-		};
-		using BoneTransforms = std::array<ozz::math::Float4x4, 60>;
-
-		struct MeshDrawCommandOverride
-		{
-			Ref<MaterialInstance>  OverrideMaterial;
-			glm::mat4			   Transform;
-		};
-
-		struct MeshDrawCommand
-		{
-			Ref<Mesh>					 Mesh;
-			Ref<MaterialAsset>			 MaterialAsset;
-			Ref<MaterialInstance>		 OverrideMaterial;
-			Ref<Pipeline>				 Pipeline;
-			uint32_t					 TransformInstanceCount = 0;
-
-			std::vector<TransformData>	 TransformData;
-			uint32_t					 TransformOffset = 0;
-
-			std::vector<MeshDrawCommandOverride> OverrideCommands;
-		};
-
-		struct AnimatedMeshDrawCommandOverride
-		{
-			Ref<MaterialInstance>  OverrideMaterial;
-			glm::mat4			   Transform;
-			BoneTransforms		   BoneTransforms;
-			uint32_t			   BoneTransformsIndex = 0;
-		};
-
-		struct AnimatedMeshDrawCommand
-		{
-			Ref<AnimatedMesh>			 Mesh;
-			Ref<MaterialAsset>			 MaterialAsset;
-			Ref<MaterialInstance>		 OverrideMaterial;
-			Ref<Pipeline>				 Pipeline;
-			uint32_t					 TransformInstanceCount = 0;
-
-			std::vector<TransformData>	 TransformData;
-			uint32_t					 TransformOffset = 0;
-
-			std::vector<BoneTransforms>	 BoneData;
-			uint32_t					 BoneTransformsIndex = 0;
-
-			std::vector<AnimatedMeshDrawCommandOverride> OverrideCommands;
-		};
-		
-		struct InstanceMeshDrawCommand
-		{
-			Ref<Mesh>			  Mesh;
-			Ref<MaterialAsset>	  MaterialAsset;
-			Ref<MaterialInstance> OverrideMaterial;
-			Ref<Pipeline>		  Pipeline;
-			glm::mat4			  Transform;
-
-			std::vector<std::byte> InstanceData;
-			uint32_t			   InstanceCount = 0;
-			uint32_t			   InstanceOffset = 0;
-		};
-
-		struct SpriteKey
-		{
-			SpriteKey(const AssetHandle& matHandle)
-				: MaterialHandle(matHandle)
-			{}
-
-			bool operator<(const SpriteKey& other) const
-			{
-				return (MaterialHandle < other.MaterialHandle);
-			}
-
-			AssetHandle MaterialHandle;
-		};
-		struct BatchMeshKey
-		{
-			AssetHandle MeshHandle;
-			AssetHandle MaterialHandle;
-
-			BatchMeshKey(AssetHandle meshHandle, AssetHandle materialHandle)
-				: MeshHandle(meshHandle), MaterialHandle(materialHandle) {}
-
-			bool operator<(const BatchMeshKey& other) const
-			{
-				if (MeshHandle < other.MeshHandle)
-					return true;
-
-				return (MeshHandle == other.MeshHandle) && (MaterialHandle < other.MaterialHandle);
-			}
-		};
-
-
-		std::map<SpriteKey, SpriteDrawCommand> SpriteDrawCommands;
-		std::map<SpriteKey, SpriteDrawCommand> BillboardDrawCommands;			
-
-		std::map<BatchMeshKey,	  MeshDrawCommand>			MeshDrawCommands;
-		std::map<BatchMeshKey,	  AnimatedMeshDrawCommand>	AnimatedMeshDrawCommands;
-		std::map<BatchMeshKey,	  InstanceMeshDrawCommand>	InstanceMeshDrawCommands;
 	};
 
 	struct SceneRendererSpecification
@@ -201,58 +71,27 @@ namespace XYZ {
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial);
 		void SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 
-		void SubmitLight(const PointLight2D& light, const glm::vec2& position);
-
 		void OnImGuiRender();
 
 
-		Ref<Renderer2D>	      GetRenderer2D() const { return m_Renderer2D; }
-		Ref<RenderPass>		  GetRenderer2DPass() const { return m_Renderer2D->GetTargetRenderPass(); }
-		Ref<RenderPass>		  GetFinalRenderPass() const;
-		Ref<Image2D>		  GetFinalPassImage() const;
+		Ref<RenderPass>			 GetFinalRenderPass()	  const;
+		Ref<Image2D>			 GetFinalPassImage()	  const;
 		Ref<RenderCommandBuffer> GetRenderCommandBuffer() const { return m_CommandBuffer; }
-
+		Ref<UniformBufferSet>    GetCameraBufferSet()	  const { return m_CameraBufferSet; }
+		
 		SceneRendererOptions& GetOptions();
 	private:
-		void geometryPass(RenderQueue& queue, bool clear);
-		void geometryPass2D(RenderQueue& queue, bool clear);
-		void lightPass();
-		void bloomPass();
-		void compositePass();
-
 		void createCompositePass();
 		void createLightPass();
 		void createGeometryPass();
+		void createBloomTextures();
 
 		void updateViewportSize();
 
 		void preRender();
-		void prepareInstances();
-		void prepareLights();
-		
-		Ref<Pipeline> getGeometryPipeline(const Ref<Material>& material, bool opaque);
-
-		void copyToBoneStorage(RenderQueue::BoneTransforms& storage, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<AnimatedMesh>& mesh);
-	private:
-		struct PointLight
-		{
-			glm::vec4 Color;
-			glm::vec2 Position;
-			float	  Radius;
-			float	  Intensity;
-		};
-		struct SpotLight
-		{
-			glm::vec4 Color;
-			glm::vec2 Position;
-			float	  Radius;
-			float	  Intensity;
-			float	  InnerAngle;
-			float	  OuterAngle;
-
-			float Alignment[2];
-		};
 	
+		void copyToBoneStorage(GeometryRenderQueue::BoneTransforms& storage, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<AnimatedMesh>& mesh);
+	private:
 		struct CameraData
 		{
 			glm::mat4 ViewProjectionMatrix;
@@ -260,80 +99,35 @@ namespace XYZ {
 			glm::vec4 ViewPosition;
 		};
 
-		struct SceneRenderPipeline
-		{
-			Ref<Pipeline> Pipeline;
-			Ref<Material> Material;
-			Ref<MaterialInstance> MaterialInstance;
+		GeometryPass2D	  m_GeometryPass2D;
+		GeometryPass3D	  m_GeometryPass3D;
+		DeferredLightPass m_DeferredLightPass;
+		BloomPass		  m_BloomPass;
+		CompositePass	  m_CompositePass;
 
-			void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, PrimitiveTopology topology = PrimitiveTopology::Triangles);
-		};
-
-		struct BloomSettings
-		{
-			float FilterTreshold = 1.0f;
-			float FilterKnee = 0.1f;
-		};
-
-		BloomSettings			   m_BloomSettings;
+		Ref<RenderPass>				  m_GeometryRenderPass;
+		Ref<RenderPass>				  m_CompositeRenderPass;
+		Ref<RenderPass>				  m_LightRenderPass;
+		std::array<Ref<Texture2D>, 3> m_BloomTexture;
 
 		SceneRendererSpecification m_Specification;
 		Ref<Scene>				   m_ActiveScene;
-		Ref<Renderer2D>			   m_Renderer2D;
-		Ref<Texture2D>			   m_WhiteTexture;
 
-		SceneRenderPipeline		   m_CompositeRenderPipeline;
-		SceneRenderPipeline		   m_LightRenderPipeline;
-		
-		std::map<size_t, Ref<Pipeline>> m_GeometryPipelines;
-
-		Ref<RenderPass>			   m_CompositePass;
-		Ref<RenderPass>			   m_LightPass;
-		Ref<RenderPass>			   m_GeometryPass;
-
-		Ref<StorageBufferSet>      m_LightStorageBufferSet;
-		Ref<StorageBufferSet>	   m_BoneTransformsStorageSet;
-
-		Ref<VertexBufferSet>	   m_InstanceVertexBufferSet;
-		Ref<VertexBufferSet>	   m_TransformVertexBufferSet;
-		
-
-		std::vector<RenderQueue::TransformData> m_TransformData;
-		std::vector<glm::mat4>					m_BoneTransformsData;
-
-		std::vector<std::byte>	   m_InstanceData;
-		
-		std::vector<PointLight>	   m_PointLights;
-		std::vector<SpotLight>	   m_SpotLights;
+		Ref<RenderCommandBuffer>   m_CommandBuffer;
+		Ref<UniformBufferSet>      m_CameraBufferSet;
 
 		SceneRendererCamera		   m_SceneCamera;
 		SceneRendererOptions	   m_Options;
 		GridProperties			   m_GridProps;
 		glm::ivec2				   m_ViewportSize;
-
-		Ref<RenderCommandBuffer>   m_CommandBuffer;
-		
-
-		Ref<UniformBuffer>		   m_CameraUniformBuffer;
-								   
-
-		Ref<Material>			   m_BloomComputeMaterial;
-		Ref<MaterialInstance>      m_BloomComputeMaterialInstance;
-		Ref<Texture2D>			   m_BloomTexture[3];
-		Ref<PipelineCompute>	   m_BloomComputePipeline;
-
-		
+	
 		CameraData				   m_CameraBuffer;
-		RenderQueue				   m_Queue;
+		GeometryRenderQueue		   m_Queue;
 								   
 		bool				       m_ViewportSizeChanged = false;
 		int32_t					   m_ThreadIndex;
 
-		static constexpr uint32_t sc_MaxNumberOfLights		  =  2 * 1024;
-		static constexpr uint32_t sc_TransformBufferCount	  = 10 * 1024; // 10240 transforms
-		static constexpr uint32_t sc_InstanceVertexBufferSize = 30 * 1024 * 1024; // 30mb
-		static constexpr uint32_t sc_MaxBoneTransforms		  =  1 * 1024;
-
+		
 		struct RenderStatistics
 		{
 			uint32_t SpriteDrawCommandCount = 0;
@@ -355,11 +149,5 @@ namespace XYZ {
 			static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
 		};
 		GPUTimeQueries m_GPUTimeQueries;
-
-
-	private:
-		Ref<Mesh>			  m_TestMesh;
-		Ref<MaterialAsset>	  m_TestMaterial;
-
 	};
 }

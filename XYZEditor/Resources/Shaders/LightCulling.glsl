@@ -1,7 +1,4 @@
-// ---------------------------------------
-// -- Hazel Engine light culling shader --
-// ---------------------------------------
-// 
+
 // References:
 // - SIGGRAPH 2011 - Rendering in Battlefield 3
 // - Implementation mostly adapted from https://github.com/bcrusco/Forward-Plus-Renderer
@@ -37,6 +34,12 @@ struct SpotLightData
 	float Alignment[2];
 };
 
+
+layout(push_constant) uniform ScreenData
+{
+	ivec2 u_ScreenSize;
+} u_ScreenData;
+
 layout(std430, binding = 1) buffer buffer_PointLights
 {
 	uint NumberPointLights;
@@ -49,14 +52,9 @@ layout(std430, binding = 2) buffer buffer_SpotLights
 	SpotLightData SpotLights[];
 };
 
-layout(push_constant) uniform ScreenData
+layout(std430, binding = 14) writeonly buffer buffer_VisibleLightIndices
 {
-	ivec2 u_ScreenSize;
-} u_ScreenData;
-
-layout(std430, binding = 14) writeonly buffer VisibleLightIndicesBuffer 
-{
-	int indices[];
+	int Indices[];
 } visibleLightIndicesBuffer;
 
 

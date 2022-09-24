@@ -43,12 +43,15 @@ namespace XYZ {
 			m_QuadMaterial->SetTexture("u_Texture", m_CameraTexture, 0);
 
 
-			m_OverlayRenderer2D = Ref<Renderer2D>::Create(
+			m_OverlayRenderer2D = Ref<Renderer2D>::Create(Renderer2DConfiguration{
 				m_CommandBuffer,
-				m_QuadMaterial, m_LineMaterial, m_CircleMaterial, 
-				m_SceneRenderer->GetFinalRenderPass()
-			);
-
+				m_SceneRenderer->GetFinalRenderPass(),
+				m_SceneRenderer->GetCameraBufferSet(),
+				m_QuadMaterial, 
+				m_LineMaterial, 
+				m_CircleMaterial
+			});
+	
 			m_EditorManager.SetSceneContext(m_Scene);
 			auto consolePanel = m_EditorManager.RegisterPanel<Editor::EditorConsolePanel>("ConsolePanel");
 			EditorLogger::Init(consolePanel->GetStream());
@@ -162,7 +165,7 @@ namespace XYZ {
 			m_CommandBuffer->Begin();
 			m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 			
-			m_OverlayRenderer2D->BeginScene(m_EditorCamera->GetViewProjection(), m_EditorCamera->GetViewMatrix(), false);
+			m_OverlayRenderer2D->BeginScene(m_EditorCamera->GetViewMatrix(), false);
 			
 			renderSelected();
 			renderColliders();

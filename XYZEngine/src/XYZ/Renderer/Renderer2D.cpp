@@ -42,47 +42,27 @@ namespace XYZ {
 		return indices;
 	}
 
-	Renderer2D::Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer)
+	Renderer2D::Renderer2D(const Renderer2DConfiguration& config)
 		:
-		m_RenderCommandBuffer(commandBuffer)
+		m_RenderCommandBuffer(config.CommandBuffer),
+		m_RenderPass(config.Pass),
+		m_CameraBufferSet(config.CameraBufferSet),
+		m_QuadMaterial(config.QuadMaterial),
+		m_LineMaterial(config.LineMaterial),
+		m_CircleMaterial(config.CircleMaterial)
 	{
-		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
-			
-		createRenderPass();	
+		XYZ_ASSERT(m_RenderCommandBuffer.Raw(), "");
+		XYZ_ASSERT(m_RenderPass.Raw(), "");
+		XYZ_ASSERT(m_CameraBufferSet.Raw(), "");
+
 		const auto& defaultResources = Renderer::GetDefaultResources();
-
-		m_QuadMaterial = defaultResources.DefaultQuadMaterial;
-		m_LineMaterial = defaultResources.DefaultLineMaterial;
-		m_CircleMaterial = defaultResources.DefaultCircleMaterial;
-
-		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
-		m_UniformBufferSet->Create(sizeof(UBCamera), 0, 0);
-
-
-		createDefaultPipelineBuckets();
-	}
-
-	Renderer2D::Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer, 
-		const Ref<MaterialAsset>& quadMaterial, 
-		const Ref<MaterialAsset>& lineMaterial, 
-		const Ref<MaterialAsset>& circleMaterial,
-		const Ref<RenderPass>& renderPass
-	)
-		:
-		m_RenderCommandBuffer(commandBuffer),
-		m_QuadMaterial(quadMaterial),
-		m_LineMaterial(lineMaterial),
-		m_CircleMaterial(circleMaterial)
-	{
-		if (!renderPass.Raw())
-			createRenderPass();
-		else
-			m_RenderPass = renderPass;
-
-		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
-		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
-		m_UniformBufferSet->Create(sizeof(UBCamera), 0, 0);
-
+		if (!m_QuadMaterial.Raw())
+			m_QuadMaterial = defaultResources.DefaultQuadMaterial;
+		if (!m_LineMaterial.Raw())
+			m_LineMaterial = defaultResources.DefaultLineMaterial;
+		if (!m_CircleMaterial.Raw())
+			m_CircleMaterial = defaultResources.DefaultCircleMaterial;
+	
 		createDefaultPipelineBuckets();
 	}
 
@@ -90,7 +70,7 @@ namespace XYZ {
 	{
 	}
 
-	void Renderer2D::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, bool clear)
+	void Renderer2D::BeginScene(const glm::mat4& viewMatrix, bool clear)
 	{
 		m_Stats.DrawCalls = 0;
 		m_Stats.LineDrawCalls = 0;
@@ -98,7 +78,6 @@ namespace XYZ {
 		m_Stats.FilledCircleDrawCalls = 0;
 
 		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
-		m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&viewProjectionMatrix, sizeof(UBCamera), 0);
 		m_ViewMatrix = viewMatrix;
 
 		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, clear);
@@ -158,6 +137,11 @@ namespace XYZ {
 			const size_t circleShaderHash = m_CircleBuffer.Pipeline->GetSpecification().Shader->GetHash();
 			m_CircleBuffer.Pipeline = m_CirclePipelines[circleShaderHash];
 		}
+	}
+
+	void Renderer2D::SetCameraBufferSet(const Ref<UniformBufferSet>& cameraBufferSet)
+	{
+		m_CameraBufferSet = cameraBufferSet;
 	}
 
 	Ref<RenderPass> Renderer2D::GetTargetRenderPass() const
@@ -509,6 +493,10 @@ namespace XYZ {
 
 	void Renderer2D::Flush()
 	{
+		XYZ_ASSERT(m_RenderCommandBuffer.Raw(), "");
+		XYZ_ASSERT(m_CameraBufferSet.Raw(), "");
+		XYZ_ASSERT(m_RenderPass.Raw(), "");
+
 		flush();
 		flushLines();
 		flushFilledCircles();
@@ -584,7 +572,7 @@ namespace XYZ {
 			XYZ_ASSERT(m_QuadMaterial.Raw(), "No material set");
 			m_QuadBuffer.VertexBuffer->Update(m_QuadBuffer.DataPtr(), dataSize, m_QuadBuffer.Offset);
 
-			Renderer::BindPipeline(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_UniformBufferSet, nullptr, m_QuadMaterial->GetMaterial());
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_CameraBufferSet, nullptr, m_QuadMaterial->GetMaterial());
 			Renderer::RenderGeometry(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_QuadMaterial->GetMaterialInstance(), m_QuadBuffer.VertexBuffer, m_QuadBuffer.IndexBuffer, glm::mat4(1.0f), m_QuadBuffer.IndexCount, m_QuadBuffer.Offset);
 			m_Stats.DrawCalls++;
 			
@@ -600,7 +588,7 @@ namespace XYZ {
 			XYZ_ASSERT(dataSize + m_LineBuffer.Offset < m_LineBuffer.VertexBuffer->GetSize(), "");
 			m_LineBuffer.VertexBuffer->Update(m_LineBuffer.DataPtr(), dataSize, m_LineBuffer.Offset);
 			
-			Renderer::BindPipeline(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_UniformBufferSet, nullptr, m_LineMaterial->GetMaterial());
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_CameraBufferSet, nullptr, m_LineMaterial->GetMaterial());
 			Renderer::RenderGeometry(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_LineMaterial->GetMaterialInstance(), m_LineBuffer.VertexBuffer, m_LineBuffer.IndexBuffer, glm::mat4(1.0f), m_LineBuffer.IndexCount, m_LineBuffer.Offset);
 
 			m_Stats.LineDrawCalls++;
@@ -618,7 +606,7 @@ namespace XYZ {
 			XYZ_ASSERT(dataSize + m_CircleBuffer.Offset < m_CircleBuffer.VertexBuffer->GetSize(), "");
 			m_CircleBuffer.VertexBuffer->Update(m_CircleBuffer.DataPtr(), dataSize, m_CircleBuffer.Offset);
 			
-			Renderer::BindPipeline(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_UniformBufferSet, nullptr, m_CircleMaterial->GetMaterial());
+			Renderer::BindPipeline(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_CameraBufferSet, nullptr, m_CircleMaterial->GetMaterial());
 			Renderer::RenderGeometry(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_CircleMaterial->GetMaterialInstance(), m_CircleBuffer.VertexBuffer, m_CircleBuffer.IndexBuffer, glm::mat4(1.0f), m_CircleBuffer.IndexCount, m_CircleBuffer.Offset);
 
 			m_Stats.FilledCircleDrawCalls++;

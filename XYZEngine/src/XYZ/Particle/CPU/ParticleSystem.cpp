@@ -21,7 +21,6 @@ namespace XYZ {
 
 	void Mat4ToTransformData(glm::vec4* transformRows, const glm::mat4& transform)
 	{
-		RenderQueue::TransformData data;
 		transformRows[0] = { transform[0][0], transform[1][0], transform[2][0], transform[3][0] };
 		transformRows[1] = { transform[0][1], transform[1][1], transform[2][1], transform[3][1] };
 		transformRows[2] = { transform[0][2], transform[1][2], transform[2][2], transform[3][2] };

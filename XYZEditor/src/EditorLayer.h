@@ -64,7 +64,7 @@ namespace XYZ {
 		private:
 			Ref<Scene>					m_Scene;
 			Ref<SceneRenderer>			m_SceneRenderer;
-
+		
 			// Overlay rendering
 			Ref<RenderCommandBuffer>	m_CommandBuffer;
 			Ref<Renderer2D>				m_OverlayRenderer2D;

@@ -138,7 +138,7 @@ Entities:
         LightColor: [0, 1, 1]
         LightRadius: 4.5999999
         LightIntensity: 4.4000001
-        MaxLights: 76
+        MaxLights: 52
         BurstInterval: 5
         Bursts:
           - Count: 0

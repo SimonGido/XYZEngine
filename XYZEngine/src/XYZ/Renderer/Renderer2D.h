@@ -41,28 +41,34 @@ namespace XYZ {
 		uint32_t		  Offset = 0;
 	};
 
+	struct Renderer2DConfiguration
+	{
+		Ref<RenderCommandBuffer> CommandBuffer;
+		Ref<RenderPass>			 Pass;
+		Ref<UniformBufferSet>    CameraBufferSet;
+
+		Ref<MaterialAsset>		 QuadMaterial;
+		Ref<MaterialAsset>		 LineMaterial;
+		Ref<MaterialAsset>		 CircleMaterial;
+	};
+
 	class Renderer2D : public RefCount
 	{
 	public:
-		Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer);
-		Renderer2D(const Ref<RenderCommandBuffer>& commandBuffer,
-			const Ref<MaterialAsset>& quadMaterial,
-			const Ref<MaterialAsset>& lineMaterial,
-			const Ref<MaterialAsset>& circleMaterial,
-			const Ref<RenderPass>& renderPass
-		);
+		Renderer2D(const Renderer2DConfiguration& config);
 		~Renderer2D();
 
-		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, bool clear = true);
+		void BeginScene(const glm::mat4& viewMatrix, bool clear = true);
 
 		void SetQuadMaterial(const Ref<MaterialAsset>& material);
 		void SetLineMaterial(const Ref<MaterialAsset>& material);
 		void SetCircleMaterial(const Ref<MaterialAsset>& material);
 		void SetCommandBuffer(const Ref<RenderCommandBuffer>& commandBuffer);
 		void SetTargetRenderPass(const Ref<RenderPass>& renderPass);
+		void SetCameraBufferSet(const Ref<UniformBufferSet>& cameraBufferSet);
+
 
 		Ref<RenderPass> GetTargetRenderPass() const;
-		Ref<UniformBufferSet> GetCameraBufferSet() const { return m_UniformBufferSet; }
 
 		void SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color = glm::vec4(1.0f));
 		void SubmitFilledCircle(const glm::vec3& pos, const glm::vec2& size, float thickness, const glm::vec4& color = glm::vec4(1.0f));
@@ -149,7 +155,9 @@ namespace XYZ {
 		};
 	private:
 		Ref<RenderCommandBuffer> m_RenderCommandBuffer;
+		Ref<UniformBufferSet>	 m_CameraBufferSet;
 		Ref<RenderPass>			 m_RenderPass;
+
 
 		Ref<MaterialAsset>		 m_QuadMaterial;
 		Ref<MaterialAsset>		 m_LineMaterial;
@@ -166,13 +174,9 @@ namespace XYZ {
 
 
 		Renderer2DStats		  m_Stats;	
-		Ref<UniformBufferSet> m_UniformBufferSet;
+		
 
-		struct UBCamera
-		{
-			glm::mat4 ViewProjection;
-		};
-		glm::mat4 m_ViewMatrix;
+		glm::mat4			  m_ViewMatrix;
 	};
 
 	template<typename VertexType>

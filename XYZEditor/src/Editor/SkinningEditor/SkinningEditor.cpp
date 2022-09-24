@@ -40,9 +40,9 @@ namespace XYZ {
 			Ref<MaterialAsset> lineMaterial = Ref<MaterialAsset>::Create(Renderer::GetDefaultResources().DefaultLineMaterial->GetShaderAsset());
 			Ref<MaterialAsset> circleMaterial = Ref<MaterialAsset>::Create(Renderer::GetDefaultResources().DefaultCircleMaterial->GetShaderAsset());
 
-			m_Renderer2D = Ref<Renderer2D>::Create(m_CommandBuffer, quadMaterial, lineMaterial, circleMaterial, nullptr);	
+			//m_Renderer2D = Ref<Renderer2D>::Create(m_CommandBuffer, quadMaterial, lineMaterial, circleMaterial, nullptr);	
 			m_BoneTransformsStorageSet = StorageBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
-			m_BoneTransformsStorageSet->Create(1 * sizeof(RenderQueue::BoneTransforms), 2, 0);
+			m_BoneTransformsStorageSet->Create(1 * sizeof(GeometryRenderQueue::BoneTransforms), 2, 0);
 			m_TransformsVertexBuffer = VertexBuffer::Create(1 * sizeof(glm::mat4));
 
 			
@@ -107,31 +107,31 @@ namespace XYZ {
 			m_CommandBuffer->Begin();
 	
 			m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
-			m_Renderer2D->BeginScene(camera.GetViewProjectionMatrix(), camera.GetViewMatrix(), true);
+			m_Renderer2D->BeginScene(camera.GetViewMatrix(), true);
 	
 			// TODO: it is flickering because, Storage with bones is updater multiple times per frame ( it is global inside shaders )
-			if (m_Mesh.Raw())
-			{
-				Renderer::BindPipeline(
-					m_CommandBuffer,
-					m_Pipeline,
-					m_Renderer2D->GetCameraBufferSet(),
-					m_BoneTransformsStorageSet,
-					m_MaterialAsset->GetMaterial()
-				);
-
-				Renderer::RenderMesh(
-					m_CommandBuffer,
-					m_Pipeline,
-					m_MaterialAsset->GetMaterialInstance(),
-					m_Mesh->GetVertexBuffer(),
-					m_Mesh->GetIndexBuffer(),
-					0,
-					m_TransformsVertexBuffer,
-					0,
-					1
-				);
-			}
+			//if (m_Mesh.Raw())
+			//{
+			//	Renderer::BindPipeline(
+			//		m_CommandBuffer,
+			//		m_Pipeline,
+			//		m_Renderer2D->GetCameraBufferSet(),
+			//		m_BoneTransformsStorageSet,
+			//		m_MaterialAsset->GetMaterial()
+			//	);
+			//
+			//	Renderer::RenderMesh(
+			//		m_CommandBuffer,
+			//		m_Pipeline,
+			//		m_MaterialAsset->GetMaterialInstance(),
+			//		m_Mesh->GetVertexBuffer(),
+			//		m_Mesh->GetIndexBuffer(),
+			//		0,
+			//		m_TransformsVertexBuffer,
+			//		0,
+			//		1
+			//	);
+			//}
 
 			const uint32_t width = m_Texture->GetWidth();
 			const uint32_t height = m_Texture->GetHeight();
