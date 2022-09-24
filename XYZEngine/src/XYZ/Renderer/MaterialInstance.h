@@ -19,7 +19,8 @@ namespace XYZ {
 		template <typename T>
 		T& Get(const std::string_view name);
 
-		Ref<Shader> GetShader() const;
+		Ref<Shader>   GetShader() const;
+		Ref<Material> GetMaterial() const { return m_Material; }
 
 		const ByteBuffer GetFSUniformsBuffer() const;
 		const ByteBuffer GetVSUniformsBuffer() const;

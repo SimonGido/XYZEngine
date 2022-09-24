@@ -27,12 +27,11 @@ namespace XYZ {
 		Renderer2DBuffer() = default;
 		~Renderer2DBuffer();
 
-		void Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, uint32_t maxVertices, uint32_t* indices, uint32_t indexCount, PrimitiveTopology topology = PrimitiveTopology::Triangles);
+		void Init(uint32_t maxVertices, uint32_t* indices, uint32_t indexCount);
 		void Reset();
 		uint32_t DataSize() const;
 		uint8_t* DataPtr() const;
 
-		Ref<Pipeline>	  Pipeline;
 		Ref<IndexBuffer>  IndexBuffer;
 		Ref<VertexBuffer> VertexBuffer;
 		VertexType*		  BufferBase = nullptr;
@@ -44,12 +43,7 @@ namespace XYZ {
 	struct Renderer2DConfiguration
 	{
 		Ref<RenderCommandBuffer> CommandBuffer;
-		Ref<RenderPass>			 Pass;
 		Ref<UniformBufferSet>    CameraBufferSet;
-
-		Ref<MaterialAsset>		 QuadMaterial;
-		Ref<MaterialAsset>		 LineMaterial;
-		Ref<MaterialAsset>		 CircleMaterial;
 	};
 
 	class Renderer2D : public RefCount
@@ -58,17 +52,11 @@ namespace XYZ {
 		Renderer2D(const Renderer2DConfiguration& config);
 		~Renderer2D();
 
-		void BeginScene(const glm::mat4& viewMatrix, bool clear = true);
+		void BeginScene(const glm::mat4& viewMatrix);
 
-		void SetQuadMaterial(const Ref<MaterialAsset>& material);
-		void SetLineMaterial(const Ref<MaterialAsset>& material);
-		void SetCircleMaterial(const Ref<MaterialAsset>& material);
 		void SetCommandBuffer(const Ref<RenderCommandBuffer>& commandBuffer);
-		void SetTargetRenderPass(const Ref<RenderPass>& renderPass);
 		void SetCameraBufferSet(const Ref<UniformBufferSet>& cameraBufferSet);
 
-
-		Ref<RenderPass> GetTargetRenderPass() const;
 
 		void SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color = glm::vec4(1.0f));
 		void SubmitFilledCircle(const glm::vec3& pos, const glm::vec2& size, float thickness, const glm::vec4& color = glm::vec4(1.0f));
@@ -90,13 +78,13 @@ namespace XYZ {
 		void SubmitRect(const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		void SubmitAABB(const glm::vec3& min, const glm::vec3& max, const glm::vec4& color);
 
-		void Flush();
-		void EndScene();
-		
-		Ref<MaterialAsset> GetQuadMaterialAsset() const { return m_QuadMaterial;}
-		Ref<MaterialAsset> GetCircleMaterialAsset() const { return m_CircleMaterial;}
-		Ref<MaterialAsset> GetLineMaterialAsset() const { return m_LineMaterial; }
 
+		void FlushQuads(const Ref<Pipeline>& pipeline, const Ref<MaterialInstance>& materialInstance, bool reset);
+		void FlushLines(const Ref<Pipeline>& pipeline, const Ref<MaterialInstance>& materialInstance, bool reset);
+		void FlushFilledCircles(const Ref<Pipeline>& pipeline, const Ref<MaterialInstance>& materialInstance, bool reset);
+
+		void EndScene(bool reset = true);
+			
 		const Renderer2DStats&	  GetStats();
 
 		static constexpr uint32_t GetMaxTextures() { return sc_MaxTextures; }
@@ -125,19 +113,9 @@ namespace XYZ {
 			glm::vec4 Color;
 		};
 	private:
-		void resetQuads();
-		void resetLines();
+		void createBuffers();
 
-		void createRenderPass();
-		void createDefaultPipelineBuckets();
-
-		void flush();
-		void flushLines();
-		void flushFilledCircles();
-		void updateRenderPass(Ref<Pipeline>& pipeline) const;
-
-		Ref<Pipeline> setMaterial(std::unordered_map<size_t, Ref<Pipeline>>& pipelines, const Ref<Pipeline>& current, const Ref<Material>& material);
-	
+		
 	private:	
 		static constexpr uint32_t sc_MaxTextures = 32;
 		static constexpr uint32_t sc_MaxQuads = 10000;
@@ -156,18 +134,8 @@ namespace XYZ {
 	private:
 		Ref<RenderCommandBuffer> m_RenderCommandBuffer;
 		Ref<UniformBufferSet>	 m_CameraBufferSet;
-		Ref<RenderPass>			 m_RenderPass;
 
-
-		Ref<MaterialAsset>		 m_QuadMaterial;
-		Ref<MaterialAsset>		 m_LineMaterial;
-		Ref<MaterialAsset>		 m_CircleMaterial;
-								 
-
-		std::unordered_map<size_t, Ref<Pipeline>> m_QuadPipelines;
-		std::unordered_map<size_t, Ref<Pipeline>> m_LinePipelines;
-		std::unordered_map<size_t, Ref<Pipeline>> m_CirclePipelines;
-
+							 
 		Renderer2DBuffer<QuadVertex>   m_QuadBuffer;
 		Renderer2DBuffer<LineVertex>   m_LineBuffer;
 		Renderer2DBuffer<CircleVertex> m_CircleBuffer;
@@ -190,18 +158,11 @@ namespace XYZ {
 
 
 	template<typename VertexType>
-	inline void Renderer2DBuffer<VertexType>::Init(const Ref<RenderPass>& renderPass, const Ref<Shader>& shader, uint32_t maxVertices, uint32_t* indices, uint32_t indexCount,PrimitiveTopology topology)
+	inline void Renderer2DBuffer<VertexType>::Init(uint32_t maxVertices, uint32_t* indices, uint32_t indexCount)
 	{
 		this->BufferBase = new VertexType[maxVertices];
 		this->VertexBuffer = VertexBuffer::Create(maxVertices * sizeof(VertexType));
 		this->IndexBuffer = IndexBuffer::Create(indices, indexCount);
-		PipelineSpecification specification;
-		specification.Shader = shader;
-		specification.Layouts = shader->GetLayouts();
-		specification.RenderPass = renderPass;
-		specification.Topology = topology;
-		specification.DepthTest = true;
-		this->Pipeline = Pipeline::Create(specification);
 		Reset();
 	}
 

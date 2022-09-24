@@ -32,6 +32,24 @@ namespace XYZ {
 		return data;
 	}
 
+	static void CopyToBoneStorage(GeometryRenderQueue::BoneTransforms& storage, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<AnimatedMesh>& mesh)
+	{
+		if (boneTransforms.empty())
+		{
+			for (auto& bone : storage)
+				bone = ozz::math::Float4x4::identity();
+		}
+		else
+		{
+			const auto& boneInfo = mesh->GetMeshSource()->GetBoneInfo();
+			for (size_t i = 0; i < boneTransforms.size(); ++i)
+			{
+				const uint32_t jointIndex = boneInfo[i].JointIndex;
+				storage[i] = boneInfo[i].InverseTransform * boneTransforms[jointIndex] * boneInfo[i].BoneOffset;
+			}
+		}
+	}
+
 	SceneRenderer::SceneRenderer(Ref<Scene> scene, SceneRendererSpecification specification)
 		:
 		m_Specification(specification),
@@ -58,6 +76,7 @@ namespace XYZ {
 		createGeometryPass();
 		createCompositePass();
 		createLightPass();
+		createDepthPass();
 		createBloomTextures();
 
 		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
@@ -68,11 +87,8 @@ namespace XYZ {
 		Ref<ShaderAsset> compositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
 		Ref<ShaderAsset> lightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
 		Ref<ShaderAsset> bloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
-		Ref<ShaderAsset> meshShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/MeshShader.shader");
 
-
-		m_GeometryPass2D.Init({ m_GeometryRenderPass, m_CameraBufferSet }, m_CommandBuffer);
-		m_GeometryPass3D.Init({ m_GeometryRenderPass, m_CameraBufferSet });
+		m_GeometryPass.Init({ m_GeometryRenderPass, m_DepthRenderPass, m_CameraBufferSet }, m_CommandBuffer);
 		m_DeferredLightPass.Init({ m_LightRenderPass, lightShaderAsset->GetShader() }, m_CommandBuffer);
 		m_BloomPass.Init({ bloomShaderAsset->GetShader(), m_BloomTexture }, m_CommandBuffer);
 		m_CompositePass.Init({ m_CompositeRenderPass, compositeShaderAsset->GetShader() }, m_CommandBuffer);
@@ -115,8 +131,6 @@ namespace XYZ {
 	{
 		preRender();
 
-		
-
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 
@@ -124,12 +138,12 @@ namespace XYZ {
 		Ref<Image2D> positionImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
 		Ref<Image2D> lightImage = m_LightRenderPass->GetSpecification().TargetFramebuffer->GetImage();
 
-		m_GeometryPass3D.Submit(m_CommandBuffer, m_Queue, true);
 		
-		m_GPUTimeQueries.Renderer2DPassQuery = m_CommandBuffer->BeginTimestampQuery();
-		m_GeometryPass2D.Submit(m_CommandBuffer, m_Queue, m_CameraBuffer.ViewMatrix, false);
-		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.Renderer2DPassQuery);
+		//m_GPUTimeQueries.Renderer2DPassQuery = m_CommandBuffer->BeginTimestampQuery();
+
+		//m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.Renderer2DPassQuery);
 		
+		m_GeometryPass.Submit(m_CommandBuffer, m_Queue, m_CameraBuffer.ViewMatrix, true);
 		m_DeferredLightPass.Submit(m_CommandBuffer, colorImage, positionImage);
 		m_BloomPass.Submit(m_CommandBuffer, lightImage, { 1.0f, 0.1f }, m_ViewportSize);
 		m_CompositePass.Submit(m_CommandBuffer, lightImage, m_BloomTexture[2]->GetImage());
@@ -233,7 +247,7 @@ namespace XYZ {
 			auto& dcOverride = dc.OverrideCommands.emplace_back();
 			dcOverride.OverrideMaterial = overrideMaterial;
 			dcOverride.Transform = transform * mesh->GetMeshSource()->GetTransform();
-			copyToBoneStorage(dcOverride.BoneTransforms, boneTransforms, mesh);
+			CopyToBoneStorage(dcOverride.BoneTransforms, boneTransforms, mesh);
 		}
 		else
 		{
@@ -241,7 +255,7 @@ namespace XYZ {
 			dc.TransformInstanceCount++;
 			dc.TransformData.push_back(Mat4ToTransformData(transform));
 			auto& boneStorage = dc.BoneData.emplace_back();
-			copyToBoneStorage(boneStorage, boneTransforms, mesh);
+			CopyToBoneStorage(boneStorage, boneTransforms, mesh);
 		}
 	}
 
@@ -267,8 +281,8 @@ namespace XYZ {
 			if (ImGui::BeginTable("##Specification", 2, ImGuiTableFlags_SizingFixedFit))
 			{
 				UI::TextTableRow("%s", "Max Light Count:", "%u", DeferredLightPass::GetMaxNumberOfLights());
-				UI::TextTableRow("%s", "Max Transform Instances:", "%u", GeometryPass3D::GetTransformBufferCount());
-				UI::TextTableRow("%s", "Max Instance Data Size:", "%u", GeometryPass3D::GetInstanceBufferSize());
+				UI::TextTableRow("%s", "Max Transform Instances:", "%u", GeometryPass::GetTransformBufferCount());
+				UI::TextTableRow("%s", "Max Instance Data Size:", "%u", GeometryPass::GetInstanceBufferSize());
 
 				ImGui::EndTable();
 			}
@@ -327,12 +341,14 @@ namespace XYZ {
 
 	Ref<RenderPass> SceneRenderer::GetFinalRenderPass() const
 	{
+		return m_DepthRenderPass;
 		return m_CompositeRenderPass;
 	}
 
 	Ref<Image2D> SceneRenderer::GetFinalPassImage() const
 	{
-		return m_CompositeRenderPass->GetSpecification().TargetFramebuffer->GetImage();
+		return GetFinalRenderPass()->GetSpecification().TargetFramebuffer->GetDepthImage();
+		return GetFinalRenderPass()->GetSpecification().TargetFramebuffer->GetImage();
 	}
 	SceneRendererOptions& SceneRenderer::GetOptions()
 	{
@@ -386,7 +402,17 @@ namespace XYZ {
 		renderPassSpec.TargetFramebuffer = framebuffer;
 		m_GeometryRenderPass = RenderPass::Create(renderPassSpec);
 	}
+	void SceneRenderer::createDepthPass()
+	{
+		FramebufferSpecification depthFramebufferSpec;
+		depthFramebufferSpec.Attachments = { ImageFormat::RED32F, ImageFormat::DEPTH24STENCIL8 };
+		depthFramebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 
+		RenderPassSpecification depthRenderPassSpec;
+		depthRenderPassSpec.TargetFramebuffer = Framebuffer::Create(depthFramebufferSpec);
+
+		m_DepthRenderPass = RenderPass::Create(depthRenderPassSpec);
+	}
 	void SceneRenderer::createBloomTextures()
 	{
 		TextureProperties props;
@@ -424,7 +450,7 @@ namespace XYZ {
 	}
 	void SceneRenderer::preRender()
 	{
-		GeometryPassStatistics stats = m_GeometryPass3D.PreSubmit(m_Queue);
+		GeometryPassStatistics stats = m_GeometryPass.PreSubmit(m_Queue);
 		m_DeferredLightPass.PreSubmit(m_ActiveScene);
 
 		m_RenderStatistics.MeshDrawCommandCount = static_cast<uint32_t>(m_Queue.MeshDrawCommands.size());
@@ -434,25 +460,5 @@ namespace XYZ {
 		m_RenderStatistics.TransformInstanceCount = stats.TransformInstanceCount;
 		m_RenderStatistics.InstanceDataSize = stats.InstanceDataSize;
 		m_RenderStatistics.SpriteDrawCommandCount = static_cast<uint32_t>(m_Queue.SpriteDrawCommands.size());	
-	}
-
-	
-	
-	void SceneRenderer::copyToBoneStorage(GeometryRenderQueue::BoneTransforms& storage, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<AnimatedMesh>& mesh)
-	{
-		if (boneTransforms.empty())
-		{
-			for (auto& bone : storage)
-				bone = ozz::math::Float4x4::identity();
-		}
-		else
-		{
-			const auto& boneInfo = mesh->GetMeshSource()->GetBoneInfo();
-			for (size_t i = 0; i < boneTransforms.size(); ++i)
-			{
-				const uint32_t jointIndex = boneInfo[i].JointIndex;
-				storage[i] = boneInfo[i].InverseTransform * boneTransforms[jointIndex] * boneInfo[i].BoneOffset;
-			}
-		}
 	}
 }

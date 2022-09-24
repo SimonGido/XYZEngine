@@ -1,0 +1,12 @@
+Shader: 628cd10d-a9e7-41c9-af8e-69a9718ee96d
+Opaque: true
+Textures:
+  []
+TextureArrays:
+  []
+MaterialData:
+  - Name: u_Renderer.Transform
+    Type: 14
+  - Name: u_Renderer.BoneIndex
+    Type: 9
+    Value: 0

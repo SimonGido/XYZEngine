@@ -122,11 +122,6 @@ namespace XYZ {
 		XYZ_ASSERT(m_Specification.Layers > 1, "");
 
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-
-		VkImageAspectFlags aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		if (m_Specification.Format == ImageFormat::DEPTH24STENCIL8)
-			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-
 		const VkFormat vulkanFormat = Utils::VulkanImageFormat(m_Specification.Format);
 
 		if (m_PerLayerImageViews.empty())
@@ -328,7 +323,7 @@ namespace XYZ {
 		imageViewCreateInfo.subresourceRange.baseArrayLayer = baseLayer;
 		imageViewCreateInfo.subresourceRange.layerCount = layerCount;
 		imageViewCreateInfo.image = m_Info.Image;
-		findUsage();
+
 		return imageViewCreateInfo;
 	}
 	VkSamplerCreateInfo VulkanImage2D::createSamplerCreateInfo() const

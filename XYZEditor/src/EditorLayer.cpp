@@ -45,13 +45,10 @@ namespace XYZ {
 
 			m_OverlayRenderer2D = Ref<Renderer2D>::Create(Renderer2DConfiguration{
 				m_CommandBuffer,
-				m_SceneRenderer->GetFinalRenderPass(),
 				m_SceneRenderer->GetCameraBufferSet(),
-				m_QuadMaterial, 
-				m_LineMaterial, 
-				m_CircleMaterial
 			});
-	
+			createOverlayPipelines();
+
 			m_EditorManager.SetSceneContext(m_Scene);
 			auto consolePanel = m_EditorManager.RegisterPanel<Editor::EditorConsolePanel>("ConsolePanel");
 			EditorLogger::Init(consolePanel->GetStream());
@@ -165,15 +162,23 @@ namespace XYZ {
 			m_CommandBuffer->Begin();
 			m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 			
-			m_OverlayRenderer2D->BeginScene(m_EditorCamera->GetViewMatrix(), false);
-			
+			Renderer::BeginRenderPass(m_CommandBuffer, m_SceneRenderer->GetFinalRenderPass(), false);	
+			m_OverlayRenderer2D->BeginScene(m_EditorCamera->GetViewMatrix());	
 			renderSelected();
 			renderColliders();
 			renderCameras();
-			renderLights();
-
+			renderLights();	
+			Renderer::BindPipeline(m_CommandBuffer, m_OverlayQuadPipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_QuadMaterial->GetMaterial());
+			m_OverlayRenderer2D->FlushQuads(m_OverlayQuadPipeline, m_QuadMaterial->GetMaterialInstance(), true);
+			
+			Renderer::BindPipeline(m_CommandBuffer, m_OverlayLinePipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_LineMaterial->GetMaterial());
+			m_OverlayRenderer2D->FlushLines(m_OverlayLinePipeline, m_LineMaterial->GetMaterialInstance(), true);
+			
+			Renderer::BindPipeline(m_CommandBuffer, m_OverlayCirclePipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_CircleMaterial->GetMaterial());
+			m_OverlayRenderer2D->FlushFilledCircles(m_OverlayCirclePipeline, m_CircleMaterial->GetMaterialInstance(), true);
 			
 			m_OverlayRenderer2D->EndScene();
+			Renderer::EndRenderPass(m_CommandBuffer);
 
 			m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
 			
@@ -280,6 +285,40 @@ namespace XYZ {
 					
 					m_OverlayRenderer2D->SubmitAABB(min, max, s_Data.Color[ED::BoundingBox]);
 				}
+			}
+		}
+
+		void EditorLayer::createOverlayPipelines()
+		{
+			{
+				PipelineSpecification spec;
+				spec.Layouts = m_QuadMaterial->GetShader()->GetLayouts();
+				spec.RenderPass = m_SceneRenderer->GetFinalRenderPass();
+				spec.Shader = m_QuadMaterial->GetShader();
+				spec.Topology = PrimitiveTopology::Triangles;
+				spec.DepthTest = true;
+				spec.DepthWrite = true;
+				m_OverlayQuadPipeline = Pipeline::Create(spec);
+			}
+			{
+				PipelineSpecification spec;
+				spec.Layouts = m_CircleMaterial->GetShader()->GetLayouts();
+				spec.RenderPass = m_SceneRenderer->GetFinalRenderPass();
+				spec.Shader = m_CircleMaterial->GetShader();
+				spec.Topology = PrimitiveTopology::Triangles;
+				spec.DepthTest = true;
+				spec.DepthWrite = true;
+				m_OverlayCirclePipeline = Pipeline::Create(spec);
+			}
+			{
+				PipelineSpecification spec;
+				spec.Layouts = m_LineMaterial->GetShader()->GetLayouts();
+				spec.RenderPass = m_SceneRenderer->GetFinalRenderPass();
+				spec.Shader = m_LineMaterial->GetShader();
+				spec.Topology = PrimitiveTopology::Lines;
+				spec.DepthTest = true;
+				spec.DepthWrite = true;
+				m_OverlayLinePipeline = Pipeline::Create(spec);
 			}
 		}
 

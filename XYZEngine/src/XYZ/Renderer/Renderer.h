@@ -50,6 +50,11 @@ namespace XYZ {
 		Ref<MaterialAsset>  OverlayCircleMaterial;
 
 		Ref<MaterialAsset>  DefaultParticleMaterial;
+
+
+		Ref<MaterialAsset>	DefaultDepth3DMaterial;
+		Ref<MaterialAsset>	DefaultDepth2DMaterial;
+		Ref<MaterialAsset>	DefaultDepthInstancedMaterial;
 	};
 
 	struct RendererConfiguration

@@ -81,7 +81,7 @@ namespace XYZ {
 					m_UpdateViewport = true;
 				}
 				
-				UI::Image(m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->GetImage(), viewportPanelSize);
+				//UI::Image(m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->GetImage(), viewportPanelSize);
 				
 				bool handled = handleToolbar();
 				if (m_Hoovered && m_Focused && !handled)
@@ -93,21 +93,21 @@ namespace XYZ {
 		}
 		void SkinningEditor::OnUpdate(Timestep ts)
 		{
-			if (m_UpdateViewport)
-			{
-				m_UpdateViewport = false;
-				m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
-				m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->Resize(m_ViewportSize.x, m_ViewportSize.y);
-			}
-			if (m_Hoovered && m_Focused)
-			{
-				m_CameraController.OnUpdate(ts);
-			}
-			auto& camera = m_CameraController.GetCamera();
-			m_CommandBuffer->Begin();
-	
-			m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
-			m_Renderer2D->BeginScene(camera.GetViewMatrix(), true);
+			//if (m_UpdateViewport)
+			//{
+			//	m_UpdateViewport = false;
+			//	m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
+			//	m_Renderer2D->GetTargetRenderPass()->GetSpecification().TargetFramebuffer->Resize(m_ViewportSize.x, m_ViewportSize.y);
+			//}
+			//if (m_Hoovered && m_Focused)
+			//{
+			//	m_CameraController.OnUpdate(ts);
+			//}
+			//auto& camera = m_CameraController.GetCamera();
+			//m_CommandBuffer->Begin();
+			//
+			//m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
+			//m_Renderer2D->BeginScene(camera.GetViewMatrix(), true);
 	
 			// TODO: it is flickering because, Storage with bones is updater multiple times per frame ( it is global inside shaders )
 			//if (m_Mesh.Raw())
@@ -250,7 +250,7 @@ namespace XYZ {
 			
 			PipelineSpecification spec;
 			spec.Layouts = shader->GetLayouts();
-			spec.RenderPass = m_Renderer2D->GetTargetRenderPass();
+			//spec.RenderPass = m_Renderer2D->GetTargetRenderPass();
 			spec.Shader = shader;
 			spec.Topology = PrimitiveTopology::Triangles;
 

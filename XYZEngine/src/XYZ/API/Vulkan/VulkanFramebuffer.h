@@ -22,7 +22,6 @@ namespace XYZ {
 		VkFramebuffer					 GetFramebuffer() const { return m_Framebuffer; }
 		const std::vector<VkClearValue>& GetVulkanClearValues() const { return m_ClearValues; }
 		bool							 HasDepthAttachment() const { return m_DepthAttachmentImage.Raw(); }
-		Ref<Image2D>					 GetDepthAttachment() const { return m_DepthAttachmentImage; }
 		
 		void Invalidate();
 		void RT_Invalidate();

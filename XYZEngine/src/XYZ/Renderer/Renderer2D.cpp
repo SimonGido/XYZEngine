@@ -45,32 +45,19 @@ namespace XYZ {
 	Renderer2D::Renderer2D(const Renderer2DConfiguration& config)
 		:
 		m_RenderCommandBuffer(config.CommandBuffer),
-		m_RenderPass(config.Pass),
-		m_CameraBufferSet(config.CameraBufferSet),
-		m_QuadMaterial(config.QuadMaterial),
-		m_LineMaterial(config.LineMaterial),
-		m_CircleMaterial(config.CircleMaterial)
+		m_CameraBufferSet(config.CameraBufferSet)
 	{
 		XYZ_ASSERT(m_RenderCommandBuffer.Raw(), "");
-		XYZ_ASSERT(m_RenderPass.Raw(), "");
 		XYZ_ASSERT(m_CameraBufferSet.Raw(), "");
 
-		const auto& defaultResources = Renderer::GetDefaultResources();
-		if (!m_QuadMaterial.Raw())
-			m_QuadMaterial = defaultResources.DefaultQuadMaterial;
-		if (!m_LineMaterial.Raw())
-			m_LineMaterial = defaultResources.DefaultLineMaterial;
-		if (!m_CircleMaterial.Raw())
-			m_CircleMaterial = defaultResources.DefaultCircleMaterial;
-	
-		createDefaultPipelineBuckets();
+		createBuffers();
 	}
 
 	Renderer2D::~Renderer2D()
 	{
 	}
 
-	void Renderer2D::BeginScene(const glm::mat4& viewMatrix, bool clear)
+	void Renderer2D::BeginScene(const glm::mat4& viewMatrix)
 	{
 		m_Stats.DrawCalls = 0;
 		m_Stats.LineDrawCalls = 0;
@@ -79,36 +66,6 @@ namespace XYZ {
 
 		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
 		m_ViewMatrix = viewMatrix;
-
-		Renderer::BeginRenderPass(m_RenderCommandBuffer, m_RenderPass, clear);
-	}
-
-
-	void Renderer2D::SetQuadMaterial(const Ref<MaterialAsset>& material)
-	{
-		if (m_QuadMaterial.Raw() != material.Raw())
-		{
-			m_QuadMaterial = material;
-			m_QuadBuffer.Pipeline = setMaterial(m_QuadPipelines, m_QuadBuffer.Pipeline, material->GetMaterial());
-		}
-	}
-
-	void Renderer2D::SetLineMaterial(const Ref<MaterialAsset>& material)
-	{
-		if (m_LineMaterial.Raw() != material.Raw())
-		{
-			m_LineMaterial = material;
-			m_LineBuffer.Pipeline = setMaterial(m_LinePipelines, m_LineBuffer.Pipeline, material->GetMaterial());
-		}
-	}
-
-	void Renderer2D::SetCircleMaterial(const Ref<MaterialAsset>& material)
-	{
-		if (m_CircleMaterial.Raw() != material.Raw())
-		{
-			m_CircleMaterial = material;
-			m_CircleBuffer.Pipeline = setMaterial(m_CirclePipelines, m_CircleBuffer.Pipeline, material->GetMaterial());
-		}
 	}
 
 	void Renderer2D::SetCommandBuffer(const Ref<RenderCommandBuffer>& commandBuffer)
@@ -116,39 +73,12 @@ namespace XYZ {
 		m_RenderCommandBuffer = commandBuffer;
 	}
 
-	void Renderer2D::SetTargetRenderPass(const Ref<RenderPass>& renderPass)
-	{
-		if (m_RenderPass.Raw() != renderPass.Raw())
-		{
-			m_RenderPass = renderPass;
-			for (auto& [hash, pipeline] : m_QuadPipelines)
-				updateRenderPass(pipeline);
-			for (auto& [hash, pipeline] : m_LinePipelines)
-				updateRenderPass(pipeline);
-			for (auto& [hash, pipeline] : m_CirclePipelines)
-				updateRenderPass(pipeline);
-
-			const size_t quadShaderHash = m_QuadBuffer.Pipeline->GetSpecification().Shader->GetHash();
-			m_QuadBuffer.Pipeline = m_QuadPipelines[quadShaderHash];
-
-			const size_t lineShaderHash = m_LineBuffer.Pipeline->GetSpecification().Shader->GetHash();
-			m_LineBuffer.Pipeline = m_LinePipelines[lineShaderHash];
-
-			const size_t circleShaderHash = m_CircleBuffer.Pipeline->GetSpecification().Shader->GetHash();
-			m_CircleBuffer.Pipeline = m_CirclePipelines[circleShaderHash];
-		}
-	}
-
 	void Renderer2D::SetCameraBufferSet(const Ref<UniformBufferSet>& cameraBufferSet)
 	{
 		m_CameraBufferSet = cameraBufferSet;
 	}
 
-	Ref<RenderPass> Renderer2D::GetTargetRenderPass() const
-	{
-		return m_RenderPass;
-	}
-	
+
 	void Renderer2D::SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color)
 	{
 		if (m_LineBuffer.IndexCount + (sides * 3) >= sc_MaxLineIndices)
@@ -490,151 +420,84 @@ namespace XYZ {
 		m_QuadBuffer.IndexCount += 6;
 	}
 
-
-	void Renderer2D::Flush()
-	{
-		XYZ_ASSERT(m_RenderCommandBuffer.Raw(), "");
-		XYZ_ASSERT(m_CameraBufferSet.Raw(), "");
-		XYZ_ASSERT(m_RenderPass.Raw(), "");
-
-		flush();
-		flushLines();
-		flushFilledCircles();
-	}
-
-	void Renderer2D::EndScene()
-	{	
-		Flush();
-		m_QuadBuffer.Reset();
-		m_LineBuffer.Reset();
-		m_CircleBuffer.Reset();
-		Renderer::EndRenderPass(m_RenderCommandBuffer);
-	}
-	void Renderer2D::resetQuads()
-	{
-		m_QuadBuffer.Reset();
-	}
-
-	void Renderer2D::resetLines()
-	{
-		m_LineBuffer.Reset();
-	}
-
-	void Renderer2D::createRenderPass()
-	{
-		FramebufferSpecification framebufferSpec;
-		framebufferSpec.Attachments = {
-				FramebufferTextureSpecification(ImageFormat::RGBA32F),
-				FramebufferTextureSpecification(ImageFormat::RGBA32F)
-		};
-		framebufferSpec.Samples = 1;
-		framebufferSpec.ClearOnLoad = false;
-		framebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-		Ref<Framebuffer> framebuffer = Framebuffer::Create(framebufferSpec);
-
-		RenderPassSpecification renderPassSpec;
-		renderPassSpec.TargetFramebuffer = framebuffer;
-		m_RenderPass = RenderPass::Create(renderPassSpec);
-	}
-
-	void Renderer2D::createDefaultPipelineBuckets()
-	{
-		uint32_t* quadIndices = GenerateQuadIndices(sc_MaxIndices);
-		
-		auto quadMaterial = m_QuadMaterial->GetMaterial();
-		auto lineMaterial = m_LineMaterial->GetMaterial();
-		auto circleMaterial = m_CircleMaterial->GetMaterial();
-
-		m_QuadBuffer.Init(m_RenderPass, quadMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices);
-		const size_t quadShaderHash = quadMaterial->GetShader()->GetHash();
-		m_QuadPipelines.emplace(quadShaderHash, m_QuadBuffer.Pipeline);
-
-		uint32_t* lineIndices = GenerateLineIndices(sc_MaxLineIndices);
-		m_LineBuffer.Init(m_RenderPass, lineMaterial->GetShader(), sc_MaxLineVertices, lineIndices, sc_MaxLineIndices, PrimitiveTopology::Lines);
-		const size_t lineShaderHash = lineMaterial->GetShader()->GetHash();
-		m_LinePipelines.emplace(lineShaderHash, m_LineBuffer.Pipeline);
-
-
-		m_CircleBuffer.Init(m_RenderPass, circleMaterial->GetShader(), sc_MaxVertices, quadIndices, sc_MaxIndices);
-		const size_t circleShaderHash = circleMaterial->GetShader()->GetHash();
-		m_CirclePipelines.emplace(circleShaderHash, m_CircleBuffer.Pipeline);
-
-		delete[]quadIndices;
-		delete[]lineIndices;
-	}
-	void Renderer2D::flush()
+	void Renderer2D::FlushQuads(const Ref<Pipeline>& pipeline, const Ref<MaterialInstance>& materialInstance, bool reset)
 	{
 		const uint32_t dataSize = m_QuadBuffer.DataSize();
 		if (dataSize)
 		{
 			XYZ_ASSERT(dataSize + m_QuadBuffer.Offset < m_QuadBuffer.VertexBuffer->GetSize(), "");
-			XYZ_ASSERT(m_QuadMaterial.Raw(), "No material set");
 			m_QuadBuffer.VertexBuffer->Update(m_QuadBuffer.DataPtr(), dataSize, m_QuadBuffer.Offset);
 
-			Renderer::BindPipeline(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_CameraBufferSet, nullptr, m_QuadMaterial->GetMaterial());
-			Renderer::RenderGeometry(m_RenderCommandBuffer, m_QuadBuffer.Pipeline, m_QuadMaterial->GetMaterialInstance(), m_QuadBuffer.VertexBuffer, m_QuadBuffer.IndexBuffer, glm::mat4(1.0f), m_QuadBuffer.IndexCount, m_QuadBuffer.Offset);
+			Renderer::RenderGeometry(m_RenderCommandBuffer, pipeline, materialInstance, m_QuadBuffer.VertexBuffer, m_QuadBuffer.IndexBuffer, glm::mat4(1.0f), m_QuadBuffer.IndexCount, m_QuadBuffer.Offset);
 			m_Stats.DrawCalls++;
-			
+
 			m_QuadBuffer.IndexCount = 0;
 			m_QuadBuffer.Offset += dataSize;
-		}		
+		}
+		if (reset)
+			m_QuadBuffer.Reset();
 	}
-	void Renderer2D::flushLines()
+	void Renderer2D::FlushLines(const Ref<Pipeline>& pipeline, const Ref<MaterialInstance>& materialInstance, bool reset)
 	{
 		const uint32_t dataSize = m_LineBuffer.DataSize();
 		if (dataSize)
 		{
 			XYZ_ASSERT(dataSize + m_LineBuffer.Offset < m_LineBuffer.VertexBuffer->GetSize(), "");
 			m_LineBuffer.VertexBuffer->Update(m_LineBuffer.DataPtr(), dataSize, m_LineBuffer.Offset);
-			
-			Renderer::BindPipeline(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_CameraBufferSet, nullptr, m_LineMaterial->GetMaterial());
-			Renderer::RenderGeometry(m_RenderCommandBuffer, m_LineBuffer.Pipeline, m_LineMaterial->GetMaterialInstance(), m_LineBuffer.VertexBuffer, m_LineBuffer.IndexBuffer, glm::mat4(1.0f), m_LineBuffer.IndexCount, m_LineBuffer.Offset);
+
+			Renderer::RenderGeometry(m_RenderCommandBuffer, pipeline, materialInstance, m_LineBuffer.VertexBuffer, m_LineBuffer.IndexBuffer, glm::mat4(1.0f), m_LineBuffer.IndexCount, m_LineBuffer.Offset);
 
 			m_Stats.LineDrawCalls++;
 			m_LineBuffer.IndexCount = 0;
 			m_LineBuffer.Offset += dataSize;
-		}	
+		}
+		if (reset)
+			m_LineBuffer.Reset();
 	}
 
 
-	void Renderer2D::flushFilledCircles()
+	void Renderer2D::FlushFilledCircles(const Ref<Pipeline>& pipeline, const Ref<MaterialInstance>& materialInstance, bool reset)
 	{
 		const uint32_t dataSize = m_CircleBuffer.DataSize();
 		if (dataSize)
 		{
 			XYZ_ASSERT(dataSize + m_CircleBuffer.Offset < m_CircleBuffer.VertexBuffer->GetSize(), "");
 			m_CircleBuffer.VertexBuffer->Update(m_CircleBuffer.DataPtr(), dataSize, m_CircleBuffer.Offset);
-			
-			Renderer::BindPipeline(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_CameraBufferSet, nullptr, m_CircleMaterial->GetMaterial());
-			Renderer::RenderGeometry(m_RenderCommandBuffer, m_CircleBuffer.Pipeline, m_CircleMaterial->GetMaterialInstance(), m_CircleBuffer.VertexBuffer, m_CircleBuffer.IndexBuffer, glm::mat4(1.0f), m_CircleBuffer.IndexCount, m_CircleBuffer.Offset);
+
+			Renderer::RenderGeometry(m_RenderCommandBuffer, pipeline, materialInstance, m_CircleBuffer.VertexBuffer, m_CircleBuffer.IndexBuffer, glm::mat4(1.0f), m_CircleBuffer.IndexCount, m_CircleBuffer.Offset);
 
 			m_Stats.FilledCircleDrawCalls++;
 
 			m_CircleBuffer.IndexCount = 0;
 			m_CircleBuffer.Offset += dataSize;
 		}
+		if (reset)
+			m_CircleBuffer.Reset();
 	}
 
-	void Renderer2D::updateRenderPass(Ref<Pipeline>& pipeline) const
-	{
-		auto spec = pipeline->GetSpecification();
-		spec.RenderPass = m_RenderPass;
-		pipeline = Pipeline::Create(spec);
+	void Renderer2D::EndScene(bool reset)
+	{	
+		if (reset)
+		{
+			m_QuadBuffer.Reset();
+			m_LineBuffer.Reset();
+			m_CircleBuffer.Reset();
+		}
 	}
 
-	Ref<Pipeline> Renderer2D::setMaterial(std::unordered_map<size_t, Ref<Pipeline>>& pipelines, const Ref<Pipeline>& current, const Ref<Material>& material)
+
+	void Renderer2D::createBuffers()
 	{
-		const size_t shaderHash = material->GetShader()->GetHash();
-		auto it = pipelines.find(shaderHash);
-		if (it != pipelines.end())
-			return it->second;
+		uint32_t* quadIndices = GenerateQuadIndices(sc_MaxIndices);
+		uint32_t* lineIndices = GenerateLineIndices(sc_MaxLineIndices);
 		
-		auto spec = current->GetSpecification();
-		spec.Shader = material->GetShader();
-		return Pipeline::Create(spec);
-	}
+		m_QuadBuffer.Init(sc_MaxVertices, quadIndices, sc_MaxIndices);
+		m_LineBuffer.Init(sc_MaxLineVertices, lineIndices, sc_MaxLineIndices);
+		m_CircleBuffer.Init(sc_MaxVertices, quadIndices, sc_MaxIndices);
 
+		delete[]quadIndices;
+		delete[]lineIndices;
+	}
 
 	const Renderer2DStats& Renderer2D::GetStats()
 	{

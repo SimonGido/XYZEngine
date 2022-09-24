@@ -472,6 +472,15 @@ namespace XYZ {
 
 		DefaultParticleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
 		DefaultParticleMaterial->SetFlag(AssetFlag::ReadOnly);
+		
+		DefaultDepth3DMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth.mat");
+		DefaultDepth3DMaterial->SetFlag(AssetFlag::ReadOnly);
+
+		DefaultDepth2DMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth2D.mat");
+		DefaultDepth2DMaterial->SetFlag(AssetFlag::ReadOnly);
+		
+		DefaultDepthInstancedMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepthInstanced.mat");
+		DefaultDepthInstancedMaterial->SetFlag(AssetFlag::ReadOnly);
 	}
 	void RendererResources::Shutdown()
 	{
@@ -485,6 +494,10 @@ namespace XYZ {
 		OverlayCircleMaterial.Reset();
 
 		DefaultParticleMaterial.Reset();
+
+		DefaultDepth3DMaterial.Reset();
+		DefaultDepth2DMaterial.Reset();
+		DefaultDepthInstancedMaterial.Reset();
 	}
 
 }

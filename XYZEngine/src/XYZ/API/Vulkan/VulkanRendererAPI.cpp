@@ -239,7 +239,7 @@ namespace XYZ {
 			Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
 			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
 
-			const VkCommandBuffer commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
+			const VkCommandBuffer		   commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 
 
@@ -309,7 +309,7 @@ namespace XYZ {
 
 			if (vsData.Size)
 				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, vsData.Size, vsData.Bytes);
-			if (fsUniformStorage)
+			if (fsUniformStorage.Size)
 				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, vsUniformStorage.Size, fsUniformStorage.Size, fsUniformStorage.Data);
 
 			vkCmdDrawIndexed(commandBuffer, indexBuffer->GetCount(), instanceCount, 0, 0, 0);

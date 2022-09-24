@@ -56,6 +56,8 @@ namespace XYZ {
 			void renderLights();
 			void renderSelected();
 
+			void createOverlayPipelines();
+
 			std::pair<glm::vec3, glm::vec3> cameraToAABB(const TransformComponent& transform, const SceneCamera& camera) const;
 			std::pair<glm::vec3, glm::vec3> transformToAABB(const TransformComponent& transform) const;
 		private:
@@ -72,6 +74,10 @@ namespace XYZ {
 			Ref<MaterialAsset>			m_QuadMaterial;
 			Ref<MaterialAsset>			m_LineMaterial;
 			Ref<MaterialAsset>			m_CircleMaterial;
+			Ref<Pipeline>				m_OverlayQuadPipeline;
+			Ref<Pipeline>				m_OverlayLinePipeline;
+			Ref<Pipeline>				m_OverlayCirclePipeline;
+
 			EditorCamera*				m_EditorCamera = nullptr;
 
 			bool m_ShowColliders = true;

@@ -84,13 +84,11 @@ namespace XYZ {
 		void createCompositePass();
 		void createLightPass();
 		void createGeometryPass();
+		void createDepthPass();
 		void createBloomTextures();
 
 		void updateViewportSize();
-
 		void preRender();
-	
-		void copyToBoneStorage(GeometryRenderQueue::BoneTransforms& storage, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<AnimatedMesh>& mesh);
 	private:
 		struct CameraData
 		{
@@ -99,8 +97,7 @@ namespace XYZ {
 			glm::vec4 ViewPosition;
 		};
 
-		GeometryPass2D	  m_GeometryPass2D;
-		GeometryPass3D	  m_GeometryPass3D;
+		GeometryPass	  m_GeometryPass;
 		DeferredLightPass m_DeferredLightPass;
 		BloomPass		  m_BloomPass;
 		CompositePass	  m_CompositePass;
@@ -108,6 +105,7 @@ namespace XYZ {
 		Ref<RenderPass>				  m_GeometryRenderPass;
 		Ref<RenderPass>				  m_CompositeRenderPass;
 		Ref<RenderPass>				  m_LightRenderPass;
+		Ref<RenderPass>				  m_DepthRenderPass;
 		std::array<Ref<Texture2D>, 3> m_BloomTexture;
 
 		SceneRendererSpecification m_Specification;
