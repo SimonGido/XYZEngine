@@ -174,6 +174,11 @@ namespace XYZ {
 		if (!forceCompile)
 			forceCompile = !binaryExists(sources);
 		
+		if (forceCompile)
+		{
+			XYZ_INFO("Compiling shader {}", m_Name);
+		}
+
 		DataMap shaderData = compileOrGetVulkanBinaries(sources, forceCompile);
 		reflectAllStages(shaderData);
 		createProgram(shaderData);
@@ -443,7 +448,6 @@ namespace XYZ {
 	VulkanShader::DataMap VulkanShader::compileOrGetVulkanBinaries(const VulkanShader::SourceMap& shaderSources, bool forceCompile)
 	{
 		DataMap outputBinary;
-		XYZ_CORE_INFO("Compiling shader {}", m_Name);
 		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
 		for (auto [stage, source] : shaderSources)
 		{

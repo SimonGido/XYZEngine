@@ -1,0 +1,9 @@
+Shader: a29bbe35-4b81-4c73-b642-a8aec3be16cc
+Opaque: true
+Textures:
+  []
+TextureArrays:
+  []
+MaterialData:
+  - Name: u_ScreenData.u_ScreenSize
+    Type: 10

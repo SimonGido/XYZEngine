@@ -5,3 +5,9 @@ Textures:
     Handle: 670eeb29-9103-4232-9a7b-ca0640f1c542
 TextureArrays:
   []
+MaterialData:
+  - Name: u_Renderer.Transform
+    Type: 14
+  - Name: u_Uniforms.Tiles
+    Type: 5
+    Value: [0, 0]

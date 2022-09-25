@@ -37,11 +37,15 @@ namespace XYZ {
 			m_CommandBuffer = RenderCommandBuffer::Create(0, "Editor");
 			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
-			m_QuadMaterial	 = Renderer::GetDefaultResources().OverlayQuadMaterial;
-			m_LineMaterial	 = Renderer::GetDefaultResources().OverlayLineMaterial;
-			m_CircleMaterial = Renderer::GetDefaultResources().OverlayCircleMaterial;
-			m_QuadMaterial->SetTexture("u_Texture", m_CameraTexture, 0);
+			m_QuadMaterial	 = Renderer::GetDefaultResources().OverlayQuadMaterial->GetMaterial();
+			m_LineMaterial	 = Renderer::GetDefaultResources().OverlayLineMaterial->GetMaterial();
+			m_CircleMaterial = Renderer::GetDefaultResources().OverlayCircleMaterial->GetMaterial();
 
+			m_QuadMaterialInstance   = Renderer::GetDefaultResources().OverlayQuadMaterial->GetMaterialInstance();
+			m_LineMaterialInstance   = Renderer::GetDefaultResources().OverlayLineMaterial->GetMaterialInstance();
+			m_CircleMaterialInstance = Renderer::GetDefaultResources().OverlayCircleMaterial->GetMaterialInstance();
+
+			m_QuadMaterial->SetImageArray("u_Texture", m_CameraTexture->GetImage(), 0);
 
 			m_OverlayRenderer2D = Ref<Renderer2D>::Create(Renderer2DConfiguration{
 				m_CommandBuffer,
@@ -61,42 +65,11 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::AssetManagerViewPanel>("AssetManagerViewPanel");
 			m_EditorManager.RegisterPanel<Editor::AssetBrowser>("AssetBrowser");
 			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
-			//m_EditorManager.RegisterPanel<Editor::AnimationEditor>("AnimationEditor");
-
-			//SceneEntity newEntity = m_Scene->CreateEntity("Havko", GUID());
-			//SceneEntity childEntity = m_Scene->CreateEntity("Child", newEntity, GUID());
-			//
-			//
-			//ParticleRenderer& particleRenderer = newEntity.EmplaceComponent<ParticleRenderer>(
-			//	MeshFactory::CreateBox(glm::vec3(0.5f)),
-			//	Renderer::GetDefaultResources().DefaultParticleMaterial
-			//);
-			//ParticleSystem system(50);
-			//auto& particleComponent = newEntity.EmplaceComponent<ParticleComponent>();
-			//particleComponent.System = system;
-			//
-			//auto& spriteRenderer = newEntity.EmplaceComponent<SpriteRenderer>();
-			//Ref<MaterialAsset> spriteMaterial = Renderer::GetDefaultResources().DefaultQuadMaterial;
-			//spriteRenderer.Material = spriteMaterial;
-			//spriteRenderer.SubTexture = Ref<SubTexture>::Create(Texture2D::Create("Assets/Textures/1_ORK_head.png"));
-
-
-			//auto meshSource = Ref<MeshSource>::Create("Resources/Meshes/Character Running.fbx");
-			//auto skeleton = Ref<SkeletonAsset>::Create("Resources/Meshes/Character Running.fbx");
-			//auto animMesh = Ref<AnimatedMesh>::Create(meshSource);
-			//auto anim = Ref<AnimationAsset>::Create("Resources/Meshes/Character Running.fbx", "Armature|ArmatureAction", skeleton);
-			//auto animMeshMaterialAsset = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/AnimMeshMaterial.mat");
-
-
+	
 
 			Ref<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
 			scenePanel->SetSceneRenderer(m_SceneRenderer);
 			m_EditorCamera = &scenePanel->GetEditorCamera();
-			
-			// auto prefab = Ref<Prefab>::Create();
-			// prefab->Create(animMesh, "Test");
-			// SceneEntity animEntity = prefab->Instantiate(m_Scene);
-
 
 			Renderer::WaitAndRenderAll();
 		}
@@ -104,7 +77,7 @@ namespace XYZ {
 		void EditorLayer::OnDetach()
 		{
 			s_Data.Shutdown();
-			// AssetManager::SerializeAll();
+			AssetManager::SerializeAll();
 			SceneSerializer serializer;
 			serializer.Serialize("Assets/Scenes/Scene.xyz", m_Scene);
 			ScriptEngine::Shutdown();
@@ -168,14 +141,14 @@ namespace XYZ {
 			renderColliders();
 			renderCameras();
 			renderLights();	
-			Renderer::BindPipeline(m_CommandBuffer, m_OverlayQuadPipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_QuadMaterial->GetMaterial());
-			m_OverlayRenderer2D->FlushQuads(m_OverlayQuadPipeline, m_QuadMaterial->GetMaterialInstance(), true);
+			Renderer::BindPipeline(m_CommandBuffer, m_OverlayQuadPipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_QuadMaterial);
+			m_OverlayRenderer2D->FlushQuads(m_OverlayQuadPipeline, m_QuadMaterialInstance, true);
 			
-			Renderer::BindPipeline(m_CommandBuffer, m_OverlayLinePipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_LineMaterial->GetMaterial());
-			m_OverlayRenderer2D->FlushLines(m_OverlayLinePipeline, m_LineMaterial->GetMaterialInstance(), true);
+			Renderer::BindPipeline(m_CommandBuffer, m_OverlayLinePipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_LineMaterial);
+			m_OverlayRenderer2D->FlushLines(m_OverlayLinePipeline, m_LineMaterialInstance, true);
 			
-			Renderer::BindPipeline(m_CommandBuffer, m_OverlayCirclePipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_CircleMaterial->GetMaterial());
-			m_OverlayRenderer2D->FlushFilledCircles(m_OverlayCirclePipeline, m_CircleMaterial->GetMaterialInstance(), true);
+			Renderer::BindPipeline(m_CommandBuffer, m_OverlayCirclePipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_CircleMaterial);
+			m_OverlayRenderer2D->FlushFilledCircles(m_OverlayCirclePipeline, m_CircleMaterialInstance, true);
 			
 			m_OverlayRenderer2D->EndScene();
 			Renderer::EndRenderPass(m_CommandBuffer);

@@ -765,9 +765,10 @@ namespace XYZ {
 
 		if (framebuffer->HasDepthAttachment())
 		{
+			Ref<VulkanImage2D> depthImage = framebuffer->GetDepthImage();
 			attachments.push_back({});
 			clearRects.push_back({});
-			attachments[colorAttachmentCount].aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+			attachments[colorAttachmentCount].aspectMask = depthImage->GetImageViewAspectFlags();
 			attachments[colorAttachmentCount].clearValue = clearValues[colorAttachmentCount];
 			clearRects[colorAttachmentCount].rect.offset = { 0, 0 };
 			clearRects[colorAttachmentCount].rect.extent = { width, height };

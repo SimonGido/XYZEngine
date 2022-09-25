@@ -133,7 +133,14 @@ namespace XYZ {
 			VK_CHECK_RESULT(vkCreateImageView(device, &imageViewCreateInfo, nullptr, &m_PerLayerImageViews[layer]));
 		}
 	}
+	VkImageAspectFlags VulkanImage2D::GetImageViewAspectFlags() const
+	{
+		VkImageAspectFlags aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		if (m_Specification.Format == ImageFormat::DEPTH24STENCIL8)
+			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 
+		return aspectMask;
+	}
 	VkImageView VulkanImage2D::GetMipImageView(uint32_t mip)
 	{
 		if (mip >= m_MipImageViews.size() || !m_MipImageViews[mip].Created)
@@ -307,9 +314,7 @@ namespace XYZ {
 	}
 	VkImageViewCreateInfo VulkanImage2D::createImageViewCreateInfo(uint32_t layerCount, uint32_t baseLayer, uint32_t mipCount, uint32_t baseMip) const
 	{
-		VkImageAspectFlags aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		if (m_Specification.Format == ImageFormat::DEPTH24STENCIL8)
-			aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		VkImageAspectFlags aspectMask = GetImageViewAspectFlags();
 
 		VkImageViewCreateInfo imageViewCreateInfo = {};
 		imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;

@@ -143,7 +143,7 @@ namespace XYZ {
 				spec.Height = m_Specification.Height;
 				depthAttachmentImage->RT_Invalidate(); // Create immediately
 				attachmentDescription.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-				if (attachmentSpec.Format == ImageFormat::DEPTH24STENCIL8) // Separate layouts requires a "separate layouts" flag to be enabled
+				if (attachmentSpec.Format == ImageFormat::DEPTH24STENCIL8 || true) // Separate layouts requires a "separate layouts" flag to be enabled
 				{
 					attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; // TODO: if not sampling
 					attachmentDescription.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL; // TODO: if sampling

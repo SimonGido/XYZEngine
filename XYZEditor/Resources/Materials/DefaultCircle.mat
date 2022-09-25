@@ -1,5 +1,9 @@
 Shader: b8fb2002-f95f-4c1d-9587-fc019c0e895c
+Opaque: true
 Textures:
   []
 TextureArrays:
   []
+MaterialData:
+  - Name: u_Renderer.Transform
+    Type: 14

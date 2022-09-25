@@ -9,7 +9,6 @@
 layout(std140, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjectionMatrix;
-	mat4 u_InverseViewProjectionMatrix;
 	mat4 u_ProjectionMatrix;
 	mat4 u_ViewMatrix;
 };
@@ -142,16 +141,16 @@ void main()
 	// Parallelize the threads against the lights now.
 	// Can handle 256 simultaniously. Anymore lights than that and additional passes are performed
 	uint threadCount = TILE_SIZE * TILE_SIZE;
-	uint passCount = (u_PointLightsCount + threadCount - 1) / threadCount;
+	uint passCount = (NumberPointLights + threadCount - 1) / threadCount;
 	for (uint i = 0; i < passCount; i++)
 	{
 		// Get the lightIndex to test for this thread / pass. If the index is >= light count, then this thread can stop testing lights
 		uint lightIndex = i * threadCount + gl_LocalInvocationIndex;
-		if (lightIndex >= u_PointLightsCount)
+		if (lightIndex >= NumberPointLights)
 			break;
 
-		vec4 position = vec4(u_PointLights[lightIndex].Position, 1.0f);
-		float radius = u_PointLights[lightIndex].Radius;
+		vec4 position = vec4(PointLights[lightIndex].Position, 0.0f, 1.0f);
+		float radius = PointLights[lightIndex].Radius;
 		radius += radius * 0.3f;
 
 		// Check if light radius is in frustum
@@ -179,14 +178,14 @@ void main()
 	{
 		uint offset = index * 1024; // Determine bosition in global buffer
 		for (uint i = 0; i < visibleLightCount; i++) {
-			visibleLightIndicesBuffer.indices[offset + i] = visibleLightIndices[i];
+			visibleLightIndicesBuffer.Indices[offset + i] = visibleLightIndices[i];
 		}
 
 		if (visibleLightCount != 1024)
 		{
 			// Unless we have totally filled the entire array, mark it's end with -1
 			// Final shader step will use this to determine where to stop (without having to pass the light count)
-			visibleLightIndicesBuffer.indices[offset + visibleLightCount] = -1;
+			visibleLightIndicesBuffer.Indices[offset + visibleLightCount] = -1;
 		}
 	}
 }

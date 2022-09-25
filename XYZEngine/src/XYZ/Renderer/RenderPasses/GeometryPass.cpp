@@ -186,22 +186,22 @@ namespace XYZ {
 
 		for (auto& [key, command] : queue.SpriteDrawCommands)
 		{
-			Ref<Pipeline> pipeline = prepareGeometryPipeline(command.Material->GetMaterial(), false);
+			Ref<Pipeline> pipeline = prepareGeometryPipeline(command.Material, false);
 			for (const auto& data : command.SpriteData)
 				m_Renderer2D->SubmitQuad(data.Transform, data.TexCoords, data.TextureIndex, data.Color);
 
-			Renderer::BindPipeline(commandBuffer, pipeline, m_CameraBufferSet, nullptr, command.Material->GetMaterial());
-			m_Renderer2D->FlushQuads(pipeline, command.Material->GetMaterialInstance(), true);
+			Renderer::BindPipeline(commandBuffer, pipeline, m_CameraBufferSet, nullptr, command.Material);
+			m_Renderer2D->FlushQuads(pipeline, command.MaterialInstance, true);
 		}
 
 		for (auto& [key, command] : queue.BillboardDrawCommands)
 		{
-			Ref<Pipeline> pipeline = prepareGeometryPipeline(command.Material->GetMaterial(), false);
+			Ref<Pipeline> pipeline = prepareGeometryPipeline(command.Material, false);
 			for (const auto& data : command.BillboardData)
 				m_Renderer2D->SubmitQuadBillboard(data.Position, data.Size, data.TexCoords, data.TextureIndex, data.Color);
 
-			Renderer::BindPipeline(commandBuffer, pipeline, m_CameraBufferSet, nullptr, command.Material->GetMaterial());
-			m_Renderer2D->FlushQuads(pipeline, command.Material->GetMaterialInstance(), true);
+			Renderer::BindPipeline(commandBuffer, pipeline, m_CameraBufferSet, nullptr, command.Material);
+			m_Renderer2D->FlushQuads(pipeline, command.MaterialInstance, true);
 		}
 		m_Renderer2D->EndScene();
 	}
@@ -323,14 +323,14 @@ namespace XYZ {
 			for (const auto& data : command.SpriteData)
 				m_Renderer2D->SubmitQuad(data.Transform, data.TexCoords, data.TextureIndex, data.Color);
 
-			m_Renderer2D->FlushQuads(m_DepthPipeline2D.Pipeline, command.Material->GetMaterialInstance(), false);
+			m_Renderer2D->FlushQuads(m_DepthPipeline2D.Pipeline, command.MaterialInstance, false);
 		}
 		for (auto& [key, command] : queue.BillboardDrawCommands)
 		{	
 			for (const auto& data : command.BillboardData)
 				m_Renderer2D->SubmitQuadBillboard(data.Position, data.Size, data.TexCoords, data.TextureIndex, data.Color);
 
-			m_Renderer2D->FlushQuads(m_DepthPipeline2D.Pipeline, command.Material->GetMaterialInstance(), false);
+			m_Renderer2D->FlushQuads(m_DepthPipeline2D.Pipeline, command.MaterialInstance, false);
 		}
 		m_Renderer2D->EndScene(false);
 	}
@@ -388,7 +388,7 @@ namespace XYZ {
 				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 				imageMemoryBarrier.image = image->GetImageInfo().Image;
-				imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+				imageMemoryBarrier.subresourceRange = { image->GetImageViewAspectFlags() , 0, image->GetSpecification().Mips, 0, 1};
 				imageMemoryBarrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 				imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
@@ -420,19 +420,17 @@ namespace XYZ {
 	{
 		for (auto& [key, command] : queue.SpriteDrawCommands)
 		{
-			Ref<Material> material = command.Material->GetMaterial();
 			for (uint32_t i = 0; i < command.TextureCount; ++i)
-				material->SetImageArray("u_Texture", command.Textures[i]->GetImage(), i);
+				command.Material->SetImageArray("u_Texture", command.Textures[i]->GetImage(), i);
 			for (uint32_t i = command.TextureCount; i < Renderer2D::GetMaxTextures(); ++i)
-				material->SetImageArray("u_Texture", m_WhiteTexture->GetImage(), i);
+				command.Material->SetImageArray("u_Texture", m_WhiteTexture->GetImage(), i);
 		}
 		for (auto& [key, command] : queue.BillboardDrawCommands)
 		{
-			Ref<Material> material = command.Material->GetMaterial();
 			for (uint32_t i = 0; i < command.TextureCount; ++i)
-				material->SetImageArray("u_Texture", command.Textures[i]->GetImage(), i);
+				command.Material->SetImageArray("u_Texture", command.Textures[i]->GetImage(), i);
 			for (uint32_t i = command.TextureCount; i < Renderer2D::GetMaxTextures(); ++i)
-				material->SetImageArray("u_Texture", m_WhiteTexture->GetImage(), i);
+				command.Material->SetImageArray("u_Texture", m_WhiteTexture->GetImage(), i);
 		}
 	}
 

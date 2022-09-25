@@ -55,6 +55,9 @@ namespace XYZ {
 		Ref<MaterialAsset>	DefaultDepth3DMaterial;
 		Ref<MaterialAsset>	DefaultDepth2DMaterial;
 		Ref<MaterialAsset>	DefaultDepthInstancedMaterial;
+
+
+		Ref<MaterialAsset>  LightCullingMaterial;
 	};
 
 	struct RendererConfiguration

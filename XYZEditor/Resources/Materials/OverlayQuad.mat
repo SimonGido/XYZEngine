@@ -1,10 +1,10 @@
 Shader: 02bb9795-5513-4a73-add1-6050f27c6cac
+Opaque: true
 Textures:
   []
 TextureArrays:
   - Name: u_Texture
     Textures:
-      - c5293dfe-f907-4b9b-9284-449e6313f3ba
       - 670eeb29-9103-4232-9a7b-ca0640f1c542
       - 670eeb29-9103-4232-9a7b-ca0640f1c542
       - 670eeb29-9103-4232-9a7b-ca0640f1c542
@@ -36,3 +36,7 @@ TextureArrays:
       - 670eeb29-9103-4232-9a7b-ca0640f1c542
       - 670eeb29-9103-4232-9a7b-ca0640f1c542
       - 670eeb29-9103-4232-9a7b-ca0640f1c542
+      - 670eeb29-9103-4232-9a7b-ca0640f1c542
+MaterialData:
+  - Name: u_Renderer.Transform
+    Type: 14

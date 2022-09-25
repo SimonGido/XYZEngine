@@ -35,6 +35,7 @@ namespace XYZ {
 	}
 	void ShaderAsset::SetLayouts(std::vector<BufferLayout> layouts)
 	{
+		XYZ_ASSERT(!IsFlagSet(AssetFlag::ReadOnly), "Asset is readonly");
 		m_Layouts = std::move(layouts);
 		m_Shader->SetLayouts(m_Layouts);
 	}

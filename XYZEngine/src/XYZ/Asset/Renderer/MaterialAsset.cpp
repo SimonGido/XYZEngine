@@ -18,6 +18,7 @@ namespace XYZ {
 	}
 	void MaterialAsset::SetShaderAsset(Ref<ShaderAsset> shaderAsset)
 	{
+		XYZ_ASSERT(!IsFlagSet(AssetFlag::ReadOnly), "Asset is readonly");
 		m_ShaderAsset = shaderAsset;
 		m_Material = Material::Create(shaderAsset->GetShader());
 		m_MaterialInstance = Ref<MaterialInstance>::Create(m_Material);
@@ -25,6 +26,7 @@ namespace XYZ {
 	}
 	void MaterialAsset::SetTexture(const std::string& name, Ref<Texture2D> texture)
 	{
+		XYZ_ASSERT(!IsFlagSet(AssetFlag::ReadOnly), "Asset is readonly");
 		for (auto& it : m_Textures)
 		{
 			if (it.Name == name)
@@ -38,6 +40,7 @@ namespace XYZ {
 	}
 	void MaterialAsset::SetTexture(const std::string& name, Ref<Texture2D> texture, uint32_t index)
 	{
+		XYZ_ASSERT(!IsFlagSet(AssetFlag::ReadOnly), "Asset is readonly");
 		const size_t arrayIndex = static_cast<size_t>(index);
 		for (auto& texArray : m_TextureArrays)
 		{

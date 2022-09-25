@@ -1,8 +1,10 @@
 #pragma once
 #include "XYZ/Core/GUID.h"
 #include "XYZ/Core/Timestep.h"
+#include "XYZ/Core/Application.h"
 
 #include "XYZ/Utils/DataStructures/MemoryPool.h"
+#include "XYZ/Utils/DataStructures/Queue.h"
 
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Utils/FileSystem.h"
@@ -15,7 +17,6 @@
 #include "AssetImporter.h"
 #include "AssetRegistry.h"
 #include "Asset.h"
-
 
 
 namespace XYZ {
@@ -69,7 +70,6 @@ namespace XYZ {
 
 		template<typename T>
 		static Ref<T> GetMemoryAsset(const AssetHandle& assetHandle);
-
 
 		template<typename T, typename... Args>
 		static Ref<T> CreateAsset(const std::string& filename, const std::string& directoryPath, Args&&... args);
@@ -183,6 +183,8 @@ namespace XYZ {
 		}
 		return asset.As<T>();
 	}
+
+
 	template<typename T>
 	inline Ref<T> AssetManager::GetAsset(const std::filesystem::path& filepath)
 	{

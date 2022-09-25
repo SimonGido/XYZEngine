@@ -172,7 +172,9 @@ namespace XYZ {
 
 		uint32_t textureIndex = command.SetTexture(subTexture->GetTexture());
 
-		command.Material = material;
+		command.Material = material->GetMaterial();
+		command.MaterialInstance = material->GetMaterialInstance();
+
 		command.BillboardData.push_back({ textureIndex, subTexture->GetTexCoords(), color, position, size });
 	}
 
@@ -183,7 +185,8 @@ namespace XYZ {
 		
 		uint32_t textureIndex = command.SetTexture(subTexture->GetTexture());
 		
-		command.Material = material;
+		command.Material = material->GetMaterial();
+		command.MaterialInstance = material->GetMaterialInstance();
 		command.SpriteData.push_back({ textureIndex, subTexture->GetTexCoords(), color, transform });
 	}
 
@@ -335,19 +338,25 @@ namespace XYZ {
 				}
 				UI::EndTreeNode();
 			}
+			if (UI::BeginTreeNode("Pre Depth Map"))
+			{
+				auto image = m_DepthRenderPass->GetSpecification().TargetFramebuffer->GetDepthImage();
+				const float size = ImGui::GetContentRegionAvail().x;
+				UI::Image(image, { size, size });
+
+				UI::EndTreeNode();
+			}
 		}
 		ImGui::End();
 	}
 
 	Ref<RenderPass> SceneRenderer::GetFinalRenderPass() const
 	{
-		return m_DepthRenderPass;
 		return m_CompositeRenderPass;
 	}
 
 	Ref<Image2D> SceneRenderer::GetFinalPassImage() const
 	{
-		return GetFinalRenderPass()->GetSpecification().TargetFramebuffer->GetDepthImage();
 		return GetFinalRenderPass()->GetSpecification().TargetFramebuffer->GetImage();
 	}
 	SceneRendererOptions& SceneRenderer::GetOptions()
@@ -405,7 +414,7 @@ namespace XYZ {
 	void SceneRenderer::createDepthPass()
 	{
 		FramebufferSpecification depthFramebufferSpec;
-		depthFramebufferSpec.Attachments = { ImageFormat::RED32F, ImageFormat::DEPTH24STENCIL8 };
+		depthFramebufferSpec.Attachments = { ImageFormat::RED32F, ImageFormat::DEPTH32F};
 		depthFramebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 		RenderPassSpecification depthRenderPassSpec;

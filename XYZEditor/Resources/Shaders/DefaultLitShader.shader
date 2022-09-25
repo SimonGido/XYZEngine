@@ -1,6 +1,6 @@
 Name: DefaultLitShader
 FilePath: Resources/Shaders/DefaultLitShader.glsl
-SourceHash: 11601763227219981937
+SourceHash: 15416665333671699391
 Layouts:
   - Instanced: false
     Elements:

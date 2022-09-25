@@ -71,9 +71,15 @@ namespace XYZ {
 			Ref<RenderCommandBuffer>	m_CommandBuffer;
 			Ref<Renderer2D>				m_OverlayRenderer2D;
 			Ref<Texture2D>				m_CameraTexture;
-			Ref<MaterialAsset>			m_QuadMaterial;
-			Ref<MaterialAsset>			m_LineMaterial;
-			Ref<MaterialAsset>			m_CircleMaterial;
+			
+			Ref<Material>				m_QuadMaterial;
+			Ref<Material>				m_LineMaterial;
+			Ref<Material>				m_CircleMaterial;
+			
+			Ref<MaterialInstance>		m_QuadMaterialInstance;
+			Ref<MaterialInstance>		m_LineMaterialInstance;
+			Ref<MaterialInstance>		m_CircleMaterialInstance;
+
 			Ref<Pipeline>				m_OverlayQuadPipeline;
 			Ref<Pipeline>				m_OverlayLinePipeline;
 			Ref<Pipeline>				m_OverlayCirclePipeline;

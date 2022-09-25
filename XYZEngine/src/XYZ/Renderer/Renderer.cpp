@@ -481,6 +481,9 @@ namespace XYZ {
 		
 		DefaultDepthInstancedMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepthInstanced.mat");
 		DefaultDepthInstancedMaterial->SetFlag(AssetFlag::ReadOnly);
+	
+		LightCullingMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/LightCulling.mat");
+		LightCullingMaterial->SetFlag(AssetFlag::ReadOnly);
 	}
 	void RendererResources::Shutdown()
 	{
@@ -498,6 +501,8 @@ namespace XYZ {
 		DefaultDepth3DMaterial.Reset();
 		DefaultDepth2DMaterial.Reset();
 		DefaultDepthInstancedMaterial.Reset();
+
+		LightCullingMaterial.Reset();
 	}
 
 }

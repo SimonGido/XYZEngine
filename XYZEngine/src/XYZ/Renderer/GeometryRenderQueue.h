@@ -35,7 +35,9 @@ namespace XYZ {
 
 		struct SpriteDrawCommand
 		{
-			Ref<MaterialAsset>  Material;
+			Ref<Material>		  Material;
+			Ref<MaterialInstance> MaterialInstance;
+
 			std::array<Ref<Texture2D>, Renderer2D::GetMaxTextures()> Textures;
 
 			uint32_t       TextureCount = 0;

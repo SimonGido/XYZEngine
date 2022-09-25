@@ -46,9 +46,9 @@ namespace XYZ {
 		void	RT_CreatePerSpecificLayerImageViews(const std::vector<uint32_t>& layerIndices);
 
 		
-
-		VkImageView GetMipImageView(uint32_t mip);
-		VkImageView RT_GetMipImageView(uint32_t mip);
+		VkImageAspectFlags GetImageViewAspectFlags() const;
+		VkImageView		   GetMipImageView(uint32_t mip);
+		VkImageView		   RT_GetMipImageView(uint32_t mip);
 		const VkDescriptorImageInfo& RT_GetMipImageDescriptor(uint32_t mip);
 
 		VulkanImageInfo& GetImageInfo() { return m_Info; }
@@ -82,6 +82,7 @@ namespace XYZ {
 		};
 		std::vector<MipView>  m_MipImageViews;
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};
+		VkImageAspectFlags	  m_AspectFlags;
 	};
 
 	namespace Utils {
