@@ -101,7 +101,8 @@ namespace XYZ {
 
 
 					UI::Image(m_SceneRenderer->GetFinalPassImage(), viewportPanelSize);
-					acceptDragAndDrop();
+					if (m_Context->GetState() == SceneState::Edit)
+						acceptDragAndDrop();
 
 					bool handled = playBar();
 					handled |= toolsBar();
@@ -431,6 +432,7 @@ namespace XYZ {
 				else if (metadata.Type == AssetType::Scene)
 				{
 					Ref<Scene> scene = AssetManager::GetAsset<Scene>(metadata.Handle);	
+					scene->SetViewportSize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
 					Application::Get().OnEvent(SceneLoadedEvent(scene));
 				}
 			}

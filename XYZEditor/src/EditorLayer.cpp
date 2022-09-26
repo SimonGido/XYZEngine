@@ -87,8 +87,6 @@ namespace XYZ {
 		{
 			s_Data.Shutdown();
 			AssetManager::SerializeAll();
-			SceneSerializer serializer;
-			serializer.Serialize("Assets/Scenes/Scene.xyz", m_Scene);
 			ScriptEngine::Shutdown();
 			m_EditorManager.Clear();
 		}
@@ -115,6 +113,9 @@ namespace XYZ {
 					SceneLoadedEvent& sceneLoadedEvent = (SceneLoadedEvent&)editorEvent;
 					AssetManager::Serialize(m_Scene->GetHandle());
 					m_Scene = sceneLoadedEvent.GetScene();
+					m_SceneRenderer->SetScene(m_Scene);
+					ScriptEngine::SetSceneContext(m_Scene);
+					m_SelectedEntity = {};
 				}
 			}
 			m_EditorManager.OnEvent(event);

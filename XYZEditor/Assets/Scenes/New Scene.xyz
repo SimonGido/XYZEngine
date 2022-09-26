@@ -1,4 +1,26 @@
 Scene: New Scene.xyz
 SceneEntity: 11dd0d24-2d51-422e-b3d7-7c0687676f45
+FirstChild: 37e33f0d-0d0d-4d03-94ce-ee93a1d328f3
 Entities:
-  []
+  - Entity: 3b2f2bd6-5819-4f92-b917-472bbf18a056
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 11dd0d24-2d51-422e-b3d7-7c0687676f45
+      PreviousSibling: 37e33f0d-0d0d-4d03-94ce-ee93a1d328f3
+      Depth: 1
+  - Entity: 37e33f0d-0d0d-4d03-94ce-ee93a1d328f3
+    SceneTagComponent:
+      Name: Empty Entity
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 11dd0d24-2d51-422e-b3d7-7c0687676f45
+      NextSibling: 3b2f2bd6-5819-4f92-b917-472bbf18a056
+      Depth: 1
