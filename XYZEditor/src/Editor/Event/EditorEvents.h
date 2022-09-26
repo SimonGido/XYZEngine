@@ -8,7 +8,8 @@ namespace XYZ {
 	{
 		None = 0,
 		EntitySelected,
-		AssetSelected
+		AssetSelected,
+		SceneLoaded
 	};
 
 	class EditorEvent : public Event
@@ -52,5 +53,22 @@ namespace XYZ {
 
 	private:
 		Ref<Asset> m_Asset;
+	};
+
+	class SceneLoadedEvent : public EditorEvent
+	{
+	public:
+		SceneLoadedEvent(Ref<Scene> scene)
+			: m_Scene(scene)
+		{}
+
+		virtual EditorEventType GetEditorEventType() const override { return EditorEventType::SceneLoaded; }
+
+		const Ref<Scene>& GetScene() const { return m_Scene; }
+
+		static EditorEventType GetStaticType() { return EditorEventType::SceneLoaded; }
+
+	private:
+		Ref<Scene> m_Scene;
 	};
 }

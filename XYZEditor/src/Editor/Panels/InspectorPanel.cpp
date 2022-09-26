@@ -28,8 +28,9 @@ namespace XYZ {
 			:
 			EditorPanel(std::move(name))
 		{
-			m_DefaultMaterial = Renderer::GetDefaultResources().DefaultQuadMaterial;
-			m_DefaultSubTexture = Ref<SubTexture>::Create(Renderer::GetDefaultResources().WhiteTexture);
+			m_DefaultMaterial = Renderer::GetDefaultResources().RendererAssets.at("QuadMaterial").As<MaterialAsset>();
+			Ref<Texture2D> whiteTexture = Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>();
+			m_DefaultSubTexture = Ref<SubTexture>::Create(whiteTexture);
 		}
 		void InspectorPanel::OnImGuiRender(bool& open)
 		{
@@ -244,7 +245,7 @@ namespace XYZ {
 					if (ImGui::MenuItem("Particle Component"))
 					{
 						auto& component = m_SelectedEntity.EmplaceComponent<ParticleComponent>();
-						component.System = std::make_shared<ParticleSystem>();
+	
 						m_ParticleInspector.SetSceneEntity(m_SelectedEntity);
 						m_ParticleRendererInspector.SetSceneEntity(m_SelectedEntity);
 						m_EditablesInUse.push_back(&m_ParticleInspector);

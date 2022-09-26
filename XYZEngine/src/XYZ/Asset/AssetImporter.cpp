@@ -35,6 +35,7 @@ namespace XYZ {
 		s_Serializers[ToUnderlying(AssetType::Mesh)] = CreateScope<MeshAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::AnimatedMesh)] = CreateScope<AnimatedMeshAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::SubTexture)] = CreateScope<SubTextureSerializer>();
+		s_Serializers[ToUnderlying(AssetType::Prefab)] = CreateScope<PrefabAssetSerializer>();
 	}
 
 	void AssetImporter::Serialize(const AssetMetadata& metadata, WeakRef<Asset> asset)

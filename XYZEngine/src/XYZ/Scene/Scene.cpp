@@ -208,7 +208,7 @@ namespace XYZ {
 		auto particleView = m_Registry.view<ParticleComponent>();
 		for (auto entity : particleView)
 		{
-			particleView.get<ParticleComponent>(entity).System->Reset();
+			particleView.get<ParticleComponent>(entity).GetSystem()->Reset();
 		}
 
 		CloneRegistry(m_Registry, s_CopyRegistry);
@@ -239,7 +239,7 @@ namespace XYZ {
 		auto particleView = m_Registry.view<ParticleComponent>();
 		for (auto entity : particleView)
 		{
-			particleView.get<ParticleComponent>(entity).System->Reset();
+			particleView.get<ParticleComponent>(entity).GetSystem()->Reset();
 		}
 
 		delete[]m_PhysicsEntityBuffer;
@@ -268,7 +268,7 @@ namespace XYZ {
 			for (auto entity : particleView)
 			{
 				auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
-				particleComponent.System->Update(transformComponent.WorldTransform, ts);
+				particleComponent.GetSystem()->Update(transformComponent.WorldTransform, ts);
 			}
 		}
 
@@ -356,7 +356,7 @@ namespace XYZ {
 		{
 			auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
 
-			auto& renderData = particleComponent.System->GetRenderData();
+			auto& renderData = particleComponent.GetSystem()->GetRenderData();
 		
 			sceneRenderer->SubmitMesh(
 				renderer.Mesh, renderer.MaterialAsset,
@@ -402,7 +402,7 @@ namespace XYZ {
 			for (auto entity : particleView)
 			{
 				auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
-				particleComponent.System->Update(transformComponent.WorldTransform, ts);
+				particleComponent.GetSystem()->Update(transformComponent.WorldTransform, ts);
 			}
 		}
 	}
@@ -469,7 +469,7 @@ namespace XYZ {
 				if (!CheckAsset(renderer.Mesh) || !CheckAsset(renderer.MaterialAsset))
 					continue;
 				
-				const auto& renderData = particleComponent.System->GetRenderData();
+				const auto& renderData = particleComponent.GetSystem()->GetRenderData();
 				sceneRenderer->SubmitMesh(
 					renderer.Mesh, renderer.MaterialAsset,
 					renderData.ParticleData.data(),
@@ -494,6 +494,17 @@ namespace XYZ {
 		for (auto entity : view)
 		{
 			if (view.get<SceneTagComponent>(entity).Name == name)
+				return SceneEntity(entity, this);
+		}
+		return SceneEntity();
+	}
+
+	SceneEntity Scene::GetEntityByGUID(const GUID& guid)
+	{
+		auto view = m_Registry.view<IDComponent>();
+		for (auto entity : view)
+		{
+			if (view.get<IDComponent>(entity).ID == guid)
 				return SceneEntity(entity, this);
 		}
 		return SceneEntity();

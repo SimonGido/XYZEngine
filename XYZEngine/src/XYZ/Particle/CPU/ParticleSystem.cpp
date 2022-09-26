@@ -49,7 +49,6 @@ namespace XYZ {
 
 	ParticleSystem::~ParticleSystem()
 	{
-	
 	}
 
 	ParticleSystem::ParticleSystem(const ParticleSystem& other)
@@ -150,6 +149,7 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("ParticleSystem::Update");
 		if (Play)
 		{		
+			m_Timestep += ts; // Accumulate timestep in case we skip frames
 			pushJobs(transform, ts * Speed);
 		}
 	}
@@ -185,9 +185,11 @@ namespace XYZ {
 		if (m_MaxParticles == 0)
 			return;
 
-		std::unique_lock lock(m_JobsMutex);
+		if (m_JobsCount != 0) // If we did not finish previous jobs, skip one update frame
+			return;
+
 		pushMainJob(ts);
-		
+	
 		if (ModuleEnabled[RotationOverLife])
 			pushRotationJob();
 		if (ModuleEnabled[SizeOverLife])
@@ -202,15 +204,19 @@ namespace XYZ {
 
 		pushBuildLightsDataJob(transform);
 		pushBuildRenderDataJobs(transform);
+
+		m_Timestep = 0;
 	}
 
 	void ParticleSystem::pushMainJob(Timestep ts)
 	{
-		std::shared_ptr<ParticleSystem> instance = shared_from_this();
-		Application::Get().GetThreadPool().PushJob<void>([instance, ts]() {
+		m_JobsCount++;
+		Ref<ParticleSystem> instance = this;
+		Application::Get().GetThreadPool().PushJob<void>([instance, ts]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushMainJob");
 			std::unique_lock lock(instance->m_JobsMutex);
+			
 
 			instance->Emitter.Kill(instance->m_Pool);
 			instance->Emitter.Emit(ts, instance->m_Pool);
@@ -221,13 +227,15 @@ namespace XYZ {
 				instance->m_Pool.Particles[i].Position += instance->m_Pool.Particles[i].Velocity * ts.GetSeconds();
 				instance->m_Pool.Particles[i].LifeRemaining -= ts.GetSeconds();
 			}
+			instance->m_JobsCount--;
 		});
 	}
 
 	void ParticleSystem::pushRotationJob()
 	{
-		std::shared_ptr<ParticleSystem> instance = shared_from_this();
-		Application::Get().GetThreadPool().PushJob<void>([instance]() {
+		m_JobsCount++;
+		Ref<ParticleSystem> instance = this;
+		Application::Get().GetThreadPool().PushJob<void>([instance]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushRotationJob");
 			std::shared_lock lock(instance->m_JobsMutex);
@@ -239,13 +247,15 @@ namespace XYZ {
 			{
 				instance->updateRotation(particles[i]);
 			}
+			instance->m_JobsCount--;
 		});
 	}
 
 	void ParticleSystem::pushAnimationJob()
 	{
-		std::shared_ptr<ParticleSystem> instance = shared_from_this();
-		Application::Get().GetThreadPool().PushJob<void>([instance]() {
+		m_JobsCount++;
+		Ref<ParticleSystem> instance = this;
+		Application::Get().GetThreadPool().PushJob<void>([instance]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushAnimationJob");
 			std::shared_lock lock(instance->m_JobsMutex);
@@ -258,13 +268,15 @@ namespace XYZ {
 			{
 				instance->updateAnimation(particles[i], stageCount);
 			}
+			instance->m_JobsCount--;
 		});
 	}
 
 	void ParticleSystem::pushColorOverLifeJob()
 	{
-		std::shared_ptr<ParticleSystem> instance = shared_from_this();
-		Application::Get().GetThreadPool().PushJob<void>([instance]() {
+		m_JobsCount++;
+		Ref<ParticleSystem> instance = this;
+		Application::Get().GetThreadPool().PushJob<void>([instance]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushColorOverLifeJob");
 			std::shared_lock lock(instance->m_JobsMutex);
@@ -276,13 +288,15 @@ namespace XYZ {
 			{
 				instance->updateColorOverLife(particles[i]);
 			}
+			instance->m_JobsCount--;
 		});
 	}
 
 	void ParticleSystem::pushSizeOverLifeJob()
 	{
-		std::shared_ptr<ParticleSystem> instance = shared_from_this();
-		Application::Get().GetThreadPool().PushJob<void>([instance]() {
+		m_JobsCount++;
+		Ref<ParticleSystem> instance = this;
+		Application::Get().GetThreadPool().PushJob<void>([instance]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushSizeOverLifeJob");
 			std::shared_lock lock(instance->m_JobsMutex);
@@ -294,13 +308,15 @@ namespace XYZ {
 			{
 				instance->updateSizeOverLife(particles[i]);
 			}
+			instance->m_JobsCount--;
 		});
 	}
 
 	void ParticleSystem::pushLightOverLifeJob()
 	{
-		std::shared_ptr<ParticleSystem> instance = shared_from_this();
-		Application::Get().GetThreadPool().PushJob<void>([instance]() {
+		m_JobsCount++;
+		Ref<ParticleSystem> instance = this;
+		Application::Get().GetThreadPool().PushJob<void>([instance]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushLightOverLifeJob");
 			std::shared_lock lock(instance->m_JobsMutex);
@@ -314,13 +330,15 @@ namespace XYZ {
 			{
 				instance->updateLightOverLife(particles[i]);
 			}
+			instance->m_JobsCount--;
 		});
 	}
 
 	void ParticleSystem::pushBuildLightsDataJob(const glm::mat4& transform)
 	{
-		std::shared_ptr<ParticleSystem> instance = shared_from_this();
-		Application::Get().GetThreadPool().PushJob<void>([instance,tr = transform]() {
+		m_JobsCount++;
+		Ref<ParticleSystem> instance = this;
+		Application::Get().GetThreadPool().PushJob<void>([instance,tr = transform]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushBuildLightsDataJob");
 			std::shared_lock lock(instance->m_JobsMutex);
@@ -347,18 +365,20 @@ namespace XYZ {
 				light.Radius = particle.LightRadius;
 				light.Intensity = particle.LightIntensity;
 			}
+			instance->m_JobsCount--;
 		});
 	}
 
 	void ParticleSystem::pushBuildRenderDataJobs(const glm::mat4& transform)
-	{
-		std::shared_ptr<ParticleSystem> instance = shared_from_this();
+	{	
+		Ref<ParticleSystem> instance = this;
 		
 		const uint32_t aliveParticles = instance->m_Pool.GetAliveParticles();
 		const uint32_t numJobs = aliveParticles / sc_PerJobCount;
 		for (uint32_t jobIndex = 0; jobIndex < numJobs + 1; ++jobIndex)
 		{
-			Application::Get().GetThreadPool().PushJob<void>([instance, jobIndex, tr = transform]() {
+			m_JobsCount++;
+			Application::Get().GetThreadPool().PushJob<void>([instance, jobIndex, tr = transform]() mutable {
 
 				XYZ_PROFILE_FUNC("ParticleSystem::pushBuildRenderDataJob");
 				std::shared_lock lock(instance->m_JobsMutex);
@@ -370,6 +390,8 @@ namespace XYZ {
 
 				instance->buildRenderData(tr, startId, endId);
 				instance->m_RenderData.ParticleCount = aliveParticles;
+
+				instance->m_JobsCount--;
 			});
 		}
 	}

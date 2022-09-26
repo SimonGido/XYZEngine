@@ -1,0 +1,57 @@
+Scene: Prefab
+SceneEntity: 60e03244-e483-44b6-b0de-e9e86d12e174
+FirstChild: de350743-08b8-444c-aa7e-28315804fcd5
+Entities:
+  - Entity: de350743-08b8-444c-aa7e-28315804fcd5
+    SceneTagComponent:
+      Name: Background
+    TransformComponent:
+      Position: [-6.29999924, 0, -0.100000001]
+      Rotation: [0, -0, 0]
+      Scale: [10, 6, 2.6500001]
+    SpriteRenderer:
+      Material: 4f8a2dd0-e276-479a-941e-9f26f019b1b2
+      SubTexture: 85c78df2-9246-4f69-8dd9-3964417dedd7
+      Color: [1, 1, 1, 1]
+      SortLayer: 0
+      Visible: true
+    Relationship:
+      Parent: 60e03244-e483-44b6-b0de-e9e86d12e174
+      FirstChild: 42d9cf2e-28c4-4b44-a746-d4fcc71193a8
+      Depth: 1
+  - Entity: 42d9cf2e-28c4-4b44-a746-d4fcc71193a8
+    SceneTagComponent:
+      Name: MoonLight
+    TransformComponent:
+      Position: [-0.180000007, 0.121951215, 0]
+      Rotation: [0, -0, 0]
+      Scale: [0.11363636, 0.16260162, 0.377358466]
+    Relationship:
+      Parent: de350743-08b8-444c-aa7e-28315804fcd5
+      NextSibling: 5ba10922-e671-47dd-b704-e6f010a3fe96
+      Depth: 2
+    PointLight2D:
+      Color: [0.0044247508, 0.920706511, 1]
+      Radius: 6.19999981
+      Intensity: 0.449999988
+  - Entity: 5ba10922-e671-47dd-b704-e6f010a3fe96
+    SceneTagComponent:
+      Name: Ground
+    TransformComponent:
+      Position: [0, -0.0500000007, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: de350743-08b8-444c-aa7e-28315804fcd5
+      PreviousSibling: 42d9cf2e-28c4-4b44-a746-d4fcc71193a8
+      Depth: 2
+    RigidBody2D:
+      Type: 0
+    ChainCollider2D:
+      Points:
+        - [-0.519999981, -0.419999987]
+        - [0.0500000007, -0.340000004]
+        - [0.540000021, -0.360000014]
+      Density: 1
+      Friction: 0.0500000007
+      InvertNormals: true

@@ -7,6 +7,8 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Components.h"
 
+#include "XYZ/Asset/AssetManager.h"
+
 #include "Editor/Event/EditorEvents.h"
 
 #include <imgui.h>
@@ -98,6 +100,12 @@ namespace XYZ {
                 if (ImGui::MenuItem("Delete Entity"))
                 {
                     entityDeleted = true;
+                }
+                if (ImGui::MenuItem("Create Prefab"))
+                {
+                    Ref<Prefab> prefab = AssetManager::CreateAsset<Prefab>(*tag + ".prefab", "Assets/Prefabs");
+                    prefab->Create(entity);
+                    AssetManager::Serialize(prefab->GetHandle());
                 }
                 ImGui::EndPopup();
             }

@@ -82,6 +82,14 @@ namespace XYZ {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon)
 				});
+			m_FileManager.RegisterExtension("prefab", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::SceneIcon)
+				});
+			m_FileManager.RegisterExtension("xyz", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::SceneIcon)
+				});
 		}
 
 		AssetBrowser::~AssetBrowser()
@@ -105,6 +113,7 @@ namespace XYZ {
 					[&]() { 
 						XYZ_PROFILE_FUNC("AssetBrowser::processCurrentDirectory");
 						m_FileManager.RenderCurrentDirectory("AssetDragAndDrop", m_IconSize);
+						rightClickMenu();
 						tryClearClickedFiles();
 					});
 				tryClearClickedFiles();
@@ -135,23 +144,24 @@ namespace XYZ {
 
 		void AssetBrowser::createAsset()
 		{
-			//std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPathString();
-			//if (ImGui::MenuItem("Create Folder"))
-			//{
-			//	const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Folder", nullptr);
-			//	FileSystem::CreateFolder(fullpath);
-			//}
-			//if (ImGui::MenuItem("Create Scene"))
-			//{
-			//	const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Scene", ".xyz");
-			//	Ref<XYZ::Scene> scene = Ref<XYZ::Scene>::Create(Utils::GetFilenameWithoutExtension(fullpath));
-			//}
-			//if (ImGui::MenuItem("Create Material"))
-			//{
-			//	const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Material", ".mat");
-			//	Ref<ShaderAsset> defaultShader = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/DefaultLitShader.shader");
-			//	AssetManager::CreateAsset<MaterialAsset>(Utils::GetFilename(fullpath), parentDir, defaultShader);
-			//}
+			std::string parentDir = m_FileManager.GetCurrentFile().GetPath().string();
+			if (ImGui::MenuItem("Create Folder"))
+			{
+				const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Folder", nullptr);
+				FileSystem::CreateFolder(fullpath);
+			}
+			if (ImGui::MenuItem("Create Scene"))
+			{
+				const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Scene", ".xyz");
+				const std::string name = Utils::GetFilename(fullpath);
+				AssetManager::CreateAsset<Scene>(name, parentDir, name);
+			}
+			if (ImGui::MenuItem("Create Material"))
+			{
+				const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Material", ".mat");
+				Ref<ShaderAsset> defaultShader = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/DefaultLitShader.shader");
+				AssetManager::CreateAsset<MaterialAsset>(Utils::GetFilename(fullpath), parentDir, defaultShader);
+			}
 		}
 		
 		void AssetBrowser::rightClickMenu()

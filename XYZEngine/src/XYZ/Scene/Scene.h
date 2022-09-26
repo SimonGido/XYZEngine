@@ -62,6 +62,7 @@ namespace XYZ {
 
 
         SceneEntity GetEntityByName(const std::string& name);
+        SceneEntity GetEntityByGUID(const GUID& guid);
         SceneEntity GetSceneEntity();
         SceneEntity GetSelectedEntity();
 

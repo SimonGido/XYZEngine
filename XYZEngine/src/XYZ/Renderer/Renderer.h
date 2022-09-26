@@ -40,24 +40,7 @@ namespace XYZ {
 		void Init();
 		void Shutdown();
 
-		Ref<Texture2D>		WhiteTexture;
-		Ref<MaterialAsset>	DefaultQuadMaterial;
-		Ref<MaterialAsset>	DefaultLineMaterial;
-		Ref<MaterialAsset>	DefaultCircleMaterial;
-
-		Ref<MaterialAsset>  OverlayQuadMaterial;
-		Ref<MaterialAsset>  OverlayLineMaterial;
-		Ref<MaterialAsset>  OverlayCircleMaterial;
-
-		Ref<MaterialAsset>  DefaultParticleMaterial;
-
-
-		Ref<MaterialAsset>	DefaultDepth3DMaterial;
-		Ref<MaterialAsset>	DefaultDepth2DMaterial;
-		Ref<MaterialAsset>	DefaultDepthInstancedMaterial;
-
-
-		Ref<MaterialAsset>  LightCullingMaterial;
+		std::unordered_map<std::string, Ref<Asset>> RendererAssets;
 	};
 
 	struct RendererConfiguration

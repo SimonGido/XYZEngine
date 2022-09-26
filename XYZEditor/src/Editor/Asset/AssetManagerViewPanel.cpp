@@ -32,7 +32,7 @@ namespace XYZ {
 					static char searchBuffer[_MAX_PATH];
 					ImGui::InputTextWithHint("##search", "Search...", searchBuffer, _MAX_PATH);
 
-					const ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingFixedFit;
+					const ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingStretchProp;
 
 					if (ImGui::BeginTable("##AssetMetadata", 2, tableFlags))
 					{

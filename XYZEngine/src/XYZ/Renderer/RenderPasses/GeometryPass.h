@@ -27,10 +27,8 @@ namespace XYZ {
 
 		void Init(const GeometryPassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer);
 
-		void DepthPass();
-
 		void Submit(
-			const Ref<RenderCommandBuffer>& commandBuffer, 
+			Ref<RenderCommandBuffer> commandBuffer, 
 			GeometryRenderQueue& queue, 
 			const glm::mat4& viewMatrix,
 			bool clear

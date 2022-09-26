@@ -12,8 +12,9 @@ namespace XYZ {
 		m_CameraBufferSet = config.CameraBufferSet;
 
 		auto& defaultResources = Renderer::GetDefaultResources();
-		m_Material = defaultResources.LightCullingMaterial->GetMaterial();
-		m_MaterialInstance = defaultResources.LightCullingMaterial->GetMaterialInstance();
+		Ref<MaterialAsset> materialAsset = defaultResources.RendererAssets.at("LightCullingMaterial");
+		m_Material = Material::Create(materialAsset->GetShader());
+		m_MaterialInstance = Ref<MaterialInstance>::Create(m_Material);
 		m_Pipeline = PipelineCompute::Create(m_Material->GetShader());
 
 	}

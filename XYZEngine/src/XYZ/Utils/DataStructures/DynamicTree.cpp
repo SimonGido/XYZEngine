@@ -18,14 +18,15 @@ namespace XYZ {
 		{
 			const int32_t index = stack.top();
 			stack.pop();
-			if (!ray.IntersectsAABB(m_Nodes[index].Box))
+			float distance = 0.0f;
+			if (!ray.IntersectsAABB(m_Nodes[index].Box, distance))
 			{
 				continue;
 			}
 			if (m_Nodes[index].IsLeaf())
 			{
 				const uint32_t objectIndex = m_Nodes[index].DataIndex;
-				if (ray.IntersectsAABB(m_Nodes[index].Box))
+				if (ray.IntersectsAABB(m_Nodes[index].Box, distance))
 				{
 					result = objectIndex;
 					return true;

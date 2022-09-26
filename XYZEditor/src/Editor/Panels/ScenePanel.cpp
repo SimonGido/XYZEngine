@@ -58,7 +58,7 @@ namespace XYZ {
 				return result;
 			}
 		}
-	
+
 		ScenePanel::ScenePanel(std::string name)
 			:
 			EditorPanel(std::move(name)),
@@ -72,38 +72,40 @@ namespace XYZ {
 		{
 			const uint32_t windowWidth = Application::Get().GetWindow().GetWidth();
 			const uint32_t windowHeight = Application::Get().GetWindow().GetHeight();
-			
+
 			m_EditorCamera.SetViewportSize((float)windowWidth, (float)windowHeight);
 		}
-	
+
 		ScenePanel::~ScenePanel()
 		{
 		}
 
-	
+
 		void ScenePanel::OnImGuiRender(bool& open)
 		{
 			UI::ScopedStyleStack styleStack(true, ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+			
 			if (ImGui::Begin("Scene", &open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 			{
 				if (m_Context.Raw())
-				{		
+				{
 					const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-					m_ViewportBounds  = Utils::ImGuiViewportBounds();
+					m_ViewportBounds = Utils::ImGuiViewportBounds();
 					m_ViewportFocused = ImGui::IsWindowFocused();
 					m_ViewportHovered = ImGui::IsWindowHovered();
 
 					ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();
 					const bool blocked = imguiLayer->GetBlockedEvents();
 					// Only unlock possible here
-					imguiLayer->BlockEvents(blocked && !m_ViewportFocused && !m_ViewportHovered);				
-									
-					
+					imguiLayer->BlockEvents(blocked && !m_ViewportFocused && !m_ViewportHovered);
+
+
 					UI::Image(m_SceneRenderer->GetFinalPassImage(), viewportPanelSize);
-					
+					acceptDragAndDrop();
+
 					bool handled = playBar();
-					handled		|= toolsBar();
-					
+					handled |= toolsBar();
+
 					if (m_ViewportHovered && m_ViewportFocused && m_Context->GetState() == SceneState::Edit)
 					{
 						const SceneEntity selectedEntity = m_Context->GetSelectedEntity();
@@ -117,10 +119,11 @@ namespace XYZ {
 							handleSelection({ mx,my });
 						}
 					}
-					handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });			
-				}
+					handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });
+				}				
 			}
-			ImGui::End();		
+			ImGui::End();
+			
 		}
 
 		void ScenePanel::OnUpdate(Timestep ts)
@@ -130,7 +133,7 @@ namespace XYZ {
 				if (m_Context->GetState() == SceneState::Edit)
 				{
 					if (m_ViewportHovered && m_ViewportFocused)
-						m_EditorCamera.OnUpdate(ts);	
+						m_EditorCamera.OnUpdate(ts);
 					m_Context->OnUpdateEditor(ts);
 					m_Context->OnRenderEditor(m_SceneRenderer, m_EditorCamera.GetViewProjection(), m_EditorCamera.GetViewMatrix(), m_EditorCamera.GetPosition());
 				}
@@ -148,7 +151,7 @@ namespace XYZ {
 			dispatcher.Dispatch<KeyPressedEvent>(Hook(&ScenePanel::onKeyPressed, this));
 			if (m_ViewportHovered && m_ViewportFocused)
 				m_EditorCamera.OnEvent(event);
-			
+
 			return false;
 		}
 
@@ -201,6 +204,7 @@ namespace XYZ {
 			}
 			return false;
 		}
+
 		std::pair<glm::vec3, glm::vec3> ScenePanel::castRay(float mx, float my) const
 		{
 			const glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
@@ -236,7 +240,8 @@ namespace XYZ {
 
 			m_Context->GetRegistry().each([&](const entt::entity entityID) {
 				SceneEntity entity(entityID, m_Context.Raw());
-				if (ray.IntersectsAABB(Utils::SceneEntityAABB(entity)))
+				float t = 0.0f;
+				if (ray.IntersectsAABB(Utils::SceneEntityAABB(entity), t))
 				{
 					result.push_back(entity);
 				}
@@ -396,6 +401,38 @@ namespace XYZ {
 				tc.Translation = translation;
 				tc.Rotation += deltaRot;
 				tc.Scale = scale;
+			}
+		}
+
+		void ScenePanel::acceptDragAndDrop()
+		{
+			char* assetPath = nullptr;
+			if (UI::DragDropTarget("AssetDragAndDrop", &assetPath))
+			{
+				std::filesystem::path path(assetPath);
+				const auto& metadata = AssetManager::GetMetadata(path);
+				if (metadata.Type == AssetType::Prefab)
+				{
+					Ref<Prefab> prefab = AssetManager::GetAsset<Prefab>(metadata.Handle);
+					
+					auto [mx, my] = getMouseViewportSpace();
+					auto [origin, direction] = castRay(mx, my);
+					const Ray ray = { origin,direction };
+					const float boundary = 9999.9f;
+
+					const AABB aabb{ glm::vec3(-boundary, -boundary, 0.0f), glm::vec3(boundary, boundary, 0.0f) };
+					float distance = 0.0f;
+					ray.IntersectsAABB(aabb, distance);
+					
+					glm::vec3 translation = ray.Origin + ray.Direction * distance;
+
+					prefab->Instantiate(m_Context, SceneEntity(), &translation);
+				}
+				else if (metadata.Type == AssetType::Scene)
+				{
+					Ref<Scene> scene = AssetManager::GetAsset<Scene>(metadata.Handle);	
+					Application::Get().OnEvent(SceneLoadedEvent(scene));
+				}
 			}
 		}
 	}

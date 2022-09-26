@@ -142,8 +142,9 @@ namespace XYZ {
 		struct GPUTimeQueries
 		{
 			uint32_t GPUTime = 0;
-			uint32_t Renderer2DPassQuery = 0;
-
+			uint32_t DepthPassQuery = 0;
+			uint32_t GeometryPassQuery = 0;
+		
 			static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
 		};
 		GPUTimeQueries m_GPUTimeQueries;

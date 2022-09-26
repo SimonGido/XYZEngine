@@ -29,7 +29,7 @@ namespace XYZ {
 		float     Intensity;
 	};
 
-	class ParticleSystem : public std::enable_shared_from_this<ParticleSystem>
+	class ParticleSystem : public RefCount
 	{
 	public:
 		struct RenderData
@@ -53,6 +53,7 @@ namespace XYZ {
 		ParticleSystem& operator=(ParticleSystem&& other) noexcept;
 
 		void Update(const glm::mat4& transform, Timestep ts);	
+		
 		void Reset();
 		void SetMaxParticles(uint32_t maxParticles);
 
@@ -84,7 +85,7 @@ namespace XYZ {
 
 		float			Speed;
 		bool			Play;
-
+		 
 		// Enabled
 		enum Module
 		{
@@ -122,8 +123,13 @@ namespace XYZ {
 		RenderData			m_RenderData;
 		uint32_t			m_MaxParticles;
 		std::shared_mutex	m_JobsMutex;
-	
+
+		std::atomic_uint8_t m_JobsCount = 0;
+		Timestep			m_Timestep;
+
 		static constexpr uint32_t sc_PerJobCount = 500;
 	};
+
+
 
 }

@@ -220,11 +220,11 @@ namespace XYZ {
 		CopyAllComponentsIfExist(newEntity.ID(), m_Scene->GetRegistry(), entity.ID(), *entity.GetRegistry());
 	
 		std::stack<entt::entity> children;
-		auto& dstRel = newEntity.GetComponent<Relationship>();
+		
 		auto& srcRel = entity.GetComponent<Relationship>();
 
-		if (dstRel.GetFirstChild() != entt::null)
-			children.push(dstRel.GetFirstChild());
+		if (srcRel.GetFirstChild() != entt::null)
+			children.push(srcRel.GetFirstChild());
 		
 		while (!children.empty())
 		{
@@ -238,6 +238,6 @@ namespace XYZ {
 				children.push(childRel.GetNextSibling());
 		}
 
-		return entity;
+		return newEntity;
 	}
 }

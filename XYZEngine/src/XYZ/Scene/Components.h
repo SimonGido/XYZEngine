@@ -178,10 +178,15 @@ namespace XYZ {
 
 	struct ParticleComponent
 	{
-		ParticleComponent() = default;
+		ParticleComponent();
 		ParticleComponent(const ParticleComponent& other);
 
-		std::shared_ptr<ParticleSystem> System;
+		ParticleComponent& operator =(const ParticleComponent& other);
+
+		Ref<ParticleSystem> GetSystem() const { return m_System; }
+
+	private:
+		Ref<ParticleSystem> m_System;
 	};
 
 

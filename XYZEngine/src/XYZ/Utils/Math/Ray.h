@@ -21,7 +21,7 @@ namespace XYZ {
             return { {0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f} };
         }
 
-        bool IntersectsAABB(const AABB& aabb) const
+        bool IntersectsAABB(const AABB& aabb, float& t) const
         {
             glm::vec3 dirfrac;
             // r.dir is unit direction vector of ray
@@ -45,14 +45,17 @@ namespace XYZ {
             // if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
             if (tmax < 0.0f)
             {
+                t = tmax;
                 return false;
             }
 
             // if tmin > tmax, ray doesn't intersect AABB
             if (tmin > tmax)
             {
+                t = tmax;
                 return false;
             }
+            t = tmin;
             return true;
         }
 

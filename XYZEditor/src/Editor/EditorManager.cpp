@@ -6,6 +6,8 @@
 #include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Utils/FileSystem.h"
 
+#include "Editor/Event/EditorEvents.h"
+
 #include <imgui.h>
 
 namespace XYZ {
@@ -33,6 +35,20 @@ namespace XYZ {
 		}
 		bool EditorManager::OnEvent(Event& e)
 		{
+			if (e.GetEventType() == EventType::Editor)
+			{
+				EditorEvent& editorEvent = (EditorEvent&)e;
+				if (editorEvent.GetEditorEventType() == EditorEventType::SceneLoaded)
+				{
+					SceneLoadedEvent& sceneLoadedEvent = (SceneLoadedEvent&)editorEvent;
+					for (auto& view : m_EditorPanels)
+					{
+						view.Panel->SetSceneContext(sceneLoadedEvent.GetScene());
+					}
+					return true;
+				}
+			}
+
 			for (auto& view : m_EditorPanels)
 			{
 				if (view.Panel->OnEvent(e))

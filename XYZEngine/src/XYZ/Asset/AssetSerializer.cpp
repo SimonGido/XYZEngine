@@ -254,7 +254,7 @@ namespace XYZ {
 			else
 			{
 				XYZ_CORE_WARN("Missing texture!");
-				materialAsset->SetTexture(name, Renderer::GetDefaultResources().WhiteTexture);
+				materialAsset->SetTexture(name, Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>());
 			}
 		}
 		auto textureArrays = data["TextureArrays"];
@@ -272,7 +272,7 @@ namespace XYZ {
 				else
 				{
 					XYZ_CORE_WARN("Missing texture!");
-					materialAsset->SetTexture(name, Renderer::GetDefaultResources().WhiteTexture, index);
+					materialAsset->SetTexture(name, Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>(), index);
 				}
 				index++;
 			}
@@ -522,10 +522,16 @@ namespace XYZ {
 	}
 	bool PrefabAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
 		Ref<Prefab> prefab = Ref<Prefab>::Create();
 
 		SceneSerializer serializer;
 		prefab->m_Scene = serializer.Deserialize(metadata.FilePath.string());
+		prefab->m_Entity = prefab->m_Scene->GetEntityByGUID(data["FirstChild"].as<std::string>());
 		prefab->m_Scene->GetRegistry().each([&](const entt::entity entity) {
 			prefab->m_Entities.push_back({ entity, prefab->m_Scene.Raw() });
 		});

@@ -20,7 +20,7 @@ namespace XYZ {
 		m_BoneTransformsStorageSet->Create(sc_MaxBoneTransforms * sizeof(GeometryRenderQueue::BoneTransforms), 2, 0);
 	
 		m_Renderer2D = Ref<Renderer2D>::Create(Renderer2DConfiguration{ commandBuffer, m_CameraBufferSet });
-		m_WhiteTexture = Renderer::GetDefaultResources().WhiteTexture;
+		m_WhiteTexture = Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>();
 
 		m_TransformData.resize(GetTransformBufferCount());
 		m_BoneTransformsData.resize(sc_MaxBoneTransforms);
@@ -29,7 +29,7 @@ namespace XYZ {
 		createDepthResources();
 	}
 	void GeometryPass::Submit(
-		const Ref<RenderCommandBuffer>& commandBuffer, 
+		Ref<RenderCommandBuffer> commandBuffer, 
 		GeometryRenderQueue& queue, 
 		const glm::mat4& viewMatrix,
 		bool clear
@@ -38,6 +38,7 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("GeometryPass::Submit");
 
 		// Pre depth
+		uint32_t depthPassQuery = commandBuffer->BeginTimestampQuery();
 		Renderer::BeginRenderPass(commandBuffer, m_DepthPass, clear);
 		
 		submit2DDepth(queue, commandBuffer, viewMatrix);
@@ -48,7 +49,10 @@ namespace XYZ {
 		Renderer::EndRenderPass(commandBuffer);
 		postDepthPass(commandBuffer);
 
+		commandBuffer->EndTimestampQuery(depthPassQuery);
+
 		// Geometry
+		uint32_t geometryPassQuery = commandBuffer->BeginTimestampQuery();
 		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, clear);
 
 		submit2D(queue, commandBuffer, viewMatrix);
@@ -57,6 +61,7 @@ namespace XYZ {
 		submitInstancedMeshes(queue, commandBuffer);
 		
 		Renderer::EndRenderPass(commandBuffer);
+		commandBuffer->EndTimestampQuery(geometryPassQuery);
 	}
 
 	GeometryPassStatistics GeometryPass::PreSubmit(GeometryRenderQueue& queue)
@@ -438,10 +443,10 @@ namespace XYZ {
 	{
 		// 3D
 		{
-			auto depthMaterialAsset = Renderer::GetDefaultResources().DefaultDepth3DMaterial;
+			Ref<MaterialAsset> depthMaterialAsset = Renderer::GetDefaultResources().RendererAssets.at("Depth3DMaterial").As<MaterialAsset>();
 			m_DepthPipeline3D.Shader = depthMaterialAsset->GetShader();
-			m_DepthPipeline3D.Material = depthMaterialAsset->GetMaterial();
-			m_DepthPipeline3D.MaterialInstance = depthMaterialAsset->GetMaterialInstance();
+			m_DepthPipeline3D.Material = Material::Create(depthMaterialAsset->GetShader());
+			m_DepthPipeline3D.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipeline3D.Material);
 
 			PipelineSpecification spec;
 			spec.Layouts = m_DepthPipeline3D.Shader->GetLayouts();
@@ -455,10 +460,10 @@ namespace XYZ {
 
 		// 2D
 		{
-			auto depthMaterialAsset = Renderer::GetDefaultResources().DefaultDepth2DMaterial;
+			Ref<MaterialAsset> depthMaterialAsset = Renderer::GetDefaultResources().RendererAssets.at("Depth2DMaterial").As<MaterialAsset>();
 			m_DepthPipeline2D.Shader = depthMaterialAsset->GetShader();
-			m_DepthPipeline2D.Material = depthMaterialAsset->GetMaterial();
-			m_DepthPipeline2D.MaterialInstance = depthMaterialAsset->GetMaterialInstance();
+			m_DepthPipeline2D.Material = Material::Create(depthMaterialAsset->GetShader());
+			m_DepthPipeline2D.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipeline3D.Material);
 
 			PipelineSpecification spec;
 			spec.Layouts = m_DepthPipeline2D.Shader->GetLayouts();
@@ -472,10 +477,10 @@ namespace XYZ {
 
 		// Instanced
 		{
-			auto depthMaterialAsset = Renderer::GetDefaultResources().DefaultDepthInstancedMaterial;
+			Ref<MaterialAsset> depthMaterialAsset = Renderer::GetDefaultResources().RendererAssets.at("DepthInstancedMaterial").As<MaterialAsset>();
 			m_DepthPipelineInstanced.Shader = depthMaterialAsset->GetShader();
-			m_DepthPipelineInstanced.Material = depthMaterialAsset->GetMaterial();
-			m_DepthPipelineInstanced.MaterialInstance = depthMaterialAsset->GetMaterialInstance();
+			m_DepthPipelineInstanced.Material = Material::Create(depthMaterialAsset->GetShader());
+			m_DepthPipelineInstanced.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipeline3D.Material);
 
 			PipelineSpecification spec;
 			spec.Layouts = m_DepthPipelineInstanced.Shader->GetLayouts();

@@ -44,6 +44,7 @@ namespace XYZ {
 			void handleSelection(const glm::vec2& mousePosition);
 			void handleEntityTransform(SceneEntity entity);
 
+			void acceptDragAndDrop();
 		private:
 			Ref<SceneRenderer>			m_SceneRenderer;
 			Ref<Scene>					m_Context;

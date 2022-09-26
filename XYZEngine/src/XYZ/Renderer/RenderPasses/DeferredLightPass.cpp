@@ -13,11 +13,13 @@ namespace XYZ {
 		createPipeline();
 
 		m_LightStorageBufferSet = StorageBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
-		m_LightStorageBufferSet->Create(sc_MaxNumberOfLights * sizeof(PointLight), 0, 1);
-		m_LightStorageBufferSet->Create(sc_MaxNumberOfLights * sizeof(SpotLight), 0, 2);
+		
+		constexpr uint32_t countOffset = 16;
+		m_LightStorageBufferSet->Create(countOffset + sc_MaxNumberOfLights * sizeof(PointLight), 0, 1);
+		m_LightStorageBufferSet->Create(countOffset + sc_MaxNumberOfLights * sizeof(SpotLight), 0, 2);
 	}
 
-	void DeferredLightPass::PreSubmit(Ref<Scene> scene)
+	DeferredLightPassStatistics DeferredLightPass::PreSubmit(Ref<Scene> scene)
 	{
 		XYZ_PROFILE_FUNC("DeferredLightPass::PreSubmit");
 		m_PointLights.clear();
@@ -66,16 +68,13 @@ namespace XYZ {
 		{
 			auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
 		
-			auto& renderData = particleComponent.System->GetRenderData();
+			auto& renderData = particleComponent.GetSystem()->GetRenderData();
 		
 			for (const auto& lightData : renderData.LightData)
 			{
-				glm::mat4 lightTransform = glm::translate(transform.WorldTransform, lightData.Position);
-				glm::vec3 worldLightPos = Math::TransformToTranslation(lightTransform);
-		
 				PointLight pointLight{
 					glm::vec4(lightData.Color, 1.0f),
-					glm::vec2(worldLightPos),
+					glm::vec2(lightData.Position),
 					lightData.Radius,
 					lightData.Intensity
 				};
@@ -117,6 +116,8 @@ namespace XYZ {
 				pointLightBuffer.Destroy();
 				spotLightBuffer.Destroy();
 			});
+
+		return { static_cast<uint32_t>(m_PointLights.size()), static_cast<uint32_t>(m_SpotLights.size()) };
 	}
 
 	void DeferredLightPass::Submit(

@@ -179,8 +179,6 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("Relationship::removeRelation");
 		auto& childRel = reg.get<Relationship>(child);
 		
-		reg.storage<Relationship>().contains(child);
-
 		if (reg.valid(childRel.Parent))
 		{
 			auto& parentRel = reg.get<Relationship>(childRel.Parent);
@@ -293,11 +291,21 @@ namespace XYZ {
 		Camera(other.Camera)
 	{
 	}
+	ParticleComponent::ParticleComponent()
+	{
+		m_System = Ref<ParticleSystem>::Create();
+	}
 	ParticleComponent::ParticleComponent(const ParticleComponent& other)
 		:
-		System(other.System)
+		m_System(new ParticleSystem(*other.m_System))
 	{
 	}
+	ParticleComponent& ParticleComponent::operator=(const ParticleComponent& other)
+	{
+		m_System = Ref<ParticleSystem>::Create(*other.m_System);
+		return *this;
+	}
+
 	IDComponent::IDComponent(const IDComponent& other)
 		:
 		ID(other.ID)

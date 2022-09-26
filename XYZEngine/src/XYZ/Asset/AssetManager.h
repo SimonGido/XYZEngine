@@ -11,6 +11,8 @@
 
 #include "XYZ/Renderer/Shader.h"
 #include "XYZ/Renderer/Texture.h"
+#include "XYZ/Scene/Prefab.h"
+
 #include "XYZ/FileWatcher/FileWatcher.h"
 
 #include "AssetSerializer.h"

@@ -1,0 +1,61 @@
+Scene: Prefab
+SceneEntity: 73d15039-1c33-4525-a457-074e01572bfb
+FirstChild: e054a620-940c-4cb1-ad3c-fe6a14a23b9a
+Entities:
+  - Entity: e054a620-940c-4cb1-ad3c-fe6a14a23b9a
+    SceneTagComponent:
+      Name: Bats
+    TransformComponent:
+      Position: [-6.6500001, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 73d15039-1c33-4525-a457-074e01572bfb
+      Depth: 1
+    ParticleRenderer:
+      Material: a26336fe-dc1c-4e82-a500-b2101792a4d3
+      Mesh: f8a2fc76-d8ba-48ac-85c0-54418b021786
+    ParticleComponent:
+      MaxParticles: 4000
+      Speed: 1.70000005
+      AnimationTiles: [4, 4]
+      AnimationStartFrame: 0
+      AnimationCycleLength: 5
+      EndRotation: [0, 0, 0]
+      EndSize: [1, 1, 1]
+      EndColor: [1, 1, 1, 1]
+      LightEndColor: [1, 1, 1]
+      LightEndIntensity: 1
+      LightEndRadius: 1
+      ModulesEnabled:
+        - true
+        - true
+        - false
+        - false
+        - true
+      Emitter:
+        Shape: 1
+        BoxMin: [-9.19999981, -7.9000001, 0]
+        BoxMax: [7.19999981, 11.8999996, 0]
+        Radius: 0.300000012
+        EmitRate: 20
+        LifeTime: 5
+        MinVelocity: [-0.100000001, -0.400000006, 0]
+        MaxVelocity: [0.699999988, 1, 0]
+        Size: [1, 1, 1]
+        Color: [1, 1, 1, 1]
+        LightColor: [0, 1, 1]
+        LightRadius: 4.5999999
+        LightIntensity: 4.4000001
+        MaxLights: 52
+        BurstInterval: 5
+        Bursts:
+          - Count: 0
+            Time: 0
+            Probability: 1
+          - Count: 0
+            Time: 0
+            Probability: 1
+          - Count: 0
+            Time: 0
+            Probability: 1

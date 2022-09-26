@@ -1,5 +1,7 @@
 #include "EditorLayer.h"
 
+#include "Editor/Event/EditorEvents.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
@@ -21,9 +23,11 @@ namespace XYZ {
 		{
 			Renderer::InitResources();
 			s_Data.Init();		
-			SceneSerializer serializer;
+
 			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
-			m_Scene = serializer.Deserialize("Assets/Scenes/Scene.xyz");
+
+			m_Scene = AssetManager::GetAsset<Scene>("Assets/Scenes/Scene.xyz");
+
 			ScriptEngine::SetSceneContext(m_Scene);
 
 			m_Scene->SetViewportSize(
@@ -37,13 +41,18 @@ namespace XYZ {
 			m_CommandBuffer = RenderCommandBuffer::Create(0, "Editor");
 			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
-			m_QuadMaterial	 = Renderer::GetDefaultResources().OverlayQuadMaterial->GetMaterial();
-			m_LineMaterial	 = Renderer::GetDefaultResources().OverlayLineMaterial->GetMaterial();
-			m_CircleMaterial = Renderer::GetDefaultResources().OverlayCircleMaterial->GetMaterial();
+			Ref<MaterialAsset> quadMaterialAsset   = Renderer::GetDefaultResources().RendererAssets.at("OverlayQuadMaterial").As<MaterialAsset>();;
+			Ref<MaterialAsset> lineMaterialAsset   = Renderer::GetDefaultResources().RendererAssets.at("OverlayLineMaterial").As<MaterialAsset>();;
+			Ref<MaterialAsset> circleMaterialAsset = Renderer::GetDefaultResources().RendererAssets.at("OverlayCircleMaterial").As<MaterialAsset>();;
 
-			m_QuadMaterialInstance   = Renderer::GetDefaultResources().OverlayQuadMaterial->GetMaterialInstance();
-			m_LineMaterialInstance   = Renderer::GetDefaultResources().OverlayLineMaterial->GetMaterialInstance();
-			m_CircleMaterialInstance = Renderer::GetDefaultResources().OverlayCircleMaterial->GetMaterialInstance();
+
+			m_QuadMaterial	 = quadMaterialAsset->GetMaterial();
+			m_LineMaterial	 = lineMaterialAsset->GetMaterial();
+			m_CircleMaterial = circleMaterialAsset->GetMaterial();
+
+			m_QuadMaterialInstance   = quadMaterialAsset->GetMaterialInstance();
+			m_LineMaterialInstance   = lineMaterialAsset->GetMaterialInstance();
+			m_CircleMaterialInstance = circleMaterialAsset->GetMaterialInstance();
 
 			m_QuadMaterial->SetImageArray("u_Texture", m_CameraTexture->GetImage(), 0);
 
@@ -98,6 +107,16 @@ namespace XYZ {
 
 		void EditorLayer::OnEvent(Event& event)
 		{
+			if (event.GetEventType() == EventType::Editor)
+			{
+				EditorEvent& editorEvent = (EditorEvent&)event;
+				if (editorEvent.GetEditorEventType() == EditorEventType::SceneLoaded)
+				{
+					SceneLoadedEvent& sceneLoadedEvent = (SceneLoadedEvent&)editorEvent;
+					AssetManager::Serialize(m_Scene->GetHandle());
+					m_Scene = sceneLoadedEvent.GetScene();
+				}
+			}
 			m_EditorManager.OnEvent(event);
 		}
 

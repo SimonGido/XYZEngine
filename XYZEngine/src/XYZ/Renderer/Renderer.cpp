@@ -449,60 +449,60 @@ namespace XYZ {
 	}
 	void RendererResources::Init()
 	{
-		WhiteTexture = AssetManager::GetAsset<Texture2D>("Resources/Textures/WhiteTexture.tex");
-		WhiteTexture->SetFlag(AssetFlag::ReadOnly);
+		auto whiteTexture = AssetManager::GetAsset<Texture2D>("Resources/Textures/WhiteTexture.tex");
+		whiteTexture->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["WhiteTexture"] = whiteTexture;
 
-		DefaultQuadMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultLit.mat");
-		DefaultQuadMaterial->SetFlag(AssetFlag::ReadOnly);
+		auto defaultQuadMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultLit.mat");
+		defaultQuadMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["QuadMaterial"] = defaultQuadMaterial;
 
-		DefaultLineMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultLine.mat");
-		DefaultLineMaterial->SetFlag(AssetFlag::ReadOnly);
-		
-		DefaultCircleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultCircle.mat");
-		DefaultCircleMaterial->SetFlag(AssetFlag::ReadOnly);
+		auto defaultLineMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultLine.mat");
+		defaultLineMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["LineMaterial"] = defaultLineMaterial;
 
-		OverlayQuadMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayQuad.mat");
-		OverlayQuadMaterial->SetFlag(AssetFlag::ReadOnly);
+		auto defaultCircleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultCircle.mat");
+		defaultCircleMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["CircleMaterial"] = defaultCircleMaterial;
 
-		OverlayLineMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayLine.mat");
-		OverlayLineMaterial->SetFlag(AssetFlag::ReadOnly);
+		auto overlayQuadMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayQuad.mat");
+		overlayQuadMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["OverlayQuadMaterial"] = overlayQuadMaterial;
 
-		OverlayCircleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayCircle.mat");
-		OverlayCircleMaterial->SetFlag(AssetFlag::ReadOnly);
+		auto overlayLineMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayLine.mat");
+		overlayLineMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["OverlayLineMaterial"] = overlayLineMaterial;
 
-		DefaultParticleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
-		DefaultParticleMaterial->SetFlag(AssetFlag::ReadOnly);
-		
-		DefaultDepth3DMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth.mat");
-		DefaultDepth3DMaterial->SetFlag(AssetFlag::ReadOnly);
+		auto overlayCircleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayCircle.mat");
+		overlayCircleMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["OverlayCircleMaterial"] = overlayCircleMaterial;
 
-		DefaultDepth2DMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth2D.mat");
-		DefaultDepth2DMaterial->SetFlag(AssetFlag::ReadOnly);
-		
-		DefaultDepthInstancedMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepthInstanced.mat");
-		DefaultDepthInstancedMaterial->SetFlag(AssetFlag::ReadOnly);
-	
-		LightCullingMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/LightCulling.mat");
-		LightCullingMaterial->SetFlag(AssetFlag::ReadOnly);
+		auto defaultParticleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
+		defaultParticleMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["ParticleMaterial"] = defaultParticleMaterial;
+
+		auto defaultDepth3DMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth.mat");
+		defaultDepth3DMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["Depth3DMaterial"] = defaultDepth3DMaterial;
+
+		auto defaultDepth2DMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth2D.mat");
+		defaultDepth2DMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["Depth2DMaterial"] = defaultDepth2DMaterial;
+
+		auto defaultDepthInstancedMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepthInstanced.mat");
+		defaultDepthInstancedMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["DepthInstancedMaterial"] = defaultDepthInstancedMaterial;
+
+		auto lightCullingMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/LightCulling.mat");
+		lightCullingMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["LightCullingMaterial"] = lightCullingMaterial;
 	}
 	void RendererResources::Shutdown()
 	{
-		WhiteTexture.Reset();
-		DefaultQuadMaterial.Reset();
-		DefaultLineMaterial.Reset();
-		DefaultCircleMaterial.Reset();
+		for (auto asset : RendererAssets)
+			asset.second.Reset();
 
-		OverlayQuadMaterial.Reset();
-		OverlayLineMaterial.Reset();
-		OverlayCircleMaterial.Reset();
-
-		DefaultParticleMaterial.Reset();
-
-		DefaultDepth3DMaterial.Reset();
-		DefaultDepth2DMaterial.Reset();
-		DefaultDepthInstancedMaterial.Reset();
-
-		LightCullingMaterial.Reset();
+		RendererAssets.clear();
 	}
 
 }

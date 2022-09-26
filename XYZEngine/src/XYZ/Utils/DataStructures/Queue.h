@@ -82,6 +82,7 @@ namespace XYZ {
 			return temp;
 		}
 
+
 		std::mutex& GetMutex() { return m_Mutex; }
 
 	private:

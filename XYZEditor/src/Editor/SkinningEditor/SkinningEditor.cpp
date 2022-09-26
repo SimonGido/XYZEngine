@@ -36,31 +36,31 @@ namespace XYZ {
 			m_CommandBuffer = RenderCommandBuffer::Create(0, "SkinningEditor");
 			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
-			Ref<MaterialAsset> quadMaterial = Ref<MaterialAsset>::Create(Renderer::GetDefaultResources().DefaultQuadMaterial->GetShaderAsset());
-			Ref<MaterialAsset> lineMaterial = Ref<MaterialAsset>::Create(Renderer::GetDefaultResources().DefaultLineMaterial->GetShaderAsset());
-			Ref<MaterialAsset> circleMaterial = Ref<MaterialAsset>::Create(Renderer::GetDefaultResources().DefaultCircleMaterial->GetShaderAsset());
-
-			//m_Renderer2D = Ref<Renderer2D>::Create(m_CommandBuffer, quadMaterial, lineMaterial, circleMaterial, nullptr);	
-			m_BoneTransformsStorageSet = StorageBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
-			m_BoneTransformsStorageSet->Create(1 * sizeof(GeometryRenderQueue::BoneTransforms), 2, 0);
-			m_TransformsVertexBuffer = VertexBuffer::Create(1 * sizeof(glm::mat4));
-
-			
-			m_Texture = Texture2D::Create("Assets/Textures/full_simple_char.png");
-			m_Context = Ref<SubTexture>::Create(m_Texture);
-			SetContext(m_Context);
-
-			Ref<ShaderAsset> meshAnimShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/AnimMeshShader.shader");
-			m_MaterialAsset = Ref<MaterialAsset>::Create(meshAnimShaderAsset);
-			m_MaterialAsset->SetTexture("u_Texture", m_Context->GetTexture());
-
-
-			for (uint32_t i = 0; i < Renderer2D::GetMaxTextures(); ++i)
-				quadMaterial->SetTexture("u_Texture", m_Context->GetTexture(), i);
-
-			m_Colors[Points] = glm::vec4(0.4f, 0.6f, 0.8f, 1.0f);
-			m_Colors[Selected] = glm::vec4(0.6f, 0.8f, 1.0f, 1.0f);
-			m_Colors[Lines] = glm::vec4(0.7f);
+			//Ref<MaterialAsset> quadMaterial = Ref<MaterialAsset>::Create(Renderer::GetDefaultResources().DefaultQuadMaterial->GetShaderAsset());
+			//Ref<MaterialAsset> lineMaterial = Ref<MaterialAsset>::Create(Renderer::GetDefaultResources().DefaultLineMaterial->GetShaderAsset());
+			//Ref<MaterialAsset> circleMaterial = Ref<MaterialAsset>::Create(Renderer::GetDefaultResources().DefaultCircleMaterial->GetShaderAsset());
+			//
+			////m_Renderer2D = Ref<Renderer2D>::Create(m_CommandBuffer, quadMaterial, lineMaterial, circleMaterial, nullptr);	
+			//m_BoneTransformsStorageSet = StorageBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
+			//m_BoneTransformsStorageSet->Create(1 * sizeof(GeometryRenderQueue::BoneTransforms), 2, 0);
+			//m_TransformsVertexBuffer = VertexBuffer::Create(1 * sizeof(glm::mat4));
+			//
+			//
+			//m_Texture = Texture2D::Create("Assets/Textures/full_simple_char.png");
+			//m_Context = Ref<SubTexture>::Create(m_Texture);
+			//SetContext(m_Context);
+			//
+			//Ref<ShaderAsset> meshAnimShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/AnimMeshShader.shader");
+			//m_MaterialAsset = Ref<MaterialAsset>::Create(meshAnimShaderAsset);
+			//m_MaterialAsset->SetTexture("u_Texture", m_Context->GetTexture());
+			//
+			//
+			//for (uint32_t i = 0; i < Renderer2D::GetMaxTextures(); ++i)
+			//	quadMaterial->SetTexture("u_Texture", m_Context->GetTexture(), i);
+			//
+			//m_Colors[Points] = glm::vec4(0.4f, 0.6f, 0.8f, 1.0f);
+			//m_Colors[Selected] = glm::vec4(0.6f, 0.8f, 1.0f, 1.0f);
+			//m_Colors[Lines] = glm::vec4(0.7f);
 
 			createPipeline();
 		}

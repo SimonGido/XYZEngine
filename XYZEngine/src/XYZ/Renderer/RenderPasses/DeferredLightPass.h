@@ -11,12 +11,18 @@ namespace XYZ {
 		Ref<Shader>		Shader;
 	};
 
+	struct DeferredLightPassStatistics
+	{
+		uint32_t PointLightCount;
+		uint32_t SpotLightCount;
+	};
+
 	class DeferredLightPass
 	{
 	public:
 		void Init(const DeferredLightPassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer);
 
-		void PreSubmit(Ref<Scene> scene);
+		DeferredLightPassStatistics PreSubmit(Ref<Scene> scene);
 
 		void Submit(
 			const Ref<RenderCommandBuffer>& commandBuffer, 
@@ -61,6 +67,7 @@ namespace XYZ {
 
 		std::vector<PointLight>	m_PointLights;
 		std::vector<SpotLight>	m_SpotLights;
+
 
 		static constexpr uint32_t sc_MaxNumberOfLights = 2 * 1024;
 	};

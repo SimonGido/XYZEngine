@@ -138,11 +138,6 @@ namespace XYZ {
 		Ref<Image2D> positionImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
 		Ref<Image2D> lightImage = m_LightRenderPass->GetSpecification().TargetFramebuffer->GetImage();
 
-		
-		//m_GPUTimeQueries.Renderer2DPassQuery = m_CommandBuffer->BeginTimestampQuery();
-
-		//m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.Renderer2DPassQuery);
-		
 		m_GeometryPass.Submit(m_CommandBuffer, m_Queue, m_CameraBuffer.ViewMatrix, true);
 		m_DeferredLightPass.Submit(m_CommandBuffer, colorImage, positionImage);
 		m_BloomPass.Submit(m_CommandBuffer, lightImage, { 1.0f, 0.1f }, m_ViewportSize);
@@ -315,7 +310,8 @@ namespace XYZ {
 				if (ImGui::BeginTable("##GPUTime", 2, ImGuiTableFlags_SizingFixedFit))
 				{
 					UI::TextTableRow("%s", "GPU time:", "%.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.GPUTime));
-					UI::TextTableRow("%s", "Renderer2D Pass:", "%.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.Renderer2DPassQuery));
+					UI::TextTableRow("%s", "Depth Pass:", "%.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.DepthPassQuery));
+					UI::TextTableRow("%s", "Geometry Pass:", "%.3fms", m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.GeometryPassQuery));
 					ImGui::EndTable();
 				}
 				
@@ -460,7 +456,7 @@ namespace XYZ {
 	void SceneRenderer::preRender()
 	{
 		GeometryPassStatistics stats = m_GeometryPass.PreSubmit(m_Queue);
-		m_DeferredLightPass.PreSubmit(m_ActiveScene);
+		DeferredLightPassStatistics lightPassStats = m_DeferredLightPass.PreSubmit(m_ActiveScene);
 
 		m_RenderStatistics.MeshDrawCommandCount = static_cast<uint32_t>(m_Queue.MeshDrawCommands.size());
 		m_RenderStatistics.MeshOverrideDrawCommandCount = stats.MeshOverrideCount;
@@ -469,5 +465,8 @@ namespace XYZ {
 		m_RenderStatistics.TransformInstanceCount = stats.TransformInstanceCount;
 		m_RenderStatistics.InstanceDataSize = stats.InstanceDataSize;
 		m_RenderStatistics.SpriteDrawCommandCount = static_cast<uint32_t>(m_Queue.SpriteDrawCommands.size());	
+	
+		m_RenderStatistics.PointLight2DCount = lightPassStats.PointLightCount;
+		m_RenderStatistics.SpotLight2DCount = lightPassStats.SpotLightCount;
 	}
 }
