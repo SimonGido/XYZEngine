@@ -187,6 +187,10 @@ namespace XYZ {
 				file->EmplaceFile(path, ext->TexCoords, ext->Texture);
 			}
 			m_CurrentFile = findFile(currentNodePath, m_Root);
+
+			m_LeftClickedFile = nullptr;
+			m_LeftDoubleClickedFile = nullptr;
+			m_RightClickedFile = nullptr;
 		}
 
 		template <typename TContainer, typename T>
@@ -218,6 +222,9 @@ namespace XYZ {
 				}
 			}
 			m_CurrentFile = findFile(currentNodePath, m_Root);
+			m_LeftClickedFile = nullptr;
+			m_LeftDoubleClickedFile = nullptr;
+			m_RightClickedFile = nullptr;
 		}
 
 		void ImGuiFileManager::SetCurrentFile(const std::filesystem::path& path)
@@ -227,6 +234,20 @@ namespace XYZ {
 	
 		void ImGuiFileManager::RenderCurrentDirectory(const char* dragName, glm::vec2 iconSize)
 		{
+			const bool mouseClicked =
+				ImGui::IsMouseClicked(ImGuiMouseButton_Left)
+			 || ImGui::IsMouseClicked(ImGuiMouseButton_Right);
+
+			if (mouseClicked
+				&& ImGui::IsWindowFocused()
+				&& ImGui::IsWindowHovered())
+			{
+				m_LeftClickedFile = nullptr;
+				m_RightClickedFile = nullptr;
+				m_LeftDoubleClickedFile = nullptr;
+			}
+
+
 			static float padding = 32.0f;
 			const float  cellSize = iconSize.x + padding;
 
@@ -297,7 +318,7 @@ namespace XYZ {
 			if (it == m_Extensions.end())
 				return;
 
-			renderDirectoryTree(m_Root, it->second);
+			renderDirectoryTree(m_Root, it->second);			
 		}
 
 		void ImGuiFileManager::Undo()

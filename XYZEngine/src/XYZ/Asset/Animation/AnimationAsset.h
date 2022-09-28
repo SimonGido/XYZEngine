@@ -28,10 +28,12 @@ namespace XYZ {
 
 		virtual ~AnimationAsset() = default;
 
-		const std::string& GetFilePath() const { return m_FilePath; }
+		const std::string&		  GetFilePath() const { return m_FilePath; }
+		const std::string&		  GetName()	 const { return m_AnimationName; }
+		const Ref<SkeletonAsset>& GetSkeleton() const { return m_Skeleton; }
 
-		static AssetType GetStaticType() { return AssetType::Animation; }
-		virtual AssetType GetAssetType() const override { return GetStaticType(); }
+		static  AssetType		  GetStaticType() { return AssetType::Animation; }
+		virtual AssetType		  GetAssetType() const override { return GetStaticType(); }
 
 
 		const ozz::animation::Animation& GetAnimation() const { XYZ_ASSERT(m_Animation, "Attempted to access null animation!"); return *m_Animation; }
@@ -40,8 +42,9 @@ namespace XYZ {
 		void load(const aiScene* scene, const std::string& animationName, Ref<SkeletonAsset> skeleton);
 
 	private:
+		Ref<SkeletonAsset> m_Skeleton;
+		std::string		   m_FilePath;
+		std::string		   m_AnimationName;
 		ozz::unique_ptr<ozz::animation::Animation> m_Animation;
-		std::string m_FilePath;
-		std::string m_AnimationName;
 	};
 }

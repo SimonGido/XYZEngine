@@ -5,11 +5,11 @@
 #include "XYZ/Utils/FileSystem.h"
 
 #include "XYZ/Asset/AssetManager.h"
+#include "XYZ/Asset/AssimpModelImporter.h"
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/SceneSerializer.h"
 #include "XYZ/Renderer/Font.h"
 #include "XYZ/ImGui/ImGui.h"
-
 #include "XYZ/Debug/Profiler.h"
 
 #include "EditorLayer.h"
@@ -20,7 +20,6 @@
 
 namespace XYZ {
 	namespace Editor {
-
 
 		AssetBrowser::AssetBrowser(std::string name)
 			:
@@ -42,27 +41,27 @@ namespace XYZ {
 				[&](const std::filesystem::path& path) -> bool { m_FileManager.SetCurrentFile(path); return true; }, // Double left click
 				[&](const std::filesystem::path& path) -> bool { return false; } // Right click
 			});
-			m_FileManager.RegisterExtension("tex", {
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Texture), {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::TextureIcon)
 			});
-			m_FileManager.RegisterExtension("subtex", {
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::SubTexture), {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon)
 				});
-			m_FileManager.RegisterExtension("mat", {
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Material), {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MaterialIcon)
 				});
-			m_FileManager.RegisterExtension("shader", {
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Shader), {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::ShaderIcon)
 				});
-			m_FileManager.RegisterExtension("cs", {
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Script), {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::ScriptIcon)
 				});
-			m_FileManager.RegisterExtension("anim", {
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Animation), {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::AnimationIcon)
 				});
@@ -74,19 +73,35 @@ namespace XYZ {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::JpgIcon)
 				});
-			m_FileManager.RegisterExtension("mesh", {
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Mesh), {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon)
+				});
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::MeshSource), {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon),
+				nullptr, // Hover
+				nullptr, // Left click
+				[&](const std::filesystem::path& path) -> bool { return true; }, // Double left click
+				[&](const std::filesystem::path& path) -> bool { return MESHSRCassetRightClickMenu(path); } // Right click
+				});
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Skeleton), {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon)
 				});
 			m_FileManager.RegisterExtension("fbx", {
 				EditorLayer::GetData().IconsTexture,
-				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon)
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon),
+				nullptr, // Hover
+				nullptr, // Left click
+				[&](const std::filesystem::path& path) -> bool { return true; }, // Double left click
+				[&](const std::filesystem::path& path) -> bool { return FBXassetRightClickMenu(path); } // Right click
 				});
-			m_FileManager.RegisterExtension("prefab", {
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Prefab), {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::SceneIcon)
 				});
-			m_FileManager.RegisterExtension("xyz", {
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Scene), {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::SceneIcon)
 				});
@@ -108,15 +123,13 @@ namespace XYZ {
 					[&]() { 
 						XYZ_PROFILE_FUNC("AssetBrowser::processDirectoryTree");
 						m_FileManager.RenderDirectoryTree();
-						tryClearClickedFiles();
 					},
 					[&]() { 
 						XYZ_PROFILE_FUNC("AssetBrowser::processCurrentDirectory");
 						m_FileManager.RenderCurrentDirectory("AssetDragAndDrop", m_IconSize);
-						rightClickMenu();
-						tryClearClickedFiles();
+						if (m_FileManager.GetRightClickedFile() == nullptr)
+							rightClickMenu();
 					});
-				tryClearClickedFiles();
 			}
 			ImGui::End();
 		}
@@ -129,99 +142,52 @@ namespace XYZ {
 
 		Ref<Asset> AssetBrowser::GetSelectedAsset()
 		{
-			if (!m_SelectedFile.empty())
-			{
-				std::string fullFilePath = m_SelectedFile.string();
-				std::replace(fullFilePath.begin(), fullFilePath.end(), '\\', '/');
-				if (Utils::GetExtension(m_SelectedFile.string()) == "mat")
-				{
-					m_SelectedAsset = AssetManager::GetAsset<MaterialAsset>(std::filesystem::path(fullFilePath));				
-					return m_SelectedAsset;
-				}
-			}
+			//if (!m_SelectedFile.empty())
+			//{
+			//	std::string fullFilePath = m_SelectedFile.string();
+			//	std::replace(fullFilePath.begin(), fullFilePath.end(), '\\', '/');
+			//	if (Utils::GetExtension(m_SelectedFile.string()) == "mat")
+			//	{
+			//		m_SelectedAsset = AssetManager::GetAsset<MaterialAsset>(std::filesystem::path(fullFilePath));				
+			//		return m_SelectedAsset;
+			//	}
+			//}
 			return Ref<Asset>();
 		}
 
-		void AssetBrowser::createAsset()
-		{
-			std::string parentDir = m_FileManager.GetCurrentFile().GetPath().string();
-			if (ImGui::MenuItem("Create Folder"))
-			{
-				const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Folder", nullptr);
-				FileSystem::CreateFolder(fullpath);
-			}
-			if (ImGui::MenuItem("Create Scene"))
-			{
-				const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Scene", ".xyz");
-				const std::string name = Utils::GetFilename(fullpath);
-				AssetManager::CreateAsset<Scene>(name, parentDir, name);
-			}
-			if (ImGui::MenuItem("Create Material"))
-			{
-				const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Material", ".mat");
-				Ref<ShaderAsset> defaultShader = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/DefaultLitShader.shader");
-				AssetManager::CreateAsset<MaterialAsset>(Utils::GetFilename(fullpath), parentDir, defaultShader);
-			}
-		}
 		
-		void AssetBrowser::rightClickMenu()
+		bool AssetBrowser::rightClickMenu()
 		{		
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
 			{
-				ImGui::OpenPopup("RightClickMenu");
+				ImGui::OpenPopup("CreateFileMenu");
 			}
-			if (ImGui::BeginPopup("RightClickMenu"))
+			if (ImGui::BeginPopup("CreateFileMenu"))
 			{
-				if (!m_RightClickedFile.empty())
+				const std::string parentDir = m_FileManager.GetCurrentFile().GetPath().string();
+				if (ImGui::MenuItem("Create Folder"))
 				{
-					std::string ext = Utils::GetExtension(m_RightClickedFile.string());
-					if (ext == "png" || ext == "jpg")
-					{
-						if (ImGui::MenuItem("Create Texture"))
-						{
-							//std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPathString();
-							//const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Texture", ".tex");
-							//AssetManager::CreateAsset<Texture2D>(Utils::GetFilename(fullpath), parentDir, m_RightClickedFile.string());
-						}
-					}
-					else if (ext == "fbx")
-					{
-						if (ImGui::MenuItem("Create Mesh Source"))
-						{
-							//std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPathString();
-							//const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Mesh Source", ".meshsrc");
-							//AssetManager::CreateAsset<MeshSource>(Utils::GetFilename(fullpath), parentDir, m_RightClickedFile.string());
-						}
-					}
-					else if (ext == "tex")
-					{
-						if (ImGui::MenuItem("Create SubTexture"))
-						{
-							//std::string parentDir = m_DirectoryTree.GetCurrentNode().GetPathString();
-							//const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New SubTexture", ".subtex");
-							//Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(m_RightClickedFile);
-							//AssetManager::CreateAsset<SubTexture>(Utils::GetFilename(fullpath), parentDir, texture);
-						}
-					}
+					const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Folder", nullptr);
+					FileSystem::CreateFolder(fullpath);
 				}
-				createAsset();			
+				if (ImGui::MenuItem("Create Scene"))
+				{
+					const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Scene", ".xyz");
+					const std::string name = Utils::GetFilename(fullpath);
+					AssetManager::CreateAsset<Scene>(name, parentDir, name);
+				}
+				if (ImGui::MenuItem("Create Material"))
+				{
+					const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Material", ".mat");
+					Ref<ShaderAsset> defaultShader = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/DefaultLitShader.shader");
+					AssetManager::CreateAsset<MaterialAsset>(Utils::GetFilename(fullpath), parentDir, defaultShader);
+				}
 				ImGui::EndPopup();
-			}
-		}
-
-		bool AssetBrowser::tryClearClickedFiles()
-		{
-			if (ImGui::GetIO().MouseReleased[ImGuiMouseButton_Left]
-				&& ImGui::IsWindowFocused()
-				&& ImGui::IsWindowHovered())
-			{
-				m_RightClickedFile.clear();
-				m_SelectedFile.clear();
-				return true;
 			}
 			return false;
 		}
 
+		
 		void AssetBrowser::renderTopPanel()
 		{
 			const auto& preferences = EditorLayer::GetData();
@@ -261,90 +227,6 @@ namespace XYZ {
 			if (ImGui::InputText("###", UI::Utils::GetPathBuffer(), _MAX_PATH))
 				m_FileManager.SetCurrentFile(UI::Utils::GetPathBuffer());
 		}
-
-		//void AssetBrowser::processCurrentDirectory()
-		//{
-		//	const auto&  preferences = EditorLayer::GetData();
-		//	static float padding = 32.0f;
-		//	const float  cellSize = m_IconSize.x + padding;
-		//
-		//	const float panelWidth = ImGui::GetContentRegionAvail().x;
-		//	int columnCount = (int)(panelWidth / cellSize);
-		//	columnCount = std::max(1, columnCount);
-		//	
-		//	ImGui::Columns(columnCount, 0, false);
-		//	for (auto& node : m_DirectoryTree.GetCurrentNode())
-		//	{
-		//		UI::ScopedID id(node.GetName().c_str());
-		//
-		//		bool leftClicked = false;
-		//		bool rightClicked = false;
-		//		bool leftDoubleClicked = false;
-		//		
-		//		node.OnImGuiRender("AssetDragAndDrop", m_IconSize, leftClicked, rightClicked, leftDoubleClicked);
-		//		
-		//		if (leftDoubleClicked)
-		//		{
-		//			if (node.IsDirectory())
-		//			{
-		//				m_DirectoryTree.SetCurrentNode(node);
-		//				break;
-		//			}
-		//			else
-		//			{
-		//				m_SelectedFile = node.GetPath();
-		//				auto asset = GetSelectedAsset();
-		//				Application::Get().OnEvent(AssetSelectedEvent(asset));
-		//			}
-		//		}
-		//		else if (leftClicked)
-		//		{
-		//		}
-		//		else if (rightClicked)
-		//		{
-		//			m_RightClickedFile = node.GetPath();
-		//		}
-		//				
-		//		ImGui::NextColumn();
-		//	}
-		//	ImGui::Columns(1);
-		//	rightClickMenu();
-		//}
-
-		//void AssetBrowser::processDirectoryTree(const File& file, bool defaulOpen)
-		//{
-		//	const auto& preferences = EditorLayer::GetData();
-		//	const UV& folderTexCoords = EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::FolderIcon);
-		//
-		//	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_OpenOnArrow;
-		//	if (defaulOpen)
-		//		flags |= ImGuiTreeNodeFlags_DefaultOpen;
-		//
-		//	if (file.Empty())
-		//		flags |= ImGuiTreeNodeFlags_Leaf;
-		//
-		//
-		//	if (file.IsDirectory())
-		//	{
-		//		std::string folderID = "##" + file.GetName();
-		//		const bool opened = ImGui::TreeNodeEx(folderID.c_str(), flags);
-		//
-		//		if (UI::Utils::IsItemDoubleClicked(ImGuiMouseButton_Left))
-		//			m_FileManager.SetCurrentFile(file.GetPath());
-		//
-		//		ImGui::SameLine();
-		//		UI::Image(preferences.IconsTexture->GetImage(), { GImGui->Font->FontSize , GImGui->Font->FontSize }, folderTexCoords[0], folderTexCoords[1]);
-		//		ImGui::SameLine();
-		//		ImGui::Text(file.GetName().c_str());
-		//
-		//		if (opened)
-		//		{
-		//			for (auto& node : file)
-		//				processDirectoryTree(node);
-		//			ImGui::TreePop();
-		//		}
-		//	}
-		//}
 		
 		void AssetBrowser::onFileChange(FileWatcher::ChangeType type, const std::filesystem::path& filePath)
 		{
@@ -356,6 +238,88 @@ namespace XYZ {
 			{
 				m_FileManager.RemoveFile(filePath);
 			}
+		}
+		bool AssetBrowser::FBXassetRightClickMenu(const std::filesystem::path& path)
+		{
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
+			{
+				ImGui::OpenPopup("RightClickMenu");
+			}
+			bool result = false;
+			if (ImGui::BeginPopup("RightClickMenu"))
+			{
+				std::string name = Utils::GetFilenameWithoutExtension(path.string());
+				if (assetRightClickMenu<MeshSource>(
+					path,
+					name + ".meshsrc",
+					"Create Mesh Source",
+					path.string()))
+				{
+					result = true;
+				}
+				if (assetRightClickMenu<SkeletonAsset>(
+					path,
+					name + ".skeleton",
+					"Create Skeleton",
+					path.string()
+					))
+				{
+					result = true;
+				}
+
+				if (ImGui::MenuItem("Create Assets"))
+				{
+					std::string parentDir = path.parent_path().string();
+				
+					AssimpModelImporter importer(parentDir, path.string());
+					AssetManager::Serialize(importer.GetMeshSourceAsset()->GetHandle());
+					AssetManager::Serialize(importer.GetSkeletonAsset()->GetHandle());
+					
+					for (const auto& animAsset : importer.GetAnimationAssets())
+					{
+						AssetManager::Serialize(animAsset->GetHandle());
+					}
+				}
+
+				ImGui::EndPopup();
+			}
+			return result;
+		}
+		bool AssetBrowser::MESHSRCassetRightClickMenu(const std::filesystem::path& path)
+		{
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
+			{
+				ImGui::OpenPopup("RightClickMenu");
+			}
+			bool result = false;
+			if (ImGui::BeginPopup("RightClickMenu"))
+			{
+				std::string name = Utils::GetFilenameWithoutExtension(path.string());
+				Ref<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>(path);
+
+				if (assetRightClickMenu<Mesh>(
+					path,
+					name + ".mesh",
+					"Create Mesh",
+					meshSource))
+				{
+					result = true;
+				}
+
+				if (meshSource->IsAnimated())
+				{
+					if (assetRightClickMenu<AnimatedMesh>(
+						path,
+						name + ".mesh",
+						"Create Mesh",
+						meshSource))
+					{
+						result = true;
+					}
+				}
+				ImGui::EndPopup();
+			}
+			return result;
 		}
 	}
 }

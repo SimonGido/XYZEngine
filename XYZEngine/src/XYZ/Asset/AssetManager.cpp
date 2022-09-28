@@ -15,7 +15,8 @@ namespace XYZ
 	std::unordered_map<AssetHandle, WeakRef<Asset>>			AssetManager::s_LoadedAssets;
 	std::unordered_map<AssetHandle, WeakRef<Asset>>			AssetManager::s_MemoryAssets;
 	std::shared_ptr<FileWatcher>							AssetManager::s_FileWatcher;
-	
+	std::function<void(Ref<Asset>)>							AssetManager::s_OnAssetLoaded;
+
 	static std::filesystem::path s_Directory = "Assets";
 
 	void AssetManager::Init()
@@ -98,6 +99,8 @@ namespace XYZ
 				it->second->SetFlag(AssetFlag::Reloaded);
 			}
 			s_LoadedAssets[asset->GetHandle()] = asset;
+			if (s_OnAssetLoaded)
+				s_OnAssetLoaded(asset);
 		}
 	}
 

@@ -411,29 +411,32 @@ namespace XYZ {
 			if (UI::DragDropTarget("AssetDragAndDrop", &assetPath))
 			{
 				std::filesystem::path path(assetPath);
-				const auto& metadata = AssetManager::GetMetadata(path);
-				if (metadata.Type == AssetType::Prefab)
+				if (AssetManager::Exist(path))
 				{
-					Ref<Prefab> prefab = AssetManager::GetAsset<Prefab>(metadata.Handle);
-					
-					auto [mx, my] = getMouseViewportSpace();
-					auto [origin, direction] = castRay(mx, my);
-					const Ray ray = { origin,direction };
-					const float boundary = 9999.9f;
+					const auto& metadata = AssetManager::GetMetadata(path);
+					if (metadata.Type == AssetType::Prefab)
+					{
+						Ref<Prefab> prefab = AssetManager::GetAsset<Prefab>(metadata.Handle);
 
-					const AABB aabb{ glm::vec3(-boundary, -boundary, 0.0f), glm::vec3(boundary, boundary, 0.0f) };
-					float distance = 0.0f;
-					ray.IntersectsAABB(aabb, distance);
-					
-					glm::vec3 translation = ray.Origin + ray.Direction * distance;
+						auto [mx, my] = getMouseViewportSpace();
+						auto [origin, direction] = castRay(mx, my);
+						const Ray ray = { origin,direction };
+						const float boundary = 9999.9f;
 
-					prefab->Instantiate(m_Context, SceneEntity(), &translation);
-				}
-				else if (metadata.Type == AssetType::Scene)
-				{
-					Ref<Scene> scene = AssetManager::GetAsset<Scene>(metadata.Handle);	
-					scene->SetViewportSize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
-					Application::Get().OnEvent(SceneLoadedEvent(scene));
+						const AABB aabb{ glm::vec3(-boundary, -boundary, 0.0f), glm::vec3(boundary, boundary, 0.0f) };
+						float distance = 0.0f;
+						ray.IntersectsAABB(aabb, distance);
+
+						glm::vec3 translation = ray.Origin + ray.Direction * distance;
+
+						prefab->Instantiate(m_Context, SceneEntity(), &translation);
+					}
+					else if (metadata.Type == AssetType::Scene)
+					{
+						Ref<Scene> scene = AssetManager::GetAsset<Scene>(metadata.Handle);
+						scene->SetViewportSize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
+						Application::Get().OnEvent(SceneLoadedEvent(scene));
+					}
 				}
 			}
 		}

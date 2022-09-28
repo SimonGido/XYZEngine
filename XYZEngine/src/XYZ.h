@@ -59,6 +59,7 @@
 
 //------Asset---------//
 #include "XYZ/Asset/AssetManager.h"
+#include "XYZ/Asset/AssetLifeManager.h"
 #include "XYZ/Asset/Animation/SkeletonAsset.h"
 #include "XYZ/Asset/Animation/AnimationAsset.h"
 #include "XYZ/Scene/Prefab.h"

@@ -81,12 +81,16 @@ namespace XYZ {
 			m_EditorCamera = &scenePanel->GetEditorCamera();
 
 			Renderer::WaitAndRenderAll();
+
+			AssetLifeManager::Start(10);
 		}
 
 		void EditorLayer::OnDetach()
 		{
 			s_Data.Shutdown();
 			AssetManager::SerializeAll();
+			AssetLifeManager::Stop();
+
 			ScriptEngine::Shutdown();
 			m_EditorManager.Clear();
 		}

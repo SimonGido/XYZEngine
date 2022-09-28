@@ -102,7 +102,8 @@ namespace XYZ {
 		static bool Exist(const AssetHandle& handle);
 		static bool Exist(const std::filesystem::path& filepath);
 
-		static std::shared_ptr<FileWatcher> GetFileWatcher() { return s_FileWatcher; }
+		static std::shared_ptr<FileWatcher> GetFileWatcher() { return s_FileWatcher; }	
+
 	private:
 		static void loadAssetMetadata(const std::filesystem::path& filepath);
 		static void writeAssetMetadata(const AssetMetadata& metadata);
@@ -117,10 +118,11 @@ namespace XYZ {
 		static std::unordered_map<AssetHandle, WeakRef<Asset>>		  s_LoadedAssets;
 		static std::unordered_map<AssetHandle, WeakRef<Asset>>        s_MemoryAssets;
 		static std::shared_ptr<FileWatcher>							  s_FileWatcher;
-	
+		static std::function<void(Ref<Asset> asset)>				  s_OnAssetLoaded;
 	private:
 		friend Editor::AssetBrowser;
 		friend Editor::AssetManagerViewPanel;
+		friend class   AssetLifeManager;
 	};
 	
 	
@@ -162,6 +164,8 @@ namespace XYZ {
 		s_LoadedAssets[asset->m_Handle] = asset.Raw();
 		writeAssetMetadata(metadata);
 		AssetImporter::Serialize(asset);
+		if (s_OnAssetLoaded)
+			s_OnAssetLoaded(asset);
 		return asset;
 	}
 
@@ -178,6 +182,8 @@ namespace XYZ {
 				return nullptr;
 
 			s_LoadedAssets[assetHandle] = asset;
+			if (s_OnAssetLoaded)
+				s_OnAssetLoaded(asset);
 		}
 		else
 		{

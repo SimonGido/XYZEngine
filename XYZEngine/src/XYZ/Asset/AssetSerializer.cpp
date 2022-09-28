@@ -357,11 +357,12 @@ namespace XYZ {
 		WeakRef<MeshSource> meshSource = asset.As<MeshSource>();
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-
+		
 		if (!meshSource->GetSourceFilePath().empty())
 			out << YAML::Key << "SourceFilePath" << meshSource->GetSourceFilePath();
 		else
 		{
+			// TODO: use obj file?
 			out << YAML::Key << "Vertices" << YAML::Value << YAML::BeginSeq;
 			for (auto& vertex : meshSource->GetVertices())
 			{
@@ -416,6 +417,7 @@ namespace XYZ {
 		}
 		else
 		{
+			// TODO: use obj file?
 			std::vector<Vertex> vertices;
 			std::vector<AnimatedVertex> animVertices;
 			std::vector<uint32_t> indices;
@@ -457,6 +459,64 @@ namespace XYZ {
 		}
 		return true;
 	}
+	void SkeletonAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+		WeakRef<SkeletonAsset> anim = asset.As<SkeletonAsset>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "SourceFilePath" << anim->GetFilePath();
+
+		out << YAML::EndMap;
+
+		std::ofstream fout(metadata.FilePath);
+		fout << out.c_str();
+		fout.flush();
+	}
+	bool SkeletonAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+		auto sourceFilePath = data["SourceFilePath"];
+		asset = Ref<SkeletonAsset>::Create(sourceFilePath.as<std::string>());
+
+		return true;
+	}
+
+	void AnimationAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+		WeakRef<AnimationAsset> anim = asset.As<AnimationAsset>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "SourceFilePath" << anim->GetFilePath();
+		out << YAML::Key << "AnimationName" << anim->GetName();
+		out << YAML::Key << "Skeleton" << anim->GetSkeleton()->GetHandle();
+		out << YAML::EndMap;
+
+		std::ofstream fout(metadata.FilePath);
+		fout << out.c_str();
+		fout.flush();
+	}
+	bool AnimationAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+		auto sourceFilePath = data["SourceFilePath"].as<std::string>();
+		auto animationName = data["AnimationName"].as<std::string>();
+		AssetHandle skeletonHandle(data["Skeleton"].as<std::string>());
+		
+		Ref<SkeletonAsset> skeleton = AssetManager::GetAsset<SkeletonAsset>(skeletonHandle);
+		asset = Ref<AnimationAsset>::Create(sourceFilePath, animationName, skeleton);
+
+		return true;
+	}
 
 	void MeshAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
 	{
@@ -473,6 +533,8 @@ namespace XYZ {
 		fout << out.c_str();
 		fout.flush();
 	}
+
+
 
 	bool MeshAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{

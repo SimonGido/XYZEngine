@@ -30,8 +30,8 @@ namespace XYZ {
 
 		std::string name = Utils::GetFilenameWithoutExtension(filepath);
 		
-		const std::filesystem::path meshPath = targetDirectory + "/" + name + ".xmesh";
-		const std::filesystem::path skeletonPath = targetDirectory + "/" + name + ".xskeleton";
+		const std::filesystem::path meshPath = targetDirectory + "/" + name + "." + Asset::GetExtension(AssetType::MeshSource);
+		const std::filesystem::path skeletonPath = targetDirectory + "/" + "." + Asset::GetExtension(AssetType::Skeleton);
 
 		if (AssetManager::Exist(meshPath))
 		{
@@ -39,7 +39,7 @@ namespace XYZ {
 		}
 		else 
 		{
-			m_MeshSourceAsset = AssetManager::CreateAsset<MeshSource>(name + ".xmesh", targetDirectory, scene, filepath);
+			m_MeshSourceAsset = AssetManager::CreateAsset<MeshSource>(name + "." + Asset::GetExtension(AssetType::MeshSource), targetDirectory, scene, filepath);
 		}
 		if (AssetManager::Exist(skeletonPath))
 		{
@@ -47,19 +47,19 @@ namespace XYZ {
 		}
 		else
 		{
-			m_SkeletonAsset = AssetManager::CreateAsset<SkeletonAsset>(name + ".xskeleton", targetDirectory, scene, filepath);
+			m_SkeletonAsset = AssetManager::CreateAsset<SkeletonAsset>(name + "." + Asset::GetExtension(AssetType::Skeleton), targetDirectory, scene, filepath);
 		}
 
 		for (uint32_t i = 0; i < scene->mNumAnimations; ++i)
 		{
-			const std::filesystem::path animPath = targetDirectory + "/" + name + ".xanim";
+			const std::filesystem::path animPath = targetDirectory + "/" + name + "." + Asset::GetExtension(AssetType::Animation);
 			if (AssetManager::Exist(animPath))
 			{
 				m_AnimationAssets.push_back(AssetManager::GetAsset<AnimationAsset>(animPath));
 			}
 			else
 			{
-				m_AnimationAssets.push_back(AssetManager::CreateAsset<AnimationAsset>(name + ".xanim", targetDirectory, 
+				m_AnimationAssets.push_back(AssetManager::CreateAsset<AnimationAsset>(name + "." + Asset::GetExtension(AssetType::Animation), targetDirectory,
 					scene, filepath, std::string(scene->mAnimations[i]->mName.data), m_SkeletonAsset)
 				);
 			}

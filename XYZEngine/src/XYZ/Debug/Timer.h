@@ -57,6 +57,11 @@ namespace XYZ {
 			return ms;
 		}
 
+		float ElapsedSeconds()
+		{
+			return Elapsed() * 0.001f;
+		}
+
 	private:
 		using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 

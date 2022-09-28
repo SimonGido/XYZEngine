@@ -96,28 +96,29 @@ namespace XYZ {
 	class Asset : public RefCount
 	{
 	public:
+		using AssetInfoContainer = std::array<std::string, ToUnderlying(AssetType::NumTypes)>;
+
+	public:
 		virtual ~Asset() = default;
 	
 		virtual AssetType GetAssetType() const { return AssetType::None; }
 		const AssetHandle& GetHandle() const { return m_Handle; }
 		
-		bool IsValid() const { return ((m_Flags & (uint16_t)AssetFlag::Missing) | (m_Flags & (uint16_t)AssetFlag::Invalid)) == 0; }
-
-		static AssetType GetStaticType() { return AssetType::None; }
-
-		bool IsFlagSet(AssetFlag flag) const { return (uint16_t)flag & m_Flags; }
-		void SetFlag(AssetFlag flag, bool value = true)
-		{
-			if (value)
-				m_Flags |= (uint16_t)flag;
-			else
-				m_Flags &= ~(uint16_t)flag;
-		}
-
+		bool IsValid() const;
 		
+		bool IsFlagSet(AssetFlag flag) const { return (uint16_t)flag & m_Flags; }
+		void SetFlag(AssetFlag flag, bool value = true);
+		
+		
+		static AssetType GetStaticType() { return AssetType::None; }
+		static const std::string& GetExtension(AssetType type) { return s_AssetExtensions[ToUnderlying(type)]; }
 	private:
 		AssetHandle m_Handle;
 		uint16_t    m_Flags = 0;
+
+		
+
+		static AssetInfoContainer s_AssetExtensions;
 
 		friend class AssetManager;
 		friend class AssetImporter;

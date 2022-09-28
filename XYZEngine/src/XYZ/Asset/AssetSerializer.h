@@ -48,6 +48,20 @@ namespace XYZ {
 		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
 
+	class SkeletonAssetSerializer : public AssetSerializer
+	{
+	public:
+		virtual void Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const override;
+		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
+	};
+
+	class AnimationAssetSerializer : public AssetSerializer
+	{
+	public:
+		virtual void Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const override;
+		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
+	};
+
 	class MeshAssetSerializer : public AssetSerializer
 	{
 	public:

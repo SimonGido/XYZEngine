@@ -34,6 +34,7 @@ static const uint32_t s_AnimationImportFlags =
 namespace XYZ {
 	AnimationAsset::AnimationAsset(const std::string& filename, const std::string& animationName, Ref<SkeletonAsset> skeleton)
 		:
+		m_Skeleton(skeleton),
 		m_FilePath(filename),
 		m_AnimationName(animationName)
 	{
@@ -59,9 +60,16 @@ namespace XYZ {
 	}
 	AnimationAsset::AnimationAsset(const aiScene* scene, const std::string& filename, const std::string& animationName, Ref<SkeletonAsset> skeleton)
 		:
+		m_Skeleton(skeleton),
 		m_FilePath(filename),
 		m_AnimationName(animationName)
 	{
+		if (!skeleton.Raw() || !skeleton->IsValid())
+		{
+			XYZ_CORE_ERROR("Invalid skeleton passed to animation asset for file '{0}'", m_FilePath);
+			SetFlag(AssetFlag::Invalid);
+			return;
+		}
 		if (!scene || !scene->HasAnimations())
 		{
 			XYZ_CORE_ERROR("Failed to load animation from file '{0}'", m_FilePath);

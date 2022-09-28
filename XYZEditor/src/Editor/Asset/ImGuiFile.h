@@ -109,6 +109,10 @@ namespace XYZ {
 
 			void RegisterExtension(const std::string& ext, const FileExtensionInfo& extInfo);
 
+			const ImGuiFile* GetLeftClickedFile()		const { return m_LeftClickedFile;}
+			const ImGuiFile* GetLeftDoubleClickedFile() const { return m_LeftDoubleClickedFile;}
+			const ImGuiFile* GetRightClickedFile()		const { return m_RightClickedFile;}
+
 			const ImGuiFile& GetRoot()		  const { return m_Root; }
 			const ImGuiFile& GetCurrentFile() const { return *m_CurrentFile; }
 		private:
