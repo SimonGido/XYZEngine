@@ -51,7 +51,10 @@ namespace XYZ {
 				});
 			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Material), {
 				EditorLayer::GetData().IconsTexture,
-				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MaterialIcon)
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MaterialIcon),
+				nullptr, // Hover
+				nullptr, // Left click
+				[&](const std::filesystem::path& path) -> bool { assetSelected(path); return true; } // Double left click
 				});
 			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Shader), {
 				EditorLayer::GetData().IconsTexture,
@@ -75,19 +78,38 @@ namespace XYZ {
 				});
 			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Mesh), {
 				EditorLayer::GetData().IconsTexture,
-				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon)
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon),
+				nullptr, // Hover
+				nullptr, // Left click
+				[&](const std::filesystem::path& path) -> bool { return true; }, // Double left click
+				[&](const std::filesystem::path& path) -> bool { return assetRightClickMenuMESH(path); } // Right click
+				});
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::AnimatedMesh), {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon),
+				nullptr, // Hover
+				nullptr, // Left click
+				[&](const std::filesystem::path& path) -> bool { return true; }, // Double left click
+				[&](const std::filesystem::path& path) -> bool { return assetRightClickMenuANIMMESH(path); } // Right click
 				});
 			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::MeshSource), {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon),
 				nullptr, // Hover
 				nullptr, // Left click
-				[&](const std::filesystem::path& path) -> bool { return true; }, // Double left click
-				[&](const std::filesystem::path& path) -> bool { return MESHSRCassetRightClickMenu(path); } // Right click
+				[&](const std::filesystem::path& path) -> bool { assetSelected(path); return true; }, // Double left click
+				[&](const std::filesystem::path& path) -> bool { return assetRightClickMenuMESHSRC(path); } // Right click
 				});
 			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Skeleton), {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon)
+				});
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::AnimationController), {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon),
+				nullptr, // Hover
+				nullptr, // Left click
+				[&](const std::filesystem::path& path) -> bool { assetSelected(path); return true; }, // Double left click
 				});
 			m_FileManager.RegisterExtension("fbx", {
 				EditorLayer::GetData().IconsTexture,
@@ -95,7 +117,7 @@ namespace XYZ {
 				nullptr, // Hover
 				nullptr, // Left click
 				[&](const std::filesystem::path& path) -> bool { return true; }, // Double left click
-				[&](const std::filesystem::path& path) -> bool { return FBXassetRightClickMenu(path); } // Right click
+				[&](const std::filesystem::path& path) -> bool { return assetRightClickMenuFBX(path); } // Right click
 				});
 			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Prefab), {
 				EditorLayer::GetData().IconsTexture,
@@ -182,6 +204,11 @@ namespace XYZ {
 					Ref<ShaderAsset> defaultShader = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/DefaultLitShader.shader");
 					AssetManager::CreateAsset<MaterialAsset>(Utils::GetFilename(fullpath), parentDir, defaultShader);
 				}
+				if (ImGui::MenuItem("Create Animation Controller"))
+				{
+					const std::string fullpath = FileSystem::UniqueFilePath(parentDir, "New Controller", ".controller");
+					AssetManager::CreateAsset<AnimationController>(Utils::GetFilename(fullpath), parentDir);
+				}
 				ImGui::EndPopup();
 			}
 			return false;
@@ -239,7 +266,12 @@ namespace XYZ {
 				m_FileManager.RemoveFile(filePath);
 			}
 		}
-		bool AssetBrowser::FBXassetRightClickMenu(const std::filesystem::path& path)
+		void AssetBrowser::assetSelected(const std::filesystem::path& path)
+		{
+			AssetSelectedEvent ev(AssetManager::GetAsset<Asset>(path));
+			Application::Get().OnEvent(ev);
+		}
+		bool AssetBrowser::assetRightClickMenuFBX(const std::filesystem::path& path)
 		{
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
 			{
@@ -251,18 +283,18 @@ namespace XYZ {
 				std::string name = Utils::GetFilenameWithoutExtension(path.string());
 				if (assetRightClickMenu<MeshSource>(
 					path,
-					name + ".meshsrc",
+					name + "." + Asset::GetExtension(AssetType::MeshSource),
 					"Create Mesh Source",
-					path.string()))
+					path.string()).Raw())
 				{
 					result = true;
 				}
 				if (assetRightClickMenu<SkeletonAsset>(
 					path,
-					name + ".skeleton",
+					name + "." + Asset::GetExtension(AssetType::Skeleton),
 					"Create Skeleton",
 					path.string()
-					))
+					).Raw())
 				{
 					result = true;
 				}
@@ -285,7 +317,7 @@ namespace XYZ {
 			}
 			return result;
 		}
-		bool AssetBrowser::MESHSRCassetRightClickMenu(const std::filesystem::path& path)
+		bool AssetBrowser::assetRightClickMenuMESHSRC(const std::filesystem::path& path)
 		{
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
 			{
@@ -299,9 +331,9 @@ namespace XYZ {
 
 				if (assetRightClickMenu<Mesh>(
 					path,
-					name + ".mesh",
+					name + "." + Asset::GetExtension(AssetType::Mesh),
 					"Create Mesh",
-					meshSource))
+					meshSource).Raw())
 				{
 					result = true;
 				}
@@ -310,12 +342,52 @@ namespace XYZ {
 				{
 					if (assetRightClickMenu<AnimatedMesh>(
 						path,
-						name + ".mesh",
-						"Create Mesh",
-						meshSource))
+						name + "." + Asset::GetExtension(AssetType::AnimatedMesh),
+						"Create Animated Mesh",
+						meshSource).Raw())
 					{
 						result = true;
 					}
+				}
+				ImGui::EndPopup();
+			}
+			return result;
+		}
+		bool AssetBrowser::assetRightClickMenuMESH(const std::filesystem::path& path)
+		{
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
+			{
+				ImGui::OpenPopup("RightClickMenu");
+			}
+			bool result = false;
+			if (ImGui::BeginPopup("RightClickMenu"))
+			{
+				std::string name = Utils::GetFilenameWithoutExtension(path.string());
+				
+				ImGui::EndPopup();
+			}
+			return result;
+		}
+		bool AssetBrowser::assetRightClickMenuANIMMESH(const std::filesystem::path& path)
+		{
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
+			{
+				ImGui::OpenPopup("RightClickMenu");
+			}
+			bool result = false;
+			if (ImGui::BeginPopup("RightClickMenu"))
+			{
+				std::string name = Utils::GetFilenameWithoutExtension(path.string());
+				Ref<AnimatedMesh> animMesh = AssetManager::GetAsset<AnimatedMesh>(path);
+		
+				if (assetRightClickMenu<Prefab>(
+					path,
+					name + "." + Asset::GetExtension(AssetType::Prefab),
+					"Create Prefab",
+					animMesh
+					).Raw())
+				{
+					result = true;
 				}
 				ImGui::EndPopup();
 			}

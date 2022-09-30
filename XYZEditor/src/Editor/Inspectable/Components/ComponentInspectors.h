@@ -9,5 +9,5 @@
 #include "ScriptComponentInspector.h"
 #include "SpriteRendererInspector.h"
 #include "TransformInspector.h"
-#include "MeshInspector.h"
-#include "AnimationInspector.h"
+#include "MeshComponentInspector.h"
+#include "AnimationComponentInspector.h"

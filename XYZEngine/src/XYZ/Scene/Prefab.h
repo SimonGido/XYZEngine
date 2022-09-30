@@ -8,9 +8,14 @@ namespace XYZ {
 	{
 	public:
 		Prefab();
+		Prefab(SceneEntity entity);
+		Prefab(const Ref<AnimatedMesh>& mesh, std::string name = "");
+
+
 		void Create(SceneEntity entity);
+
 		void Create(const Ref<AnimatedMesh>& mesh, std::string name = "");
-		
+
 		SceneEntity Instantiate(Ref<Scene> dstScene, SceneEntity parent = SceneEntity(), 
 			const glm::vec3* translation = nullptr, const glm::vec3* rotation = nullptr, const glm::vec3* scale = nullptr);
 

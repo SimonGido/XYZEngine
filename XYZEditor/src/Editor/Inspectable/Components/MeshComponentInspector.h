@@ -5,10 +5,10 @@
 #include "XYZ/Scene/SceneEntity.h"
 namespace XYZ {
 	namespace Editor {
-		class MeshInspector : public Inspectable
+		class MeshComponentInspector : public Inspectable
 		{
 		public:
-			MeshInspector();
+			MeshComponentInspector();
 
 			virtual bool OnEditorRender() override;
 			virtual void SetSceneEntity(const SceneEntity& entity) override;
@@ -18,10 +18,10 @@ namespace XYZ {
 			SceneEntity m_Context;
 		};
 
-		class AnimatedMeshInspector : public Inspectable
+		class AnimatedMeshComponentInspector : public Inspectable
 		{
 		public:
-			AnimatedMeshInspector();
+			AnimatedMeshComponentInspector();
 
 			virtual bool OnEditorRender() override;
 			virtual void SetSceneEntity(const SceneEntity& entity) override;

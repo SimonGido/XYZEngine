@@ -4,3 +4,9 @@ Textures:
   []
 TextureArrays:
   []
+MaterialData:
+  - Name: u_Renderer.Transform
+    Type: 14
+  - Name: u_Uniforms.Tiles
+    Type: 5
+    Value: [0, 0]

@@ -312,7 +312,20 @@ namespace XYZ {
 	template <>
 	void SceneSerializer::serialize<AnimatedMeshComponent>(YAML::Emitter& out, const AnimatedMeshComponent& val, SceneEntity entity)
 	{
-	
+		out << YAML::Key << "AnimatedMeshComponent";
+		out << YAML::BeginMap;
+		out << YAML::Key << "Mesh" << val.Mesh->GetHandle();
+		out << YAML::Key << "Material" << val.MaterialAsset->GetHandle();
+
+		out << YAML::Key << "BoneEntities";
+		out << YAML::Value << YAML::BeginSeq << YAML::Flow;
+		for (const auto boneEntity : val.BoneEntities)
+		{
+			out << YAML::Value << entity.GetRegistry()->get<IDComponent>(boneEntity).ID;
+		}
+		out << YAML::EndSeq;
+
+		out << YAML::EndMap;
 	}
 
 	template <>
@@ -320,6 +333,14 @@ namespace XYZ {
 	{
 		MeshComponent& component = entity.EmplaceComponent<MeshComponent>();
 		component.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
+		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
+	}
+
+	template <>
+	void SceneSerializer::deserialize<AnimatedMeshComponent>(YAML::Node& data, SceneEntity entity)
+	{
+		AnimatedMeshComponent& component = entity.EmplaceComponent<AnimatedMeshComponent>();
+		component.Mesh = AssetManager::GetAsset<AnimatedMesh>(AssetHandle(data["Mesh"].as<std::string>()));
 		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
 	}
 
@@ -665,6 +686,12 @@ namespace XYZ {
 		{
 			deserialize<MeshComponent>(meshComponent, entity);
 		}
+
+		auto animatedMeshComponent = data["AnimatedMeshComponent"];
+		if (animatedMeshComponent)
+		{
+			deserialize<AnimatedMeshComponent>(animatedMeshComponent, entity);
+		}
 	}
 
 
@@ -703,12 +730,12 @@ namespace XYZ {
 		fout.flush();
 	}
 
-	entt::entity FindByID(entt::registry& reg, const GUID& guid)
+	entt::entity FindByID(const entt::registry& reg, const GUID& guid)
 	{
-		auto view = reg.view<IDComponent>();
+		auto view = reg.view<const IDComponent>();
 		for (auto entity : view)
 		{
-			if (view.get<IDComponent>(entity).ID == guid)
+			if (view.get<const IDComponent>(entity).ID == guid)
 				return entity;
 		}
 		return entt::null;
@@ -745,39 +772,17 @@ namespace XYZ {
 			{
 				GUID guid = entityData["Entity"].as<std::string>();
 				entt::entity entity = FindByID(reg, guid);
+				SceneEntity setupEntity{ entity, scene.Raw() };
 
-				Relationship& relationship = reg.get<Relationship>(entity);
-				// Remove relations created by scene
-				relationship.Parent = entt::null;
-				relationship.NextSibling = entt::null;
-				relationship.PreviousSibling = entt::null;
-				relationship.FirstChild = entt::null;
-
-				auto relComponent = entityData["Relationship"];
-
-				GUID parent = relComponent["Parent"].as<std::string>();
-				relationship.Parent = FindByID(reg, parent);
-				
-				if (relComponent["NextSibling"])
-				{
-					GUID nextSibling = relComponent["NextSibling"].as<std::string>();
-					relationship.NextSibling = FindByID(reg, nextSibling);
-				}
-				if (relComponent["PreviousSibling"])
-				{
-					GUID previousSibling = relComponent["PreviousSibling"].as<std::string>();
-					relationship.PreviousSibling = FindByID(reg, previousSibling);
-				}
-				if (relComponent["FirstChild"])
-				{
-					GUID firstChild = relComponent["FirstChild"].as<std::string>();
-					relationship.FirstChild = FindByID(reg, firstChild);
-				}
-				relationship.Depth = relComponent["Depth"].as<uint32_t>();
+				setupRelationship(entityData, setupEntity);
+				auto animatedMeshComponent = entityData["AnimatedMeshComponent"];
+				if (animatedMeshComponent)
+					setupAnimatedMeshComponent(animatedMeshComponent, setupEntity);
 			}
 		}
 		return scene;
 	}
+
 	void SceneSerializer::serializeEntity(YAML::Emitter& out, SceneEntity entity)
 	{
 		out << YAML::BeginMap;
@@ -843,6 +848,53 @@ namespace XYZ {
 		{
 			serialize<MeshComponent>(out, entity.GetComponent<MeshComponent>(), entity);
 		}
+		if (entity.HasComponent<AnimatedMeshComponent>())
+		{
+			serialize<AnimatedMeshComponent>(out, entity.GetComponent<AnimatedMeshComponent>(), entity);
+		}
 		out << YAML::EndMap; // Entity
+	}
+
+
+	void SceneSerializer::setupRelationship(YAML::Node& data, SceneEntity entity)
+	{
+		const entt::registry& reg = *entity.GetRegistry();
+		Relationship& relationship = entity.GetComponent<Relationship>();
+		// Remove relations created by scene
+		relationship.Parent = entt::null;
+		relationship.NextSibling = entt::null;
+		relationship.PreviousSibling = entt::null;
+		relationship.FirstChild = entt::null;
+
+		auto relComponent = data["Relationship"];
+
+		GUID parent = relComponent["Parent"].as<std::string>();
+		relationship.Parent = FindByID(reg, parent);
+
+		if (relComponent["NextSibling"])
+		{
+			GUID nextSibling = relComponent["NextSibling"].as<std::string>();
+			relationship.NextSibling = FindByID(reg, nextSibling);
+		}
+		if (relComponent["PreviousSibling"])
+		{
+			GUID previousSibling = relComponent["PreviousSibling"].as<std::string>();
+			relationship.PreviousSibling = FindByID(reg, previousSibling);
+		}
+		if (relComponent["FirstChild"])
+		{
+			GUID firstChild = relComponent["FirstChild"].as<std::string>();
+			relationship.FirstChild = FindByID(reg, firstChild);
+		}
+		relationship.Depth = relComponent["Depth"].as<uint32_t>();
+	}
+	void SceneSerializer::setupAnimatedMeshComponent(YAML::Node& data, SceneEntity entity)
+	{
+		AnimatedMeshComponent& component = entity.GetComponent<AnimatedMeshComponent>();
+		for (auto boneEntity : data["BoneEntities"])
+		{
+			entt::entity bone = FindByID(*entity.GetRegistry(), boneEntity.as<std::string>());
+			component.BoneEntities.push_back(bone);
+		}
 	}
 }

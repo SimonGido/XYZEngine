@@ -275,6 +275,11 @@ namespace XYZ {
 					m_EditablesInUse.push_back(&m_MaterialInspector);
 					m_MaterialInspector.SetAsset(m_SelectedAsset);
 				}
+				else if (m_SelectedAsset->GetAssetType() == AssetType::AnimationController)
+				{
+					m_EditablesInUse.push_back(&m_AnimationControllerInspector);
+					m_AnimationControllerInspector.SetAsset(m_SelectedAsset);
+				}
 			}
 
 			if (m_SelectedEntity && m_State == State::Entity)
@@ -333,15 +338,15 @@ namespace XYZ {
 				}
 				if (m_SelectedEntity.HasComponent<MeshComponent>())
 				{
-					m_EditablesInUse.push_back(&m_MeshInspector);
+					m_EditablesInUse.push_back(&m_MeshComponentInspector);
 				}
 				if (m_SelectedEntity.HasComponent<AnimatedMeshComponent>())
 				{
-					m_EditablesInUse.push_back(&m_AnimatedMeshInspector);
+					m_EditablesInUse.push_back(&m_AnimatedMeshComponentInspector);
 				}
 				if (m_SelectedEntity.HasComponent<AnimationComponent>())
 				{
-					m_EditablesInUse.push_back(&m_AnimationInspector);
+					m_EditablesInUse.push_back(&m_AnimationComponentInspector);
 				}
 			}
 

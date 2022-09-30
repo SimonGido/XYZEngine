@@ -76,13 +76,15 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
 	
 
-			Ref<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
+			std::shared_ptr<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
+		
 			scenePanel->SetSceneRenderer(m_SceneRenderer);
 			m_EditorCamera = &scenePanel->GetEditorCamera();
 
 			Renderer::WaitAndRenderAll();
 
-			AssetLifeManager::Start(10);
+			const float keepAliveAssetSeconds = 60;
+			AssetLifeManager::Start(keepAliveAssetSeconds);
 		}
 
 		void EditorLayer::OnDetach()

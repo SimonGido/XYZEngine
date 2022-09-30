@@ -2,6 +2,7 @@
 #include "Editor/EditorPanel.h"
 #include "Editor/Inspectable/Components/ComponentInspectors.h"
 #include "Editor/Inspectable/Assets/MaterialInspector.h"
+#include "Editor/Inspectable/Assets/AnimationControllerInspector.h"
 
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Material.h"
@@ -51,24 +52,25 @@ namespace XYZ {
 			std::vector<WeakRef<Inspectable>> m_EditablesInUse;
 
 			// Default editables for components
-			CameraInspector		          m_CameraInspector;
-			PointLight2DInspector         m_PointLight2DInspector;
-			SpotLight2DInspector          m_SpotLight2DInspector;
-			ParticleComponentInspector	  m_ParticleInspector;
-			ParticleRendererInspector	  m_ParticleRendererInspector;
-			SceneTagInspector			  m_SceneTagInspector;
-			ScriptComponentInspector	  m_ScriptComponentInspector;
-			TransformInspector			  m_TransformInspector;
-			SpriteRendererInspector		  m_SpriteRendererInspector;
-			RigidBody2DInspector		  m_RigidBodyInspector;
-			BoxCollider2DInspector		  m_BoxCollider2DInspector;
-			CircleCollider2DInspector	  m_CircleCollider2DInspector;
-			ChainCollider2DInspector	  m_ChainCollider2DInspector;
+			CameraInspector		           m_CameraInspector;
+			PointLight2DInspector          m_PointLight2DInspector;
+			SpotLight2DInspector           m_SpotLight2DInspector;
+			ParticleComponentInspector	   m_ParticleInspector;
+			ParticleRendererInspector	   m_ParticleRendererInspector;
+			SceneTagInspector			   m_SceneTagInspector;
+			ScriptComponentInspector	   m_ScriptComponentInspector;
+			TransformInspector			   m_TransformInspector;
+			SpriteRendererInspector		   m_SpriteRendererInspector;
+			RigidBody2DInspector		   m_RigidBodyInspector;
+			BoxCollider2DInspector		   m_BoxCollider2DInspector;
+			CircleCollider2DInspector	   m_CircleCollider2DInspector;
+			ChainCollider2DInspector	   m_ChainCollider2DInspector;
+			MeshComponentInspector		   m_MeshComponentInspector;
+			AnimatedMeshComponentInspector m_AnimatedMeshComponentInspector;
+			AnimationComponentInspector	   m_AnimationComponentInspector;
 
-			MeshInspector				  m_MeshInspector;
-			AnimatedMeshInspector		  m_AnimatedMeshInspector;
-			AnimationInspector			  m_AnimationInspector;
 			MaterialInspector			  m_MaterialInspector;
+			AnimationControllerInspector  m_AnimationControllerInspector;
 		};
 
 		template<typename T, typename ...Args>

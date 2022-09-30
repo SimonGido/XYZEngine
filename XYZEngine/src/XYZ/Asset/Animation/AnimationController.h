@@ -34,10 +34,15 @@ namespace XYZ {
 		const glm::vec3& GetScale(size_t jointIndex)	   const { return m_LocalScales[jointIndex]; }
 		const glm::quat& GetRotation(size_t jointIndex)	   const { return m_LocalRotations[jointIndex]; }
 
+		const Ref<SkeletonAsset>&				GetSkeleton()		 const { return m_SkeletonAsset; }
 		const std::vector<std::string>&			GetStateNames()		 const { return m_AnimationNames; }
 		const std::vector<Ref<AnimationAsset>>& GetAnimationStates() const { return m_AnimationStates; }
 		const std::vector<ozz::math::Float4x4>& GetTransforms()		 const; 
-	
+
+		static AssetType GetStaticType() { return AssetType::AnimationController; }
+		virtual AssetType GetAssetType() const override { return GetStaticType(); }
+
+
 		void UpdateModel();
 	private:
 		void updateSampling(float ratio);

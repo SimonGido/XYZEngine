@@ -631,4 +631,61 @@ namespace XYZ {
 
 		return true;
 	}
+	void AnimationControllerAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+		WeakRef<AnimationController> controller = asset.As<AnimationController>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		auto skeleton = controller->GetSkeleton();
+		if (skeleton.Raw())
+			out << YAML::Key << "Skeleton" << controller->GetSkeleton()->GetHandle();
+		else
+			out << YAML::Key << "Skeleton" << "";
+
+		out << YAML::Key << "Animations";
+		for (size_t i = 0; i < controller->GetAnimationStates().size(); ++i)
+		{
+			const Ref<AnimationAsset>& anim = controller->GetAnimationStates()[i];
+			const std::string& stateName = controller->GetStateNames()[i];
+
+			out << YAML::BeginMap;
+			out << YAML::Key << "Name" << stateName;
+			out << YAML::Key << "Handle" << anim->GetHandle();
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+
+		std::ofstream fout(metadata.FilePath);
+		fout << out.c_str();
+		fout.flush();
+	}
+	bool AnimationControllerAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+		Ref<AnimationController> controller = Ref<AnimationController>::Create();
+
+		auto skeletonData = data["Skeleton"].as<std::string>();
+		if (!skeletonData.empty())
+		{
+			AssetHandle skeletonHandle(skeletonData);
+			controller->SetSkeletonAsset(AssetManager::GetAsset<SkeletonAsset>(skeletonHandle));
+		}
+		
+		auto animationsData = data["Animations"];
+		for (auto animData : animationsData)
+		{
+			std::string stateName = animData["Name"].as<std::string>();
+			AssetHandle animHandle(animData["Handle"].as<std::string>());
+			Ref<AnimationAsset> animation = AssetManager::GetAsset<AnimationAsset>(animHandle);
+			controller->AddState(stateName, animation);
+		}
+
+		asset = controller;
+		return true;
+	}
 }

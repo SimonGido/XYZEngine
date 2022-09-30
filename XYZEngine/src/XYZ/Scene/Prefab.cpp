@@ -86,9 +86,16 @@ namespace XYZ {
 	Prefab::Prefab()
 	{
 		m_Scene = Ref<Scene>::Create("Prefab");
-		m_Entity = m_Scene->CreateEntity("Prefab", GUID());
+		m_Entity = m_Scene->CreateEntity("First Entity");
 	}
-
+	Prefab::Prefab(SceneEntity entity)
+	{
+		Create(entity);
+	}
+	Prefab::Prefab(const Ref<AnimatedMesh>& mesh, std::string name)
+	{
+		Create(mesh, name);
+	}
 	void Prefab::Create(SceneEntity entity)
 	{
 		m_Scene = Ref<Scene>::Create("Prefab");
@@ -102,8 +109,9 @@ namespace XYZ {
 			}
 		}
 	}
+
 	void Prefab::Create(const Ref<AnimatedMesh>& mesh, std::string name)
-	{		
+	{
 		if (name.empty())
 		{
 			const auto& metadata = AssetManager::GetMetadata(mesh);
@@ -124,12 +132,13 @@ namespace XYZ {
 		}
 
 		// Find in hierarchy animated mesh component and assign it's bones
-		for (auto &entity : m_Entities)
+		for (auto& entity : m_Entities)
 		{
 			if (entity.HasComponent<AnimatedMeshComponent>())
 				setupBoneEntities(entity);
 		}
 	}
+
 	SceneEntity Prefab::Instantiate(Ref<Scene> dstScene, SceneEntity parent, const glm::vec3* translation, const glm::vec3* rotation, const glm::vec3* scale)
 	{
 		SceneEntity newEntity;
@@ -203,13 +212,10 @@ namespace XYZ {
 		animatedMeshComponent.BoneEntities.resize(boneInfo.size());
 		for (const auto& entity : m_Entities)
 		{
-			for (const auto& [name, index] : bones)
+			auto it = bones.find(entity.GetComponent<SceneTagComponent>().Name);
+			if (it != bones.end())
 			{
-				if (entity.GetComponent<SceneTagComponent>().Name == name)
-				{
-					animatedMeshComponent.BoneEntities[index] = entity.ID();
-					break;
-				}
+				animatedMeshComponent.BoneEntities[it->second] = entity.ID();
 			}
 		}
 	}

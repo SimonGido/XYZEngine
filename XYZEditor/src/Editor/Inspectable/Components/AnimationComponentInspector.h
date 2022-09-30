@@ -5,10 +5,10 @@
 
 namespace XYZ {
 	namespace Editor {
-		class AnimationInspector : public Inspectable
+		class AnimationComponentInspector : public Inspectable
 		{
 		public:
-			AnimationInspector();
+			AnimationComponentInspector();
 
 			virtual bool OnEditorRender() override;
 			virtual void SetSceneEntity(const SceneEntity& entity) override;

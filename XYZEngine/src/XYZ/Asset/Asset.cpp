@@ -17,7 +17,7 @@ namespace XYZ {
 		"animmesh",
 		"meshsrc",
 		"anim",
-		"animator",
+		"controller",
 		"skeleton",
 		"prefab"
 	};

@@ -72,7 +72,7 @@ namespace XYZ {
 			}
 		}
 
-		Ref<EditorPanel> EditorManager::getPanel(const std::string& name) const
+		std::shared_ptr<EditorPanel> EditorManager::getPanel(const std::string& name) const
 		{
 			for (auto& panel : m_EditorPanels)
 			{

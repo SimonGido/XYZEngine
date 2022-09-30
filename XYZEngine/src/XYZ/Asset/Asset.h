@@ -22,7 +22,7 @@ namespace XYZ {
 		AnimatedMesh,
 		MeshSource,
 		Animation,
-		Animator,
+		AnimationController,
 		Skeleton,
 		Prefab,
 		NumTypes
@@ -41,22 +41,22 @@ namespace XYZ {
 
 		inline AssetType AssetTypeFromString(const std::string& assetType)
 		{
-			if (assetType == "None") 			  return AssetType::None;
-			if (assetType == "Scene")			  return AssetType::Scene;
-			if (assetType == "Texture")			  return AssetType::Texture;
-			if (assetType == "SubTexture")		  return AssetType::SubTexture;
-			if (assetType == "Material")		  return AssetType::Material;
-			if (assetType == "Shader")			  return AssetType::Shader;
-			if (assetType == "Font")			  return AssetType::Font;
-			if (assetType == "Audio")			  return AssetType::Audio;
-			if (assetType == "Script")			  return AssetType::Script;
-			if (assetType == "Mesh")			  return AssetType::Mesh;
-			if (assetType == "AnimatedMesh")	  return AssetType::AnimatedMesh;
-			if (assetType == "MeshSource")		  return AssetType::MeshSource;
-			if (assetType == "Animation")		  return AssetType::Animation;
-			if (assetType == "Animator")		  return AssetType::Animator;
-			if (assetType == "Skeleton")		  return AssetType::Skeleton;
-			if (assetType == "Prefab")			  return AssetType::Prefab;
+			if (assetType == "None") 					  return AssetType::None;
+			if (assetType == "Scene")					  return AssetType::Scene;
+			if (assetType == "Texture")					  return AssetType::Texture;
+			if (assetType == "SubTexture")				  return AssetType::SubTexture;
+			if (assetType == "Material")				  return AssetType::Material;
+			if (assetType == "Shader")					  return AssetType::Shader;
+			if (assetType == "Font")					  return AssetType::Font;
+			if (assetType == "Audio")					  return AssetType::Audio;
+			if (assetType == "Script")					  return AssetType::Script;
+			if (assetType == "Mesh")					  return AssetType::Mesh;
+			if (assetType == "AnimatedMesh")			  return AssetType::AnimatedMesh;
+			if (assetType == "MeshSource")				  return AssetType::MeshSource;
+			if (assetType == "Animation")				  return AssetType::Animation;
+			if (assetType == "AnimationController")		  return AssetType::AnimationController;
+			if (assetType == "Skeleton")				  return AssetType::Skeleton;
+			if (assetType == "Prefab")					  return AssetType::Prefab;
 			
 
 			XYZ_ASSERT(false, "Unknown Asset Type");
@@ -66,22 +66,22 @@ namespace XYZ {
 		{
 			switch (assetType)
 			{
-			case XYZ::AssetType::None:				return "None";
-			case XYZ::AssetType::Scene:		 		return "Scene";
-			case XYZ::AssetType::Texture:			return "Texture";
-			case XYZ::AssetType::SubTexture:		return "SubTexture";
-			case XYZ::AssetType::Material:			return "Material";
-			case XYZ::AssetType::Shader:			return "Shader";
-			case XYZ::AssetType::Font:				return "Font";
-			case XYZ::AssetType::Audio:				return "Audio";
-			case XYZ::AssetType::Script:			return "Script";
-			case XYZ::AssetType::Mesh:				return "Mesh";
-			case XYZ::AssetType::AnimatedMesh:		return "AnimatedMesh";
-			case XYZ::AssetType::MeshSource:		return "MeshSource";
-			case XYZ::AssetType::Animation:			return "Animation";
-			case XYZ::AssetType::Animator:			return "Animator";
-			case XYZ::AssetType::Skeleton:			return "Skeleton";
-			case XYZ::AssetType::Prefab:			return "Prefab";
+			case XYZ::AssetType::None:							return "None";
+			case XYZ::AssetType::Scene:		 					return "Scene";
+			case XYZ::AssetType::Texture:						return "Texture";
+			case XYZ::AssetType::SubTexture:					return "SubTexture";
+			case XYZ::AssetType::Material:						return "Material";
+			case XYZ::AssetType::Shader:						return "Shader";
+			case XYZ::AssetType::Font:							return "Font";
+			case XYZ::AssetType::Audio:							return "Audio";
+			case XYZ::AssetType::Script:						return "Script";
+			case XYZ::AssetType::Mesh:							return "Mesh";
+			case XYZ::AssetType::AnimatedMesh:					return "AnimatedMesh";
+			case XYZ::AssetType::MeshSource:					return "MeshSource";
+			case XYZ::AssetType::Animation:						return "Animation";
+			case XYZ::AssetType::AnimationController:			return "AnimationController";
+			case XYZ::AssetType::Skeleton:						return "Skeleton";
+			case XYZ::AssetType::Prefab:						return "Prefab";
 			default:
 				break;
 			}

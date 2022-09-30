@@ -335,6 +335,7 @@ namespace XYZ {
 		}
 		void ImGuiFileManager::RegisterExtension(const std::string& ext, const FileExtensionInfo& extInfo)
 		{
+			XYZ_ASSERT(m_Extensions.find(ext) == m_Extensions.end(), "Extension is already registered");
 			m_Extensions[ext] = extInfo;
 			m_ExtensionsUpdated = true;
 		}

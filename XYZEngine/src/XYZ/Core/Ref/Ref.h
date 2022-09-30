@@ -28,7 +28,7 @@ namespace XYZ {
 	};	
 	
 	
-	template<typename T, typename Allocator = RefAllocator>
+	template<typename T>
 	class Ref
 	{
 	public:
@@ -68,7 +68,7 @@ namespace XYZ {
 		
 		bool operator==(const Ref<T>& other) const;
 
-		bool EqualsObject(const Ref<T, Allocator>& other);
+		bool EqualsObject(const Ref<T>& other);
 		
 		T* Raw();
 		const T* Raw() const;
@@ -90,66 +90,66 @@ namespace XYZ {
 		
 		T*		  m_Instance;
 
-		template<class T2, typename Allocator2>
+		template<class T22>
 		friend class Ref;
 	};
-	template<typename T, typename Allocator>
-	inline Ref<T, Allocator>::Ref()
+	template<typename T>
+	inline Ref<T>::Ref()
 		: m_Instance(nullptr)
 	{
 	}
-	template<typename T, typename Allocator>
-	inline Ref<T, Allocator>::Ref(std::nullptr_t n)
+	template<typename T>
+	inline Ref<T>::Ref(std::nullptr_t n)
 		: m_Instance(nullptr)
 	{
 	}
-	template<typename T, typename Allocator>
-	inline Ref<T, Allocator>::Ref(T* instance)
+	template<typename T>
+	inline Ref<T>::Ref(T* instance)
 		: m_Instance(instance)
 	{
 		static_assert(std::is_base_of<RefCount, T>::value, "Class is not RefCounted!");
 		incRef();
 	}
 
-	template <typename T, typename Allocator>
+	template <typename T>
 	template <typename T2>
-	Ref<T, Allocator>::Ref(const Ref<T2>& other)
+	Ref<T>::Ref(const Ref<T2>& other)
 	{
 		m_Instance = (T*)other.m_Instance;
 		incRef();
 	}
 
-	template<typename T, typename Allocator>
+	template<typename T>
 	template<typename T2>
-	inline Ref<T, Allocator>::Ref(Ref<T2>&& other)
+	inline Ref<T>::Ref(Ref<T2>&& other)
 	{
 		m_Instance = (T*)other.m_Instance;
 		other.m_Instance = nullptr;
 	}
 
-	template <typename T, typename Allocator>
-	Ref<T, Allocator>::~Ref()
+	template <typename T>
+	Ref<T>::~Ref()
 	{
 		decRef();
 	}
 
-	template <typename T, typename Allocator>
-	Ref<T, Allocator>::Ref(const Ref<T>& other)
+	template <typename T>
+	Ref<T>::Ref(const Ref<T>& other)
 	: m_Instance(other.m_Instance)
 	{
 		incRef();
 	}
 
-	template <typename T, typename Allocator>
-	Ref<T, Allocator>& Ref<T, Allocator>::operator=(std::nullptr_t)
+	template <typename T>
+	Ref<T>& Ref<T>::operator=(std::nullptr_t)
 	{
 		decRef();
 		m_Instance = nullptr;
 		return *this;
 	}
 
-	template <typename T, typename Allocator>
-	Ref<T, Allocator>& Ref<T, Allocator>::operator=(const Ref<T>& other)
+	template <typename T>
+	Ref<T>& Ref<T>::operator=(const Ref<T>& other)
 	{
 		other.incRef();
 		decRef();
@@ -158,9 +158,9 @@ namespace XYZ {
 		return *this;
 	}
 
-	template <typename T, typename Allocator>
+	template <typename T>
 	template <typename T2>
-	Ref<T, Allocator>& Ref<T, Allocator>::operator=(const Ref<T2>& other)
+	Ref<T>& Ref<T>::operator=(const Ref<T2>& other)
 	{
 		other.incRef();
 		decRef();
@@ -169,9 +169,9 @@ namespace XYZ {
 		return *this;
 	}
 
-	template <typename T, typename Allocator>
+	template <typename T>
 	template <typename T2>
-	Ref<T, Allocator>& Ref<T, Allocator>::operator=(Ref<T2>&& other)
+	Ref<T>& Ref<T>::operator=(Ref<T2>&& other)
 	{
 		decRef();
 
@@ -180,38 +180,38 @@ namespace XYZ {
 		return *this;
 	}
 
-	template <typename T, typename Allocator>
-	T* Ref<T, Allocator>::operator->()
+	template <typename T>
+	T* Ref<T>::operator->()
 	{
 		return m_Instance;
 	}
 
-	template <typename T, typename Allocator>
-	const T* Ref<T, Allocator>::operator->() const
+	template <typename T>
+	const T* Ref<T>::operator->() const
 	{
 		return m_Instance;
 	}
 
-	template <typename T, typename Allocator>
-	T& Ref<T, Allocator>::operator*()
+	template <typename T>
+	T& Ref<T>::operator*()
 	{
 		return *m_Instance;
 	}
 
-	template <typename T, typename Allocator>
-	const T& Ref<T, Allocator>::operator*() const
+	template <typename T>
+	const T& Ref<T>::operator*() const
 	{
 		return *m_Instance;
 	}
 
-	template<typename T, typename Allocator>
-	inline bool Ref<T, Allocator>::operator==(const Ref<T>& other) const
+	template<typename T>
+	inline bool Ref<T>::operator==(const Ref<T>& other) const
 	{
 		return m_Instance == other.m_Instance;
 	}
 
-	template <typename T, typename Allocator>
-	bool Ref<T, Allocator>::EqualsObject(const Ref<T, Allocator>& other)
+	template <typename T>
+	bool Ref<T>::EqualsObject(const Ref<T>& other)
 	{
 		if (!m_Instance || !other.m_Instance)
 			return false;
@@ -219,59 +219,57 @@ namespace XYZ {
 		return *m_Instance == *other.m_Instance;
 	}
 
-	template <typename T, typename Allocator>
-	T* Ref<T, Allocator>::Raw()
+	template <typename T>
+	T* Ref<T>::Raw()
 	{
 		return m_Instance;
 	}
 
-	template <typename T, typename Allocator>
-	const T* Ref<T, Allocator>::Raw() const
+	template <typename T>
+	const T* Ref<T>::Raw() const
 	{
 		return m_Instance;
 	}
 
-	template <typename T, typename Allocator>
-	void Ref<T, Allocator>::Reset(T* instance)
+	template <typename T>
+	void Ref<T>::Reset(T* instance)
 	{
 		decRef();
 		m_Instance = instance;
 	}
 
-	template <typename T, typename Allocator>
+	template <typename T>
 	template <typename T2>
-	Ref<T2> Ref<T, Allocator>::As()
+	Ref<T2> Ref<T>::As()
 	{
-		return Ref<T2, Allocator>(*this);
+		return Ref<T2>(*this);
 	}
-	template <typename T, typename Allocator>
+	template <typename T>
 	template <typename T2>
-	Ref<T2> Ref<T, Allocator>::As() const
+	Ref<T2> Ref<T>::As() const
 	{
-		return Ref<T2, Allocator>(*this);
+		return Ref<T2>(*this);
 	}
 
-	template<typename T, typename Allocator>
+	template<typename T>
 	template<typename ...Args>
-	inline Ref<T> Ref<T, Allocator>::Create(Args && ...args)
+	inline Ref<T> Ref<T>::Create(Args && ...args)
 	{
-		Allocator allocator{};
-		void* ptr = allocator.Allocate(sizeof(T));
-		RefTracker::addToLiveReferences(ptr);
-		new (ptr)T(std::forward<Args>(args)...);
-		return Ref<T, Allocator>(static_cast<T*>(ptr));
+		T* instance = new T(std::forward<Args>(args)...);
+		RefTracker::addToLiveReferences(instance);
+		return Ref<T>(instance);
 	}
 
 
-	template <typename T, typename Allocator>
-	void Ref<T, Allocator>::incRef() const
+	template <typename T>
+	void Ref<T>::incRef() const
 	{
 		if (m_Instance)
 			m_Instance->IncRefCount();
 	}
 
-	template <typename T, typename Allocator>
-	void Ref<T, Allocator>::decRef() const
+	template <typename T>
+	void Ref<T>::decRef() const
 	{
 		if (m_Instance)
 		{
@@ -279,9 +277,7 @@ namespace XYZ {
 			if (m_Instance->GetRefCount() == 0)
 			{
 				RefTracker::removeFromLiveReferences((void*)(m_Instance));
-				m_Instance->~T();
-				Allocator allocator;
-				allocator.Deallocate(m_Instance);
+				delete m_Instance;
 			}
 		}
 	}

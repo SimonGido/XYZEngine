@@ -33,11 +33,14 @@ namespace XYZ {
 
 			void onFileChange(FileWatcher::ChangeType type, const std::filesystem::path& filePath);
 
-			bool FBXassetRightClickMenu(const std::filesystem::path& path);
-			bool MESHSRCassetRightClickMenu(const std::filesystem::path& path);
+			void assetSelected(const std::filesystem::path& path);
+			bool assetRightClickMenuFBX(const std::filesystem::path& path);
+			bool assetRightClickMenuMESHSRC(const std::filesystem::path& path);
+			bool assetRightClickMenuMESH(const std::filesystem::path& path);
+			bool assetRightClickMenuANIMMESH(const std::filesystem::path& path);
 
 			template <typename T, typename ...Args>
-			static bool assetRightClickMenu(const std::filesystem::path& path, const std::string& assetName, const char* menuName, Args&& ...args);
+			static Ref<T> assetRightClickMenu(const std::filesystem::path& path, const std::string& assetName, const char* menuName, Args&& ...args);
 		private:
 			std::filesystem::path m_BaseDirectory;
 			ImGuiFileManager	  m_FileManager;
@@ -49,7 +52,7 @@ namespace XYZ {
 			float m_SplitterWidth;
 		};
 		template<typename T, typename ...Args>
-		inline bool AssetBrowser::assetRightClickMenu(const std::filesystem::path& path, const std::string& assetName, const char* menuName, Args && ...args)
+		inline Ref<T> AssetBrowser::assetRightClickMenu(const std::filesystem::path& path, const std::string& assetName, const char* menuName, Args && ...args)
 		{
 			if (ImGui::MenuItem(menuName))
 			{
@@ -60,8 +63,9 @@ namespace XYZ {
 				const std::string fullpath = FileSystem::UniqueFilePath(parentDir, name, ext.c_str());
 				Ref<T> asset = AssetManager::CreateAsset<T>(Utils::GetFilename(fullpath), parentDir, std::forward<Args>(args)...);
 				AssetManager::Serialize(asset->GetHandle());
-				return true;
+				return asset;
 			}
+			return Ref<T>();
 		}
 	}
 }
