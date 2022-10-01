@@ -236,8 +236,10 @@ namespace XYZ {
 					{
 						auto& component = m_SelectedEntity.EmplaceComponent<AnimationComponent>();
 						component.Playing = true;
-						if (m_SelectedEntity.HasComponent<AnimatedMeshComponent>())
-							component.BoneEntities = m_SelectedEntity.GetComponent<AnimatedMeshComponent>().BoneEntities;
+						
+						m_EditablesInUse.push_back(&m_AnimationComponentInspector);
+						m_AnimationComponentInspector.SetSceneEntity(m_SelectedEntity);
+						ImGui::CloseCurrentPopup();
 					}
 				}
 				if (!m_SelectedEntity.HasComponent<ParticleComponent>())

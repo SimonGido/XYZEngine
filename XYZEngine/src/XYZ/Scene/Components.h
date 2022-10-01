@@ -139,7 +139,6 @@ namespace XYZ {
 		AnimationComponent(const AnimationComponent& other);
 
 		Ref<AnimationController>  Controller;
-		std::vector<entt::entity> BoneEntities; 
 		float					  AnimationTime = 0.0f;
 		bool					  Playing = false;
 	};

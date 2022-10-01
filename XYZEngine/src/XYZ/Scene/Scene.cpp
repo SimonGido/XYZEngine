@@ -274,17 +274,17 @@ namespace XYZ {
 
 		{
 			XYZ_PROFILE_FUNC("Scene::OnUpdate animView");
-			auto animView = m_Registry.view<AnimationComponent>();
+			auto animView = m_Registry.view<AnimationComponent, AnimatedMeshComponent>();
 			for (auto& entity : animView)
 			{
-				auto& anim = animView.get<AnimationComponent>(entity);
+				auto [anim, animMesh] = animView.get(entity);
 				if (anim.Playing && anim.Controller.Raw())
 				{
 					anim.Controller->Update(anim.AnimationTime);
 					anim.AnimationTime += ts;
-					for (size_t i = 0; i < anim.BoneEntities.size(); ++i)
+					for (size_t i = 0; i < animMesh.BoneEntities.size(); ++i)
 					{
-						auto& transform = m_Registry.get<TransformComponent>(anim.BoneEntities[i]);
+						auto& transform = m_Registry.get<TransformComponent>(animMesh.BoneEntities[i]);
 						transform.Translation = anim.Controller->GetTranslation(i);
 						transform.Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
 						transform.Scale = anim.Controller->GetScale(i);
@@ -378,17 +378,17 @@ namespace XYZ {
 		
 		{
 			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor animStorage");
-			auto animView = m_Registry.view<AnimationComponent>();
+			auto animView = m_Registry.view<AnimationComponent, AnimatedMeshComponent>();
 			for (auto& entity : animView)
 			{
-				auto& anim = animView.get<AnimationComponent>(entity);
+				auto [anim, animMesh] = animView.get(entity);
 				if (anim.Playing && anim.Controller.Raw())
 				{
 					anim.Controller->Update(anim.AnimationTime);
 					anim.AnimationTime += ts;
-					for (size_t i = 0; i < anim.BoneEntities.size(); ++i)
+					for (size_t i = 0; i < animMesh.BoneEntities.size(); ++i)
 					{
-						auto& transform = m_Registry.get<TransformComponent>(anim.BoneEntities[i]);
+						auto& transform = m_Registry.get<TransformComponent>(animMesh.BoneEntities[i]);
 						transform.Translation = anim.Controller->GetTranslation(i);
 						transform.Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
 						transform.Scale = anim.Controller->GetScale(i);

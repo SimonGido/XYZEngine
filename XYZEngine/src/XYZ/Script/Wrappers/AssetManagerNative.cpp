@@ -26,7 +26,7 @@ namespace XYZ {
 			template <typename T>
 			void* GetAsset(const std::string& strPath)
 			{		
-				Ref<T> asset = AssetManager::TryGetAsset<T>(strPath);
+				Ref<T> asset = AssetManager::TryGetAsset<T>(std::filesystem::path(strPath));
 				if (asset.Raw())
 					return new Ref<T>(asset);
 				return nullptr;

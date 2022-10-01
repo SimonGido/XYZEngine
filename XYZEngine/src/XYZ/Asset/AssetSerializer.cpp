@@ -643,7 +643,7 @@ namespace XYZ {
 		else
 			out << YAML::Key << "Skeleton" << "";
 
-		out << YAML::Key << "Animations";
+		out << YAML::Key << "Animations" << YAML::BeginSeq;
 		for (size_t i = 0; i < controller->GetAnimationStates().size(); ++i)
 		{
 			const Ref<AnimationAsset>& anim = controller->GetAnimationStates()[i];

@@ -82,6 +82,8 @@ namespace XYZ {
 		template <typename T>
 		static Ref<T> GetAsset(const std::filesystem::path& filepath);
 
+		template<typename T>
+		static Ref<T> TryGetAsset(const AssetHandle& assetHandle);
 
 		template <typename T>
 		static Ref<T> TryGetAsset(const std::filesystem::path& filepath);
@@ -200,6 +202,17 @@ namespace XYZ {
 		auto& metadata = GetMetadata(filepath);
 		return GetAsset<T>(metadata.Handle);
 	}
+
+	template<typename T>
+	inline Ref<T> AssetManager::TryGetAsset(const AssetHandle& assetHandle)
+	{
+		auto metadata = s_Registry.GetMetadata(assetHandle);
+		if (metadata == nullptr)
+			return Ref<T>();
+
+		return GetAsset<T>(metadata->Handle);
+	}
+	
 	template<typename T>
 	inline Ref<T> AssetManager::TryGetAsset(const std::filesystem::path& filepath)
 	{

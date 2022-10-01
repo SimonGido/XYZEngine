@@ -329,6 +329,22 @@ namespace XYZ {
 	}
 
 	template <>
+	void SceneSerializer::serialize<AnimationComponent>(YAML::Emitter& out, const AnimationComponent& val, SceneEntity entity)
+	{
+		out << YAML::Key << "AnimationComponent";
+		out << YAML::BeginMap;
+		if (val.Controller.Raw())
+		{
+			out << YAML::Key << "Controller" << val.Controller->GetHandle();
+		}
+		else
+		{
+			out << YAML::Key << "Controller" << "";
+		}
+		out << YAML::EndMap;
+	}
+
+	template <>
 	void SceneSerializer::deserialize<MeshComponent>(YAML::Node& data, SceneEntity entity)
 	{
 		MeshComponent& component = entity.EmplaceComponent<MeshComponent>();
@@ -601,6 +617,19 @@ namespace XYZ {
 		entity.AddComponent(chain);
 	}
 
+	template <>
+	void SceneSerializer::deserialize<AnimationComponent>(YAML::Node& data, SceneEntity entity)
+	{
+		AnimationComponent component;
+
+		auto controllerData = data["Controller"].as<std::string>();
+		if (!controllerData.empty())
+		{
+			AssetHandle handle(controllerData);
+			component.Controller = AssetManager::TryGetAsset<AnimationController>(handle);
+		}
+		entity.AddComponent(component);
+	}
 
 	void SceneSerializer::deserializeEntity(YAML::Node& data,  WeakRef<Scene> scene)
 	{
@@ -691,6 +720,12 @@ namespace XYZ {
 		if (animatedMeshComponent)
 		{
 			deserialize<AnimatedMeshComponent>(animatedMeshComponent, entity);
+		}
+
+		auto animationComponent = data["AnimationComponent"];
+		if (animationComponent)
+		{
+			deserialize<AnimationComponent>(animationComponent, entity);
 		}
 	}
 
@@ -852,6 +887,12 @@ namespace XYZ {
 		{
 			serialize<AnimatedMeshComponent>(out, entity.GetComponent<AnimatedMeshComponent>(), entity);
 		}
+
+		if (entity.HasComponent<AnimationComponent>())
+		{
+			serialize<AnimationComponent>(out, entity.GetComponent<AnimationComponent>(), entity);
+		}
+
 		out << YAML::EndMap; // Entity
 	}
 

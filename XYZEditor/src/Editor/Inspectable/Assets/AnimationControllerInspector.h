@@ -17,7 +17,7 @@ namespace XYZ {
 
 		private:
 			void handleSkeleton();
-
+			void handleAnimations();
 		private:
 			Ref<AnimationController> m_ControllerAsset;
 		};

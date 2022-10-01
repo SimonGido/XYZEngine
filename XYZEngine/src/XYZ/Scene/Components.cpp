@@ -314,7 +314,6 @@ namespace XYZ {
 	AnimationComponent::AnimationComponent(const AnimationComponent& other)
 		:
 		Controller(other.Controller),
-		BoneEntities(other.BoneEntities),
 		AnimationTime(other.AnimationTime),
 		Playing(other.Playing)
 	{

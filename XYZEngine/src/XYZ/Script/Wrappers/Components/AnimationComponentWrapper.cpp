@@ -36,15 +36,15 @@ namespace XYZ {
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
-			auto& boneEntities = ent.GetComponent<AnimationComponent>().BoneEntities;
+			//auto& boneEntities = ent.GetComponent<AnimationComponent>().BoneEntities;
 
-			MonoArray* result = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("XYZ.Entity"), boneEntities.size());
-
-			uint32_t index = 0;
-			for (auto boneEntity : boneEntities)
-			{
-				mono_array_set(result, entt::entity, index++, boneEntity);
-			}
+			//MonoArray* result = mono_array_new(mono_domain_get(), ScriptEngine::GetCoreClass("XYZ.Entity"), boneEntities.size());
+			MonoArray* result;
+			//uint32_t index = 0;
+			//for (auto boneEntity : boneEntities)
+			//{
+			//	mono_array_set(result, entt::entity, index++, boneEntity);
+			//}
 			return result;
 		}
 
@@ -96,14 +96,14 @@ namespace XYZ {
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
 			auto& animComponent = ent.GetComponent<AnimationComponent>();
-			animComponent.BoneEntities.clear();
-
-			auto length = mono_array_length(boneEntities);
-			for (size_t i = 0; i < length; ++i)
-			{
-				uint32_t ent = (uint32_t)mono_array_get(boneEntities, entt::entity, i);
-				animComponent.BoneEntities.push_back(static_cast<entt::entity>(ent));
-			}
+			//animComponent.BoneEntities.clear();
+			//
+			//auto length = mono_array_length(boneEntities);
+			//for (size_t i = 0; i < length; ++i)
+			//{
+			//	uint32_t ent = (uint32_t)mono_array_get(boneEntities, entt::entity, i);
+			//	animComponent.BoneEntities.push_back(static_cast<entt::entity>(ent));
+			//}
 		}
 	}
 }
