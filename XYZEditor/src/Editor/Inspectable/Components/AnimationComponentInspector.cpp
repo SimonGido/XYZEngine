@@ -22,33 +22,19 @@ namespace XYZ {
 		{
 			return EditorHelper::DrawComponent<AnimationComponent>("Animation Component", m_Context, [&](auto& component) {
 
-				std::string name = "Controller Invalid";
+				std::string name = "";
 				if (component.Controller.Raw())
-					name = "Controller Valid";
+					name = AssetManager::GetMetadata(component.Controller->GetHandle()).FilePath.string();
 				ImGui::InputText("##ControllerName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
 
 
-				char* assetPath = nullptr;
-				if (UI::DragDropTarget("AssetDragAndDrop", &assetPath))
-				{
-					std::filesystem::path path(assetPath);
-					if (AssetManager::Exist(path))
-					{
-						auto& metadata = AssetManager::GetMetadata(path);
-						if (metadata.Type == AssetType::AnimationController)
-						{
-							Ref<AnimationController> asset = AssetManager::GetAsset<AnimationController>(metadata.Handle);
-							component.Controller = asset;
-						}
-					}
-				}
+				EditorHelper::AssetDragAcceptor(component.Controller);
 				
 				bool playing = component.Playing;
 				if (ImGui::Checkbox("Playing", &playing))
 				{
 					component.Playing = playing;
 				}
-
 			});
 		}
 		void AnimationComponentInspector::SetSceneEntity(const SceneEntity& entity)

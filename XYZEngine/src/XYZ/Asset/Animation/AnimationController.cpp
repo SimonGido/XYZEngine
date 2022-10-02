@@ -54,8 +54,21 @@ namespace XYZ {
 	}
 	void AnimationController::AddState(const std::string_view name, const Ref<AnimationAsset>& animation)
 	{
+		for (const auto& animName : m_AnimationNames)
+		{
+			if (animName == name)
+			{
+				XYZ_CORE_ERROR("State with the same name {} already exists", name);
+				return;
+			}
+		}
 		m_AnimationNames.push_back(std::string(name));
 		m_AnimationStates.push_back(animation);
+	}
+	void AnimationController::SetState(size_t index, const std::string_view name, const Ref<AnimationAsset>& animation)
+	{
+		m_AnimationNames[index] = name;
+		m_AnimationStates[index] = animation;
 	}
 	const std::vector<ozz::math::Float4x4>& AnimationController::GetTransforms() const
 	{

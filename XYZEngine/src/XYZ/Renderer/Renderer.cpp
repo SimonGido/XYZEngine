@@ -305,6 +305,11 @@ namespace XYZ {
 		s_RendererAPI->RenderGeometry(renderCommandBuffer, pipeline, material, s_Data.FullscreenQuadVertexBuffer, s_Data.FullscreenQuadIndexBuffer);
 	}
 
+	void Renderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, const PushConstBuffer& constData)
+	{
+		s_RendererAPI->RenderGeometry(renderCommandBuffer, pipeline, material, s_Data.FullscreenQuadVertexBuffer, s_Data.FullscreenQuadIndexBuffer, constData);
+	}
+
 	void Renderer::BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material)
 	{
 		s_RendererAPI->BindPipeline(renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, material);
@@ -496,6 +501,10 @@ namespace XYZ {
 		auto lightCullingMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/LightCulling.mat");
 		lightCullingMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["LightCullingMaterial"] = lightCullingMaterial;
+
+		auto gridMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/Grid.mat");
+		gridMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["GridMaterial"] = gridMaterial;
 	}
 	void RendererResources::Shutdown()
 	{

@@ -313,7 +313,7 @@ namespace XYZ {
 						[&]() {
 						UI::ScopedWidth w(150.0f);
 						ImGui::InputText("##Material", (char*)materialName.c_str(), materialName.size(), ImGuiInputTextFlags_ReadOnly);
-						acceptMaterialDragAndDrop(component);
+						EditorHelper::AssetDragAcceptor(component.MaterialAsset);
 					});
 
 					ImGui::EndTable();
@@ -325,22 +325,5 @@ namespace XYZ {
 		{
 			m_Context = entity;
 		}
-		void ParticleRendererInspector::acceptMaterialDragAndDrop(ParticleRenderer& component)
-		{
-			char* materialAssetPath = nullptr;
-			if (UI::DragDropTarget("AssetDragAndDrop", &materialAssetPath))
-			{
-				std::filesystem::path path(materialAssetPath);
-				if (AssetManager::Exist(path))
-				{
-					auto& metadata = AssetManager::GetMetadata(path);
-					if (metadata.Type == AssetType::Material)
-					{
-						Ref<MaterialAsset> materialAsset = AssetManager::GetAsset<MaterialAsset>(metadata.Handle);
-						component.MaterialAsset = materialAsset;
-					}
-				}
-			}
-		}
-}
+	}
 }

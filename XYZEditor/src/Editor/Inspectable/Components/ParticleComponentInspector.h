@@ -39,9 +39,7 @@ namespace XYZ {
 			virtual void SetSceneEntity(const SceneEntity& entity) override;
 
 			virtual Type GetType() const override { return Inspectable::Type::Entity; }
-		private:
-			void acceptMaterialDragAndDrop(ParticleRenderer& component);
-		
+	
 		private:
 			SceneEntity m_Context;
 		};

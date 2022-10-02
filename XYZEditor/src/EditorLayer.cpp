@@ -44,17 +44,23 @@ namespace XYZ {
 			Ref<MaterialAsset> quadMaterialAsset   = Renderer::GetDefaultResources().RendererAssets.at("OverlayQuadMaterial").As<MaterialAsset>();;
 			Ref<MaterialAsset> lineMaterialAsset   = Renderer::GetDefaultResources().RendererAssets.at("OverlayLineMaterial").As<MaterialAsset>();;
 			Ref<MaterialAsset> circleMaterialAsset = Renderer::GetDefaultResources().RendererAssets.at("OverlayCircleMaterial").As<MaterialAsset>();;
-
+			Ref<MaterialAsset> gridMaterialAsset = Renderer::GetDefaultResources().RendererAssets.at("GridMaterial").As<MaterialAsset>();
 
 			m_QuadMaterial	 = quadMaterialAsset->GetMaterial();
 			m_LineMaterial	 = lineMaterialAsset->GetMaterial();
 			m_CircleMaterial = circleMaterialAsset->GetMaterial();
+			m_GridMaterial	 = gridMaterialAsset->GetMaterial();
 
 			m_QuadMaterialInstance   = quadMaterialAsset->GetMaterialInstance();
 			m_LineMaterialInstance   = lineMaterialAsset->GetMaterialInstance();
 			m_CircleMaterialInstance = circleMaterialAsset->GetMaterialInstance();
+			m_GridMaterialInstance	 = gridMaterialAsset->GetMaterialInstance();
 
 			m_QuadMaterial->SetImageArray("u_Texture", m_CameraTexture->GetImage(), 0);
+			const float gridScale = 16.025f;
+			const float gridSize = 0.025f;
+			m_GridMaterialInstance->Set("u_Settings.Scale", gridScale);
+			m_GridMaterialInstance->Set("u_Settings.Size", gridSize);
 
 			m_OverlayRenderer2D = Ref<Renderer2D>::Create(Renderer2DConfiguration{
 				m_CommandBuffer,
@@ -162,6 +168,7 @@ namespace XYZ {
 			m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 			
 			Renderer::BeginRenderPass(m_CommandBuffer, m_SceneRenderer->GetFinalRenderPass(), false);	
+			renderGrid();
 			m_OverlayRenderer2D->BeginScene(m_EditorCamera->GetViewMatrix());	
 			renderSelected();
 			renderColliders();
@@ -287,6 +294,14 @@ namespace XYZ {
 			}
 		}
 
+		void EditorLayer::renderGrid()
+		{
+			const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
+
+			Renderer::BindPipeline(m_CommandBuffer, m_GridPipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_GridMaterial);
+			Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_GridPipeline, m_GridMaterialInstance, transform);
+		}
+
 		void EditorLayer::createOverlayPipelines()
 		{
 			{
@@ -318,6 +333,17 @@ namespace XYZ {
 				spec.DepthTest = true;
 				spec.DepthWrite = true;
 				m_OverlayLinePipeline = Pipeline::Create(spec);
+			}
+			{
+				PipelineSpecification spec;
+				spec.Layouts = m_GridMaterial->GetShader()->GetLayouts();
+				spec.RenderPass = m_SceneRenderer->GetFinalRenderPass();
+				spec.Shader = m_GridMaterial->GetShader();
+				spec.Topology = PrimitiveTopology::Triangles;
+				spec.DepthTest = true;
+				spec.DepthWrite = true;
+				spec.BackfaceCulling = false;
+				m_GridPipeline = Pipeline::Create(spec);
 			}
 		}
 

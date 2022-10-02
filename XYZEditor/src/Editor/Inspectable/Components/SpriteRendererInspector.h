@@ -19,9 +19,6 @@ namespace XYZ {
 			void selectSubTextureDialog();
 			void selectMaterialDialog();
 
-			void acceptMaterialDragAndDrop(SpriteRenderer& component);
-			void acceptSubTextureDragAndDrop(SpriteRenderer& component);
-
 		private:
 			SceneEntity			  m_Context;
 

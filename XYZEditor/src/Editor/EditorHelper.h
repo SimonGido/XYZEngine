@@ -29,6 +29,10 @@ namespace XYZ {
 
 		static void PushDisabled();
 		static void PopDisabled();
+
+
+		template <typename T>
+		static bool AssetDragAcceptor(Ref<T>& asset);
 	};
 	template<typename T, typename UIFunction>
 	inline bool EditorHelper::DrawComponent(const std::string& name, SceneEntity entity, UIFunction uiFunction)
@@ -143,5 +147,25 @@ namespace XYZ {
 
 			ImGui::TreePop();
 		}
+	}
+	template<typename T>
+	inline bool EditorHelper::AssetDragAcceptor(Ref<T>& asset)
+	{
+		static_assert(std::is_base_of<Asset, T>::value, "AssetDragAcceptor only works for types derived from Asset");
+		char* assetPath = nullptr;
+		if (UI::DragDropTarget("AssetDragAndDrop", &assetPath))
+		{
+			std::filesystem::path path(assetPath);
+			if (AssetManager::Exist(path))
+			{
+				auto& metadata = AssetManager::GetMetadata(path);
+				if (metadata.Type == T::GetStaticType())
+				{
+					asset = AssetManager::GetAsset<T>(metadata.Handle);
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

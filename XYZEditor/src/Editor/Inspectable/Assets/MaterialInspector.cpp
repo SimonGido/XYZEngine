@@ -5,6 +5,8 @@
 
 #include "XYZ/ImGui/ImGui.h"
 
+#include "Editor/EditorHelper.h"
+
 #include <imgui/imgui.h>
 
 #include <glm/gtc/type_ptr.hpp>
@@ -136,20 +138,11 @@ namespace XYZ {
 			const std::string& name = m_MaterialAsset->GetShader()->GetName();
 			ImGui::InputText("##ShaderName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
 			
-			char* shaderAssetPath = nullptr;
-			if (UI::DragDropTarget("AssetDragAndDrop", &shaderAssetPath))
+			Ref<ShaderAsset> shaderAsset;
+			if (EditorHelper::AssetDragAcceptor(shaderAsset))
 			{
-				std::filesystem::path path(shaderAssetPath);
-				if (AssetManager::Exist(path))
-				{
-					auto& metadata = AssetManager::GetMetadata(path);
-					if (metadata.Type == AssetType::Shader)
-					{
-						Ref<ShaderAsset> shaderAsset = AssetManager::GetAsset<ShaderAsset>(metadata.Handle);
-						m_MaterialAsset->SetShaderAsset(shaderAsset);
-						AssetManager::Serialize(m_MaterialAsset->GetHandle());
-					}
-				}
+				m_MaterialAsset->SetShaderAsset(shaderAsset);
+				AssetManager::Serialize(m_MaterialAsset->GetHandle());
 			}
 			
 			if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
@@ -193,20 +186,12 @@ namespace XYZ {
 				UI::ScopedID id(name.c_str());
 				ImGui::InputText("##TextureName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
 				
-				char* textureAssetPath = nullptr;
-				if (UI::DragDropTarget("AssetDragAndDrop", &textureAssetPath))
+
+				Ref<Texture2D> textureAsset;
+				if (EditorHelper::AssetDragAcceptor(textureAsset))
 				{
-					std::filesystem::path path(textureAssetPath);
-					if (AssetManager::Exist(path))
-					{
-						auto& metadata = AssetManager::GetMetadata(path);
-						if (metadata.Type == AssetType::Texture)
-						{
-							Ref<Texture2D> textureAsset = AssetManager::GetAsset<Texture2D>(metadata.Handle);
-							m_MaterialAsset->SetTexture(textureData.Name, textureAsset);
-							AssetManager::Serialize(m_MaterialAsset->GetHandle());
-						}
-					}
+					m_MaterialAsset->SetTexture(textureData.Name, textureAsset);
+					AssetManager::Serialize(m_MaterialAsset->GetHandle());
 				}
 			}
 		}
@@ -230,20 +215,11 @@ namespace XYZ {
 					ImGui::SameLine();
 					ImGui::InputText("##TextureName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
 
-					char* textureAssetPath = nullptr;
-					if (UI::DragDropTarget("AssetDragAndDrop", &textureAssetPath))
+					Ref<Texture2D> textureAsset;
+					if (EditorHelper::AssetDragAcceptor(textureAsset))
 					{
-						std::filesystem::path path(textureAssetPath);
-						if (AssetManager::Exist(path))
-						{
-							auto& metadata = AssetManager::GetMetadata(path);
-							if (metadata.Type == AssetType::Texture)
-							{
-								Ref<Texture2D> textureAsset = AssetManager::GetAsset<Texture2D>(metadata.Handle);
-								m_MaterialAsset->SetTexture(textureArrayData.Name, textureAsset, index);
-								AssetManager::Serialize(m_MaterialAsset->GetHandle());
-							}
-						}
+						m_MaterialAsset->SetTexture(textureArrayData.Name, textureAsset, index);
+						AssetManager::Serialize(m_MaterialAsset->GetHandle());
 					}
 					index++;
 				}

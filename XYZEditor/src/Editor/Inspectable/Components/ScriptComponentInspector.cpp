@@ -20,8 +20,6 @@ namespace XYZ {
 
 				if (ImGui::BeginTable("##PublicFields", 2, ImGuiTableFlags_SizingStretchProp))
 				{
-					const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-
 					for (const PublicField& field : ScriptEngine::GetPublicFields(m_Context))
 					{
 						UI::TableRow(field.GetName().c_str(),
@@ -56,10 +54,7 @@ namespace XYZ {
 							else if (field.GetType() == PublicFieldType::String)
 							{
 								std::string value = field.GetStoredValue<std::string>();
-								char buffer[1024];
-								memcpy(buffer, value.c_str(), value.size());
-
-								if (ImGui::InputText(id.c_str(), buffer, strlen(buffer)))
+								if (UI::InputText<1024>(id.c_str(), value))
 								{
 									field.SetStoredValue<std::string>(value);
 								}

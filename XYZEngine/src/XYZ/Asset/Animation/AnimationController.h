@@ -27,6 +27,7 @@ namespace XYZ {
 		void SetCurrentState(size_t index) { m_StateIndex = index; };
 		void SetCurrentState(const std::string& name);
 		void AddState(const std::string_view name, const Ref<AnimationAsset>& animation);
+		void SetState(size_t index, const std::string_view name, const Ref<AnimationAsset>& animation);
 
 		size_t GetCurrentState() const { return m_StateIndex; }
 
@@ -61,6 +62,8 @@ namespace XYZ {
 
 		std::vector<Ref<AnimationAsset>> m_AnimationStates;
 		std::vector<std::string>		 m_AnimationNames;
+
+
 		size_t							 m_StateIndex = 0;
 
 	};

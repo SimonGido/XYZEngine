@@ -5,6 +5,8 @@
 
 #include "XYZ/ImGui/ImGui.h"
 
+#include "Editor/EditorHelper.h"
+
 #include <imgui/imgui.h>
 
 namespace XYZ {
@@ -21,7 +23,7 @@ namespace XYZ {
 			ImGui::Text("Skeleton");
 			handleSkeleton();
 
-			ImGui::Text("Animations");
+			ImGui::Text("States");
 			handleAnimations();
 
 			return false;
@@ -34,52 +36,67 @@ namespace XYZ {
 		{
 			std::string name = "";
 			if (m_ControllerAsset->GetSkeleton().Raw())
-				name = m_ControllerAsset->GetSkeleton()->GetFilePath();
-			ImGui::InputText("##SkeletonName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
+				name = AssetManager::GetMetadata(m_ControllerAsset->GetHandle()).FilePath.string();
 
-			char* assetPath = nullptr;
-			if (UI::DragDropTarget("AssetDragAndDrop", &assetPath))
+			ImGui::InputText("##SkeletonName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
+			
+			Ref<SkeletonAsset> asset;
+			if (EditorHelper::AssetDragAcceptor(asset))
 			{
-				std::filesystem::path path(assetPath);
-				if (AssetManager::Exist(path))
-				{
-					auto& metadata = AssetManager::GetMetadata(path);
-					if (metadata.Type == AssetType::Skeleton)
-					{
-						Ref<SkeletonAsset> asset = AssetManager::GetAsset<SkeletonAsset>(metadata.Handle);
-						m_ControllerAsset->SetSkeletonAsset(asset);
-						AssetManager::Serialize(m_ControllerAsset->GetHandle());
-					}
-				}
+				m_ControllerAsset->SetSkeletonAsset(asset);
+				AssetManager::Serialize(m_ControllerAsset->GetHandle());
 			}
 		}
 		void AnimationControllerInspector::handleAnimations()
 		{
 			auto& animations = m_ControllerAsset->GetAnimationStates();
 
-			uint32_t index = 0;
-			for (auto& animation : animations)
+			if (ImGui::BeginTable("##AnimationStates", 2, ImGuiTableFlags_SizingStretchProp))
 			{
-				
-			}
-			if (ImGui::Button("Add Animation"))
-			{
-				
-			}
-			char* assetPath = nullptr;
-			if (UI::DragDropTarget("AssetDragAndDrop", &assetPath))
-			{
-				std::filesystem::path path(assetPath);
-				if (AssetManager::Exist(path))
+				const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+
+				for (size_t i = 0; i < m_ControllerAsset->GetAnimationStates().size(); ++i)
 				{
-					auto& metadata = AssetManager::GetMetadata(path);
-					if (metadata.Type == AssetType::Animation)
-					{
-						Ref<AnimationAsset> asset = AssetManager::GetAsset<AnimationAsset>(metadata.Handle);
-						m_ControllerAsset->AddState(asset->GetName(), asset);
-						AssetManager::Serialize(m_ControllerAsset->GetHandle());
-					}
+					const std::string rowName = "AnimationState" + std::to_string(i);
+					UI::TableRow(rowName.c_str(),
+						[&]() 
+						{
+							UI::ScopedTableColumnAutoWidth scoped(2, lineHeight);
+
+							Ref<AnimationAsset> animation = m_ControllerAsset->GetAnimationStates()[i];
+							std::string stateName = m_ControllerAsset->GetStateNames()[i];
+							if (UI::InputText("##StateName", stateName))
+							{
+								m_ControllerAsset->SetState(i, stateName, animation);
+								AssetManager::Serialize(m_ControllerAsset->GetHandle());
+							}
+
+							ImGui::SameLine();
+
+							const std::string& filepath = animation->GetFilePath();
+							ImGui::InputText("##AnimationAsset", (char*)filepath.c_str(), filepath.size(), ImGuiInputTextFlags_ReadOnly);
+
+							Ref<AnimationAsset> asset;
+							if (EditorHelper::AssetDragAcceptor(asset))
+							{
+								m_ControllerAsset->SetState(i, stateName, asset);
+								AssetManager::Serialize(m_ControllerAsset->GetHandle());
+							}
+						}
+					);
 				}
+				ImGui::EndTable();
+			}
+			if (ImGui::Button("Add State"))
+			{
+				
+			}
+
+			Ref<AnimationAsset> asset;
+			if (EditorHelper::AssetDragAcceptor(asset))
+			{
+				m_ControllerAsset->AddState(asset->GetName(), asset);
+				AssetManager::Serialize(m_ControllerAsset->GetHandle());
 			}
 		}
 	}

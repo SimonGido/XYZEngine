@@ -1,0 +1,15 @@
+Shader: 807785e7-2753-43ad-8a3f-a1dbd87ad373
+Opaque: true
+Textures:
+  []
+TextureArrays:
+  []
+MaterialData:
+  - Name: u_Renderer.Transform
+    Type: 14
+  - Name: u_Settings.Scale
+    Type: 4
+    Value: 16.0249996
+  - Name: u_Settings.Size
+    Type: 4
+    Value: 0.0250000004

@@ -44,7 +44,19 @@ namespace XYZ {
 		bool IVec3Control(const std::array<const char*, 3>& names, glm::ivec3& values, float resetValue = 0.0f, float speed = 0.05f);
 		bool IVec4Control(const std::array<const char*, 4>& names, glm::ivec4& values, float resetValue = 0.0f, float speed = 0.05f);
 		
-
+		template <size_t size = 256>
+		bool InputText(const char* name, std::string& value, ImGuiInputTextFlags flags = 0)
+		{
+			char buffer[size];
+			memcpy(buffer, value.c_str(), value.size());
+			buffer[value.size()] = '\0';
+			if (ImGui::InputText(name, buffer, sizeof(buffer), flags))
+			{
+				value = buffer;
+				return true;
+			}
+			return false;
+		}
 
 		template <size_t numHeaders, typename T, typename Func>
 		void ContainerControl(const char* name, T& container, const std::array<const char*, numHeaders>& headerNames, size_t& selectedIndex, Func&& elementControl)
