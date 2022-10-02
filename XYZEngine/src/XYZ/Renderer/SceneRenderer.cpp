@@ -61,14 +61,14 @@ namespace XYZ {
 
 	SceneRenderer::~SceneRenderer()
 	{
-		s_ThreadPool.EraseThread(m_ThreadIndex);
+		
 	}
 
 
 	void SceneRenderer::Init()
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::Init");
-		m_ThreadIndex = s_ThreadPool.PushThread();
+
 		m_CommandBuffer = RenderCommandBuffer::Create(0, "SceneRenderer");
 
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());

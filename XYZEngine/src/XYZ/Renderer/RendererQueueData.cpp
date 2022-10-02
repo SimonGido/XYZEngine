@@ -13,7 +13,7 @@ namespace XYZ {
 	void RendererQueueData::Init(uint32_t framesInFlight)
 	{
 		m_FramesInFlight = framesInFlight;
-		m_Pool.PushThread();
+		m_Pool.Start(1);
 		m_ResourceQueues = new ResourceCommandQueue[framesInFlight];
 	}
 	void RendererQueueData::Shutdown()
@@ -26,7 +26,7 @@ namespace XYZ {
 			ExecuteRenderQueue();
 			BlockRenderThread();
 		};
-		m_Pool.EraseThread(0);
+		m_Pool.Stop();
 		for (uint32_t i = 0; i < m_FramesInFlight; ++i)
 			ExecuteResourceQueue(i);
 
@@ -39,7 +39,7 @@ namespace XYZ {
 		#ifdef RENDER_THREAD_ENABLED
 
 		m_RenderWriteIndex = m_RenderWriteIndex == 0 ? 1 : 0;
-		m_RenderThreadFinished = m_Pool.PushJob<bool>([this, queue]() {
+		m_RenderThreadFinished = m_Pool.SubmitJob([this, queue]() -> bool{
 			XYZ_PROFILE_FUNC("RendererQueueData::ExecuteRenderQueue Job");
 			XYZ_SCOPE_PERF("RendererQueueData::ExecuteRenderQueue");
 

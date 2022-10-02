@@ -30,10 +30,11 @@ namespace XYZ {
 		:
 		m_LastFrameTime(0.0f),
 		m_Timestep(0.0f),
-		m_ThreadPool(11),
+		
 		m_Minimized(false),
 		m_Specification(specification)
 	{	
+		m_ThreadPool.Start(11);
 		s_Application = this;
 		m_Running = true;
 		m_ImGuiLayer = nullptr;
@@ -75,6 +76,7 @@ namespace XYZ {
 		{
 			Renderer::Shutdown();
 		}
+		m_ThreadPool.Stop();
 	}
 
 	void Application::Run()

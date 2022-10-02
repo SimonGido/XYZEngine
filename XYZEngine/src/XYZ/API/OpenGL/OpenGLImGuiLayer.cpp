@@ -45,7 +45,7 @@ namespace XYZ
         // Setup Platform/Renderer bindings
 #ifdef RENDER_THREAD_ENABLED
     		io.ConfigFlags &= ~ImGuiConfigFlags_ViewportsEnable;
-    		auto result = Renderer::GetPool().PushJob<bool>([window]()->bool {
+    		auto result = Renderer::GetPool().SubmitJob([window]()->bool {
     			ImGui_ImplGlfw_InitForOpenGL(window, true);
     			ImGui_ImplOpenGL3_Init("#version 410");
     			ImGui_ImplOpenGL3_NewFrame();
@@ -64,7 +64,7 @@ namespace XYZ
     {
 #ifdef RENDER_THREAD_ENABLED
     		{
-    			auto result = Renderer::GetPool().PushJob<bool>([this]()->bool {
+    			auto result = Renderer::GetPool().SubmitJob([this]()->bool {
     				ImGui_ImplOpenGL3_Shutdown();
     				ImGui_ImplGlfw_Shutdown();
     				ImGui::DestroyContext();

@@ -212,7 +212,7 @@ namespace XYZ {
 	{
 		m_JobsCount++;
 		Ref<ParticleSystem> instance = this;
-		Application::Get().GetThreadPool().PushJob<void>([instance, ts]() mutable {
+		Application::Get().GetThreadPool().PushJob([instance, ts]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushMainJob");
 			std::unique_lock lock(instance->m_JobsMutex);
@@ -235,7 +235,7 @@ namespace XYZ {
 	{
 		m_JobsCount++;
 		Ref<ParticleSystem> instance = this;
-		Application::Get().GetThreadPool().PushJob<void>([instance]() mutable {
+		Application::Get().GetThreadPool().PushJob([instance]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushRotationJob");
 			std::shared_lock lock(instance->m_JobsMutex);
@@ -255,7 +255,7 @@ namespace XYZ {
 	{
 		m_JobsCount++;
 		Ref<ParticleSystem> instance = this;
-		Application::Get().GetThreadPool().PushJob<void>([instance]() mutable {
+		Application::Get().GetThreadPool().PushJob([instance]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushAnimationJob");
 			std::shared_lock lock(instance->m_JobsMutex);
@@ -276,7 +276,7 @@ namespace XYZ {
 	{
 		m_JobsCount++;
 		Ref<ParticleSystem> instance = this;
-		Application::Get().GetThreadPool().PushJob<void>([instance]() mutable {
+		Application::Get().GetThreadPool().PushJob([instance]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushColorOverLifeJob");
 			std::shared_lock lock(instance->m_JobsMutex);
@@ -296,7 +296,7 @@ namespace XYZ {
 	{
 		m_JobsCount++;
 		Ref<ParticleSystem> instance = this;
-		Application::Get().GetThreadPool().PushJob<void>([instance]() mutable {
+		Application::Get().GetThreadPool().PushJob([instance]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushSizeOverLifeJob");
 			std::shared_lock lock(instance->m_JobsMutex);
@@ -316,7 +316,7 @@ namespace XYZ {
 	{
 		m_JobsCount++;
 		Ref<ParticleSystem> instance = this;
-		Application::Get().GetThreadPool().PushJob<void>([instance]() mutable {
+		Application::Get().GetThreadPool().PushJob([instance]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushLightOverLifeJob");
 			std::shared_lock lock(instance->m_JobsMutex);
@@ -338,7 +338,7 @@ namespace XYZ {
 	{
 		m_JobsCount++;
 		Ref<ParticleSystem> instance = this;
-		Application::Get().GetThreadPool().PushJob<void>([instance,tr = transform]() mutable {
+		Application::Get().GetThreadPool().PushJob([instance,tr = transform]() mutable {
 
 			XYZ_PROFILE_FUNC("ParticleSystem::pushBuildLightsDataJob");
 			std::shared_lock lock(instance->m_JobsMutex);
@@ -378,7 +378,7 @@ namespace XYZ {
 		for (uint32_t jobIndex = 0; jobIndex < numJobs + 1; ++jobIndex)
 		{
 			m_JobsCount++;
-			Application::Get().GetThreadPool().PushJob<void>([instance, jobIndex, tr = transform]() mutable {
+			Application::Get().GetThreadPool().PushJob([instance, jobIndex, tr = transform]() mutable {
 
 				XYZ_PROFILE_FUNC("ParticleSystem::pushBuildRenderDataJob");
 				std::shared_lock lock(instance->m_JobsMutex);

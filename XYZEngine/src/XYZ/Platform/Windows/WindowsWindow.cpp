@@ -194,7 +194,7 @@ namespace XYZ {
 	{
 		m_Data.VSync = enable;
 		#ifdef RENDER_THREAD_ENABLED
-		Renderer::GetPool().PushJob<void>([enable]() {
+		Renderer::GetPool().PushJob([enable]() {
 			glfwSwapInterval(enable);
 		});
 		#else

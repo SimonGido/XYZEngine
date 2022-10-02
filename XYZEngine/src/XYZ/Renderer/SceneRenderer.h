@@ -123,8 +123,7 @@ namespace XYZ {
 		GeometryRenderQueue		   m_Queue;
 								   
 		bool				       m_ViewportSizeChanged = false;
-		int32_t					   m_ThreadIndex;
-
+	
 		
 		struct RenderStatistics
 		{
