@@ -20,7 +20,8 @@ namespace XYZ {
 		void Start(uint32_t numThreads);
 		void Stop();
 
-	
+		void WaitForJobs();
+
 		template <typename F, typename... A>
 		void PushJob(F&& task, A&&... args);
 		
@@ -28,15 +29,17 @@ namespace XYZ {
 		std::future<R> SubmitJob(F&& task, A&&... args);	
 
 	private:	
-		void waitForJob();
+		void worker();
 
 	private:
 		std::atomic_bool		 m_Running;
+		std::atomic_bool		 m_Waiting;
 		std::vector<std::thread> m_Threads;
 
-		mutable std::mutex m_Mutex;
-		mutable std::queue<Job> m_JobQueue;
-		mutable std::condition_variable m_Condition;
+		std::mutex				m_JobMutex;
+		std::queue<Job>			m_JobQueue;
+		std::condition_variable m_JobAvailableCV;
+		std::condition_variable m_JobDoneCV;
 	};
 
 
@@ -45,10 +48,10 @@ namespace XYZ {
 	{
 		Job taskFunction = std::bind(std::forward<F>(task), std::forward<A>(args)...);
 		{
-			const std::scoped_lock tasksLock(m_Mutex);
+			const std::scoped_lock jobsLock(m_JobMutex);
 			m_JobQueue.push(taskFunction);
 		}
-		m_Condition.notify_one();
+		m_JobAvailableCV.notify_one();
 	}
 
 	template<typename F, typename ...A, typename R>

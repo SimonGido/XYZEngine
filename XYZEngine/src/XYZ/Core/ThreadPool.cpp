@@ -7,7 +7,8 @@
 namespace XYZ {
 	ThreadPool::ThreadPool()
 		:
-		m_Running(false)
+		m_Running(false),
+		m_Waiting(false)
 	{
 	}
 
@@ -25,9 +26,9 @@ namespace XYZ {
 			if (numThreads > std::thread::hardware_concurrency())
 				XYZ_CORE_WARN("Creating more threads than the maximum number of threads");
 			{
-				std::unique_lock<std::mutex> lock(m_Mutex);
+				std::unique_lock<std::mutex> lock(m_JobMutex);
 				for (uint32_t i = 0; i < numThreads; ++i)
-					m_Threads.push_back(std::thread(&ThreadPool::waitForJob, this));
+					m_Threads.push_back(std::thread(&ThreadPool::worker, this));
 			}
 		}
 	}
@@ -36,8 +37,9 @@ namespace XYZ {
 	{
 		if (m_Running)
 		{
+			WaitForJobs();
 			m_Running = false;
-			m_Condition.notify_all(); // wake up all threads.
+			m_JobAvailableCV.notify_all(); // wake up all threads.
 
 			for (size_t i = 0; i < m_Threads.size(); ++i)
 			{
@@ -46,7 +48,14 @@ namespace XYZ {
 			m_Threads.clear();
 		}
 	}
-	void ThreadPool::waitForJob()
+	void ThreadPool::WaitForJobs()
+	{
+		m_Waiting = true;
+		std::unique_lock<std::mutex> lock(m_JobMutex);
+		m_JobDoneCV.wait(lock, [this] { return m_JobQueue.empty(); });
+		m_Waiting = false;
+	}
+	void ThreadPool::worker()
 	{
 		Job job;
 		XYZ_PROFILE_THREAD("WorkerThread");
@@ -54,8 +63,8 @@ namespace XYZ {
 		while (true)
 		{
 			{
-				std::unique_lock<std::mutex> lock(m_Mutex);
-				m_Condition.wait(lock, [&] { return !m_JobQueue.empty() || !m_Running; });
+				std::unique_lock<std::mutex> lock(m_JobMutex);
+				m_JobAvailableCV.wait(lock, [&] { return !m_JobQueue.empty() || !m_Running; });
 				if (!m_Running && m_JobQueue.empty())
 					return;
 

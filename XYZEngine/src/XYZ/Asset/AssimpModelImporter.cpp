@@ -27,6 +27,8 @@ namespace XYZ {
 	{
 		Assimp::Importer importer;
 		const aiScene* scene = importer.ReadFile(filepath, s_AnimationImportFlags);
+		if (!scene)
+			return;
 
 		std::string name = Utils::GetFilenameWithoutExtension(filepath);
 		

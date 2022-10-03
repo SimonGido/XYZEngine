@@ -242,6 +242,16 @@ namespace XYZ {
 						ImGui::CloseCurrentPopup();
 					}
 				}
+				if (!m_SelectedEntity.HasComponent<MeshComponent>())
+				{
+					if (ImGui::MenuItem("Mesh Component"))
+					{
+						auto& component = m_SelectedEntity.EmplaceComponent<MeshComponent>();
+						m_EditablesInUse.push_back(&m_MeshComponentInspector);
+						m_MeshComponentInspector.SetSceneEntity(m_SelectedEntity);
+						ImGui::CloseCurrentPopup();
+					}
+				}
 				if (!m_SelectedEntity.HasComponent<ParticleComponent>())
 				{
 					if (ImGui::MenuItem("Particle Component"))

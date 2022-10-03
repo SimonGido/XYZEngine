@@ -52,8 +52,8 @@ namespace XYZ {
 		ParticleSystem& operator=(const ParticleSystem& other);
 		ParticleSystem& operator=(ParticleSystem&& other) noexcept;
 
-		void Update(const glm::mat4& transform, Timestep ts);	
-		
+		void Update(const glm::mat4& transform, Timestep ts);
+
 		void Reset();
 		void SetMaxParticles(uint32_t maxParticles);
 

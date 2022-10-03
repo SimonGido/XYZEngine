@@ -7,10 +7,10 @@ namespace XYZ {
 	Ref<MeshSource> MeshFactory::CreateQuad(const glm::vec2& size)
 	{   
 		const std::vector<Vertex> vertices{
-			Vertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(0.0f, 0.0f)},
-			Vertex{glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec2(1.0f, 0.0f)},
-			Vertex{glm::vec3( 0.5f,  0.5f, 0.0f), glm::vec2(1.0f, 1.0f)},
-			Vertex{glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec2(0.0f, 1.0f)}
+			Vertex{glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 0.0f)},
+			Vertex{glm::vec3( 0.5f, -0.5f, 0.0f), glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 0.0f)},
+			Vertex{glm::vec3( 0.5f,  0.5f, 0.0f), glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 1.0f)},
+			Vertex{glm::vec3(-0.5f,  0.5f, 0.0f), glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 1.0f)}
 		};
 		const std::vector<uint32_t> indices { 0, 1, 2, 2, 3, 0 };
 		return Ref<MeshSource>::Create(vertices, indices);
@@ -68,40 +68,40 @@ namespace XYZ {
 	{
 		const Vertex vertices[24] = {
 			// Front face
-			Vertex{{ -size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, glm::vec2(0.0f, 0.0f)},
-			Vertex{{  size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, glm::vec2(1.0f, 0.0f)},
-			Vertex{{  size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f }, glm::vec2(1.0f, 1.0f)},
-			Vertex{{ -size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f }, glm::vec2(0.0f, 1.0f)},
+			Vertex{{ -size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 0.0f)},
+			Vertex{{  size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 0.0f)},
+			Vertex{{  size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 1.0f)},
+			Vertex{{ -size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 1.0f)},
 
 			// Top face
-			Vertex{{ -size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f }, glm::vec2(0.0f, 0.0f)},
-			Vertex{{  size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f }, glm::vec2(1.0f, 0.0f)},
-			Vertex{{  size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f }, glm::vec2(1.0f, 1.0f)},
-			Vertex{{ -size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f }, glm::vec2(0.0f, 1.0f)},
+			Vertex{{ -size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 0.0f)},
+			Vertex{{  size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 0.0f)},
+			Vertex{{  size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 1.0f)},
+			Vertex{{ -size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 1.0f)},
 
 			// Bottom face
-			Vertex{{ -size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, glm::vec2(0.0f, 0.0f)},
-			Vertex{{  size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, glm::vec2(1.0f, 0.0f)},
-			Vertex{{  size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f }, glm::vec2(1.0f, 1.0f)},
-			Vertex{{ -size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f }, glm::vec2(0.0f, 1.0f)},
+			Vertex{{ -size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 0.0f)},
+			Vertex{{  size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 0.0f)},
+			Vertex{{  size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 1.0f)},
+			Vertex{{ -size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 1.0f)},
 
 			// Left face
-			Vertex{{ -size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, glm::vec2(0.0f, 0.0f)},
-			Vertex{{ -size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f }, glm::vec2(1.0f, 0.0f)},
-			Vertex{{ -size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f }, glm::vec2(1.0f, 1.0f)},
-			Vertex{{ -size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f }, glm::vec2(0.0f, 1.0f)},
+			Vertex{{ -size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 0.0f)},
+			Vertex{{ -size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 0.0f)},
+			Vertex{{ -size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 1.0f)},
+			Vertex{{ -size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 1.0f)},
 
 			// Right face 
-			Vertex{{  size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, glm::vec2(0.0f, 0.0f)},
-			Vertex{{  size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f }, glm::vec2(1.0f, 0.0f)},
-			Vertex{{  size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f }, glm::vec2(1.0f, 1.0f)},
-			Vertex{{  size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f }, glm::vec2(0.0f, 1.0f)},
+			Vertex{{  size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 0.0f)},
+			Vertex{{  size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 0.0f)},
+			Vertex{{  size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 1.0f)},
+			Vertex{{  size.x / 2.0f,  size.y / 2.0f,  size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 1.0f)},
 
 			// Back face
-			Vertex{{ -size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f }, glm::vec2(0.0f, 0.0f)},
-			Vertex{{  size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f }, glm::vec2(1.0f, 0.0f)},
-			Vertex{{  size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f }, glm::vec2(1.0f, 1.0f)},
-			Vertex{{ -size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f }, glm::vec2(0.0f, 1.0f)}
+			Vertex{{ -size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 0.0f)},
+			Vertex{{  size.x / 2.0f, -size.y / 2.0f, -size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 0.0f)},
+			Vertex{{  size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(1.0f, 1.0f)},
+			Vertex{{ -size.x / 2.0f,  size.y / 2.0f, -size.z / 2.0f },glm::vec3(0), glm::vec3(0), glm::vec3(0), glm::vec2(0.0f, 1.0f)}
 		};
 
 		

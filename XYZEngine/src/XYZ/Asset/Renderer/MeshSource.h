@@ -26,12 +26,18 @@ namespace XYZ {
 	struct Vertex
 	{
 		glm::vec3 Position;
+		glm::vec3 Normal;
+		glm::vec3 Tangent;
+		glm::vec3 Binormal;
 		glm::vec2 TexCoord;
 	};
 
 	struct AnimatedVertex
 	{
 		glm::vec3 Position;
+		glm::vec3 Normal;
+		glm::vec3 Tangent;
+		glm::vec3 Binormal;
 		glm::vec2 TexCoord;
 		uint32_t IDs[4] = { 0,0,0,0 };
 		float Weights[4] = { 0.0f, 0.0f, 0.0f, 0.0f };

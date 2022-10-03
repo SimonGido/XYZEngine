@@ -10,11 +10,11 @@ namespace XYZ {
 		createPipeline();
 	}
 
-	void CompositePass::Submit(const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Image2D>& lightImage, const Ref<Image2D>& bloomImage)
+	void CompositePass::Submit(const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Image2D>& lightImage, const Ref<Image2D>& bloomImage, bool clear)
 	{
 		XYZ_PROFILE_FUNC("CompositePass::Submit");
 
-		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, true);
+		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, clear);
 		m_Material->SetImage("u_GeometryTexture", lightImage);
 		m_Material->SetImage("u_BloomTexture", bloomImage);
 		Renderer::BindPipeline(

@@ -78,6 +78,7 @@ namespace XYZ {
 		createLightPass();
 		createDepthPass();
 		createBloomTextures();
+		createGridResources();
 
 		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
 		m_CameraBufferSet = UniformBufferSet::Create(framesInFlight);
@@ -92,6 +93,7 @@ namespace XYZ {
 		m_DeferredLightPass.Init({ m_LightRenderPass, lightShaderAsset->GetShader() }, m_CommandBuffer);
 		m_BloomPass.Init({ bloomShaderAsset->GetShader(), m_BloomTexture }, m_CommandBuffer);
 		m_CompositePass.Init({ m_CompositeRenderPass, compositeShaderAsset->GetShader() }, m_CommandBuffer);
+		m_LightCullingPass.Init({ m_CameraBufferSet });
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -117,6 +119,9 @@ namespace XYZ {
 		
 		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
 		m_CameraBufferSet->Get(0, 0, currentFrame)->Update(&m_CameraBuffer, sizeof(m_CameraBuffer), 0);
+	
+
+		updateLights3D();
 	}
 	void SceneRenderer::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition)
 	{
@@ -138,10 +143,18 @@ namespace XYZ {
 		Ref<Image2D> positionImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
 		Ref<Image2D> lightImage = m_LightRenderPass->GetSpecification().TargetFramebuffer->GetImage();
 
-		m_GeometryPass.Submit(m_CommandBuffer, m_Queue, m_CameraBuffer.ViewMatrix, true);
+		const bool clearGeometryPass = !m_Options.ShowGrid;
+		if (m_Options.ShowGrid)
+		{
+			Renderer::BeginRenderPass(m_CommandBuffer, m_GeometryRenderPass, true);
+			renderGrid();
+			Renderer::EndRenderPass(m_CommandBuffer);
+		}
+
+		m_GeometryPass.Submit(m_CommandBuffer, m_Queue, m_CameraBuffer.ViewMatrix, clearGeometryPass);
 		m_DeferredLightPass.Submit(m_CommandBuffer, colorImage, positionImage);
 		m_BloomPass.Submit(m_CommandBuffer, lightImage, { 1.0f, 0.1f }, m_ViewportSize);
-		m_CompositePass.Submit(m_CommandBuffer, lightImage, m_BloomTexture[2]->GetImage());
+		m_CompositePass.Submit(m_CommandBuffer, lightImage, m_BloomTexture[2]->GetImage(), true);
 
 
 		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
@@ -429,6 +442,28 @@ namespace XYZ {
 		m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 	}
 	
+	void SceneRenderer::createGridResources()
+	{
+		Ref<MaterialAsset> gridMaterialAsset = Renderer::GetDefaultResources().RendererAssets.at("GridMaterial").As<MaterialAsset>();
+
+		m_GridMaterial = gridMaterialAsset->GetMaterial();
+		m_GridMaterialInstance = gridMaterialAsset->GetMaterialInstance();
+
+		const float gridScale = 16.025f;
+		const float gridSize = 0.025f;
+		m_GridMaterialInstance->Set("u_Settings.Scale", gridScale);
+		m_GridMaterialInstance->Set("u_Settings.Size", gridSize);
+
+		PipelineSpecification spec;
+		spec.Layouts = m_GridMaterial->GetShader()->GetLayouts();
+		spec.RenderPass = m_GeometryRenderPass;
+		spec.Shader = m_GridMaterial->GetShader();
+		spec.Topology = PrimitiveTopology::Triangles;
+		spec.DepthTest = true;
+		spec.DepthWrite = true;
+		spec.BackfaceCulling = false;
+		m_GridPipeline = Pipeline::Create(spec);
+	}
 	void SceneRenderer::updateViewportSize()
 	{
 		if (m_ViewportSizeChanged)
@@ -468,5 +503,44 @@ namespace XYZ {
 	
 		m_RenderStatistics.PointLight2DCount = lightPassStats.PointLightCount;
 		m_RenderStatistics.SpotLight2DCount = lightPassStats.SpotLightCount;
+	}
+
+	void SceneRenderer::renderGrid()
+	{
+		const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
+
+		Renderer::BindPipeline(m_CommandBuffer, m_GridPipeline, GetCameraBufferSet(), nullptr, m_GridMaterial);
+		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_GridPipeline, m_GridMaterialInstance, transform);
+	}
+
+	void SceneRenderer::updateLights3D()
+	{
+		// Collect 3D point lights
+		m_PointLights3D.clear();
+		auto& registry = m_ActiveScene->GetRegistry();
+		// Point lights
+		auto pointLight3DView = registry.view<TransformComponent, PointLightComponent3D>();
+		for (auto entity : pointLight3DView)
+		{
+			auto [transformComponent, lightComponent] = pointLight3DView.get(entity);
+			auto [translation, rot, scale] = transformComponent.GetWorldComponents();
+			m_PointLights3D.push_back({
+				translation,
+				lightComponent.Intensity,
+				lightComponent.Radiance,
+				lightComponent.MinRadius,
+				lightComponent.Radius,
+				lightComponent.Falloff,
+				lightComponent.LightSize,
+				lightComponent.CastsShadows,
+				});
+		}
+
+		constexpr uint32_t countOffset = 16;
+
+		ByteBuffer spotLightBuffer;
+		spotLightBuffer.Allocate(countOffset + (m_PointLights3D.size() * sizeof(PointLight3D)));
+		spotLightBuffer.Write(m_PointLights3D.size(), 0);
+		spotLightBuffer.Write(m_PointLights3D.data(), m_PointLights3D.size() * sizeof(PointLight3D), countOffset);
 	}
 }

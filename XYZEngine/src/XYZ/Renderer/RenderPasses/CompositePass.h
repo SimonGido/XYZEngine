@@ -15,7 +15,7 @@ namespace XYZ {
 	public:
 		void Init(const CompositePassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer);
 
-		void Submit(const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Image2D>& lightImage, const Ref<Image2D>& bloomImage);
+		void Submit(const Ref<RenderCommandBuffer>& commandBuffer, const Ref<Image2D>& lightImage, const Ref<Image2D>& bloomImage, bool clear);
 
 	private:
 		void createPipeline();

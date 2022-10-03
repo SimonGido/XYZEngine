@@ -2,6 +2,20 @@ Scene: TestScene
 SceneEntity: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
 FirstChild: 36905812-ac4e-4371-97a4-ba100c73abba
 Entities:
+  - Entity: 9700baef-ca7f-4393-a01c-8de18e22d110
+    SceneTagComponent:
+      Name: Cerberus
+    TransformComponent:
+      Position: [0, 1, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      PreviousSibling: f911a9b2-fbba-4cd5-829d-d2aee24ba4d8
+      Depth: 1
+    MeshComponent:
+      Mesh: 13d9f33c-56e1-4909-bec9-e483d39a6a73
+      Material: 35da3007-4fb2-497f-909b-bc5621d1e8e6
   - Entity: a329bb15-11a1-4847-83e4-9e80df18bedd
     SceneTagComponent:
       Name: Cube
@@ -15,7 +29,7 @@ Entities:
       Depth: 2
     AnimatedMeshComponent:
       Mesh: 2f3adb89-c406-47bd-a0d5-ff8ae3714ac3
-      Material: 60a4a2f6-fdcb-448c-b682-e1e92b8b20c7
+      Material: 79280b4c-c21c-45d2-98e4-a7c0baf16724
       BoneEntities:
         - 204d215e-7c12-46c4-b054-aa08bbdc5369
         - 169143df-da4a-4341-8936-d03d63ec5e39
@@ -40,7 +54,7 @@ Entities:
       Name: Foot.R
     TransformComponent:
       Position: [0, 0.0149307251, 0]
-      Rotation: [-1.74984837, 6.20633364e-06, -3.11196876]
+      Rotation: [-2.46060252, 0.04162791, -3.0639677]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 86643f2c-331e-4e93-82dc-a775e454ef2d
@@ -50,7 +64,7 @@ Entities:
       Name: Lower_Leg.R
     TransformComponent:
       Position: [0, 0.0128250122, 0]
-      Rotation: [-2.71125197, -0.0153943105, -3.10317159]
+      Rotation: [-1.5228852, 0.0277394801, -3.1034224]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 81992393-90b0-455b-84a4-5eb0a160c28b
@@ -61,7 +75,7 @@ Entities:
       Name: Upper_Leg.R
     TransformComponent:
       Position: [-0.00566864014, -1.34706497e-05, -0.0010433197]
-      Rotation: [0.213112637, 0.00321813556, 3.13244224]
+      Rotation: [0.150576934, 0.00250972877, 3.13228178]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 204d215e-7c12-46c4-b054-aa08bbdc5369
@@ -73,7 +87,7 @@ Entities:
       Name: Foot.L
     TransformComponent:
       Position: [0, 0.0149307251, 0]
-      Rotation: [-2.11610055, -2.73343176e-06, 3.11195636]
+      Rotation: [-1.81206214, 3.2633543e-06, 3.11197591]
       Scale: [1, 1, 1]
     Relationship:
       Parent: e72b15de-9d06-4975-9db7-2e1a88331e71
@@ -83,7 +97,7 @@ Entities:
       Name: Lower_Leg.L
     TransformComponent:
       Position: [0, 0.0128250122, 0]
-      Rotation: [-1.37214267, 0.0211697873, 3.13592982]
+      Rotation: [-2.77461839, 0.0113444179, 3.10242271]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 38d6f778-7f9c-4f1c-be91-665172cf5529
@@ -94,7 +108,7 @@ Entities:
       Name: Upper_Leg.L
     TransformComponent:
       Position: [0.00566864014, -1.34706497e-05, -0.0010433197]
-      Rotation: [0.59683454, -0.00577687891, -3.13494682]
+      Rotation: [0.595683455, -0.00574010285, -3.13205862]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 204d215e-7c12-46c4-b054-aa08bbdc5369
@@ -107,7 +121,7 @@ Entities:
       Name: Hand.R
     TransformComponent:
       Position: [0, 0.0108337402, 0]
-      Rotation: [0.0208827518, 0.649966359, -0.228922069]
+      Rotation: [0.0208827499, 0.649966359, -0.228922054]
       Scale: [1, 1, 1]
     Relationship:
       Parent: f4df3eaf-cc92-405c-b072-cd50f86f95d1
@@ -117,7 +131,7 @@ Entities:
       Name: Lower_Arm.R
     TransformComponent:
       Position: [0, 0.0148086548, 0]
-      Rotation: [1.37594914, 0.548421025, -1.43593574]
+      Rotation: [1.45731485, 0.548170567, -1.44042671]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 93bb3551-2223-4999-925e-a88f0a2563d5
@@ -128,7 +142,7 @@ Entities:
       Name: Upper_Arm.R
     TransformComponent:
       Position: [-0.00925445557, 0.00771713257, -0.00155735016]
-      Rotation: [-0.298953146, -0.564153016, 2.95885777]
+      Rotation: [-0.0489483289, -0.449900657, 2.90108299]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 169143df-da4a-4341-8936-d03d63ec5e39
@@ -140,7 +154,7 @@ Entities:
       Name: Hand.L
     TransformComponent:
       Position: [0, 0.0108337402, 0]
-      Rotation: [-0.0755016357, -0.0966042876, -0.524856091]
+      Rotation: [-0.0755016431, -0.0966042876, -0.524856091]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 4162eae5-f199-4589-8085-08bac3d71d7d
@@ -150,7 +164,7 @@ Entities:
       Name: Lower_Arm.L
     TransformComponent:
       Position: [0, 0.0148086548, 0]
-      Rotation: [1.78498578, 0.230636045, -1.79411113]
+      Rotation: [1.79258215, 0.247313872, -1.79936028]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 481fdb74-c6b4-47c4-b1d9-bbe34bbd55d8
@@ -161,7 +175,7 @@ Entities:
       Name: Upper_Arm.L
     TransformComponent:
       Position: [0.00925445557, 0.00771713257, -0.00155735016]
-      Rotation: [-0.252312124, 0.81455034, -2.85751843]
+      Rotation: [-0.573881209, 0.77125293, -3.02296019]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 169143df-da4a-4341-8936-d03d63ec5e39
@@ -196,7 +210,7 @@ Entities:
       Name: Chest
     TransformComponent:
       Position: [0, 0.0148239136, 0]
-      Rotation: [-0.0618820786, 0.00569383753, -0.018529363]
+      Rotation: [-0.0723567605, 0.00735173654, -0.0240521859]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 204d215e-7c12-46c4-b054-aa08bbdc5369
@@ -207,7 +221,7 @@ Entities:
     SceneTagComponent:
       Name: Torso
     TransformComponent:
-      Position: [0, 0, 0.0321980529]
+      Position: [0, 0, 0.0332835577]
       Rotation: [1.63550317, -0, 0]
       Scale: [1, 1, 1]
     Relationship:
@@ -235,6 +249,7 @@ Entities:
       Scale: [1, 1, 1]
     Relationship:
       Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
+      NextSibling: 9700baef-ca7f-4393-a01c-8de18e22d110
       PreviousSibling: 3eafb4f0-efaf-4f3d-9f04-40ee22e42715
       FirstChild: 7d2475fc-13f7-41cf-ad7a-993a72d10bbb
       Depth: 1
@@ -251,8 +266,8 @@ Entities:
       Depth: 2
     PointLight2D:
       Color: [0.564668298, 0.822794914, 0.845132709]
-      Radius: 7.69999981
-      Intensity: 0.550000012
+      Radius: 9.39999962
+      Intensity: 1.75
   - Entity: 36905812-ac4e-4371-97a4-ba100c73abba
     SceneTagComponent:
       Name: Bats

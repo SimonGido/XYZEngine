@@ -70,11 +70,19 @@ namespace XYZ {
 				});
 			m_FileManager.RegisterExtension("png", {
 				EditorLayer::GetData().IconsTexture,
-				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::PngIcon)
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::PngIcon),
+				nullptr, // Hover
+				nullptr, // Left click
+				[&](const std::filesystem::path& path) -> bool { return true; }, // Double left click
+				[&](const std::filesystem::path& path) -> bool { return assetRightClickMenuTextureSource(path); } // Right click
 				});
 			m_FileManager.RegisterExtension("jpg", {
 				EditorLayer::GetData().IconsTexture,
-				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::JpgIcon)
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::JpgIcon),
+				nullptr, // Hover
+				nullptr, // Left click
+				[&](const std::filesystem::path& path) -> bool { return true; }, // Double left click
+				[&](const std::filesystem::path& path) -> bool { return assetRightClickMenuTextureSource(path); } // Right click
 				});
 			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Mesh), {
 				EditorLayer::GetData().IconsTexture,
@@ -112,6 +120,14 @@ namespace XYZ {
 				[&](const std::filesystem::path& path) -> bool { assetSelected(path); return true; }, // Double left click
 				});
 			m_FileManager.RegisterExtension("fbx", {
+				EditorLayer::GetData().IconsTexture,
+				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon),
+				nullptr, // Hover
+				nullptr, // Left click
+				[&](const std::filesystem::path& path) -> bool { return true; }, // Double left click
+				[&](const std::filesystem::path& path) -> bool { return assetRightClickMenuFBX(path); } // Right click
+				});
+			m_FileManager.RegisterExtension("gltf", {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon),
 				nullptr, // Hover
@@ -385,6 +401,31 @@ namespace XYZ {
 					name + "." + Asset::GetExtension(AssetType::Prefab),
 					"Create Prefab",
 					animMesh
+					).Raw())
+				{
+					result = true;
+				}
+				ImGui::EndPopup();
+			}
+			return result;
+		}
+		bool AssetBrowser::assetRightClickMenuTextureSource(const std::filesystem::path& path)
+		{
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Right) && ImGui::IsWindowHovered())
+			{
+				ImGui::OpenPopup("RightClickMenu");
+			}
+			bool result = false;
+			if (ImGui::BeginPopup("RightClickMenu"))
+			{
+				const std::string texturePath = path.string();
+				const std::string name = Utils::GetFilenameWithoutExtension(texturePath);
+				
+				if (assetRightClickMenu<Texture2D>(
+					path,
+					name + "." + Asset::GetExtension(AssetType::Texture),
+					"Create Texture",
+					texturePath
 					).Raw())
 				{
 					result = true;

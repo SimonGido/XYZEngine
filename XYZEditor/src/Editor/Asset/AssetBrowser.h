@@ -38,6 +38,7 @@ namespace XYZ {
 			bool assetRightClickMenuMESHSRC(const std::filesystem::path& path);
 			bool assetRightClickMenuMESH(const std::filesystem::path& path);
 			bool assetRightClickMenuANIMMESH(const std::filesystem::path& path);
+			bool assetRightClickMenuTextureSource(const std::filesystem::path& path);
 
 			template <typename T, typename ...Args>
 			static Ref<T> assetRightClickMenu(const std::filesystem::path& path, const std::string& assetName, const char* menuName, Args&& ...args);

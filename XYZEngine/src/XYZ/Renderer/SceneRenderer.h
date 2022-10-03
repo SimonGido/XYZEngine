@@ -14,7 +14,7 @@
 #include "RenderPasses/DeferredLightPass.h"
 #include "RenderPasses/BloomPass.h"
 #include "RenderPasses/CompositePass.h"
-
+#include "RenderPasses/LightCullingPass.h"
 
 #include "XYZ/Asset/Renderer/MaterialAsset.h"
 
@@ -86,9 +86,13 @@ namespace XYZ {
 		void createGeometryPass();
 		void createDepthPass();
 		void createBloomTextures();
+		void createGridResources();
 
 		void updateViewportSize();
 		void preRender();
+		void renderGrid();
+
+		void updateLights3D();
 	private:
 		struct CameraData
 		{
@@ -97,8 +101,24 @@ namespace XYZ {
 			glm::vec4 ViewPosition;
 		};
 
+		struct PointLight3D
+		{
+			glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+			float	  Multiplier = 0.0f;
+			glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
+			float	  MinRadius = 0.001f;
+			float	  Radius = 25.0f;
+			float	  Falloff = 1.f;
+			float	  SourceSize = 0.1f;
+			bool	  CastsShadows = true;
+			char	  Padding[3]{ 0, 0, 0 };
+		};
+
+		std::vector<PointLight3D> m_PointLights3D;
+
 		GeometryPass	  m_GeometryPass;
 		DeferredLightPass m_DeferredLightPass;
+		LightCullingPass  m_LightCullingPass;
 		BloomPass		  m_BloomPass;
 		CompositePass	  m_CompositePass;
 
@@ -106,6 +126,11 @@ namespace XYZ {
 		Ref<RenderPass>				  m_CompositeRenderPass;
 		Ref<RenderPass>				  m_LightRenderPass;
 		Ref<RenderPass>				  m_DepthRenderPass;
+
+		Ref<Material>				  m_GridMaterial;
+		Ref<Pipeline>				  m_GridPipeline;
+		Ref<MaterialInstance>		  m_GridMaterialInstance;
+
 		std::array<Ref<Texture2D>, 3> m_BloomTexture;
 
 		SceneRendererSpecification m_Specification;

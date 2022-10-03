@@ -6,6 +6,8 @@
 // #type compute
 #version 450 core
 
+const int MAX_POINT_LIGHTS = 1024;
+
 layout(std140, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjectionMatrix;
@@ -15,22 +17,14 @@ layout(std140, binding = 0) uniform Camera
 
 struct PointLightData
 {
-	vec4  Color;
-	vec2  Position;
+	vec3  Position;
+	float Multiplier;
+	vec3  Radiance;
+	float MinRadius;
 	float Radius;
-	float Intensity;
-};
-
-struct SpotLightData
-{
-	vec4  Color;
-	vec2  Position;
-	float Radius;
-	float Intensity;
-	float InnerAngle;
-	float OuterAngle;
-
-	float Alignment[2];
+	float Falloff;
+	float LightSize;
+	bool  CastsShadows;
 };
 
 
@@ -39,16 +33,11 @@ layout(push_constant) uniform ScreenData
 	ivec2 u_ScreenSize;
 } u_ScreenData;
 
-layout(std430, binding = 1) buffer buffer_PointLights
+
+layout(std430, binding = 4) buffer buffer_PointLights
 {
 	uint NumberPointLights;
-	PointLightData PointLights[];
-};
-
-layout(std430, binding = 2) buffer buffer_SpotLights
-{
-	uint NumberSpotLights;
-	SpotLightData SpotLights[];
+	PointLightData PointLights[MAX_POINT_LIGHTS];
 };
 
 layout(std430, binding = 14) writeonly buffer buffer_VisibleLightIndices
@@ -68,7 +57,7 @@ shared uint visibleLightCount;
 shared vec4 frustumPlanes[6];
 
 // Shared local storage for visible indices, will be written out to the global buffer at the end
-shared int visibleLightIndices[1024];
+shared int visibleLightIndices[MAX_POINT_LIGHTS];
 
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main()
@@ -149,7 +138,7 @@ void main()
 		if (lightIndex >= NumberPointLights)
 			break;
 
-		vec4 position = vec4(PointLights[lightIndex].Position, 0.0f, 1.0f);
+		vec4 position = vec4(PointLights[lightIndex].Position, 1.0f);
 		float radius = PointLights[lightIndex].Radius;
 		radius += radius * 0.3f;
 
@@ -176,12 +165,12 @@ void main()
 	// One thread should fill the global light buffer
 	if (gl_LocalInvocationIndex == 0)
 	{
-		uint offset = index * 1024; // Determine bosition in global buffer
+		uint offset = index * MAX_POINT_LIGHTS; // Determine position in global buffer
 		for (uint i = 0; i < visibleLightCount; i++) {
 			visibleLightIndicesBuffer.Indices[offset + i] = visibleLightIndices[i];
 		}
 
-		if (visibleLightCount != 1024)
+		if (visibleLightCount != MAX_POINT_LIGHTS)
 		{
 			// Unless we have totally filled the entire array, mark it's end with -1
 			// Final shader step will use this to determine where to stop (without having to pass the light count)

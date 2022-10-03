@@ -5,7 +5,6 @@
 namespace XYZ {
 	struct LightCullingPassConfiguration
 	{
-		Ref<StorageBufferSet> LightsBufferSet;
 		Ref<UniformBufferSet> CameraBufferSet;
 	};
 	class LightCullingPass

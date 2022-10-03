@@ -8,7 +8,6 @@ namespace XYZ {
 
 	void LightCullingPass::Init(const LightCullingPassConfiguration& config)
 	{
-		m_LightsBufferSet = config.LightsBufferSet;
 		m_CameraBufferSet = config.CameraBufferSet;
 
 		auto& defaultResources = Renderer::GetDefaultResources();

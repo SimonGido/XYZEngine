@@ -5,6 +5,9 @@ Layouts:
   - Instanced: false
     Elements:
       - 3
+      - 3
+      - 3
+      - 3
       - 2
   - Instanced: true
     Elements:

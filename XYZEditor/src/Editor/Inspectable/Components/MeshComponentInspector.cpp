@@ -4,6 +4,7 @@
 
 #include "Editor/EditorHelper.h"
 #include "XYZ/Scene/Components.h"
+#include "XYZ/Asset/AssetManager.h"
 
 #include "XYZ/ImGui/ImGui.h"
 
@@ -17,7 +18,20 @@ namespace XYZ {
 		bool MeshComponentInspector::OnEditorRender()
 		{
 			return EditorHelper::DrawComponent<MeshComponent>("Mesh Component", m_Context, [&](auto& component) {
-
+				{
+					std::string name = "";
+					if (component.Mesh.Raw())
+						name = AssetManager::GetMetadata(component.Mesh->GetHandle()).FilePath.string();
+					ImGui::InputText("##MaterialAssetName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
+					EditorHelper::AssetDragAcceptor(component.Mesh);
+				}
+				{
+					std::string name = "";
+					if (component.MaterialAsset.Raw())
+						name = AssetManager::GetMetadata(component.MaterialAsset->GetHandle()).FilePath.string();
+					ImGui::InputText("##MaterialAssetName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
+					EditorHelper::AssetDragAcceptor(component.MaterialAsset);
+				}
 			});
 		}
 		void MeshComponentInspector::SetSceneEntity(const SceneEntity& entity)
@@ -39,6 +53,14 @@ namespace XYZ {
 					ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
 				);
 				const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+
+				std::string name = "";
+				if (component.MaterialAsset.Raw())
+					name = AssetManager::GetMetadata(component.MaterialAsset->GetHandle()).FilePath.string();
+				ImGui::InputText("##MaterialAssetName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
+
+
+				EditorHelper::AssetDragAcceptor(component.MaterialAsset);
 
 				if (ImGui::BeginTable("##AnimatedMeshTable", 2, ImGuiTableFlags_SizingStretchProp))
 				{

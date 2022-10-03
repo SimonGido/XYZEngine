@@ -31,6 +31,7 @@ void main()
 #version 430
 
 layout(location = 0) out vec4 o_Color;
+layout(location = 1) out vec4 o_Position;
 
 layout (push_constant) uniform Settings
 {
@@ -50,6 +51,8 @@ void main()
 {
 	float x = grid(v_TexCoord * u_Settings.Scale, u_Settings.Size);
 	o_Color = vec4(vec3(0.2), 1.0) * (1.0 - x);
+	o_Position = vec4(0.0, 0.0, 0.0, 0.0);
+
 	if (o_Color.a == 0.0)
 		discard;
 }

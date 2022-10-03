@@ -1,0 +1,19 @@
+Shader: 12620202-22f3-436f-94ee-9c160a016786
+Opaque: true
+Textures:
+  - Name: u_AlbedoTexture
+    Handle: 670eeb29-9103-4232-9a7b-ca0640f1c542
+  - Name: u_MetalnessTexture
+    Handle: 670eeb29-9103-4232-9a7b-ca0640f1c542
+  - Name: u_RoughnessTexture
+    Handle: 670eeb29-9103-4232-9a7b-ca0640f1c542
+  - Name: u_NormalTexture
+    Handle: 670eeb29-9103-4232-9a7b-ca0640f1c542
+TextureArrays:
+  []
+MaterialData:
+  - Name: u_Renderer.Transform
+    Type: 14
+  - Name: u_Renderer.BoneIndex
+    Type: 9
+    Value: 0

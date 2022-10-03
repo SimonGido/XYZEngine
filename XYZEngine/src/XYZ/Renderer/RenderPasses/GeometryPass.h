@@ -83,7 +83,8 @@ namespace XYZ {
 			Ref<MaterialInstance>	MaterialInstance;
 		};
 
-		DepthPipeline m_DepthPipeline3D;
+		DepthPipeline m_DepthPipeline3DStatic;
+		DepthPipeline m_DepthPipeline3DAnimated;
 		DepthPipeline m_DepthPipeline2D;
 		DepthPipeline m_DepthPipelineInstanced;
 
