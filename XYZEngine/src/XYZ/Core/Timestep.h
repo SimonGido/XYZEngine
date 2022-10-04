@@ -9,6 +9,7 @@ namespace XYZ {
 		Timestep() {}
 		Timestep(float time) : m_Time(time) {}
 
+		inline void Clear(float time) { m_Time = time; }
 		inline float GetSeconds() const { return m_Time; }
 		inline float GetMilliseconds() const { return m_Time * 1000.0f; }
 

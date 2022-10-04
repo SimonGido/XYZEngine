@@ -184,6 +184,18 @@ namespace XYZ {
 
 		Ref<ParticleSystem> GetSystem() const { return m_System; }
 
+		// Enabled
+		enum Module
+		{
+			TextureAnimation,
+			RotationOverLife,
+			SizeOverLife,
+			ColorOverLife,
+			LightOverLife,
+			NumModules
+		};
+		std::array<bool, NumModules> ModulesEnabled = { true, true, true, true, true };
+
 	private:
 		Ref<ParticleSystem> m_System;
 	};

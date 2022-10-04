@@ -68,18 +68,18 @@ namespace XYZ {
 		{
 			auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
 		
-			auto& renderData = particleComponent.GetSystem()->GetRenderData();
-		
-			for (const auto& lightData : renderData.LightData)
-			{
-				PointLight pointLight{
-					glm::vec4(lightData.Color, 1.0f),
-					glm::vec2(lightData.Position),
-					lightData.Radius,
-					lightData.Intensity
-				};
-				m_PointLights.push_back(pointLight);
-			}
+			//auto& renderData = particleComponent.GetSystem()->GetRenderData();
+			//
+			//for (const auto& lightData : renderData.LightData)
+			//{
+			//	PointLight pointLight{
+			//		glm::vec4(lightData.Color, 1.0f),
+			//		glm::vec2(lightData.Position),
+			//		lightData.Radius,
+			//		lightData.Intensity
+			//	};
+			//	m_PointLights.push_back(pointLight);
+			//}
 		}
 
 		if (m_SpotLights.size() > sc_MaxNumberOfLights)

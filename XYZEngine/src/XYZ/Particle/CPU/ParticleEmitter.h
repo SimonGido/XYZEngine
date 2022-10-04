@@ -31,7 +31,8 @@ namespace XYZ {
 	public:
 		ParticleEmitter();
 		
-		void Emit(Timestep ts, ParticlePool& data);
+		void Update(Timestep ts, ParticlePool& data);
+		void Emit(uint32_t count, ParticlePool& data, const glm::vec3& position);
 		void Kill(ParticlePool& data);
 
 		EmitShape				  Shape;
@@ -57,15 +58,14 @@ namespace XYZ {
 	private:
 		uint32_t burstEmit();
 
-		void	 generate(ParticlePool& data, uint32_t id) const;
-		void	 generateBox(ParticlePool& data, uint32_t id) const;
-		void	 generateCircle(ParticlePool& data, uint32_t id) const;
+		void	 generate(ParticlePool& data, const glm::vec3& position, uint32_t id) const;
+		void	 generateBox(ParticlePool& data, const glm::vec3& position, uint32_t id) const;
+		void	 generateCircle(ParticlePool& data, const glm::vec3& position, uint32_t id) const;
 
 	private:
 		float m_EmittedParticles;
 		float m_PassedTime;
-		
-		uint32_t m_AliveLights = 0;
+
 
 		friend class ParticleSystem;
 	};

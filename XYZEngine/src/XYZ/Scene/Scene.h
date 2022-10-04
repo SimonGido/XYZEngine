@@ -14,6 +14,7 @@
 #include "XYZ/Asset/Animation/AnimationController.h"
 #include "XYZ/Asset/Renderer/MeshSource.h"
 #include "XYZ/Renderer/Mesh.h"
+#include "XYZ/Particle/CPU/ParticleScene.h"
 
 #include "SceneCamera.h"
 
@@ -85,9 +86,9 @@ namespace XYZ {
         ContactListener     m_ContactListener;
         SceneEntity*        m_PhysicsEntityBuffer;
 
-        entt::registry            m_Registry;
-        GUID                      m_UUID;
-        entt::entity              m_SceneEntity;
+        entt::registry      m_Registry;
+        GUID                m_UUID;
+        entt::entity        m_SceneEntity;
 
         std::string m_Name;
         SceneState  m_State;
@@ -99,6 +100,7 @@ namespace XYZ {
         uint32_t m_ViewportWidth;
         uint32_t m_ViewportHeight;
 
+        Ref<ParticleScene>  m_ParticleScene;
    
         friend class SceneEntity;
         friend class SceneSerializer;

@@ -105,6 +105,8 @@ namespace XYZ {
 
 		m_Registry.on_construct<ScriptComponent>().connect<&Scene::onScriptComponentConstruct>(this);
 		m_Registry.on_destroy<ScriptComponent>().connect<&Scene::onScriptComponentDestruct>(this);
+		
+		m_ParticleScene = Ref<ParticleScene>::Create();
 	}
 
 	Scene::~Scene()
@@ -208,7 +210,7 @@ namespace XYZ {
 		auto particleView = m_Registry.view<ParticleComponent>();
 		for (auto entity : particleView)
 		{
-			particleView.get<ParticleComponent>(entity).GetSystem()->Reset();
+			//particleView.get<ParticleComponent>(entity).GetSystem()->Reset();
 		}
 
 		CloneRegistry(m_Registry, s_CopyRegistry);
@@ -239,7 +241,7 @@ namespace XYZ {
 		auto particleView = m_Registry.view<ParticleComponent>();
 		for (auto entity : particleView)
 		{
-			particleView.get<ParticleComponent>(entity).GetSystem()->Reset();
+			//particleView.get<ParticleComponent>(entity).GetSystem()->Reset();
 		}
 
 		delete[]m_PhysicsEntityBuffer;
@@ -265,11 +267,14 @@ namespace XYZ {
 		{
 			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor particleView");
 			auto particleView = m_Registry.view<ParticleComponent, TransformComponent>();
+			
+			m_ParticleScene->Begin(ts);
 			for (auto entity : particleView)
 			{
 				auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
-				particleComponent.GetSystem()->Update(transformComponent.WorldTransform, ts);
+				m_ParticleScene->SubmitSystem(transformComponent.WorldTransform, particleComponent.GetSystem(), particleComponent.ModulesEnabled);
 			}
+			m_ParticleScene->EndAsync(Application::Get().GetThreadPool());
 		}
 
 		{
@@ -352,19 +357,28 @@ namespace XYZ {
 		}
 
 		auto particleView = m_Registry.view<TransformComponent, ParticleRenderer, ParticleComponent>();
-		for (auto entity : particleView)
-		{
-			auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
-
-			auto& renderData = particleComponent.GetSystem()->GetRenderData();
 		
-			sceneRenderer->SubmitMesh(
-				renderer.Mesh, renderer.MaterialAsset,
-				renderData.ParticleData.data(),
-				renderData.ParticleCount,
-				sizeof(ParticleRenderData),
-				renderer.OverrideMaterial
-			);
+
+		{
+			size_t index = 0;
+			size_t startIndex = 0;
+			size_t endIndex = 0;
+
+			const auto& renderData = m_ParticleScene->GetRenderData();
+			for (auto entity : particleView)
+			{
+				auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
+				endIndex = renderData.SystemDataIndices[index++];
+
+				sceneRenderer->SubmitMesh(
+					renderer.Mesh, renderer.MaterialAsset,
+					&renderData.InstanceData.data()[startIndex],
+					static_cast<uint32_t>(endIndex),
+					sizeof(ParticleInstanceData),
+					renderer.OverrideMaterial
+				);
+				startIndex = endIndex;
+			}
 		}
 		sceneRenderer->EndScene();
 	}
@@ -399,11 +413,13 @@ namespace XYZ {
 		{
 			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor particleView");
 			auto particleView = m_Registry.view<ParticleComponent, TransformComponent>();
+			m_ParticleScene->Begin(ts);
 			for (auto entity : particleView)
 			{
 				auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
-				particleComponent.GetSystem()->Update(transformComponent.WorldTransform, ts);
+				m_ParticleScene->SubmitSystem(transformComponent.WorldTransform, particleComponent.GetSystem(), particleComponent.ModulesEnabled);
 			}
+			m_ParticleScene->EndAsync(Application::Get().GetThreadPool());
 		}
 	}
 	
@@ -462,21 +478,25 @@ namespace XYZ {
 
 		{
 			XYZ_PROFILE_FUNC("Scene::OnRenderEditor particleView");
+			size_t index = 0;
+			size_t startIndex = 0;
+			size_t endIndex = 0;
+
 			auto particleView = m_Registry.view<TransformComponent, ParticleRenderer, ParticleComponent>();
+			const auto& renderData = m_ParticleScene->GetRenderData();
 			for (auto entity : particleView)
 			{
 				auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
-				if (!CheckAsset(renderer.Mesh) || !CheckAsset(renderer.MaterialAsset))
-					continue;
-				
-				const auto& renderData = particleComponent.GetSystem()->GetRenderData();
+				endIndex = renderData.SystemDataIndices[index++];
+
 				sceneRenderer->SubmitMesh(
 					renderer.Mesh, renderer.MaterialAsset,
-					renderData.ParticleData.data(),
-					renderData.ParticleCount,
-					sizeof(ParticleRenderData),
+					&renderData.InstanceData.data()[startIndex],
+					static_cast<uint32_t>(endIndex),
+					sizeof(ParticleInstanceData),
 					renderer.OverrideMaterial
 				);
+				startIndex = endIndex;
 			}
 		}
 		sceneRenderer->EndScene();

@@ -33,17 +33,17 @@ namespace XYZ {
 
 				const float columnWidth = 200.0f;
 				
-				if (ImGui::Button("Reset"))
-					component.GetSystem()->Reset();
+				//if (ImGui::Button("Reset"))
+				//	component.GetSystem()->Reset();
 				
 				if (ImGui::BeginTable("Particle Component Settings", 2, ImGuiTableFlags_SizingStretchProp))
 				{
-					int maxParticles = component.GetSystem()->GetMaxParticles();
+					int maxParticles = component.GetSystem()->MaxParticles;
 					UI::TableRow("Max Particles",
 						[]() {ImGui::Text("Max Particles"); },
 						[&]() {
-						if (ImGui::InputInt("##MaxParticles", &maxParticles))
-							component.GetSystem()->SetMaxParticles(maxParticles);
+							if (ImGui::InputInt("##MaxParticles", &maxParticles))
+								component.GetSystem()->MaxParticles = maxParticles;
 					});
 				
 					UI::TableRow("Simulation Speed",
@@ -52,10 +52,10 @@ namespace XYZ {
 						ImGui::DragFloat("##SimulationSpeed", &component.GetSystem()->Speed, sc_VSpeed);
 					});
 				
-					UI::TableRow("Simulation Speed",
-						[]() {ImGui::Text("Alive Particles"); },
-						[&]() {ImGui::Text("%u", component.GetSystem()->GetAliveParticles()); }
-					);
+					//UI::TableRow("Simulation Speed",
+					//	[]() {ImGui::Text("Alive Particles"); },
+					//	[&]() {ImGui::Text("%u", component.GetSystem()->GetAliveParticles()); }
+					//);
 
 					ImGui::EndTable();
 				}
@@ -79,7 +79,7 @@ namespace XYZ {
 						);
 						ImGui::EndTable();
 					}
-				}, component.GetSystem()->ModuleEnabled[ParticleSystem::TextureAnimation]);
+				}, component.ModulesEnabled[ParticleComponent::TextureAnimation]);
 
 
 				EditorHelper::DrawNodeControl("Rotation Over Life", component, [](auto& component) {
@@ -92,7 +92,7 @@ namespace XYZ {
 
 						ImGui::EndTable();
 					}
-					}, component.GetSystem()->ModuleEnabled[ParticleSystem::RotationOverLife]);
+					}, component.ModulesEnabled[ParticleComponent::RotationOverLife]);
 
 				EditorHelper::DrawNodeControl("Size Over Life", component, [](auto& component) {
 					if (ImGui::BeginTable("Size table", 2, ImGuiTableFlags_SizingStretchProp))
@@ -104,7 +104,7 @@ namespace XYZ {
 
 						ImGui::EndTable();
 					}
-					}, component.GetSystem()->ModuleEnabled[ParticleSystem::SizeOverLife]);
+					}, component.ModulesEnabled[ParticleComponent::SizeOverLife]);
 
 
 				EditorHelper::DrawNodeControl("Color Over Life", component, [](auto& component) {
@@ -117,7 +117,7 @@ namespace XYZ {
 
 						ImGui::EndTable();
 					}
-					}, component.GetSystem()->ModuleEnabled[ParticleSystem::ColorOverLife]);
+					}, component.ModulesEnabled[ParticleComponent::ColorOverLife]);
 				
 				EditorHelper::DrawNodeControl("Light Over Life", component, [](auto& component) {
 					if (ImGui::BeginTable("Lights table", 2, ImGuiTableFlags_SizingStretchProp))
@@ -136,7 +136,7 @@ namespace XYZ {
 						);
 						ImGui::EndTable();
 					}
-					}, component.GetSystem()->ModuleEnabled[ParticleSystem::LightOverLife]);
+					}, component.ModulesEnabled[ParticleComponent::LightOverLife]);
 
 				drawEmitter(component.GetSystem()->Emitter);
 			});

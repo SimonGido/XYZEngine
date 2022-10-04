@@ -14,35 +14,9 @@
 
 namespace XYZ {
 
-	struct ParticleRenderData
-	{
-		glm::vec4 Transform[3];
-		glm::vec4 Color;
-		glm::vec2 TexOffset;
-	};
-
-	struct ParticleLightData
-	{
-		glm::vec3 Color;
-		glm::vec3 Position;
-		float	  Radius;
-		float     Intensity;
-	};
 
 	class ParticleSystem : public RefCount
 	{
-	public:
-		struct RenderData
-		{
-			RenderData() = default;
-			RenderData(uint32_t maxParticles);
-
-			std::vector<ParticleRenderData> ParticleData;
-			uint32_t						ParticleCount = 0;
-
-			std::vector<ParticleLightData>	LightData;
-		};
-
 	public:
 		ParticleSystem(uint32_t maxParticles = 20);	
 		ParticleSystem(const ParticleSystem& other);
@@ -52,17 +26,16 @@ namespace XYZ {
 		ParticleSystem& operator=(const ParticleSystem& other);
 		ParticleSystem& operator=(ParticleSystem&& other) noexcept;
 
-		void Update(const glm::mat4& transform, Timestep ts);	
-		
-		void Reset();
-		void SetMaxParticles(uint32_t maxParticles);
-
-		uint32_t GetMaxParticles() const;
-		uint32_t GetAliveParticles() const;
-		
-		const RenderData& GetRenderData() const { return m_RenderData; }
-		
+		// New API //
+		void Update(Timestep ts, ParticlePool& pool);
+		void UpdateRotation(ParticlePool& pool);
+		void UpdateAnimation(ParticlePool& pool);
+		void UpdateColorOverLife(ParticlePool& pool);
+		void UpdateSizeOverLife(ParticlePool& pool);
+		void UpdateLightOverLife(ParticlePool& pool);
+		/////////////
 		ParticleEmitter	Emitter;
+		uint32_t		MaxParticles;
 
 		// Texture animation
 		glm::ivec2		AnimationTiles;
@@ -85,18 +58,6 @@ namespace XYZ {
 
 		float			Speed;
 		bool			Play;
-		 
-		// Enabled
-		enum Module
-		{
-			TextureAnimation,
-			RotationOverLife,
-			SizeOverLife,
-			ColorOverLife,
-			LightOverLife,
-			NumModules
-		};
-		bool ModuleEnabled[NumModules];
 
 	private:
 		void pushJobs(const glm::mat4& transform, Timestep ts);
@@ -116,18 +77,10 @@ namespace XYZ {
 		void updateSizeOverLife(ParticlePool::Particle& particle) const;
 		void updateLightOverLife(ParticlePool::Particle& particle) const;
 
-		void buildRenderData(const glm::mat4& transform, uint32_t startId, uint32_t endId);
-
-	private:
-		ParticlePool		m_Pool;
-		RenderData			m_RenderData;
-		uint32_t			m_MaxParticles;
-		std::shared_mutex	m_JobsMutex;
-
-		std::atomic_uint8_t m_JobsCount = 0;
-		Timestep			m_Timestep;
-
-		static constexpr uint32_t sc_PerJobCount = 500;
+	public:
+		
+		uint32_t m_StartParticle = 0;
+		uint32_t m_EndParticle	= 0;
 	};
 
 

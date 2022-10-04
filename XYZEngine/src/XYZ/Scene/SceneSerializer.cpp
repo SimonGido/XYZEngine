@@ -236,7 +236,7 @@ namespace XYZ {
 		out << YAML::Key << "ParticleComponent";
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "MaxParticles" << val.GetSystem()->GetMaxParticles();
+		out << YAML::Key << "MaxParticles" << val.GetSystem()->MaxParticles;
 		out << YAML::Key << "Speed" << val.GetSystem()->Speed;
 		
 		out << YAML::Key << "AnimationTiles" << val.GetSystem()->AnimationTiles;
@@ -255,7 +255,7 @@ namespace XYZ {
 		out << YAML::Key << "ModulesEnabled";
 		out << YAML::Value << YAML::BeginSeq;
 		out << YAML::Flow;
-		for (bool enabled : val.GetSystem()->ModuleEnabled)
+		for (bool enabled : val.ModulesEnabled)
 			out << YAML::Value << enabled;
 		out << YAML::EndSeq;
 
@@ -365,7 +365,7 @@ namespace XYZ {
 	{
 		ParticleComponent& component = entity.EmplaceComponent<ParticleComponent>();;
 
-		component.GetSystem()->SetMaxParticles(data["MaxParticles"].as<uint32_t>());
+		component.GetSystem()->MaxParticles			   = data["MaxParticles"].as<uint32_t>();
 		component.GetSystem()->Speed				   = data["Speed"].as<float>();
 		component.GetSystem()->AnimationTiles		   = data["AnimationTiles"].as<glm::ivec2>();
 		component.GetSystem()->AnimationStartFrame     = data["AnimationStartFrame"].as<uint32_t>();
@@ -374,7 +374,7 @@ namespace XYZ {
 		
 		size_t counter = 0;
 		for (auto enabled : data["ModulesEnabled"])
-			component.GetSystem()->ModuleEnabled[counter++] = enabled.as<bool>();
+			component.ModulesEnabled[counter++] = enabled.as<bool>();
 
 		{ // Emitter
 			auto emitter = data["Emitter"];
@@ -392,9 +392,9 @@ namespace XYZ {
 			component.GetSystem()->Emitter.Size  = emitter["Size"].as<glm::vec3>();
 			component.GetSystem()->Emitter.Color = emitter["Color"].as<glm::vec4>();
 		
-			component.GetSystem()->Emitter.LightColor     = emitter["LightColor"].as<glm::vec3>();
-			component.GetSystem()->Emitter.LightRadius    = emitter["LightRadius"].as<float>();
-			component.GetSystem()->Emitter.LightIntensity = emitter["LightIntensity"].as<float>();
+			component.GetSystem()->Emitter.LightColor		= emitter["LightColor"].as<glm::vec3>();
+			component.GetSystem()->Emitter.LightRadius		= emitter["LightRadius"].as<float>();
+			component.GetSystem()->Emitter.LightIntensity	= emitter["LightIntensity"].as<float>();
 			component.GetSystem()->Emitter.MaxLights		= emitter["MaxLights"].as<uint32_t>();
 
 
