@@ -150,7 +150,7 @@ namespace XYZ {
 		if (Play)
 		{		
 			m_Timestep += ts; // Accumulate timestep in case we skip frames
-			pushJobs(transform, ts * Speed);
+			pushJobs(transform, m_Timestep * Speed);
 		}
 	}
 
