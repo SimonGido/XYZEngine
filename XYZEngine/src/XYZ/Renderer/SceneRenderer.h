@@ -108,6 +108,13 @@ namespace XYZ {
 			PointLight3D PointLights[1024]{};
 		} m_PointsLights3DUB;
 
+		struct UBRendererData
+		{
+			uint32_t TilesCountX{ 0 };
+			bool ShowLightComplexity = false;
+			char Padding1[3] = { 0, 0, 0 };  // Bools are 4-bytes in GLSL
+
+		} m_RendererDataUB;
 		
 		GeometryPass	  m_GeometryPass;
 		DeferredLightPass m_DeferredLightPass;
@@ -136,8 +143,10 @@ namespace XYZ {
 
 		SceneRendererCamera		   m_SceneCamera;
 		SceneRendererOptions	   m_Options;
+		BloomSettings			   m_BloomSettings;
 		GridProperties			   m_GridProps;
 		glm::ivec2				   m_ViewportSize;
+		glm::ivec3				   m_LightCullingWorkGroups;
 
 		GeometryRenderQueue		   m_Queue;								   
 		bool				       m_ViewportSizeChanged = false;

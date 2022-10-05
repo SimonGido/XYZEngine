@@ -74,4 +74,7 @@ namespace XYZ {
 
 	template <typename T>
 	using vector3D = std::vector<vector2D<T>>;
+
+	template <typename Key0, typename Key1, typename Value>
+	using unordered_map2D = std::unordered_map<Key0, std::unordered_map<Key1, Value>>;
 }

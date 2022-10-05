@@ -55,7 +55,7 @@ namespace XYZ {
 		virtual void BindRange(uint32_t offset, uint32_t size) const override;
 		virtual void Bind()const override;
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) override;
-		virtual void Resize(const void* data, uint32_t size) override;
+		virtual void Resize(uint32_t size) override;
 		virtual void GetSubData(void** buffer, uint32_t size, uint32_t offset = 0) override;
 
 		virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; };;

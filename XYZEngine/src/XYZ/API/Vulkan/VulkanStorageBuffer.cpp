@@ -66,6 +66,14 @@ namespace XYZ {
 			instance->m_Buffers.PushBack(data);
 		});
 	}
+	void VulkanStorageBuffer::Resize(uint32_t size)
+	{
+		m_Size = size;
+		Ref<VulkanStorageBuffer> instance = this;
+		Renderer::Submit([instance]() mutable{
+				instance->RT_invalidate();
+		});
+	}
 	void VulkanStorageBuffer::release()
 	{
 		if (!m_MemoryAllocation)

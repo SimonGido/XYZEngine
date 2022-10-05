@@ -36,6 +36,7 @@ namespace XYZ {
 
 	static Ref<VulkanDescriptorAllocator> s_DescriptorAllocator;
 
+
 	VulkanRendererAPI::~VulkanRendererAPI()
 	{
 		s_DescriptorAllocator.Reset();

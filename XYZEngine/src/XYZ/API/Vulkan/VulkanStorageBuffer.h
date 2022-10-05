@@ -16,7 +16,7 @@ namespace XYZ {
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) override;
 		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) override;
 		virtual void Update(ByteBuffer data, uint32_t size, uint32_t offset = 0) override;
-
+		virtual void Resize(uint32_t size) override;
 		virtual uint32_t GetBinding() const override { return m_Binding; }
 		virtual ByteBuffer GetBuffer() override;
 

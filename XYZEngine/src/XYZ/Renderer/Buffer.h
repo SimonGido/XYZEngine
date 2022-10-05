@@ -191,7 +191,7 @@ namespace XYZ {
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) {};
 		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) {};
 		virtual void Update(ByteBuffer data, uint32_t size, uint32_t offset = 0) {}
-		virtual void Resize(const void* data, uint32_t size) {};
+		virtual void Resize(uint32_t size) {};
 		virtual void GetSubData(void** buffer, uint32_t size, uint32_t offset = 0) {};
 		virtual void SetLayout(const BufferLayout& layout) {};
 		virtual uint32_t GetBinding() const { return 0; }

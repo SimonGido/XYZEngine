@@ -27,19 +27,15 @@ namespace XYZ {
 
 
 		void RT_UpdateForRendering(
-			const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors, 
+			const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors,
 			const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors,
 			bool forceDescriptroAllocation = false
 		);
-		const std::vector<VkWriteDescriptorSet>& GetWriteDescriptors(uint32_t frame) const { return m_WriteDescriptors[frame]; }
-		const std::vector<VkDescriptorSet>&      GetDescriptors(uint32_t frame) const { return m_Descriptors[frame].DescriptorSets; }
+		const std::vector<VkWriteDescriptorSet>& GetWriteDescriptors(uint32_t frame) const { return m_WriteDescriptors[frame].WriteDescriptors; }
+		const std::vector<VkDescriptorSet>& GetDescriptors(uint32_t frame) const { return m_Descriptors[frame].DescriptorSets; }
 
 	private:
-		void RT_updateForRenderingFrame(uint32_t frame,
-			vector2D<VkDescriptorImageInfo>& arrayImageInfos,
-			const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors,
-			const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors
-		);
+		void RT_updateForRenderingFrame(uint32_t frame);
 
 		bool tryAllocateDescriptorSets(bool force = false);
 
@@ -50,11 +46,6 @@ namespace XYZ {
 
 	private:
 		Ref<VulkanShader>					   m_Shader;
-
-		std::vector<Ref<Image2D>>			   m_Images;
-		std::vector<std::vector<Ref<Image2D>>> m_ImageArrays;
-		
-		vector3D<VkDescriptorImageInfo>		   m_ArrayImageInfos;
 			
 		struct Descriptor
 		{
@@ -77,16 +68,22 @@ namespace XYZ {
 		{
 			VkWriteDescriptorSet WriteDescriptor;
 			std::vector<Ref<VulkanImage2D>> Images;
+			std::vector< VkDescriptorImageInfo> ImagesInfo;
 		};
 
 		// Per set -> per binding
-		vector2D<PendingDescriptor> m_ImageDescriptors;
-
+		unordered_map2D<uint32_t, uint32_t, PendingDescriptor> m_ImageDescriptors;
 		// Per set -> per binding
-		vector2D<PendingDescriptorArray> m_ImageArraysDescriptors;
+		unordered_map2D<uint32_t, uint32_t, PendingDescriptorArray> m_ImageArrayDescriptors;
+
+		struct WriteDescriptorSet
+		{
+			std::vector<VkWriteDescriptorSet> WriteDescriptors;
+			uint32_t						  ResourceWriteDescriptorCount;
+		};
 
 		// Per frame
-		vector2D<VkWriteDescriptorSet> m_WriteDescriptors;
+		std::vector<WriteDescriptorSet> m_WriteDescriptors;
 
 		Flags<RenderFlags>			   m_Flags;
 		bool						   m_DescriptorsDirty;

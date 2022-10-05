@@ -235,8 +235,8 @@ namespace XYZ {
 					if (ImGui::MenuItem("Point Light3D"))
 					{
 						m_SelectedEntity.EmplaceComponent<PointLightComponent3D>();
-						//m_EditablesInUse.push_back(&m_SpotLight2DInspector);
-						//m_SpotLight2DInspector.SetSceneEntity(m_SelectedEntity);
+						m_EditablesInUse.push_back(&m_PointLight3DInspector);
+						m_PointLight3DInspector.SetSceneEntity(m_SelectedEntity);
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -326,6 +326,10 @@ namespace XYZ {
 				{
 					m_EditablesInUse.push_back(&m_SpotLight2DInspector);
 				}
+				if (m_SelectedEntity.HasComponent<PointLightComponent3D>())
+				{
+					m_EditablesInUse.push_back(&m_PointLight3DInspector);
+				}
 				if (m_SelectedEntity.HasComponent<ScriptComponent>())
 				{
 					m_EditablesInUse.push_back(&m_ScriptComponentInspector);
@@ -370,6 +374,7 @@ namespace XYZ {
 				{
 					m_EditablesInUse.push_back(&m_AnimationComponentInspector);
 				}
+			
 			}
 
 			for (auto& [name, editable] : m_Editables)

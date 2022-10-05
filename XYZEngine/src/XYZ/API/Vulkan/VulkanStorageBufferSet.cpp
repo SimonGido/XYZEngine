@@ -42,6 +42,13 @@ namespace XYZ {
 	{
 		m_StorageBuffers[frame][set][storageBuffer->GetBinding()] = storageBuffer.As<VulkanStorageBuffer>();
 	}
+	void VulkanStorageBufferSet::Resize(uint32_t size, uint32_t set, uint32_t binding)
+	{
+		for (uint32_t frame = 0; frame < m_Frames; frame++)
+		{
+			m_StorageBuffers.at(frame).at(set).at(binding)->Resize(size);
+		}
+	}
 	Ref<StorageBuffer> VulkanStorageBufferSet::Get(uint32_t binding, uint32_t set, uint32_t frame)
 	{
 		XYZ_ASSERT(m_StorageBuffers.find(frame) != m_StorageBuffers.end(), "");

@@ -689,6 +689,29 @@ namespace XYZ {
 				lightComponent.CastsShadows,
 				});
 		}
+
+		auto particleView = m_Registry.view<TransformComponent, ParticleRenderer, ParticleComponent>();
+
+		for (auto entity : particleView)
+		{
+			auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
+
+			auto& renderData = particleComponent.GetSystem()->GetRenderData();
+
+			for (const auto& lightData : renderData.LightData)
+			{
+				m_LightEnvironment.PointLights3D.push_back({
+					lightData.Position,
+					lightData.Intensity,
+					lightData.Color,
+					1.0f,
+					lightData.Radius,
+					1.0f,
+					0.5f,
+					true
+				});
+			}
+		}
 	}
 
 }

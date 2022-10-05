@@ -83,7 +83,8 @@ namespace XYZ {
 		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
 		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
 		m_UniformBufferSet->Create(sizeof(UBCameraData), 0, 0);
-		m_UniformBufferSet->Create(sizeof(UBPointLights3D), 0, 5);
+		m_UniformBufferSet->Create(sizeof(UBRendererData), 0, 1);
+		m_UniformBufferSet->Create(sizeof(UBPointLights3D), 0, 2);
 
 		m_StorageBufferSet = StorageBufferSet::Create(framesInFlight);
 		m_StorageBufferSet->Create(1, 0, 14);
@@ -97,7 +98,13 @@ namespace XYZ {
 		m_DeferredLightPass.Init({ m_LightRenderPass, lightShaderAsset->GetShader() }, m_CommandBuffer);
 		m_BloomPass.Init({ bloomShaderAsset->GetShader(), m_BloomTexture }, m_CommandBuffer);
 		m_CompositePass.Init({ m_CompositeRenderPass, compositeShaderAsset->GetShader() }, m_CommandBuffer);
-		m_LightCullingPass.Init({ m_UniformBufferSet });
+		m_LightCullingPass.Init({ m_UniformBufferSet, m_StorageBufferSet });
+	
+		m_LightCullingWorkGroups = { 
+			(m_ViewportSize.x + m_ViewportSize.x % 16) / 16, 
+			(m_ViewportSize.y + m_ViewportSize.y % 16) / 16, 
+			1 
+		};
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -124,7 +131,7 @@ namespace XYZ {
 		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
 		m_PointsLights3DUB.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
 		memcpy(m_PointsLights3DUB.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
-
+		updateViewportSize();
 		updateUniformBufferSet();
 	}
 	void SceneRenderer::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition)
@@ -136,7 +143,7 @@ namespace XYZ {
 		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
 		m_PointsLights3DUB.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
 		memcpy(m_PointsLights3DUB.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
-
+		updateViewportSize();
 		updateUniformBufferSet();
 	}
 	void SceneRenderer::EndScene()
@@ -146,6 +153,7 @@ namespace XYZ {
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 
+		Ref<Image2D> depthImage = m_DepthRenderPass->GetSpecification().TargetFramebuffer->GetDepthImage();
 		Ref<Image2D> colorImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(0);
 		Ref<Image2D> positionImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
 		Ref<Image2D> lightImage = m_LightRenderPass->GetSpecification().TargetFramebuffer->GetImage();
@@ -158,9 +166,13 @@ namespace XYZ {
 			Renderer::EndRenderPass(m_CommandBuffer);
 		}
 
+		m_GeometryPass.PreDepthPass(m_CommandBuffer, m_Queue, m_CameraDataUB.ViewMatrix, true);
+		
+
+		m_LightCullingPass.Submit(m_CommandBuffer, depthImage, m_LightCullingWorkGroups, m_ViewportSize);
 		m_GeometryPass.Submit(m_CommandBuffer, m_Queue, m_CameraDataUB.ViewMatrix, clearGeometryPass);
 		m_DeferredLightPass.Submit(m_CommandBuffer, colorImage, positionImage);
-		m_BloomPass.Submit(m_CommandBuffer, lightImage, { 1.0f, 0.1f }, m_ViewportSize);
+		m_BloomPass.Submit(m_CommandBuffer, colorImage, m_BloomSettings, m_ViewportSize);
 		m_CompositePass.Submit(m_CommandBuffer, lightImage, m_BloomTexture[2]->GetImage(), true);
 
 
@@ -173,9 +185,7 @@ namespace XYZ {
 		m_Queue.BillboardDrawCommands.clear();
 		m_Queue.MeshDrawCommands.clear();
 		m_Queue.AnimatedMeshDrawCommands.clear();
-		m_Queue.InstanceMeshDrawCommands.clear();
-		
-		updateViewportSize();
+		m_Queue.InstanceMeshDrawCommands.clear();		
 	}
 
 
@@ -303,6 +313,18 @@ namespace XYZ {
 				UI::TextTableRow("%s", "Max Instance Data Size:", "%u", GeometryPass::GetInstanceBufferSize());
 
 				ImGui::EndTable();
+			}
+			if (UI::BeginTreeNode("Visualization"))
+			{
+				if (ImGui::BeginTable("##VisualizationTable", 2, ImGuiTableFlags_SizingFixedFit))
+				{
+					UI::TableRow("ShowLightComplexity",
+						[]() { ImGui::Text("Show Light Complexity"); },
+						[&]() { ImGui::Checkbox("##ShowLightComplexity", &m_RendererDataUB.ShowLightComplexity); }
+					);
+					ImGui::EndTable();
+				}
+				UI::EndTreeNode();
 			}
 			if (UI::BeginTreeNode("Render Statistics"))
 			{
@@ -482,6 +504,7 @@ namespace XYZ {
 				m_GeometryRenderPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 				m_LightRenderPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 				m_CompositeRenderPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+				m_DepthRenderPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 
 				TextureProperties props;
 				props.Storage = true;
@@ -491,6 +514,15 @@ namespace XYZ {
 				m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
 				m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
 				m_BloomPass.SetBloomTextures(m_BloomTexture);
+
+				m_LightCullingWorkGroups = {
+					(m_ViewportSize.x + m_ViewportSize.x % 16) / 16,
+					(m_ViewportSize.y + m_ViewportSize.y % 16) / 16,
+					1
+				};
+				m_RendererDataUB.TilesCountX = m_LightCullingWorkGroups.x;
+
+				m_StorageBufferSet->Resize(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * 4096, 0, 14);
 			}
 			m_ViewportSizeChanged = false;
 		}
@@ -500,6 +532,7 @@ namespace XYZ {
 		GeometryPassStatistics stats = m_GeometryPass.PreSubmit(m_Queue);
 		DeferredLightPassStatistics lightPassStats = m_DeferredLightPass.PreSubmit(m_ActiveScene);
 
+		
 		m_RenderStatistics.MeshDrawCommandCount = static_cast<uint32_t>(m_Queue.MeshDrawCommands.size());
 		m_RenderStatistics.MeshOverrideDrawCommandCount = stats.MeshOverrideCount;
 		m_RenderStatistics.InstanceMeshDrawCommandCount = static_cast<uint32_t>(m_Queue.InstanceMeshDrawCommands.size());
@@ -523,12 +556,13 @@ namespace XYZ {
 	void SceneRenderer::updateUniformBufferSet()
 	{
 		Ref<SceneRenderer> instance = this;
+
 		Renderer::Submit([instance]() mutable {
 
 			const uint32_t currentFrame = Renderer::GetCurrentFrame();
-			instance->m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&instance->m_CameraDataUB, sizeof(UBCameraData), 0);
-			instance->m_UniformBufferSet->Get(5, 0, currentFrame)->Update(&instance->m_PointsLights3DUB, sizeof(UBPointLights3D), 0);
-			
+			instance->m_UniformBufferSet->Get(0, 0, currentFrame)->RT_Update(&instance->m_CameraDataUB, sizeof(UBCameraData), 0);
+			instance->m_UniformBufferSet->Get(1, 0, currentFrame)->RT_Update(&instance->m_RendererDataUB, sizeof(UBRendererData), 0);
+			instance->m_UniformBufferSet->Get(2, 0, currentFrame)->RT_Update(&instance->m_PointsLights3DUB, sizeof(UBPointLights3D), 0);
 		});
 	}
 }

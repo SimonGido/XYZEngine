@@ -1,6 +1,6 @@
-Name: PreDepth
-FilePath: Resources/Shaders/PreDepth.glsl
-SourceHash: 1137539151895748623
+Name: PreDepthAnim
+FilePath: Resources/Shaders/PreDepthAnim.glsl
+SourceHash: 2311603699233521888
 Layouts:
   - Instanced: false
     Elements:
@@ -9,6 +9,8 @@ Layouts:
       - 3
       - 3
       - 2
+      - 10
+      - 4
   - Instanced: true
     Elements:
       - 4

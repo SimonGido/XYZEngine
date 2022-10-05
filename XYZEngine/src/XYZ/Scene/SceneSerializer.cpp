@@ -124,6 +124,22 @@ namespace XYZ {
 		out << YAML::EndMap; // Spot Light
 	}
 
+	template<>
+	void SceneSerializer::serialize<PointLightComponent3D>(YAML::Emitter& out, const PointLightComponent3D& val, SceneEntity entity)
+	{
+		out << YAML::Key << "PointLightComponent3D";
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Radiance" << YAML::Value << val.Radiance;
+		out << YAML::Key << "Intensity" << YAML::Value << val.Intensity;
+		out << YAML::Key << "LightSize" << YAML::Value << val.LightSize;
+		out << YAML::Key << "MinRadius" << YAML::Value << val.MinRadius;
+		out << YAML::Key << "CastShadows" << YAML::Value << val.CastsShadows;
+		out << YAML::Key << "SoftShadows" << YAML::Value << val.SoftShadows;
+		out << YAML::Key << "Falloff" << YAML::Value << val.Falloff;
+
+		out << YAML::EndMap;
+	}
 	template <>
 	void SceneSerializer::serialize<RigidBody2DComponent>(YAML::Emitter& out, const RigidBody2DComponent& val, SceneEntity entity)
 	{
@@ -561,6 +577,20 @@ namespace XYZ {
 	}
 
 	template <>
+	void SceneSerializer::deserialize<PointLightComponent3D>(YAML::Node& data, SceneEntity entity)
+	{
+		PointLightComponent3D component;
+		component.Radiance = data["Radiance"].as<glm::vec3>();
+		component.Intensity = data["Intensity"].as<float>();
+		component.LightSize = data["LightSize"].as<float>();
+		component.MinRadius = data["MinRadius"].as<float>();
+		component.CastsShadows = data["CastShadows"].as<bool>();
+		component.SoftShadows = data["SoftShadows"].as<bool>();
+		component.Falloff = data["Falloff"].as<float>();
+		entity.AddComponent<PointLightComponent3D>(component);
+	}
+
+	template <>
 	void SceneSerializer::deserialize<RigidBody2DComponent>(YAML::Node& data, SceneEntity entity)
 	{
 		RigidBody2DComponent body;
@@ -727,6 +757,12 @@ namespace XYZ {
 		{
 			deserialize<AnimationComponent>(animationComponent, entity);
 		}
+
+		auto pointLightComponent3D = data["PointLightComponent3D"];
+		if (pointLightComponent3D)
+		{
+			deserialize<PointLightComponent3D>(pointLightComponent3D, entity);
+		}
 	}
 
 
@@ -891,6 +927,11 @@ namespace XYZ {
 		if (entity.HasComponent<AnimationComponent>())
 		{
 			serialize<AnimationComponent>(out, entity.GetComponent<AnimationComponent>(), entity);
+		}
+
+		if (entity.HasComponent<PointLightComponent3D>())
+		{
+			serialize<PointLightComponent3D>(out, entity.GetComponent<PointLightComponent3D>(), entity);
 		}
 
 		out << YAML::EndMap; // Entity

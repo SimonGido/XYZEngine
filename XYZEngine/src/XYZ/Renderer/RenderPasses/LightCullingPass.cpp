@@ -9,6 +9,7 @@ namespace XYZ {
 	void LightCullingPass::Init(const LightCullingPassConfiguration& config)
 	{
 		m_UniformBufferSet = config.UniformBufferSet;
+		m_StorageBufferSet = config.StorageBufferSet;
 
 		auto& defaultResources = Renderer::GetDefaultResources();
 		Ref<MaterialAsset> materialAsset = defaultResources.RendererAssets.at("LightCullingMaterial");
@@ -29,7 +30,7 @@ namespace XYZ {
 		m_MaterialInstance->Set("u_ScreenData.u_ScreenSize", screenSize);
 
 
-		Renderer::BeginPipelineCompute(commandBuffer, m_Pipeline, m_UniformBufferSet, m_LightsBufferSet, m_Material);
+		Renderer::BeginPipelineCompute(commandBuffer, m_Pipeline, m_UniformBufferSet, m_StorageBufferSet, m_Material);
 		Renderer::DispatchCompute(m_Pipeline, m_MaterialInstance, workGroups.x, workGroups.y, workGroups.z);
 
 		Renderer::Submit([renderCommandBuffer = commandBuffer]() mutable

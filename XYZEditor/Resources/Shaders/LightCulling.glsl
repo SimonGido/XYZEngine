@@ -15,7 +15,7 @@ layout(std140, binding = 0) uniform Camera
 	mat4 u_ViewMatrix;
 };
 
-struct PointLightData
+struct PointLight
 {
 	vec3  Position;
 	float Multiplier;
@@ -34,10 +34,10 @@ layout(push_constant) uniform ScreenData
 } u_ScreenData;
 
 
-layout(std430, binding = 4) buffer buffer_PointLights
+layout(std140, binding = 2) uniform PointLightsData
 {
 	uint NumberPointLights;
-	PointLightData PointLights[MAX_POINT_LIGHTS];
+	PointLight PointLights[MAX_POINT_LIGHTS];
 };
 
 layout(std430, binding = 14) writeonly buffer buffer_VisibleLightIndices

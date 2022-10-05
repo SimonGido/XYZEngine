@@ -27,6 +27,31 @@ namespace XYZ {
 
 		createDepthResources();
 	}
+	void GeometryPass::PreDepthPass(
+		Ref<RenderCommandBuffer> commandBuffer,
+		GeometryRenderQueue& queue,
+		const glm::mat4& viewMatrix,
+		bool clear
+	)
+	{
+		XYZ_PROFILE_FUNC("GeometryPass::PreDepthPass");
+
+		// Pre depth
+		uint32_t depthPassQuery = commandBuffer->BeginTimestampQuery();
+		Renderer::BeginRenderPass(commandBuffer, m_DepthPass, clear);
+
+		submit2DDepth(queue, commandBuffer, viewMatrix);
+		submitStaticMeshesDepth(queue, commandBuffer);
+		submitAnimatedMeshesDepth(queue, commandBuffer);
+		submitInstancedMeshesDepth(queue, commandBuffer);
+
+		Renderer::EndRenderPass(commandBuffer);
+		postDepthPass(commandBuffer);
+
+		commandBuffer->EndTimestampQuery(depthPassQuery);
+	}
+
+
 	void GeometryPass::Submit(
 		Ref<RenderCommandBuffer> commandBuffer, 
 		GeometryRenderQueue& queue, 
@@ -35,21 +60,6 @@ namespace XYZ {
 	)
 	{
 		XYZ_PROFILE_FUNC("GeometryPass::Submit");
-
-		// Pre depth
-		uint32_t depthPassQuery = commandBuffer->BeginTimestampQuery();
-		Renderer::BeginRenderPass(commandBuffer, m_DepthPass, true);
-		
-		submit2DDepth(queue, commandBuffer, viewMatrix);
-		//submitStaticMeshesDepth(queue, commandBuffer);
-		submitAnimatedMeshesDepth(queue, commandBuffer);
-		submitInstancedMeshesDepth(queue, commandBuffer);
-
-		Renderer::EndRenderPass(commandBuffer);
-		postDepthPass(commandBuffer);
-
-		commandBuffer->EndTimestampQuery(depthPassQuery);
-
 		// Geometry
 		uint32_t geometryPassQuery = commandBuffer->BeginTimestampQuery();
 		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, clear);
@@ -91,7 +101,7 @@ namespace XYZ {
 				commandBuffer,
 				command.Pipeline,
 				m_UniformBufferSet,
-				nullptr,
+				m_StorageBufferSet,
 				command.MaterialAsset->GetMaterial()
 			);
 
@@ -228,7 +238,7 @@ namespace XYZ {
 				m_DepthPipeline3DStatic.MaterialInstance,
 				command.Mesh->GetVertexBuffer(),
 				command.Mesh->GetIndexBuffer(),
-				{ glm::mat4(1.0f), 0 },
+				glm::mat4(1.0f),
 				m_TransformVertexBufferSet,
 				command.TransformOffset,
 				command.TransformInstanceCount
@@ -241,7 +251,7 @@ namespace XYZ {
 					m_DepthPipeline3DStatic.MaterialInstance,
 					command.Mesh->GetVertexBuffer(),
 					command.Mesh->GetIndexBuffer(),
-					{ dcOverride.Transform, 0 }
+					dcOverride.Transform
 				);
 			}
 		}
@@ -440,7 +450,7 @@ namespace XYZ {
 
 	void GeometryPass::createDepthResources()
 	{
-		// 3D
+		// 3D Anim
 		{
 			Ref<MaterialAsset> depthMaterialAsset = Renderer::GetDefaultResources().RendererAssets.at("Depth3DMaterialAnim").As<MaterialAsset>();
 			m_DepthPipeline3DAnimated.Shader = depthMaterialAsset->GetShader();
@@ -455,6 +465,23 @@ namespace XYZ {
 			spec.DepthTest = true;
 			spec.DepthWrite = true;
 			m_DepthPipeline3DAnimated.Pipeline = Pipeline::Create(spec);
+		}
+
+		// 3D Static
+		{
+			Ref<MaterialAsset> depthMaterialAsset = Renderer::GetDefaultResources().RendererAssets.at("Depth3DMaterial").As<MaterialAsset>();
+			m_DepthPipeline3DStatic.Shader = depthMaterialAsset->GetShader();
+			m_DepthPipeline3DStatic.Material = Material::Create(depthMaterialAsset->GetShader());
+			m_DepthPipeline3DStatic.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipeline3DStatic.Material);
+
+			PipelineSpecification spec;
+			spec.Layouts = m_DepthPipeline3DStatic.Shader->GetLayouts();
+			spec.RenderPass = m_DepthPass;
+			spec.Shader = m_DepthPipeline3DStatic.Shader;
+			spec.Topology = PrimitiveTopology::Triangles;
+			spec.DepthTest = true;
+			spec.DepthWrite = true;
+			m_DepthPipeline3DStatic.Pipeline = Pipeline::Create(spec);
 		}
 
 		// 2D

@@ -488,8 +488,13 @@ namespace XYZ {
 
 		auto defaultDepth3DMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth.mat");
 		defaultDepth3DMaterial->SetFlag(AssetFlag::ReadOnly);
-		RendererAssets["Depth3DMaterialAnim"] = defaultDepth3DMaterial;
+		RendererAssets["Depth3DMaterial"] = defaultDepth3DMaterial;
+	
 
+		auto defaultDepth3DAnimMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepthAnim.mat");
+		defaultDepth3DAnimMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["Depth3DMaterialAnim"] = defaultDepth3DAnimMaterial;
+		
 		auto defaultDepth2DMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth2D.mat");
 		defaultDepth2DMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["Depth2DMaterial"] = defaultDepth2DMaterial;
@@ -509,6 +514,7 @@ namespace XYZ {
 		auto animationPBRMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/AnimationPBR.mat");
 		animationPBRMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["AnimationPBR"] = animationPBRMaterial;
+
 	}
 	void RendererResources::Shutdown()
 	{

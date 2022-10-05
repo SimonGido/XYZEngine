@@ -85,6 +85,8 @@ void main()
 layout(location = 0) out vec4 o_Color;
 layout(location = 1) out vec4 o_Position;
 
+const int MAX_POINT_LIGHTS = 1024;
+
 struct VertexOutput
 {
 	vec3 Position;
@@ -94,6 +96,18 @@ struct VertexOutput
 	mat3 WorldNormals;
 	mat3 WorldTransform;
 	vec3 Binormal;
+};
+
+struct PointLight 
+{
+	vec3  Position;
+	float Multiplier;
+	vec3  Radiance;
+	float MinRadius;
+	float Radius;
+	float Falloff;
+	float LightSize;
+	bool  CastsShadows;
 };
 
 struct PBRParameters
@@ -106,6 +120,23 @@ struct PBRParameters
 	vec3 View;
 	float NdotV;
 };
+
+layout(std140, binding = 1) uniform RendererData
+{
+	int  TilesCountX;
+	bool ShowLightComplexity;
+};
+
+layout(std140, binding = 2) uniform PointLightsData
+{
+	uint NumberPointLights;
+	PointLight PointLights[MAX_POINT_LIGHTS];
+};
+
+layout(std430, binding = 14) readonly buffer buffer_VisibleLightIndices
+{
+	int Indices[];
+} visibleLightIndicesBuffer;
 
 PBRParameters m_Params;
 
@@ -126,10 +157,10 @@ layout(location = 0) in VertexOutput v_Input;
 
 
 // PBR texture inputs
-layout (binding = 1) uniform sampler2D u_AlbedoTexture;
-layout (binding = 2) uniform sampler2D u_NormalTexture;
-layout (binding = 3) uniform sampler2D u_MetalnessTexture;
-layout (binding = 4) uniform sampler2D u_RoughnessTexture;
+layout (binding = 3) uniform sampler2D u_AlbedoTexture;
+layout (binding = 4) uniform sampler2D u_NormalTexture;
+layout (binding = 5) uniform sampler2D u_MetalnessTexture;
+layout (binding = 6) uniform sampler2D u_RoughnessTexture;
 
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04);
