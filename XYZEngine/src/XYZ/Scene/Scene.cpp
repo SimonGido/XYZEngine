@@ -320,6 +320,7 @@ namespace XYZ {
 		auto [translation, rotation, scale] = cameraTransform.GetWorldComponents();
 		renderCamera.ViewPosition = translation;
 
+		setupLightEnvironment();
 		sceneRenderer->GetOptions().ShowGrid = false;
 		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		sceneRenderer->BeginScene(renderCamera);
@@ -422,9 +423,11 @@ namespace XYZ {
 	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos)
 	{
 		XYZ_PROFILE_FUNC("Scene::OnRenderEditor");
+		
+		
+		setupLightEnvironment();
 		sceneRenderer->BeginScene(viewProjection, view, camPos);
-		
-		
+	
 		auto spriteView = m_Registry.view<TransformComponent, SpriteRenderer>();
 		for (auto entity : spriteView)
 		{
@@ -663,6 +666,28 @@ namespace XYZ {
 				chainCollider.RuntimeFixture = body->CreateFixture(&fixture);
 			}
 			counter++;
+		}
+	}
+
+	void Scene::setupLightEnvironment()
+	{
+		auto pointLights3D = m_Registry.view<PointLightComponent3D, TransformComponent>();
+		m_LightEnvironment.PointLights3D.clear();
+		for (auto entity : pointLights3D)
+		{
+			auto [transformComponent, lightComponent] = pointLights3D.get<TransformComponent, PointLightComponent3D>(entity);
+			auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
+
+			m_LightEnvironment.PointLights3D.push_back({
+				translation,
+				lightComponent.Intensity,
+				lightComponent.Radiance,
+				lightComponent.MinRadius,
+				lightComponent.Radius,
+				lightComponent.Falloff,
+				lightComponent.LightSize,
+				lightComponent.CastsShadows,
+				});
 		}
 	}
 

@@ -266,13 +266,13 @@ Entities:
       Depth: 2
     PointLight2D:
       Color: [0.564668298, 0.822794914, 0.845132709]
-      Radius: 9.39999962
-      Intensity: 1.75
+      Radius: 4.3499999
+      Intensity: 1
   - Entity: 36905812-ac4e-4371-97a4-ba100c73abba
     SceneTagComponent:
       Name: Bats
     TransformComponent:
-      Position: [-19.2000008, 0, 0]
+      Position: [0.899999976, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     Relationship:
@@ -312,8 +312,8 @@ Entities:
         Size: [1, 1, 1]
         Color: [1, 1, 1, 1]
         LightColor: [0, 1, 1]
-        LightRadius: 4.5999999
-        LightIntensity: 4.4000001
+        LightRadius: 1.79999995
+        LightIntensity: 3.0999999
         MaxLights: 52
         BurstInterval: 5
         Bursts:

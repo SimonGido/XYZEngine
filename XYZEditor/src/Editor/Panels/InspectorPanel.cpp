@@ -230,6 +230,16 @@ namespace XYZ {
 						ImGui::CloseCurrentPopup();
 					}
 				}
+				if (!m_SelectedEntity.HasComponent<PointLightComponent3D>())
+				{
+					if (ImGui::MenuItem("Point Light3D"))
+					{
+						m_SelectedEntity.EmplaceComponent<PointLightComponent3D>();
+						//m_EditablesInUse.push_back(&m_SpotLight2DInspector);
+						//m_SpotLight2DInspector.SetSceneEntity(m_SelectedEntity);
+						ImGui::CloseCurrentPopup();
+					}
+				}
 				if (!m_SelectedEntity.HasComponent<AnimationComponent>())
 				{
 					if (ImGui::MenuItem("Animation Component"))

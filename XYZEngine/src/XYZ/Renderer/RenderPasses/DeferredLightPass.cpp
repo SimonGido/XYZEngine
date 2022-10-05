@@ -24,7 +24,7 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("DeferredLightPass::PreSubmit");
 		m_PointLights.clear();
 		m_SpotLights.clear();
-
+		// TODO: move this to scene
 		auto& registry = scene->GetRegistry();
 
 		// Spot lights

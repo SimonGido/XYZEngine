@@ -81,19 +81,23 @@ namespace XYZ {
 		createGridResources();
 
 		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
-		m_CameraBufferSet = UniformBufferSet::Create(framesInFlight);
-		m_CameraBufferSet->Create(sizeof(m_CameraBuffer), 0, 0);
+		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
+		m_UniformBufferSet->Create(sizeof(UBCameraData), 0, 0);
+		m_UniformBufferSet->Create(sizeof(UBPointLights3D), 0, 5);
 
-		
+		m_StorageBufferSet = StorageBufferSet::Create(framesInFlight);
+		m_StorageBufferSet->Create(1, 0, 14);
+		m_StorageBufferSet->Create(GeometryPass::GetMaxBonesTransforms() * sizeof(GeometryRenderQueue::BoneTransforms), 2, 0);
+
 		Ref<ShaderAsset> compositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
 		Ref<ShaderAsset> lightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
 		Ref<ShaderAsset> bloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
 
-		m_GeometryPass.Init({ m_GeometryRenderPass, m_DepthRenderPass, m_CameraBufferSet }, m_CommandBuffer);
+		m_GeometryPass.Init({ m_GeometryRenderPass, m_DepthRenderPass, m_UniformBufferSet, m_StorageBufferSet }, m_CommandBuffer);
 		m_DeferredLightPass.Init({ m_LightRenderPass, lightShaderAsset->GetShader() }, m_CommandBuffer);
 		m_BloomPass.Init({ bloomShaderAsset->GetShader(), m_BloomTexture }, m_CommandBuffer);
 		m_CompositePass.Init({ m_CompositeRenderPass, compositeShaderAsset->GetShader() }, m_CommandBuffer);
-		m_LightCullingPass.Init({ m_CameraBufferSet });
+		m_LightCullingPass.Init({ m_UniformBufferSet });
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -113,24 +117,27 @@ namespace XYZ {
 	{
 		m_SceneCamera = camera;
 
-		m_CameraBuffer.ViewProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix() * m_SceneCamera.ViewMatrix;
-		m_CameraBuffer.ViewMatrix = m_SceneCamera.ViewMatrix;
-		m_CameraBuffer.ViewPosition = glm::vec4(camera.ViewPosition, 0.0f);
+		m_CameraDataUB.ViewProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix() * m_SceneCamera.ViewMatrix;
+		m_CameraDataUB.ViewMatrix = m_SceneCamera.ViewMatrix;
+		m_CameraDataUB.ViewPosition = glm::vec4(camera.ViewPosition, 0.0f);
 		
-		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
-		m_CameraBufferSet->Get(0, 0, currentFrame)->Update(&m_CameraBuffer, sizeof(m_CameraBuffer), 0);
-	
+		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
+		m_PointsLights3DUB.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
+		memcpy(m_PointsLights3DUB.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
 
-		updateLights3D();
+		updateUniformBufferSet();
 	}
 	void SceneRenderer::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition)
 	{
-		m_CameraBuffer.ViewProjectionMatrix = viewProjectionMatrix;
-		m_CameraBuffer.ViewMatrix = viewMatrix;
-		m_CameraBuffer.ViewPosition = glm::vec4(viewPosition, 0.0f);
+		m_CameraDataUB.ViewProjectionMatrix = viewProjectionMatrix;
+		m_CameraDataUB.ViewMatrix = viewMatrix;
+		m_CameraDataUB.ViewPosition = glm::vec4(viewPosition, 0.0f);
 
-		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
-		m_CameraBufferSet->Get(0, 0, currentFrame)->Update(&m_CameraBuffer, sizeof(m_CameraBuffer), 0);
+		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
+		m_PointsLights3DUB.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
+		memcpy(m_PointsLights3DUB.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
+
+		updateUniformBufferSet();
 	}
 	void SceneRenderer::EndScene()
 	{
@@ -151,7 +158,7 @@ namespace XYZ {
 			Renderer::EndRenderPass(m_CommandBuffer);
 		}
 
-		m_GeometryPass.Submit(m_CommandBuffer, m_Queue, m_CameraBuffer.ViewMatrix, clearGeometryPass);
+		m_GeometryPass.Submit(m_CommandBuffer, m_Queue, m_CameraDataUB.ViewMatrix, clearGeometryPass);
 		m_DeferredLightPass.Submit(m_CommandBuffer, colorImage, positionImage);
 		m_BloomPass.Submit(m_CommandBuffer, lightImage, { 1.0f, 0.1f }, m_ViewportSize);
 		m_CompositePass.Submit(m_CommandBuffer, lightImage, m_BloomTexture[2]->GetImage(), true);
@@ -509,38 +516,19 @@ namespace XYZ {
 	{
 		const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
 
-		Renderer::BindPipeline(m_CommandBuffer, m_GridPipeline, GetCameraBufferSet(), nullptr, m_GridMaterial);
+		Renderer::BindPipeline(m_CommandBuffer, m_GridPipeline, m_UniformBufferSet, nullptr, m_GridMaterial);
 		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_GridPipeline, m_GridMaterialInstance, transform);
 	}
 
-	void SceneRenderer::updateLights3D()
+	void SceneRenderer::updateUniformBufferSet()
 	{
-		// Collect 3D point lights
-		m_PointLights3D.clear();
-		auto& registry = m_ActiveScene->GetRegistry();
-		// Point lights
-		auto pointLight3DView = registry.view<TransformComponent, PointLightComponent3D>();
-		for (auto entity : pointLight3DView)
-		{
-			auto [transformComponent, lightComponent] = pointLight3DView.get(entity);
-			auto [translation, rot, scale] = transformComponent.GetWorldComponents();
-			m_PointLights3D.push_back({
-				translation,
-				lightComponent.Intensity,
-				lightComponent.Radiance,
-				lightComponent.MinRadius,
-				lightComponent.Radius,
-				lightComponent.Falloff,
-				lightComponent.LightSize,
-				lightComponent.CastsShadows,
-				});
-		}
+		Ref<SceneRenderer> instance = this;
+		Renderer::Submit([instance]() mutable {
 
-		constexpr uint32_t countOffset = 16;
-
-		ByteBuffer spotLightBuffer;
-		spotLightBuffer.Allocate(countOffset + (m_PointLights3D.size() * sizeof(PointLight3D)));
-		spotLightBuffer.Write(m_PointLights3D.size(), 0);
-		spotLightBuffer.Write(m_PointLights3D.data(), m_PointLights3D.size() * sizeof(PointLight3D), countOffset);
+			const uint32_t currentFrame = Renderer::GetCurrentFrame();
+			instance->m_UniformBufferSet->Get(0, 0, currentFrame)->Update(&instance->m_CameraDataUB, sizeof(UBCameraData), 0);
+			instance->m_UniformBufferSet->Get(5, 0, currentFrame)->Update(&instance->m_PointsLights3DUB, sizeof(UBPointLights3D), 0);
+			
+		});
 	}
 }

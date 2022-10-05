@@ -77,7 +77,7 @@ namespace XYZ {
 		Ref<RenderPass>			 GetFinalRenderPass()	  const;
 		Ref<Image2D>			 GetFinalPassImage()	  const;
 		Ref<RenderCommandBuffer> GetRenderCommandBuffer() const { return m_CommandBuffer; }
-		Ref<UniformBufferSet>    GetCameraBufferSet()	  const { return m_CameraBufferSet; }
+		Ref<UniformBufferSet>    GetUniformBufferSet()	  const { return m_UniformBufferSet; }
 		
 		SceneRendererOptions& GetOptions();
 	private:
@@ -92,30 +92,23 @@ namespace XYZ {
 		void preRender();
 		void renderGrid();
 
-		void updateLights3D();
+		void updateUniformBufferSet();
 	private:
-		struct CameraData
+		struct UBCameraData
 		{
 			glm::mat4 ViewProjectionMatrix;
 			glm::mat4 ViewMatrix;
 			glm::vec4 ViewPosition;
-		};
+		} m_CameraDataUB;
 
-		struct PointLight3D
+		struct UBPointLights3D
 		{
-			glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
-			float	  Multiplier = 0.0f;
-			glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
-			float	  MinRadius = 0.001f;
-			float	  Radius = 25.0f;
-			float	  Falloff = 1.f;
-			float	  SourceSize = 0.1f;
-			bool	  CastsShadows = true;
-			char	  Padding[3]{ 0, 0, 0 };
-		};
+			uint32_t	 Count{ 0 };
+			glm::vec3	 Padding{};
+			PointLight3D PointLights[1024]{};
+		} m_PointsLights3DUB;
 
-		std::vector<PointLight3D> m_PointLights3D;
-
+		
 		GeometryPass	  m_GeometryPass;
 		DeferredLightPass m_DeferredLightPass;
 		LightCullingPass  m_LightCullingPass;
@@ -137,16 +130,16 @@ namespace XYZ {
 		Ref<Scene>				   m_ActiveScene;
 
 		Ref<RenderCommandBuffer>   m_CommandBuffer;
-		Ref<UniformBufferSet>      m_CameraBufferSet;
+		
+		Ref<UniformBufferSet>      m_UniformBufferSet;
+		Ref<StorageBufferSet>	   m_StorageBufferSet;
 
 		SceneRendererCamera		   m_SceneCamera;
 		SceneRendererOptions	   m_Options;
 		GridProperties			   m_GridProps;
 		glm::ivec2				   m_ViewportSize;
-	
-		CameraData				   m_CameraBuffer;
-		GeometryRenderQueue		   m_Queue;
-								   
+
+		GeometryRenderQueue		   m_Queue;								   
 		bool				       m_ViewportSizeChanged = false;
 	
 		

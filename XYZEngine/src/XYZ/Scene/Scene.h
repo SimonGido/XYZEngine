@@ -38,6 +38,26 @@ namespace XYZ {
     namespace Editor {
         class SceneHierarchyPanel;
     }
+
+
+    struct PointLight3D
+    {
+        glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+        float	  Multiplier = 0.0f;
+        glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
+        float	  MinRadius = 0.001f;
+        float	  Radius = 25.0f;
+        float	  Falloff = 1.f;
+        float	  SourceSize = 0.1f;
+        bool	  CastsShadows = true;
+        char	  Padding[3]{ 0, 0, 0 };
+    };
+    
+    struct LightEnvironment
+    {
+        std::vector<PointLight3D> PointLights3D;
+    };
+
     class Scene : public Asset
     {
     public:
@@ -80,14 +100,17 @@ namespace XYZ {
 
         void updateHierarchy();
         void setupPhysics();
+        void setupLightEnvironment();
+
     private:
         PhysicsWorld2D      m_PhysicsWorld;
         ContactListener     m_ContactListener;
         SceneEntity*        m_PhysicsEntityBuffer;
+        LightEnvironment    m_LightEnvironment;
 
-        entt::registry            m_Registry;
-        GUID                      m_UUID;
-        entt::entity              m_SceneEntity;
+        entt::registry      m_Registry;
+        GUID                m_UUID;
+        entt::entity        m_SceneEntity;
 
         std::string m_Name;
         SceneState  m_State;
@@ -99,7 +122,7 @@ namespace XYZ {
         uint32_t m_ViewportWidth;
         uint32_t m_ViewportHeight;
 
-   
+        friend SceneRenderer;
         friend class SceneEntity;
         friend class SceneSerializer;
         friend class ScriptEngine;

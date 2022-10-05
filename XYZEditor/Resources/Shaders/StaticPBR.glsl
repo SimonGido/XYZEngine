@@ -104,10 +104,10 @@ struct PBRParameters
 	float NdotV;
 };
 
-layout(std430, binding = 4) buffer buffer_PointLights
+layout(std430, binding = 5) buffer buffer_PointLights
 {
 	uint NumberPointLights;
-	PointLightData PointLights[MAX_POINT_LIGHTS];
+	PointLight PointLights[MAX_POINT_LIGHTS];
 };
 
 layout(std430, binding = 14) readonly buffer buffer_VisibleLightIndices

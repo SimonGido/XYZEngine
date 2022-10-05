@@ -57,7 +57,7 @@ namespace XYZ {
 
 			m_OverlayRenderer2D = Ref<Renderer2D>::Create(Renderer2DConfiguration{
 				m_CommandBuffer,
-				m_SceneRenderer->GetCameraBufferSet(),
+				m_SceneRenderer->GetUniformBufferSet(),
 			});
 			createOverlayPipelines();
 
@@ -167,13 +167,13 @@ namespace XYZ {
 			renderColliders();
 			renderCameras();
 			renderLights();	
-			Renderer::BindPipeline(m_CommandBuffer, m_OverlayQuadPipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_QuadMaterial);
+			Renderer::BindPipeline(m_CommandBuffer, m_OverlayQuadPipeline, m_SceneRenderer->GetUniformBufferSet(), nullptr, m_QuadMaterial);
 			m_OverlayRenderer2D->FlushQuads(m_OverlayQuadPipeline, m_QuadMaterialInstance, true);
 			
-			Renderer::BindPipeline(m_CommandBuffer, m_OverlayLinePipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_LineMaterial);
+			Renderer::BindPipeline(m_CommandBuffer, m_OverlayLinePipeline, m_SceneRenderer->GetUniformBufferSet(), nullptr, m_LineMaterial);
 			m_OverlayRenderer2D->FlushLines(m_OverlayLinePipeline, m_LineMaterialInstance, true);
 			
-			Renderer::BindPipeline(m_CommandBuffer, m_OverlayCirclePipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_CircleMaterial);
+			Renderer::BindPipeline(m_CommandBuffer, m_OverlayCirclePipeline, m_SceneRenderer->GetUniformBufferSet(), nullptr, m_CircleMaterial);
 			m_OverlayRenderer2D->FlushFilledCircles(m_OverlayCirclePipeline, m_CircleMaterialInstance, true);
 			
 			m_OverlayRenderer2D->EndScene();

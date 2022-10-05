@@ -13,13 +13,12 @@ namespace XYZ {
 	{
 		m_RenderPass = config.Pass;
 		m_DepthPass = config.DepthPass;
-		m_CameraBufferSet = config.CameraBufferSet;
+		m_UniformBufferSet = config.UniformBufferSet;
+		m_StorageBufferSet = config.StorageBufferSet;
 		m_InstanceVertexBufferSet = Ref<VertexBufferSet>::Create(Renderer::GetConfiguration().FramesInFlight, sc_InstanceVertexBufferSize);
 		m_TransformVertexBufferSet = Ref<VertexBufferSet>::Create(Renderer::GetConfiguration().FramesInFlight, sc_TransformBufferSize);
-		m_BoneTransformsStorageSet = StorageBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
-		m_BoneTransformsStorageSet->Create(sc_MaxBoneTransforms * sizeof(GeometryRenderQueue::BoneTransforms), 2, 0);
-	
-		m_Renderer2D = Ref<Renderer2D>::Create(Renderer2DConfiguration{ commandBuffer, m_CameraBufferSet });
+		
+		m_Renderer2D = Ref<Renderer2D>::Create(Renderer2DConfiguration{ commandBuffer, m_UniformBufferSet });
 		m_WhiteTexture = Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>();
 
 		m_TransformData.resize(GetTransformBufferCount());
@@ -79,7 +78,7 @@ namespace XYZ {
 
 		m_TransformVertexBufferSet->Update(m_TransformData.data(), transformsCount * sizeof(GeometryRenderQueue::TransformData));
 		m_InstanceVertexBufferSet->Update(m_InstanceData.data(), instanceOffset);
-		m_BoneTransformsStorageSet->Update(m_BoneTransformsData.data(), boneTransformCount * sizeof(GeometryRenderQueue::BoneTransforms), 0, 0, 2);
+		m_StorageBufferSet->Update(m_BoneTransformsData.data(), boneTransformCount * sizeof(GeometryRenderQueue::BoneTransforms), 0, 0, 2);
 
 		return { static_cast<uint32_t>(overrideCount), transformsCount, instanceOffset };
 	}
@@ -91,7 +90,7 @@ namespace XYZ {
 			Renderer::BindPipeline(
 				commandBuffer,
 				command.Pipeline,
-				m_CameraBufferSet,
+				m_UniformBufferSet,
 				nullptr,
 				command.MaterialAsset->GetMaterial()
 			);
@@ -127,8 +126,8 @@ namespace XYZ {
 			Renderer::BindPipeline(
 				commandBuffer,
 				command.Pipeline,
-				m_CameraBufferSet,
-				m_BoneTransformsStorageSet,
+				m_UniformBufferSet,
+				m_StorageBufferSet,
 				command.MaterialAsset->GetMaterial()
 			);
 			Renderer::RenderMesh(
@@ -165,7 +164,7 @@ namespace XYZ {
 			Renderer::BindPipeline(
 				commandBuffer,
 				command.Pipeline,
-				m_CameraBufferSet,
+				m_UniformBufferSet,
 				nullptr,
 				command.MaterialAsset->GetMaterial()
 			);
@@ -195,7 +194,7 @@ namespace XYZ {
 			for (const auto& data : command.SpriteData)
 				m_Renderer2D->SubmitQuad(data.Transform, data.TexCoords, data.TextureIndex, data.Color);
 
-			Renderer::BindPipeline(commandBuffer, pipeline, m_CameraBufferSet, nullptr, command.Material);
+			Renderer::BindPipeline(commandBuffer, pipeline, m_UniformBufferSet, nullptr, command.Material);
 			m_Renderer2D->FlushQuads(pipeline, command.MaterialInstance, true);
 		}
 
@@ -205,7 +204,7 @@ namespace XYZ {
 			for (const auto& data : command.BillboardData)
 				m_Renderer2D->SubmitQuadBillboard(data.Position, data.Size, data.TexCoords, data.TextureIndex, data.Color);
 
-			Renderer::BindPipeline(commandBuffer, pipeline, m_CameraBufferSet, nullptr, command.Material);
+			Renderer::BindPipeline(commandBuffer, pipeline, m_UniformBufferSet, nullptr, command.Material);
 			m_Renderer2D->FlushQuads(pipeline, command.MaterialInstance, true);
 		}
 		m_Renderer2D->EndScene();
@@ -216,7 +215,7 @@ namespace XYZ {
 		Renderer::BindPipeline(
 			commandBuffer,
 			m_DepthPipeline3DStatic.Pipeline,
-			m_CameraBufferSet,
+			m_UniformBufferSet,
 			nullptr,
 			m_DepthPipeline3DStatic.Material
 		);
@@ -252,8 +251,8 @@ namespace XYZ {
 		Renderer::BindPipeline(
 			commandBuffer,
 			m_DepthPipeline3DAnimated.Pipeline,
-			m_CameraBufferSet,
-			m_BoneTransformsStorageSet,
+			m_UniformBufferSet,
+			m_StorageBufferSet,
 			m_DepthPipeline3DAnimated.Material
 		);
 		for (auto& [key, command] : queue.AnimatedMeshDrawCommands)
@@ -290,7 +289,7 @@ namespace XYZ {
 		Renderer::BindPipeline(
 			commandBuffer,
 			m_DepthPipelineInstanced.Pipeline,
-			m_CameraBufferSet,
+			m_UniformBufferSet,
 			nullptr,
 			m_DepthPipelineInstanced.Material
 		);
@@ -319,7 +318,7 @@ namespace XYZ {
 		Renderer::BindPipeline(
 			commandBuffer, 
 			m_DepthPipeline2D.Pipeline, 
-			m_CameraBufferSet, 
+			m_UniformBufferSet,
 			nullptr, 
 			m_DepthPipeline2D.Material
 		);

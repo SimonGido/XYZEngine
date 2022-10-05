@@ -10,7 +10,8 @@ namespace XYZ {
 	{
 		Ref<RenderPass>		  Pass;
 		Ref<RenderPass>		  DepthPass;
-		Ref<UniformBufferSet> CameraBufferSet;
+		Ref<UniformBufferSet> UniformBufferSet;
+		Ref<StorageBufferSet> StorageBufferSet;
 	};
 
 	struct GeometryPassStatistics
@@ -67,11 +68,11 @@ namespace XYZ {
 
 		Ref<RenderPass>       m_RenderPass;
 		Ref<RenderPass>		  m_DepthPass;
-		Ref<UniformBufferSet> m_CameraBufferSet;
+		Ref<UniformBufferSet> m_UniformBufferSet;
 
 		Ref<VertexBufferSet>  m_InstanceVertexBufferSet;
 		Ref<VertexBufferSet>  m_TransformVertexBufferSet;
-		Ref<StorageBufferSet> m_BoneTransformsStorageSet;
+		Ref<StorageBufferSet> m_StorageBufferSet;
 
 		std::map<size_t, Ref<Pipeline>> m_GeometryPipelines;
 		

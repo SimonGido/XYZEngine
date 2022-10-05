@@ -1,6 +1,6 @@
 Name: StaticPBR
 FilePath: Resources/Shaders/StaticPBR.glsl
-SourceHash: 8462608023084982979
+SourceHash: 5603946015025202309
 Layouts:
   - Instanced: false
     Elements:

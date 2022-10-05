@@ -45,10 +45,10 @@ namespace XYZ {
 	Renderer2D::Renderer2D(const Renderer2DConfiguration& config)
 		:
 		m_RenderCommandBuffer(config.CommandBuffer),
-		m_CameraBufferSet(config.CameraBufferSet)
+		m_UniformBufferSet(config.UniformBufferSet)
 	{
 		XYZ_ASSERT(m_RenderCommandBuffer.Raw(), "");
-		XYZ_ASSERT(m_CameraBufferSet.Raw(), "");
+		XYZ_ASSERT(m_UniformBufferSet.Raw(), "");
 
 		createBuffers();
 	}
@@ -73,9 +73,9 @@ namespace XYZ {
 		m_RenderCommandBuffer = commandBuffer;
 	}
 
-	void Renderer2D::SetCameraBufferSet(const Ref<UniformBufferSet>& cameraBufferSet)
+	void Renderer2D::SetUniformBufferSet(const Ref<UniformBufferSet>& uniformBufferSet)
 	{
-		m_CameraBufferSet = cameraBufferSet;
+		m_UniformBufferSet = uniformBufferSet;
 	}
 
 
