@@ -195,7 +195,7 @@ Entities:
     SceneTagComponent:
       Name: Torso
     TransformComponent:
-      Position: [0, 0, 0.0332835577]
+      Position: [0, 0, 0.0325078964]
       Rotation: [1.63550317, -0, 0]
       Scale: [1, 1, 1]
     Relationship:
@@ -207,7 +207,7 @@ Entities:
       Name: Chest
     TransformComponent:
       Position: [0, 0.0148239136, 0]
-      Rotation: [-0.0723567605, 0.00735173654, -0.0240521859]
+      Rotation: [-0.0833217651, 0.00608859537, -0.020957591]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 204d215e-7c12-46c4-b054-aa08bbdc5369
@@ -241,7 +241,7 @@ Entities:
       Name: Upper_Arm.L
     TransformComponent:
       Position: [0.00925445557, 0.00771713257, -0.00155735016]
-      Rotation: [-0.573881209, 0.77125293, -3.02296019]
+      Rotation: [-0.392489403, 0.800668359, -2.93139172]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 169143df-da4a-4341-8936-d03d63ec5e39
@@ -254,7 +254,7 @@ Entities:
       Name: Lower_Arm.L
     TransformComponent:
       Position: [0, 0.0148086548, 0]
-      Rotation: [1.79258215, 0.247313872, -1.79936028]
+      Rotation: [1.78820801, 0.237691283, -1.79634416]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 481fdb74-c6b4-47c4-b1d9-bbe34bbd55d8
@@ -265,7 +265,7 @@ Entities:
       Name: Hand.L
     TransformComponent:
       Position: [0, 0.0108337402, 0]
-      Rotation: [-0.0755016431, -0.0966042876, -0.524856091]
+      Rotation: [-0.0755016357, -0.0966042876, -0.524856091]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 4162eae5-f199-4589-8085-08bac3d71d7d
@@ -275,7 +275,7 @@ Entities:
       Name: Upper_Arm.R
     TransformComponent:
       Position: [-0.00925445557, 0.00771713257, -0.00155735016]
-      Rotation: [-0.0489483289, -0.449900657, 2.90108299]
+      Rotation: [-0.18925491, -0.516906679, 2.92970371]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 169143df-da4a-4341-8936-d03d63ec5e39
@@ -287,7 +287,7 @@ Entities:
       Name: Lower_Arm.R
     TransformComponent:
       Position: [0, 0.0148086548, 0]
-      Rotation: [1.45731485, 0.548170567, -1.44042671]
+      Rotation: [1.41042423, 0.547641814, -1.43786061]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 93bb3551-2223-4999-925e-a88f0a2563d5
@@ -298,7 +298,7 @@ Entities:
       Name: Hand.R
     TransformComponent:
       Position: [0, 0.0108337402, 0]
-      Rotation: [0.0208827518, 0.649966359, -0.228922069]
+      Rotation: [0.0208827499, 0.649966359, -0.228922054]
       Scale: [1, 1, 1]
     Relationship:
       Parent: f4df3eaf-cc92-405c-b072-cd50f86f95d1
@@ -308,7 +308,7 @@ Entities:
       Name: Upper_Leg.L
     TransformComponent:
       Position: [0.00566864014, -1.34706497e-05, -0.0010433197]
-      Rotation: [0.595683455, -0.00574010285, -3.13205862]
+      Rotation: [0.410211861, -0.00383585831, -3.13115478]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 204d215e-7c12-46c4-b054-aa08bbdc5369
@@ -321,7 +321,7 @@ Entities:
       Name: Lower_Leg.L
     TransformComponent:
       Position: [0, 0.0128250122, 0]
-      Rotation: [-2.77461839, 0.0113444179, 3.10242271]
+      Rotation: [-2.8123219, 0.011080957, 3.10205293]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 38d6f778-7f9c-4f1c-be91-665172cf5529
@@ -332,7 +332,7 @@ Entities:
       Name: Foot.L
     TransformComponent:
       Position: [0, 0.0149307251, 0]
-      Rotation: [-1.81206214, 3.2633543e-06, 3.11197591]
+      Rotation: [-1.87118804, 3.3415854e-06, 3.11197448]
       Scale: [1, 1, 1]
     Relationship:
       Parent: e72b15de-9d06-4975-9db7-2e1a88331e71
@@ -342,7 +342,7 @@ Entities:
       Name: Upper_Leg.R
     TransformComponent:
       Position: [-0.00566864014, -1.34706497e-05, -0.0010433197]
-      Rotation: [0.150576934, 0.00250972877, 3.13228178]
+      Rotation: [0.386832356, 0.00505789556, 3.13240933]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 204d215e-7c12-46c4-b054-aa08bbdc5369
@@ -354,7 +354,7 @@ Entities:
       Name: Lower_Leg.R
     TransformComponent:
       Position: [0, 0.0128250122, 0]
-      Rotation: [-1.5228852, 0.0277394801, -3.1034224]
+      Rotation: [-1.43594491, 0.0341091864, -3.09878349]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 81992393-90b0-455b-84a4-5eb0a160c28b
@@ -365,7 +365,7 @@ Entities:
       Name: Foot.R
     TransformComponent:
       Position: [0, 0.0149307251, 0]
-      Rotation: [-2.46060252, 0.04162791, -3.0639677]
+      Rotation: [-2.35552907, 0.0456913002, -3.05333734]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 86643f2c-331e-4e93-82dc-a775e454ef2d
@@ -407,9 +407,9 @@ Entities:
     SceneTagComponent:
       Name: Cerberus
     TransformComponent:
-      Position: [0, 1, 0]
+      Position: [0.400000006, 1, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [4, 4, 4]
     Relationship:
       Parent: 6be23fea-3212-49b2-bdb8-802e4f1f8b2d
       NextSibling: 47c79ef7-9a35-4451-bc3a-ccb972dd3fd1

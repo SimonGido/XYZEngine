@@ -314,6 +314,34 @@ namespace XYZ {
 
 				ImGui::EndTable();
 			}
+
+			if (ImGui::BeginTable("##GridSettings", 2, ImGuiTableFlags_SizingFixedFit))
+			{
+				UI::TableRow("ShowGridRow",
+					[]() { ImGui::Text("Show Grid"); },
+					[&]() { ImGui::Checkbox("##ShowGrid", &m_Options.ShowGrid); }
+				);
+
+				UI::TableRow("GridScaleRow",
+					[]() { ImGui::Text("Grid Scale"); },
+					[&]() 
+					{ 
+						if (UI::FloatControl("##GridScale", "##GridScaleDrag", m_GridProps.Scale, 16.025f, 0.05f))
+							m_GridMaterialInstance->Set("u_Settings.Scale", m_GridProps.Scale);			
+					}
+				);
+
+				UI::TableRow("LineWidthRow",
+					[]() { ImGui::Text("Line Width"); },
+					[&]() 
+					{ 
+						if (UI::FloatControl("##LineWidth", "##LineWidthDrag", m_GridProps.LineWidth, 0.025f, 0.05f))
+							m_GridMaterialInstance->Set("u_Settings.Size", m_GridProps.LineWidth); 
+					}
+				);
+
+				ImGui::EndTable();
+			}
 			if (UI::BeginTreeNode("Visualization"))
 			{
 				if (ImGui::BeginTable("##VisualizationTable", 2, ImGuiTableFlags_SizingFixedFit))
@@ -478,10 +506,9 @@ namespace XYZ {
 		m_GridMaterial = gridMaterialAsset->GetMaterial();
 		m_GridMaterialInstance = gridMaterialAsset->GetMaterialInstance();
 
-		const float gridScale = 16.025f;
-		const float gridSize = 0.025f;
-		m_GridMaterialInstance->Set("u_Settings.Scale", gridScale);
-		m_GridMaterialInstance->Set("u_Settings.Size", gridSize);
+
+		m_GridMaterialInstance->Set("u_Settings.Scale", m_GridProps.Scale);
+		m_GridMaterialInstance->Set("u_Settings.Size", m_GridProps.LineWidth);
 
 		PipelineSpecification spec;
 		spec.Layouts = m_GridMaterial->GetShader()->GetLayouts();

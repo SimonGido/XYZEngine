@@ -27,8 +27,8 @@ namespace XYZ {
 	struct GridProperties
 	{
 		glm::mat4 Transform;
-		glm::vec2 Scale;
-		float LineWidth;
+		float Scale = 16.025f;
+		float LineWidth = 0.03f;
 	};
 
 	struct SceneRendererOptions
