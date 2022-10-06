@@ -315,33 +315,6 @@ namespace XYZ {
 				ImGui::EndTable();
 			}
 
-			if (ImGui::BeginTable("##GridSettings", 2, ImGuiTableFlags_SizingFixedFit))
-			{
-				UI::TableRow("ShowGridRow",
-					[]() { ImGui::Text("Show Grid"); },
-					[&]() { ImGui::Checkbox("##ShowGrid", &m_Options.ShowGrid); }
-				);
-
-				UI::TableRow("GridScaleRow",
-					[]() { ImGui::Text("Grid Scale"); },
-					[&]() 
-					{ 
-						if (UI::FloatControl("##GridScale", "##GridScaleDrag", m_GridProps.Scale, 16.025f, 0.05f))
-							m_GridMaterialInstance->Set("u_Settings.Scale", m_GridProps.Scale);			
-					}
-				);
-
-				UI::TableRow("LineWidthRow",
-					[]() { ImGui::Text("Line Width"); },
-					[&]() 
-					{ 
-						if (UI::FloatControl("##LineWidth", "##LineWidthDrag", m_GridProps.LineWidth, 0.025f, 0.05f))
-							m_GridMaterialInstance->Set("u_Settings.Size", m_GridProps.LineWidth); 
-					}
-				);
-
-				ImGui::EndTable();
-			}
 			if (UI::BeginTreeNode("Visualization"))
 			{
 				if (ImGui::BeginTable("##VisualizationTable", 2, ImGuiTableFlags_SizingFixedFit))
@@ -349,6 +322,28 @@ namespace XYZ {
 					UI::TableRow("ShowLightComplexity",
 						[]() { ImGui::Text("Show Light Complexity"); },
 						[&]() { ImGui::Checkbox("##ShowLightComplexity", &m_RendererDataUB.ShowLightComplexity); }
+					);
+					UI::TableRow("ShowGridRow",
+						[]() { ImGui::Text("Show Grid"); },
+						[&]() { ImGui::Checkbox("##ShowGrid", &m_Options.ShowGrid); }
+					);
+
+					UI::TableRow("GridScaleRow",
+						[]() { ImGui::Text("Grid Scale"); },
+						[&]()
+						{	UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
+							if (UI::FloatControl("##GridScale", "##GridScaleDrag", m_GridProps.Scale, 16.025f, 0.05f))
+								m_GridMaterialInstance->Set("u_Settings.Scale", m_GridProps.Scale);
+						}
+					);
+
+					UI::TableRow("LineWidthRow",
+						[]() { ImGui::Text("Line Width"); },
+						[&]()
+						{	UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
+							if (UI::FloatControl("##LineWidth", "##LineWidthDrag", m_GridProps.LineWidth, 0.025f, 0.05f))
+								m_GridMaterialInstance->Set("u_Settings.Size", m_GridProps.LineWidth);
+						}
 					);
 					ImGui::EndTable();
 				}
