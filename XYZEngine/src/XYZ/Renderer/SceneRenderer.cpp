@@ -3,6 +3,8 @@
 
 #include "Renderer2D.h"
 #include "Renderer.h"
+#include "MeshFactory.h"
+
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Debug/Profiler.h"
@@ -17,7 +19,6 @@
 #include <imgui/imgui.h>
 
 
-#include "XYZ/Renderer/MeshFactory.h"
 
 namespace XYZ {
 

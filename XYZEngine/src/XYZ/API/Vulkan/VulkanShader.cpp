@@ -6,6 +6,7 @@
 #include "XYZ/Renderer/Pipeline.h"
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Utils/FileSystem.h"
+#include "XYZ/Utils/ShaderParser.h"
 
 #include "VulkanContext.h"
 #include "VulkanRendererAPI.h"
@@ -25,6 +26,115 @@
 namespace XYZ {
 
 	namespace Utils {
+
+		
+
+		static void PrintResources(
+			const spirv_cross::Compiler& compiler, 
+			const char* tag, 
+			const spirv_cross::SmallVector<spirv_cross::Resource>& resources
+		)
+		{
+			fprintf(stderr, "%s\n", tag);
+			fprintf(stderr, "=============\n\n");
+			bool print_ssbo = !strcmp(tag, "ssbos");
+
+			for (auto& res : resources)
+			{
+				auto& type = compiler.get_type(res.type_id);
+
+				if (print_ssbo && compiler.buffer_is_hlsl_counter_buffer(res.id))
+					continue;
+
+				// If we don't have a name, use the fallback for the type instead of the variable
+				// for SSBOs and UBOs since those are the only meaningful names to use externally.
+				// Push constant blocks are still accessed by name and not block name, even though they are technically Blocks.
+				bool is_push_constant = compiler.get_storage_class(res.id) == spv::StorageClassPushConstant;
+				bool is_block = compiler.get_decoration_bitset(type.self).get(spv::DecorationBlock) ||
+					compiler.get_decoration_bitset(type.self).get(spv::DecorationBufferBlock);
+				bool is_sized_block = is_block && (compiler.get_storage_class(res.id) == spv::StorageClassUniform ||
+					compiler.get_storage_class(res.id) == spv::StorageClassUniformConstant);
+				spirv_cross::ID fallback_id = !is_push_constant && is_block ? spirv_cross::ID(res.base_type_id) : spirv_cross::ID(res.id);
+
+				uint32_t block_size = 0;
+				uint32_t runtime_array_stride = 0;
+				if (is_sized_block)
+				{
+					auto& base_type = compiler.get_type(res.base_type_id);
+					block_size = uint32_t(compiler.get_declared_struct_size(base_type));
+					runtime_array_stride = uint32_t(compiler.get_declared_struct_size_runtime_array(base_type, 1) -
+						compiler.get_declared_struct_size_runtime_array(base_type, 0));
+				}
+
+				spirv_cross::Bitset mask;
+				if (print_ssbo)
+					mask = compiler.get_buffer_block_flags(res.id);
+				else
+					mask = compiler.get_decoration_bitset(res.id);
+
+
+				if (mask.get(spv::DecorationLocation))
+					fprintf(stderr, " (Location : %u)", compiler.get_decoration(res.id, spv::DecorationLocation));
+				if (mask.get(spv::DecorationDescriptorSet))
+					fprintf(stderr, " (Set : %u)", compiler.get_decoration(res.id, spv::DecorationDescriptorSet));
+				if (mask.get(spv::DecorationBinding))
+					fprintf(stderr, " (Binding : %u)", compiler.get_decoration(res.id, spv::DecorationBinding));
+				if (static_cast<const spirv_cross::CompilerGLSL&>(compiler).variable_is_depth_or_compare(res.id))
+					fprintf(stderr, " (comparison)");
+				if (mask.get(spv::DecorationInputAttachmentIndex))
+					fprintf(stderr, " (Attachment : %u)", compiler.get_decoration(res.id, spv::DecorationInputAttachmentIndex));
+				if (mask.get(spv::DecorationNonReadable))
+					fprintf(stderr, " writeonly");
+				if (mask.get(spv::DecorationNonWritable))
+					fprintf(stderr, " readonly");
+				if (mask.get(spv::DecorationRestrict))
+					fprintf(stderr, " restrict");
+				if (mask.get(spv::DecorationCoherent))
+					fprintf(stderr, " coherent");
+				if (mask.get(spv::DecorationVolatile))
+					fprintf(stderr, " volatile");
+				if (is_sized_block)
+				{
+					fprintf(stderr, " (BlockSize : %u bytes)", block_size);
+					if (runtime_array_stride)
+						fprintf(stderr, " (Unsized array stride: %u bytes)", runtime_array_stride);
+				}
+
+				uint32_t counter_id = 0;
+				if (print_ssbo && compiler.buffer_get_hlsl_counter_buffer(res.id, counter_id))
+					fprintf(stderr, " (HLSL counter buffer ID: %u)", counter_id);
+				fprintf(stderr, "\n");
+			}
+			fprintf(stderr, "=============\n\n");
+		}
+
+
+		static ShaderDataType SPIRTypeToShaderDataType(spirv_cross::SPIRType type)
+		{
+			switch (type.basetype)
+			{
+			case spirv_cross::SPIRType::Boolean:  return ShaderDataType::Bool;
+			case spirv_cross::SPIRType::Int:
+				if (type.vecsize == 1)            return ShaderDataType::Int;
+				if (type.vecsize == 2)            return ShaderDataType::Int2;
+				if (type.vecsize == 3)            return ShaderDataType::Int3;
+				if (type.vecsize == 4)            return ShaderDataType::Int4;
+
+			//case spirv_cross::SPIRType::UInt:     return ShaderDataType::UInt;
+			case spirv_cross::SPIRType::Float:
+				if (type.columns == 3)            return ShaderDataType::Mat3;
+				if (type.columns == 4)            return ShaderDataType::Mat4;
+
+				if (type.vecsize == 1)            return ShaderDataType::Float;
+				if (type.vecsize == 2)            return ShaderDataType::Float2;
+				if (type.vecsize == 3)            return ShaderDataType::Float3;
+				if (type.vecsize == 4)            return ShaderDataType::Float4;
+				break;
+			}
+			XYZ_ASSERT(false, "Unknown type!");
+			return ShaderDataType::None;
+		}
+
 
 		static ShaderUniformDataType SPIRTypeToShaderUniformType(spirv_cross::SPIRType type)
 		{
@@ -50,6 +160,35 @@ namespace XYZ {
 			}
 			XYZ_ASSERT(false, "Unknown type!");
 			return ShaderUniformDataType::None;
+		}
+
+		struct ShaderLayoutElement
+		{
+			std::string    Name;
+			ShaderDataType DataType;
+			uint32_t       Location;
+		};
+
+
+		static std::vector<ShaderLayoutElement> CreateLayout(
+			const spirv_cross::Compiler& compiler,
+			const spirv_cross::SmallVector<spirv_cross::Resource>& resources
+		)
+		{
+			std::vector<ShaderLayoutElement> elements;
+			for (const auto& res : resources)
+			{
+				auto& type = compiler.get_type(res.type_id);
+				
+				spirv_cross::Bitset mask = compiler.get_decoration_bitset(res.id);
+
+				
+	
+				uint32_t location = compiler.get_decoration(res.id, spv::DecorationLocation);
+				ShaderDataType shaderDataType = SPIRTypeToShaderDataType(type);
+				elements.push_back(ShaderLayoutElement{ res.name, shaderDataType, location});
+			}
+			return elements;
 		}
 
 
@@ -170,7 +309,15 @@ namespace XYZ {
 		Utils::CreateCacheDirectoryIfNeeded();
 
 		m_Source = FileSystem::ReadFile(m_FilePath);
+		
+		ShaderParser parser(m_Source);
+		parser.AddKeyword("XYZ_INSTANCED");
+		auto layoutInfo = parser.ParseLayoutInfo(ShaderParser::Vertex);
+		parser.RemoveKeywordsFromSourceCode();
+		
+
 		SourceMap sources = preProcess(m_Source);
+					
 		if (!forceCompile)
 			forceCompile = !binaryExists(sources);
 		
@@ -222,7 +369,12 @@ namespace XYZ {
 	{
 		const spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
+	
 		
+		if (stage == VK_SHADER_STAGE_VERTEX_BIT)
+		{
+			auto layout = Utils::CreateLayout(compiler, resources.stage_inputs);
+		}
 		reflectConstantBuffers(compiler, stage, resources.push_constant_buffers);
 		reflectStorageBuffers(compiler, stage, resources.storage_buffers);
 		reflectUniformBuffers(compiler, stage, resources.uniform_buffers);
@@ -477,7 +629,7 @@ namespace XYZ {
 				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
 				options.SetWarningsAsErrors();
 				options.SetGenerateDebugInfo();
-
+				
 				const bool optimize = false;
 				if (optimize)
 					options.SetOptimizationLevel(shaderc_optimization_level_performance);
