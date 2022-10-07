@@ -226,7 +226,6 @@ namespace XYZ {
 				
 				if (layoutInfo.Keyword == sc_InstancedKeyword)
 				{
-
 					elementsInstanced.emplace_back(location, shaderDataType, res.name);
 				}
 				else

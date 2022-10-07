@@ -507,7 +507,6 @@ namespace XYZ {
 		m_GridMaterialInstance->Set("u_Settings.Size", m_GridProps.LineWidth);
 
 		PipelineSpecification spec;
-		spec.Layouts = m_GridMaterial->GetShader()->GetLayouts();
 		spec.RenderPass = m_GeometryRenderPass;
 		spec.Shader = m_GridMaterial->GetShader();
 		spec.Topology = PrimitiveTopology::Triangles;

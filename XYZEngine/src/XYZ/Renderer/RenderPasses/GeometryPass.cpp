@@ -458,7 +458,6 @@ namespace XYZ {
 			m_DepthPipeline3DAnimated.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipeline3DAnimated.Material);
 
 			PipelineSpecification spec;
-			spec.Layouts = m_DepthPipeline3DAnimated.Shader->GetLayouts();
 			spec.RenderPass = m_DepthPass;
 			spec.Shader = m_DepthPipeline3DAnimated.Shader;
 			spec.Topology = PrimitiveTopology::Triangles;
@@ -475,7 +474,6 @@ namespace XYZ {
 			m_DepthPipeline3DStatic.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipeline3DStatic.Material);
 
 			PipelineSpecification spec;
-			spec.Layouts = m_DepthPipeline3DStatic.Shader->GetLayouts();
 			spec.RenderPass = m_DepthPass;
 			spec.Shader = m_DepthPipeline3DStatic.Shader;
 			spec.Topology = PrimitiveTopology::Triangles;
@@ -492,7 +490,6 @@ namespace XYZ {
 			m_DepthPipeline2D.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipeline2D.Material);
 
 			PipelineSpecification spec;
-			spec.Layouts = m_DepthPipeline2D.Shader->GetLayouts();
 			spec.RenderPass = m_DepthPass;
 			spec.Shader = m_DepthPipeline2D.Shader;
 			spec.Topology = PrimitiveTopology::Triangles;
@@ -509,7 +506,6 @@ namespace XYZ {
 			m_DepthPipelineInstanced.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipelineInstanced.Material);
 
 			PipelineSpecification spec;
-			spec.Layouts = m_DepthPipelineInstanced.Shader->GetLayouts();
 			spec.RenderPass = m_DepthPass;
 			spec.Shader = m_DepthPipelineInstanced.Shader;
 			spec.Topology = PrimitiveTopology::Triangles;
@@ -528,7 +524,6 @@ namespace XYZ {
 
 
 		PipelineSpecification spec;
-		spec.Layouts = shader->GetLayouts();
 		spec.RenderPass = m_RenderPass;
 		spec.Shader = shader;
 		spec.Topology = PrimitiveTopology::Triangles;

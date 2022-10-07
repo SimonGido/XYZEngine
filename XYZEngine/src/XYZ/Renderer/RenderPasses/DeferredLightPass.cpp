@@ -131,7 +131,6 @@ namespace XYZ {
 	{
 		PipelineSpecification specification;
 		specification.Shader = m_Shader;
-		specification.Layouts = m_Shader->GetLayouts();
 		specification.RenderPass = m_RenderPass;
 		specification.Topology = PrimitiveTopology::Triangles;
 		specification.DepthWrite = false;
