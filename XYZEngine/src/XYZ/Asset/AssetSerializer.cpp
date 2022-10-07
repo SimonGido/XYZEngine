@@ -101,7 +101,6 @@ namespace XYZ {
 	{
 		WeakRef<ShaderAsset> shaderAsset = asset.As<ShaderAsset>();
 		Ref<Shader> shader = shaderAsset->GetShader();
-		const auto& layouts = shaderAsset->GetLayouts();
 
 
 		YAML::Emitter out;
@@ -109,21 +108,6 @@ namespace XYZ {
 		out << YAML::Key << "Name" << shader->GetName();
 		out << YAML::Key << "FilePath" << shader->GetPath();
 		out << YAML::Key << "SourceHash" << shaderAsset->GetSourceHash();
-		out << YAML::Key << "Layouts" << YAML::BeginSeq;
-		for (const auto& layout : layouts)
-		{
-			out << YAML::BeginMap;
-			out << YAML::Key << "Instanced" << layout.Instanced();
-			out << YAML::Key << "Elements" << YAML::BeginSeq;
-			out << YAML::Flow;
-			for (const auto& element : layout)
-			{
-				out << static_cast<uint32_t>(element.Type);
-			}
-			out << YAML::EndSeq;
-			out << YAML::EndMap;
-		}
-		out << YAML::EndSeq;
 		out << YAML::EndMap;
 		std::ofstream fout(metadata.FilePath);
 		fout << out.c_str();
@@ -140,21 +124,8 @@ namespace XYZ {
 		std::string filePath = data["FilePath"].as<std::string>();
 		const size_t sourceHash = data["SourceHash"].as<size_t>();
 
-		std::vector<BufferLayout> layouts;
-		for (auto layoutData : data["Layouts"])
-		{
-			bool instanced = layoutData["Instanced"].as<bool>();
-			std::vector<BufferElement> elements;
-			for (auto elementData : layoutData["Elements"])
-			{
-				ShaderDataType type = static_cast<ShaderDataType>(elementData.as<uint32_t>());
-				elements.push_back({ type, "" });
-			}
-			layouts.emplace_back(elements, instanced);
-		}
 
-
-		asset = Ref<ShaderAsset>::Create(name, filePath, sourceHash, layouts);
+		asset = Ref<ShaderAsset>::Create(name, filePath, sourceHash);
 		return true;
 	}
 

@@ -2,6 +2,7 @@
 #include "XYZ/Renderer/Shader.h"
 
 #include "XYZ/Renderer/Material.h"
+#include "XYZ/Utils/ShaderParser.h"
 
 #include "Vulkan.h"
 #include "VulkanMemoryAllocator/vk_mem_alloc.h"
@@ -66,10 +67,13 @@ namespace XYZ {
 			ShaderDescriptorSet	  ShaderDescriptorSet;
 		};
 
+		template <typename T>
+		using StageMap = std::unordered_map<VkShaderStageFlagBits, T>;
+
 	public:
-		VulkanShader(const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile);
-		VulkanShader(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile);
-		VulkanShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, std::vector<BufferLayout> layouts, bool forceCompile);
+		VulkanShader(const std::string& path, bool forceCompile);
+		VulkanShader(const std::string& name, const std::string& path, bool forceCompile);
+		VulkanShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, bool forceCompile);
 
 		virtual ~VulkanShader() override;
 
@@ -95,15 +99,19 @@ namespace XYZ {
 		std::vector<VkDescriptorSetLayout>				   GetAllDescriptorSetLayouts() const;
 		
 	private:
-		using SourceMap = std::unordered_map<VkShaderStageFlagBits, std::string>;
-		using DataMap = std::unordered_map<VkShaderStageFlagBits, std::vector<uint32_t>>;
-
-		DataMap   compileOrGetVulkanBinaries(const SourceMap& sources, bool forceCompile);
-		SourceMap preProcess(const std::string& source) const;
-		void	  createProgram(const DataMap& shaderData);
 		
-		void reflectAllStages(const DataMap& shaderData);
-		void reflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData);
+		struct PreprocessData
+		{
+			StageMap<std::string> Sources;
+			StageMap<std::unordered_map<std::string, ShaderParser::ShaderLayoutInfo>> LayoutInfo;
+		};
+
+		StageMap<std::vector<uint32_t>> compileOrGetVulkanBinaries(const StageMap<std::string>& sources, bool forceCompile);
+		PreprocessData				    preProcess(const std::string& source) const;
+		void						    createProgram(const StageMap<std::vector<uint32_t>>& shaderData);
+		
+		void reflectAllStages(const StageMap<std::vector<uint32_t>>& shaderData, const PreprocessData& preprocessData);
+		void reflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData, const PreprocessData& preprocessData);
 		void reflectConstantBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers);
 		void reflectStorageBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers);
 		void reflectUniformBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers);
@@ -112,9 +120,9 @@ namespace XYZ {
 
 
 
-		void createDescriptorSetLayout();
-		void destroy();	
-		bool binaryExists(const SourceMap& sources) const;
+		void   createDescriptorSetLayout();
+		void   destroy();	
+		bool   binaryExists(const StageMap<std::string>& sources) const;
 		size_t getBuffersSize() const;
 	private:
 		bool					   m_Compiled;

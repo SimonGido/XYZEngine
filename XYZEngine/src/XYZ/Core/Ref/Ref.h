@@ -1,6 +1,4 @@
 #pragma once
-#include "RefTracker.h"
-#include "RefAllocator.h"
 
 #include <stdint.h>
 #include <atomic>
@@ -10,22 +8,32 @@ namespace XYZ {
 	class RefCount
 	{
 	public:
+		RefCount()
+		{
+			m_RefCount = std::make_shared<std::atomic_uint32_t>(0);
+		}
+
 		virtual ~RefCount() = default;
 
+	private:
 		void IncRefCount() const
 		{
-			m_RefCount++;
+			(*m_RefCount)++;
 		}
 		void DecRefCount() const
 		{
-			m_RefCount--;
+			(*m_RefCount)--;
 		}
 
-		uint32_t GetRefCount() const { return m_RefCount; }
 	private:
-		mutable std::atomic<uint32_t> m_RefCount = 0;
+		mutable std::shared_ptr<std::atomic_uint32_t> m_RefCount;
 
-	};	
+		template<typename T>
+		friend class Ref;
+
+		template <typename T>
+		friend class WeakRef;
+	};
 	
 	
 	template<typename T>
@@ -256,7 +264,6 @@ namespace XYZ {
 	inline Ref<T> Ref<T>::Create(Args && ...args)
 	{
 		T* instance = new T(std::forward<Args>(args)...);
-		RefTracker::addToLiveReferences(instance);
 		return Ref<T>(instance);
 	}
 
@@ -274,9 +281,8 @@ namespace XYZ {
 		if (m_Instance)
 		{
 			m_Instance->DecRefCount();
-			if (m_Instance->GetRefCount() == 0)
+			if (*m_Instance->m_RefCount == 0)
 			{
-				RefTracker::removeFromLiveReferences((void*)(m_Instance));
 				delete m_Instance;
 			}
 		}

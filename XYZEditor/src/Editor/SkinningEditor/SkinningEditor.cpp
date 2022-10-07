@@ -249,7 +249,6 @@ namespace XYZ {
 			Ref<Shader> shader = m_MaterialAsset->GetShader();
 			
 			PipelineSpecification spec;
-			spec.Layouts = shader->GetLayouts();
 			//spec.RenderPass = m_Renderer2D->GetTargetRenderPass();
 			spec.Shader = shader;
 			spec.Topology = PrimitiveTopology::Triangles;

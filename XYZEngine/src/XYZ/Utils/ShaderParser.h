@@ -12,33 +12,23 @@ namespace XYZ {
 			uint32_t	Location;
 		};
 
-		enum ShaderStage
-		{
-			None,
-			Vertex,
-			Fragment,
-			Compute
-		};
 
-		ShaderParser(std::string sourceCode);
+		ShaderParser();
 
 		void AddKeyword(std::string keyword);
 
-		void RemoveKeywordsFromSourceCode();
+		void RemoveKeywordsFromSourceCode(std::string& source);
 
-		std::vector<ShaderLayoutInfo> ParseLayoutInfo(ShaderStage stage) const;
-
-		const std::string& GetSourceCode() const { return m_SourceCode; }
-		const std::unordered_map<ShaderStage, std::string>& GetSources() const { return m_Sources; }
+		std::unordered_map<std::string, std::string>	  ParseStages(const std::string& source) const;
+		std::unordered_map<std::string, ShaderLayoutInfo> ParseLayoutInfo(const std::string& source) const;
+		
 	private:
 		size_t findKeywordInSourceCode(const std::string& source, size_t start, size_t end, std::string& foundWord) const;
 	
 		bool parseLayout(const std::string& source, size_t offset, ShaderLayoutInfo& info, size_t& end) const;
 
-		void extractSources();
+		void extractSources(const std::string& source, std::unordered_map<std::string, std::string>& stages) const;
 	private:
-		std::string m_SourceCode;
-		std::unordered_map<ShaderStage, std::string> m_Sources;
 		std::vector<std::string> m_Keywords;
 	};
 }

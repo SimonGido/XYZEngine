@@ -3,19 +3,6 @@
 
 namespace XYZ {
 
-	static ShaderParser::ShaderStage ShaderStageFromString(const std::string& type)
-	{
-		if (type == "vertex")
-			return ShaderParser::ShaderStage::Vertex;
-		if (type == "fragment" || type == "pixel")
-			return ShaderParser::ShaderStage::Fragment;
-		if (type == "compute")
-			return ShaderParser::ShaderStage::Compute;
-
-		XYZ_ASSERT(false, "Unknown shader type!");
-		return ShaderParser::ShaderStage::None;
-	}
-
 	static size_t FindDigit(const std::string& str, size_t offset = 0)
 	{
 		while (offset != std::string::npos)
@@ -49,44 +36,48 @@ namespace XYZ {
 	}
 
 
-	ShaderParser::ShaderParser(std::string sourceCode)
-		:
-		m_SourceCode(std::move(sourceCode))
+	ShaderParser::ShaderParser()
 	{
-		extractSources();
+
 	}
+
 	void ShaderParser::AddKeyword(std::string keyword)
 	{
 		m_Keywords.push_back(std::move(keyword));
 	}
-	void ShaderParser::RemoveKeywordsFromSourceCode()
+	void ShaderParser::RemoveKeywordsFromSourceCode(std::string& source)
 	{
 		for (auto& word : m_Keywords)
 		{
-			auto pos = m_SourceCode.find(word);
+			auto pos = source.find(word);
 			while (pos != std::string::npos)
 			{
-				m_SourceCode.erase(pos, word.length());
-				pos = m_SourceCode.find(word);
+				source.erase(pos, word.length());
+				pos = source.find(word);
 			}
 		}
 	}
 
-	std::vector<ShaderParser::ShaderLayoutInfo> ShaderParser::ParseLayoutInfo(ShaderStage stage) const
+
+	std::unordered_map<std::string, std::string> ShaderParser::ParseStages(const std::string& source) const
 	{
-		std::vector<ShaderLayoutInfo> result;
+		std::unordered_map<std::string, std::string> stages;
+		extractSources(source, stages);
+		return stages;
+	}
+
+	std::unordered_map<std::string, ShaderParser::ShaderLayoutInfo> ShaderParser::ParseLayoutInfo(const std::string& source) const
+	{
+		std::unordered_map<std::string, ShaderParser::ShaderLayoutInfo> result;
 
 		size_t offset = 0;
 		ShaderLayoutInfo info;
 
-		auto it = m_Sources.find(stage);
-		if (it != m_Sources.end())
+		while (parseLayout(source, offset, info, offset))
 		{
-			while (parseLayout(it->second, offset, info, offset))
-			{
-				result.push_back(info);
-			}
+			result[info.Name] = info;
 		}
+	
 		return result;
 	}
 	size_t ShaderParser::findKeywordInSourceCode(const std::string& source, size_t start, size_t end, std::string& foundWord) const
@@ -146,23 +137,22 @@ namespace XYZ {
 		}
 		return false;
 	}
-	void ShaderParser::extractSources()
+
+	void ShaderParser::extractSources(const std::string& source, std::unordered_map<std::string, std::string>& stages) const
 	{
-		const char* TypeToken = "#type";
-		const size_t TypeTokenLength = strlen(TypeToken);
-		size_t pos = m_SourceCode.find(TypeToken, 0);
+		const char* typeToken = "#type";
+		const size_t typeTokenLength = strlen(typeToken);
+		size_t pos = source.find(typeToken, 0);
 		while (pos != std::string::npos)
 		{
-			const size_t eol = m_SourceCode.find_first_of("\r\n", pos);
+			const size_t eol = source.find_first_of("\r\n", pos);
 			XYZ_ASSERT(eol != std::string::npos, "Syntax error");
-			const size_t begin = pos + TypeTokenLength + 1;
-			std::string type = m_SourceCode.substr(begin, eol - begin);
+			const size_t begin = pos + typeTokenLength + 1;
+			std::string type = source.substr(begin, eol - begin);
 
-			ShaderParser::ShaderStage stage = ShaderStageFromString(type);
-
-			const size_t nextLinePos = m_SourceCode.find_first_not_of("\r\n", eol);
-			pos = m_SourceCode.find(TypeToken, nextLinePos);
-			m_Sources[stage] = m_SourceCode.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? m_SourceCode.size() - 1 : nextLinePos));
+			const size_t nextLinePos = source.find_first_not_of("\r\n", eol);
+			pos = source.find(typeToken, nextLinePos);
+			stages[type] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
 		}
 	}
 }

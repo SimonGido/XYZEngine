@@ -10,11 +10,11 @@ layout(location = 4) in vec2 a_TexCoord;
 
 
 
-layout(location = 5) in vec4  a_ITransformRow0;
-layout(location = 6) in vec4  a_ITransformRow1;
-layout(location = 7) in vec4  a_ITransformRow2;
-layout(location = 8) in vec4  a_IColor;
-layout(location = 9) in vec2  a_ITexOffset;
+XYZ_INSTANCED layout(location = 5) in vec4  a_ITransformRow0;
+XYZ_INSTANCED layout(location = 6) in vec4  a_ITransformRow1;
+XYZ_INSTANCED layout(location = 7) in vec4  a_ITransformRow2;
+XYZ_INSTANCED layout(location = 8) in vec4  a_IColor;
+XYZ_INSTANCED layout(location = 9) in vec2  a_ITexOffset;
 
 
 

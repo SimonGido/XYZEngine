@@ -11,9 +11,9 @@ layout(location = 4) in vec2 a_TexCoord;
 layout(location = 5) in ivec4 a_BoneIDs;
 layout(location = 6) in vec4  a_Weights;
 
-layout(location = 7) in vec4  a_TransformRow0;
-layout(location = 8) in vec4  a_TransformRow1;
-layout(location = 9) in vec4  a_TransformRow2;
+XYZ_INSTANCED layout(location = 7) in vec4  a_TransformRow0;
+XYZ_INSTANCED layout(location = 8) in vec4  a_TransformRow1;
+XYZ_INSTANCED layout(location = 9) in vec4  a_TransformRow2;
 
 layout(std140, binding = 0) uniform Camera
 {

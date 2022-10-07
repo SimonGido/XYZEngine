@@ -6,7 +6,7 @@
 #include "XYZ/Renderer/Pipeline.h"
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Utils/FileSystem.h"
-#include "XYZ/Utils/ShaderParser.h"
+
 
 #include "VulkanContext.h"
 #include "VulkanRendererAPI.h"
@@ -26,6 +26,9 @@
 namespace XYZ {
 
 	namespace Utils {
+		
+		// Custom shader keywords
+		static constexpr const char* sc_InstancedKeyword = "XYZ_INSTANCED";
 
 		
 
@@ -162,49 +165,6 @@ namespace XYZ {
 			return ShaderUniformDataType::None;
 		}
 
-		struct ShaderLayoutElement
-		{
-			std::string    Name;
-			ShaderDataType DataType;
-			uint32_t       Location;
-		};
-
-
-		static std::vector<ShaderLayoutElement> CreateLayout(
-			const spirv_cross::Compiler& compiler,
-			const spirv_cross::SmallVector<spirv_cross::Resource>& resources
-		)
-		{
-			std::vector<ShaderLayoutElement> elements;
-			for (const auto& res : resources)
-			{
-				auto& type = compiler.get_type(res.type_id);
-				
-				spirv_cross::Bitset mask = compiler.get_decoration_bitset(res.id);
-
-				
-	
-				uint32_t location = compiler.get_decoration(res.id, spv::DecorationLocation);
-				ShaderDataType shaderDataType = SPIRTypeToShaderDataType(type);
-				elements.push_back(ShaderLayoutElement{ res.name, shaderDataType, location});
-			}
-			return elements;
-		}
-
-
-		static const char* GetCacheDirectory()
-		{
-			// TODO: make sure the assets directory is valid
-			return "Resources/Cache/Shader/Vulkan";
-		}
-
-		static void CreateCacheDirectoryIfNeeded()
-		{
-			const std::string cacheDirectory = GetCacheDirectory();
-			if (!std::filesystem::exists(cacheDirectory))
-				std::filesystem::create_directories(cacheDirectory);
-		}
-
 		static const char* VkShaderStageCachedFileExtension(VkShaderStageFlagBits stage)
 		{
 			switch (stage)
@@ -215,13 +175,6 @@ namespace XYZ {
 			}
 			XYZ_ASSERT(false, "");
 			return "";
-		}
-
-		static std::string GetCachePath(const std::string& name, VkShaderStageFlagBits stage)
-		{
-			std::string result = GetCacheDirectory();
-			result += "/" + name + VkShaderStageCachedFileExtension(stage);
-			return result;
 		}
 
 		static shaderc_shader_kind VkShaderStageToShaderC(VkShaderStageFlagBits stage)
@@ -236,7 +189,7 @@ namespace XYZ {
 			return (shaderc_shader_kind)0;
 		}
 
-		static VkShaderStageFlagBits ShaderComponentFromString(const std::string& type)
+		static VkShaderStageFlagBits ShaderStageFromString(const std::string& type)
 		{
 			if (type == "vertex")
 				return VK_SHADER_STAGE_VERTEX_BIT;
@@ -248,39 +201,119 @@ namespace XYZ {
 			XYZ_ASSERT(false, "Unknown shader type!");
 			return VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
 		}
+
+		static std::vector<BufferLayout> CreateBufferLayouts(
+			const spirv_cross::Compiler& compiler,
+			const spirv_cross::SmallVector<spirv_cross::Resource>& resources,
+			const std::unordered_map<std::string, ShaderParser::ShaderLayoutInfo>& layoutInfos
+		)
+		{
+			std::vector<BufferLayout> result;
+			std::vector<BufferElement> elements;
+			std::vector<BufferElement> elementsInstanced;
+
+			for (const auto& res : resources)
+			{
+				auto& type = compiler.get_type(res.type_id);
+
+				const spirv_cross::Bitset mask = compiler.get_decoration_bitset(res.id);
+
+				const uint32_t location = compiler.get_decoration(res.id, spv::DecorationLocation);
+
+
+				const ShaderDataType shaderDataType = SPIRTypeToShaderDataType(type);
+				const ShaderParser::ShaderLayoutInfo& layoutInfo = layoutInfos.at(res.name);
+				
+				if (layoutInfo.Keyword == sc_InstancedKeyword)
+				{
+
+					elementsInstanced.emplace_back(location, shaderDataType, res.name);
+				}
+				else
+				{
+					elements.emplace_back(location, shaderDataType, res.name);
+				}
+			}
+
+			std::sort(elements.begin(), elements.end(), [](const BufferElement& a, const BufferElement& b) {
+				return a.Location < b.Location;
+			});
+		
+			std::sort(elementsInstanced.begin(), elementsInstanced.end(), [](const BufferElement& a, const BufferElement& b) {
+				return a.Location < b.Location;
+			});
+
+			if (!elements.empty())
+				result.emplace_back(elements);
+			if (!elementsInstanced.empty())
+				result.emplace_back(elementsInstanced, true);
+		
+			return result;
+		}
+
+		static const char* GetCacheDirectory()
+		{
+			// TODO: make sure the assets directory is valid
+			return "Resources/Cache/Shader/Vulkan";
+		}
+
+		static void CreateCacheDirectoryIfNeeded()
+		{
+			const std::string cacheDirectory = GetCacheDirectory();
+			if (!std::filesystem::exists(cacheDirectory))
+				std::filesystem::create_directories(cacheDirectory);
+		}	
+
+		static std::string GetCachePath(const std::string& name, VkShaderStageFlagBits stage)
+		{
+			std::string result = GetCacheDirectory();
+			result += "/" + name + VkShaderStageCachedFileExtension(stage);
+			return result;
+		}
+
+		
 	}
 
-	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::UniformBuffer*>> s_UniformBuffers; // set -> binding point -> buffer
-	static std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::StorageBuffer*>> s_StorageBuffers; // set -> binding point -> buffer
+	struct VulkanShaderStaticData
+	{
+		VulkanShaderStaticData()
+		{
+			Parser.AddKeyword(Utils::sc_InstancedKeyword);
+		}
+
+		std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::UniformBuffer*>> UniformBuffers; // set -> binding point -> buffer
+		std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::StorageBuffer*>> StorageBuffers; // set -> binding point -> buffer
+
+		ShaderParser Parser;
+	};
+
+	static VulkanShaderStaticData s_Data;
 	
 
-	VulkanShader::VulkanShader(const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile)
+	VulkanShader::VulkanShader(const std::string& path, bool forceCompile)
 		:
 		m_Compiled(false),
 		m_Name(Utils::GetFilenameWithoutExtension(path)),
 		m_FilePath(path),
-		m_VertexBufferSize(0),
-		m_Layouts(std::move(layouts))
+		m_VertexBufferSize(0)
 	{
 		Reload(forceCompile);
 	}
-	VulkanShader::VulkanShader(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile)
+	VulkanShader::VulkanShader(const std::string& name, const std::string& path, bool forceCompile)
 		:
 		m_Compiled(false),
 		m_Name(name),
 		m_FilePath(path),
-		m_VertexBufferSize(0),
-		m_Layouts(std::move(layouts))
+		m_VertexBufferSize(0)
 	{
 		Reload(forceCompile);
 	}
-	VulkanShader::VulkanShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, std::vector<BufferLayout> layouts, bool forceCompile)
+	VulkanShader::VulkanShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, bool forceCompile)
 		:
 		m_Compiled(false),
 		m_Name(name),
 		m_FilePath(Utils::GetDirectoryPath(vertexPath) + "/" + name + ".glsl"),
-		m_VertexBufferSize(0),
-		m_Layouts(std::move(layouts))
+		m_VertexBufferSize(0)
 	{
 		std::ofstream outfile(m_FilePath);
 		outfile << "#type vertex\n" << FileSystem::ReadFile(vertexPath);
@@ -309,25 +342,19 @@ namespace XYZ {
 		Utils::CreateCacheDirectoryIfNeeded();
 
 		m_Source = FileSystem::ReadFile(m_FilePath);
-		
-		ShaderParser parser(m_Source);
-		parser.AddKeyword("XYZ_INSTANCED");
-		auto layoutInfo = parser.ParseLayoutInfo(ShaderParser::Vertex);
-		parser.RemoveKeywordsFromSourceCode();
-		
-
-		SourceMap sources = preProcess(m_Source);
+	
+		PreprocessData preprocessData = preProcess(m_Source);
 					
 		if (!forceCompile)
-			forceCompile = !binaryExists(sources);
+			forceCompile = !binaryExists(preprocessData.Sources);
 		
 		if (forceCompile)
 		{
 			XYZ_INFO("Compiling shader {}", m_Name);
 		}
 
-		DataMap shaderData = compileOrGetVulkanBinaries(sources, forceCompile);
-		reflectAllStages(shaderData);
+		auto shaderData = compileOrGetVulkanBinaries(preprocessData.Sources, forceCompile);
+		reflectAllStages(shaderData, preprocessData);
 		createProgram(shaderData);
 		createDescriptorSetLayout();
 		m_Compiled = true;
@@ -352,7 +379,7 @@ namespace XYZ {
 	}
 
 
-	void VulkanShader::reflectAllStages(const VulkanShader::DataMap& shaderData)
+	void VulkanShader::reflectAllStages(const VulkanShader::StageMap<std::vector<uint32_t>>& shaderData, const PreprocessData& preprocessData)
 	{
 		XYZ_TRACE("===========================");
 		XYZ_TRACE(" Vulkan Shader Reflection");
@@ -361,11 +388,11 @@ namespace XYZ {
 		m_Resources.clear();
 		for (auto [stage, data] : shaderData)
 		{
-			reflectStage(stage, data);
+			reflectStage(stage, data, preprocessData);
 		}
 	}
 
-	void VulkanShader::reflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData)
+	void VulkanShader::reflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData, const PreprocessData& preprocessData)
 	{
 		const spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
@@ -373,7 +400,7 @@ namespace XYZ {
 		
 		if (stage == VK_SHADER_STAGE_VERTEX_BIT)
 		{
-			auto layout = Utils::CreateLayout(compiler, resources.stage_inputs);
+			m_Layouts = Utils::CreateBufferLayouts(compiler, resources.stage_inputs, preprocessData.LayoutInfo.at(stage));
 		}
 		reflectConstantBuffers(compiler, stage, resources.push_constant_buffers);
 		reflectStorageBuffers(compiler, stage, resources.storage_buffers);
@@ -440,23 +467,23 @@ namespace XYZ {
 				m_DescriptorSets.resize(static_cast<size_t>(descriptorSet) + 1);
 			ShaderDescriptorSet& shaderDescriptorSet = m_DescriptorSets[descriptorSet].ShaderDescriptorSet;
 			
-			if (s_StorageBuffers[descriptorSet].find(binding) == s_StorageBuffers[descriptorSet].end())
+			if (s_Data.StorageBuffers[descriptorSet].find(binding) == s_Data.StorageBuffers[descriptorSet].end())
 			{
 				StorageBuffer* storageBuffer = new StorageBuffer();
 				storageBuffer->BindingPoint = binding;
 				storageBuffer->Size = size;
 				storageBuffer->Name = name;
 				storageBuffer->ShaderStage = VK_SHADER_STAGE_ALL;
-				s_StorageBuffers.at(descriptorSet)[binding] = storageBuffer;
+				s_Data.StorageBuffers.at(descriptorSet)[binding] = storageBuffer;
 			}
 			else
 			{
-				StorageBuffer* storageBuffer = s_StorageBuffers.at(descriptorSet).at(binding);
+				StorageBuffer* storageBuffer = s_Data.StorageBuffers.at(descriptorSet).at(binding);
 				if (size > storageBuffer->Size)
 					storageBuffer->Size = size;
 			}
 
-			shaderDescriptorSet.StorageBuffers[binding] = s_StorageBuffers.at(descriptorSet).at(binding);
+			shaderDescriptorSet.StorageBuffers[binding] = s_Data.StorageBuffers.at(descriptorSet).at(binding);
 
 			XYZ_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 			XYZ_TRACE("  Member Count: {0}", memberCount);
@@ -480,24 +507,24 @@ namespace XYZ {
 				m_DescriptorSets.resize(static_cast<size_t>(descriptorSet) + 1);
 			ShaderDescriptorSet& shaderDescriptorSet = m_DescriptorSets[descriptorSet].ShaderDescriptorSet;
 
-			if (s_UniformBuffers[descriptorSet].find(binding) == s_UniformBuffers[descriptorSet].end())
+			if (s_Data.UniformBuffers[descriptorSet].find(binding) == s_Data.UniformBuffers[descriptorSet].end())
 			{
 				UniformBuffer* uniformBuffer = new UniformBuffer();
 				uniformBuffer->BindingPoint = binding;
 				uniformBuffer->Size = size;
 				uniformBuffer->Name = name;
 				uniformBuffer->ShaderStage = VK_SHADER_STAGE_ALL;
-				s_UniformBuffers.at(descriptorSet)[binding] = uniformBuffer;
+				s_Data.UniformBuffers.at(descriptorSet)[binding] = uniformBuffer;
 			}
 			else
 			{
-				UniformBuffer* uniformBuffer = s_UniformBuffers.at(descriptorSet).at(binding);
+				UniformBuffer* uniformBuffer = s_Data.UniformBuffers.at(descriptorSet).at(binding);
 				if (size > uniformBuffer->Size)
 					uniformBuffer->Size = size;
 
 			}
 
-			shaderDescriptorSet.UniformBuffers[binding] = s_UniformBuffers.at(descriptorSet).at(binding);
+			shaderDescriptorSet.UniformBuffers[binding] = s_Data.UniformBuffers.at(descriptorSet).at(binding);
 
 			XYZ_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 			XYZ_TRACE("  Member Count: {0}", memberCount);
@@ -597,9 +624,9 @@ namespace XYZ {
 
 		return result;
 	}
-	VulkanShader::DataMap VulkanShader::compileOrGetVulkanBinaries(const VulkanShader::SourceMap& shaderSources, bool forceCompile)
+	VulkanShader::StageMap<std::vector<uint32_t>> VulkanShader::compileOrGetVulkanBinaries(const VulkanShader::StageMap<std::string>& shaderSources, bool forceCompile)
 	{
-		DataMap outputBinary;
+		StageMap<std::vector<uint32_t>> outputBinary;
 		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
 		for (auto [stage, source] : shaderSources)
 		{
@@ -658,7 +685,7 @@ namespace XYZ {
 		}
 		return outputBinary;
 	}
-	void VulkanShader::createProgram(const DataMap& shaderData)
+	void VulkanShader::createProgram(const StageMap<std::vector<uint32_t>>& shaderData)
 	{
 		const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 		m_PipelineShaderStageCreateInfos.clear();
@@ -683,26 +710,22 @@ namespace XYZ {
 		}
 	}
 
-	std::unordered_map<VkShaderStageFlagBits, std::string> VulkanShader::preProcess(const std::string& source) const
+	VulkanShader::PreprocessData VulkanShader::preProcess(const std::string& source) const
 	{
-		std::unordered_map<VkShaderStageFlagBits, std::string> sources;
-		const char* TypeToken = "#type";
-		const size_t TypeTokenLength = strlen(TypeToken);
-		size_t pos = source.find(TypeToken, 0);
-		while (pos != std::string::npos)
-		{
-			const size_t eol = source.find_first_of("\r\n", pos);
-			XYZ_ASSERT(eol != std::string::npos, "Syntax error");
-			const size_t begin = pos + TypeTokenLength + 1;
-			std::string Type = source.substr(begin, eol - begin);
-			VkShaderStageFlagBits stageType = Utils::ShaderComponentFromString(Type);
-			XYZ_ASSERT(stageType, "Invalid shader Component specified");
+		PreprocessData result;
 
-			const size_t nextLinePos = source.find_first_not_of("\r\n", eol);
-			pos = source.find(TypeToken, nextLinePos);
-			sources[stageType] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() - 1 : nextLinePos));
+		auto stageMap = s_Data.Parser.ParseStages(source);
+
+		std::vector<ShaderParser::ShaderLayoutInfo> vertexLayoutInfo;
+		for (auto& [type, source] : stageMap)
+		{
+			auto stage = Utils::ShaderStageFromString(type);
+			result.LayoutInfo[stage] = s_Data.Parser.ParseLayoutInfo(source);
+			s_Data.Parser.RemoveKeywordsFromSourceCode(source);
+			result.Sources[stage] = source;
 		}
-		return sources;
+
+		return result;
 	}
 
 
@@ -833,7 +856,7 @@ namespace XYZ {
 		});
 		m_Compiled = false;
 	}
-	bool VulkanShader::binaryExists(const SourceMap& sources) const
+	bool VulkanShader::binaryExists(const StageMap<std::string>& sources) const
 	{
 		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
 		std::filesystem::path shaderFilePath = m_FilePath;

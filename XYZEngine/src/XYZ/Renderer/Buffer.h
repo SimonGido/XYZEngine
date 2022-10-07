@@ -46,34 +46,14 @@ namespace XYZ {
 
 	struct BufferElement
 	{
-		BufferElement(ShaderDataType type, const std::string_view name)
-			: Type(type), Size(ShaderDataTypeSize(type)), Offset(0)
+		BufferElement(uint32_t location, ShaderDataType type, const std::string_view name)
+			: Type(type), Size(ShaderDataTypeSize(type)), Offset(0), Location(location)
 		{}
-
-
-		uint32_t GetComponentCount() const
-		{
-			switch (Type)
-			{
-			case ShaderDataType::Bool:   return 1;
-			case ShaderDataType::Float:  return 1;
-			case ShaderDataType::Float2: return 2;
-			case ShaderDataType::Float3: return 3;
-			case ShaderDataType::Float4: return 4;
-			case ShaderDataType::Int:    return 1;
-			case ShaderDataType::Int2:   return 2;
-			case ShaderDataType::Int3:   return 3;
-			case ShaderDataType::Int4:   return 4;
-			case ShaderDataType::Mat3:   return 9;
-			case ShaderDataType::Mat4:   return 16;
-			}
-			XYZ_ASSERT(false, "ShaderDataTypeSize(ShaderDataType::None)");
-			return 0;
-		}
 
 		ShaderDataType Type;
 		uint32_t	   Size;
 		uint32_t	   Offset;
+		uint32_t	   Location;
 	};
 
 	class BufferLayout
@@ -85,13 +65,11 @@ namespace XYZ {
 		BufferLayout(const std::initializer_list<BufferElement>& elements, bool instanced = false)
 			: m_Elements(elements), m_Instanced(instanced)
 		{
-			createMat4();
 			calculateOffsetsAndStride();
 		}
 		BufferLayout(const std::vector<BufferElement>& elements, bool instanced = false)
 			: m_Elements(elements), m_Instanced(instanced)
 		{
-			createMat4();
 			calculateOffsetsAndStride();
 		}
 
@@ -120,24 +98,6 @@ namespace XYZ {
 				m_Stride += element.Size;
 			}
 		};
-
-
-		inline void createMat4()
-		{
-			for (auto& element : m_Elements)
-			{
-				if (element.Type == ShaderDataType::Mat4)
-				{
-					element.Type = ShaderDataType::Float4;
-					element.Size = 4 * 4;
-
-					const BufferElement tmpElement = element;
-					m_Elements.push_back(BufferElement(tmpElement.Type, ""));
-					m_Elements.push_back(BufferElement(tmpElement.Type, ""));
-					m_Elements.push_back(BufferElement(tmpElement.Type, ""));
-				}
-			}
-		}
 
 	private:
 		std::vector<BufferElement> m_Elements;

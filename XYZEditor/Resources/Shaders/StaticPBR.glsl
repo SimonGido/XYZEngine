@@ -7,9 +7,9 @@ layout(location = 2) in vec3 a_Tangent;
 layout(location = 3) in vec3 a_Binormal;
 layout(location = 4) in vec2 a_TexCoord;
 
-layout(location = 5) in vec4  a_TransformRow0;
-layout(location = 6) in vec4  a_TransformRow1;
-layout(location = 7) in vec4  a_TransformRow2;
+XYZ_INSTANCED layout(location = 5) in vec4  a_TransformRow0;
+XYZ_INSTANCED layout(location = 6) in vec4  a_TransformRow1;
+XYZ_INSTANCED layout(location = 7) in vec4  a_TransformRow2;
 
 
 struct VertexOutput

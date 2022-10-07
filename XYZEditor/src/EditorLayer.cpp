@@ -292,7 +292,6 @@ namespace XYZ {
 		{
 			{
 				PipelineSpecification spec;
-				spec.Layouts = m_QuadMaterial->GetShader()->GetLayouts();
 				spec.RenderPass = m_SceneRenderer->GetFinalRenderPass();
 				spec.Shader = m_QuadMaterial->GetShader();
 				spec.Topology = PrimitiveTopology::Triangles;
@@ -302,7 +301,6 @@ namespace XYZ {
 			}
 			{
 				PipelineSpecification spec;
-				spec.Layouts = m_CircleMaterial->GetShader()->GetLayouts();
 				spec.RenderPass = m_SceneRenderer->GetFinalRenderPass();
 				spec.Shader = m_CircleMaterial->GetShader();
 				spec.Topology = PrimitiveTopology::Triangles;
@@ -312,7 +310,6 @@ namespace XYZ {
 			}
 			{
 				PipelineSpecification spec;
-				spec.Layouts = m_LineMaterial->GetShader()->GetLayouts();
 				spec.RenderPass = m_SceneRenderer->GetFinalRenderPass();
 				spec.Shader = m_LineMaterial->GetShader();
 				spec.Topology = PrimitiveTopology::Lines;
