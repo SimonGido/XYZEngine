@@ -4,6 +4,8 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/Pipeline.h"
+#include "XYZ/Renderer/ShaderIncluder.h"
+
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Utils/FileSystem.h"
 
@@ -655,7 +657,9 @@ namespace XYZ {
 				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
 				options.SetWarningsAsErrors();
 				options.SetGenerateDebugInfo();
-				
+
+				options.SetIncluder(ShaderIncluder::Create());
+
 				const bool optimize = false;
 				if (optimize)
 					options.SetOptimizationLevel(shaderc_optimization_level_performance);
