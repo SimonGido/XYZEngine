@@ -9,6 +9,41 @@
 
 namespace XYZ {
 	namespace Editor {
+		namespace Utils {
+			static AABB SceneEntityAABB(const SceneEntity& entity)
+			{
+				const TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
+
+				if (entity.HasComponent<AnimatedMeshComponent>())
+				{
+					auto& meshComponent = entity.GetComponent<AnimatedMeshComponent>();
+					if (meshComponent.Mesh->IsValid())
+					{
+						AABB aabb = meshComponent.Mesh->GetMeshSource()->GetBoundingBox();
+						aabb.Min = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Min, 1.0f));
+						aabb.Max = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Max, 1.0f));
+						return aabb;
+					}
+				}
+				if (entity.HasComponent<MeshComponent>())
+				{
+					auto& meshComponent = entity.GetComponent<MeshComponent>();
+					if (meshComponent.Mesh->IsValid())
+					{
+						AABB aabb = meshComponent.Mesh->GetMeshSource()->GetBoundingBox();
+						aabb.Min = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Min, 1.0f));
+						aabb.Max = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Max, 1.0f));
+						return aabb;
+					}
+				}
+
+				auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
+				return AABB(
+					translation - (scale / 2.0f),
+					translation + (scale / 2.0f)
+				);
+			}
+		}
 
 		EditorLayer::EditorLayer()
 		{
@@ -183,7 +218,9 @@ namespace XYZ {
 			
 			m_CommandBuffer->End();
 			m_CommandBuffer->Submit();
-			Application::Get().GetPerformanceProfiler().PushMeasurement("EditorLayer::renderOverlay", static_cast<float>(m_GPUTimeQueries.GPUTime));
+
+			float gpuTime = m_CommandBuffer->GetExecutionGPUTime(Renderer::GetCurrentFrame(), m_GPUTimeQueries.GPUTime);
+			Application::Get().GetPerformanceProfiler().PushMeasurement("EditorLayer::renderOverlay", gpuTime);
 		}
 
 		void EditorLayer::renderColliders()
@@ -279,10 +316,8 @@ namespace XYZ {
 				}
 				else
 				{
-					auto& transform = selected.GetComponent<TransformComponent>();
-					auto [min, max] = transformToAABB(transform);
-					
-					m_OverlayRenderer2D->SubmitAABB(min, max, s_Data.Color[ED::BoundingBox]);
+					auto aabb = Utils::SceneEntityAABB(selected);
+					m_OverlayRenderer2D->SubmitAABB(aabb.Min, aabb.Max, s_Data.Color[ED::BoundingBox]);
 				}
 			}
 		}
@@ -341,12 +376,6 @@ namespace XYZ {
 			return std::pair<glm::vec3, glm::vec3>();
 		}
 
-		std::pair<glm::vec3, glm::vec3> EditorLayer::transformToAABB(const TransformComponent& transform) const
-		{
-			auto [translation, rotation, scale] = transform.GetWorldComponents();
-			scale.z = 0.0f; // 2D
-			return { translation - (scale / 2.0f),translation + (scale / 2.0f) };
-		}
 
 		void EditorLayer::displayStats()
 		{

@@ -4,6 +4,8 @@
 
 #include "XYZ/Renderer/Buffer.h"
 
+#include "XYZ/Utils/Math/AABB.h"
+
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -76,7 +78,7 @@ namespace XYZ {
 		const glm::mat4&   GetTransform()		 const { return m_Transform; }
 		const aiScene*	   GetScene()			 const { return m_Scene; }
 		bool			   IsAnimated()			 const { return m_IsAnimated; }
-
+		const AABB&		   GetBoundingBox()		 const { return m_BoundingBox; }
 
 		Ref<VertexBuffer>   GetVertexBuffer() const { return m_VertexBuffer; }
 		Ref<IndexBuffer>    GetIndexBuffer()  const { return m_IndexBuffer; }
@@ -88,7 +90,8 @@ namespace XYZ {
 		void loadMeshes(const aiScene* scene);
 		void loadBoneInfo(const aiScene* scene);
 		void traverseNodes(aiNode* node, const glm::mat4& parentTransform);
-
+		void updateBoundingBox(const glm::vec3& position);
+	
 		uint32_t findJointIndex(const std::string& name) const;
 	private:
 		std::string						  m_SourceFilePath;
@@ -113,5 +116,7 @@ namespace XYZ {
 		// TODO: Per submesh
 		glm::mat4			  m_Transform;
 		glm::mat4			  m_InverseTransform;
+
+		AABB				  m_BoundingBox;
 	};
 }

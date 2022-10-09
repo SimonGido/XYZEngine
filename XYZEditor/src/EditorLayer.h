@@ -59,7 +59,6 @@ namespace XYZ {
 			void createOverlayPipelines();
 
 			std::pair<glm::vec3, glm::vec3> cameraToAABB(const TransformComponent& transform, const SceneCamera& camera) const;
-			std::pair<glm::vec3, glm::vec3> transformToAABB(const TransformComponent& transform) const;
 		private:
 			void displayStats();
 

@@ -2,7 +2,7 @@
 #include "XYZ/Renderer/Shader.h"
 
 #include "XYZ/Renderer/Material.h"
-#include "XYZ/Utils/ShaderParser.h"
+#include "XYZ/Renderer/ShaderParser.h"
 
 #include "Vulkan.h"
 #include "VulkanMemoryAllocator/vk_mem_alloc.h"

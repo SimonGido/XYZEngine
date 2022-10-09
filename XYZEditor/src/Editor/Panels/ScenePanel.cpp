@@ -40,6 +40,30 @@ namespace XYZ {
 			static AABB SceneEntityAABB(const SceneEntity& entity)
 			{
 				const TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
+				
+				if (entity.HasComponent<AnimatedMeshComponent>())
+				{
+					auto& meshComponent = entity.GetComponent<AnimatedMeshComponent>();
+					if (meshComponent.Mesh->IsValid())
+					{
+						AABB aabb = meshComponent.Mesh->GetMeshSource()->GetBoundingBox();
+						aabb.Min = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Min, 1.0f));
+						aabb.Max = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Max, 1.0f));
+						return aabb;
+					}
+				}
+				if (entity.HasComponent<MeshComponent>())
+				{
+					auto& meshComponent = entity.GetComponent<MeshComponent>();
+					if (meshComponent.Mesh->IsValid())
+					{
+						AABB aabb = meshComponent.Mesh->GetMeshSource()->GetBoundingBox();
+						aabb.Min = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Min, 1.0f));
+						aabb.Max = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Max, 1.0f));
+						return aabb;
+					}
+				}
+
 				auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
 				return AABB(
 					translation - (scale / 2.0f),
