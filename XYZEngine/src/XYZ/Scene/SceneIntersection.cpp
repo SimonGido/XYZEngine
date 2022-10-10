@@ -56,6 +56,10 @@ namespace XYZ {
 						}
 					}
 				}
+				else if (entity.HasComponent<SpriteRenderer>())
+				{
+					return true;
+				}
 			}
 			return false;
 		}
