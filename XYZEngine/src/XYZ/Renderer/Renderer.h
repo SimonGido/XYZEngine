@@ -149,7 +149,7 @@ namespace XYZ {
 
 	private:
 		static ScopedLock<RenderCommandQueue> getResourceQueue();
-		static RenderCommandQueue& getRenderCommandQueue();
+		static ScopedLock<RenderCommandQueue> getRenderCommandQueue();
 		static RendererStats&	   getStats();
 	};
 
@@ -162,8 +162,8 @@ namespace XYZ {
 			(*pFunc)();
 			pFunc->~FuncT(); // Call destructor
 		};
-		auto& queue = getRenderCommandQueue();
-		auto storageBuffer = queue.Allocate(renderCmd, sizeof(func));
+		ScopedLock<RenderCommandQueue> queue = getRenderCommandQueue();
+		auto storageBuffer = queue->Allocate(renderCmd, sizeof(func));
 		new (storageBuffer) FuncT(std::forward<FuncT>(func));
 		getStats().CommandsCount++;
 	}

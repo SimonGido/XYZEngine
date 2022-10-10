@@ -69,9 +69,9 @@ namespace XYZ {
 		#endif
 	}
 
-	RenderCommandQueue& RendererQueueData::GetRenderCommandQueue()
+	ScopedLock<RenderCommandQueue> RendererQueueData::GetRenderCommandQueue()
 	{
-		return m_RenderCommandQueue[m_RenderWriteIndex];
+		return ScopedLock<RenderCommandQueue>(&m_RenderCommandQueueMutex, m_RenderCommandQueue[m_RenderWriteIndex]);
 	}
 
 	ScopedLock<RenderCommandQueue> RendererQueueData::GetResourceQueue(uint32_t index)
