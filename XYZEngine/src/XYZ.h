@@ -48,6 +48,7 @@
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 #include "XYZ/Utils/DataStructures/MemoryPool.h"
 #include "XYZ/Utils/Math/Ray.h"
+#include "XYZ/Utils/Math/Math.h"
 
 
 

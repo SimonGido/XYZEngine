@@ -74,7 +74,7 @@ Entities:
       Name: Foot.R
     TransformComponent:
       Position: [0, 0.0149307251, 0]
-      Rotation: [-1.78029776, 5.99119812e-06, -3.1119647]
+      Rotation: [-2.70960236, 0.0126094064, -3.10065031]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 86643f2c-331e-4e93-82dc-a775e454ef2d
@@ -84,7 +84,7 @@ Entities:
       Name: Lower_Leg.R
     TransformComponent:
       Position: [0, 0.0128250122, 0]
-      Rotation: [-2.70245385, -0.0155267548, -3.10328388]
+      Rotation: [-1.91662085, -0.0102872951, -3.11552596]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 81992393-90b0-455b-84a4-5eb0a160c28b
@@ -95,7 +95,7 @@ Entities:
       Name: Upper_Leg.R
     TransformComponent:
       Position: [-0.00566864014, -1.34706497e-05, -0.0010433197]
-      Rotation: [0.175390854, 0.00279386272, 3.13241482]
+      Rotation: [-0.542252481, -0.00518137589, 3.13243008]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 204d215e-7c12-46c4-b054-aa08bbdc5369
@@ -107,7 +107,7 @@ Entities:
       Name: Foot.L
     TransformComponent:
       Position: [0, 0.0149307251, 0]
-      Rotation: [-2.10707021, 2.25193799e-06, 3.11195731]
+      Rotation: [-1.54511404, -9.29366797e-06, 3.11195922]
       Scale: [1, 1, 1]
     Relationship:
       Parent: e72b15de-9d06-4975-9db7-2e1a88331e71
@@ -117,7 +117,7 @@ Entities:
       Name: Lower_Leg.L
     TransformComponent:
       Position: [0, 0.0128250122, 0]
-      Rotation: [-1.38743818, 0.0210663434, 3.13547873]
+      Rotation: [-2.6040647, 0.0149553353, 3.10463428]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 38d6f778-7f9c-4f1c-be91-665172cf5529
@@ -128,7 +128,7 @@ Entities:
       Name: Upper_Leg.L
     TransformComponent:
       Position: [0.00566864014, -1.34706497e-05, -0.0010433197]
-      Rotation: [0.628009617, -0.00607828889, -3.13500261]
+      Rotation: [1.10026014, -0.00987094454, -3.13491845]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 204d215e-7c12-46c4-b054-aa08bbdc5369
@@ -141,7 +141,7 @@ Entities:
       Name: Hand.R
     TransformComponent:
       Position: [0, 0.0108337402, 0]
-      Rotation: [0.0208827499, 0.649966359, -0.228922054]
+      Rotation: [0.0208827518, 0.649966359, -0.228922069]
       Scale: [1, 1, 1]
     Relationship:
       Parent: f4df3eaf-cc92-405c-b072-cd50f86f95d1
@@ -151,7 +151,7 @@ Entities:
       Name: Lower_Arm.R
     TransformComponent:
       Position: [0, 0.0148086548, 0]
-      Rotation: [1.38520598, 0.548431993, -1.43645012]
+      Rotation: [1.58880329, 0.550078392, -1.44704282]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 93bb3551-2223-4999-925e-a88f0a2563d5
@@ -162,7 +162,7 @@ Entities:
       Name: Upper_Arm.R
     TransformComponent:
       Position: [-0.00925445557, 0.00771713257, -0.00155735016]
-      Rotation: [-0.269061685, -0.551754653, 2.95036101]
+      Rotation: [0.302198321, -0.25895673, 2.87717962]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 169143df-da4a-4341-8936-d03d63ec5e39
@@ -184,7 +184,7 @@ Entities:
       Name: Lower_Arm.L
     TransformComponent:
       Position: [0, 0.0148086548, 0]
-      Rotation: [1.78585136, 0.232528538, -1.79471219]
+      Rotation: [1.80481744, 0.274435163, -1.80721593]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 481fdb74-c6b4-47c4-b1d9-bbe34bbd55d8
@@ -195,7 +195,7 @@ Entities:
       Name: Upper_Arm.L
     TransformComponent:
       Position: [0.00925445557, 0.00771713257, -0.00155735016]
-      Rotation: [-0.290247053, 0.811532497, -2.87770247]
+      Rotation: [-1.01220882, 0.64210093, 3.07338357]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 169143df-da4a-4341-8936-d03d63ec5e39
@@ -230,7 +230,7 @@ Entities:
       Name: Chest
     TransformComponent:
       Position: [0, 0.0148239136, 0]
-      Rotation: [-0.0610883161, 0.00591747463, -0.0191479214]
+      Rotation: [-0.0227882881, 0.0115460083, -0.0325423628]
       Scale: [1, 1, 1]
     Relationship:
       Parent: 204d215e-7c12-46c4-b054-aa08bbdc5369
@@ -241,7 +241,7 @@ Entities:
     SceneTagComponent:
       Name: Torso
     TransformComponent:
-      Position: [0, 0, 0.0322811902]
+      Position: [0, 0, 0.0367723629]
       Rotation: [1.63550317, -0, 0]
       Scale: [1, 1, 1]
     Relationship:

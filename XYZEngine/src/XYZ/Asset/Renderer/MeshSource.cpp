@@ -2,6 +2,7 @@
 #include "MeshSource.h"
 #include "XYZ/Asset/AssimpImporter.h"
 #include "XYZ/Asset/AssimpLog.h"
+#include "XYZ/Utils/Math/Math.h"
 
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -84,29 +85,8 @@ namespace XYZ {
 			SetFlag(AssetFlag::Invalid);
 			return;
 		}
-
 		m_Scene = scene;
-
-		m_IsAnimated = scene->mAnimations != nullptr;
-		m_InverseTransform = glm::inverse(Utils::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
-		m_BoundingBox.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
-		m_BoundingBox.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-
-		loadMeshes(m_Scene);
-		loadSkeleton(m_Scene);
-		traverseNodes(scene->mRootNode, glm::mat4(1.0f));
-		loadBoneInfo(m_Scene);
-
-		m_BoundingBox.Min = glm::vec3(m_Transform * glm::vec4(m_BoundingBox.Min, 1.0f));
-		m_BoundingBox.Max = glm::vec3(m_Transform * glm::vec4(m_BoundingBox.Max, 1.0f));
-
-
-		if (m_IsAnimated)
-			m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), static_cast<uint32_t>(m_AnimatedVertices.size() * sizeof(AnimatedVertex)));
-		else
-			m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), static_cast<uint32_t>(m_StaticVertices.size() * sizeof(Vertex)));
-		
-		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), static_cast<uint32_t>(m_Indices.size()));
+		loadFromScene(scene);
 	}
 	MeshSource::MeshSource(const aiScene* scene, const std::string& filepath)
 		:
@@ -119,22 +99,63 @@ namespace XYZ {
 			SetFlag(AssetFlag::Invalid);
 			return;
 		}
+		loadFromScene(scene);
+	}
+	MeshSource::MeshSource(std::vector<Vertex> vertices, std::vector<uint32_t> indices)
+		:
+		m_StaticVertices(std::move(vertices)),
+		m_Indices(std::move(indices)),
+		m_SubmeshTransform(1.0f),
+		m_InverseTransform(1.0f),
+		m_Scene(nullptr),
+		m_IsAnimated(false)
+	{
+		m_SubmeshBoundingBox.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
+		m_SubmeshBoundingBox.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+		for (const auto& vertex : m_StaticVertices)
+		{
+			updateBoundingBox(vertex.Position);
+		}
+		setupTriangles();
 
-		m_Scene = scene;
+		m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), static_cast<uint32_t>(m_StaticVertices.size() * sizeof(Vertex)));
+		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), static_cast<uint32_t>(m_Indices.size()));
+	}
+	MeshSource::MeshSource(std::vector<AnimatedVertex> vertices, std::vector<uint32_t> indices)
+		:
+		m_AnimatedVertices(std::move(vertices)),
+		m_Indices(std::move(indices)),
+		m_SubmeshTransform(1.0f),
+		m_InverseTransform(1.0f),
+		m_Scene(nullptr),
+		m_IsAnimated(true)
+	{
+		m_SubmeshBoundingBox.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
+		m_SubmeshBoundingBox.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+		for (const auto& vertex : m_AnimatedVertices)
+		{
+			updateBoundingBox(vertex.Position);
+		}
+		setupTriangles();
 
+		m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), static_cast<uint32_t>(m_AnimatedVertices.size() * sizeof(AnimatedVertex)));
+		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), static_cast<uint32_t>(m_Indices.size()));
+	}
+	
+
+	void MeshSource::loadFromScene(const aiScene* scene)
+	{
 		m_IsAnimated = scene->mAnimations != nullptr;
 		m_InverseTransform = glm::inverse(Utils::Mat4FromAssimpMat4(scene->mRootNode->mTransformation));
-		
-		m_BoundingBox.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
-		m_BoundingBox.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
-		loadMeshes(m_Scene);
-		loadSkeleton(m_Scene);
+		m_SubmeshBoundingBox.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
+		m_SubmeshBoundingBox.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+		loadMeshes(scene);
+		loadSkeleton(scene);
 		traverseNodes(scene->mRootNode, glm::mat4(1.0f));
-		loadBoneInfo(m_Scene);
-
-		m_BoundingBox.Min = glm::vec3(m_Transform * glm::vec4(m_BoundingBox.Min, 1.0f));
-		m_BoundingBox.Max = glm::vec3(m_Transform * glm::vec4(m_BoundingBox.Max, 1.0f));
+		loadBoneInfo(scene);
+		setupTriangles();
 
 
 		if (m_IsAnimated)
@@ -144,44 +165,6 @@ namespace XYZ {
 
 		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), static_cast<uint32_t>(m_Indices.size()));
 	}
-	MeshSource::MeshSource(std::vector<Vertex> vertices, std::vector<uint32_t> indices)
-		:
-		m_StaticVertices(std::move(vertices)),
-		m_Indices(std::move(indices)),
-		m_Transform(1.0f),
-		m_InverseTransform(1.0f),
-		m_Scene(nullptr),
-		m_IsAnimated(false)
-	{
-		m_BoundingBox.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
-		m_BoundingBox.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-		for (const auto& vertex : m_StaticVertices)
-		{
-			updateBoundingBox(vertex.Position);
-		}
-		
-		m_VertexBuffer = VertexBuffer::Create(m_StaticVertices.data(), static_cast<uint32_t>(m_StaticVertices.size() * sizeof(Vertex)));
-		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), static_cast<uint32_t>(m_Indices.size()));
-	}
-	MeshSource::MeshSource(std::vector<AnimatedVertex> vertices, std::vector<uint32_t> indices)
-		:
-		m_AnimatedVertices(std::move(vertices)),
-		m_Indices(std::move(indices)),
-		m_Transform(1.0f),
-		m_InverseTransform(1.0f),
-		m_Scene(nullptr),
-		m_IsAnimated(true)
-	{
-		m_BoundingBox.Min = { FLT_MAX, FLT_MAX, FLT_MAX };
-		m_BoundingBox.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
-		for (const auto& vertex : m_AnimatedVertices)
-		{
-			updateBoundingBox(vertex.Position);
-		}
-		m_VertexBuffer = VertexBuffer::Create(m_AnimatedVertices.data(), static_cast<uint32_t>(m_AnimatedVertices.size() * sizeof(AnimatedVertex)));
-		m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), static_cast<uint32_t>(m_Indices.size()));
-	}
-	
 
 	void MeshSource::loadSkeleton(const aiScene* scene)
 	{
@@ -276,7 +259,7 @@ namespace XYZ {
 						m_BoneCount++;
 						m_BoneInfo.emplace_back(
 							Utils::Float4x4FromAIMatrix4x4(bone->mOffsetMatrix),
-							ozz::math::Invert(Utils::Float4x4FromMat4(m_Transform)),
+							ozz::math::Invert(Utils::Float4x4FromMat4(m_SubmeshTransform)),
 							findJointIndex(boneName)
 						);
 						m_BoneMapping[boneName] = boneIndex;
@@ -296,6 +279,31 @@ namespace XYZ {
 			}
 		}
 	}
+	void MeshSource::setupTriangles()
+	{
+		if (m_IsAnimated)
+		{
+			for (size_t i = 0; i < m_Indices.size(); i += 3)
+			{
+				const auto& v1 = m_AnimatedVertices[m_Indices[i]];
+				const auto& v2 = m_AnimatedVertices[m_Indices[i + 1]];
+				const auto& v3 = m_AnimatedVertices[m_Indices[i + 2]];
+
+				m_Triangles.push_back({ v1.Position, v2.Position, v3.Position });
+			}
+		}
+		else
+		{
+			for (size_t i = 0; i < m_Indices.size(); i += 3)
+			{
+				const auto& v1 = m_StaticVertices[m_Indices[i]];
+				const auto& v2 = m_StaticVertices[m_Indices[i + 1]];
+				const auto& v3 = m_StaticVertices[m_Indices[i + 2]];
+
+				m_Triangles.push_back({ v1.Position, v2.Position, v3.Position });
+			}
+		}
+	}
 	void MeshSource::traverseNodes(aiNode* node, const glm::mat4& parentTransform)
 	{
 		glm::mat4 localTransform = Utils::Mat4FromAssimpMat4(node->mTransformation);
@@ -303,20 +311,21 @@ namespace XYZ {
 		for (uint32_t i = 0; i < node->mNumMeshes; i++)
 		{
 			// TODO: for every submesh
-			m_Transform = transform;
-			m_InverseTransform = glm::inverse(transform);
+			m_SubmeshTransform = transform;
+			m_SubmeshInverseTransform = glm::inverse(transform);
 		}
 		for (uint32_t i = 0; i < node->mNumChildren; i++)
 			traverseNodes(node->mChildren[i], transform);
 	}
 	void MeshSource::updateBoundingBox(const glm::vec3& position)
 	{
-		m_BoundingBox.Min.x = glm::min(position.x, m_BoundingBox.Min.x);
-		m_BoundingBox.Min.y = glm::min(position.y, m_BoundingBox.Min.y);
-		m_BoundingBox.Min.z = glm::min(position.z, m_BoundingBox.Min.z);
-		m_BoundingBox.Max.x = glm::max(position.x, m_BoundingBox.Max.x);
-		m_BoundingBox.Max.y = glm::max(position.y, m_BoundingBox.Max.y);
-		m_BoundingBox.Max.z = glm::max(position.z, m_BoundingBox.Max.z);
+		m_SubmeshBoundingBox.Min.x = glm::min(position.x, m_SubmeshBoundingBox.Min.x);
+		m_SubmeshBoundingBox.Min.y = glm::min(position.y, m_SubmeshBoundingBox.Min.y);
+		m_SubmeshBoundingBox.Min.z = glm::min(position.z, m_SubmeshBoundingBox.Min.z);
+
+		m_SubmeshBoundingBox.Max.x = glm::max(position.x, m_SubmeshBoundingBox.Max.x);
+		m_SubmeshBoundingBox.Max.y = glm::max(position.y, m_SubmeshBoundingBox.Max.y);
+		m_SubmeshBoundingBox.Max.z = glm::max(position.z, m_SubmeshBoundingBox.Max.z);
 	}
 
 	uint32_t MeshSource::findJointIndex(const std::string& name) const

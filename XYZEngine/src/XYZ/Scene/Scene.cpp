@@ -349,7 +349,8 @@ namespace XYZ {
 				const entt::entity boneEntity = meshComponent.BoneEntities[i];
 				meshComponent.BoneTransforms[i] = Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity).WorldTransform);
 			}
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
+			Ref<MeshSource> meshSource = meshComponent.Mesh->GetMeshSource();
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
 		}
 
 		auto particleView = m_Registry.view<TransformComponent, ParticleRenderer, ParticleComponent>();
@@ -446,7 +447,8 @@ namespace XYZ {
 				continue;
 			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.OverrideMaterial);
 		}
-
+		
+		
 		auto animMeshView = m_Registry.view<TransformComponent,AnimatedMeshComponent>();
 		for (auto entity : animMeshView)
 		{
@@ -454,13 +456,15 @@ namespace XYZ {
 			if (!CheckAsset(meshComponent.Mesh) || !CheckAsset(meshComponent.MaterialAsset))
 				continue;
 
+			
 			meshComponent.BoneTransforms.resize(meshComponent.BoneEntities.size());
 			for (size_t i = 0; i < meshComponent.BoneEntities.size(); ++i)
 			{
 				const entt::entity boneEntity = meshComponent.BoneEntities[i];
 				meshComponent.BoneTransforms[i] = Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity).WorldTransform);
 			}
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
+			Ref<MeshSource> meshSource = meshComponent.Mesh->GetMeshSource();
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
 		}
 
 		{
@@ -560,6 +564,43 @@ namespace XYZ {
 				transform.WorldTransform = transform.GetTransform();
 			}
 		}
+	}
+
+	void Scene::updateBoneHierarchy(entt::entity entity)
+	{	
+		auto& meshComponent = m_Registry.get<AnimatedMeshComponent>(entity);
+		if (!CheckAsset(meshComponent.Mesh) || !CheckAsset(meshComponent.MaterialAsset))
+			return;
+
+
+		XYZ_ASSERT(!meshComponent.BoneEntities.empty(), "");
+		
+		Relationship& relation = m_Registry.get<Relationship>(meshComponent.BoneEntities[0]);
+		TransformComponent& transformComponent = m_Registry.get<TransformComponent>(meshComponent.BoneEntities[0]);
+		
+		
+		glm::mat4 transform = transformComponent.GetTransform();
+		transformComponent.WorldTransform = transform;
+
+		
+		if (m_Registry.valid(relation.GetFirstChild()))
+		{
+			propagateBoneTransform(transformComponent.WorldTransform, relation.GetFirstChild());
+		}
+	}
+
+	void Scene::propagateBoneTransform(const glm::mat4& parentTransform, entt::entity entity)
+	{
+		auto [translation, rotation, scale] = Math::DecomposeTransform(parentTransform);
+
+		Relationship& relation = m_Registry.get<Relationship>(entity);
+		TransformComponent& transformComponent = m_Registry.get<TransformComponent>(entity);
+		transformComponent.WorldTransform = parentTransform * transformComponent.GetTransform();
+
+		if (m_Registry.valid(relation.GetNextSibling()))
+			propagateBoneTransform(parentTransform, relation.GetNextSibling());
+		if (m_Registry.valid(relation.GetFirstChild()))
+			propagateBoneTransform(transformComponent.WorldTransform, relation.GetFirstChild());
 	}
 	
 	void Scene::setupPhysics()

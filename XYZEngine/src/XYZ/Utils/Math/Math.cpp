@@ -57,5 +57,17 @@ namespace XYZ {
 			glm::vec3 euler = glm::eulerAngles(rot);
 			return std::tuple<glm::vec3, glm::vec3, glm::vec3>(translation, euler, scale);
 		}
+
+		std::tuple<glm::vec3, glm::quat, glm::vec3> DecomposeTransformQuat(const glm::mat4& transform)
+		{
+			glm::vec3 translation;
+			glm::vec3 scale;
+			glm::quat rot;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+			glm::decompose(transform, scale, rot, translation, skew, perspective);
+			return std::tuple<glm::vec3, glm::quat, glm::vec3>(translation, rot, scale);
+		}
+
 	}
 }

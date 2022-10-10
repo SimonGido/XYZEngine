@@ -7,6 +7,8 @@
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer2D.h"
+
+
 #include "XYZ/Utils/Math/Math.h"
 #include "XYZ/ImGui/ImGui.h"
 
@@ -24,52 +26,19 @@
 namespace XYZ {
 	namespace Editor {
 		namespace Utils {
-			template <typename T>
-			static bool CompareDeques(const std::deque<T>& a, const std::deque<T>& b)
+			template <typename T, typename Comparator>
+			static bool CompareDeques(const std::deque<T>& a, const std::deque<T>& b, Comparator&& cmp)
 			{
 				if (a.size() != b.size())
 					return false;
 				for (size_t i = 0; i < a.size(); ++i)
 				{
-					if (a[i] != b[i])
+					if (!cmp(a[i], b[i]))
 						return false;
 				}
 				return true;
-			}
+			}	
 
-			static AABB SceneEntityAABB(const SceneEntity& entity)
-			{
-				const TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
-				
-				if (entity.HasComponent<AnimatedMeshComponent>())
-				{
-					auto& meshComponent = entity.GetComponent<AnimatedMeshComponent>();
-					if (meshComponent.Mesh->IsValid())
-					{
-						AABB aabb = meshComponent.Mesh->GetMeshSource()->GetBoundingBox();
-						aabb.Min = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Min, 1.0f));
-						aabb.Max = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Max, 1.0f));
-						return aabb;
-					}
-				}
-				if (entity.HasComponent<MeshComponent>())
-				{
-					auto& meshComponent = entity.GetComponent<MeshComponent>();
-					if (meshComponent.Mesh->IsValid())
-					{
-						AABB aabb = meshComponent.Mesh->GetMeshSource()->GetBoundingBox();
-						aabb.Min = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Min, 1.0f));
-						aabb.Max = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Max, 1.0f));
-						return aabb;
-					}
-				}
-
-				auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
-				return AABB(
-					translation - (scale / 2.0f),
-					translation + (scale / 2.0f)
-				);
-			}
 			static std::array<glm::vec2, 2> ImGuiViewportBounds()
 			{
 				const auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -259,30 +228,6 @@ namespace XYZ {
 			return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 		}
 
-		std::deque<SceneEntity> ScenePanel::findSelection(const Ray& ray)
-		{
-			std::deque<SceneEntity> result;
-
-			m_Context->GetRegistry().each([&](const entt::entity entityID) {
-				SceneEntity entity(entityID, m_Context.Raw());
-				float t = 0.0f;
-				if (ray.IntersectsAABB(Utils::SceneEntityAABB(entity), t))
-				{
-					result.push_back(entity);
-				}
-			});
-
-			std::sort(result.begin(), result.end(), [&](const SceneEntity& a, const SceneEntity& b) {
-				auto& cameraPos = m_EditorCamera.GetPosition();
-				const TransformComponent& transformA = a.GetComponent<TransformComponent>();
-				const TransformComponent& transformB = b.GetComponent<TransformComponent>();
-				auto [worldPosA, worldRotA, worldScaleA] = transformA.GetWorldComponents();
-				auto [worldPosB, worldRotB, worldScaleB] = transformB.GetWorldComponents();
-				return glm::distance(worldPosA, cameraPos) < glm::distance(worldPosB, cameraPos);
-			});
-			return result;
-		}
-
 		bool ScenePanel::playBar()
 		{
 			bool handled = false;
@@ -368,8 +313,11 @@ namespace XYZ {
 				const Ray ray = { origin,direction };
 				m_Context->SetSelectedEntity(entt::null);
 
-				std::deque<SceneEntity> newSelection = findSelection(ray);
-				if (!Utils::CompareDeques(m_Selection, newSelection))
+				std::deque<SceneIntersection::HitData> newSelection = SceneIntersection::Intersect(ray, m_Context);
+				
+				if (!Utils::CompareDeques(m_Selection, newSelection, [](const SceneIntersection::HitData& a, const SceneIntersection::HitData & b) {
+					return a.Entity == b.Entity;
+				}))
 				{
 					m_Selection = std::move(newSelection);
 					m_SelectionIndex = 0;
@@ -385,8 +333,8 @@ namespace XYZ {
 
 				if (!m_Selection.empty())
 				{
-					m_Context->SetSelectedEntity(m_Selection[m_SelectionIndex].ID());
-					Application::Get().OnEvent(EntitySelectedEvent(m_Selection[m_SelectionIndex]));
+					m_Context->SetSelectedEntity(m_Selection[m_SelectionIndex].Entity.ID());
+					Application::Get().OnEvent(EntitySelectedEvent(m_Selection[m_SelectionIndex].Entity));
 				}
 			}
 		}

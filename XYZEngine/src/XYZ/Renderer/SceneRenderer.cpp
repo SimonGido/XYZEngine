@@ -275,7 +275,7 @@ namespace XYZ {
 		{
 			auto& dcOverride = dc.OverrideCommands.emplace_back();
 			dcOverride.OverrideMaterial = overrideMaterial;
-			dcOverride.Transform = transform * mesh->GetMeshSource()->GetTransform();
+			dcOverride.Transform = transform;
 			CopyToBoneStorage(dcOverride.BoneTransforms, boneTransforms, mesh);
 		}
 		else

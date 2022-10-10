@@ -99,8 +99,11 @@ namespace XYZ {
         void onScriptComponentDestruct(entt::registry& reg, entt::entity ent);
 
         void updateHierarchy();
+        void updateBoneHierarchy(entt::entity entity);
         void setupPhysics();
         void setupLightEnvironment();
+
+        void propagateBoneTransform(const glm::mat4& parentTransform, entt::entity entity);
 
     private:
         PhysicsWorld2D      m_PhysicsWorld;
@@ -123,6 +126,7 @@ namespace XYZ {
         uint32_t m_ViewportHeight;
 
         friend SceneRenderer;
+        friend class SceneIntersection;
         friend class SceneEntity;
         friend class SceneSerializer;
         friend class ScriptEngine;

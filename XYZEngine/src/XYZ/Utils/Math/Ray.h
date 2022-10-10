@@ -59,7 +59,7 @@ namespace XYZ {
             return true;
         }
 
-        bool IntersectsTriangle(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, float& t)
+        bool IntersectsTriangle(const glm::vec3& A, const glm::vec3& B, const glm::vec3& C, float& t) const
         {
             const glm::vec3 E1 = B - A;
             const glm::vec3 E2 = C - A;

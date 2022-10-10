@@ -1,6 +1,8 @@
 #include "EditorLayer.h"
 
 #include "Editor/Event/EditorEvents.h"
+#include "XYZ/Utils/Math/Math.h"
+#include "XYZ/Scene/SceneEntityUtils.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -9,42 +11,7 @@
 
 namespace XYZ {
 	namespace Editor {
-		namespace Utils {
-			static AABB SceneEntityAABB(const SceneEntity& entity)
-			{
-				const TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
-
-				if (entity.HasComponent<AnimatedMeshComponent>())
-				{
-					auto& meshComponent = entity.GetComponent<AnimatedMeshComponent>();
-					if (meshComponent.Mesh->IsValid())
-					{
-						AABB aabb = meshComponent.Mesh->GetMeshSource()->GetBoundingBox();
-						aabb.Min = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Min, 1.0f));
-						aabb.Max = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Max, 1.0f));
-						return aabb;
-					}
-				}
-				if (entity.HasComponent<MeshComponent>())
-				{
-					auto& meshComponent = entity.GetComponent<MeshComponent>();
-					if (meshComponent.Mesh->IsValid())
-					{
-						AABB aabb = meshComponent.Mesh->GetMeshSource()->GetBoundingBox();
-						aabb.Min = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Min, 1.0f));
-						aabb.Max = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Max, 1.0f));
-						return aabb;
-					}
-				}
-
-				auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
-				return AABB(
-					translation - (scale / 2.0f),
-					translation + (scale / 2.0f)
-				);
-			}
-		}
-
+		
 		EditorLayer::EditorLayer()
 		{
 		}
@@ -316,7 +283,7 @@ namespace XYZ {
 				}
 				else
 				{
-					auto aabb = Utils::SceneEntityAABB(selected);
+					auto aabb = SceneEntityAABB(selected);
 					m_OverlayRenderer2D->SubmitAABB(aabb.Min, aabb.Max, s_Data.Color[ED::BoundingBox]);
 				}
 			}

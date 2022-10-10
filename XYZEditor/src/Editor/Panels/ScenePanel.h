@@ -2,11 +2,14 @@
 
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Scene/SceneIntersection.h"
+
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/InputEvent.h"
+
 #include "XYZ/Renderer/Texture.h"
 #include "XYZ/Utils/Math/Ray.h"
-#include "XYZ/Scene/SceneEntity.h"
+
 
 #include "Editor/EditorPanel.h"
 #include "Editor/EditorCamera.h"
@@ -35,7 +38,6 @@ namespace XYZ {
 
 			std::pair<glm::vec3, glm::vec3> castRay(float mx, float my) const;
 			std::pair<float, float>		    getMouseViewportSpace()		const;
-			std::deque<SceneEntity>		    findSelection(const Ray& ray);
 
 			bool playBar();
 			bool toolsBar();
@@ -60,9 +62,9 @@ namespace XYZ {
 			EditorCamera m_EditorCamera;
 
 
-			std::deque<SceneEntity> m_Selection;
-			uint32_t				m_SelectionIndex;
-			int						m_GizmoType;
+			std::deque<SceneIntersection::HitData> m_Selection;
+			uint32_t							   m_SelectionIndex;
+			int									   m_GizmoType;
 
 			static constexpr int    sc_InvalidGizmoType = -1;
 		};
