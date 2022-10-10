@@ -60,6 +60,8 @@ namespace XYZ {
 	class AssetManager
 	{
 	public:
+		using AsyncAsset = std::shared_ptr<std::future<Ref<Asset>>>;
+
 		static void Init();
 		static void Shutdown();
 		static void SerializeAll();
@@ -122,6 +124,7 @@ namespace XYZ {
 		static std::unordered_map<AssetHandle, WeakRef<Asset>>        s_MemoryAssets;
 		static std::shared_ptr<FileWatcher>							  s_FileWatcher;
 		static std::function<void(Ref<Asset> asset)>				  s_OnAssetLoaded;
+
 	private:
 		friend Editor::AssetBrowser;
 		friend Editor::AssetManagerViewPanel;
@@ -222,6 +225,8 @@ namespace XYZ {
 
 		return GetAsset<T>(metadata->Handle);
 	}
+
+
 
 	template<typename T>
 	inline std::vector<Ref<T>> AssetManager::FindAllAssets(AssetType type)

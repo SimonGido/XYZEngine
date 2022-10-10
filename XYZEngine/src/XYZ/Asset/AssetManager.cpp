@@ -66,6 +66,7 @@ namespace XYZ
 	{
 		s_FileWatcher->ProcessChanges();
 	}
+
 	std::vector<AssetMetadata> AssetManager::FindAllMetadata(AssetType type)
 	{
 		std::vector<AssetMetadata> result;
