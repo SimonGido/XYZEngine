@@ -468,7 +468,6 @@ namespace XYZ {
 	template <>
 	void SceneSerializer::deserialize<ScriptComponent>(YAML::Node& data, ScriptComponent& component, SceneEntity entity)
 	{
-		XYZ_ASSERT(false, "Component must be first created in order to access public fields");
 		component.ModuleName = data["ModuleName"].as<std::string>();
 
 		auto& fields = ScriptEngine::GetPublicFields(entity);
@@ -682,9 +681,8 @@ namespace XYZ {
 		auto transformComponent = data["TransformComponent"];
 		if (transformComponent)
 		{
-			deserialize<TransformComponent>(transformComponent, entity.EmplaceComponent<TransformComponent>(), entity);
+			deserialize<TransformComponent>(transformComponent, entity.GetComponent<TransformComponent>(), entity);
 		}
-
 
 		auto meshComponent = data["MeshComponent"];
 		if (meshComponent)
@@ -766,7 +764,6 @@ namespace XYZ {
 		{
 			deserialize<ParticleRenderer>(particleRenderer, entity.EmplaceComponent<ParticleRenderer>(), entity);
 		}
-
 		
 
 		auto animationComponent = data["AnimationComponent"];
@@ -791,126 +788,6 @@ namespace XYZ {
 			entity.AddComponent<MeshComponent>(meshComponentFuture.get());
 		}
 	}
-
-
-	
-
-
-	std::future<MultiComponent<XYZ_COMPONENTS>> SceneSerializer::deserializeEntityAsync(YAML::Node& data, WeakRef<Scene> scene)
-	{
-		auto& threadPool = Application::Get().GetThreadPool();
-
-		GUID guid = data["Entity"].as<std::string>();
-		auto& tagComponent = data["SceneTagComponent"];
-
-		SceneTagComponent tag = tagComponent["Name"].as<std::string>();
-		SceneEntity entity = scene->CreateEntity(tag, guid);
-
-		
-		return threadPool.SubmitJob([this, entity, data]() {
-			
-			MultiComponent<XYZ_COMPONENTS> multiComponent;
-			multiComponent.Entity = entity;
-
-			auto transformComponent = data["TransformComponent"];
-			if (transformComponent)
-			{
-				deserialize<TransformComponent>(transformComponent, multiComponent.Get<TransformComponent>(), entity);
-			}
-
-			auto meshComponent = data["MeshComponent"];
-			if (meshComponent)
-			{
-				deserialize<MeshComponent>(meshComponent, multiComponent.Get<MeshComponent>(), entity);
-			}
-
-			auto animatedMeshComponent = data["AnimatedMeshComponent"];
-			if (animatedMeshComponent)
-			{
-				deserialize<AnimatedMeshComponent>(animatedMeshComponent, multiComponent.Get<AnimatedMeshComponent>(), entity);
-			}
-
-			auto cameraComponent = data["CameraComponent"];
-			if (cameraComponent)
-			{
-				deserialize<CameraComponent>(cameraComponent, multiComponent.Get<CameraComponent>(), entity);
-			}
-			auto spriteRenderer = data["SpriteRenderer"];
-			if (spriteRenderer)
-			{
-				deserialize<SpriteRenderer>(spriteRenderer, multiComponent.Get<SpriteRenderer>(), entity);
-			}
-
-			auto rigidBody = data["RigidBody2D"];
-			if (rigidBody)
-			{
-				deserialize<RigidBody2DComponent>(rigidBody, multiComponent.Get<RigidBody2DComponent>(), entity);
-			}
-
-			auto boxCollider = data["BoxCollider2D"];
-			if (boxCollider)
-			{
-				deserialize<BoxCollider2DComponent>(boxCollider, multiComponent.Get<BoxCollider2DComponent>(), entity);
-			}
-
-			auto circleCollider = data["CircleCollider2D"];
-			if (circleCollider)
-			{
-				deserialize<CircleCollider2DComponent>(circleCollider, multiComponent.Get<CircleCollider2DComponent>(), entity);
-			}
-
-			auto chainCollider = data["ChainCollider2D"];
-			if (chainCollider)
-			{
-				deserialize<ChainCollider2DComponent>(chainCollider, multiComponent.Get<ChainCollider2DComponent>(), entity);
-			}
-
-			auto scriptComponent = data["ScriptComponent"];
-			if (scriptComponent)
-			{
-				//deserialize<ScriptComponent>(scriptComponent, multiComponent.Get<ScriptComponent>(), entity);
-			}
-
-			auto pointLightComponent = data["PointLight2D"];
-			if (pointLightComponent)
-			{
-				deserialize<PointLight2D>(pointLightComponent, multiComponent.Get<PointLight2D>(), entity);
-			}
-
-			auto spotLightComponent = data["SpotLight2D"];
-			if (spotLightComponent)
-			{
-				deserialize<SpotLight2D>(spotLightComponent, multiComponent.Get<SpotLight2D>(), entity);
-			}
-
-			auto particleComponent = data["ParticleComponent"];
-			if (particleComponent)
-			{
-				deserialize<ParticleComponent>(particleComponent, multiComponent.Get<ParticleComponent>(), entity);
-			}
-
-			auto particleRenderer = data["ParticleRenderer"];
-			if (particleRenderer)
-			{
-				deserialize<ParticleRenderer>(particleRenderer, multiComponent.Get<ParticleRenderer>(), entity);
-			}
-
-			auto animationComponent = data["AnimationComponent"];
-			if (animationComponent)
-			{
-				deserialize<AnimationComponent>(animationComponent, multiComponent.Get<AnimationComponent>(), entity);
-			}
-
-			auto pointLightComponent3D = data["PointLightComponent3D"];
-			if (pointLightComponent3D)
-			{
-				deserialize<PointLightComponent3D>(pointLightComponent3D, multiComponent.Get<PointLightComponent3D>(), entity);
-			}
-
-			return multiComponent;
-		});
-	}
-
 
 
 	void SceneSerializer::Serialize(const std::string& filepath, WeakRef<Scene> scene)
@@ -976,17 +853,9 @@ namespace XYZ {
 		auto entities = data["Entities"];
 		if (entities)
 		{
-			std::vector<std::future<MultiComponent<XYZ_COMPONENTS>>> entityFutures;
 			for (auto entity : entities)
 			{
-				entityFutures.emplace_back(SceneSerializer::deserializeEntityAsync(entity, scene));
-				//SceneSerializer::deserializeEntity(entity, scene);
-			}
-
-			for (auto& entityFuture : entityFutures)
-			{
-				auto multiComponent = entityFuture.get();
-				multiComponent.AddToEntity();
+				SceneSerializer::deserializeEntity(entity, scene);
 			}
 
 			if (data["FirstChild"])
