@@ -33,6 +33,7 @@ namespace XYZ {
 		template <typename T>
 		bool HasComponent() const;
 		
+	
 		void Destroy();
 		
 		bool IsValid() const;
@@ -92,6 +93,7 @@ namespace XYZ {
 	{
 		return m_Scene->m_Registry.any_of<T>(m_ID);
 	}
+
 }
 
 namespace std {

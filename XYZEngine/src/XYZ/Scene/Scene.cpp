@@ -41,42 +41,59 @@ namespace XYZ {
 	}
 
 	template<typename T>
-	void Clone(entt::registry& src, entt::registry& dst) 
+	static void Clone(const entt::registry& src, entt::registry& dst)
 	{
-		auto view = src.view<T>();
+		auto view = src.view<const T>();
 		for (auto entity : view)
 		{
 			auto& component = dst.emplace<T>(entity);
-			component = view.get<T>(entity);
+			component = view.get<const T>(entity);
 		}
 	}
-	
-	void CloneRegistry(entt::registry& src, entt::registry& dst)
+
+	template <typename ...Args>
+	static void CloneAll(const entt::registry& src, entt::registry& dst)
 	{
-		auto view = src.view<TransformComponent>();
-		dst = entt::registry();
+		(Clone<Args>(src, dst), ...);
+	}
+
+	template<typename T>
+	static void CopyComponentIfExists(const entt::registry& src, entt::registry& dst, entt::entity srcEntity, entt::entity dstEntity)
+	{
+		if (src.any_of<const T>(srcEntity))
+		{
+			const auto& srcComponent = src.get<const T>(srcEntity);
+	
+			dst.emplace_or_replace<T>(dstEntity, srcComponent);
+		}
+	}
+
+	template <typename ...Args>
+	static void CopyComponentsIfExist(const entt::registry& src, entt::registry& dst, entt::entity srcEntity, entt::entity dstEntity)
+	{
+		(CopyComponentIfExists<Args>(src, dst, srcEntity, dstEntity), ...);
+	}
+
+	
+	static void CloneRegistry(const entt::registry& src, entt::registry& dst, bool clearDestination = true)
+	{
+		if (clearDestination)
+			dst = entt::registry();
+		
 		dst.assign(src.data(), src.data() + src.size(), src.released()); // Copy entities
 
-		Clone<IDComponent>(src, dst);
-		Clone<TransformComponent>(src, dst);
-		Clone<SceneTagComponent>(src, dst);
-		Clone<SpriteRenderer>(src, dst);
-		Clone<MeshComponent>(src, dst);
-		Clone<AnimatedMeshComponent>(src, dst);
-		Clone<AnimationComponent>(src, dst);
-		Clone<PrefabComponent>(src, dst);
-		Clone<ParticleRenderer>(src, dst);
-		Clone<CameraComponent>(src, dst);
-		Clone<ParticleComponent>(src, dst);
-		Clone<PointLight2D>(src, dst);
-		Clone<SpotLight2D>(src, dst);
-		Clone<Relationship>(src, dst);
-		Clone<ScriptComponent>(src, dst);
-		Clone<RigidBody2DComponent>(src, dst);
-		Clone<BoxCollider2DComponent>(src, dst);
-		Clone<CircleCollider2DComponent>(src, dst);
-		Clone<PolygonCollider2DComponent>(src, dst);
-		Clone<ChainCollider2DComponent>(src, dst);
+		CloneAll<XYZ_COMPONENTS>(src, dst);
+	}
+
+	static void CopyRegistry(const entt::registry& src, entt::registry& dst, bool clearDestination = false)
+	{
+		if (clearDestination)
+			dst = entt::registry();
+
+		dst.each([&src, &dst](entt::entity srcEntity) {
+			entt::entity dstEntity = dst.create();
+			CopyComponentsIfExist<XYZ_COMPONENTS>(src, dst, srcEntity, dstEntity);
+		});
 	}
 
 
@@ -211,6 +228,7 @@ namespace XYZ {
 			particleView.get<ParticleComponent>(entity).GetSystem()->Reset();
 		}
 
+
 		CloneRegistry(m_Registry, s_CopyRegistry);
 	}
 
@@ -293,15 +311,8 @@ namespace XYZ {
 			}
 		}
 
-		auto scriptView = m_Registry.view<ScriptComponent>();
-		for (auto entity : scriptView)
-		{
-			ScriptComponent& scriptComponent = scriptView.get<ScriptComponent>(entity);
-			SceneEntity sceneEntity(entity, this);
-			if (!scriptComponent.ModuleName.empty())
-				ScriptEngine::OnUpdateEntity(sceneEntity, ts);
-		}
 
+		updateScripts(ts);
 		updateHierarchy();
 	}
 
@@ -489,6 +500,7 @@ namespace XYZ {
 		sceneRenderer->EndScene();
 	}
 
+
 	void Scene::SetViewportSize(uint32_t width, uint32_t height)
 	{
 		m_ViewportWidth = width;
@@ -529,12 +541,27 @@ namespace XYZ {
 
 	void Scene::onScriptComponentConstruct(entt::registry& reg, entt::entity ent)
 	{
+		std::unique_lock lock(m_ScriptMutex);
 		ScriptEngine::CreateScriptEntityInstance({ ent, this });
 	}
 
 	void Scene::onScriptComponentDestruct(entt::registry& reg, entt::entity ent)
 	{
+		std::unique_lock lock(m_ScriptMutex);
 		ScriptEngine::DestroyScriptEntityInstance({ ent, this });
+	}
+
+	void Scene::updateScripts(Timestep ts)
+	{
+		auto scriptView = m_Registry.view<ScriptComponent>();
+		std::shared_lock lock(m_ScriptMutex);
+		for (auto entity : scriptView)
+		{
+			ScriptComponent& scriptComponent = scriptView.get<ScriptComponent>(entity);
+			SceneEntity sceneEntity(entity, this);
+			if (!scriptComponent.ModuleName.empty())
+				ScriptEngine::OnUpdateEntity(sceneEntity, ts);
+		}
 	}
 
 	void Scene::updateHierarchy()

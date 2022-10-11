@@ -266,6 +266,12 @@ namespace XYZ {
 	{
 	}
 	AnimatedMeshComponent::AnimatedMeshComponent(const AnimatedMeshComponent& other)
+		:
+		Mesh(other.Mesh),
+		MaterialAsset(other.MaterialAsset),
+		OverrideMaterial(other.OverrideMaterial),
+		BoneTransforms(other.BoneTransforms),
+		BoneEntities(other.BoneEntities)
 	{
 	}
 	AnimatedMeshComponent::AnimatedMeshComponent(const Ref<AnimatedMesh>& mesh, const Ref<XYZ::MaterialAsset>& materialAsset)

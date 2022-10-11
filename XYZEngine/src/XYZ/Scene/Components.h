@@ -364,4 +364,28 @@ namespace XYZ {
 		bool  InvertNormals = false;
 		void* RuntimeFixture = nullptr;
 	};
+
+
+#define XYZ_COMPONENTS \
+	IDComponent, \
+	SceneTagComponent, \
+	TransformComponent, \
+	SpriteRenderer, \
+	MeshComponent, \
+	AnimatedMeshComponent, \
+	AnimationComponent, \
+	PrefabComponent, \
+	ParticleRenderer, \
+	CameraComponent,\
+	ParticleComponent, \
+	PointLight2D, \
+	SpotLight2D, \
+	PointLightComponent3D, \
+	Relationship, \
+	ScriptComponent, \
+	RigidBody2DComponent, \
+	BoxCollider2DComponent, \
+	CircleCollider2DComponent, \
+	PolygonCollider2DComponent, \
+	ChainCollider2DComponent
 }

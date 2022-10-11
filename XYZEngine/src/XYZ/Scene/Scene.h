@@ -80,7 +80,7 @@ namespace XYZ {
         void OnUpdateEditor(Timestep ts);
         void OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos);
 
-
+    
         SceneEntity GetEntityByName(const std::string& name);
         SceneEntity GetEntityByGUID(const GUID& guid);
         SceneEntity GetSceneEntity();
@@ -98,6 +98,7 @@ namespace XYZ {
         void onScriptComponentConstruct(entt::registry& reg, entt::entity ent);
         void onScriptComponentDestruct(entt::registry& reg, entt::entity ent);
 
+        void updateScripts(Timestep ts);
         void updateHierarchy();
         void updateBoneHierarchy(entt::entity entity);
         void setupPhysics();
@@ -124,6 +125,8 @@ namespace XYZ {
 
         uint32_t m_ViewportWidth;
         uint32_t m_ViewportHeight;
+
+        std::shared_mutex m_ScriptMutex;
 
         friend SceneRenderer;
         friend class SceneIntersection;

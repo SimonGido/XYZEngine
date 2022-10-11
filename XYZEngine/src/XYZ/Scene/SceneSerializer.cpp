@@ -2,7 +2,6 @@
 #include "SceneSerializer.h"
 
 #include "XYZ/Scene/SceneEntity.h"
-#include "XYZ/Scene/Components.h"
 #include "XYZ/Asset/AssetManager.h"
 #include "XYZ/Script/ScriptEngine.h"
 
@@ -16,12 +15,14 @@
 
 namespace XYZ {
 
-	static void SerializeRelationship(entt::registry& reg, YAML::Emitter& out, const Relationship& val)
+	template <>
+	void SceneSerializer::serialize<Relationship>(YAML::Emitter& out, const Relationship& val, SceneEntity entity)
 	{
 		out << YAML::Key << "Relationship";
 		out << YAML::BeginMap;
-	
 
+		const auto& reg = *entity.GetRegistry();
+		
 		if (reg.valid(val.GetParent()))
 			out << YAML::Key << "Parent" << YAML::Value << reg.get<IDComponent>(val.GetParent()).ID;
 		if (reg.valid(val.GetNextSibling()))
@@ -33,7 +34,6 @@ namespace XYZ {
 		out << YAML::Key << "Depth" << YAML::Value << val.GetDepth();
 		out << YAML::EndMap;
 	}
-
 	template <>
 	void SceneSerializer::serialize<SceneTagComponent>(YAML::Emitter& out, const SceneTagComponent& val, SceneEntity entity)
 	{
@@ -360,6 +360,16 @@ namespace XYZ {
 		out << YAML::EndMap;
 	}
 
+	template <>
+	void SceneSerializer::serialize<PolygonCollider2DComponent>(YAML::Emitter& out, const PolygonCollider2DComponent& val, SceneEntity entity)
+	{
+	}
+
+	template <>
+	void SceneSerializer::serialize<PrefabComponent>(YAML::Emitter& out, const PrefabComponent& val, SceneEntity entity)
+	{
+	}
+
 
 	template <>
 	std::future<MeshComponent> SceneSerializer::deserializeAsync<MeshComponent>(YAML::Node& data)
@@ -375,9 +385,8 @@ namespace XYZ {
 	}
 
 	template <>
-	void SceneSerializer::deserialize<MeshComponent>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<MeshComponent>(YAML::Node& data, MeshComponent& component, SceneEntity entity)
 	{
-		MeshComponent& component = entity.EmplaceComponent<MeshComponent>();
 		component.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
 		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
 	}
@@ -397,18 +406,15 @@ namespace XYZ {
 	}
 
 	template <>
-	void SceneSerializer::deserialize<AnimatedMeshComponent>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<AnimatedMeshComponent>(YAML::Node& data, AnimatedMeshComponent& component, SceneEntity entity)
 	{
-		AnimatedMeshComponent& component = entity.EmplaceComponent<AnimatedMeshComponent>();
 		component.Mesh = AssetManager::GetAsset<AnimatedMesh>(AssetHandle(data["Mesh"].as<std::string>()));
 		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
 	}
 
 	template <>
-	void SceneSerializer::deserialize<ParticleComponent>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<ParticleComponent>(YAML::Node& data, ParticleComponent& component, SceneEntity entity)
 	{
-		ParticleComponent& component = entity.EmplaceComponent<ParticleComponent>();;
-
 		component.GetSystem()->SetMaxParticles(data["MaxParticles"].as<uint32_t>());
 		component.GetSystem()->Speed				   = data["Speed"].as<float>();
 		component.GetSystem()->AnimationTiles		   = data["AnimationTiles"].as<glm::ivec2>();
@@ -454,21 +460,18 @@ namespace XYZ {
 		}
 	}
 	template <>
-	void SceneSerializer::deserialize<ParticleRenderer>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<ParticleRenderer>(YAML::Node& data, ParticleRenderer& component, SceneEntity entity)
 	{
-		auto& particleRenderer = entity.EmplaceComponent<ParticleRenderer>();
-		particleRenderer.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
-		particleRenderer.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
+		component.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
+		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
 	}
 	template <>
-	void SceneSerializer::deserialize<ScriptComponent>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<ScriptComponent>(YAML::Node& data, ScriptComponent& component, SceneEntity entity)
 	{
-		ScriptComponent scriptComponent;
-		scriptComponent.ModuleName = data["ModuleName"].as<std::string>();
-		entity.AddComponent(scriptComponent);
+		XYZ_ASSERT(false, "Component must be first created in order to access public fields");
+		component.ModuleName = data["ModuleName"].as<std::string>();
 
 		auto& fields = ScriptEngine::GetPublicFields(entity);
-		const auto& component = entity.GetComponent<ScriptComponent>();
 		for (auto& field : fields)
 		{
 			auto val = data[field.GetName()];
@@ -507,7 +510,7 @@ namespace XYZ {
 	}
 
 	template <>
-	void SceneSerializer::deserialize<SpriteRenderer>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<SpriteRenderer>(YAML::Node& data, SpriteRenderer& component, SceneEntity entity)
 	{
 		const GUID materialHandle(data["Material"].as<std::string>());
 		const GUID subTextureHandle(data["SubTexture"].as<std::string>());
@@ -515,29 +518,26 @@ namespace XYZ {
 		const uint16_t sortLayer = data["SortLayer"].as<uint16_t>();
 		const bool visible	     = data["Visible"].as<bool>();
 
-		Ref<Material> material;
+		Ref<MaterialAsset> material;
 		Ref<SubTexture> subTexture;
 		if (AssetManager::Exist(materialHandle))
 		{
-			material = AssetManager::GetAsset<Material>(materialHandle);
+			material = AssetManager::GetAsset<MaterialAsset>(materialHandle);
 		}
 		if (AssetManager::Exist(subTextureHandle))
 		{
 			subTexture = AssetManager::GetAsset<SubTexture>(subTextureHandle);
 		}
 
-		const SpriteRenderer spriteRenderer(
-			material,
-			subTexture,
-			color,
-			sortLayer,
-			visible
-		);
-		entity.AddComponent(spriteRenderer);
+		component.Material = material;
+		component.SubTexture = subTexture;
+		component.Color = color;
+		component.SortLayer = sortLayer;
+		component.Visible = visible;
 	}
 
 	template <>
-	void SceneSerializer::deserialize<CameraComponent>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<CameraComponent>(YAML::Node& data, CameraComponent& component, SceneEntity entity)
 	{
 		CameraPerspectiveProperties perspectiveProps;
 		CameraOrthographicProperties orthoProps;
@@ -563,51 +563,44 @@ namespace XYZ {
 		orthoProps.OrthographicNear = data["OrthographicNear"].as<float>();
 		orthoProps.OrthographicFar = data["OrthographicFar"].as<float>();
 
-		CameraComponent camera;
-		camera.Camera.SetProjectionType(projectionType);
-		camera.Camera.SetPerspective(perspectiveProps);
-		camera.Camera.SetOrthographic(orthoProps);
-		entity.AddComponent(camera);
+		
+		component.Camera.SetProjectionType(projectionType);
+		component.Camera.SetPerspective(perspectiveProps);
+		component.Camera.SetOrthographic(orthoProps);
 	}
 
 	template <>
-	void SceneSerializer::deserialize<TransformComponent>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<TransformComponent>(YAML::Node& data, TransformComponent& component, SceneEntity entity)
 	{
-		TransformComponent transform(data["Position"].as<glm::vec3>());
-
 		const glm::vec3 rotation = data["Rotation"].as<glm::vec3>();
 		const glm::vec3 scale = data["Scale"].as<glm::vec3>();
 
-		transform.Rotation = rotation;
-		transform.Scale = scale;
-		entity.GetComponent<TransformComponent>() = transform;
+		component.Translation = data["Position"].as<glm::vec3>();
+		component.Rotation = rotation;
+		component.Scale = scale;
 	}
 
 	template <>
-	void SceneSerializer::deserialize<PointLight2D>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<PointLight2D>(YAML::Node& data, PointLight2D& component, SceneEntity entity)
 	{
-		PointLight2D light;
-		light.Color = data["Color"].as<glm::vec3>();
-		light.Radius = data["Radius"].as<float>();
-		light.Intensity = data["Intensity"].as<float>();
-		entity.AddComponent(light);
+		component.Color = data["Color"].as<glm::vec3>();
+		component.Radius = data["Radius"].as<float>();
+		component.Intensity = data["Intensity"].as<float>();
+
 	}
 	template <>
-	void SceneSerializer::deserialize<SpotLight2D>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<SpotLight2D>(YAML::Node& data, SpotLight2D& component, SceneEntity entity)
 	{
-		SpotLight2D light;
-		light.Color = data["Color"].as<glm::vec3>();
-		light.Radius = data["Radius"].as<float>();
-		light.Intensity = data["Intensity"].as<float>();
-		light.OuterAngle = data["OuterAngle"].as<float>();
-		light.InnerAngle = data["InnerAngle"].as<float>();
-		entity.AddComponent(light);
+		component.Color = data["Color"].as<glm::vec3>();
+		component.Radius = data["Radius"].as<float>();
+		component.Intensity = data["Intensity"].as<float>();
+		component.OuterAngle = data["OuterAngle"].as<float>();
+		component.InnerAngle = data["InnerAngle"].as<float>();
 	}
 
 	template <>
-	void SceneSerializer::deserialize<PointLightComponent3D>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<PointLightComponent3D>(YAML::Node& data, PointLightComponent3D& component, SceneEntity entity)
 	{
-		PointLightComponent3D component;
 		component.Radiance = data["Radiance"].as<glm::vec3>();
 		component.Intensity = data["Intensity"].as<float>();
 		component.LightSize = data["LightSize"].as<float>();
@@ -615,78 +608,60 @@ namespace XYZ {
 		component.CastsShadows = data["CastShadows"].as<bool>();
 		component.SoftShadows = data["SoftShadows"].as<bool>();
 		component.Falloff = data["Falloff"].as<float>();
-		entity.AddComponent<PointLightComponent3D>(component);
 	}
 
 	template <>
-	void SceneSerializer::deserialize<RigidBody2DComponent>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<RigidBody2DComponent>(YAML::Node& data, RigidBody2DComponent& component, SceneEntity entity)
 	{
-		RigidBody2DComponent body;
 		const uint32_t type = data["Type"].as<uint32_t>();
 		switch (type)
 		{
 		case ToUnderlying(RigidBody2DComponent::BodyType::Static):
-			body.Type = RigidBody2DComponent::BodyType::Static;
+			component.Type = RigidBody2DComponent::BodyType::Static;
 			break;
 		case ToUnderlying(RigidBody2DComponent::BodyType::Dynamic):
-			body.Type = RigidBody2DComponent::BodyType::Dynamic;
+			component.Type = RigidBody2DComponent::BodyType::Dynamic;
 			break;
 		case ToUnderlying(RigidBody2DComponent::BodyType::Kinematic):
-			body.Type = RigidBody2DComponent::BodyType::Kinematic;
+			component.Type = RigidBody2DComponent::BodyType::Kinematic;
 			break;
 		}
-		entity.AddComponent(body);
 	}
 
 	template <>
-	void SceneSerializer::deserialize<BoxCollider2DComponent>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<BoxCollider2DComponent>(YAML::Node& data, BoxCollider2DComponent& component, SceneEntity entity)
 	{
-		BoxCollider2DComponent box;
-
-		box.Offset = data["Offset"].as<glm::vec2>();
-		box.Size = data["Size"].as<glm::vec2>();
-		box.Density = data["Density"].as<float>();
-		box.Friction = data["Friction"].as<float>();
-
-		entity.AddComponent<BoxCollider2DComponent>(box);
+		component.Offset = data["Offset"].as<glm::vec2>();
+		component.Size = data["Size"].as<glm::vec2>();
+		component.Density = data["Density"].as<float>();
+		component.Friction = data["Friction"].as<float>();
 	}
 	template <>
-	void SceneSerializer::deserialize<CircleCollider2DComponent>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<CircleCollider2DComponent>(YAML::Node& data, CircleCollider2DComponent& component, SceneEntity entity)
 	{
-		CircleCollider2DComponent circle;
-
-		circle.Offset = data["Offset"].as<glm::vec2>();
-		circle.Radius = data["Radius"].as<float>();
-		circle.Density = data["Density"].as<float>();
-		circle.Friction = data["Friction"].as<float>();
-
-		entity.AddComponent(circle);
+		component.Offset = data["Offset"].as<glm::vec2>();
+		component.Radius = data["Radius"].as<float>();
+		component.Density = data["Density"].as<float>();
+		component.Friction = data["Friction"].as<float>();
 	}
 	template <>
-	void SceneSerializer::deserialize<ChainCollider2DComponent>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<ChainCollider2DComponent>(YAML::Node& data, ChainCollider2DComponent& component, SceneEntity entity)
 	{
-		ChainCollider2DComponent chain;
-
-		chain.Points = data["Points"].as<std::vector<glm::vec2>>();
-		chain.Density = data["Density"].as<float>();
-		chain.Friction = data["Friction"].as<float>();
-		chain.InvertNormals = data["InvertNormals"].as<bool>();
-
-		entity.AddComponent(chain);
+		component.Points = data["Points"].as<std::vector<glm::vec2>>();
+		component.Density = data["Density"].as<float>();
+		component.Friction = data["Friction"].as<float>();
+		component.InvertNormals = data["InvertNormals"].as<bool>();
 	}
 
 	template <>
-	void SceneSerializer::deserialize<AnimationComponent>(YAML::Node& data, SceneEntity entity)
+	void SceneSerializer::deserialize<AnimationComponent>(YAML::Node& data, AnimationComponent& component, SceneEntity entity)
 	{
-		AnimationComponent component;
-
 		auto controllerData = data["Controller"].as<std::string>();
 		if (!controllerData.empty())
 		{
 			AssetHandle handle(controllerData);
 			component.Controller = AssetManager::TryGetAsset<AnimationController>(handle);
 		}
-		entity.AddComponent(component);
 	}
 
 	void SceneSerializer::deserializeEntity(YAML::Node& data,  WeakRef<Scene> scene)
@@ -707,89 +682,89 @@ namespace XYZ {
 		auto transformComponent = data["TransformComponent"];
 		if (transformComponent)
 		{
-			deserialize<TransformComponent>(transformComponent, entity);
+			deserialize<TransformComponent>(transformComponent, entity.EmplaceComponent<TransformComponent>(), entity);
 		}
 
 
 		auto meshComponent = data["MeshComponent"];
 		if (meshComponent)
 		{
-			deserialize<MeshComponent>(meshComponent, entity);
-			//meshComponentFuture = deserializeAsync<MeshComponent>(meshComponent);
-			//meshComponentFutureAssigned = true;
+			//deserialize<MeshComponent>(meshComponent, entity);
+			meshComponentFuture = deserializeAsync<MeshComponent>(meshComponent);
+			meshComponentFutureAssigned = true;
 		}
 
 		auto animatedMeshComponent = data["AnimatedMeshComponent"];
 		if (animatedMeshComponent)
 		{
-			deserialize<AnimatedMeshComponent>(animatedMeshComponent, entity);
-			//animatedMeshComponentFuture = deserializeAsync<AnimatedMeshComponent>(animatedMeshComponent);
-			//animatedMeshComponentFutureAssigned = true;
+			//deserialize<AnimatedMeshComponent>(animatedMeshComponent, entity);
+			animatedMeshComponentFuture = deserializeAsync<AnimatedMeshComponent>(animatedMeshComponent);
+			animatedMeshComponentFutureAssigned = true;
 		}
 
 		auto cameraComponent = data["CameraComponent"];
 		if (cameraComponent)
 		{
-			deserialize<CameraComponent>(cameraComponent, entity);
+			deserialize<CameraComponent>(cameraComponent, entity.EmplaceComponent<CameraComponent>(), entity);
 		}
 		auto spriteRenderer = data["SpriteRenderer"];
 		if (spriteRenderer)
 		{
-			deserialize<SpriteRenderer>(spriteRenderer, entity);
+			deserialize<SpriteRenderer>(spriteRenderer, entity.EmplaceComponent<SpriteRenderer>(), entity);
 		}
 
 		auto rigidBody = data["RigidBody2D"];
 		if (rigidBody)
 		{
-			deserialize<RigidBody2DComponent>(rigidBody, entity);
+			deserialize<RigidBody2DComponent>(rigidBody, entity.EmplaceComponent<RigidBody2DComponent>(), entity);
 		}
 
 		auto boxCollider = data["BoxCollider2D"];
 		if (boxCollider)
 		{
-			deserialize<BoxCollider2DComponent>(boxCollider, entity);
+			deserialize<BoxCollider2DComponent>(boxCollider, entity.EmplaceComponent<BoxCollider2DComponent>(), entity);
 		}
 
 		auto circleCollider = data["CircleCollider2D"];
 		if (circleCollider)
 		{
-			deserialize<CircleCollider2DComponent>(circleCollider, entity);
+			deserialize<CircleCollider2DComponent>(circleCollider, entity.EmplaceComponent<CircleCollider2DComponent>(), entity);
 		}
 
 		auto chainCollider = data["ChainCollider2D"];
 		if (chainCollider)
 		{
-			deserialize<ChainCollider2DComponent>(chainCollider, entity);
+			deserialize<ChainCollider2DComponent>(chainCollider, entity.EmplaceComponent<ChainCollider2DComponent>(), entity);
 		}
 
 		auto scriptComponent = data["ScriptComponent"];
 		if (scriptComponent)
 		{
-			deserialize<ScriptComponent>(scriptComponent, entity);
+			deserialize<ScriptComponent>(scriptComponent, entity.EmplaceComponent<ScriptComponent>(), entity);
 		}
 			
 		auto pointLightComponent = data["PointLight2D"];
 		if (pointLightComponent)
 		{
-			deserialize<PointLight2D>(pointLightComponent, entity);
+			deserialize<PointLight2D>(pointLightComponent, entity.EmplaceComponent<PointLight2D>(), entity);
 		}
 
 		auto spotLightComponent = data["SpotLight2D"];
 		if (spotLightComponent)
 		{
-			deserialize<SpotLight2D>(spotLightComponent, entity);
+			deserialize<SpotLight2D>(spotLightComponent, entity.EmplaceComponent<SpotLight2D>(), entity);
 		}
 
 		auto particleComponent = data["ParticleComponent"];
 		if (particleComponent)
 		{
-			deserialize<ParticleComponent>(particleComponent, entity);
+			deserialize<ParticleComponent>(particleComponent, entity.EmplaceComponent<ParticleComponent>(), entity);
 		}
 
 		auto particleRenderer = data["ParticleRenderer"];
 		if (particleRenderer)
 		{
-			deserialize<ParticleRenderer>(particleRenderer, entity);
+			deserialize<ParticleRenderer>(particleRenderer, entity.EmplaceComponent<ParticleRenderer>(), entity);
 		}
 
 		
@@ -797,13 +772,13 @@ namespace XYZ {
 		auto animationComponent = data["AnimationComponent"];
 		if (animationComponent)
 		{
-			deserialize<AnimationComponent>(animationComponent, entity);
+			deserialize<AnimationComponent>(animationComponent, entity.EmplaceComponent<AnimationComponent>(), entity);
 		}
 
 		auto pointLightComponent3D = data["PointLightComponent3D"];
 		if (pointLightComponent3D)
 		{
-			deserialize<PointLightComponent3D>(pointLightComponent3D, entity);
+			deserialize<PointLightComponent3D>(pointLightComponent3D, entity.EmplaceComponent<PointLightComponent3D>(), entity);
 		}
 
 
@@ -815,6 +790,125 @@ namespace XYZ {
 		{
 			entity.AddComponent<MeshComponent>(meshComponentFuture.get());
 		}
+	}
+
+
+	
+
+
+	std::future<MultiComponent<XYZ_COMPONENTS>> SceneSerializer::deserializeEntityAsync(YAML::Node& data, WeakRef<Scene> scene)
+	{
+		auto& threadPool = Application::Get().GetThreadPool();
+
+		GUID guid = data["Entity"].as<std::string>();
+		auto& tagComponent = data["SceneTagComponent"];
+
+		SceneTagComponent tag = tagComponent["Name"].as<std::string>();
+		SceneEntity entity = scene->CreateEntity(tag, guid);
+
+		
+		return threadPool.SubmitJob([this, entity, data]() {
+			
+			MultiComponent<XYZ_COMPONENTS> multiComponent;
+			multiComponent.Entity = entity;
+
+			auto transformComponent = data["TransformComponent"];
+			if (transformComponent)
+			{
+				deserialize<TransformComponent>(transformComponent, multiComponent.Get<TransformComponent>(), entity);
+			}
+
+			auto meshComponent = data["MeshComponent"];
+			if (meshComponent)
+			{
+				deserialize<MeshComponent>(meshComponent, multiComponent.Get<MeshComponent>(), entity);
+			}
+
+			auto animatedMeshComponent = data["AnimatedMeshComponent"];
+			if (animatedMeshComponent)
+			{
+				deserialize<AnimatedMeshComponent>(animatedMeshComponent, multiComponent.Get<AnimatedMeshComponent>(), entity);
+			}
+
+			auto cameraComponent = data["CameraComponent"];
+			if (cameraComponent)
+			{
+				deserialize<CameraComponent>(cameraComponent, multiComponent.Get<CameraComponent>(), entity);
+			}
+			auto spriteRenderer = data["SpriteRenderer"];
+			if (spriteRenderer)
+			{
+				deserialize<SpriteRenderer>(spriteRenderer, multiComponent.Get<SpriteRenderer>(), entity);
+			}
+
+			auto rigidBody = data["RigidBody2D"];
+			if (rigidBody)
+			{
+				deserialize<RigidBody2DComponent>(rigidBody, multiComponent.Get<RigidBody2DComponent>(), entity);
+			}
+
+			auto boxCollider = data["BoxCollider2D"];
+			if (boxCollider)
+			{
+				deserialize<BoxCollider2DComponent>(boxCollider, multiComponent.Get<BoxCollider2DComponent>(), entity);
+			}
+
+			auto circleCollider = data["CircleCollider2D"];
+			if (circleCollider)
+			{
+				deserialize<CircleCollider2DComponent>(circleCollider, multiComponent.Get<CircleCollider2DComponent>(), entity);
+			}
+
+			auto chainCollider = data["ChainCollider2D"];
+			if (chainCollider)
+			{
+				deserialize<ChainCollider2DComponent>(chainCollider, multiComponent.Get<ChainCollider2DComponent>(), entity);
+			}
+
+			auto scriptComponent = data["ScriptComponent"];
+			if (scriptComponent)
+			{
+				//deserialize<ScriptComponent>(scriptComponent, multiComponent.Get<ScriptComponent>(), entity);
+			}
+
+			auto pointLightComponent = data["PointLight2D"];
+			if (pointLightComponent)
+			{
+				deserialize<PointLight2D>(pointLightComponent, multiComponent.Get<PointLight2D>(), entity);
+			}
+
+			auto spotLightComponent = data["SpotLight2D"];
+			if (spotLightComponent)
+			{
+				deserialize<SpotLight2D>(spotLightComponent, multiComponent.Get<SpotLight2D>(), entity);
+			}
+
+			auto particleComponent = data["ParticleComponent"];
+			if (particleComponent)
+			{
+				deserialize<ParticleComponent>(particleComponent, multiComponent.Get<ParticleComponent>(), entity);
+			}
+
+			auto particleRenderer = data["ParticleRenderer"];
+			if (particleRenderer)
+			{
+				deserialize<ParticleRenderer>(particleRenderer, multiComponent.Get<ParticleRenderer>(), entity);
+			}
+
+			auto animationComponent = data["AnimationComponent"];
+			if (animationComponent)
+			{
+				deserialize<AnimationComponent>(animationComponent, multiComponent.Get<AnimationComponent>(), entity);
+			}
+
+			auto pointLightComponent3D = data["PointLightComponent3D"];
+			if (pointLightComponent3D)
+			{
+				deserialize<PointLightComponent3D>(pointLightComponent3D, multiComponent.Get<PointLightComponent3D>(), entity);
+			}
+
+			return multiComponent;
+		});
 	}
 
 
@@ -882,10 +976,19 @@ namespace XYZ {
 		auto entities = data["Entities"];
 		if (entities)
 		{
+			std::vector<std::future<MultiComponent<XYZ_COMPONENTS>>> entityFutures;
 			for (auto entity : entities)
 			{
-				SceneSerializer::deserializeEntity(entity, scene);
+				entityFutures.emplace_back(SceneSerializer::deserializeEntityAsync(entity, scene));
+				//SceneSerializer::deserializeEntity(entity, scene);
 			}
+
+			for (auto& entityFuture : entityFutures)
+			{
+				auto multiComponent = entityFuture.get();
+				multiComponent.AddToEntity();
+			}
+
 			if (data["FirstChild"])
 			{
 				GUID firstChildID = data["FirstChild"].as<std::string>();
@@ -906,85 +1009,13 @@ namespace XYZ {
 		return scene;
 	}
 
+
 	void SceneSerializer::serializeEntity(YAML::Emitter& out, SceneEntity entity)
 	{
 		out << YAML::BeginMap;
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetComponent<IDComponent>().ID;
-
-		if (entity.HasComponent<SceneTagComponent>())
-		{
-			serialize<SceneTagComponent>(out, entity.GetComponent<SceneTagComponent>(), entity);
-		}
-		if (entity.HasComponent<TransformComponent>())
-		{
-			serialize<TransformComponent>(out, entity.GetComponent<TransformComponent>(), entity);
-		}
-		if (entity.HasComponent<CameraComponent>())
-		{
-			serialize<CameraComponent>(out, entity.GetComponent<CameraComponent>(), entity);
-		}
-		if (entity.HasComponent<SpriteRenderer>())
-		{
-			serialize<SpriteRenderer>(out, entity.GetComponent<SpriteRenderer>(), entity);
-		}
-		if (entity.HasComponent<Relationship>())
-		{
-			SerializeRelationship(entity.m_Scene->m_Registry, out, entity.GetComponent<Relationship>());
-		}
-		if (entity.HasComponent<RigidBody2DComponent>())
-		{
-			serialize<RigidBody2DComponent>(out, entity.GetComponent<RigidBody2DComponent>(), entity);
-		}
-		if (entity.HasComponent<BoxCollider2DComponent>())
-		{
-			serialize<BoxCollider2DComponent>(out, entity.GetComponent<BoxCollider2DComponent>(), entity);
-		}
-		if (entity.HasComponent<CircleCollider2DComponent>())
-		{
-			serialize<CircleCollider2DComponent>(out, entity.GetComponent<CircleCollider2DComponent>(), entity);
-		}
-		if (entity.HasComponent<ChainCollider2DComponent>())
-		{
-			serialize<ChainCollider2DComponent>(out, entity.GetComponent<ChainCollider2DComponent>(), entity);
-		}
-		if (entity.HasComponent<ScriptComponent>())
-		{
-			serialize<ScriptComponent>(out, entity.GetComponent<ScriptComponent>(), entity);
-		}
-		if (entity.HasComponent<PointLight2D>())
-		{
-			serialize<PointLight2D>(out, entity.GetComponent<PointLight2D>(), entity);
-		}
-		if (entity.HasComponent<SpotLight2D>())
-		{
-			serialize<SpotLight2D>(out, entity.GetComponent<SpotLight2D>(), entity);
-		}
-		if (entity.HasComponent<ParticleRenderer>())
-		{
-			serialize<ParticleRenderer>(out, entity.GetComponent<ParticleRenderer>(), entity);
-		}
-		if (entity.HasComponent<ParticleComponent>())
-		{
-			serialize<ParticleComponent>(out, entity.GetComponent<ParticleComponent>(), entity);
-		}
-		if (entity.HasComponent<MeshComponent>())
-		{
-			serialize<MeshComponent>(out, entity.GetComponent<MeshComponent>(), entity);
-		}
-		if (entity.HasComponent<AnimatedMeshComponent>())
-		{
-			serialize<AnimatedMeshComponent>(out, entity.GetComponent<AnimatedMeshComponent>(), entity);
-		}
-
-		if (entity.HasComponent<AnimationComponent>())
-		{
-			serialize<AnimationComponent>(out, entity.GetComponent<AnimationComponent>(), entity);
-		}
-
-		if (entity.HasComponent<PointLightComponent3D>())
-		{
-			serialize<PointLightComponent3D>(out, entity.GetComponent<PointLightComponent3D>(), entity);
-		}
+		
+		serializeEntityComponents<XYZ_COMPONENTS>(out, entity);
 
 		out << YAML::EndMap; // Entity
 	}
