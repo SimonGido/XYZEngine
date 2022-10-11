@@ -10,8 +10,8 @@ namespace XYZ
 {
 	MemoryPool												AssetManager::s_Pool = MemoryPool(1024 * 1024 * 10);
 	AssetRegistry											AssetManager::s_Registry;
-	std::unordered_map<AssetHandle, WeakRef<Asset>>			AssetManager::s_LoadedAssets;
-	std::unordered_map<AssetHandle, WeakRef<Asset>>			AssetManager::s_MemoryAssets;
+	ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>			AssetManager::s_LoadedAssets;
+	ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>			AssetManager::s_MemoryAssets;
 	std::shared_ptr<FileWatcher>							AssetManager::s_FileWatcher;
 	std::function<void(Ref<Asset>)>							AssetManager::s_OnAssetLoaded;
 
@@ -31,30 +31,31 @@ namespace XYZ
 	}
 	void AssetManager::Shutdown()
 	{
-		s_LoadedAssets.clear();
-		s_MemoryAssets.clear();
+		s_LoadedAssets.Clear();
+		s_MemoryAssets.Clear();
 		s_FileWatcher->Stop();
 	}
 
 	void AssetManager::SerializeAll()
 	{
-		for (const auto& [handle, asset] : s_LoadedAssets)
-		{
+		s_LoadedAssets.ForEach([](const AssetHandle& handle, WeakRef<Asset> asset) {
 			if (asset.IsValid())
 			{
 				const auto& metadata = GetMetadata(handle);
 				AssetImporter::Serialize(metadata, asset);
 			}
-		}
+		});
 	}
 
 	void AssetManager::Serialize(const AssetHandle& assetHandle)
 	{
-		auto it = s_LoadedAssets.find(assetHandle);
-		if (it != s_LoadedAssets.end() && it->second.IsValid() && it->second.Raw())
+
+		WeakRef<Asset> asset;
+		bool found = s_LoadedAssets.Find(assetHandle, asset);
+		if (found && asset.IsValid())
 		{
 			const auto& metadata = GetMetadata(assetHandle);
-			AssetImporter::Serialize(metadata, it->second);
+			AssetImporter::Serialize(metadata, asset);
 		}
 		else
 		{
@@ -70,14 +71,15 @@ namespace XYZ
 	std::vector<AssetMetadata> AssetManager::FindAllMetadata(AssetType type)
 	{
 		std::vector<AssetMetadata> result;
-		for (auto& [handle, asset] : s_LoadedAssets)
-		{
+
+		s_LoadedAssets.ForEach([type, &result](const AssetHandle& handle, WeakRef<Asset> asset) {
 			auto metadata = s_Registry.GetMetadata(handle);
 			if (metadata->Type == type)
 			{
 				result.push_back(*metadata);
 			}
-		}
+		});
+
 		return result;
 	}
 	void AssetManager::ReloadAsset(const std::filesystem::path& filepath)
@@ -92,12 +94,16 @@ namespace XYZ
 				XYZ_CORE_WARN("Could not load asset {}", filepath);
 				return;
 			}
+
+			WeakRef<Asset> weakAsset;
+			bool found = s_LoadedAssets.Find(metadata->Handle, weakAsset);
+
 			auto it = s_LoadedAssets.find(metadata->Handle);
-			if (it != s_LoadedAssets.end())
+			if (found)
 			{
-				it->second->SetFlag(AssetFlag::Reloaded);
+				weakAsset->SetFlag(AssetFlag::Reloaded);
 			}
-			s_LoadedAssets[asset->GetHandle()] = asset;
+			s_LoadedAssets.Set(asset->GetHandle(), asset);
 			if (s_OnAssetLoaded)
 				s_OnAssetLoaded(asset);
 		}
@@ -209,9 +215,7 @@ namespace XYZ
 			if (metadata)
 			{
 				s_Registry.RemoveMetadata((*metadata).Handle);
-				auto it = s_LoadedAssets.find((*metadata).Handle);
-				if (it != s_LoadedAssets.end())
-					s_LoadedAssets.erase(it);
+				s_LoadedAssets.Erase((*metadata).Handle);
 			}
 		}
 		else if (type == FileWatcher::ChangeType::RenamedOld)

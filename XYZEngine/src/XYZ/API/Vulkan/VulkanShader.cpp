@@ -270,26 +270,8 @@ namespace XYZ {
 			std::string result = GetCacheDirectory();
 			result += "/" + name + VkShaderStageCachedFileExtension(stage);
 			return result;
-		}
-
-		
+		}	
 	}
-
-	struct VulkanShaderStaticData
-	{
-		VulkanShaderStaticData()
-		{
-			Parser.AddKeyword(Utils::sc_InstancedKeyword);
-		}
-
-		std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::UniformBuffer*>> UniformBuffers; // set -> binding point -> buffer
-		std::unordered_map<uint32_t, std::unordered_map<uint32_t, VulkanShader::StorageBuffer*>> StorageBuffers; // set -> binding point -> buffer
-
-		ShaderParser Parser;
-	};
-
-	static VulkanShaderStaticData s_Data;
-	
 
 	VulkanShader::VulkanShader(const std::string& path, bool forceCompile)
 		:
@@ -298,6 +280,7 @@ namespace XYZ {
 		m_FilePath(path),
 		m_VertexBufferSize(0)
 	{
+		m_Parser.AddKeyword("XYZ_INSTANCED");
 		Reload(forceCompile);
 	}
 	VulkanShader::VulkanShader(const std::string& name, const std::string& path, bool forceCompile)
@@ -307,6 +290,7 @@ namespace XYZ {
 		m_FilePath(path),
 		m_VertexBufferSize(0)
 	{
+		m_Parser.AddKeyword("XYZ_INSTANCED");
 		Reload(forceCompile);
 	}
 	VulkanShader::VulkanShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, bool forceCompile)
@@ -324,6 +308,7 @@ namespace XYZ {
 
 		outfile.close();
 
+		m_Parser.AddKeyword("XYZ_INSTANCED");
 		Reload(forceCompile);
 	}
 	VulkanShader::~VulkanShader()
@@ -468,23 +453,14 @@ namespace XYZ {
 				m_DescriptorSets.resize(static_cast<size_t>(descriptorSet) + 1);
 			ShaderDescriptorSet& shaderDescriptorSet = m_DescriptorSets[descriptorSet].ShaderDescriptorSet;
 			
-			if (s_Data.StorageBuffers[descriptorSet].find(binding) == s_Data.StorageBuffers[descriptorSet].end())
-			{
-				StorageBuffer* storageBuffer = new StorageBuffer();
-				storageBuffer->BindingPoint = binding;
-				storageBuffer->Size = size;
-				storageBuffer->Name = name;
-				storageBuffer->ShaderStage = VK_SHADER_STAGE_ALL;
-				s_Data.StorageBuffers.at(descriptorSet)[binding] = storageBuffer;
-			}
-			else
-			{
-				StorageBuffer* storageBuffer = s_Data.StorageBuffers.at(descriptorSet).at(binding);
-				if (size > storageBuffer->Size)
-					storageBuffer->Size = size;
-			}
-
-			shaderDescriptorSet.StorageBuffers[binding] = s_Data.StorageBuffers.at(descriptorSet).at(binding);
+			
+			StorageBuffer storageBuffer;
+			storageBuffer.BindingPoint = binding;
+			storageBuffer.Size = size;
+			storageBuffer.Name = name;
+			storageBuffer.ShaderStage = VK_SHADER_STAGE_ALL;
+		
+			shaderDescriptorSet.StorageBuffers[binding] = storageBuffer;
 
 			XYZ_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 			XYZ_TRACE("  Member Count: {0}", memberCount);
@@ -508,24 +484,14 @@ namespace XYZ {
 				m_DescriptorSets.resize(static_cast<size_t>(descriptorSet) + 1);
 			ShaderDescriptorSet& shaderDescriptorSet = m_DescriptorSets[descriptorSet].ShaderDescriptorSet;
 
-			if (s_Data.UniformBuffers[descriptorSet].find(binding) == s_Data.UniformBuffers[descriptorSet].end())
-			{
-				UniformBuffer* uniformBuffer = new UniformBuffer();
-				uniformBuffer->BindingPoint = binding;
-				uniformBuffer->Size = size;
-				uniformBuffer->Name = name;
-				uniformBuffer->ShaderStage = VK_SHADER_STAGE_ALL;
-				s_Data.UniformBuffers.at(descriptorSet)[binding] = uniformBuffer;
-			}
-			else
-			{
-				UniformBuffer* uniformBuffer = s_Data.UniformBuffers.at(descriptorSet).at(binding);
-				if (size > uniformBuffer->Size)
-					uniformBuffer->Size = size;
-
-			}
-
-			shaderDescriptorSet.UniformBuffers[binding] = s_Data.UniformBuffers.at(descriptorSet).at(binding);
+		
+			UniformBuffer uniformBuffer;
+			uniformBuffer.BindingPoint = binding;
+			uniformBuffer.Size = size;
+			uniformBuffer.Name = name;
+			uniformBuffer.ShaderStage = VK_SHADER_STAGE_ALL;
+			
+			shaderDescriptorSet.UniformBuffers[binding] = uniformBuffer;
 
 			XYZ_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 			XYZ_TRACE("  Member Count: {0}", memberCount);
@@ -709,7 +675,6 @@ namespace XYZ {
 			shaderStage.stage = stage;
 			shaderStage.module = shaderModule;
 			shaderStage.pName = "main";
-
 		}
 	}
 
@@ -717,14 +682,14 @@ namespace XYZ {
 	{
 		PreprocessData result;
 
-		auto stageMap = s_Data.Parser.ParseStages(source);
+		auto stageMap = m_Parser.ParseStages(source);
 
 		std::vector<ShaderParser::ShaderLayoutInfo> vertexLayoutInfo;
 		for (auto& [type, source] : stageMap)
 		{
 			auto stage = Utils::ShaderStageFromString(type);
-			result.LayoutInfo[stage] = s_Data.Parser.ParseLayoutInfo(source);
-			s_Data.Parser.RemoveKeywordsFromSourceCode(source);
+			result.LayoutInfo[stage] = m_Parser.ParseLayoutInfo(source);
+			m_Parser.RemoveKeywordsFromSourceCode(source);
 			result.Sources[stage] = source;
 		}
 
@@ -745,11 +710,11 @@ namespace XYZ {
 				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
 				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 				layoutBinding.descriptorCount = 1;
-				layoutBinding.stageFlags = uniformBuffer->ShaderStage;
+				layoutBinding.stageFlags = uniformBuffer.ShaderStage;
 				layoutBinding.pImmutableSamplers = nullptr;
 				layoutBinding.binding = binding;
 
-				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[uniformBuffer->Name];
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[uniformBuffer.Name];
 				set = {};
 				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 				set.pNext = nullptr;
@@ -763,11 +728,11 @@ namespace XYZ {
 				VkDescriptorSetLayoutBinding& layoutBinding = layoutBindings.emplace_back();
 				layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 				layoutBinding.descriptorCount = 1;
-				layoutBinding.stageFlags = strorageBuffer->ShaderStage;
+				layoutBinding.stageFlags = strorageBuffer.ShaderStage;
 				layoutBinding.pImmutableSamplers = nullptr;
 				layoutBinding.binding = binding;
 
-				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[strorageBuffer->Name];
+				VkWriteDescriptorSet& set = shaderDescriptorSet.WriteDescriptorSets[strorageBuffer.Name];
 				set = {};
 				set.pNext = nullptr;
 				set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

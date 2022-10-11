@@ -360,12 +360,40 @@ namespace XYZ {
 		out << YAML::EndMap;
 	}
 
+
+	template <>
+	std::future<MeshComponent> SceneSerializer::deserializeAsync<MeshComponent>(YAML::Node& data)
+	{
+		auto& threadPool = Application::Get().GetThreadPool();
+
+		return threadPool.SubmitJob([&data]() {
+			MeshComponent component;
+			component.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
+			component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
+			return component;
+		});
+	}
+
 	template <>
 	void SceneSerializer::deserialize<MeshComponent>(YAML::Node& data, SceneEntity entity)
 	{
 		MeshComponent& component = entity.EmplaceComponent<MeshComponent>();
 		component.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
 		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
+	}
+
+	template <>
+	std::future<AnimatedMeshComponent> SceneSerializer::deserializeAsync<AnimatedMeshComponent>(YAML::Node& data)
+	{
+		auto& threadPool = Application::Get().GetThreadPool();
+		
+		return threadPool.SubmitJob([&data]() {
+			AnimatedMeshComponent component;
+			component.Mesh = AssetManager::GetAsset<AnimatedMesh>(AssetHandle(data["Mesh"].as<std::string>()));
+			component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
+
+			return component;
+		});
 	}
 
 	template <>
@@ -669,10 +697,34 @@ namespace XYZ {
 		SceneTagComponent tag = tagComponent["Name"].as<std::string>();
 		SceneEntity entity = scene->CreateEntity(tag, guid);
 
+
+
+		bool animatedMeshComponentFutureAssigned = false;
+		bool meshComponentFutureAssigned = false;
+		std::future<AnimatedMeshComponent> animatedMeshComponentFuture;
+		std::future<MeshComponent> meshComponentFuture;
+
 		auto transformComponent = data["TransformComponent"];
 		if (transformComponent)
 		{
 			deserialize<TransformComponent>(transformComponent, entity);
+		}
+
+
+		auto meshComponent = data["MeshComponent"];
+		if (meshComponent)
+		{
+			deserialize<MeshComponent>(meshComponent, entity);
+			//meshComponentFuture = deserializeAsync<MeshComponent>(meshComponent);
+			//meshComponentFutureAssigned = true;
+		}
+
+		auto animatedMeshComponent = data["AnimatedMeshComponent"];
+		if (animatedMeshComponent)
+		{
+			deserialize<AnimatedMeshComponent>(animatedMeshComponent, entity);
+			//animatedMeshComponentFuture = deserializeAsync<AnimatedMeshComponent>(animatedMeshComponent);
+			//animatedMeshComponentFutureAssigned = true;
 		}
 
 		auto cameraComponent = data["CameraComponent"];
@@ -740,17 +792,7 @@ namespace XYZ {
 			deserialize<ParticleRenderer>(particleRenderer, entity);
 		}
 
-		auto meshComponent = data["MeshComponent"];
-		if (meshComponent)
-		{
-			deserialize<MeshComponent>(meshComponent, entity);
-		}
-
-		auto animatedMeshComponent = data["AnimatedMeshComponent"];
-		if (animatedMeshComponent)
-		{
-			deserialize<AnimatedMeshComponent>(animatedMeshComponent, entity);
-		}
+		
 
 		auto animationComponent = data["AnimationComponent"];
 		if (animationComponent)
@@ -762,6 +804,16 @@ namespace XYZ {
 		if (pointLightComponent3D)
 		{
 			deserialize<PointLightComponent3D>(pointLightComponent3D, entity);
+		}
+
+
+		if (animatedMeshComponentFutureAssigned)
+		{
+			entity.AddComponent<AnimatedMeshComponent>(animatedMeshComponentFuture.get());
+		}
+		if (meshComponentFutureAssigned)
+		{
+			entity.AddComponent<MeshComponent>(meshComponentFuture.get());
 		}
 	}
 

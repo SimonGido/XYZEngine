@@ -31,7 +31,7 @@ namespace  XYZ
         BufferUsage       m_Usage;
         BufferLayout      m_Layout;
         VkBuffer          m_VulkanBuffer;
-        Queue<ByteBuffer> m_Buffers;
+        ThreadQueue<ByteBuffer> m_Buffers;
         VmaAllocation     m_MemoryAllocation;
     };
 }

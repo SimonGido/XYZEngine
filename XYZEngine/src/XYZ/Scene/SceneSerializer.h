@@ -1,6 +1,8 @@
 #pragma once
 #include "Scene.h"
 
+#include <future>
+
 #include <yaml-cpp/yaml.h>
 
 namespace XYZ {
@@ -20,7 +22,10 @@ namespace XYZ {
 		void serialize(YAML::Emitter& out, const T& val, SceneEntity entity);
 
 		template <typename T>
-		void deserialize(YAML::Node& node, SceneEntity entity);
+		void deserialize(YAML::Node& data, SceneEntity entity);
+
+		template <typename T>
+		std::future<T> deserializeAsync(YAML::Node& data);
 
 	private:
 		static void setupRelationship(YAML::Node& data, SceneEntity entity);

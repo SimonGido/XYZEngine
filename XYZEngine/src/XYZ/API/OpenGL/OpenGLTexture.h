@@ -2,7 +2,7 @@
 
 #include "XYZ/Renderer/Texture.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
-#include "XYZ/Utils/DataStructures/Queue.h"
+#include "XYZ/Utils/DataStructures/ThreadQueue.h"
 
 #include <GL/glew.h>
 

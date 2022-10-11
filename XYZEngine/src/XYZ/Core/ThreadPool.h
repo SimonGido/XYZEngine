@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/Utils/DataStructures/Queue.h"
+#include "XYZ/Utils/DataStructures/ThreadQueue.h"
 #include "XYZ/Utils/DataStructures/FreeList.h"
 
 #include <thread>

@@ -5,7 +5,7 @@
 namespace XYZ {
 
 	std::vector<AssetLifeManager::AssetTimer> AssetLifeManager::s_AssetTimers;
-	Queue<Ref<Asset>>						  AssetLifeManager::s_AssetQueue;
+	ThreadQueue<Ref<Asset>>					  AssetLifeManager::s_AssetQueue;
 	float									  AssetLifeManager::s_TimeAlive = 0.0f;
 	bool									  AssetLifeManager::s_Running = false;
 	std::unique_ptr<std::thread>			  AssetLifeManager::s_UpdateThread;

@@ -1,6 +1,6 @@
 #pragma once
 #include "Buffer.h"
-#include "XYZ/Utils/DataStructures/Queue.h"
+#include "XYZ/Utils/DataStructures/ThreadQueue.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
 namespace XYZ {
@@ -14,7 +14,7 @@ namespace XYZ {
 		Ref<VertexBuffer> GetVertexBuffer(uint32_t frame) const { return m_VertexBuffers[frame]; }
 	private:
 		std::vector<Ref<VertexBuffer>> m_VertexBuffers;
-		Queue<ByteBuffer>			   m_Buffers;
+		ThreadQueue<ByteBuffer>		   m_Buffers;
 		uint32_t					   m_Size;
 	};
 }

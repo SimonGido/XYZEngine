@@ -1,6 +1,6 @@
 #pragma once
 #include "AssetManager.h"
-#include "XYZ/Utils/DataStructures/Queue.h"
+#include "XYZ/Utils/DataStructures/ThreadQueue.h"
 
 namespace XYZ {
 
@@ -21,7 +21,7 @@ namespace XYZ {
 
 	private:
 		static std::vector<AssetTimer> s_AssetTimers;
-		static Queue<Ref<Asset>>	   s_AssetQueue;
+		static ThreadQueue<Ref<Asset>> s_AssetQueue;
 
 		static float				   s_TimeAlive;
 		static bool					   s_Running;

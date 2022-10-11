@@ -51,8 +51,8 @@ namespace XYZ {
 
 		struct ShaderDescriptorSet
 		{
-			std::unordered_map<uint32_t, UniformBuffer*> UniformBuffers;
-			std::unordered_map<uint32_t, StorageBuffer*> StorageBuffers;
+			std::unordered_map<uint32_t, UniformBuffer>  UniformBuffers;
+			std::unordered_map<uint32_t, StorageBuffer>  StorageBuffers;
 			std::unordered_map<uint32_t, ImageSampler>   ImageSamplers;
 			std::unordered_map<uint32_t, ImageSampler>   StorageImages;
 
@@ -129,6 +129,7 @@ namespace XYZ {
 		std::string				   m_Name;
 		std::string				   m_FilePath;
 		std::string				   m_Source;
+		mutable ShaderParser	  m_Parser;
 
 		std::vector<DescriptorSet> m_DescriptorSets;
 		std::vector<BufferLayout>  m_Layouts;
@@ -140,6 +141,5 @@ namespace XYZ {
 		
 		std::unordered_map<std::string, ShaderBuffer>				m_Buffers;
 		size_t														m_VertexBufferSize;
-
 	};
 }

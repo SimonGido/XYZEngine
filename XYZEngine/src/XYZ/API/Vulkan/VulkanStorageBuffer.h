@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Renderer/Buffer.h"
-#include "XYZ/Utils/DataStructures/Queue.h"
+#include "XYZ/Utils/DataStructures/ThreadQueue.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
 #include "VulkanAllocator.h"
@@ -36,6 +36,6 @@ namespace XYZ {
 		uint32_t		  m_Size;
 		uint32_t		  m_Binding;
 		BufferLayout	  m_Layout;
-		Queue<ByteBuffer> m_Buffers;
+		ThreadQueue<ByteBuffer> m_Buffers;
 	};
 }
