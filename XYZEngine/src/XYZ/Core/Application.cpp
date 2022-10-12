@@ -39,22 +39,21 @@ namespace XYZ {
 		m_Running = true;
 		m_ImGuiLayer = nullptr;
 
+		AssetManager::Init();
 		if (specification.WindowCreate)
-		{
+		{		
 			Renderer::Init();
 			m_Window = Window::Create(Renderer::GetAPIContext());
 			m_Window->RegisterCallback(Hook(&Application::OnEvent, this));
 			m_Window->SetVSync(false);
-			
+				
 			if (specification.EnableImGui)
 			{			
 				m_ImGuiLayer = ImGuiLayer::Create();
 				m_LayerStack.PushOverlay(m_ImGuiLayer);
 			}
 		}
-
-		AssetManager::Init();
-		
+				
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);
 		std::wstring tmp(&NPath[0]);

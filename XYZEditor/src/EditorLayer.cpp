@@ -22,8 +22,7 @@ namespace XYZ {
 		}
 
 		void EditorLayer::OnAttach()
-		{
-			Renderer::InitResources();
+		{		
 			s_Data.Init();		
 
 			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");

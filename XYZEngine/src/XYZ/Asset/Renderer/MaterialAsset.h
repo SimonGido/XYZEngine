@@ -52,7 +52,12 @@ namespace XYZ {
 		virtual AssetType GetAssetType() const override { return GetStaticType(); }
 		static AssetType GetStaticType() { return AssetType::Material; }
 	private:
+		void setup();
 		void setupTextureBuffers();
+		void applyTexturesToMaterial();
+
+		TextureData*	  findTextureData(const std::string& name);
+		TextureArrayData* findTextureArrayData(const std::string& name);
 
 	private:
 		Ref<ShaderAsset>			  m_ShaderAsset;

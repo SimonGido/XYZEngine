@@ -8,7 +8,6 @@ namespace XYZ {
 		:
 		m_Shader(shader)
 	{
-		m_SourceHash = std::hash<std::string>{}(shader->GetSource());
 	}
 	ShaderAsset::ShaderAsset(const std::string& filepath, size_t sourceHash)
 	{
@@ -17,7 +16,6 @@ namespace XYZ {
 		bool forceCompile = newSourceHash != sourceHash;
 
 		m_Shader = Shader::Create(filepath,forceCompile);
-		m_SourceHash = newSourceHash;
 	}
 	ShaderAsset::ShaderAsset(const std::string& name, const std::string& filepath, size_t sourceHash)
 	{
@@ -26,9 +24,16 @@ namespace XYZ {
 		bool forceCompile = newSourceHash != sourceHash;
 
 		m_Shader = Shader::Create(name, filepath, forceCompile);
-		m_SourceHash = newSourceHash;
 	}
 	ShaderAsset::~ShaderAsset()
 	{
+	}
+	size_t ShaderAsset::GetSourceHash() const
+	{
+		if (m_Shader.Raw())
+		{
+			return std::hash<std::string>{}(m_Shader->GetSource());
+		}
+		return 0;
 	}
 }

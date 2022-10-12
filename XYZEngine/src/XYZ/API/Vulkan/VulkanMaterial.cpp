@@ -49,9 +49,6 @@ namespace XYZ {
 		const auto& shaderDescriptorSets = vulkanShader->GetDescriptorSets();
 		m_Descriptors.resize(Renderer::GetConfiguration().FramesInFlight);
 		
-		m_ImageDescriptors.clear();
-		m_ImageArrayDescriptors.clear();
-
 		for (auto& descriptor : m_Descriptors) // Per frame
 		{
 			descriptor.DescriptorSets.resize(shaderDescriptorSets.size());
@@ -62,6 +59,15 @@ namespace XYZ {
 		{
 			m_Descriptors[frame].Version = VulkanRendererAPI::GetDescriptorAllocatorVersion(frame);
 		}
+		
+		Ref<VulkanMaterial> instance = this;
+		Renderer::Submit([instance]() mutable {
+			instance->m_ImageDescriptors.clear();
+			instance->m_ImageArrayDescriptors.clear();
+		});
+
+		if (m_OnInvalidate)
+			m_OnInvalidate();
 	}
 	void VulkanMaterial::SetFlag(RenderFlags renderFlag, bool val)
 	{

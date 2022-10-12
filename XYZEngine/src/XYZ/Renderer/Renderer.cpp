@@ -26,9 +26,9 @@ namespace XYZ {
 			PipelineDependencies.clear();
 			PipelineComputeDependencies.clear();
 		}
-		std::vector<Ref<Material>> MaterialDependencies;
-		std::vector<Ref<Pipeline>> PipelineDependencies;
-		std::vector<Ref<PipelineCompute>> PipelineComputeDependencies;
+		std::vector<Ref<Material>>		    MaterialDependencies;
+		std::vector<Ref<Pipeline>>		    PipelineDependencies;
+		std::vector<Ref<PipelineCompute>>   PipelineComputeDependencies;
 	};
 
 	struct ShaderDependencyMap
@@ -146,20 +146,19 @@ namespace XYZ {
 	
 		s_Data.APIContext = APIContext::Create();
 		s_RendererAPI = CreateRendererAPI();	
-		s_Data.QueueData.Init(s_Data.Configuration.FramesInFlight);
+		s_Data.QueueData.Init(s_Data.Configuration.FramesInFlight);	
 	}
 
-	void Renderer::InitResources(bool initDefaultResources)
+	void Renderer::InitAPI(bool initDefaultResources)
 	{
-		// It is called after window and context is created	
 		s_RendererAPI->Init();
-		
-		SetupFullscreenQuad();	
+		SetupFullscreenQuad();
 		if (initDefaultResources)
 			s_Data.Resources.Init();
-		
+
 		WaitAndRenderAll();
 	}
+
 
 	void Renderer::Shutdown()
 	{	
@@ -353,6 +352,8 @@ namespace XYZ {
 	{
 		s_Data.ShaderDependencies.Register(shader->GetHash(), material);
 	}
+	
+	
 	void Renderer::RemoveShaderDependency(size_t hash)
 	{
 		s_Data.ShaderDependencies.RemoveDependency(hash);

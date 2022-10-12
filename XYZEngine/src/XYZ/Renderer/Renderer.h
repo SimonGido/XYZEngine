@@ -54,7 +54,8 @@ namespace XYZ {
 	{
 	public:
 		static void Init(const RendererConfiguration& config = RendererConfiguration());
-		static void InitResources(bool initDefaultResources = true);
+		static void InitAPI(bool initDefaultResources = true);
+
 		static void Shutdown();
 
 		// Old API
@@ -115,8 +116,11 @@ namespace XYZ {
 		static void RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Pipeline>& pipeline);
 		static void RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Material>& material);
 		
+
 		static void RemoveShaderDependency(size_t hash);
 		static void OnShaderReload(size_t hash);
+
+
 		//////////////
 		static Ref<APIContext>				GetAPIContext();
 		

@@ -96,6 +96,9 @@ namespace XYZ {
 		const VkWriteDescriptorSet*						   GetDescriptorSet(const std::string& name, uint32_t set) const;
 		std::pair<const VkWriteDescriptorSet*, uint32_t>   GetDescriptorSet(const std::string& name) const;
 
+		const VkWriteDescriptorSet*						   TryGetDescriptorSet(const std::string& name, uint32_t set) const;
+		std::pair<const VkWriteDescriptorSet*, uint32_t>   TryGetDescriptorSet(const std::string& name) const;
+
 		std::vector<VkDescriptorSetLayout>				   GetAllDescriptorSetLayouts() const;
 		
 	private:
@@ -129,7 +132,8 @@ namespace XYZ {
 		std::string				   m_Name;
 		std::string				   m_FilePath;
 		std::string				   m_Source;
-		mutable ShaderParser	  m_Parser;
+		mutable ShaderParser	   m_Parser;
+		size_t					   m_SourceHash;
 
 		std::vector<DescriptorSet> m_DescriptorSets;
 		std::vector<BufferLayout>  m_Layouts;

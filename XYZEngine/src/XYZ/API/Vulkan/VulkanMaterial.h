@@ -45,7 +45,7 @@ namespace XYZ {
 		const ShaderResourceDeclaration* findResourceDeclaration(const std::string& name);
 
 	private:
-		Ref<VulkanShader>					   m_Shader;
+		Ref<VulkanShader> m_Shader;
 			
 		struct Descriptor
 		{

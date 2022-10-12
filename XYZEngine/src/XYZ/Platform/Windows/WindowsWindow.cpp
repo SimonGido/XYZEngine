@@ -64,6 +64,7 @@ namespace XYZ {
 		m_Context->CreateSwapChain(&m_Data.Width, &m_Data.Height, m_Data.VSync);
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		
+		Renderer::InitAPI();
 		
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{

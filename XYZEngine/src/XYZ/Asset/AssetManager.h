@@ -97,6 +97,9 @@ namespace XYZ {
 		template <typename T>
 		static std::vector<Ref<T>> FindAllAssets(AssetType type);
 
+		template <typename T>
+		static std::vector<Ref<T>> FindAllLoadedAssets(AssetType type);
+
 		static std::vector<AssetMetadata> FindAllMetadata(AssetType type);
 
 		static void ReloadAsset(const std::filesystem::path& filepath);
@@ -248,13 +251,33 @@ namespace XYZ {
 	{
 		std::vector<Ref<T>> result;
 
-		s_LoadedAssets.ForEach([&result](const AssetHandle& handle, WeakRef<Asset> asset) {
+		s_LoadedAssets.ForEach([&result, type](const AssetHandle& handle, WeakRef<Asset> asset) {
 			auto metadata = s_Registry.GetMetadata(handle);
 			if (metadata->Type == type)
 			{
 				result.push_back(GetAsset<T>(handle));
 			}
 		});
+		return result;
+	}
+
+	template<typename T>
+	inline std::vector<Ref<T>> AssetManager::FindAllLoadedAssets(AssetType type)
+	{
+		std::vector<Ref<T>> result;
+
+		s_LoadedAssets.ForEach([&result, type](const AssetHandle& handle, WeakRef<Asset> asset) {
+			auto metadata = s_Registry.GetMetadata(handle);
+			if (metadata->Type == type)
+			{
+				WeakRef<Asset> getAsset = nullptr;
+				if (s_LoadedAssets.TryGet(metadata->Handle, getAsset) && getAsset.IsValid())
+				{
+					Ref<T> asset = getAsset.As<T>().Raw();
+					result.push_back(asset);
+				}
+			}
+			});
 		return result;
 	}
 }

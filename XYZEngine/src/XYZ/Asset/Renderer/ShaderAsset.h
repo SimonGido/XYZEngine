@@ -14,13 +14,13 @@ namespace XYZ {
 		ShaderAsset(const std::string& name, const std::string& filepath, size_t sourceHash);
 		~ShaderAsset();
 
+
+
 		Ref<Shader> GetShader() const { return m_Shader; }
-		size_t	    GetSourceHash() const { return m_SourceHash; }
-	
+		size_t	    GetSourceHash() const;
+
 		static AssetType GetStaticType() { return AssetType::Shader; }
 	private:
-
-		Ref<Shader>				  m_Shader;
-		size_t					  m_SourceHash;
+		Ref<Shader>	m_Shader;
 	};
 }

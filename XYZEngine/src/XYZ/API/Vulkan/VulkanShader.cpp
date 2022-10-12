@@ -278,6 +278,7 @@ namespace XYZ {
 		m_Compiled(false),
 		m_Name(Utils::GetFilenameWithoutExtension(path)),
 		m_FilePath(path),
+		m_SourceHash(0),
 		m_VertexBufferSize(0)
 	{
 		m_Parser.AddKeyword("XYZ_INSTANCED");
@@ -288,6 +289,7 @@ namespace XYZ {
 		m_Compiled(false),
 		m_Name(name),
 		m_FilePath(path),
+		m_SourceHash(0),
 		m_VertexBufferSize(0)
 	{
 		m_Parser.AddKeyword("XYZ_INSTANCED");
@@ -298,6 +300,7 @@ namespace XYZ {
 		m_Compiled(false),
 		m_Name(name),
 		m_FilePath(Utils::GetDirectoryPath(vertexPath) + "/" + name + ".glsl"),
+		m_SourceHash(0),
 		m_VertexBufferSize(0)
 	{
 		std::ofstream outfile(m_FilePath);
@@ -328,12 +331,19 @@ namespace XYZ {
 		Utils::CreateCacheDirectoryIfNeeded();
 
 		m_Source = FileSystem::ReadFile(m_FilePath);
-	
 		PreprocessData preprocessData = preProcess(m_Source);
 					
+
+		const size_t newSourceHash = std::hash<std::string>{}(m_Source);
+		if (newSourceHash != m_SourceHash) // Source code has changed
+		{
+			forceCompile = true;
+			m_SourceHash = newSourceHash;
+		}
 		if (!forceCompile)
-			forceCompile = !binaryExists(preprocessData.Sources);
-		
+		{
+			forceCompile = !binaryExists(preprocessData.Sources); // If binary does not exist recompile
+		}
 		if (forceCompile)
 		{
 			XYZ_INFO("Compiling shader {}", m_Name);
@@ -562,24 +572,59 @@ namespace XYZ {
 		XYZ_ASSERT(m_DescriptorSets[set].ShaderDescriptorSet, "");
 		auto& shaderDescriptorSet = m_DescriptorSets.at(set).ShaderDescriptorSet;
 
-		if (shaderDescriptorSet.WriteDescriptorSets.find(name) == shaderDescriptorSet.WriteDescriptorSets.end())
+		auto it = shaderDescriptorSet.WriteDescriptorSets.find(name);
+		if (it == shaderDescriptorSet.WriteDescriptorSets.end())
 		{
 			XYZ_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
 			return nullptr;
 		}
-		return &shaderDescriptorSet.WriteDescriptorSets.at(name);
+		return &it->second;
 	}
 	std::pair<const VkWriteDescriptorSet*, uint32_t> VulkanShader::GetDescriptorSet(const std::string& name) const
 	{
 		for (uint32_t set = 0; set < m_DescriptorSets.size(); ++set)
 		{
 			auto& shaderDescriptorSet = m_DescriptorSets.at(set).ShaderDescriptorSet;
-			if (shaderDescriptorSet.WriteDescriptorSets.find(name) == shaderDescriptorSet.WriteDescriptorSets.end())
+			
+			auto it = shaderDescriptorSet.WriteDescriptorSets.find(name);
+			if (it == shaderDescriptorSet.WriteDescriptorSets.end())
 				continue;
 			
-			return { &shaderDescriptorSet.WriteDescriptorSets.at(name), set };
+			return { &it->second, set };
 		}
 		XYZ_CORE_WARN("Shader {0} does not contain requested descriptor set {1}", m_Name, name);
+		return { nullptr, 0 };
+	}
+	const VkWriteDescriptorSet* VulkanShader::TryGetDescriptorSet(const std::string& name, uint32_t set) const
+	{
+		if (set >= m_DescriptorSets.size())
+			return nullptr;
+
+		if (!m_DescriptorSets[set].ShaderDescriptorSet)
+			return nullptr;
+
+		auto& shaderDescriptorSet = m_DescriptorSets.at(set).ShaderDescriptorSet;
+		auto it = shaderDescriptorSet.WriteDescriptorSets.find(name);
+		
+		if (it == shaderDescriptorSet.WriteDescriptorSets.end())
+		{
+			return nullptr;
+		}
+		return &it->second;
+	}
+	std::pair<const VkWriteDescriptorSet*, uint32_t> VulkanShader::TryGetDescriptorSet(const std::string& name) const
+	{
+		for (uint32_t set = 0; set < m_DescriptorSets.size(); ++set)
+		{
+			auto& shaderDescriptorSet = m_DescriptorSets.at(set).ShaderDescriptorSet;
+
+			auto it = shaderDescriptorSet.WriteDescriptorSets.find(name);
+			if (it == shaderDescriptorSet.WriteDescriptorSets.end())
+				continue;
+
+			return { &it->second, set };
+		}
+
 		return { nullptr, 0 };
 	}
 	std::vector<VkDescriptorSetLayout> VulkanShader::GetAllDescriptorSetLayouts() const
