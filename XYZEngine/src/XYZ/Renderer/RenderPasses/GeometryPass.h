@@ -17,6 +17,7 @@ namespace XYZ {
 	struct GeometryPassStatistics
 	{
 		uint32_t MeshOverrideCount;
+		uint32_t AnimatedMeshOverrideCount;
 		uint32_t TransformInstanceCount;
 		uint32_t InstanceDataSize;
 	};

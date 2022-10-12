@@ -12,6 +12,7 @@ namespace XYZ {
 		VulkanPipelineCompute(Ref<Shader> computeShader);
 		virtual ~VulkanPipelineCompute() override;
 
+		virtual void		Invalidate() override;
 		virtual void		Begin(Ref<RenderCommandBuffer> renderCommandBuffer = nullptr) override;
 		virtual void		End() override;
 		virtual Ref<Shader> GetShader() const override { return m_Shader; }
@@ -26,9 +27,8 @@ namespace XYZ {
 		VkPipelineLayout GetVulkanPipelineLayout() const { return m_ComputePipelineLayout; }
 	
 	private:
-		static void destroy(VkPipelineLayout pipelineLayout, VkPipeline vulkanPipeline, VkPipelineCache cache);
-
-		void RT_CreatePipeline();
+		void destroy();
+		void RT_createPipeline();
 	private:
 		Ref<VulkanShader> m_Shader;
 

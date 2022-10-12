@@ -353,9 +353,15 @@ namespace XYZ {
 				if (ImGui::BeginTable("##RenderStatistics", 2, ImGuiTableFlags_SizingFixedFit))
 				{
 					UI::TextTableRow("%s", "Sprite Draw Count:", "%u", m_RenderStatistics.SpriteDrawCommandCount);
+					
 					UI::TextTableRow("%s", "Mesh Draw Count:", "%u", m_RenderStatistics.MeshDrawCommandCount);
-
 					UI::TextTableRow("%s", "Mesh Override Draw Count:", "%u", m_RenderStatistics.MeshOverrideDrawCommandCount);
+
+					
+					UI::TextTableRow("%s", "Animated Mesh Draw Count:", "%u", m_RenderStatistics.AnimatedMeshDrawCommandCount);
+					UI::TextTableRow("%s", "Animated Mesh Override Draw Count:", "%u", m_RenderStatistics.AnimatedMeshOverrideDrawCommandCount);
+
+
 					UI::TextTableRow("%s", "Instance Mesh Draw Count:", "%u", m_RenderStatistics.InstanceMeshDrawCommandCount);
 
 					UI::TextTableRow("%s", "Point Light2D Count:", "%u", m_RenderStatistics.PointLight2DCount);
@@ -551,10 +557,13 @@ namespace XYZ {
 	{
 		GeometryPassStatistics stats = m_GeometryPass.PreSubmit(m_Queue);
 		DeferredLightPassStatistics lightPassStats = m_DeferredLightPass.PreSubmit(m_ActiveScene);
-
 		
 		m_RenderStatistics.MeshDrawCommandCount = static_cast<uint32_t>(m_Queue.MeshDrawCommands.size());
 		m_RenderStatistics.MeshOverrideDrawCommandCount = stats.MeshOverrideCount;
+		
+		m_RenderStatistics.AnimatedMeshDrawCommandCount = static_cast<uint32_t>(m_Queue.AnimatedMeshDrawCommands.size());
+		m_RenderStatistics.AnimatedMeshOverrideDrawCommandCount = stats.AnimatedMeshOverrideCount;
+
 		m_RenderStatistics.InstanceMeshDrawCommandCount = static_cast<uint32_t>(m_Queue.InstanceMeshDrawCommands.size());
 		
 		m_RenderStatistics.TransformInstanceCount = stats.TransformInstanceCount;

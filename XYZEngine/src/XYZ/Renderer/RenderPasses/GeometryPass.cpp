@@ -77,12 +77,13 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("GeometryPass::PreSubmit");
 		size_t overrideCount = 0;
+		size_t animatedOverrideCount = 0;
 		uint32_t transformsCount = 0;
 		uint32_t boneTransformCount = 0;
 		uint32_t instanceOffset = 0;
 
 		prepareStaticDrawCommands(queue, overrideCount, transformsCount);
-		prepareAnimatedDrawCommands(queue, overrideCount, transformsCount, boneTransformCount);
+		prepareAnimatedDrawCommands(queue, animatedOverrideCount, transformsCount, boneTransformCount);
 		prepareInstancedDrawCommands(queue, instanceOffset);
 		prepare2DDrawCommands(queue);
 
@@ -90,7 +91,12 @@ namespace XYZ {
 		m_InstanceVertexBufferSet->Update(m_InstanceData.data(), instanceOffset);
 		m_StorageBufferSet->Update(m_BoneTransformsData.data(), boneTransformCount * sizeof(GeometryRenderQueue::BoneTransforms), 0, 0, 2);
 
-		return { static_cast<uint32_t>(overrideCount), transformsCount, instanceOffset };
+		return { 
+			static_cast<uint32_t>(overrideCount), 
+			static_cast<uint32_t>(animatedOverrideCount), 
+			transformsCount, 
+			instanceOffset 
+		};
 	}
 
 	void GeometryPass::submitStaticMeshes(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer)

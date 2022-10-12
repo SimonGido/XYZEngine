@@ -15,8 +15,8 @@
 #include "XYZ/Script/ScriptEngine.h"
 #include "XYZ/Debug/Profiler.h"
 #include "XYZ/Utils/Math/Math.h"
-#include "XYZ/Scene/Prefab.h"
 
+#include "Prefab.h"
 #include "SceneEntity.h"
 #include "Components.h"
 
@@ -30,73 +30,74 @@
 
 namespace XYZ {
 
-	ozz::math::Float4x4 Float4x4FromMat4(const glm::mat4& mat)
-	{
-		ozz::math::Float4x4 result;
-		result.cols[0] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[0]));
-		result.cols[1] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[1]));
-		result.cols[2] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[2]));
-		result.cols[3] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[3]));
-		return result;
-	}
-
-	template<typename T>
-	static void Clone(const entt::registry& src, entt::registry& dst)
-	{
-		auto view = src.view<const T>();
-		for (auto entity : view)
+	namespace Utils {
+		static ozz::math::Float4x4 Float4x4FromMat4(const glm::mat4& mat)
 		{
-			auto& component = dst.emplace<T>(entity);
-			component = view.get<const T>(entity);
+			ozz::math::Float4x4 result;
+			result.cols[0] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[0]));
+			result.cols[1] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[1]));
+			result.cols[2] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[2]));
+			result.cols[3] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[3]));
+			return result;
+		}
+
+		template<typename T>
+		static void Clone(const entt::registry& src, entt::registry& dst)
+		{
+			auto view = src.view<const T>();
+			for (auto entity : view)
+			{
+				auto& component = dst.emplace<T>(entity);
+				component = view.get<const T>(entity);
+			}
+		}
+
+		template <typename ...Args>
+		static void CloneAll(const entt::registry& src, entt::registry& dst)
+		{
+			(Clone<Args>(src, dst), ...);
+		}
+
+		template<typename T>
+		static void CopyComponentIfExists(const entt::registry& src, entt::registry& dst, entt::entity srcEntity, entt::entity dstEntity)
+		{
+			if (src.any_of<const T>(srcEntity))
+			{
+				const auto& srcComponent = src.get<const T>(srcEntity);
+
+				dst.emplace_or_replace<T>(dstEntity, srcComponent);
+			}
+		}
+
+		template <typename ...Args>
+		static void CopyComponentsIfExist(const entt::registry& src, entt::registry& dst, entt::entity srcEntity, entt::entity dstEntity)
+		{
+			(CopyComponentIfExists<Args>(src, dst, srcEntity, dstEntity), ...);
+		}
+
+
+		static void CloneRegistry(const entt::registry& src, entt::registry& dst, bool clearDestination = true)
+		{
+			if (clearDestination)
+				dst = entt::registry();
+
+			dst.assign(src.data(), src.data() + src.size(), src.released()); // Copy entities
+
+			CloneAll<XYZ_COMPONENTS>(src, dst);
+		}
+
+		static void CopyRegistry(const entt::registry& src, entt::registry& dst, bool clearDestination = false)
+		{
+			if (clearDestination)
+				dst = entt::registry();
+
+			dst.each([&src, &dst](entt::entity srcEntity) {
+				entt::entity dstEntity = dst.create();
+				CopyComponentsIfExist<XYZ_COMPONENTS>(src, dst, srcEntity, dstEntity);
+				});
 		}
 	}
-
-	template <typename ...Args>
-	static void CloneAll(const entt::registry& src, entt::registry& dst)
-	{
-		(Clone<Args>(src, dst), ...);
-	}
-
-	template<typename T>
-	static void CopyComponentIfExists(const entt::registry& src, entt::registry& dst, entt::entity srcEntity, entt::entity dstEntity)
-	{
-		if (src.any_of<const T>(srcEntity))
-		{
-			const auto& srcComponent = src.get<const T>(srcEntity);
 	
-			dst.emplace_or_replace<T>(dstEntity, srcComponent);
-		}
-	}
-
-	template <typename ...Args>
-	static void CopyComponentsIfExist(const entt::registry& src, entt::registry& dst, entt::entity srcEntity, entt::entity dstEntity)
-	{
-		(CopyComponentIfExists<Args>(src, dst, srcEntity, dstEntity), ...);
-	}
-
-	
-	static void CloneRegistry(const entt::registry& src, entt::registry& dst, bool clearDestination = true)
-	{
-		if (clearDestination)
-			dst = entt::registry();
-		
-		dst.assign(src.data(), src.data() + src.size(), src.released()); // Copy entities
-
-		CloneAll<XYZ_COMPONENTS>(src, dst);
-	}
-
-	static void CopyRegistry(const entt::registry& src, entt::registry& dst, bool clearDestination = false)
-	{
-		if (clearDestination)
-			dst = entt::registry();
-
-		dst.each([&src, &dst](entt::entity srcEntity) {
-			entt::entity dstEntity = dst.create();
-			CopyComponentsIfExist<XYZ_COMPONENTS>(src, dst, srcEntity, dstEntity);
-		});
-	}
-
-
 	static entt::registry s_CopyRegistry;
 
 	Scene::Scene(const std::string& name, const GUID& guid)
@@ -229,12 +230,12 @@ namespace XYZ {
 		}
 
 
-		CloneRegistry(m_Registry, s_CopyRegistry);
+		Utils::CloneRegistry(m_Registry, s_CopyRegistry);
 	}
 
 	void Scene::OnStop()
 	{
-		CloneRegistry(s_CopyRegistry, m_Registry);
+		Utils::CloneRegistry(s_CopyRegistry, m_Registry);
 		s_CopyRegistry = entt::registry();
 		{
 			b2World& physicsWorld = m_PhysicsWorld.GetWorld();
@@ -358,7 +359,7 @@ namespace XYZ {
 			for (size_t i = 0; i < meshComponent.BoneEntities.size(); ++i)
 			{
 				const entt::entity boneEntity = meshComponent.BoneEntities[i];
-				meshComponent.BoneTransforms[i] = Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity).WorldTransform);
+				meshComponent.BoneTransforms[i] = Utils::Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity).WorldTransform);
 			}
 			Ref<MeshSource> meshSource = meshComponent.Mesh->GetMeshSource();
 			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
@@ -472,7 +473,7 @@ namespace XYZ {
 			for (size_t i = 0; i < meshComponent.BoneEntities.size(); ++i)
 			{
 				const entt::entity boneEntity = meshComponent.BoneEntities[i];
-				meshComponent.BoneTransforms[i] = Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity).WorldTransform);
+				meshComponent.BoneTransforms[i] = Utils::Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity).WorldTransform);
 			}
 			Ref<MeshSource> meshSource = meshComponent.Mesh->GetMeshSource();
 			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);

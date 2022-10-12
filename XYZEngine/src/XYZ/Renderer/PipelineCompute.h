@@ -11,6 +11,7 @@ namespace XYZ {
 		
 		virtual void Begin(Ref<RenderCommandBuffer> renderCommandBuffer = nullptr) = 0;
 		virtual void End() = 0;
+		virtual void Invalidate() = 0;
 
 		virtual Ref<Shader> GetShader() const = 0;
 

@@ -158,11 +158,18 @@ namespace XYZ {
 		struct RenderStatistics
 		{
 			uint32_t SpriteDrawCommandCount = 0;
+
 			uint32_t MeshDrawCommandCount = 0;
 			uint32_t MeshOverrideDrawCommandCount = 0;
+			
+			uint32_t AnimatedMeshDrawCommandCount = 0;
+			uint32_t AnimatedMeshOverrideDrawCommandCount = 0;
+			
 			uint32_t InstanceMeshDrawCommandCount = 0;
+			
 			uint32_t PointLight2DCount = 0;
 			uint32_t SpotLight2DCount = 0;
+			
 			uint32_t TransformInstanceCount = 0;
 			uint32_t InstanceDataSize = 0;
 		};

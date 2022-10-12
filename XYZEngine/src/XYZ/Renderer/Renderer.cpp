@@ -42,6 +42,8 @@ namespace XYZ {
 					material->Invalidate();
 				for (auto& pipeline : it->second.PipelineDependencies)
 					pipeline->Invalidate();
+				for (auto& pipeline : it->second.PipelineComputeDependencies)
+					pipeline->Invalidate();
 			}
 		}
 		void Register(size_t hash, const Ref<Material>& material)
