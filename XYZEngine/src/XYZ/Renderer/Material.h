@@ -35,7 +35,6 @@ namespace XYZ {
 		virtual void SetImage(const std::string& name, Ref<Image2D> image, int32_t mip = -1) = 0;
 
 		virtual uint64_t	GetFlags() const = 0;
-		virtual uint32_t	GetID()    const = 0;
 		virtual Ref<Shader>	GetShader()const = 0;
 		
 		

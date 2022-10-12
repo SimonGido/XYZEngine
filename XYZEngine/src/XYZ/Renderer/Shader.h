@@ -160,9 +160,9 @@ namespace XYZ {
 
 		virtual bool IsCompiled() const { return false; };
 
-		static Ref<Shader> Create(const std::string& path, bool forceCompile = true);
-		static Ref<Shader> Create(const std::string& name, const std::string& path, bool forceCompile = true);
-		static Ref<Shader> Create(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, bool forceCompile = true);
+		static Ref<Shader> Create(const std::string& path, size_t sourceHash = 0, bool forceCompile = true);
+		static Ref<Shader> Create(const std::string& name, const std::string& path, size_t sourceHash = 0, bool forceCompile = true);
+		static Ref<Shader> Create(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, size_t sourceHash = 0, bool forceCompile = true);
 	};
 
 }

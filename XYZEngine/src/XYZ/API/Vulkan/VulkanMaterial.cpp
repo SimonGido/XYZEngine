@@ -5,28 +5,12 @@
 
 namespace XYZ {
 
-	namespace Utils {
-		static uint32_t s_NextID = 0;
-		static std::queue<uint32_t> s_FreeIDs;
-		
-		static uint32_t GenerateID()
-		{
-			if (!s_FreeIDs.empty())
-			{
-				uint32_t id = s_FreeIDs.back();
-				s_FreeIDs.pop();
-				return id;
-			}
-			return s_NextID++;
-		}
-	}
-
+	
 	VulkanMaterial::VulkanMaterial(const Ref<Shader>& shader)
 		:
 		m_Shader(shader),
 		m_WriteDescriptors(Renderer::GetConfiguration().FramesInFlight),
-		m_DescriptorsDirty(true),
-		m_ID(Utils::GenerateID())
+		m_DescriptorsDirty(true)
 	{
 		Ref<VulkanMaterial> instance = this;
 		Renderer::Submit([instance]() mutable
@@ -38,7 +22,6 @@ namespace XYZ {
 
 	VulkanMaterial::~VulkanMaterial()
 	{	
-		Utils::s_FreeIDs.push(m_ID);
 	}
 	void VulkanMaterial::Invalidate()
 	{

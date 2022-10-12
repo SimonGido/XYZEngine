@@ -61,10 +61,8 @@ namespace XYZ {
 	}
 
 	SceneRenderer::~SceneRenderer()
-	{
-		
+	{		
 	}
-
 
 	void SceneRenderer::Init()
 	{
@@ -91,14 +89,14 @@ namespace XYZ {
 		m_StorageBufferSet->Create(1, 0, 14);
 		m_StorageBufferSet->Create(GeometryPass::GetMaxBonesTransforms() * sizeof(GeometryRenderQueue::BoneTransforms), 2, 0);
 
-		Ref<ShaderAsset> compositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
-		Ref<ShaderAsset> lightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
-		Ref<ShaderAsset> bloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
+		m_CompositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
+		m_LightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
+		m_BloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
 		
 		m_GeometryPass.Init({ m_GeometryRenderPass, m_DepthRenderPass, m_UniformBufferSet, m_StorageBufferSet }, m_CommandBuffer);
-		m_DeferredLightPass.Init({ m_LightRenderPass, lightShaderAsset->GetShader() }, m_CommandBuffer);
-		m_BloomPass.Init({ bloomShaderAsset->GetShader(), m_BloomTexture }, m_CommandBuffer);
-		m_CompositePass.Init({ m_CompositeRenderPass, compositeShaderAsset->GetShader() }, m_CommandBuffer);
+		m_DeferredLightPass.Init({ m_LightRenderPass, m_LightShaderAsset->GetShader() }, m_CommandBuffer);
+		m_BloomPass.Init({ m_BloomShaderAsset->GetShader(), m_BloomTexture }, m_CommandBuffer);
+		m_CompositePass.Init({ m_CompositeRenderPass, m_CompositeShaderAsset->GetShader() }, m_CommandBuffer);
 		m_LightCullingPass.Init({ m_UniformBufferSet, m_StorageBufferSet });
 	
 		m_LightCullingWorkGroups = { 
@@ -339,10 +337,10 @@ namespace XYZ {
 					);
 
 					UI::TableRow("LineWidthRow",
-						[]() { ImGui::Text("Line Width"); },
+						[]() { ImGui::Text("Grid Line Width"); },
 						[&]()
 						{	UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
-							if (UI::FloatControl("##LineWidth", "##LineWidthDrag", m_GridProps.LineWidth, 0.025f, 0.05f))
+							if (UI::FloatControl("##GridLineWidth", "##GridLineWidthDrag", m_GridProps.LineWidth, 0.025f, 0.05f))
 								m_GridMaterialInstance->Set("u_Settings.Size", m_GridProps.LineWidth);
 						}
 					);

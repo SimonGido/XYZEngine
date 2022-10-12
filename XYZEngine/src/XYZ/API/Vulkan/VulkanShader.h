@@ -71,9 +71,9 @@ namespace XYZ {
 		using StageMap = std::unordered_map<VkShaderStageFlagBits, T>;
 
 	public:
-		VulkanShader(const std::string& path, bool forceCompile);
-		VulkanShader(const std::string& name, const std::string& path, bool forceCompile);
-		VulkanShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, bool forceCompile);
+		VulkanShader(const std::string& path, size_t sourceHash, bool forceCompile);
+		VulkanShader(const std::string& name, const std::string& path, size_t sourceHash, bool forceCompile);
+		VulkanShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, size_t sourceHash, bool forceCompile);
 
 		virtual ~VulkanShader() override;
 

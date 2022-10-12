@@ -22,7 +22,6 @@ namespace XYZ {
 
 
 		virtual uint64_t	   GetFlags() const override { return m_Flags.ToUlong(); }
-		virtual uint32_t	   GetID()    const  override { return m_ID; };
 		virtual Ref<Shader>	   GetShader() const override { return m_Shader; }
 
 
@@ -87,7 +86,6 @@ namespace XYZ {
 
 		Flags<RenderFlags>			   m_Flags;
 		bool						   m_DescriptorsDirty;
-
-		uint32_t					   m_ID;		
+	
 	};
 }

@@ -273,34 +273,34 @@ namespace XYZ {
 		}	
 	}
 
-	VulkanShader::VulkanShader(const std::string& path, bool forceCompile)
+	VulkanShader::VulkanShader(const std::string& path, size_t sourceHash, bool forceCompile)
 		:
 		m_Compiled(false),
 		m_Name(Utils::GetFilenameWithoutExtension(path)),
 		m_FilePath(path),
-		m_SourceHash(0),
+		m_SourceHash(sourceHash),
 		m_VertexBufferSize(0)
 	{
 		m_Parser.AddKeyword("XYZ_INSTANCED");
 		Reload(forceCompile);
 	}
-	VulkanShader::VulkanShader(const std::string& name, const std::string& path, bool forceCompile)
+	VulkanShader::VulkanShader(const std::string& name, const std::string& path, size_t sourceHash, bool forceCompile)
 		:
 		m_Compiled(false),
 		m_Name(name),
 		m_FilePath(path),
-		m_SourceHash(0),
+		m_SourceHash(sourceHash),
 		m_VertexBufferSize(0)
 	{
 		m_Parser.AddKeyword("XYZ_INSTANCED");
 		Reload(forceCompile);
 	}
-	VulkanShader::VulkanShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, bool forceCompile)
+	VulkanShader::VulkanShader(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, size_t sourceHash, bool forceCompile)
 		:
 		m_Compiled(false),
 		m_Name(name),
 		m_FilePath(Utils::GetDirectoryPath(vertexPath) + "/" + name + ".glsl"),
-		m_SourceHash(0),
+		m_SourceHash(sourceHash),
 		m_VertexBufferSize(0)
 	{
 		std::ofstream outfile(m_FilePath);

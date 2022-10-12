@@ -151,6 +151,9 @@ namespace XYZ {
 		GeometryRenderQueue		   m_Queue;								   
 		bool				       m_ViewportSizeChanged = false;
 	
+		Ref<ShaderAsset>		   m_CompositeShaderAsset;
+		Ref<ShaderAsset>		   m_LightShaderAsset;
+		Ref<ShaderAsset>		   m_BloomShaderAsset;
 		
 		struct RenderStatistics
 		{
