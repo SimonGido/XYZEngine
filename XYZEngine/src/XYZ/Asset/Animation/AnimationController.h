@@ -2,7 +2,6 @@
 #include "XYZ/Core/Timestep.h"
 #include "AnimationAsset.h"
 
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
@@ -15,13 +14,40 @@
 #include <ozz/base/memory/unique_ptr.h>
 
 namespace XYZ {
+
+	struct SamplingContext
+	{
+		SamplingContext();
+		SamplingContext(const SamplingContext& other);
+
+		SamplingContext& operator=(const SamplingContext& other);
+
+		std::vector<glm::vec3> LocalTranslations;
+		std::vector<glm::vec3> LocalScales;
+		std::vector<glm::quat> LocalRotations;
+	
+	private:
+		void resize(uint32_t size);
+		void resizeSao(uint32_t size);
+
+
+	private:
+		ozz::animation::SamplingJob::Context m_Context;
+		ozz::vector<ozz::math::SoaTransform> m_LocalSpaceSoaTransforms;
+	
+		uint32_t m_SaoSize = 0;
+		uint32_t m_Size = 0;
+
+		friend class AnimationController;
+	};
+
 	// Controls which animation (or animations) is playing on a mesh.
 	class AnimationController : public Asset
 	{
 	public:
 		virtual ~AnimationController() = default;
 
-		void Update(float& animationTime);
+		void Update(float& animationTime, SamplingContext& context);
 
 		void SetSkeletonAsset(const Ref<SkeletonAsset>& skeletonAsset);
 		void SetCurrentState(size_t index) { m_StateIndex = index; };
@@ -31,40 +57,24 @@ namespace XYZ {
 
 		size_t GetCurrentState() const { return m_StateIndex; }
 
-		const glm::vec3& GetTranslation(size_t jointIndex) const { return m_LocalTranslations[jointIndex]; }
-		const glm::vec3& GetScale(size_t jointIndex)	   const { return m_LocalScales[jointIndex]; }
-		const glm::quat& GetRotation(size_t jointIndex)	   const { return m_LocalRotations[jointIndex]; }
-
 		const Ref<SkeletonAsset>&				GetSkeleton()		 const { return m_SkeletonAsset; }
 		const std::vector<std::string>&			GetStateNames()		 const { return m_AnimationNames; }
 		const std::vector<Ref<AnimationAsset>>& GetAnimationStates() const { return m_AnimationStates; }
-		const std::vector<ozz::math::Float4x4>& GetTransforms()		 const; 
+		
 
 		static AssetType GetStaticType() { return AssetType::AnimationController; }
 		virtual AssetType GetAssetType() const override { return GetStaticType(); }
 
-
-		void UpdateModel();
 	private:
-		void updateSampling(float ratio);
+		void updateSampling(float ratio, SamplingContext& context);
 		
 
 	private:
-		Ref<SkeletonAsset> m_SkeletonAsset;
-		ozz::animation::SamplingJob::Context m_SamplingContext;
-		ozz::vector<ozz::math::SoaTransform> m_LocalSpaceSoaTransforms;
-
-		std::vector<glm::vec3> m_LocalTranslations;
-		std::vector<glm::vec3> m_LocalScales;
-		std::vector<glm::quat> m_LocalRotations;
-
-		std::vector<ozz::math::Float4x4> m_BoneTransforms;
-
+		Ref<SkeletonAsset>				 m_SkeletonAsset;
 		std::vector<Ref<AnimationAsset>> m_AnimationStates;
 		std::vector<std::string>		 m_AnimationNames;
 
-
-		size_t							 m_StateIndex = 0;
-
+		
+		size_t m_StateIndex = 0;
 	};
 }

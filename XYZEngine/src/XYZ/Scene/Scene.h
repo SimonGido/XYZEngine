@@ -101,8 +101,9 @@ namespace XYZ {
         void onScriptComponentDestruct(entt::registry& reg, entt::entity ent);
 
         void updateScripts(Timestep ts);
-        void updateHierarchy();
-        
+        void updateHierarchy();      
+        void updateHierarchyAsync();
+
         void updateAnimationView(Timestep ts);
         void updateAnimationViewAsync(Timestep ts);
 
@@ -134,6 +135,7 @@ namespace XYZ {
 
 
         bool m_UpdateAnimationAsync = false;
+        bool m_UpdateHierarchyAsync = false;
 
         friend SceneRenderer;
         friend class SceneIntersection;

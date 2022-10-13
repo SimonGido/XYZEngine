@@ -8,6 +8,7 @@
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Mesh.h"
 #include "XYZ/Asset/Renderer/MaterialAsset.h"
+#include "XYZ/Asset/Animation/AnimationController.h"
 
 #include "XYZ/Script/ScriptPublicField.h"
 #include "XYZ/Particle/CPU/ParticleSystem.h"
@@ -145,13 +146,13 @@ namespace XYZ {
 		std::vector<entt::entity>		 BoneEntities;
 	};
 
-	class AnimationController;
 	struct AnimationComponent
 	{
 		AnimationComponent() = default;
 		AnimationComponent(const AnimationComponent& other);
 
 		Ref<AnimationController>  Controller;
+		SamplingContext			  Context; // It is not owned by controller so single controller can update on multiple threads
 		float					  AnimationTime = 0.0f;
 		bool					  Playing = false;
 	};
@@ -251,11 +252,11 @@ namespace XYZ {
 		std::vector<entt::entity> GetTree(const entt::registry& reg) const;
 		bool					  IsInHierarchy(const entt::registry& reg, entt::entity child) const;
 
-		entt::entity GetParent() const { return Parent; }
-		entt::entity GetFirstChild() const { return FirstChild; }
+		entt::entity GetParent()		  const { return Parent; }
+		entt::entity GetFirstChild()	  const { return FirstChild; }
 		entt::entity GetPreviousSibling() const { return PreviousSibling; }
-		entt::entity GetNextSibling() const { return NextSibling; }
-		uint32_t GetDepth() const { return Depth; }
+		entt::entity GetNextSibling()	  const { return NextSibling; }
+		uint32_t	 GetDepth()			  const { return Depth; }
 
 		static void SetupRelation(entt::entity parent, entt::entity child, entt::registry& reg);
 		static void RemoveRelation(entt::entity child, entt::registry& reg);

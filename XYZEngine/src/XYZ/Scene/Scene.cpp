@@ -575,6 +575,14 @@ namespace XYZ {
 		for (auto& transformComponent : transformStorage)
 			transformComponent.m_Dirty = false;
 	}
+
+	void Scene::updateHierarchyAsync()
+	{
+		XYZ_PROFILE_FUNC("Scene::updateHierarchyAsync");
+
+		std::vector<std::function<bool()>> jobs;
+	}
+
 	void Scene::updateAnimationView(Timestep ts)
 	{
 		XYZ_PROFILE_FUNC("Scene::updateAnimationView");
@@ -585,14 +593,14 @@ namespace XYZ {
 			anim.Playing = true; // TODO: temporary
 			if (anim.Playing && anim.Controller.Raw())
 			{
-				anim.Controller->Update(anim.AnimationTime);
+				anim.Controller->Update(anim.AnimationTime, anim.Context);
 				anim.AnimationTime += ts;
 				for (size_t i = 0; i < animMesh.BoneEntities.size(); ++i)
 				{
 					auto& transform = m_Registry.get<TransformComponent>(animMesh.BoneEntities[i]);
-					transform.GetTransform().Translation = anim.Controller->GetTranslation(i);
-					transform.GetTransform().Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
-					transform.GetTransform().Scale = anim.Controller->GetScale(i);
+					transform.GetTransform().Translation = anim.Context.LocalTranslations[i];
+					transform.GetTransform().Rotation = glm::eulerAngles(anim.Context.LocalRotations[i]);
+					transform.GetTransform().Scale = anim.Context.LocalScales[i];
 				}
 			}
 		}
@@ -600,7 +608,7 @@ namespace XYZ {
 	
 	void Scene::updateAnimationViewAsync(Timestep ts)
 	{
-		XYZ_ASSERT(false, "Split tasks by controller");
+		//XYZ_ASSERT(false, "Split tasks by controller");
 
 		XYZ_PROFILE_FUNC("Scene::updateAnimationViewAsync");
 		Ref<Scene> instance = this;
@@ -618,14 +626,14 @@ namespace XYZ {
 			{
 				futures.emplace_back(threadPool.SubmitJob([instance, ts, &animation = anim, &animatedMesh = animMesh]() mutable {
 
-					animation.Controller->Update(animation.AnimationTime);
+					animation.Controller->Update(animation.AnimationTime, animation.Context);
 					animation.AnimationTime += ts;
 					for (size_t i = 0; i < animatedMesh.BoneEntities.size(); ++i)
 					{
 						auto& transform = instance->m_Registry.get<TransformComponent>(animatedMesh.BoneEntities[i]);
-						transform.GetTransform().Translation = animation.Controller->GetTranslation(i);
-						transform.GetTransform().Rotation = glm::eulerAngles(animation.Controller->GetRotation(i));
-						transform.GetTransform().Scale = animation.Controller->GetScale(i);
+						transform.GetTransform().Translation = animation.Context.LocalTranslations[i];
+						transform.GetTransform().Rotation = glm::eulerAngles(animation.Context.LocalRotations[i]);
+						transform.GetTransform().Scale = animation.Context.LocalScales[i];
 					}
 					return true;
 				}));
