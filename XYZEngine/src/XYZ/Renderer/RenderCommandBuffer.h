@@ -11,13 +11,20 @@ namespace XYZ {
 	public:
 		virtual ~RenderCommandBuffer() {}
 
+		virtual void* CommandBufferHandle(uint32_t index) = 0;
+	};
+
+
+	class PrimaryRenderCommandBuffer : public RenderCommandBuffer
+	{
+	public:
+		virtual ~PrimaryRenderCommandBuffer() {}
+
 		virtual void Begin() = 0;
 		virtual void End() = 0;
-		
-		virtual void RT_Begin(){};
-		virtual void RT_End() {}
 
-		virtual void* CommandBufferHandle(uint32_t index) = 0;
+		virtual void RT_Begin() = 0;
+		virtual void RT_End() = 0;
 
 		virtual void Submit() = 0;
 
@@ -31,7 +38,7 @@ namespace XYZ {
 
 		virtual Ref<SecondaryRenderCommandBuffer> CreateSecondaryCommandBuffer() = 0;
 
-		static Ref<RenderCommandBuffer> Create(uint32_t count = 0, const std::string& debugName = "");
+		static Ref<PrimaryRenderCommandBuffer> Create(uint32_t count = 0, const std::string& debugName = "");
 	};
 
 
@@ -41,8 +48,8 @@ namespace XYZ {
 		virtual void Begin(Ref<Framebuffer> frameBuffer) = 0;
 		virtual void End() = 0;
 
-		virtual void RT_Begin(Ref<Framebuffer> frameBuffer) {};
-		virtual void RT_End() {}
+		virtual void RT_Begin(Ref<Framebuffer> frameBuffer) = 0;
+		virtual void RT_End() = 0;
 
 		virtual Ref<RenderCommandBuffer> GetPrimaryCommandBuffer() const = 0;
 

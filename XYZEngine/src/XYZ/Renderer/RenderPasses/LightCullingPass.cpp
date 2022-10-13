@@ -41,7 +41,7 @@ namespace XYZ {
 				barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-				VkCommandBuffer vulkanCommandBuffer = (const VkCommandBuffer)renderCommandBuffer.As<VulkanPrimaryRenderCommandBuffer>()->CommandBufferHandle(frameIndex);
+				VkCommandBuffer vulkanCommandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 
 				vkCmdPipelineBarrier(vulkanCommandBuffer,
 					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,

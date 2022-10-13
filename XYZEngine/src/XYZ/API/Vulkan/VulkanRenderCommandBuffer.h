@@ -6,7 +6,7 @@
 namespace XYZ {
 
 	class VulkanSwapChain;
-	class VulkanPrimaryRenderCommandBuffer : public RenderCommandBuffer
+	class VulkanPrimaryRenderCommandBuffer : public PrimaryRenderCommandBuffer
 	{
 	public:
 		VulkanPrimaryRenderCommandBuffer(uint32_t count = 0, std::string debugName = "");

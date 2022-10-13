@@ -136,8 +136,10 @@ namespace XYZ {
 		SceneRendererSpecification m_Specification;
 		Ref<Scene>				   m_ActiveScene;
 
-		Ref<RenderCommandBuffer>   m_CommandBuffer;
-		
+		Ref<PrimaryRenderCommandBuffer>   m_CommandBuffer;
+		Ref<SecondaryRenderCommandBuffer> m_GeometryCommandBuffer;
+
+
 		Ref<UniformBufferSet>      m_UniformBufferSet;
 		Ref<StorageBufferSet>	   m_StorageBufferSet;
 

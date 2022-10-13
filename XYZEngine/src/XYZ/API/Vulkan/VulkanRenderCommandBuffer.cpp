@@ -156,6 +156,7 @@ namespace XYZ {
 		// Pipeline stats query		
 		vkCmdResetQueryPool(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0, m_PipelineQueryCount);
 		vkCmdBeginQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0, 0);
+
 	}
 
 	void VulkanPrimaryRenderCommandBuffer::RT_End() 
@@ -385,8 +386,8 @@ namespace XYZ {
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = 0; // Optional
-		beginInfo.pInheritanceInfo = nullptr; // Optional
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+		beginInfo.pInheritanceInfo = &inheritanceInfo;
 
 		const VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
 		VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo));

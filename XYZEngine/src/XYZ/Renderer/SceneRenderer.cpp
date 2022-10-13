@@ -68,11 +68,11 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::Init");
 
-		m_CommandBuffer = RenderCommandBuffer::Create(0, "SceneRenderer");
+		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "SceneRenderer");
 
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
-		m_CommandBuffer->CreateSecondaryCommandBuffer();
+		m_GeometryCommandBuffer = m_CommandBuffer->CreateSecondaryCommandBuffer();
 
 		createGeometryPass();
 		createCompositePass();
@@ -581,7 +581,9 @@ namespace XYZ {
 		const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
 
 		Renderer::BindPipeline(m_CommandBuffer, m_GridPipeline, m_UniformBufferSet, nullptr, m_GridMaterial);
-		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_GridPipeline, m_GridMaterialInstance, transform);
+		
+		m_GeometryCommandBuffer->Begin(m_GeometryRenderPass->GetSpecification().TargetFramebuffer);
+		Renderer::SubmitFullscreenQuad(m_GeometryCommandBuffer, m_GridPipeline, m_GridMaterialInstance, transform);
 	}
 
 	void SceneRenderer::updateUniformBufferSet()
