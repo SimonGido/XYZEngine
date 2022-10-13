@@ -14,7 +14,7 @@ namespace XYZ {
 		virtual void BeginFrame() override;
 		virtual void EndFrame() override;
 
-		virtual void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<RenderPass> renderPass, bool explicitClear = false) override;
+		virtual void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<RenderPass> renderPass, bool subPass = false, bool explicitClear = false) override;
 		virtual void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer) override;
 		
 		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData, uint32_t indexCount = 0, uint32_t vertexOffsetSize = 0) override;

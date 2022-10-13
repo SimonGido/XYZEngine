@@ -28,7 +28,7 @@ namespace XYZ {
 		createDepthResources();
 	}
 	void GeometryPass::PreDepthPass(
-		Ref<RenderCommandBuffer> commandBuffer,
+		Ref<PrimaryRenderCommandBuffer> commandBuffer,
 		GeometryRenderQueue& queue,
 		const glm::mat4& viewMatrix,
 		bool clear
@@ -38,7 +38,7 @@ namespace XYZ {
 
 		// Pre depth
 		uint32_t depthPassQuery = commandBuffer->BeginTimestampQuery();
-		Renderer::BeginRenderPass(commandBuffer, m_DepthPass, clear);
+		Renderer::BeginRenderPass(commandBuffer, m_DepthPass, false, clear);
 
 		submit2DDepth(queue, commandBuffer, viewMatrix);
 		submitStaticMeshesDepth(queue, commandBuffer);
@@ -53,7 +53,7 @@ namespace XYZ {
 
 
 	void GeometryPass::Submit(
-		Ref<RenderCommandBuffer> commandBuffer, 
+		Ref<PrimaryRenderCommandBuffer> commandBuffer,
 		GeometryRenderQueue& queue, 
 		const glm::mat4& viewMatrix,
 		bool clear
@@ -62,7 +62,7 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("GeometryPass::Submit");
 		// Geometry
 		uint32_t geometryPassQuery = commandBuffer->BeginTimestampQuery();
-		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, clear);
+		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, false, clear);
 
 		submit2D(queue, commandBuffer, viewMatrix);
 		submitStaticMeshes(queue, commandBuffer);

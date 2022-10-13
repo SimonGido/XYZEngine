@@ -1,6 +1,8 @@
 #pragma once
 #include "XYZ/Renderer/RenderCommandBuffer.h"
 
+#include "VulkanFramebuffer.h"
+
 #include <vulkan/vulkan.h>
 
 namespace XYZ {
@@ -30,7 +32,7 @@ namespace XYZ {
 
 		virtual Ref<SecondaryRenderCommandBuffer> CreateSecondaryCommandBuffer() override;
 
-		virtual void* CommandBufferHandle(uint32_t index) override { return m_CommandBuffers[index]; }
+		virtual void* CommandBufferHandle(uint32_t index) const override { return m_CommandBuffers[index]; }
 
 		VkResult GetFenceStatus(uint32_t index) const;
 	private:
@@ -79,16 +81,19 @@ namespace XYZ {
 		VulkanSecondaryRenderCommandBuffer(Ref<RenderCommandBuffer> primaryCommandBuffer);
 		~VulkanSecondaryRenderCommandBuffer() override;
 
-		virtual void Begin(Ref<Framebuffer> frameBuffer) override;
+		virtual void Begin(Ref<Framebuffer> framebuffer, bool clear) override;
 		virtual void End() override;
 
-		virtual void RT_Begin(Ref<Framebuffer> frameBuffer) override;
+		virtual void RT_Begin(Ref<Framebuffer> framebuffer, bool clear) override;
 		virtual void RT_End() override;
+
+		virtual void Submit() override;
 
 		virtual void* CommandBufferHandle(uint32_t index) const override { return m_CommandBuffers[index]; }
 		
-		virtual Ref<RenderCommandBuffer> GetPrimaryCommandBuffer() const { return m_PrimaryRenderCommandBuffer; };
-
+		virtual Ref<PrimaryRenderCommandBuffer> GetPrimaryCommandBuffer() const { return m_PrimaryRenderCommandBuffer; };
+	private:
+		void clearFramebuffer(Ref<VulkanFramebuffer> framebuffer, const VkCommandBuffer commandBuffer);
 	private:
 		std::vector<VkCommandBuffer>		  m_CommandBuffers;
 		Ref<VulkanPrimaryRenderCommandBuffer> m_PrimaryRenderCommandBuffer;

@@ -160,6 +160,8 @@ namespace XYZ {
 		enabledFeatures.wideLines = true;
 		enabledFeatures.fillModeNonSolid = true;
 		enabledFeatures.pipelineStatisticsQuery = true;
+		enabledFeatures.inheritedQueries = true;
+
 		m_Device = Ref<VulkanDevice>::Create(enabledFeatures);
 	}
 }

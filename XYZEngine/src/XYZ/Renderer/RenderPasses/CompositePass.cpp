@@ -14,7 +14,7 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("CompositePass::Submit");
 
-		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, clear);
+		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, false, clear);
 		m_Material->SetImage("u_GeometryTexture", lightImage);
 		m_Material->SetImage("u_BloomTexture", bloomImage);
 		Renderer::BindPipeline(

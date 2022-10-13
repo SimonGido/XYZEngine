@@ -268,10 +268,10 @@ namespace XYZ {
 	}
 
 	void Renderer::BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass,
-		bool clear)
+		bool subPass, bool clear)
 	{
 		XYZ_ASSERT(renderPass.Raw(), "Render pass can not be null");
-		s_RendererAPI->BeginRenderPass(renderCommandBuffer, renderPass, clear);
+		s_RendererAPI->BeginRenderPass(renderCommandBuffer, renderPass, subPass, clear);
 	}
 
 	void Renderer::EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer)

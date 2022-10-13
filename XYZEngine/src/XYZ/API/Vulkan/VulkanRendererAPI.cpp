@@ -74,9 +74,9 @@ namespace XYZ {
 	}
 
 	void VulkanRendererAPI::BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer,
-		Ref<RenderPass> renderPass, bool explicitClear)
+		Ref<RenderPass> renderPass, bool subPass, bool explicitClear)
 	{
-		Renderer::Submit([renderCommandBuffer, renderPass, explicitClear]() mutable
+		Renderer::Submit([renderCommandBuffer, renderPass, subPass, explicitClear]() mutable
 		{
 			XYZ_PROFILE_FUNC("VulkanRendererAPI::BeginRenderPass");
 			Ref<VulkanContext> vulkanContext = Renderer::GetAPIContext();
@@ -125,19 +125,25 @@ namespace XYZ {
 				viewport = { 0.0f, static_cast<float>(extent.height) };
 				viewport.width = static_cast<float>(extent.width);
 				viewport.height = -static_cast<float>(extent.height);
-				scissor.extent = swapChain.GetExtent();
+				scissor.extent = extent;
 			}
 
 			const VkCommandBuffer commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 
-			vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-			if (explicitClear)
-				clearFramebuffer(framebuffer, commandBuffer);
+			const VkSubpassContents contents = subPass ? VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS : VK_SUBPASS_CONTENTS_INLINE;
+			vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo, contents);
+			
+			// We use secondary command buffer
+			if (!subPass)
+			{
+				if (explicitClear)
+					clearFramebuffer(framebuffer, commandBuffer);
 
-			// Update dynamic viewport state
-			vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-			// Update dynamic scissor state				
-			vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+				// Update dynamic viewport state
+				vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+				// Update dynamic scissor state				
+				vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+			}
 		});
 	}
 

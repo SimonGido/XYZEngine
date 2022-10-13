@@ -10,8 +10,8 @@ namespace XYZ {
 	{
 	public:
 		virtual ~RenderCommandBuffer() {}
-
-		virtual void* CommandBufferHandle(uint32_t index) = 0;
+		virtual void Submit() = 0;
+		virtual void* CommandBufferHandle(uint32_t index) const = 0;
 	};
 
 
@@ -26,7 +26,7 @@ namespace XYZ {
 		virtual void RT_Begin() = 0;
 		virtual void RT_End() = 0;
 
-		virtual void Submit() = 0;
+		
 
 		virtual void CreateTimestampQueries(uint32_t count) = 0;
 
@@ -42,18 +42,17 @@ namespace XYZ {
 	};
 
 
-	class SecondaryRenderCommandBuffer : public RefCount
+	class SecondaryRenderCommandBuffer : public RenderCommandBuffer
 	{
 	public:
-		virtual void Begin(Ref<Framebuffer> frameBuffer) = 0;
+		virtual void Begin(Ref<Framebuffer> framebuffer, bool clear) = 0;
 		virtual void End() = 0;
 
-		virtual void RT_Begin(Ref<Framebuffer> frameBuffer) = 0;
+		virtual void RT_Begin(Ref<Framebuffer> framebuffer, bool clear) = 0;
 		virtual void RT_End() = 0;
 
-		virtual Ref<RenderCommandBuffer> GetPrimaryCommandBuffer() const = 0;
+		virtual Ref<PrimaryRenderCommandBuffer> GetPrimaryCommandBuffer() const = 0;
 
-		virtual void* CommandBufferHandle(uint32_t index) const = 0;
 	};
 
 }

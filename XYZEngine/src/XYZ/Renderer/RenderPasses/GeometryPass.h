@@ -30,14 +30,14 @@ namespace XYZ {
 		void Init(const GeometryPassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer);
 
 		void PreDepthPass(
-			Ref<RenderCommandBuffer> commandBuffer,
+			Ref<PrimaryRenderCommandBuffer> commandBuffer,
 			GeometryRenderQueue& queue,
 			const glm::mat4& viewMatrix,
 			bool clear
 		);
 
 		void Submit(
-			Ref<RenderCommandBuffer> commandBuffer, 
+			Ref<PrimaryRenderCommandBuffer> commandBuffer,
 			GeometryRenderQueue& queue, 
 			const glm::mat4& viewMatrix,
 			bool clear

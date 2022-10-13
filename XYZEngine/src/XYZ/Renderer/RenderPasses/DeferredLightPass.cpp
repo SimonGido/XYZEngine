@@ -109,7 +109,7 @@ namespace XYZ {
 	)
 	{
 		XYZ_PROFILE_FUNC("DeferredLightPass::Submit");
-		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, true);
+		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, false, true);
 	
 		m_Material->SetImageArray("u_Texture", colorImage, 0);
 		m_Material->SetImageArray("u_Texture", positionImage, 1);

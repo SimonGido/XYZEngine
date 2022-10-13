@@ -160,7 +160,7 @@ namespace XYZ {
 			m_CommandBuffer->Begin();
 			m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 			
-			Renderer::BeginRenderPass(m_CommandBuffer, m_SceneRenderer->GetFinalRenderPass(), false);	
+			Renderer::BeginRenderPass(m_CommandBuffer, m_SceneRenderer->GetFinalRenderPass(), false, false);	
 			
 			m_OverlayRenderer2D->BeginScene(m_EditorCamera->GetViewMatrix());	
 			renderSelected();
