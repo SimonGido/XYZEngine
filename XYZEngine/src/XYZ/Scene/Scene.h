@@ -104,6 +104,8 @@ namespace XYZ {
         void updateHierarchy();      
         void updateHierarchyAsync();
 
+        void updateHierarchyAsync(entt::entity parent);
+
         void updateAnimationView(Timestep ts);
         void updateAnimationViewAsync(Timestep ts);
 

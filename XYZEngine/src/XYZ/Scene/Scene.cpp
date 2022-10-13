@@ -580,7 +580,49 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("Scene::updateHierarchyAsync");
 
-		std::vector<std::function<bool()>> jobs;
+		const Relationship& relation = m_Registry.get<Relationship>(m_SceneEntity);
+		TransformComponent& parentTransform = m_Registry.get<TransformComponent>(m_SceneEntity);
+
+		entt::entity parent = m_SceneEntity;
+		entt::entity current = relation.GetFirstChild();
+		while (m_Registry.valid(current))
+		{
+			const Relationship& childRelation = m_Registry.get<Relationship>(current);
+
+			TransformComponent& transform = m_Registry.get<TransformComponent>(current);
+			
+			current = childRelation.GetNextSibling();
+		}
+	}
+
+	void Scene::updateHierarchyAsync(entt::entity parent)
+	{
+		XYZ_PROFILE_FUNC("Scene::updateHierarchyAsync");
+		std::stack<entt::entity> entities;
+		{
+			const Relationship& relation = m_Registry.get<Relationship>(m_SceneEntity);
+			if (m_Registry.valid(relation.FirstChild))
+				entities.push(relation.FirstChild);
+		}
+
+		while (!entities.empty())
+		{
+			const entt::entity tmp = entities.top();
+			entities.pop();
+
+			const Relationship& relation = m_Registry.get<Relationship>(tmp);
+			if (m_Registry.valid(relation.NextSibling))
+				entities.push(relation.NextSibling);
+			if (m_Registry.valid(relation.FirstChild))
+				entities.push(relation.FirstChild);
+
+			TransformComponent& transform = m_Registry.get<TransformComponent>(tmp);
+			// Every entity except m_SceneEntity must have parent
+			TransformComponent& parentTransform = m_Registry.get<TransformComponent>(relation.Parent);
+
+			if (parentTransform.m_Dirty || transform.m_Dirty)
+				transform.GetTransform().WorldTransform = parentTransform->WorldTransform * transform.GetLocalTransform();
+		}
 	}
 
 	void Scene::updateAnimationView(Timestep ts)
