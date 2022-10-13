@@ -15,8 +15,8 @@ namespace XYZ {
 				AABB aabb = meshSource->GetSubmeshBoundingBox();
 
 				const TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
-				aabb.Min = glm::vec3(transformComponent.WorldTransform * meshSource->GetSubmeshTransform() * glm::vec4(aabb.Min, 1.0f));
-				aabb.Max = glm::vec3(transformComponent.WorldTransform * meshSource->GetSubmeshTransform() * glm::vec4(aabb.Max, 1.0f));
+				aabb.Min = glm::vec3(transformComponent->WorldTransform * meshSource->GetSubmeshTransform() * glm::vec4(aabb.Min, 1.0f));
+				aabb.Max = glm::vec3(transformComponent->WorldTransform * meshSource->GetSubmeshTransform() * glm::vec4(aabb.Max, 1.0f));
 				return aabb;
 			}
 		}
@@ -27,8 +27,8 @@ namespace XYZ {
 			{
 				const TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
 				AABB aabb = meshComponent.Mesh->GetMeshSource()->GetSubmeshBoundingBox();
-				aabb.Min = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Min, 1.0f));
-				aabb.Max = glm::vec3(transformComponent.WorldTransform * glm::vec4(aabb.Max, 1.0f));
+				aabb.Min = glm::vec3(transformComponent->WorldTransform * glm::vec4(aabb.Min, 1.0f));
+				aabb.Max = glm::vec3(transformComponent->WorldTransform * glm::vec4(aabb.Max, 1.0f));
 				return aabb;
 			}
 		}

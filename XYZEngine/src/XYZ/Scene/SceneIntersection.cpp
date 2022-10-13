@@ -18,8 +18,8 @@ namespace XYZ {
 					auto& transformComponent = entity.GetComponent<TransformComponent>();
 
 					Ray transformedRay = {
-						glm::inverse(transformComponent.WorldTransform) * glm::vec4(ray.Origin, 1.0f),
-						glm::inverse(glm::mat3(transformComponent.WorldTransform)) * ray.Direction
+						glm::inverse(transformComponent->WorldTransform) * glm::vec4(ray.Origin, 1.0f),
+						glm::inverse(glm::mat3(transformComponent->WorldTransform)) * ray.Direction
 					};
 
 					if (meshComponent.Mesh->IsValid())
@@ -40,8 +40,8 @@ namespace XYZ {
 					auto& transformComponent = entity.GetComponent<TransformComponent>();
 
 					Ray transformedRay = {
-						glm::inverse(transformComponent.WorldTransform) * glm::vec4(ray.Origin, 1.0f),
-						glm::inverse(glm::mat3(transformComponent.WorldTransform)) * ray.Direction
+						glm::inverse(transformComponent->WorldTransform) * glm::vec4(ray.Origin, 1.0f),
+						glm::inverse(glm::mat3(transformComponent->WorldTransform)) * ray.Direction
 					};
 
 					if (meshComponent.Mesh->IsValid())

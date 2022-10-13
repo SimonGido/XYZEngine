@@ -1,10 +1,11 @@
 #pragma once
-#include "AssetManager.h"
+#include "Asset.h"
+
 #include "XYZ/Utils/DataStructures/ThreadQueue.h"
 
 namespace XYZ {
 
-	class AssetLifeManager
+	class AssetLifeManager : public std::enable_shared_from_this<AssetLifeManager>
 	{
 	public:
 		struct AssetTimer
@@ -13,20 +14,21 @@ namespace XYZ {
 			float	   TimeLeft;
 		};
 
-		static void Start(float aliveSeconds);
-		static void Stop();
+		void Start(float aliveSeconds);
+		void Stop();
+		void PushAsset(Ref<Asset> asset);
 
 	private:
-		static void threadFunc();
+		static void threadFunc(std::shared_ptr<AssetLifeManager> lifeManager);
 
 	private:
-		static std::vector<AssetTimer> s_AssetTimers;
-		static ThreadQueue<Ref<Asset>> s_AssetQueue;
+		std::vector<AssetTimer> m_AssetTimers;
+		ThreadQueue<Ref<Asset>> m_AssetQueue;
 
-		static float				   s_TimeAlive;
-		static bool					   s_Running;
+		float				    m_TimeAlive;
+		bool					m_Running;
 
-		static std::unique_ptr<std::thread>   s_UpdateThread;
+		std::unique_ptr<std::thread> m_UpdateThread;
 	};
 
 }

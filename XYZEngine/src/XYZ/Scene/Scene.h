@@ -100,11 +100,12 @@ namespace XYZ {
 
         void updateScripts(Timestep ts);
         void updateHierarchy();
-        void updateBoneHierarchy(entt::entity entity);
+        void updateHierarchyAsync(); // Registry can not be modified while updating
+        void waitForAsyncHierarchyUpdate();
+
         void setupPhysics();
         void setupLightEnvironment();
 
-        void propagateBoneTransform(const glm::mat4& parentTransform, entt::entity entity);
 
     private:
         PhysicsWorld2D      m_PhysicsWorld;
@@ -127,6 +128,8 @@ namespace XYZ {
         uint32_t m_ViewportHeight;
 
         std::shared_mutex m_ScriptMutex;
+
+        bool m_HierarchyUpdatedAsync = false;
 
         friend SceneRenderer;
         friend class SceneIntersection;

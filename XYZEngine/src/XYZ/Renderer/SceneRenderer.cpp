@@ -72,6 +72,8 @@ namespace XYZ {
 
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
+		m_CommandBuffer->CreateSecondaryCommandBuffer();
+
 		createGeometryPass();
 		createCompositePass();
 		createLightPass();

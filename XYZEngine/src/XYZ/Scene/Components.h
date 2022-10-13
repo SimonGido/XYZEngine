@@ -36,26 +36,39 @@ namespace XYZ {
 
 		GUID ID;
 	};
+
 	class TransformComponent 
 	{
 	public:
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent& other);
-		TransformComponent(const glm::vec3& translation)
-			: Translation(translation)
-		{}
-				
-		glm::vec3 Translation = { 0.0f,0.0f,0.0f };
-		glm::vec3 Rotation = { 0.0f,0.0f,0.0f };
-		glm::vec3 Scale = { 1.0f,1.0f,1.0f };
-		
-		glm::mat4 WorldTransform = glm::mat4(1.0f);
+		TransformComponent(const glm::vec3& translation);
 
+		struct Transform
+		{
+			glm::vec3 Translation = { 0.0f,0.0f,0.0f };
+			glm::vec3 Rotation = { 0.0f,0.0f,0.0f };
+			glm::vec3 Scale = { 1.0f,1.0f,1.0f };
+
+			glm::mat4 WorldTransform = glm::mat4(1.0f);
+		};
+
+
+		const Transform * operator->() const { return &m_Transform; }
+
+		Transform& GetTransform() { m_Dirty = true; return m_Transform; }
+		
 		std::tuple<glm::vec3, glm::vec3, glm::vec3> GetWorldComponents() const;
 
-		glm::mat4 GetTransform() const;
+		glm::mat4 GetLocalTransform() const;
 		
 		void DecomposeTransform(const glm::mat4& transform);
+
+	private:
+		Transform m_Transform;
+		bool	  m_Dirty = true;
+
+		friend class Scene;
 	};
 	
 

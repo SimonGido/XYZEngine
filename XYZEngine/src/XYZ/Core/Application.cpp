@@ -34,7 +34,7 @@ namespace XYZ {
 		m_Minimized(false),
 		m_Specification(specification)
 	{	
-		m_ThreadPool.Start(11);
+		m_ThreadPool.Start(std::thread::hardware_concurrency() - 1);
 		s_Application = this;
 		m_Running = true;
 		m_ImGuiLayer = nullptr;
@@ -238,7 +238,9 @@ namespace XYZ {
 				}
 				if (m_Specification.EnableImGui)
 				{
-					Renderer::BlockRenderThread(); // Prevents calling VkSubmitQueue from multiple threads at once
+					// We must block render thread only if multiple viewports are created
+					if (m_ImGuiLayer->IsMultiViewport())
+						Renderer::BlockRenderThread(); // Prevents calling VkSubmitQueue from multiple threads at once
 					onImGuiRender();
 				}
 				Renderer::EndFrame();

@@ -161,11 +161,11 @@ namespace XYZ {
 
 		auto& transformComponent = newEntity.GetComponent<TransformComponent>();
 		if (translation)
-			transformComponent.Translation = *translation;
+			transformComponent.GetTransform().Translation = *translation;
 		if (rotation)
-			transformComponent.Rotation = *rotation;
+			transformComponent.GetTransform().Rotation = *rotation;
 		if (scale)
-			transformComponent.Scale = *scale;
+			transformComponent.GetTransform().Scale = *scale;
 
 		return newEntity;
 	}

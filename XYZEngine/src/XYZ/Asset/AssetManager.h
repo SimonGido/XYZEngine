@@ -19,6 +19,7 @@
 #include "AssetSerializer.h"
 #include "AssetImporter.h"
 #include "AssetRegistry.h"
+#include "AssetLifeManager.h"
 #include "Asset.h"
 
 
@@ -61,10 +62,11 @@ namespace XYZ {
 	class AssetManager
 	{
 	public:
-		using AsyncAsset = std::shared_ptr<std::future<Ref<Asset>>>;
-
 		static void Init();
 		static void Shutdown();
+		static void KeepAlive(float seconds);
+
+
 		static void SerializeAll();
 		static void Serialize(const AssetHandle& assetHandle);
 
@@ -129,8 +131,9 @@ namespace XYZ {
 		static AssetRegistry										  s_Registry;
 		static ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>		  s_LoadedAssets;
 		static ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>        s_MemoryAssets;
+
 		static std::shared_ptr<FileWatcher>							  s_FileWatcher;
-		static std::function<void(Ref<Asset> asset)>				  s_OnAssetLoaded;
+		static std::shared_ptr<AssetLifeManager>					  s_AssetLifeManager;
 
 	private:
 		friend Editor::AssetBrowser;
@@ -178,8 +181,6 @@ namespace XYZ {
 		s_LoadedAssets.Set(asset->m_Handle, asset.Raw());
 		writeAssetMetadata(metadata);
 		AssetImporter::Serialize(asset);
-		if (s_OnAssetLoaded)
-			s_OnAssetLoaded(asset);
 		return asset;
 	}
 
@@ -197,9 +198,6 @@ namespace XYZ {
 				return nullptr;
 
 			s_LoadedAssets.Set(assetHandle, result.Raw());
-			if (s_OnAssetLoaded)
-				s_OnAssetLoaded(result);
-
 			return result;
 		}
 
@@ -223,6 +221,7 @@ namespace XYZ {
 			return GetAsset<T>(path);
 		});
 	}
+
 
 	template<typename T>
 	inline Ref<T> AssetManager::TryGetAsset(const AssetHandle& assetHandle)

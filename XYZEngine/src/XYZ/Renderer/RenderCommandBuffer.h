@@ -5,6 +5,7 @@
 namespace XYZ {
 
 	class SecondaryRenderCommandBuffer;
+
 	class RenderCommandBuffer : public RefCount
 	{
 	public:

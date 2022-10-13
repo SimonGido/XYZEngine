@@ -235,6 +235,11 @@ namespace XYZ {
 		m_AddFonts.push(config);
 	}
 
+	bool VulkanImGuiLayer::IsMultiViewport() const
+	{
+		return ImGui::GetPlatformIO().Viewports.size() > 1;
+	}
+
     void VulkanImGuiLayer::OnImGuiRender()
     {
     }

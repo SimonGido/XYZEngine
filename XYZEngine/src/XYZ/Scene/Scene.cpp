@@ -277,9 +277,9 @@ namespace XYZ {
 		{
 			auto [transform, rigidBody] = rigidView.get<TransformComponent, RigidBody2DComponent>(entity);
 			const b2Body* body = static_cast<b2Body*>(rigidBody.RuntimeBody);
-			transform.Translation.x = body->GetPosition().x;
-			transform.Translation.y = body->GetPosition().y;
-			transform.Rotation.z = body->GetAngle();
+			transform.GetTransform().Translation.x = body->GetPosition().x;
+			transform.GetTransform().Translation.y = body->GetPosition().y;
+			transform.GetTransform().Rotation.z = body->GetAngle();
 		}
 		{
 			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor particleView");
@@ -287,7 +287,7 @@ namespace XYZ {
 			for (auto entity : particleView)
 			{
 				auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
-				particleComponent.GetSystem()->Update(transformComponent.WorldTransform, ts);
+				particleComponent.GetSystem()->Update(transformComponent->WorldTransform, ts);
 			}
 		}
 
@@ -304,9 +304,9 @@ namespace XYZ {
 					for (size_t i = 0; i < animMesh.BoneEntities.size(); ++i)
 					{
 						auto& transform = m_Registry.get<TransformComponent>(animMesh.BoneEntities[i]);
-						transform.Translation = anim.Controller->GetTranslation(i);
-						transform.Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
-						transform.Scale = anim.Controller->GetScale(i);
+						transform.GetTransform().Translation = anim.Controller->GetTranslation(i);
+						transform.GetTransform().Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
+						transform.GetTransform().Scale = anim.Controller->GetScale(i);
 					}
 				}
 			}
@@ -328,7 +328,7 @@ namespace XYZ {
 		auto& cameraComponent = cameraEntity.GetComponent<CameraComponent>();
 		auto& cameraTransform = cameraEntity.GetComponent<TransformComponent>();
 		renderCamera.Camera = cameraComponent.Camera;
-		renderCamera.ViewMatrix = glm::inverse(cameraTransform.WorldTransform);
+		renderCamera.ViewMatrix = glm::inverse(cameraTransform->WorldTransform);
 		auto [translation, rotation, scale] = cameraTransform.GetWorldComponents();
 		renderCamera.ViewPosition = translation;
 
@@ -342,13 +342,13 @@ namespace XYZ {
 		for (auto entity : spriteView)
 		{
 			auto& [transform, spriteRenderer] = spriteView.get<TransformComponent, SpriteRenderer>(entity);
-			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform.WorldTransform);
+			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform->WorldTransform);
 		}
 		auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
 		for (auto entity : meshView)
 		{
 			auto& [transform, meshComponent] = meshView.get<TransformComponent, MeshComponent>(entity);
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.OverrideMaterial);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform->WorldTransform, meshComponent.OverrideMaterial);
 		}
 
 		auto animMeshView = m_Registry.view<TransformComponent, AnimatedMeshComponent>();
@@ -359,7 +359,7 @@ namespace XYZ {
 			for (size_t i = 0; i < meshComponent.BoneEntities.size(); ++i)
 			{
 				const entt::entity boneEntity = meshComponent.BoneEntities[i];
-				meshComponent.BoneTransforms[i] = Utils::Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity).WorldTransform);
+				meshComponent.BoneTransforms[i] = Utils::Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity)->WorldTransform);
 			}
 			Ref<MeshSource> meshSource = meshComponent.Mesh->GetMeshSource();
 			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
@@ -389,9 +389,9 @@ namespace XYZ {
 		m_PhysicsWorld.Step(ts);
 
 		updateHierarchy();
-		
+	
 		{
-			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor animStorage");
+			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor animView");
 			auto animView = m_Registry.view<AnimationComponent, AnimatedMeshComponent>();
 			for (auto& entity : animView)
 			{
@@ -403,9 +403,9 @@ namespace XYZ {
 					for (size_t i = 0; i < animMesh.BoneEntities.size(); ++i)
 					{
 						auto& transform = m_Registry.get<TransformComponent>(animMesh.BoneEntities[i]);
-						transform.Translation = anim.Controller->GetTranslation(i);
-						transform.Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
-						transform.Scale = anim.Controller->GetScale(i);
+						transform.GetTransform().Translation = anim.Controller->GetTranslation(i);
+						transform.GetTransform().Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
+						transform.GetTransform().Scale = anim.Controller->GetScale(i);
 					}
 				}
 			}
@@ -416,7 +416,7 @@ namespace XYZ {
 			for (auto entity : particleView)
 			{
 				auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
-				particleComponent.GetSystem()->Update(transformComponent.WorldTransform, ts);
+				particleComponent.GetSystem()->Update(transformComponent->WorldTransform, ts);
 			}
 		}
 	}
@@ -448,7 +448,7 @@ namespace XYZ {
 			
 			if (!CheckAsset(spriteRenderer.Material) || !CheckAsset(spriteRenderer.SubTexture))
 				continue;
-			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform.WorldTransform);
+			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform->WorldTransform);
 		}
 		
 		auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
@@ -457,7 +457,7 @@ namespace XYZ {
 			auto& [transform, meshComponent] = meshView.get<TransformComponent, MeshComponent>(entity);
 			if (!CheckAsset(meshComponent.MaterialAsset) || !CheckAsset(meshComponent.Mesh))
 				continue;
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.OverrideMaterial);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform->WorldTransform, meshComponent.OverrideMaterial);
 		}
 		
 		
@@ -473,7 +473,7 @@ namespace XYZ {
 			for (size_t i = 0; i < meshComponent.BoneEntities.size(); ++i)
 			{
 				const entt::entity boneEntity = meshComponent.BoneEntities[i];
-				meshComponent.BoneTransforms[i] = Utils::Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity).WorldTransform);
+				meshComponent.BoneTransforms[i] = Utils::Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity)->WorldTransform);
 			}
 			Ref<MeshSource> meshSource = meshComponent.Mesh->GetMeshSource();
 			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
@@ -569,7 +569,12 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("Scene::updateHierarchy");
 		std::stack<entt::entity> entities;
-		entities.push(m_SceneEntity);
+		{
+			const Relationship& relation = m_Registry.get<Relationship>(m_SceneEntity);
+			if (m_Registry.valid(relation.FirstChild))
+				entities.push(relation.FirstChild);
+		}
+
 		while (!entities.empty())
 		{
 			const entt::entity tmp = entities.top();
@@ -581,55 +586,38 @@ namespace XYZ {
 			if (m_Registry.valid(relation.FirstChild))
 				entities.push(relation.FirstChild);
 			
-			TransformComponent& transform = m_Registry.get<TransformComponent>(tmp);
-			if (m_Registry.valid(relation.Parent))
-			{
-				TransformComponent& parentTransform = m_Registry.get<TransformComponent>(relation.Parent);
-				transform.WorldTransform = parentTransform.WorldTransform * transform.GetTransform();
-			}
-			else
-			{
-				transform.WorldTransform = transform.GetTransform();
-			}
+			TransformComponent& transform = m_Registry.get<TransformComponent>(tmp);		
+			// Every entity except m_SceneEntity must have parent
+			TransformComponent& parentTransform = m_Registry.get<TransformComponent>(relation.Parent);
+			
+			if (parentTransform.m_Dirty || transform.m_Dirty)
+				transform.GetTransform().WorldTransform = parentTransform->WorldTransform * transform.GetLocalTransform();
 		}
+		
+		// We updated all transforms, they are no longer dirty
+		auto& transformStorage = m_Registry.storage<TransformComponent>();
+		for (auto& transformComponent : transformStorage)
+			transformComponent.m_Dirty = false;
 	}
 
-	void Scene::updateBoneHierarchy(entt::entity entity)
-	{	
-		auto& meshComponent = m_Registry.get<AnimatedMeshComponent>(entity);
-		if (!CheckAsset(meshComponent.Mesh) || !CheckAsset(meshComponent.MaterialAsset))
-			return;
-
-
-		XYZ_ASSERT(!meshComponent.BoneEntities.empty(), "");
-		
-		Relationship& relation = m_Registry.get<Relationship>(meshComponent.BoneEntities[0]);
-		TransformComponent& transformComponent = m_Registry.get<TransformComponent>(meshComponent.BoneEntities[0]);
-		
-		
-		glm::mat4 transform = transformComponent.GetTransform();
-		transformComponent.WorldTransform = transform;
-
-		
-		if (m_Registry.valid(relation.GetFirstChild()))
-		{
-			propagateBoneTransform(transformComponent.WorldTransform, relation.GetFirstChild());
-		}
-	}
-
-	void Scene::propagateBoneTransform(const glm::mat4& parentTransform, entt::entity entity)
+	void Scene::updateHierarchyAsync()
 	{
-		auto [translation, rotation, scale] = Math::DecomposeTransform(parentTransform);
-
-		Relationship& relation = m_Registry.get<Relationship>(entity);
-		TransformComponent& transformComponent = m_Registry.get<TransformComponent>(entity);
-		transformComponent.WorldTransform = parentTransform * transformComponent.GetTransform();
-
-		if (m_Registry.valid(relation.GetNextSibling()))
-			propagateBoneTransform(parentTransform, relation.GetNextSibling());
-		if (m_Registry.valid(relation.GetFirstChild()))
-			propagateBoneTransform(transformComponent.WorldTransform, relation.GetFirstChild());
+		auto& threadPool = Application::Get().GetThreadPool();
+		Ref<Scene> instance = this;
+		threadPool.PushJob([instance]() mutable {
+			instance->updateHierarchy();
+			instance->m_HierarchyUpdatedAsync = true;
+		});
 	}
+
+	void Scene::waitForAsyncHierarchyUpdate()
+	{
+		XYZ_PROFILE_FUNC("Scene::waitForAsyncHierarchyUpdate");
+		while (!m_HierarchyUpdatedAsync)
+		{}
+		m_HierarchyUpdatedAsync = false;
+	}
+
 	
 	void Scene::setupPhysics()
 	{
@@ -660,7 +648,7 @@ namespace XYZ {
 			
 			
 			bodyDef.position.Set(translation.x, translation.y);
-			bodyDef.angle = transform.Rotation.z;
+			bodyDef.angle = transform->Rotation.z;
 			bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(&m_PhysicsEntityBuffer[counter]);
 			
 			b2Body* body = physicsWorld.CreateBody(&bodyDef);

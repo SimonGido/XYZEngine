@@ -118,8 +118,8 @@ namespace XYZ {
 			m_Output = Ref<SubTexture>::Create(m_Context);
 
 			const float aspect = (float)m_Context->GetWidth() / (float)m_Context->GetHeight();
-			m_Transform.Scale.x = 1.0f * aspect;
-			m_Transform.WorldTransform = m_Transform.GetTransform();
+			m_Transform.GetTransform().Scale.x = 1.0f * aspect;
+			m_Transform.GetTransform().WorldTransform = m_Transform.GetLocalTransform();
 			memset(m_OutputPath, 0, _MAX_PATH);
 		}
 		void SpriteEditor::handlePanelResize(const glm::vec2& newSize)

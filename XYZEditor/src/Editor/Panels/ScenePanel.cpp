@@ -354,7 +354,7 @@ namespace XYZ {
 			TransformComponent& tc = selectedEntity.GetComponent<TransformComponent>();
 			const Relationship& rel = selectedEntity.GetComponent<Relationship>();
 
-			glm::mat4 transform = tc.WorldTransform;
+			glm::mat4 transform = tc->WorldTransform;
 			
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
@@ -366,14 +366,14 @@ namespace XYZ {
 				if (rel.GetParent() != entt::null)
 				{
 					auto& reg = *entity.GetRegistry();
-					const glm::mat4& parentTransform = reg.get<TransformComponent>(parent).WorldTransform;
+					const glm::mat4& parentTransform = reg.get<TransformComponent>(parent)->WorldTransform;
 					transform = glm::inverse(parentTransform) * transform;
 				}
 				auto [translation, rotation, scale] = Math::DecomposeTransform(transform);
-				glm::vec3 deltaRot = rotation - tc.Rotation;
-				tc.Translation = translation;
-				tc.Rotation += deltaRot;
-				tc.Scale = scale;
+				glm::vec3 deltaRot = rotation - tc->Rotation;
+				tc.GetTransform().Translation = translation;
+				tc.GetTransform().Rotation += deltaRot;
+				tc.GetTransform().Scale = scale;
 			}
 		}
 

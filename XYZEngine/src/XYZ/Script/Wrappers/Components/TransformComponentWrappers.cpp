@@ -33,7 +33,7 @@ namespace XYZ {
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
 			const auto& transformComponent = ent.GetComponent<TransformComponent>();
-			memcpy(outTransform, glm::value_ptr(transformComponent.GetTransform()), sizeof(glm::mat4));
+			memcpy(outTransform, glm::value_ptr(transformComponent.GetLocalTransform()), sizeof(glm::mat4));
 		}
 
 		void TransformComponentNative::SetTransform(uint32_t entity, glm::mat4* inTransform)
@@ -51,7 +51,7 @@ namespace XYZ {
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
-			memcpy(out, &ent.GetComponent<TransformComponent>().Translation, sizeof(glm::vec3));
+			memcpy(out, &ent.GetComponent<TransformComponent>()->Translation, sizeof(glm::vec3));
 		}
 
 		void TransformComponentNative::SetTranslation(uint32_t entity, glm::vec3* in)
@@ -61,7 +61,7 @@ namespace XYZ {
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
-			ent.GetComponent<TransformComponent>().Translation = *in;
+			ent.GetComponent<TransformComponent>().GetTransform().Translation = *in;
 		}
 
 		void TransformComponentNative::GetRotation(uint32_t entity, glm::vec3* out)
@@ -70,7 +70,7 @@ namespace XYZ {
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
-			memcpy(out, &ent.GetComponent<TransformComponent>().Rotation, sizeof(glm::vec3));
+			memcpy(out, &ent.GetComponent<TransformComponent>()->Rotation, sizeof(glm::vec3));
 		}
 
 		void TransformComponentNative::SetRotation(uint32_t entity, glm::vec3* in)
@@ -80,7 +80,7 @@ namespace XYZ {
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
-			ent.GetComponent<TransformComponent>().Rotation = *in;
+			ent.GetComponent<TransformComponent>().GetTransform().Rotation = *in;
 		}
 
 		void TransformComponentNative::GetScale(uint32_t entity, glm::vec3* out)
@@ -89,7 +89,7 @@ namespace XYZ {
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
-			memcpy(out, &ent.GetComponent<TransformComponent>().Scale, sizeof(glm::vec3));
+			memcpy(out, &ent.GetComponent<TransformComponent>()->Scale, sizeof(glm::vec3));
 		}
 
 		void TransformComponentNative::SetScale(uint32_t entity, glm::vec3* in)
@@ -99,7 +99,7 @@ namespace XYZ {
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
-			ent.GetComponent<TransformComponent>().Scale = *in;
+			ent.GetComponent<TransformComponent>().GetTransform().Scale = *in;
 		}
 	}
 }

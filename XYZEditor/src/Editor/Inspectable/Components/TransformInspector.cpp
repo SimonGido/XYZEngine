@@ -26,26 +26,35 @@ namespace XYZ {
 						ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
 					);
 					const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * GImGui->Font->Scale * 2.0f;
+					glm::vec3 translation = component->Translation;
+					glm::vec3 rotation = glm::degrees(component->Rotation);
+					glm::vec3 scale = component->Scale;
 
+					bool translationChanged = false, rotationChanged = false, scaleChanged = false;
 					UI::TableRow("Translation",
 						[]() { ImGui::Text("Translation"); },
 						[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight);
-					UI::Vec3Control({ "X", "Y", "Z" }, component.Translation); }
+						translationChanged = UI::Vec3Control({ "X", "Y", "Z" }, translation); }
 					);
 
-					glm::vec3 rotation = glm::degrees(component.Rotation);
 					UI::TableRow("Rotation",
 						[]() { ImGui::Text("Rotation"); },
 						[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight);
-					UI::Vec3Control({ "X", "Y", "Z" }, rotation); }
+						rotationChanged = UI::Vec3Control({ "X", "Y", "Z" }, rotation); }
 					);
-					component.Rotation = glm::radians(rotation);
-
+					
 					UI::TableRow("Scale",
 						[]() { ImGui::Text("Scale"); },
 						[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight);
-					UI::Vec3Control({ "X", "Y", "Z" }, component.Scale, 1.0f); }
+						scaleChanged = UI::Vec3Control({ "X", "Y", "Z" }, scale, 1.0f); }
 					);
+
+					if (translationChanged)
+						component.GetTransform().Translation = translation;
+					if (rotationChanged)
+						component.GetTransform().Rotation = glm::radians(rotation);
+					if (scaleChanged)
+						component.GetTransform().Scale = scale;
 
 					ImGui::EndTable();
 				}

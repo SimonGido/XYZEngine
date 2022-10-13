@@ -49,9 +49,9 @@ namespace XYZ {
 		out << YAML::Key << "TransformComponent";
 		out << YAML::BeginMap;
 
-		out << YAML::Key << "Position" << YAML::Value << val.Translation;
-		out << YAML::Key << "Rotation" << YAML::Value << val.Rotation;
-		out << YAML::Key << "Scale" << YAML::Value << val.Scale;
+		out << YAML::Key << "Position" << YAML::Value << val->Translation;
+		out << YAML::Key << "Rotation" << YAML::Value << val->Rotation;
+		out << YAML::Key << "Scale" << YAML::Value << val->Scale;
 
 		out << YAML::EndMap; // TransformComponent
 	}
@@ -574,9 +574,9 @@ namespace XYZ {
 		const glm::vec3 rotation = data["Rotation"].as<glm::vec3>();
 		const glm::vec3 scale = data["Scale"].as<glm::vec3>();
 
-		component.Translation = data["Position"].as<glm::vec3>();
-		component.Rotation = rotation;
-		component.Scale = scale;
+		component.GetTransform().Translation = data["Position"].as<glm::vec3>();
+		component.GetTransform().Rotation = rotation;
+		component.GetTransform().Scale = scale;
 	}
 
 	template <>

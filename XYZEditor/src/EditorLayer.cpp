@@ -84,14 +84,13 @@ namespace XYZ {
 			Renderer::WaitAndRenderAll();
 
 			const float keepAliveAssetSeconds = 60;
-			AssetLifeManager::Start(keepAliveAssetSeconds);
+			AssetManager::KeepAlive(keepAliveAssetSeconds);
 		}
 
 		void EditorLayer::OnDetach()
 		{
 			s_Data.Shutdown();
 			AssetManager::SerializeAll();
-			AssetLifeManager::Stop();
 
 			ScriptEngine::Shutdown();
 			m_EditorManager.Clear();
@@ -225,13 +224,13 @@ namespace XYZ {
 					auto& [transformComp, chainCollider] = chain2DColliderView.get(entity);
 					if (!chainCollider.Points.empty())
 					{
-						glm::vec4 p = transformComp.WorldTransform * glm::vec4(chainCollider.Points[0], 0.0f, 1.0f);
+						glm::vec4 p = transformComp->WorldTransform * glm::vec4(chainCollider.Points[0], 0.0f, 1.0f);
 						m_OverlayRenderer2D->SubmitFilledCircle(glm::vec3(p), glm::vec2(0.2f), 0.3f, s_Data.Color[ED::Collider2D]);
 					}
 					for (size_t i = 1; i < chainCollider.Points.size(); ++i)
 					{
-						glm::vec4 p0 = transformComp.WorldTransform * glm::vec4(chainCollider.Points[i - 1], 0.0f, 1.0f);
-						glm::vec4 p1 = transformComp.WorldTransform * glm::vec4(chainCollider.Points[i], 0.0f, 1.0f);
+						glm::vec4 p0 = transformComp->WorldTransform * glm::vec4(chainCollider.Points[i - 1], 0.0f, 1.0f);
+						glm::vec4 p1 = transformComp->WorldTransform * glm::vec4(chainCollider.Points[i], 0.0f, 1.0f);
 
 						m_OverlayRenderer2D->SubmitLine(glm::vec3(p0), glm::vec3(p1), s_Data.Color[ED::Collider2D]);
 						m_OverlayRenderer2D->SubmitFilledCircle(glm::vec3(p1), glm::vec2(0.2f), 0.3f, s_Data.Color[ED::Collider2D]);

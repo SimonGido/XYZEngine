@@ -13,7 +13,7 @@ namespace XYZ
 	ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>			AssetManager::s_LoadedAssets;
 	ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>			AssetManager::s_MemoryAssets;
 	std::shared_ptr<FileWatcher>							AssetManager::s_FileWatcher;
-	std::function<void(Ref<Asset>)>							AssetManager::s_OnAssetLoaded;
+	std::shared_ptr<AssetLifeManager>						AssetManager::s_AssetLifeManager;
 
 	static std::filesystem::path s_Directory = "Assets";
 
@@ -34,6 +34,16 @@ namespace XYZ
 		s_LoadedAssets.Clear();
 		s_MemoryAssets.Clear();
 		s_FileWatcher->Stop();
+		if (s_AssetLifeManager)
+			s_AssetLifeManager->Stop();
+	}
+
+	void AssetManager::KeepAlive(float seconds)
+	{
+		if (!s_AssetLifeManager)
+			s_AssetLifeManager = std::make_shared<AssetLifeManager>();
+
+		s_AssetLifeManager->Start(seconds);
 	}
 
 	void AssetManager::SerializeAll()
@@ -104,8 +114,6 @@ namespace XYZ
 				weakAsset->SetFlag(AssetFlag::Reloaded);
 			}
 			s_LoadedAssets.Set(asset->GetHandle(), asset);
-			if (s_OnAssetLoaded)
-				s_OnAssetLoaded(asset);
 		}
 	}
 
