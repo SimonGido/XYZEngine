@@ -105,7 +105,7 @@ namespace XYZ {
 
 		static constexpr uint32_t sc_TransformBufferSize	  = 10 * 1024 * sizeof(GeometryRenderQueue::TransformData); // 10240 transforms
 		static constexpr uint32_t sc_InstanceVertexBufferSize = 30 * 1024 * 1024; // 30mb
-		static constexpr uint32_t sc_MaxBoneTransforms		  = 1 * 1024;
+		static constexpr uint32_t sc_MaxBoneTransforms		  = 10 * 1024;
 
 	};
 }

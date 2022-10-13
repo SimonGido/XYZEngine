@@ -80,7 +80,9 @@ namespace XYZ {
         void OnUpdateEditor(Timestep ts);
         void OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos);
 
-    
+        
+        void OnImGuiRender();
+
         SceneEntity GetEntityByName(const std::string& name);
         SceneEntity GetEntityByGUID(const GUID& guid);
         SceneEntity GetSceneEntity();
@@ -100,8 +102,9 @@ namespace XYZ {
 
         void updateScripts(Timestep ts);
         void updateHierarchy();
-        void updateHierarchyAsync(); // Registry can not be modified while updating
-        void waitForAsyncHierarchyUpdate();
+        
+        void updateAnimationView(Timestep ts);
+        void updateAnimationViewAsync(Timestep ts);
 
         void setupPhysics();
         void setupLightEnvironment();
@@ -129,7 +132,8 @@ namespace XYZ {
 
         std::shared_mutex m_ScriptMutex;
 
-        bool m_HierarchyUpdatedAsync = false;
+
+        bool m_UpdateAnimationAsync = false;
 
         friend SceneRenderer;
         friend class SceneIntersection;

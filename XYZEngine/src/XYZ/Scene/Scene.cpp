@@ -291,27 +291,10 @@ namespace XYZ {
 			}
 		}
 
-		{
-			XYZ_PROFILE_FUNC("Scene::OnUpdate animView");
-			auto animView = m_Registry.view<AnimationComponent, AnimatedMeshComponent>();
-			for (auto& entity : animView)
-			{
-				auto [anim, animMesh] = animView.get(entity);
-				if (anim.Playing && anim.Controller.Raw())
-				{
-					anim.Controller->Update(anim.AnimationTime);
-					anim.AnimationTime += ts;
-					for (size_t i = 0; i < animMesh.BoneEntities.size(); ++i)
-					{
-						auto& transform = m_Registry.get<TransformComponent>(animMesh.BoneEntities[i]);
-						transform.GetTransform().Translation = anim.Controller->GetTranslation(i);
-						transform.GetTransform().Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
-						transform.GetTransform().Scale = anim.Controller->GetScale(i);
-					}
-				}
-			}
-		}
-
+		if (m_UpdateAnimationAsync)
+			updateAnimationViewAsync(ts);
+		else
+			updateAnimationView(ts);
 
 		updateScripts(ts);
 		updateHierarchy();
@@ -389,27 +372,11 @@ namespace XYZ {
 		m_PhysicsWorld.Step(ts);
 
 		updateHierarchy();
-	
-		{
-			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor animView");
-			auto animView = m_Registry.view<AnimationComponent, AnimatedMeshComponent>();
-			for (auto& entity : animView)
-			{
-				auto [anim, animMesh] = animView.get(entity);
-				if (anim.Playing && anim.Controller.Raw())
-				{
-					anim.Controller->Update(anim.AnimationTime);
-					anim.AnimationTime += ts;
-					for (size_t i = 0; i < animMesh.BoneEntities.size(); ++i)
-					{
-						auto& transform = m_Registry.get<TransformComponent>(animMesh.BoneEntities[i]);
-						transform.GetTransform().Translation = anim.Controller->GetTranslation(i);
-						transform.GetTransform().Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
-						transform.GetTransform().Scale = anim.Controller->GetScale(i);
-					}
-				}
-			}
-		}
+		if (m_UpdateAnimationAsync)
+			updateAnimationViewAsync(ts);
+		else
+			updateAnimationView(ts);
+
 		{
 			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor particleView");
 			auto particleView = m_Registry.view<ParticleComponent, TransformComponent>();
@@ -501,6 +468,15 @@ namespace XYZ {
 		sceneRenderer->EndScene();
 	}
 
+
+	void Scene::OnImGuiRender()
+	{
+		if (ImGui::Begin("Scene Settings"))
+		{
+			ImGui::Checkbox("Update Animation Async", &m_UpdateAnimationAsync);
+		}
+		ImGui::End();
+	}
 
 	void Scene::SetViewportSize(uint32_t width, uint32_t height)
 	{
@@ -599,26 +575,67 @@ namespace XYZ {
 		for (auto& transformComponent : transformStorage)
 			transformComponent.m_Dirty = false;
 	}
-
-	void Scene::updateHierarchyAsync()
+	void Scene::updateAnimationView(Timestep ts)
 	{
-		auto& threadPool = Application::Get().GetThreadPool();
-		Ref<Scene> instance = this;
-		threadPool.PushJob([instance]() mutable {
-			instance->updateHierarchy();
-			instance->m_HierarchyUpdatedAsync = true;
-		});
+		XYZ_PROFILE_FUNC("Scene::updateAnimationView");
+		auto animView = m_Registry.view<AnimationComponent, AnimatedMeshComponent>();
+		for (auto entity : animView)
+		{
+			auto [anim, animMesh] = animView.get(entity);
+			anim.Playing = true; // TODO: temporary
+			if (anim.Playing && anim.Controller.Raw())
+			{
+				anim.Controller->Update(anim.AnimationTime);
+				anim.AnimationTime += ts;
+				for (size_t i = 0; i < animMesh.BoneEntities.size(); ++i)
+				{
+					auto& transform = m_Registry.get<TransformComponent>(animMesh.BoneEntities[i]);
+					transform.GetTransform().Translation = anim.Controller->GetTranslation(i);
+					transform.GetTransform().Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
+					transform.GetTransform().Scale = anim.Controller->GetScale(i);
+				}
+			}
+		}
 	}
-
-	void Scene::waitForAsyncHierarchyUpdate()
-	{
-		XYZ_PROFILE_FUNC("Scene::waitForAsyncHierarchyUpdate");
-		while (!m_HierarchyUpdatedAsync)
-		{}
-		m_HierarchyUpdatedAsync = false;
-	}
-
 	
+	void Scene::updateAnimationViewAsync(Timestep ts)
+	{
+		XYZ_ASSERT(false, "Split tasks by controller");
+
+		XYZ_PROFILE_FUNC("Scene::updateAnimationViewAsync");
+		Ref<Scene> instance = this;
+		auto& threadPool = Application::Get().GetThreadPool();
+		auto animView = m_Registry.view<AnimationComponent, AnimatedMeshComponent>();
+		
+		std::vector<std::future<bool>> futures;
+		futures.reserve(animView.size_hint());
+		
+		for (auto entity : animView)
+		{
+			auto [anim, animMesh] = animView.get(entity);
+			anim.Playing = true; // TODO: temporary
+			if (anim.Playing && anim.Controller.Raw())
+			{
+				futures.emplace_back(threadPool.SubmitJob([instance, ts, &animation = anim, &animatedMesh = animMesh]() mutable {
+
+					animation.Controller->Update(animation.AnimationTime);
+					animation.AnimationTime += ts;
+					for (size_t i = 0; i < animatedMesh.BoneEntities.size(); ++i)
+					{
+						auto& transform = instance->m_Registry.get<TransformComponent>(animatedMesh.BoneEntities[i]);
+						transform.GetTransform().Translation = animation.Controller->GetTranslation(i);
+						transform.GetTransform().Rotation = glm::eulerAngles(animation.Controller->GetRotation(i));
+						transform.GetTransform().Scale = animation.Controller->GetScale(i);
+					}
+					return true;
+				}));
+			}
+		}
+		for (auto& future : futures)
+			future.wait();
+	}
+
+
 	void Scene::setupPhysics()
 	{
 		auto rigidBodyView = m_Registry.view<RigidBody2DComponent>();

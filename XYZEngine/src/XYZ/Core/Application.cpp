@@ -71,11 +71,12 @@ namespace XYZ {
 
 		AssetManager::Shutdown();
 		Audio::ShutDown();
+		m_ThreadPool.Stop(); // Thread pool must be stopped before renderer, so resources are destroyed properly
+
 		if (m_Specification.WindowCreate)
 		{
 			Renderer::Shutdown();
 		}
-		m_ThreadPool.Stop();
 	}
 
 	void Application::Run()

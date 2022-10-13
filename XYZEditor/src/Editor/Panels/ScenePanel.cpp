@@ -76,48 +76,52 @@ namespace XYZ {
 
 		void ScenePanel::OnImGuiRender(bool& open)
 		{
-			UI::ScopedStyleStack styleStack(true, ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-			
-			if (ImGui::Begin("Scene", &open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 			{
-				if (m_Context.Raw())
+				UI::ScopedStyleStack styleStack(true, ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+				if (ImGui::Begin("Scene", &open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 				{
-					const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-					m_ViewportBounds = Utils::ImGuiViewportBounds();
-					m_ViewportFocused = ImGui::IsWindowFocused();
-					m_ViewportHovered = ImGui::IsWindowHovered();
-
-					ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();
-					const bool blocked = imguiLayer->GetBlockedEvents();
-					// Only unlock possible here
-					imguiLayer->BlockEvents(blocked && !m_ViewportFocused && !m_ViewportHovered);
-
-
-					UI::Image(m_SceneRenderer->GetFinalPassImage(), viewportPanelSize);
-					if (m_Context->GetState() == SceneState::Edit)
-						acceptDragAndDrop();
-
-					bool handled = playBar();
-					handled |= toolsBar();
-
-					if (m_ViewportHovered && m_ViewportFocused && m_Context->GetState() == SceneState::Edit)
+					if (m_Context.Raw())
 					{
-						const SceneEntity selectedEntity = m_Context->GetSelectedEntity();
-						if (selectedEntity && m_GizmoType != sc_InvalidGizmoType)
+						const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+						m_ViewportBounds = Utils::ImGuiViewportBounds();
+						m_ViewportFocused = ImGui::IsWindowFocused();
+						m_ViewportHovered = ImGui::IsWindowHovered();
+
+						ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();
+						const bool blocked = imguiLayer->GetBlockedEvents();
+						// Only unlock possible here
+						imguiLayer->BlockEvents(blocked && !m_ViewportFocused && !m_ViewportHovered);
+
+
+						UI::Image(m_SceneRenderer->GetFinalPassImage(), viewportPanelSize);
+						if (m_Context->GetState() == SceneState::Edit)
+							acceptDragAndDrop();
+
+						bool handled = playBar();
+						handled |= toolsBar();
+
+						if (m_ViewportHovered && m_ViewportFocused && m_Context->GetState() == SceneState::Edit)
 						{
-							handleEntityTransform(m_Context->GetSelectedEntity());
+							const SceneEntity selectedEntity = m_Context->GetSelectedEntity();
+							if (selectedEntity && m_GizmoType != sc_InvalidGizmoType)
+							{
+								handleEntityTransform(m_Context->GetSelectedEntity());
+							}
+							else if (!handled)
+							{
+								auto [mx, my] = getMouseViewportSpace();
+								handleSelection({ mx,my });
+							}
 						}
-						else if (!handled)
-						{
-							auto [mx, my] = getMouseViewportSpace();
-							handleSelection({ mx,my });
-						}
+						handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });
 					}
-					handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });
-				}				
+				}
+				ImGui::End();
 			}
-			ImGui::End();
-			
+			if (m_Context.Raw())
+			{
+				m_Context->OnImGuiRender();
+			}
 		}
 
 		void ScenePanel::OnUpdate(Timestep ts)
