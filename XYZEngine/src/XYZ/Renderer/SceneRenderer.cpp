@@ -72,8 +72,6 @@ namespace XYZ {
 
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
-		m_GeometryCommandBuffer = m_CommandBuffer->CreateSecondaryCommandBuffer();
-
 		createGeometryPass();
 		createCompositePass();
 		createLightPass();
@@ -162,7 +160,7 @@ namespace XYZ {
 		const bool clearGeometryPass = !m_Options.ShowGrid;
 		if (m_Options.ShowGrid)
 		{
-			Renderer::BeginRenderPass(m_CommandBuffer, m_GeometryRenderPass, true, false);
+			Renderer::BeginRenderPass(m_CommandBuffer, m_GeometryRenderPass, false, true);
 			renderGrid();
 			Renderer::EndRenderPass(m_CommandBuffer);
 		}
@@ -185,7 +183,9 @@ namespace XYZ {
 		m_Queue.BillboardDrawCommands.clear();
 		m_Queue.MeshDrawCommands.clear();
 		m_Queue.AnimatedMeshDrawCommands.clear();
-		m_Queue.InstanceMeshDrawCommands.clear();		
+		m_Queue.InstanceMeshDrawCommands.clear();	
+
+		//updateViewportSize();
 	}
 
 
@@ -578,14 +578,10 @@ namespace XYZ {
 	void SceneRenderer::renderGrid()
 	{
 		const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
-		// TODO: this is just an example of how secondary command buffers can be used => multithreaded command recording
-		m_GeometryCommandBuffer->Begin(m_GeometryRenderPass->GetSpecification().TargetFramebuffer, true);
+
+		Renderer::BindPipeline(m_CommandBuffer, m_GridPipeline, m_UniformBufferSet, nullptr, m_GridMaterial);
+		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_GridPipeline, m_GridMaterialInstance, transform);
 		
-		Renderer::BindPipeline(m_GeometryCommandBuffer, m_GridPipeline, m_UniformBufferSet, nullptr, m_GridMaterial);
-		Renderer::SubmitFullscreenQuad(m_GeometryCommandBuffer, m_GridPipeline, m_GridMaterialInstance, transform);
-		
-		m_GeometryCommandBuffer->End();
-		m_GeometryCommandBuffer->Submit();
 	}
 
 	void SceneRenderer::updateUniformBufferSet()

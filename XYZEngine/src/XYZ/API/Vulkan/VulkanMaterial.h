@@ -28,15 +28,16 @@ namespace XYZ {
 		void RT_UpdateForRendering(
 			const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors,
 			const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors,
-			bool forceDescriptroAllocation = false
+			bool forceDescriptorAllocation = false
 		);
 		const std::vector<VkWriteDescriptorSet>& GetWriteDescriptors(uint32_t frame) const { return m_WriteDescriptors[frame].WriteDescriptors; }
 		const std::vector<VkDescriptorSet>& GetDescriptors(uint32_t frame) const { return m_Descriptors[frame].DescriptorSets; }
 
 	private:
 		void RT_updateForRenderingFrame(uint32_t frame);
-
-		bool tryAllocateDescriptorSets(bool force = false);
+		
+		bool allocateDescriptorSetsFrame(bool force);
+		void allocateDescriptorSetsAll();
 
 		void setDescriptor(const std::string& name, Ref<Image2D> image, int32_t mip);
 		void setDescriptor(const std::string& name, uint32_t index, Ref<Image2D> image);
@@ -86,6 +87,7 @@ namespace XYZ {
 
 		Flags<RenderFlags>			   m_Flags;
 		bool						   m_DescriptorsDirty;
+		bool						   m_AllocateDescriptors;
 	
 	};
 }

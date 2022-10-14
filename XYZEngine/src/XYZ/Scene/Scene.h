@@ -103,8 +103,8 @@ namespace XYZ {
         void updateScripts(Timestep ts);
         void updateHierarchy();      
         void updateHierarchyAsync();
+        void updateSubHierarchy(entt::entity parent);
 
-        void updateHierarchyAsync(entt::entity parent);
 
         void updateAnimationView(Timestep ts);
         void updateAnimationViewAsync(Timestep ts);

@@ -137,8 +137,6 @@ namespace XYZ {
 		Ref<Scene>				   m_ActiveScene;
 
 		Ref<PrimaryRenderCommandBuffer>   m_CommandBuffer;
-		Ref<SecondaryRenderCommandBuffer> m_GeometryCommandBuffer;
-
 
 		Ref<UniformBufferSet>      m_UniformBufferSet;
 		Ref<StorageBufferSet>	   m_StorageBufferSet;

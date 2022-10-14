@@ -371,11 +371,15 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("Scene::OnUpdateEditor");
 		m_PhysicsWorld.Step(ts);
 
-		updateHierarchy();
+		if (m_UpdateHierarchyAsync)
+			updateHierarchyAsync();
+		else
+			updateHierarchy();
+
 		if (m_UpdateAnimationAsync)
 			updateAnimationViewAsync(ts);
 		else
-			updateAnimationView(ts);
+			updateAnimationView(ts);		
 
 		{
 			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor particleView");
@@ -579,49 +583,60 @@ namespace XYZ {
 	void Scene::updateHierarchyAsync()
 	{
 		XYZ_PROFILE_FUNC("Scene::updateHierarchyAsync");
+		auto& threadPool = Application::Get().GetThreadPool();
+		Ref<Scene> instance = this;
 
 		const Relationship& relation = m_Registry.get<Relationship>(m_SceneEntity);
 		TransformComponent& parentTransform = m_Registry.get<TransformComponent>(m_SceneEntity);
 
 		entt::entity parent = m_SceneEntity;
-		entt::entity current = relation.GetFirstChild();
-		while (m_Registry.valid(current))
-		{
-			const Relationship& childRelation = m_Registry.get<Relationship>(current);
+		entt::entity child = relation.GetFirstChild();
 
-			TransformComponent& transform = m_Registry.get<TransformComponent>(current);
-			
-			current = childRelation.GetNextSibling();
+		std::vector<std::future<bool>> futures;
+		while (m_Registry.valid(child))
+		{
+			const Relationship& childRelation = m_Registry.get<Relationship>(child);
+
+			TransformComponent& transform = m_Registry.get<TransformComponent>(child);
+			if (parentTransform.m_Dirty || transform.m_Dirty)
+				transform.GetTransform().WorldTransform = parentTransform->WorldTransform * transform.GetLocalTransform();
+
+			futures.emplace_back(threadPool.SubmitJob([instance, child]() mutable {
+				instance->updateSubHierarchy(child);
+				return true;
+			}));
+			child = childRelation.GetNextSibling();
 		}
+
+		for (auto& future : futures)
+			future.wait();
+
+		// We updated all transforms, they are no longer dirty
+		auto& transformStorage = m_Registry.storage<TransformComponent>();
+		for (auto& transformComponent : transformStorage)
+			transformComponent.m_Dirty = false;
 	}
 
-	void Scene::updateHierarchyAsync(entt::entity parent)
+	void Scene::updateSubHierarchy(entt::entity parent)
 	{
-		XYZ_PROFILE_FUNC("Scene::updateHierarchyAsync");
-		std::stack<entt::entity> entities;
+		XYZ_PROFILE_FUNC("Scene::updateSubHierarchy");
+
+		const Relationship& relation = m_Registry.get<Relationship>(parent);
+		TransformComponent& parentTransform = m_Registry.get<TransformComponent>(parent);
+
+		entt::entity child = relation.GetFirstChild();
+		while (m_Registry.valid(child))
 		{
-			const Relationship& relation = m_Registry.get<Relationship>(m_SceneEntity);
-			if (m_Registry.valid(relation.FirstChild))
-				entities.push(relation.FirstChild);
-		}
-
-		while (!entities.empty())
-		{
-			const entt::entity tmp = entities.top();
-			entities.pop();
-
-			const Relationship& relation = m_Registry.get<Relationship>(tmp);
-			if (m_Registry.valid(relation.NextSibling))
-				entities.push(relation.NextSibling);
-			if (m_Registry.valid(relation.FirstChild))
-				entities.push(relation.FirstChild);
-
-			TransformComponent& transform = m_Registry.get<TransformComponent>(tmp);
-			// Every entity except m_SceneEntity must have parent
-			TransformComponent& parentTransform = m_Registry.get<TransformComponent>(relation.Parent);
+			const Relationship& childRelation = m_Registry.get<Relationship>(child);
+			TransformComponent& transform = m_Registry.get<TransformComponent>(child);
 
 			if (parentTransform.m_Dirty || transform.m_Dirty)
 				transform.GetTransform().WorldTransform = parentTransform->WorldTransform * transform.GetLocalTransform();
+
+			if (m_Registry.valid(childRelation.GetFirstChild()))
+				updateSubHierarchy(parent);
+
+			child = childRelation.GetNextSibling();
 		}
 	}
 
@@ -650,8 +665,6 @@ namespace XYZ {
 	
 	void Scene::updateAnimationViewAsync(Timestep ts)
 	{
-		//XYZ_ASSERT(false, "Split tasks by controller");
-
 		XYZ_PROFILE_FUNC("Scene::updateAnimationViewAsync");
 		Ref<Scene> instance = this;
 		auto& threadPool = Application::Get().GetThreadPool();
