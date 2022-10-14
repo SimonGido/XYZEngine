@@ -495,10 +495,10 @@ namespace XYZ {
 
 	void VulkanRendererAPI::DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 	{
-		Renderer::Submit([pipeline, material, groupCountX, groupCountY, groupCountZ]() {
+		PushConstBuffer vsUniformStorage = material->GetVSUniformsBuffer();
+		Renderer::Submit([pipeline, material, groupCountX, groupCountY, groupCountZ, vsUniformStorage]() {
 			Ref<VulkanPipelineCompute> vulkanPipeline = pipeline;
 
-			PushConstBuffer vsUniformStorage = material->GetVSUniformsBuffer();
 			if (vsUniformStorage.Size != 0)
 			{
 				vkCmdPushConstants(

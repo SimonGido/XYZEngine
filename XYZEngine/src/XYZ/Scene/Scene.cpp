@@ -478,6 +478,7 @@ namespace XYZ {
 		if (ImGui::Begin("Scene Settings"))
 		{
 			ImGui::Checkbox("Update Animation Async", &m_UpdateAnimationAsync);
+			ImGui::Checkbox("Update Hierarchy Async", &m_UpdateHierarchyAsync);
 		}
 		ImGui::End();
 	}
@@ -624,19 +625,29 @@ namespace XYZ {
 		const Relationship& relation = m_Registry.get<Relationship>(parent);
 		TransformComponent& parentTransform = m_Registry.get<TransformComponent>(parent);
 
-		entt::entity child = relation.GetFirstChild();
-		while (m_Registry.valid(child))
+		std::stack<entt::entity> entities;
 		{
-			const Relationship& childRelation = m_Registry.get<Relationship>(child);
-			TransformComponent& transform = m_Registry.get<TransformComponent>(child);
+			const Relationship& relation = m_Registry.get<Relationship>(parent);
+			if (m_Registry.valid(relation.FirstChild))
+				entities.push(relation.FirstChild);
+		}
+
+		while (!entities.empty())
+		{
+			const entt::entity current = entities.top();
+			entities.pop();
+
+			const Relationship& relation = m_Registry.get<Relationship>(current);
+			if (m_Registry.valid(relation.NextSibling))
+				entities.push(relation.NextSibling);
+			if (m_Registry.valid(relation.FirstChild))
+				entities.push(relation.FirstChild);
+
+			TransformComponent& transform = m_Registry.get<TransformComponent>(current);
+			TransformComponent& parentTransform = m_Registry.get<TransformComponent>(relation.Parent);
 
 			if (parentTransform.m_Dirty || transform.m_Dirty)
 				transform.GetTransform().WorldTransform = parentTransform->WorldTransform * transform.GetLocalTransform();
-
-			if (m_Registry.valid(childRelation.GetFirstChild()))
-				updateSubHierarchy(parent);
-
-			child = childRelation.GetNextSibling();
 		}
 	}
 
