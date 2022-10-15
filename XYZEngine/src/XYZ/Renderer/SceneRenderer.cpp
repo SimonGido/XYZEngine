@@ -104,6 +104,20 @@ namespace XYZ {
 			(m_ViewportSize.y + m_ViewportSize.y % 16) / 16, 
 			1 
 		};
+
+		// Indirect draw test
+		m_StorageBufferSet->Create(16, 0, 15);
+		uint32_t deadCount = 0;
+		m_StorageBufferSet->Update(&deadCount, sizeof(uint32_t), 0, 15);
+		m_IndirectBufferSet = IndirectBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
+
+		m_IndirectBufferSet->Create(1 * sizeof(IndirectIndexedDrawCommand), 0, 1);
+
+		m_IndirectCommandComputeShader = Shader::Create("Resources/Shaders/Particle/GPU/ParticleComputeShader.glsl");
+		m_IndirectCommandMaterial = Material::Create(m_IndirectCommandComputeShader);
+		m_IndirectCommandMaterialInstance = Ref<MaterialInstance>::Create(m_IndirectCommandMaterial);
+		m_CreateIndirectCommandPipeline = PipelineCompute::Create(m_IndirectCommandComputeShader);
+		//
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -156,6 +170,8 @@ namespace XYZ {
 		Ref<Image2D> colorImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(0);
 		Ref<Image2D> positionImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
 		Ref<Image2D> lightImage = m_LightRenderPass->GetSpecification().TargetFramebuffer->GetImage();
+
+		computeIndirectCommand();
 
 		const bool clearGeometryPass = !m_Options.ShowGrid;
 		if (m_Options.ShowGrid)
@@ -595,5 +611,16 @@ namespace XYZ {
 			instance->m_UniformBufferSet->Get(1, 0, currentFrame)->RT_Update(&instance->m_RendererDataUB, sizeof(UBRendererData), 0);
 			instance->m_UniformBufferSet->Get(2, 0, currentFrame)->RT_Update(&instance->m_PointsLights3DUB, sizeof(UBPointLights3D), 0);
 		});
+	}
+
+	void SceneRenderer::computeIndirectCommand()
+	{
+		Renderer::BeginPipelineCompute(m_CommandBuffer, m_CreateIndirectCommandPipeline, nullptr, m_StorageBufferSet, m_IndirectBufferSet, m_IndirectCommandMaterial);
+	
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.MaxParticles", 10);
+
+		Renderer::DispatchCompute(m_CreateIndirectCommandPipeline, m_IndirectCommandMaterialInstance, 32, 32, 1);
+
+		Renderer::EndPipelineCompute(m_CreateIndirectCommandPipeline);
 	}
 }

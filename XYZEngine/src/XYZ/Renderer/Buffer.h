@@ -191,7 +191,7 @@ namespace XYZ {
 	};
 
 
-	struct DrawArraysIndirectCommand
+	struct IndirectDrawCommand
 	{
 		uint32_t Count;
 		uint32_t InstanceCount;
@@ -199,7 +199,7 @@ namespace XYZ {
 		uint32_t BaseInstance;
 	};
 
-	struct DrawElementsIndirectCommand
+	struct IndirectIndexedDrawCommand
 	{
 		uint32_t Count;         
 		uint32_t InstanceCount; 
@@ -214,10 +214,12 @@ namespace XYZ {
 	public:
 		virtual ~IndirectBuffer() = default;
 		
-		virtual void Bind() const = 0;
-		virtual void BindBase(uint32_t index) = 0;
+		virtual void Bind() const {};
+		virtual void BindBase(uint32_t index) {};
 
-		static Ref<IndirectBuffer> Create(void * drawCommand, uint32_t size, uint32_t binding);
+		virtual uint32_t GetBinding() const { return 0; }
+
+		static Ref<IndirectBuffer> Create(const void * data, uint32_t size, uint32_t binding);
 	};
 
 

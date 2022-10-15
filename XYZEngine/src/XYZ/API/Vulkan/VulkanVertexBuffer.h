@@ -14,6 +14,7 @@ namespace  XYZ
 
         virtual void Bind() const override{};
         virtual void UnBind() const override{};
+
         virtual void Update(const void* vertices, uint32_t size, uint32_t offset = 0) override;
         virtual void RT_Update(const void* vertices, uint32_t size, uint32_t offset = 0) override;
         virtual uint32_t GetSize() const override { return m_Size; }

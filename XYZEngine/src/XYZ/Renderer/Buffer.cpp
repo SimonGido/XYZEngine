@@ -6,6 +6,7 @@
 #include "XYZ/API/Vulkan/VulkanIndexBuffer.h"
 #include "XYZ/API/Vulkan/VulkanUniformBuffer.h"
 #include "XYZ/API/Vulkan/VulkanStorageBuffer.h"
+#include "XYZ/API/Vulkan/VulkanIndirectBuffer.h"
 
 #include "Renderer.h"
 
@@ -84,12 +85,12 @@ namespace XYZ {
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<IndirectBuffer> IndirectBuffer::Create(void* drawCommand, uint32_t size, uint32_t binding)
+	Ref<IndirectBuffer> IndirectBuffer::Create(const void* data, uint32_t size, uint32_t binding)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::Type::OpenGL:  return Ref<OpenGLIndirectBuffer>::Create(drawCommand, size, binding);
+		case RendererAPI::Type::Vulkan:  return Ref<VulkanIndirectBuffer>::Create(data, size, binding);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");

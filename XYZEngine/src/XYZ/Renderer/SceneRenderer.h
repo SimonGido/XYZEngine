@@ -6,6 +6,8 @@
 #include "RenderCommandBuffer.h"
 #include "StorageBufferSet.h"
 #include "VertexBufferSet.h"
+#include "IndirectBufferSet.h"
+
 #include "PipelineCompute.h"
 #include "MaterialInstance.h"
 #include "GeometryRenderQueue.h"
@@ -155,6 +157,19 @@ namespace XYZ {
 		Ref<ShaderAsset>		   m_LightShaderAsset;
 		Ref<ShaderAsset>		   m_BloomShaderAsset;
 		
+
+
+
+		// Indirect draw test
+		Ref<IndirectBufferSet> m_IndirectBufferSet;
+		Ref<PipelineCompute>   m_CreateIndirectCommandPipeline;
+		Ref<Material>		   m_IndirectCommandMaterial;
+		Ref<MaterialInstance>  m_IndirectCommandMaterialInstance;
+		Ref<Shader>			   m_IndirectCommandComputeShader;
+		void computeIndirectCommand();
+
+		//
+
 		struct RenderStatistics
 		{
 			uint32_t SpriteDrawCommandCount = 0;

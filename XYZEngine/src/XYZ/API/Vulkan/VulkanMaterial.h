@@ -28,6 +28,7 @@ namespace XYZ {
 		void RT_UpdateForRendering(
 			const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors,
 			const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors,
+			const vector3D<VkWriteDescriptorSet>& indirectBufferDescriptors,
 			bool forceDescriptorAllocation = false
 		);
 		const std::vector<VkWriteDescriptorSet>& GetWriteDescriptors(uint32_t frame) const { return m_WriteDescriptors[frame].WriteDescriptors; }
