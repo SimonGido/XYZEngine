@@ -14,9 +14,10 @@ namespace XYZ {
 				Ref<MeshSource> meshSource = meshComponent.Mesh->GetMeshSource();
 				AABB aabb = meshSource->GetSubmeshBoundingBox();
 
-				const TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
-				aabb.Min = glm::vec3(transformComponent->WorldTransform * meshSource->GetSubmeshTransform() * glm::vec4(aabb.Min, 1.0f));
-				aabb.Max = glm::vec3(transformComponent->WorldTransform * meshSource->GetSubmeshTransform() * glm::vec4(aabb.Max, 1.0f));
+				const Relationship& relationship = entity.GetComponent<Relationship>();
+				const TransformComponent& parentTransformComponent = entity.GetRegistry()->get<TransformComponent>(relationship.GetParent());
+				aabb.Min = glm::vec3(parentTransformComponent->WorldTransform * meshSource->GetSubmeshTransform() * glm::vec4(aabb.Min, 1.0f));
+				aabb.Max = glm::vec3(parentTransformComponent->WorldTransform * meshSource->GetSubmeshTransform() * glm::vec4(aabb.Max, 1.0f));
 				return aabb;
 			}
 		}
