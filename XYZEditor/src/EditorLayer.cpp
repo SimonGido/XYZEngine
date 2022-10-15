@@ -261,9 +261,9 @@ namespace XYZ {
 			{
 				auto& registry = m_Scene->GetRegistry();
 
-				auto spotLight2DView = registry.view<TransformComponent, SpotLight2D>();
+				auto spotLight2DView = registry.view<TransformComponent, SpotLightComponent2D>();
 
-				auto pointLight2DView = registry.view<TransformComponent, PointLight2D>();
+				auto pointLight2DView = registry.view<TransformComponent, PointLightComponent2D>();
 			}
 		}
 

@@ -272,24 +272,9 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("Scene::OnUpdate");
 		m_PhysicsWorld.Step(ts);
 
-		auto rigidView = m_Registry.view<TransformComponent, RigidBody2DComponent>();
-		for (const auto entity : rigidView)
-		{
-			auto [transform, rigidBody] = rigidView.get<TransformComponent, RigidBody2DComponent>(entity);
-			const b2Body* body = static_cast<b2Body*>(rigidBody.RuntimeBody);
-			transform.GetTransform().Translation.x = body->GetPosition().x;
-			transform.GetTransform().Translation.y = body->GetPosition().y;
-			transform.GetTransform().Rotation.z = body->GetAngle();
-		}
-		{
-			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor particleView");
-			auto particleView = m_Registry.view<ParticleComponent, TransformComponent>();
-			for (auto entity : particleView)
-			{
-				auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
-				particleComponent.GetSystem()->Update(transformComponent->WorldTransform, ts);
-			}
-		}
+		updateRigidBody2DView();
+		
+		updateParticleView(ts);
 
 		if (m_UpdateAnimationAsync)
 			updateAnimationViewAsync(ts);
@@ -381,15 +366,7 @@ namespace XYZ {
 		else
 			updateAnimationView(ts);		
 
-		{
-			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor particleView");
-			auto particleView = m_Registry.view<ParticleComponent, TransformComponent>();
-			for (auto entity : particleView)
-			{
-				auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
-				particleComponent.GetSystem()->Update(transformComponent->WorldTransform, ts);
-			}
-		}
+		updateParticleView(ts);
 	}
 	
 	template <typename T>
@@ -535,6 +512,7 @@ namespace XYZ {
 
 	void Scene::updateScripts(Timestep ts)
 	{
+		XYZ_PROFILE_FUNC("Scene::updateScripts");
 		auto scriptView = m_Registry.view<ScriptComponent>();
 		std::shared_lock lock(m_ScriptMutex);
 		for (auto entity : scriptView)
@@ -707,6 +685,31 @@ namespace XYZ {
 		}
 		for (auto& future : futures)
 			future.wait();
+	}
+
+	void Scene::updateParticleView(Timestep ts)
+	{
+		XYZ_PROFILE_FUNC("Scene::updateParticleView");
+		auto particleView = m_Registry.view<ParticleComponent, TransformComponent>();
+		for (auto entity : particleView)
+		{
+			auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
+			particleComponent.GetSystem()->Update(transformComponent->WorldTransform, ts);
+		}
+	}
+
+	void Scene::updateRigidBody2DView()
+	{
+		XYZ_PROFILE_FUNC("Scene::updateRigidBody2DView");
+		auto rigidView = m_Registry.view<TransformComponent, RigidBody2DComponent>();
+		for (const auto entity : rigidView)
+		{
+			auto [transform, rigidBody] = rigidView.get<TransformComponent, RigidBody2DComponent>(entity);
+			const b2Body* body = static_cast<b2Body*>(rigidBody.RuntimeBody);
+			transform.GetTransform().Translation.x = body->GetPosition().x;
+			transform.GetTransform().Translation.y = body->GetPosition().y;
+			transform.GetTransform().Rotation.z = body->GetAngle();
+		}
 	}
 
 

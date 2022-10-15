@@ -40,7 +40,7 @@ namespace XYZ
     {
         // TODO
     }
-    public class PointLight2D : Component
+    public class PointLightComponent2D : Component
     {
         // TODO
     }

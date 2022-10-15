@@ -109,6 +109,9 @@ namespace XYZ {
         void updateAnimationView(Timestep ts);
         void updateAnimationViewAsync(Timestep ts);
 
+        void updateParticleView(Timestep ts);
+        void updateRigidBody2DView();
+
         void setupPhysics();
         void setupLightEnvironment();
 

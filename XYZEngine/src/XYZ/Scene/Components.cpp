@@ -327,21 +327,21 @@ namespace XYZ {
 		Playing(other.Playing)
 	{
 	}
-	PointLight2D::PointLight2D(const glm::vec3& color, float radius, float intensity)
+	PointLightComponent2D::PointLightComponent2D(const glm::vec3& color, float radius, float intensity)
 		:
 		Color(color),
 		Radius(radius),
 		Intensity(intensity)
 	{
 	}
-	PointLight2D::PointLight2D(const PointLight2D& other)
+	PointLightComponent2D::PointLightComponent2D(const PointLightComponent2D& other)
 		:
 		Color(other.Color),
 		Radius(other.Radius),
 		Intensity(other.Intensity)
 	{
 	}
-	SpotLight2D::SpotLight2D(const SpotLight2D& other)
+	SpotLightComponent2D::SpotLightComponent2D(const SpotLightComponent2D& other)
 		:
 		Color(other.Color),
 		Radius(other.Radius),

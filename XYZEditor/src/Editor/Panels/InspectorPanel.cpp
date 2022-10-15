@@ -88,11 +88,11 @@ namespace XYZ {
 		}
 		void InspectorPanel::drawSelectedEntity()
 		{
-			for (auto it = m_EditablesInUse.begin(); it !=  m_EditablesInUse.end(); )
+			for (auto it = m_InspectablesInUse.begin(); it !=  m_InspectablesInUse.end(); )
 			{
 				if ((*it)->OnEditorRender())
 				{
-					it = m_EditablesInUse.erase(it);
+					it = m_InspectablesInUse.erase(it);
 				}
 				else
 				{
@@ -103,7 +103,7 @@ namespace XYZ {
 		}
 		void InspectorPanel::drawSelectedAsset()
 		{
-			for (auto& editable : m_EditablesInUse)
+			for (auto& editable : m_InspectablesInUse)
 				editable->OnEditorRender();
 		}
 		
@@ -125,8 +125,7 @@ namespace XYZ {
 					if (ImGui::MenuItem("Transform Component"))
 					{
 						m_SelectedEntity.EmplaceComponent<TransformComponent>();
-						m_EditablesInUse.push_back(&m_TransformInspector);
-						m_TransformInspector.SetSceneEntity(m_SelectedEntity);
+						activateInspector<TransformComponent>();
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -141,8 +140,8 @@ namespace XYZ {
 							0,
 							true
 							);
-						m_EditablesInUse.push_back(&m_SpriteRendererInspector);
-						m_SpriteRendererInspector.SetSceneEntity(m_SelectedEntity);
+
+						activateInspector<SpriteRenderer>();
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -151,8 +150,7 @@ namespace XYZ {
 					if (ImGui::MenuItem("Camera Component"))
 					{
 						m_SelectedEntity.EmplaceComponent<CameraComponent>();
-						m_EditablesInUse.push_back(&m_CameraInspector);
-						m_CameraInspector.SetSceneEntity(m_SelectedEntity);
+						activateInspector<CameraComponent>();
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -164,10 +162,8 @@ namespace XYZ {
 						{
 							if (ImGui::MenuItem(name.c_str()))
 							{
-								m_SelectedEntity.EmplaceComponent<ScriptComponent>(name);
-							
-								m_EditablesInUse.push_back(&m_ScriptComponentInspector);
-								m_ScriptComponentInspector.SetSceneEntity(m_SelectedEntity);
+								m_SelectedEntity.EmplaceComponent<ScriptComponent>(name);						
+								activateInspector<ScriptComponent>();
 								ImGui::CloseCurrentPopup();
 							}
 						}
@@ -179,8 +175,7 @@ namespace XYZ {
 					if (ImGui::MenuItem("Rigid Body2D"))
 					{
 						m_SelectedEntity.EmplaceComponent<RigidBody2DComponent>();
-						m_EditablesInUse.push_back(&m_RigidBodyInspector);
-						m_RigidBodyInspector.SetSceneEntity(m_SelectedEntity);
+						activateInspector<RigidBody2DComponent>();
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -191,42 +186,37 @@ namespace XYZ {
 					if (ImGui::MenuItem("Box Collider2D"))
 					{
 						m_SelectedEntity.EmplaceComponent<BoxCollider2DComponent>();
-						m_EditablesInUse.push_back(&m_BoxCollider2DInspector);
-						m_BoxCollider2DInspector.SetSceneEntity(m_SelectedEntity);
+						activateInspector<BoxCollider2DComponent>();
 						ImGui::CloseCurrentPopup();
 					}
 					if (ImGui::MenuItem("Circle Collider2D"))
 					{
 						m_SelectedEntity.EmplaceComponent<CircleCollider2DComponent>();
-						m_EditablesInUse.push_back(&m_CircleCollider2DInspector);
-						m_CircleCollider2DInspector.SetSceneEntity(m_SelectedEntity);
+						activateInspector<CircleCollider2DComponent>();
 						ImGui::CloseCurrentPopup();
 					}
 					if (ImGui::MenuItem("Chain Collider2D"))
 					{
 						m_SelectedEntity.EmplaceComponent<ChainCollider2DComponent>();
-						m_EditablesInUse.push_back(&m_ChainCollider2DInspector);
-						m_ChainCollider2DInspector.SetSceneEntity(m_SelectedEntity);
+						activateInspector<ChainCollider2DComponent>();
 						ImGui::CloseCurrentPopup();
 					}
 				}
-				if (!m_SelectedEntity.HasComponent<PointLight2D>())
+				if (!m_SelectedEntity.HasComponent<PointLightComponent2D>())
 				{
 					if (ImGui::MenuItem("Point Light2D"))
 					{
-						m_SelectedEntity.EmplaceComponent<PointLight2D>();
-						m_EditablesInUse.push_back(&m_PointLight2DInspector);
-						m_PointLight2DInspector.SetSceneEntity(m_SelectedEntity);
+						m_SelectedEntity.EmplaceComponent<PointLightComponent2D>();
+						activateInspector<PointLightComponent2D>();
 						ImGui::CloseCurrentPopup();
 					}
 				}
-				if (!m_SelectedEntity.HasComponent<SpotLight2D>())
+				if (!m_SelectedEntity.HasComponent<SpotLightComponent2D>())
 				{
 					if (ImGui::MenuItem("Spot Light2D"))
 					{
-						m_SelectedEntity.EmplaceComponent<SpotLight2D>();
-						m_EditablesInUse.push_back(&m_SpotLight2DInspector);
-						m_SpotLight2DInspector.SetSceneEntity(m_SelectedEntity);
+						m_SelectedEntity.EmplaceComponent<SpotLightComponent2D>();
+						activateInspector<SpotLightComponent2D>();
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -235,8 +225,7 @@ namespace XYZ {
 					if (ImGui::MenuItem("Point Light3D"))
 					{
 						m_SelectedEntity.EmplaceComponent<PointLightComponent3D>();
-						m_EditablesInUse.push_back(&m_PointLight3DInspector);
-						m_PointLight3DInspector.SetSceneEntity(m_SelectedEntity);
+						activateInspector<PointLightComponent3D>();
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -247,8 +236,7 @@ namespace XYZ {
 						auto& component = m_SelectedEntity.EmplaceComponent<AnimationComponent>();
 						component.Playing = true;
 						
-						m_EditablesInUse.push_back(&m_AnimationComponentInspector);
-						m_AnimationComponentInspector.SetSceneEntity(m_SelectedEntity);
+						activateInspector<AnimationComponent>();
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -257,8 +245,7 @@ namespace XYZ {
 					if (ImGui::MenuItem("Mesh Component"))
 					{
 						auto& component = m_SelectedEntity.EmplaceComponent<MeshComponent>();
-						m_EditablesInUse.push_back(&m_MeshComponentInspector);
-						m_MeshComponentInspector.SetSceneEntity(m_SelectedEntity);
+						activateInspector<MeshComponent>();
 						ImGui::CloseCurrentPopup();
 					}
 				}
@@ -267,11 +254,7 @@ namespace XYZ {
 					if (ImGui::MenuItem("Particle Component"))
 					{
 						auto& component = m_SelectedEntity.EmplaceComponent<ParticleComponent>();
-	
-						m_ParticleInspector.SetSceneEntity(m_SelectedEntity);
-						m_ParticleRendererInspector.SetSceneEntity(m_SelectedEntity);
-						m_EditablesInUse.push_back(&m_ParticleInspector);
-						m_EditablesInUse.push_back(&m_ParticleRendererInspector);
+						activateInspectors<ParticleComponent, ParticleRenderer>();
 						if (!m_SelectedEntity.HasComponent<ParticleRenderer>())
 						{
 							auto& particleRenderer = m_SelectedEntity.EmplaceComponent<ParticleRenderer>();
@@ -286,7 +269,7 @@ namespace XYZ {
 
 		void InspectorPanel::selectEditablesInUse()
 		{
-			m_EditablesInUse.clear();
+			m_InspectablesInUse.clear();
 			if (m_State == State::None)
 				return;
 
@@ -294,97 +277,20 @@ namespace XYZ {
 			{
 				if (m_SelectedAsset->GetAssetType() == AssetType::Material)
 				{
-					m_EditablesInUse.push_back(&m_MaterialInspector);
+					m_InspectablesInUse.push_back(&m_MaterialInspector);
 					m_MaterialInspector.SetAsset(m_SelectedAsset);
 				}
 				else if (m_SelectedAsset->GetAssetType() == AssetType::AnimationController)
 				{
-					m_EditablesInUse.push_back(&m_AnimationControllerInspector);
+					m_InspectablesInUse.push_back(&m_AnimationControllerInspector);
 					m_AnimationControllerInspector.SetAsset(m_SelectedAsset);
 				}
 			}
 
 			if (m_SelectedEntity && m_State == State::Entity)
 			{
-				if (m_SelectedEntity.HasComponent<SceneTagComponent>())
-				{
-					m_EditablesInUse.push_back(&m_SceneTagInspector);
-				}
-				if (m_SelectedEntity.HasComponent<TransformComponent>())
-				{
-					m_EditablesInUse.push_back(&m_TransformInspector);
-				}
-				if (m_SelectedEntity.HasComponent<CameraComponent>())
-				{
-					m_EditablesInUse.push_back(&m_CameraInspector);
-				}
-				if (m_SelectedEntity.HasComponent<PointLight2D>())
-				{
-					m_EditablesInUse.push_back(&m_PointLight2DInspector);
-				}
-				if (m_SelectedEntity.HasComponent<SpotLight2D>())
-				{
-					m_EditablesInUse.push_back(&m_SpotLight2DInspector);
-				}
-				if (m_SelectedEntity.HasComponent<PointLightComponent3D>())
-				{
-					m_EditablesInUse.push_back(&m_PointLight3DInspector);
-				}
-				if (m_SelectedEntity.HasComponent<ScriptComponent>())
-				{
-					m_EditablesInUse.push_back(&m_ScriptComponentInspector);
-				}
-				if (m_SelectedEntity.HasComponent<SpriteRenderer>())
-				{
-					m_EditablesInUse.push_back(&m_SpriteRendererInspector);
-				}
-				if (m_SelectedEntity.HasComponent<RigidBody2DComponent>())
-				{
-					m_EditablesInUse.push_back(&m_RigidBodyInspector);
-				}
-				if (m_SelectedEntity.HasComponent<BoxCollider2DComponent>())
-				{
-					m_EditablesInUse.push_back(&m_BoxCollider2DInspector);
-				}
-				if (m_SelectedEntity.HasComponent<CircleCollider2DComponent>())
-				{
-					m_EditablesInUse.push_back(&m_CircleCollider2DInspector);
-				}
-				if (m_SelectedEntity.HasComponent<ChainCollider2DComponent>())
-				{
-					m_EditablesInUse.push_back(&m_ChainCollider2DInspector);
-				}
-				if (m_SelectedEntity.HasComponent<ParticleComponent>())
-				{
-					m_EditablesInUse.push_back(&m_ParticleInspector);
-				}
-				if (m_SelectedEntity.HasComponent<ParticleRenderer>())
-				{
-					m_EditablesInUse.push_back(&m_ParticleRendererInspector);
-				}
-				if (m_SelectedEntity.HasComponent<MeshComponent>())
-				{
-					m_EditablesInUse.push_back(&m_MeshComponentInspector);
-				}
-				if (m_SelectedEntity.HasComponent<AnimatedMeshComponent>())
-				{
-					m_EditablesInUse.push_back(&m_AnimatedMeshComponentInspector);
-				}
-				if (m_SelectedEntity.HasComponent<AnimationComponent>())
-				{
-					m_EditablesInUse.push_back(&m_AnimationComponentInspector);
-				}
-			
+				activateInspectors<XYZ_COMPONENTS>();
 			}
-
-			for (auto& [name, editable] : m_Editables)
-			{
-				if (editable->GetType() == Inspectable::Type::Entity)
-					m_EditablesInUse.push_back(editable);
-			}
-
-			for (auto selected : m_EditablesInUse)
-				selected->SetSceneEntity(m_SelectedEntity);
 		}
 	}
 }

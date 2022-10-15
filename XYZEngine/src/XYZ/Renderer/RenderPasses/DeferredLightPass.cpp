@@ -28,11 +28,11 @@ namespace XYZ {
 		auto& registry = scene->GetRegistry();
 
 		// Spot lights
-		auto spotLight2DView = registry.view<TransformComponent, SpotLight2D>();
+		auto spotLight2DView = registry.view<TransformComponent, SpotLightComponent2D>();
 		for (auto entity : spotLight2DView)
 		{
 			// Render previous frame data
-			auto& [transform, light] = spotLight2DView.get<TransformComponent, SpotLight2D>(entity);
+			auto& [transform, light] = spotLight2DView.get<TransformComponent, SpotLightComponent2D>(entity);
 			auto [trans, rot, scale] = transform.GetWorldComponents();
 			
 			SpotLight spotLight{
@@ -47,10 +47,10 @@ namespace XYZ {
 		}
 
 		// Point Lights
-		auto pointLight2DView = registry.view<TransformComponent, PointLight2D>();
+		auto pointLight2DView = registry.view<TransformComponent, PointLightComponent2D>();
 		for (auto entity : pointLight2DView)
 		{
-			auto& [transform, light] = pointLight2DView.get<TransformComponent, PointLight2D>(entity);
+			auto& [transform, light] = pointLight2DView.get<TransformComponent, PointLightComponent2D>(entity);
 			auto [trans, rot, scale] = transform.GetWorldComponents();
 			
 			PointLight pointLight{

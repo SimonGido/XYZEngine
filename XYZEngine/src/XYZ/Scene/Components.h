@@ -203,11 +203,11 @@ namespace XYZ {
 	};
 
 
-	struct PointLight2D 
+	struct PointLightComponent2D 
 	{
-		PointLight2D() = default;
-		PointLight2D(const glm::vec3& color, float radius, float intensity);
-		PointLight2D(const PointLight2D& other);
+		PointLightComponent2D() = default;
+		PointLightComponent2D(const glm::vec3& color, float radius, float intensity);
+		PointLightComponent2D(const PointLightComponent2D& other);
 
 		glm::vec3 Color = glm::vec3(1.0f);
 		float	  Radius	= 1.0f;
@@ -215,10 +215,10 @@ namespace XYZ {
 	};
 	
 
-	struct SpotLight2D 
+	struct SpotLightComponent2D
 	{
-		SpotLight2D() = default;
-		SpotLight2D(const SpotLight2D& other);
+		SpotLightComponent2D() = default;
+		SpotLightComponent2D(const SpotLightComponent2D& other);
 
 		glm::vec3 Color  = glm::vec3(1.0f);
 		float Radius	 = 1.0f;
@@ -392,8 +392,8 @@ namespace XYZ {
 	ParticleRenderer, \
 	CameraComponent,\
 	ParticleComponent, \
-	PointLight2D, \
-	SpotLight2D, \
+	PointLightComponent2D, \
+	SpotLightComponent2D, \
 	PointLightComponent3D, \
 	Relationship, \
 	ScriptComponent, \

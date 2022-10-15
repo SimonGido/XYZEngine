@@ -100,7 +100,7 @@ namespace XYZ {
 		out << YAML::EndMap; // SpriteRenderer
 	}
 	template <>
-	void SceneSerializer::serialize<PointLight2D>(YAML::Emitter& out, const PointLight2D& val, SceneEntity entity)
+	void SceneSerializer::serialize<PointLightComponent2D>(YAML::Emitter& out, const PointLightComponent2D& val, SceneEntity entity)
 	{
 		out << YAML::Key << "PointLight2D";
 		out << YAML::BeginMap; // Point Light
@@ -111,7 +111,7 @@ namespace XYZ {
 		out << YAML::EndMap; // Point Light
 	}
 	template <>
-	void SceneSerializer::serialize<SpotLight2D>(YAML::Emitter& out, const SpotLight2D& val, SceneEntity entity)
+	void SceneSerializer::serialize<SpotLightComponent2D>(YAML::Emitter& out, const SpotLightComponent2D& val, SceneEntity entity)
 	{
 		out << YAML::Key << "SpotLight2D";
 		out << YAML::BeginMap; // Spot Light
@@ -580,7 +580,7 @@ namespace XYZ {
 	}
 
 	template <>
-	void SceneSerializer::deserialize<PointLight2D>(YAML::Node& data, PointLight2D& component, SceneEntity entity)
+	void SceneSerializer::deserialize<PointLightComponent2D>(YAML::Node& data, PointLightComponent2D& component, SceneEntity entity)
 	{
 		component.Color = data["Color"].as<glm::vec3>();
 		component.Radius = data["Radius"].as<float>();
@@ -588,7 +588,7 @@ namespace XYZ {
 
 	}
 	template <>
-	void SceneSerializer::deserialize<SpotLight2D>(YAML::Node& data, SpotLight2D& component, SceneEntity entity)
+	void SceneSerializer::deserialize<SpotLightComponent2D>(YAML::Node& data, SpotLightComponent2D& component, SceneEntity entity)
 	{
 		component.Color = data["Color"].as<glm::vec3>();
 		component.Radius = data["Radius"].as<float>();
@@ -744,13 +744,13 @@ namespace XYZ {
 		auto pointLightComponent = data["PointLight2D"];
 		if (pointLightComponent)
 		{
-			deserialize<PointLight2D>(pointLightComponent, entity.EmplaceComponent<PointLight2D>(), entity);
+			deserialize<PointLightComponent2D>(pointLightComponent, entity.EmplaceComponent<PointLightComponent2D>(), entity);
 		}
 
 		auto spotLightComponent = data["SpotLight2D"];
 		if (spotLightComponent)
 		{
-			deserialize<SpotLight2D>(spotLightComponent, entity.EmplaceComponent<SpotLight2D>(), entity);
+			deserialize<SpotLightComponent2D>(spotLightComponent, entity.EmplaceComponent<SpotLightComponent2D>(), entity);
 		}
 
 		auto particleComponent = data["ParticleComponent"];

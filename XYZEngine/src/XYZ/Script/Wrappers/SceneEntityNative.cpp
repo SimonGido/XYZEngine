@@ -95,7 +95,7 @@ namespace XYZ {
 			REGISTER_COMPONENT_TYPE(CameraComponent);
 			REGISTER_COMPONENT_TYPE(ParticleComponent);
 			REGISTER_COMPONENT_TYPE(Relationship);
-			REGISTER_COMPONENT_TYPE(PointLight2D);
+			REGISTER_COMPONENT_TYPE(PointLightComponent2D);
 			REGISTER_COMPONENT_TYPE(RigidBody2DComponent);
 			REGISTER_COMPONENT_TYPE(BoxCollider2DComponent);
 			REGISTER_COMPONENT_TYPE(CircleCollider2DComponent);
