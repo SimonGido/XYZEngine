@@ -88,7 +88,6 @@ namespace XYZ {
 		virtual void RenderIndirect(
 			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material,
 			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData,
-			Ref<VertexBufferSet> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount,
 			Ref<StorageBufferSet> indirectBuffer, uint32_t indirectOffset, uint32_t indirectCount
 		) {};
 

@@ -30,9 +30,11 @@ struct ParticleProperty
     // Current state
     vec4  Position;
     vec4  Color;
-    vec3  Velocity;   
+    vec4  Velocity;  
+    
     float LifeRemaining;
     bool  Alive;
+    uint  Padding0[2];
 };
 
 layout(push_constant) uniform Uniform
@@ -50,22 +52,22 @@ layout(push_constant) uniform Uniform
 } u_Uniforms;
 
 
-layout (std140, binding = 15) buffer buffer_State
+layout (std140, binding = 16) buffer buffer_State
 {
 	uint InstanceCount;
 };
 
-layout (std140, binding = 16) buffer buffer_Particles
+layout (std140, binding = 17) buffer buffer_Particles
 {
     Particle Particles[];
 };
 
-layout (std140, binding = 17) buffer buffer_ParticleProperties
+layout (std140, binding = 18) buffer buffer_ParticleProperties
 {
     ParticleProperty ParticleProperties[];
 };
 
-layout(std430, binding = 18) buffer buffer_DrawCommand // indirect
+layout(std430, binding = 19) buffer buffer_DrawCommand // indirect
 {
 	DrawCommand Command;
 };
@@ -84,7 +86,7 @@ void SpawnParticle(uint id)
 {
     ParticleProperties[id].Position      = ParticleProperties[id].StartPosition;
     ParticleProperties[id].Color         = ParticleProperties[id].StartColor;
-    ParticleProperties[id].Velocity      = ParticleProperties[id].StartVelocity.xyz;
+    ParticleProperties[id].Velocity      = ParticleProperties[id].StartVelocity;
     ParticleProperties[id].LifeRemaining = u_Uniforms.LifeTime;
     ParticleProperties[id].Alive         = true;
 }
@@ -109,14 +111,12 @@ void KillParticle(uint id)
     if (ParticleProperties[id].LifeRemaining <= 0.0)
     {
         ParticleProperties[id].Alive = false;
-        if (u_Uniforms.Loop != 0) // We loop so respawn particle
-            SpawnParticle(id);
     }
 }
 
 void UpdateParticle(uint id)
 {
-    ParticleProperties[id].Position.xyz += ParticleProperties[id].Velocity;
+    ParticleProperties[id].Position.xyz += ParticleProperties[id].Velocity.xyz;
     ParticleProperties[id].LifeRemaining -= u_Uniforms.Timestep;
 }
 
@@ -126,7 +126,7 @@ void UpdateRenderData(uint id, uint instanceIndex)
     Particles[instanceIndex].TransformRow0 = vec4(transform[0][0], transform[1][0], transform[2][0], transform[3][0]);
     Particles[instanceIndex].TransformRow1 = vec4(transform[0][1], transform[1][1], transform[2][1], transform[3][1]);
     Particles[instanceIndex].TransformRow2 = vec4(transform[0][2], transform[1][2], transform[2][2], transform[3][2]);
-    Particles[instanceIndex].Color         = ParticleProperties[id].StartColor;
+    Particles[instanceIndex].Color         = ParticleProperties[id].Color;
 }
 
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
@@ -140,6 +140,7 @@ void main(void)
     UpdateParticle(id);
     KillParticle(id);
 
+    
     if (ParticleProperties[id].Alive) // Particle is alive, write it to the buffer for rendering
     {  
         uint instanceIndex = atomicAdd(InstanceCount, 1);

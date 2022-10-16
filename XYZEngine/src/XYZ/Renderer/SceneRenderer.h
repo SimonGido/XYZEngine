@@ -168,7 +168,14 @@ namespace XYZ {
 		Ref<Shader>			   m_IndirectCommandComputeShader;
 		Ref<ParticleSystemGPU> m_ParticleSystemGPU;
 
+		Ref<Shader>			   m_ParticleShaderGPU;
+		Ref<Material>		   m_ParticleMaterialGPU;
+		Ref<MaterialInstance>  m_ParticleMaterialInstanceGPU;
+		Ref<Pipeline>		   m_ParticlePipelineGPU;
+		Ref<Mesh>			   m_ParticleCubeMesh;
+
 		void computeIndirectCommand();
+		void createParticleTest();
 
 		//////////////////////////////
 

@@ -138,10 +138,6 @@ namespace XYZ {
 	}
 	void ParticleEmitter::generateBox(ParticlePool& data, uint32_t id) const
 	{
-		std::random_device dev;
-		std::mt19937 rng(dev());
-		std::uniform_real_distribution<double> dist(-1.0, 1.0); // distribution in range [1, 6]
-
 		data.Particles[id].Position = glm::linearRand(BoxMin, BoxMax);
 	}
 	void ParticleEmitter::generateCircle(ParticlePool& data, uint32_t id) const

@@ -390,7 +390,6 @@ namespace XYZ {
 
 	void VulkanRendererAPI::RenderIndirect(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material,
 		Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData,
-		Ref<VertexBufferSet> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount,
 		Ref<StorageBufferSet> indirectBuffer, uint32_t indirectOffset, uint32_t indirectCount
 	)
 	{
@@ -401,7 +400,6 @@ namespace XYZ {
 		Renderer::Submit([renderCommandBuffer, pipeline, material,
 			vertexBuffer,indexBuffer, vsData = constData,
 			indirectBuffer, indirectOffset, indirectCount,
-			instanceBuffer, instanceOffset, instanceCount,
 			fsUniformStorage
 		]() mutable
 		{
@@ -411,7 +409,6 @@ namespace XYZ {
 
 				
 				Ref<VulkanVertexBuffer>		   vulkanVertexBuffer = vertexBuffer.As<VulkanVertexBuffer>();
-				Ref<VulkanVertexBuffer>		   vulkanInstanceBuffer = instanceBuffer->GetVertexBuffer(frameIndex).As<VulkanVertexBuffer>();
 				Ref<VulkanIndexBuffer>		   vulkanIndexBuffer = indexBuffer;
 
 				Ref<VulkanShader>			   vulkanShader = pipeline->GetSpecification().Shader;
@@ -428,11 +425,6 @@ namespace XYZ {
 				VkDeviceSize offsets[1] = { 0 };
 				vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vbVertexBuffer, offsets);
 
-				// Instance Buffer
-				VkBuffer vbInstanceBuffer = vulkanInstanceBuffer->GetVulkanBuffer();
-				VkDeviceSize instanceOffsets[1] = { instanceOffset };
-				vkCmdBindVertexBuffers(commandBuffer, 1, 1, &vbInstanceBuffer, instanceOffsets);
-
 				// Index buffer
 				vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), 0, vulkanIndexBuffer->GetVulkanIndexType());
 
@@ -447,6 +439,7 @@ namespace XYZ {
 				{
 					vkCmdDrawIndexedIndirect(commandBuffer, buffer->GetVulkanBuffer(), indirectOffset, indirectCount, sizeof(IndirectIndexedDrawCommand));
 				}
+				
 		});
 	}
 

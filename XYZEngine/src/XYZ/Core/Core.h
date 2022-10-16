@@ -77,4 +77,13 @@ namespace XYZ {
 
 	template <typename Key0, typename Key1, typename Value>
 	using unordered_map2D = std::unordered_map<Key0, std::unordered_map<Key1, Value>>;
+
+
+	template <size_t size>
+	struct Padding
+	{
+		Padding() { memset(m_Bytes, 0, size); }
+	private:
+		char m_Bytes[size];
+	};
 }

@@ -302,12 +302,11 @@ namespace XYZ {
 		s_RendererAPI->RenderMesh(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transformBuffer, transformOffset, transformInstanceCount, instanceBuffer, instanceOffset, instanceCount);
 	}
 
-	void Renderer::RenderIndirectMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData, Ref<VertexBufferSet> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount, Ref<StorageBufferSet> indirectBuffer, uint32_t indirectOffset, uint32_t indirectCount)
+	void Renderer::RenderIndirectMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData, Ref<StorageBufferSet> indirectBuffer, uint32_t indirectOffset, uint32_t indirectCount)
 	{
 		s_RendererAPI->RenderIndirect(
 			renderCommandBuffer, pipeline, material,
 			vertexBuffer, indexBuffer, constData,
-			instanceBuffer, instanceOffset, instanceCount,
 			indirectBuffer, indirectOffset, indirectCount
 		);
 	}

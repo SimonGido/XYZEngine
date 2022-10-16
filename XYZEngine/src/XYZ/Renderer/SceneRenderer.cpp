@@ -106,37 +106,7 @@ namespace XYZ {
 		};
 
 		// Indirect draw test //
-		
-		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create();
-
-		m_StorageBufferSet->Create(16, 0, 15); // Instance count
-		
-
-		m_StorageBufferSet->Create(1024 * sizeof(ParticleGPU), 0, 16);
-		m_StorageBufferSet->Create(1024 * sizeof(ParticlePropertyGPU), 0, 17);
-
-		m_StorageBufferSet->Create(1 * sizeof(IndirectIndexedDrawCommand), 0, 18, true);
-
-		m_StorageBufferSet->Update(
-			m_ParticleSystemGPU->Particles.data(),
-			1024 * sizeof(ParticleGPU),
-			0,
-			16,
-			0
-		);
-
-		m_StorageBufferSet->Update(
-			m_ParticleSystemGPU->ParticleProperties.data(),
-			1024 * sizeof(ParticlePropertyGPU),
-			0,
-			17,
-			0
-		);
-
-		m_IndirectCommandComputeShader = Shader::Create("Resources/Shaders/Particle/GPU/ParticleComputeShader.glsl");
-		m_IndirectCommandMaterial = Material::Create(m_IndirectCommandComputeShader);
-		m_IndirectCommandMaterialInstance = Ref<MaterialInstance>::Create(m_IndirectCommandMaterial);
-		m_CreateIndirectCommandPipeline = PipelineCompute::Create(m_IndirectCommandComputeShader);
+		createParticleTest();
 		////////////////////////////////
 	}
 
@@ -191,7 +161,7 @@ namespace XYZ {
 		Ref<Image2D> positionImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
 		Ref<Image2D> lightImage = m_LightRenderPass->GetSpecification().TargetFramebuffer->GetImage();
 
-		computeIndirectCommand();
+		
 
 		const bool clearGeometryPass = !m_Options.ShowGrid;
 		if (m_Options.ShowGrid)
@@ -200,9 +170,9 @@ namespace XYZ {
 			renderGrid();
 			Renderer::EndRenderPass(m_CommandBuffer);
 		}
-
 		m_GeometryPass.PreDepthPass(m_CommandBuffer, m_Queue, m_CameraDataUB.ViewMatrix, true);
 		
+		computeIndirectCommand();
 		m_LightCullingPass.Submit(m_CommandBuffer, depthImage, m_LightCullingWorkGroups, m_ViewportSize);
 		m_GeometryPass.Submit(m_CommandBuffer, m_Queue, m_CameraDataUB.ViewMatrix, clearGeometryPass);
 		m_DeferredLightPass.Submit(m_CommandBuffer, colorImage, positionImage);
@@ -635,10 +605,17 @@ namespace XYZ {
 
 	void SceneRenderer::computeIndirectCommand()
 	{
-		Renderer::BeginPipelineCompute(m_CommandBuffer, m_CreateIndirectCommandPipeline, nullptr, m_StorageBufferSet, m_IndirectCommandMaterial);
 		m_ParticleSystemGPU->Time += 0.01f;
 		uint32_t instanceCount = 0;
-		m_StorageBufferSet->Update(&instanceCount, sizeof(uint32_t), 0, 15);
+		m_StorageBufferSet->Update(&instanceCount, sizeof(uint32_t), 0, 16);
+
+		IndirectIndexedDrawCommand command;
+		command.Count = 6;
+		command.InstanceCount = 0;
+		command.FirstIndex = 0;
+		command.BaseVertex = 0;
+		command.BaseInstance = 0;
+		m_StorageBufferSet->Update(&command, sizeof(IndirectIndexedDrawCommand), 0, 19);
 
 		m_IndirectCommandMaterialInstance->Set("u_Uniforms.EndColor",		  m_ParticleSystemGPU->EndColor);
 		m_IndirectCommandMaterialInstance->Set("u_Uniforms.EndRotation",	  m_ParticleSystemGPU->EndRotation);
@@ -650,8 +627,96 @@ namespace XYZ {
 		m_IndirectCommandMaterialInstance->Set("u_Uniforms.ParticlesEmitted", m_ParticleSystemGPU->ParticlesEmitted);
 		m_IndirectCommandMaterialInstance->Set("u_Uniforms.Loop",			  m_ParticleSystemGPU->Loop);
 
+		Renderer::BeginPipelineCompute(m_CommandBuffer, m_CreateIndirectCommandPipeline, nullptr, m_StorageBufferSet, m_IndirectCommandMaterial);
 		Renderer::DispatchCompute(m_CreateIndirectCommandPipeline, m_IndirectCommandMaterialInstance, 32, 32, 1);
 
+		Renderer::Submit([renderCommandBuffer = m_CommandBuffer]() mutable
+			{
+				const uint32_t frameIndex = Renderer::GetCurrentFrame();
+				VkMemoryBarrier barrier{};
+
+				barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+				barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_MEMORY_READ_BIT;
+
+				VkCommandBuffer vulkanCommandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
+
+				vkCmdPipelineBarrier(vulkanCommandBuffer,
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+					VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+					0,
+					1, &barrier,
+					0, nullptr,
+					0, nullptr);
+			});
+
 		Renderer::EndPipelineCompute(m_CreateIndirectCommandPipeline);
+
+
+		Renderer::BeginRenderPass(m_CommandBuffer, m_GeometryRenderPass, false, false);
+
+		Renderer::BindPipeline(m_CommandBuffer, m_ParticlePipelineGPU, m_UniformBufferSet, m_StorageBufferSet, m_ParticleMaterialGPU);
+
+		Renderer::RenderIndirectMesh(
+			m_CommandBuffer,
+			m_ParticlePipelineGPU,
+			m_ParticleMaterialInstanceGPU,
+			m_ParticleCubeMesh->GetVertexBuffer(),
+			m_ParticleCubeMesh->GetIndexBuffer(),
+			{ glm::mat4(1.0f) },
+			m_StorageBufferSet, 0, 1
+		);
+
+		Renderer::EndRenderPass(m_CommandBuffer);
+	}
+
+	void SceneRenderer::createParticleTest()
+	{
+		m_ParticleCubeMesh = MeshFactory::CreateBox(glm::vec3(10.0f));
+		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create();
+
+		m_StorageBufferSet->Create(16, 0, 16); // Instance count
+
+
+		m_StorageBufferSet->Create(m_ParticleSystemGPU->MaxParticles * sizeof(ParticleGPU), 0, 17);
+		m_StorageBufferSet->Create(m_ParticleSystemGPU->MaxParticles * sizeof(ParticlePropertyGPU), 0, 18);
+
+		m_StorageBufferSet->Create(1 * sizeof(IndirectIndexedDrawCommand), 0, 19, true);
+
+		m_StorageBufferSet->Update(
+			m_ParticleSystemGPU->Particles.data(),
+			m_ParticleSystemGPU->MaxParticles * sizeof(ParticleGPU),
+			0,
+			17,
+			0
+		);
+
+		for (uint32_t frame = 0; frame < Renderer::GetConfiguration().FramesInFlight; ++frame)
+		{
+			m_StorageBufferSet->Get(18, 0, frame)->Update(
+				m_ParticleSystemGPU->ParticleProperties.data(),
+				m_ParticleSystemGPU->MaxParticles * sizeof(ParticlePropertyGPU),
+				0
+			);
+		}
+
+		m_IndirectCommandComputeShader = Shader::Create("Resources/Shaders/Particle/GPU/ParticleComputeShader.glsl");
+		m_IndirectCommandMaterial = Material::Create(m_IndirectCommandComputeShader);
+		m_IndirectCommandMaterialInstance = Ref<MaterialInstance>::Create(m_IndirectCommandMaterial);
+		m_CreateIndirectCommandPipeline = PipelineCompute::Create(m_IndirectCommandComputeShader);
+
+
+		m_ParticleShaderGPU = Shader::Create("Resources/Shaders/Particle/GPU/ParticleShaderGPU.glsl");
+		m_ParticleMaterialGPU = Material::Create(m_ParticleShaderGPU);
+		m_ParticleMaterialInstanceGPU = Ref<MaterialInstance>::Create(m_ParticleMaterialGPU);
+
+		Ref<Texture2D> whiteTexture = Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>();
+		m_ParticleMaterialGPU->SetImage("u_Texture", whiteTexture->GetImage());
+
+		PipelineSpecification specs;
+		specs.Shader = m_ParticleShaderGPU;
+		specs.RenderPass = m_GeometryRenderPass;
+
+		m_ParticlePipelineGPU = Pipeline::Create(specs);
 	}
 }

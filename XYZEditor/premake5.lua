@@ -47,6 +47,9 @@ project "XYZEditor"
 		postbuildcommands 
 		{
 			'{COPY} "../XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll" "%{cfg.targetdir}"',
+			'{COPY} "Resources" "%{cfg.targetdir}/Resources"',
+			'{COPY} "Assets" "%{cfg.targetdir}/Assets"',
+			'{COPY} "mono" "%{cfg.targetdir}/mono"',
 			'{COPY} "%{Binaries.Assimp_Debug}" "%{cfg.targetdir}"',
 			"{COPYDIR} \"%{LibraryDir.VulkanSDK_DebugDLL}\" \"%{cfg.targetdir}\""
 		}
@@ -59,5 +62,8 @@ project "XYZEditor"
 		postbuildcommands 
 		{
 			'{COPY} "%{Binaries.Assimp_Release}" "%{cfg.targetdir}"',
-			'{COPY} "../XYZEngine/vendor/mono/bin/Release/mono-2.0-sgen.dll" "%{cfg.targetdir}"'
+			'{COPY} "../XYZEngine/vendor/mono/bin/Release/mono-2.0-sgen.dll" "%{cfg.targetdir}"',
+			'{COPY} "Resources" "%{cfg.targetdir}/Resources"',
+			'{COPY} "Assets" "%{cfg.targetdir}/Assets"',
+			'{COPY} "mono" "%{cfg.targetdir}/mono"'
 		}
