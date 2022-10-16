@@ -4,8 +4,11 @@
 #include "VulkanContext.h"
 
 namespace XYZ {
-	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size, uint32_t binding)
-		: m_Size(size), m_Binding(binding)
+	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size, uint32_t binding, bool indirect)
+		: 
+		m_Size(size), 
+		m_Binding(binding),
+		m_IsIndirect(indirect)
 	{
 		Ref<VulkanStorageBuffer> instance = this;
 		Renderer::Submit([instance]() mutable
@@ -13,9 +16,11 @@ namespace XYZ {
 			instance->RT_invalidate();
 		});
 	}
-	VulkanStorageBuffer::VulkanStorageBuffer(const void* data, uint32_t size, uint32_t binding)
+	VulkanStorageBuffer::VulkanStorageBuffer(const void* data, uint32_t size, uint32_t binding, bool indirect)
 		:
-		m_Size(size), m_Binding(binding)
+		m_Size(size), 
+		m_Binding(binding),
+		m_IsIndirect(indirect)
 	{
 		ByteBuffer buffer = GetBuffer();
 		buffer.Write(data, size);
@@ -98,9 +103,15 @@ namespace XYZ {
 	{
 		release();
 
+		VkBufferUsageFlags flags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+		if (m_IsIndirect)
+		{
+			flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+		}
+
 		VkBufferCreateInfo bufferInfo = {};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+		bufferInfo.usage = flags;
 		bufferInfo.size = m_Size;
 
 		VulkanAllocator allocator("StorageBuffer");

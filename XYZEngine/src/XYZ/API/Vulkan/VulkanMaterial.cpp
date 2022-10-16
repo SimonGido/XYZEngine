@@ -72,7 +72,6 @@ namespace XYZ {
 	void VulkanMaterial::RT_UpdateForRendering(
 		const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors, 
 		const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors,
-		const vector3D<VkWriteDescriptorSet>& indirectBufferDescriptors,
 		bool forceDescriptorAllocation
 	)
 	{	
@@ -122,7 +121,6 @@ namespace XYZ {
 			}
 		}
 
-		// TODO: Indirect buffers are basically storages buffers => write descriptors are written twice + they are not same distinguish it
 		if (!storageBufferDescriptors.empty())
 		{
 			uint32_t set = 0;
@@ -137,21 +135,7 @@ namespace XYZ {
 				set++;
 			}
 		}
-		else if (!indirectBufferDescriptors.empty())
-		{
-			uint32_t set = 0;
-			for (auto& frameDesc : indirectBufferDescriptors[currentFrame])
-			{
-				for (auto& desc : frameDesc)
-				{
-					writeDescriptors.push_back(desc);
-					auto& last = writeDescriptors.back();
-					last.dstSet = m_Descriptors[currentFrame].DescriptorSets[set];
-				}
-				set++;
-			}
-		}
-
+		
 		auto vulkanDevice = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 		vkUpdateDescriptorSets(vulkanDevice, (uint32_t)writeDescriptors.size(), writeDescriptors.data(), 0, nullptr);
 	}

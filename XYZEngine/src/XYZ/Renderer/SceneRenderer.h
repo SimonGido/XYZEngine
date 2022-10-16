@@ -6,7 +6,6 @@
 #include "RenderCommandBuffer.h"
 #include "StorageBufferSet.h"
 #include "VertexBufferSet.h"
-#include "IndirectBufferSet.h"
 
 #include "PipelineCompute.h"
 #include "MaterialInstance.h"
@@ -23,6 +22,8 @@
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"
 
+
+#include "XYZ/Particle/GPU/ParticleSystemGPU.h"
 
 namespace XYZ {
 
@@ -160,15 +161,16 @@ namespace XYZ {
 
 
 
-		// Indirect draw test
-		Ref<IndirectBufferSet> m_IndirectBufferSet;
+		// Indirect draw test //
 		Ref<PipelineCompute>   m_CreateIndirectCommandPipeline;
 		Ref<Material>		   m_IndirectCommandMaterial;
 		Ref<MaterialInstance>  m_IndirectCommandMaterialInstance;
 		Ref<Shader>			   m_IndirectCommandComputeShader;
+		Ref<ParticleSystemGPU> m_ParticleSystemGPU;
+
 		void computeIndirectCommand();
 
-		//
+		//////////////////////////////
 
 		struct RenderStatistics
 		{

@@ -155,24 +155,27 @@ namespace XYZ {
 	{
 	public:
 		virtual ~StorageBuffer() = default;
+		// Old API
 		virtual void BindBase(uint32_t binding) const {};
 		virtual void BindRange(uint32_t offset, uint32_t size) const {};
 		virtual void Bind() const {};
+		virtual void GetSubData(void** buffer, uint32_t size, uint32_t offset = 0) {};
+		virtual void SetLayout(const BufferLayout& layout) {};
+		virtual uint32_t GetRendererID() const { return 0; };
+		//
 
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) {};
 		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) {};
 		virtual void Update(ByteBuffer data, uint32_t size, uint32_t offset = 0) {}
 		virtual void Resize(uint32_t size) {};
-		virtual void GetSubData(void** buffer, uint32_t size, uint32_t offset = 0) {};
-		virtual void SetLayout(const BufferLayout& layout) {};
+		
 		virtual uint32_t GetBinding() const { return 0; }
 		virtual const BufferLayout& GetLayout() const { return BufferLayout(); };
-		virtual uint32_t GetRendererID() const { return 0; };
 		virtual ByteBuffer GetBuffer() { return ByteBuffer(); }
-
-		static Ref<StorageBuffer> Create(uint32_t size, uint32_t binding);
-
-		static Ref<StorageBuffer> Create(const void *data, uint32_t size, uint32_t binding, BufferUsage usage = BufferUsage::Dynamic);
+		virtual bool	   IsIndirect() const { return false; }
+		
+		static Ref<StorageBuffer> Create(uint32_t size, uint32_t binding, bool indirect = false);
+		static Ref<StorageBuffer> Create(const void *data, uint32_t size, uint32_t binding, bool indirect = false, BufferUsage usage = BufferUsage::Dynamic);
 	};
 
 

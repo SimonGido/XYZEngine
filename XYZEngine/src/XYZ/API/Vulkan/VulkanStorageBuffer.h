@@ -9,21 +9,22 @@ namespace XYZ {
 	class VulkanStorageBuffer : public StorageBuffer
 	{
 	public:
-		VulkanStorageBuffer(uint32_t size, uint32_t binding);
-		VulkanStorageBuffer(const void* data, uint32_t size, uint32_t binding);
+		VulkanStorageBuffer(uint32_t size, uint32_t binding, bool indirect);
+		VulkanStorageBuffer(const void* data, uint32_t size, uint32_t binding, bool indirect);
 		virtual ~VulkanStorageBuffer() override;
 
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) override;
 		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) override;
 		virtual void Update(ByteBuffer data, uint32_t size, uint32_t offset = 0) override;
 		virtual void Resize(uint32_t size) override;
-		virtual uint32_t GetBinding() const override { return m_Binding; }
-		virtual ByteBuffer GetBuffer() override;
-
-
-		const VkDescriptorBufferInfo& GetDescriptorBufferInfo() const { return m_DescriptorInfo; }
-	
 		
+		virtual bool		IsIndirect() const override { return m_IsIndirect; }
+		virtual uint32_t	GetBinding() const override { return m_Binding; }
+		virtual ByteBuffer	GetBuffer() override;
+
+
+		VkBuffer GetVulkanBuffer() const { return m_Buffer; }
+		const VkDescriptorBufferInfo& GetDescriptorBufferInfo() const { return m_DescriptorInfo; }
 	private:
 		void release();
 		void RT_invalidate();
@@ -37,5 +38,7 @@ namespace XYZ {
 		uint32_t		  m_Binding;
 		BufferLayout	  m_Layout;
 		ThreadQueue<ByteBuffer> m_Buffers;
+
+		bool m_IsIndirect;
 	};
 }

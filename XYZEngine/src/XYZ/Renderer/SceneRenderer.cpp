@@ -88,7 +88,7 @@ namespace XYZ {
 		m_StorageBufferSet = StorageBufferSet::Create(framesInFlight);
 		m_StorageBufferSet->Create(1, 0, 14);
 		m_StorageBufferSet->Create(GeometryPass::GetMaxBonesTransforms() * sizeof(GeometryRenderQueue::BoneTransforms), 2, 0);
-
+		
 		m_CompositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
 		m_LightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
 		m_BloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
@@ -105,19 +105,39 @@ namespace XYZ {
 			1 
 		};
 
-		// Indirect draw test
-		m_StorageBufferSet->Create(16, 0, 15);
-		uint32_t deadCount = 0;
-		m_StorageBufferSet->Update(&deadCount, sizeof(uint32_t), 0, 15);
-		m_IndirectBufferSet = IndirectBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
+		// Indirect draw test //
+		
+		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create();
 
-		m_IndirectBufferSet->Create(1 * sizeof(IndirectIndexedDrawCommand), 0, 1);
+		m_StorageBufferSet->Create(16, 0, 15); // Instance count
+		
+
+		m_StorageBufferSet->Create(1024 * sizeof(ParticleGPU), 0, 16);
+		m_StorageBufferSet->Create(1024 * sizeof(ParticlePropertyGPU), 0, 17);
+
+		m_StorageBufferSet->Create(1 * sizeof(IndirectIndexedDrawCommand), 0, 18, true);
+
+		m_StorageBufferSet->Update(
+			m_ParticleSystemGPU->Particles.data(),
+			1024 * sizeof(ParticleGPU),
+			0,
+			16,
+			0
+		);
+
+		m_StorageBufferSet->Update(
+			m_ParticleSystemGPU->ParticleProperties.data(),
+			1024 * sizeof(ParticlePropertyGPU),
+			0,
+			17,
+			0
+		);
 
 		m_IndirectCommandComputeShader = Shader::Create("Resources/Shaders/Particle/GPU/ParticleComputeShader.glsl");
 		m_IndirectCommandMaterial = Material::Create(m_IndirectCommandComputeShader);
 		m_IndirectCommandMaterialInstance = Ref<MaterialInstance>::Create(m_IndirectCommandMaterial);
 		m_CreateIndirectCommandPipeline = PipelineCompute::Create(m_IndirectCommandComputeShader);
-		//
+		////////////////////////////////
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -615,9 +635,20 @@ namespace XYZ {
 
 	void SceneRenderer::computeIndirectCommand()
 	{
-		Renderer::BeginPipelineCompute(m_CommandBuffer, m_CreateIndirectCommandPipeline, nullptr, m_StorageBufferSet, m_IndirectBufferSet, m_IndirectCommandMaterial);
-	
-		m_IndirectCommandMaterialInstance->Set("u_Uniforms.MaxParticles", 10);
+		Renderer::BeginPipelineCompute(m_CommandBuffer, m_CreateIndirectCommandPipeline, nullptr, m_StorageBufferSet, m_IndirectCommandMaterial);
+		m_ParticleSystemGPU->Time += 0.01f;
+		uint32_t instanceCount = 0;
+		m_StorageBufferSet->Update(&instanceCount, sizeof(uint32_t), 0, 15);
+
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.EndColor",		  m_ParticleSystemGPU->EndColor);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.EndRotation",	  m_ParticleSystemGPU->EndRotation);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.EndSize",		  m_ParticleSystemGPU->EndSize);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.LifeTime",		  m_ParticleSystemGPU->LifeTime);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.Timestep",		  0.01f);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.Speed",			  m_ParticleSystemGPU->Speed);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.MaxParticles",	  m_ParticleSystemGPU->MaxParticles);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.ParticlesEmitted", m_ParticleSystemGPU->ParticlesEmitted);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.Loop",			  m_ParticleSystemGPU->Loop);
 
 		Renderer::DispatchCompute(m_CreateIndirectCommandPipeline, m_IndirectCommandMaterialInstance, 32, 32, 1);
 

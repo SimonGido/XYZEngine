@@ -302,7 +302,7 @@ namespace XYZ {
 		s_RendererAPI->RenderMesh(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transformBuffer, transformOffset, transformInstanceCount, instanceBuffer, instanceOffset, instanceCount);
 	}
 
-	void Renderer::RenderIndirectMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData, Ref<VertexBufferSet> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount, Ref<IndirectBufferSet> indirectBuffer, uint32_t indirectOffset, uint32_t indirectCount)
+	void Renderer::RenderIndirectMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData, Ref<VertexBufferSet> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount, Ref<StorageBufferSet> indirectBuffer, uint32_t indirectOffset, uint32_t indirectCount)
 	{
 		s_RendererAPI->RenderIndirect(
 			renderCommandBuffer, pipeline, material,
@@ -327,24 +327,12 @@ namespace XYZ {
 		s_RendererAPI->BindPipeline(renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, material);
 	}
 
-	void Renderer::BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<IndirectBufferSet> indirectBufferSet, Ref<Material> material)
-	{
-		s_RendererAPI->BindPipeline(renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, indirectBufferSet, material);
-	}
 
 	void Renderer::BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material)
 	{
 		s_RendererAPI->BeginPipelineCompute(renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, material);
 	}
 
-	void Renderer::BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<IndirectBufferSet> indirectBufferSet, Ref<Material> material)
-	{
-		s_RendererAPI->BeginPipelineCompute(
-			renderCommandBuffer, pipeline,
-			uniformBufferSet, storageBufferSet, indirectBufferSet,
-			material
-		);
-	}
 
 	void Renderer::DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 	{

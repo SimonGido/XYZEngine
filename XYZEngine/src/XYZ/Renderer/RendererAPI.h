@@ -8,7 +8,6 @@
 #include "XYZ/Renderer/UniformBufferSet.h"
 #include "XYZ/Renderer/StorageBufferSet.h"
 #include "XYZ/Renderer/VertexBufferSet.h"
-#include "XYZ/Renderer/IndirectBufferSet.h"
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/PushConstBuffer.h"
 
@@ -90,14 +89,12 @@ namespace XYZ {
 			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material,
 			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData,
 			Ref<VertexBufferSet> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount,
-			Ref<IndirectBufferSet> indirectBuffer, uint32_t indirectOffset, uint32_t indirectCount
+			Ref<StorageBufferSet> indirectBuffer, uint32_t indirectOffset, uint32_t indirectCount
 		) {};
 
 		virtual void BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material) {};
-		virtual void BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<IndirectBufferSet> indirectBufferSet, Ref<Material> material) {};
 		virtual void BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material) {};
-		virtual void BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<IndirectBufferSet> indirectBufferSet, Ref<Material> material) {};
-
+		
 		virtual void DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) {};
 		virtual void EndPipelineCompute(Ref<PipelineCompute> pipeline) {};
 		virtual void UpdateDescriptors(Ref<PipelineCompute> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet) {};
