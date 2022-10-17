@@ -99,7 +99,7 @@ namespace XYZ {
 		m_LightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
 		m_BloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
 		
-		m_GeometryPass.Init({ m_GeometryRenderPass, m_DepthRenderPass, m_UniformBufferSet, m_StorageBufferSet }, m_CommandBuffer);
+		m_GeometryPass.Init(this);
 		m_DeferredLightPass.Init({ m_LightRenderPass, m_LightShaderAsset->GetShader() }, m_CommandBuffer);
 		m_BloomPass.Init({ m_BloomShaderAsset->GetShader(), m_BloomTexture }, m_CommandBuffer);
 		m_CompositePass.Init({ m_CompositeRenderPass, m_CompositeShaderAsset->GetShader() }, m_CommandBuffer);
@@ -307,41 +307,38 @@ namespace XYZ {
 
 		auto& computeCommand = m_Queue.IndirectComputeCommands[computeKey];
 		computeCommand.MaterialCompute = materialCompute;
-
-		const uint32_t dataOffset = static_cast<uint32_t>(computeCommand.ComputeData.size());
-		const uint32_t commandIndex = static_cast<uint32_t>(computeCommand.Commands.size());
-		const uint32_t computeDataSizeRounded = Math::RoundUp(computeDataSize, 16);
-
-		computeCommand.ComputeData.resize(dataOffset + computeDataSizeRounded);
-		memcpy(&computeCommand.ComputeData.data()[dataOffset], computeData, computeDataSize);
-
-
+		
 		auto& command = computeCommand.Commands.emplace_back();
-		command.Command.DataOffset = dataOffset;
-		command.Command.DataSize = computeDataSizeRounded;
-		command.Command.DataResultSize = computeResultSize;
 
-		command.CommmandOffset = Math::RoundUp(commandIndex * sizeof(IndirectIndexedDrawCommand), 16);
+		command.ComputeResultSize = computeResultSize;
+		command.ComputeData.resize(computeDataSize);
+		memcpy(command.ComputeData.data(), computeData, computeDataSize);
 
 		if (overrideComputeMaterial.Raw())
 		{
-			command.Command.OverrideMaterial = overrideComputeMaterial;
+			command.OverrideMaterial = overrideComputeMaterial;
 		}
 		else
 		{
-			command.Command.OverrideMaterial = materialCompute->GetMaterialInstance();
+			command.OverrideMaterial = materialCompute->GetMaterialInstance();
 		}
 
 
 		auto& dc = m_Queue.IndirectDrawCommands[renderKey];
 		dc.MaterialAsset = material;
+
+		auto& renderCommand = dc.OverrideCommands.emplace_back();
+		renderCommand.Mesh = mesh;
+		renderCommand.ComputeDataSize = computeDataSize;
+		renderCommand.ComputeResultSize = computeResultSize;
+
 		if (overrideMaterial.Raw())
 		{
-			dc.OverrideCommands.push_back({ mesh, overrideMaterial });
+			renderCommand.OverrideMaterial = overrideMaterial;
 		}
 		else
 		{
-			dc.OverrideCommands.push_back({ mesh, material->GetMaterialInstance() });
+			renderCommand.OverrideMaterial = material->GetMaterialInstance();
 		}
 	}
 

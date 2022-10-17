@@ -8,14 +8,6 @@
 
 namespace XYZ {
 
-	struct GeometryPassConfiguration
-	{
-		Ref<RenderPass>		  Pass;
-		Ref<RenderPass>		  DepthPass;
-		Ref<UniformBufferSet> UniformBufferSet;
-		Ref<StorageBufferSet> StorageBufferSet;
-	};
-
 	struct GeometryPassStatistics
 	{
 		uint32_t MeshOverrideCount;
@@ -29,7 +21,7 @@ namespace XYZ {
 	public:
 		GeometryPass();
 
-		void Init(const GeometryPassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer);
+		void Init(WeakRef<SceneRenderer> renderer);
 
 		void PreDepthPass(
 			Ref<PrimaryRenderCommandBuffer> commandBuffer,
@@ -77,18 +69,13 @@ namespace XYZ {
 		Ref<PipelineCompute> prepareComputePipeline(const Ref<Material>& material);
 
 	private:
-		using TransformData = GeometryRenderQueue::TransformData;
+		
+		WeakRef<SceneRenderer> m_SceneRenderer;
+		Ref<Renderer2D>		   m_Renderer2D;
+		Ref<Texture2D>		   m_WhiteTexture;
 
-		Ref<Renderer2D>		  m_Renderer2D;
-		Ref<Texture2D>		  m_WhiteTexture;
-
-		Ref<RenderPass>       m_RenderPass;
-		Ref<RenderPass>		  m_DepthPass;
-		Ref<UniformBufferSet> m_UniformBufferSet;
-
-		Ref<VertexBufferSet>  m_InstanceVertexBufferSet;
-		Ref<VertexBufferSet>  m_TransformVertexBufferSet;
-		Ref<StorageBufferSet> m_StorageBufferSet;
+		Ref<VertexBufferSet>   m_InstanceVertexBufferSet;
+		Ref<VertexBufferSet>   m_TransformVertexBufferSet;
 
 		std::map<size_t, Ref<Pipeline>> m_GeometryPipelines;
 		std::map<size_t, Ref<PipelineCompute>> m_ComputePipelines;
@@ -107,14 +94,7 @@ namespace XYZ {
 		DepthPipeline m_DepthPipelineInstanced;
 
 
-		SSBOBoneTransformData m_BoneTransformSSBO;
-		SSBOIndirectData	  m_IndirectBufferSSBO;
-		SSBOComputeData		  m_ComputeDataSSBO;
-		SSBOComputeState	  m_ComputeStateSSBO;
-
-
-		std::vector<TransformData> m_TransformData;
-		std::vector<std::byte>	   m_InstanceData;
+		
 
 		static constexpr uint32_t sc_TransformBufferSize	  = 10 * 1024 * sizeof(GeometryRenderQueue::TransformData); // 10240 transforms
 		static constexpr uint32_t sc_InstanceVertexBufferSize = 30 * 1024 * 1024; // 30mb

@@ -210,6 +210,9 @@ namespace XYZ {
 		uint32_t FirstIndex		= 0;    
 		uint32_t BaseVertex		= 0;    
 		uint32_t BaseInstance	= 0;
+
+	private:
+		Padding<12> Padding;
 	};
 	
 

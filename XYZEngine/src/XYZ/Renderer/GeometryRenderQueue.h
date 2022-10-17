@@ -16,6 +16,38 @@
 namespace XYZ {
 	struct GeometryRenderQueue
 	{
+		struct SpriteKey
+		{
+			SpriteKey(const AssetHandle& matHandle)
+				: MaterialHandle(matHandle)
+			{}
+
+			bool operator<(const SpriteKey& other) const
+			{
+				return (MaterialHandle < other.MaterialHandle);
+			}
+
+			AssetHandle MaterialHandle;
+		};
+		struct BatchMeshKey
+		{
+			AssetHandle MeshHandle;
+			AssetHandle MaterialHandle;
+
+			BatchMeshKey(AssetHandle meshHandle, AssetHandle materialHandle)
+				: MeshHandle(meshHandle), MaterialHandle(materialHandle) {}
+
+			bool operator<(const BatchMeshKey& other) const
+			{
+				if (MeshHandle < other.MeshHandle)
+					return true;
+
+				return (MeshHandle == other.MeshHandle) && (MaterialHandle < other.MaterialHandle);
+			}
+		};
+
+
+
 		struct SpriteDrawData
 		{
 			uint32_t  TextureIndex;
@@ -113,82 +145,53 @@ namespace XYZ {
 			uint32_t			   InstanceOffset = 0;
 		};
 
-
-		struct IndirectMeshDrawCommandOverride
+		struct SSBOState
 		{
-			Ref<Mesh>			  Mesh;
-			Ref<MaterialInstance> OverrideMaterial;
+			uint32_t Size;
+			uint32_t Offset;
 		};
 
-		struct IndirectMeshDrawCommand
-		{		
-			Ref<MaterialAsset>	  MaterialAsset;
-			Ref<Pipeline>		  Pipeline;
-
-			std::vector<IndirectMeshDrawCommandOverride> OverrideCommands;
-		};
-
-		struct SpriteKey
-		{
-			SpriteKey(const AssetHandle& matHandle)
-				: MaterialHandle(matHandle)
-			{}
-
-			bool operator<(const SpriteKey& other) const
-			{
-				return (MaterialHandle < other.MaterialHandle);
-			}
-
-			AssetHandle MaterialHandle;
-		};
-		struct BatchMeshKey
-		{
-			AssetHandle MeshHandle;
-			AssetHandle MaterialHandle;
-
-			BatchMeshKey(AssetHandle meshHandle, AssetHandle materialHandle)
-				: MeshHandle(meshHandle), MaterialHandle(materialHandle) {}
-
-			bool operator<(const BatchMeshKey& other) const
-			{
-				if (MeshHandle < other.MeshHandle)
-					return true;
-
-				return (MeshHandle == other.MeshHandle) && (MaterialHandle < other.MaterialHandle);
-			}
-		};
-
-		struct ComputeCommand
-		{
-			Ref<MaterialInstance>  OverrideMaterial;
-			uint32_t			   DataOffset;
-			uint32_t			   DataSize;
-			uint32_t			   DataResultSize;
-		};
-
-		struct ComputeBatch
-		{
-			Ref<PipelineCompute>   Pipeline;
-			Ref<MaterialAsset>	   MaterialCompute;
-			std::vector<std::byte> ComputeData;
-
-			std::vector<ComputeCommand> Commands;
-		};
 
 		struct IndirectComputeCommand
 		{
-			ComputeCommand Command;
-			uint32_t	   CommmandOffset;
+			Ref<MaterialInstance>  OverrideMaterial;
+			std::vector<std::byte> ComputeData;
+			uint32_t			   ComputeResultSize;
+
+			SSBOState			   IndirectCommandState;
+			SSBOState			   ComputeDataState;
+			SSBOState			   ComputeResultState;
 		};
 
 		struct IndirectComputeBatch
 		{
 			Ref<PipelineCompute>   Pipeline;
 			Ref<MaterialAsset>	   MaterialCompute;
-			std::vector<std::byte> ComputeData;
 
 			std::vector<IndirectComputeCommand> Commands;
 		};
+
+		struct IndirectMeshDrawCommandOverride
+		{
+			Ref<Mesh>			  Mesh;
+			Ref<MaterialInstance> OverrideMaterial;
+			uint32_t			  ComputeDataSize;
+			uint32_t			  ComputeResultSize;
+
+			
+			SSBOState			  IndirectCommandState;
+			SSBOState			  ComputeDataState;
+			SSBOState			  ComputeResultState;
+		};
+
+		struct IndirectMeshDrawCommand
+		{
+			Ref<MaterialAsset>	  MaterialAsset;
+			Ref<Pipeline>		  Pipeline;
+
+			std::vector<IndirectMeshDrawCommandOverride> OverrideCommands;
+		};
+
 
 
 		std::map<SpriteKey, SpriteDrawCommand> SpriteDrawCommands;
@@ -199,8 +202,7 @@ namespace XYZ {
 		std::map<BatchMeshKey, InstanceMeshDrawCommand>	InstanceMeshDrawCommands;
 		std::map<AssetHandle,  IndirectMeshDrawCommand>	IndirectDrawCommands;
 		std::map<AssetHandle,  IndirectComputeBatch>	IndirectComputeCommands;
-		std::map<AssetHandle,  ComputeBatch>			ComputeCommands;
-	
+		
 		void Clear()
 		{
 			SpriteDrawCommands.clear();
@@ -210,7 +212,6 @@ namespace XYZ {
 			InstanceMeshDrawCommands.clear();
 			IndirectDrawCommands.clear();
 			IndirectComputeCommands.clear();
-			ComputeCommands.clear();
 		}
 	};
 }

@@ -5,26 +5,25 @@
 #include "XYZ/API/Vulkan/VulkanPipelineCompute.h"
 #include "XYZ/API/Vulkan/VulkanRenderCommandBuffer.h"
 
+#include "XYZ/Renderer/SceneRenderer.h"
+
 #include "XYZ/Utils/Math/Math.h"
 
 namespace XYZ {
 	GeometryPass::GeometryPass()
 	{
 	}
-	void GeometryPass::Init(const GeometryPassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer)
+	void GeometryPass::Init(WeakRef<SceneRenderer> renderer)
 	{
-		m_RenderPass = config.Pass;
-		m_DepthPass = config.DepthPass;
-		m_UniformBufferSet = config.UniformBufferSet;
-		m_StorageBufferSet = config.StorageBufferSet;
+		m_SceneRenderer = renderer;
 		m_InstanceVertexBufferSet = Ref<VertexBufferSet>::Create(Renderer::GetConfiguration().FramesInFlight, sc_InstanceVertexBufferSize);
 		m_TransformVertexBufferSet = Ref<VertexBufferSet>::Create(Renderer::GetConfiguration().FramesInFlight, sc_TransformBufferSize);
 		
-		m_Renderer2D = Ref<Renderer2D>::Create(Renderer2DConfiguration{ commandBuffer, m_UniformBufferSet });
+		m_Renderer2D = Ref<Renderer2D>::Create(Renderer2DConfiguration{ m_SceneRenderer->m_CommandBuffer, m_SceneRenderer->m_UniformBufferSet });
 		m_WhiteTexture = Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>();
 
-		m_TransformData.resize(GetTransformBufferCount());
-		m_InstanceData.resize(sc_InstanceVertexBufferSize);
+		m_SceneRenderer->m_TransformData.resize(GetTransformBufferCount());
+		m_SceneRenderer->m_InstanceData.resize(sc_InstanceVertexBufferSize);
 
 		createDepthResources();
 	}
@@ -39,7 +38,7 @@ namespace XYZ {
 
 		// Pre depth
 		uint32_t depthPassQuery = commandBuffer->BeginTimestampQuery();
-		Renderer::BeginRenderPass(commandBuffer, m_DepthPass, false, clear);
+		Renderer::BeginRenderPass(commandBuffer, m_SceneRenderer->m_DepthRenderPass, false, clear);
 
 		submit2DDepth(queue, commandBuffer, viewMatrix);
 		submitStaticMeshesDepth(queue, commandBuffer);
@@ -66,7 +65,7 @@ namespace XYZ {
 
 		// Geometry
 		uint32_t geometryPassQuery = commandBuffer->BeginTimestampQuery();
-		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, false, clear);
+		Renderer::BeginRenderPass(commandBuffer, m_SceneRenderer->m_GeometryRenderPass, false, clear);
 
 		submit2D(queue, commandBuffer, viewMatrix);
 		submitStaticMeshes(queue, commandBuffer);
@@ -96,11 +95,12 @@ namespace XYZ {
 		prepareInstancedDrawCommands(queue, instanceOffset);
 		prepare2DDrawCommands(queue);
 
-		m_TransformVertexBufferSet->Update(m_TransformData.data(), transformsCount * sizeof(GeometryRenderQueue::TransformData));
-		m_InstanceVertexBufferSet->Update(m_InstanceData.data(), instanceOffset);
-		m_StorageBufferSet->Update(m_BoneTransformSSBO.Data, boneTransformCount * sizeof(GeometryRenderQueue::BoneTransforms), 0, SSBOBoneTransformData::Binding, SSBOBoneTransformData::Set);
-		m_StorageBufferSet->Update(m_ComputeStateSSBO.Data, computeDataSize, 0, SSBOComputeState::Binding, SSBOComputeState::Set);
-		m_StorageBufferSet->Update(m_IndirectBufferSSBO.Data, sizeof(m_IndirectBufferSSBO), 0, SSBOIndirectData::Binding, SSBOIndirectData::Set);
+		m_TransformVertexBufferSet->Update(m_SceneRenderer->m_TransformData.data(), transformsCount * sizeof(GeometryRenderQueue::TransformData));
+		m_InstanceVertexBufferSet->Update(m_SceneRenderer->m_InstanceData.data(), instanceOffset);
+		
+		m_SceneRenderer->m_StorageBufferSet->Update(m_SceneRenderer->m_BoneTransformSSBO.Data, boneTransformCount * sizeof(GeometryRenderQueue::BoneTransforms), 0, SSBOBoneTransformData::Binding, SSBOBoneTransformData::Set);
+		m_SceneRenderer->m_StorageBufferSet->Update(m_SceneRenderer->m_ComputeStateSSBO.Data, computeDataSize, 0, SSBOComputeState::Binding, SSBOComputeState::Set);
+		m_SceneRenderer->m_StorageBufferSet->Update(m_SceneRenderer->m_IndirectBufferSSBO.Data, sizeof(SSBOIndirectData), 0, SSBOIndirectData::Binding, SSBOIndirectData::Set);
 		
 		return { 
 			static_cast<uint32_t>(overrideCount), 
@@ -117,30 +117,44 @@ namespace XYZ {
 			Renderer::BeginPipelineCompute(
 				commandBuffer,
 				com.Pipeline,
-				m_UniformBufferSet,
-				m_StorageBufferSet,
+				m_SceneRenderer->m_UniformBufferSet,
+				m_SceneRenderer->m_StorageBufferSet,
 				com.MaterialCompute->GetMaterial()
 			);
 
 			for (auto& command : com.Commands)
 			{
-				m_StorageBufferSet->SetBufferInfo(
-					Math::RoundUp(sizeof(IndirectIndexedDrawCommand), 16),
-					command.CommmandOffset,
+				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
+					command.IndirectCommandState.Size,
+					command.IndirectCommandState.Offset,
 					SSBOIndirectData::Binding,
 					SSBOIndirectData::Set
 				);
 
-				m_StorageBufferSet->SetBufferInfo(
-					command.Command.DataSize,
-					command.Command.DataOffset,
+				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
+					command.ComputeDataState.Size,
+					command.ComputeDataState.Offset,
 					SSBOComputeState::Binding,
 					SSBOComputeState::Set
 				);
 
+				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
+					command.ComputeResultState.Size,
+					command.ComputeResultState.Offset,
+					SSBOComputeData::Binding,
+					SSBOComputeData::Set
+				);
+
+				Renderer::UpdateDescriptors(
+					com.Pipeline,
+					com.MaterialCompute->GetMaterial(),
+					m_SceneRenderer->m_UniformBufferSet,
+					m_SceneRenderer->m_StorageBufferSet
+				);
+
 				Renderer::DispatchCompute(
 					com.Pipeline,
-					command.Command.OverrideMaterial,
+					command.OverrideMaterial,
 					32, 32, 1
 				);
 
@@ -171,19 +185,48 @@ namespace XYZ {
 
 	void GeometryPass::submitIndirectCommands(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer)
 	{
-		uint32_t offset = 0;
+		uint32_t index = 0;
 		for (auto& [key, dc] : queue.IndirectDrawCommands)
 		{
 			Renderer::BindPipeline(
 				commandBuffer,
 				dc.Pipeline,
-				m_UniformBufferSet,
-				m_StorageBufferSet,
+				m_SceneRenderer->m_UniformBufferSet,
+				m_SceneRenderer->m_StorageBufferSet,
 				dc.MaterialAsset->GetMaterial()
 			);
 
 			for (auto& dcOverride : dc.OverrideCommands)
 			{
+				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
+					dcOverride.IndirectCommandState.Size,
+					dcOverride.IndirectCommandState.Offset,
+					SSBOIndirectData::Binding,
+					SSBOIndirectData::Set
+				);
+
+				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
+					dcOverride.ComputeDataState.Size,
+					dcOverride.ComputeDataState.Offset,
+					SSBOComputeState::Binding,
+					SSBOComputeState::Set
+				);
+
+				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
+					dcOverride.ComputeResultState.Size,
+					dcOverride.ComputeResultState.Offset,
+					SSBOComputeData::Binding,
+					SSBOComputeData::Set
+				);
+
+				Renderer::UpdateDescriptors(
+					commandBuffer,
+					dc.Pipeline,
+					dc.MaterialAsset->GetMaterial(),
+					m_SceneRenderer->m_UniformBufferSet,
+					m_SceneRenderer->m_StorageBufferSet
+				);
+
 				Renderer::RenderIndirectMesh(
 					commandBuffer,
 					dc.Pipeline,
@@ -191,12 +234,12 @@ namespace XYZ {
 					dcOverride.Mesh->GetVertexBuffer(),
 					dcOverride.Mesh->GetIndexBuffer(),
 					{ glm::mat4(1.0f) },
-					m_StorageBufferSet,
-					offset,
+					m_SceneRenderer->m_StorageBufferSet,
+					dcOverride.IndirectCommandState.Offset,
 					1,
 					sizeof(IndirectIndexedDrawCommand)
 				);
-				offset++;
+				index++;
 			}
 		}
 	}
@@ -208,8 +251,8 @@ namespace XYZ {
 			Renderer::BindPipeline(
 				commandBuffer,
 				command.Pipeline,
-				m_UniformBufferSet,
-				m_StorageBufferSet,
+				m_SceneRenderer->m_UniformBufferSet,
+				m_SceneRenderer->m_StorageBufferSet,
 				command.MaterialAsset->GetMaterial()
 			);
 			if (command.Count > 0)
@@ -246,8 +289,8 @@ namespace XYZ {
 			Renderer::BindPipeline(
 				commandBuffer,
 				command.Pipeline,
-				m_UniformBufferSet,
-				m_StorageBufferSet,
+				m_SceneRenderer->m_UniformBufferSet,
+				m_SceneRenderer->m_StorageBufferSet,
 				command.MaterialAsset->GetMaterial()
 			);
 			if (command.Count > 0)
@@ -287,7 +330,7 @@ namespace XYZ {
 			Renderer::BindPipeline(
 				commandBuffer,
 				command.Pipeline,
-				m_UniformBufferSet,
+				m_SceneRenderer->m_UniformBufferSet,
 				nullptr,
 				command.MaterialAsset->GetMaterial()
 			);
@@ -317,7 +360,7 @@ namespace XYZ {
 			for (const auto& data : command.SpriteData)
 				m_Renderer2D->SubmitQuad(data.Transform, data.TexCoords, data.TextureIndex, data.Color);
 
-			Renderer::BindPipeline(commandBuffer, pipeline, m_UniformBufferSet, nullptr, command.Material);
+			Renderer::BindPipeline(commandBuffer, pipeline, m_SceneRenderer->m_UniformBufferSet, nullptr, command.Material);
 			m_Renderer2D->FlushQuads(pipeline, command.MaterialInstance, true);
 		}
 
@@ -327,7 +370,7 @@ namespace XYZ {
 			for (const auto& data : command.BillboardData)
 				m_Renderer2D->SubmitQuadBillboard(data.Position, data.Size, data.TexCoords, data.TextureIndex, data.Color);
 
-			Renderer::BindPipeline(commandBuffer, pipeline, m_UniformBufferSet, nullptr, command.Material);
+			Renderer::BindPipeline(commandBuffer, pipeline, m_SceneRenderer->m_UniformBufferSet, nullptr, command.Material);
 			m_Renderer2D->FlushQuads(pipeline, command.MaterialInstance, true);
 		}
 		m_Renderer2D->EndScene();
@@ -338,7 +381,7 @@ namespace XYZ {
 		Renderer::BindPipeline(
 			commandBuffer,
 			m_DepthPipeline3DStatic.Pipeline,
-			m_UniformBufferSet,
+			m_SceneRenderer->m_UniformBufferSet,
 			nullptr,
 			m_DepthPipeline3DStatic.Material
 		);
@@ -374,8 +417,8 @@ namespace XYZ {
 		Renderer::BindPipeline(
 			commandBuffer,
 			m_DepthPipeline3DAnimated.Pipeline,
-			m_UniformBufferSet,
-			m_StorageBufferSet,
+			m_SceneRenderer->m_UniformBufferSet,
+			m_SceneRenderer->m_StorageBufferSet,
 			m_DepthPipeline3DAnimated.Material
 		);
 		for (auto& [key, command] : queue.AnimatedMeshDrawCommands)
@@ -412,7 +455,7 @@ namespace XYZ {
 		Renderer::BindPipeline(
 			commandBuffer,
 			m_DepthPipelineInstanced.Pipeline,
-			m_UniformBufferSet,
+			m_SceneRenderer->m_UniformBufferSet,
 			nullptr,
 			m_DepthPipelineInstanced.Material
 		);
@@ -441,7 +484,7 @@ namespace XYZ {
 		Renderer::BindPipeline(
 			commandBuffer, 
 			m_DepthPipeline2D.Pipeline, 
-			m_UniformBufferSet,
+			m_SceneRenderer->m_UniformBufferSet,
 			nullptr, 
 			m_DepthPipeline2D.Material
 		);
@@ -471,7 +514,7 @@ namespace XYZ {
 			overrideCount += dc.OverrideCommands.size();
 			for (const auto& transform : dc.TransformData)
 			{
-				m_TransformData[transformsCount] = transform;
+				m_SceneRenderer->m_TransformData[transformsCount] = transform;
 				transformsCount++;
 			}
 		}
@@ -479,19 +522,56 @@ namespace XYZ {
 
 	void GeometryPass::prepareIndirectCommands(GeometryRenderQueue& queue)
 	{
+		uint32_t offset = 0;
+		uint32_t resultOffset = 0;
+		uint32_t commandOffset = 0;
+
 		for (auto& [key, dc] : queue.IndirectDrawCommands)
 		{
 			dc.Pipeline = prepareGeometryPipeline(dc.MaterialAsset->GetMaterial(), dc.MaterialAsset->IsOpaque());	
+			for (auto& cmd : dc.OverrideCommands)
+			{
+				cmd.ComputeDataState.Offset = offset;
+				cmd.ComputeDataState.Size = Math::RoundUp(cmd.ComputeDataSize, 16);
+
+				cmd.ComputeResultState.Offset = resultOffset;
+				cmd.ComputeResultState.Size = Math::RoundUp(cmd.ComputeResultSize, 16);
+
+				cmd.IndirectCommandState.Offset = commandOffset;
+				cmd.IndirectCommandState.Size = sizeof(IndirectIndexedDrawCommand);
+			
+				offset += Math::RoundUp(cmd.ComputeDataSize, 16);
+				resultOffset += Math::RoundUp(cmd.ComputeResultSize, 16);
+				commandOffset += sizeof(IndirectIndexedDrawCommand);
+			}
 		}
 	}
 	void GeometryPass::prepareIndirectComputeCommands(GeometryRenderQueue& queue, uint32_t& computeDataSize)
 	{
 		uint32_t offset = 0;
+		uint32_t resultOffset = 0;
+		uint32_t commandOffset = 0;
+
 		for (auto& [key, dc] : queue.IndirectComputeCommands)
 		{
-			dc.Pipeline = prepareComputePipeline(dc.MaterialCompute->GetMaterial());
-			memcpy(&m_ComputeStateSSBO.Data[offset], dc.ComputeData.data(), dc.ComputeData.size());
-			offset += static_cast<uint32_t>(dc.ComputeData.size());
+			dc.Pipeline = prepareComputePipeline(dc.MaterialCompute->GetMaterial());		
+			for (auto& cmd : dc.Commands)
+			{
+				cmd.ComputeDataState.Offset = offset;
+				cmd.ComputeDataState.Size = Math::RoundUp(static_cast<uint32_t>(cmd.ComputeData.size()), 16);
+
+				cmd.ComputeResultState.Offset = resultOffset;
+				cmd.ComputeResultState.Size = Math::RoundUp(cmd.ComputeResultSize, 16);
+
+				cmd.IndirectCommandState.Offset = commandOffset;
+				cmd.IndirectCommandState.Size = sizeof(IndirectIndexedDrawCommand);
+
+				memcpy(&m_SceneRenderer->m_ComputeStateSSBO.Data[offset], cmd.ComputeData.data(), cmd.ComputeData.size());
+				
+				offset		  += Math::RoundUp(static_cast<uint32_t>(cmd.ComputeData.size()), 16);
+				resultOffset  += Math::RoundUp(cmd.ComputeResultSize, 16);
+				commandOffset += sizeof(IndirectIndexedDrawCommand);
+			}
 		}
 		computeDataSize = offset;
 	}
@@ -501,25 +581,25 @@ namespace XYZ {
 		for (auto& [key, dc] : queue.AnimatedMeshDrawCommands)
 		{
 			dc.Pipeline = prepareGeometryPipeline(dc.MaterialAsset->GetMaterial(), dc.MaterialAsset->IsOpaque());
-			dc.TransformOffset = transformsCount * sizeof(TransformData);
+			dc.TransformOffset = transformsCount * sizeof(SceneRenderer::TransformData);
 			dc.BoneTransformsIndex = boneTransformCount;
 			overrideCount += dc.OverrideCommands.size();
 			for (const auto& transform : dc.TransformData)
 			{
-				m_TransformData[transformsCount] = transform;
+				m_SceneRenderer->m_TransformData[transformsCount] = transform;
 				transformsCount++;
 			}
 			for (const auto& bones : dc.BoneData)
 			{
 				const size_t offset = boneTransformCount * bones.size();
-				memcpy(&m_BoneTransformSSBO.Data[offset], bones.data(), sizeof(GeometryRenderQueue::BoneTransforms));
+				memcpy(&m_SceneRenderer->m_BoneTransformSSBO.Data[offset], bones.data(), sizeof(GeometryRenderQueue::BoneTransforms));
 				boneTransformCount++;
 			}
 			for (auto& overrideDc : dc.OverrideCommands)
 			{
 				const auto& bones = overrideDc.BoneTransforms;
 				const size_t offset = boneTransformCount * bones.size();
-				memcpy(&m_BoneTransformSSBO.Data[offset], bones.data(), sizeof(GeometryRenderQueue::BoneTransforms));
+				memcpy(&m_SceneRenderer->m_BoneTransformSSBO.Data[offset], bones.data(), sizeof(GeometryRenderQueue::BoneTransforms));
 				overrideDc.BoneTransformsIndex = boneTransformCount;
 				boneTransformCount++;
 			}
@@ -528,7 +608,7 @@ namespace XYZ {
 
 	void GeometryPass::postDepthPass(const Ref<RenderCommandBuffer>& commandBuffer)
 	{
-		Renderer::Submit([cb = commandBuffer, image = m_DepthPass->GetSpecification().TargetFramebuffer->GetDepthImage().As<VulkanImage2D>()]()
+		Renderer::Submit([cb = commandBuffer, image = m_SceneRenderer->m_DepthRenderPass->GetSpecification().TargetFramebuffer->GetDepthImage().As<VulkanImage2D>()]()
 			{
 				VkImageMemoryBarrier imageMemoryBarrier = {};
 				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -558,7 +638,7 @@ namespace XYZ {
 		{
 			dc.Pipeline = prepareGeometryPipeline(dc.MaterialAsset->GetMaterial(), dc.MaterialAsset->IsOpaque());
 			dc.InstanceOffset = instanceOffset;
-			memcpy(&m_InstanceData.data()[instanceOffset], dc.InstanceData.data(), dc.InstanceData.size());
+			memcpy(&m_SceneRenderer->m_InstanceData.data()[instanceOffset], dc.InstanceData.data(), dc.InstanceData.size());
 			instanceOffset += dc.InstanceData.size();
 		}
 	}
@@ -591,7 +671,7 @@ namespace XYZ {
 			m_DepthPipeline3DAnimated.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipeline3DAnimated.Material);
 
 			PipelineSpecification spec;
-			spec.RenderPass = m_DepthPass;
+			spec.RenderPass = m_SceneRenderer->m_DepthRenderPass;
 			spec.Shader = m_DepthPipeline3DAnimated.Shader;
 			spec.Topology = PrimitiveTopology::Triangles;
 			spec.DepthTest = true;
@@ -607,7 +687,7 @@ namespace XYZ {
 			m_DepthPipeline3DStatic.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipeline3DStatic.Material);
 
 			PipelineSpecification spec;
-			spec.RenderPass = m_DepthPass;
+			spec.RenderPass = m_SceneRenderer->m_DepthRenderPass;
 			spec.Shader = m_DepthPipeline3DStatic.Shader;
 			spec.Topology = PrimitiveTopology::Triangles;
 			spec.DepthTest = true;
@@ -623,7 +703,7 @@ namespace XYZ {
 			m_DepthPipeline2D.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipeline2D.Material);
 
 			PipelineSpecification spec;
-			spec.RenderPass = m_DepthPass;
+			spec.RenderPass = m_SceneRenderer->m_DepthRenderPass;
 			spec.Shader = m_DepthPipeline2D.Shader;
 			spec.Topology = PrimitiveTopology::Triangles;
 			spec.DepthTest = true;
@@ -639,7 +719,7 @@ namespace XYZ {
 			m_DepthPipelineInstanced.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipelineInstanced.Material);
 
 			PipelineSpecification spec;
-			spec.RenderPass = m_DepthPass;
+			spec.RenderPass = m_SceneRenderer->m_DepthRenderPass;
 			spec.Shader = m_DepthPipelineInstanced.Shader;
 			spec.Topology = PrimitiveTopology::Triangles;
 			spec.DepthTest = true;
@@ -657,7 +737,7 @@ namespace XYZ {
 
 
 		PipelineSpecification spec;
-		spec.RenderPass = m_RenderPass;
+		spec.RenderPass = m_SceneRenderer->m_GeometryRenderPass;
 		spec.Shader = shader;
 		spec.Topology = PrimitiveTopology::Triangles;
 		spec.DepthTest = true;

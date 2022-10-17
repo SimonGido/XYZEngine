@@ -348,6 +348,11 @@ namespace XYZ {
 		s_RendererAPI->UpdateDescriptors(pipeline, material, uniformBufferSet, storageBufferSet);
 	}
 
+	void Renderer::UpdateDescriptors(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet)
+	{
+		s_RendererAPI->UpdateDescriptors(renderCommandBuffer, pipeline, material, uniformBufferSet, storageBufferSet);
+	}
+
 	void Renderer::ClearImage(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Image2D> image)
 	{
 		s_RendererAPI->ClearImage(renderCommandBuffer, image);

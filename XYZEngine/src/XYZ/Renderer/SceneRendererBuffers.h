@@ -40,7 +40,7 @@ namespace XYZ {
 		static constexpr uint32_t MaxBoneTransforms = 10 * 1024;
 
 		// NOTE: always heap allocate
-		glm::mat4 Data[MaxBoneTransforms];
+		glm::mat4 Data[MaxBoneTransforms]{ glm::mat4(1.0f) };
 
 		static constexpr uint32_t Binding = 3;
 		static constexpr uint32_t Set = 0;

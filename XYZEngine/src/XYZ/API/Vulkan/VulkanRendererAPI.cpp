@@ -572,6 +572,36 @@ namespace XYZ {
 		});
 	}
 
+	void VulkanRendererAPI::UpdateDescriptors(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet)
+	{
+		Renderer::Submit([renderCommandBuffer, pipeline, material, uniformBufferSet, storageBufferSet]() {
+
+			const uint32_t frameIndex = VulkanContext::Get()->GetSwapChain().GetCurrentBufferIndex();
+
+
+			Ref<VulkanUniformBufferSet>	   vulkanUniformBufferSet = uniformBufferSet;
+			Ref<VulkanStorageBufferSet>    vulkanStorageBufferSet = storageBufferSet;
+			Ref<VulkanMaterial>			   vulkanMaterial = material;
+			Ref<VulkanPipeline>			   vulkanPipeline = pipeline;
+
+			const VkCommandBuffer		   commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
+			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+			vulkanMaterial->RT_UpdateForRendering(vulkanUniformBufferSet, vulkanStorageBufferSet, true);
+
+			const auto& materialDescriptors = vulkanMaterial->GetDescriptors(frameIndex);
+
+			if (!materialDescriptors.empty())
+			{
+				vkCmdBindDescriptorSets(
+					commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, layout,
+					0, static_cast<uint32_t>(materialDescriptors.size()),
+					materialDescriptors.data(), 0, nullptr
+				);
+			}
+		});
+	}
+
 	void VulkanRendererAPI::ClearImage(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Image2D> image)
 	{
 		Renderer::Submit([renderCommandBuffer, image = image.As<VulkanImage2D>()]() mutable

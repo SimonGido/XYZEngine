@@ -891,7 +891,8 @@ namespace XYZ {
 			m_ParticleMaterialGPU,
 			m_IndirectCommandMaterial,
 			m_ParticleSystemGPU->ParticleProperties.data(),
-			m_ParticleSystemGPU->ParticleProperties.size(),
+			m_ParticleSystemGPU->ParticleProperties.size() * sizeof(ParticlePropertyGPU),
+			m_ParticleSystemGPU->MaxParticles * sizeof(ParticleGPU),
 			m_IndirectCommandMaterialInstance
 		);
 	}

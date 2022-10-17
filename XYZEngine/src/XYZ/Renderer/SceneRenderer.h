@@ -108,26 +108,33 @@ namespace XYZ {
 
 		void updateUniformBufferSet();
 	private:
+		using TransformData = GeometryRenderQueue::TransformData;
+
 		UBCameraData	 m_CameraDataUB;
 		UBPointLights3D  m_PointsLights3DUB;
 		UBRendererData   m_RendererDataUB;
 		
-		
+		SSBOBoneTransformData	   m_BoneTransformSSBO;
+		SSBOIndirectData		   m_IndirectBufferSSBO;
+		SSBOComputeData			   m_ComputeDataSSBO;
+		SSBOComputeState		   m_ComputeStateSSBO;
+		std::vector<TransformData> m_TransformData;
+		std::vector<std::byte>	   m_InstanceData;
 
-		GeometryPass	  m_GeometryPass;
-		DeferredLightPass m_DeferredLightPass;
-		LightCullingPass  m_LightCullingPass;
-		BloomPass		  m_BloomPass;
-		CompositePass	  m_CompositePass;
+		GeometryPass			   m_GeometryPass;
+		DeferredLightPass		   m_DeferredLightPass;
+		LightCullingPass		   m_LightCullingPass;
+		BloomPass				   m_BloomPass;
+		CompositePass			   m_CompositePass;
 
-		Ref<RenderPass>				  m_GeometryRenderPass;
-		Ref<RenderPass>				  m_CompositeRenderPass;
-		Ref<RenderPass>				  m_LightRenderPass;
-		Ref<RenderPass>				  m_DepthRenderPass;
-
-		Ref<Material>				  m_GridMaterial;
-		Ref<Pipeline>				  m_GridPipeline;
-		Ref<MaterialInstance>		  m_GridMaterialInstance;
+		Ref<RenderPass>			   m_GeometryRenderPass;
+		Ref<RenderPass>			   m_CompositeRenderPass;
+		Ref<RenderPass>			   m_LightRenderPass;
+		Ref<RenderPass>			   m_DepthRenderPass;
+								   
+		Ref<Material>			   m_GridMaterial;
+		Ref<Pipeline>			   m_GridPipeline;
+		Ref<MaterialInstance>	   m_GridMaterialInstance;
 
 		std::array<Ref<Texture2D>, 3> m_BloomTexture;
 
@@ -183,5 +190,7 @@ namespace XYZ {
 			static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
 		};
 		GPUTimeQueries m_GPUTimeQueries;
+
+		friend GeometryPass;
 	};
 }
