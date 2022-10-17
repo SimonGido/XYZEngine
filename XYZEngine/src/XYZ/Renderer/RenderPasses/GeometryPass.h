@@ -4,6 +4,8 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/GeometryRenderQueue.h"
 
+#include "XYZ/Renderer/SceneRendererBuffers.h"
+
 namespace XYZ {
 
 	struct GeometryPassConfiguration
@@ -45,11 +47,12 @@ namespace XYZ {
 		GeometryPassStatistics PreSubmit(GeometryRenderQueue& queue);
 
 
-		static constexpr uint32_t GetMaxBonesTransforms() { return sc_MaxBoneTransforms; }
 		static constexpr uint32_t GetInstanceBufferSize() { return sc_InstanceVertexBufferSize; }
 		static constexpr uint32_t GetTransformBufferSize() { return sc_TransformBufferSize; }
 		static constexpr uint32_t GetTransformBufferCount() { return sc_TransformBufferSize / sizeof(GeometryRenderQueue::TransformData); }
 	private:
+		void submitIndirectComputeCommands(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer);
+		void submitIndirectCommands(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer);
 		void submitStaticMeshes(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer);
 		void submitAnimatedMeshes(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer);
 		void submitInstancedMeshes(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer);
@@ -61,6 +64,9 @@ namespace XYZ {
 		void submit2DDepth(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer, const glm::mat4& viewMatrix);
 		void postDepthPass(const Ref<RenderCommandBuffer>& commandBuffer);
 
+
+		void prepareIndirectCommands(GeometryRenderQueue& queue);
+		void prepareIndirectComputeCommands(GeometryRenderQueue& queue, uint32_t& computeDataSize);
 		void prepareStaticDrawCommands(GeometryRenderQueue& queue, size_t& overrideCount, uint32_t& transformsCount);
 		void prepareAnimatedDrawCommands(GeometryRenderQueue& queue, size_t& overrideCount, uint32_t& transformsCount, uint32_t& boneTransformCount);
 		void prepareInstancedDrawCommands(GeometryRenderQueue& queue, uint32_t& instanceOffset);
@@ -68,6 +74,8 @@ namespace XYZ {
 
 		void createDepthResources();
 		Ref<Pipeline> prepareGeometryPipeline(const Ref<Material>& material, bool opaque);
+		Ref<PipelineCompute> prepareComputePipeline(const Ref<Material>& material);
+
 	private:
 		using TransformData = GeometryRenderQueue::TransformData;
 
@@ -83,7 +91,8 @@ namespace XYZ {
 		Ref<StorageBufferSet> m_StorageBufferSet;
 
 		std::map<size_t, Ref<Pipeline>> m_GeometryPipelines;
-		
+		std::map<size_t, Ref<PipelineCompute>> m_ComputePipelines;
+
 		struct DepthPipeline
 		{
 			Ref<Pipeline>			Pipeline;
@@ -98,14 +107,17 @@ namespace XYZ {
 		DepthPipeline m_DepthPipelineInstanced;
 
 
-		std::vector<TransformData> m_TransformData;
-		std::vector<glm::mat4>	   m_BoneTransformsData;
-		std::vector<std::byte>	   m_InstanceData;
+		SSBOBoneTransformData m_BoneTransformSSBO;
+		SSBOIndirectData	  m_IndirectBufferSSBO;
+		SSBOComputeData		  m_ComputeDataSSBO;
+		SSBOComputeState	  m_ComputeStateSSBO;
 
+
+		std::vector<TransformData> m_TransformData;
+		std::vector<std::byte>	   m_InstanceData;
 
 		static constexpr uint32_t sc_TransformBufferSize	  = 10 * 1024 * sizeof(GeometryRenderQueue::TransformData); // 10240 transforms
 		static constexpr uint32_t sc_InstanceVertexBufferSize = 30 * 1024 * 1024; // 30mb
-		static constexpr uint32_t sc_MaxBoneTransforms		  = 10 * 1024;
-
+		static constexpr uint32_t sc_MaxIndirectCommands	  = 1024;
 	};
 }

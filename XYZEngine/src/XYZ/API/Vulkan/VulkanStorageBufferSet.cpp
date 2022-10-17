@@ -53,6 +53,15 @@ namespace XYZ {
 			m_StorageBuffers.at(frame).at(set).at(binding)->Resize(size);
 		}
 	}
+	void VulkanStorageBufferSet::SetBufferInfo(uint32_t size, uint32_t offset, uint32_t binding, uint32_t set)
+	{
+		Ref<VulkanStorageBufferSet> instance = this;
+
+		Renderer::Submit([instance, size, offset, binding, set]() mutable {
+			const uint32_t frame = Renderer::GetCurrentFrame();
+			instance->Get(binding, set, frame).As<VulkanStorageBuffer>()->RT_SetBufferInfo(size, offset);
+		});
+	}
 	Ref<StorageBuffer> VulkanStorageBufferSet::Get(uint32_t binding, uint32_t set, uint32_t frame)
 	{
 		XYZ_ASSERT(m_StorageBuffers.find(frame) != m_StorageBuffers.end(), "");
@@ -104,6 +113,7 @@ namespace XYZ {
 					writeDescr.descriptorCount = 1;
 
 					writeDescr.pBufferInfo = &m_StorageBuffers[frame][set][binding]->GetDescriptorBufferInfo();
+					
 					writeDescr.pImageInfo = nullptr; // Optional
 					writeDescr.pTexelBufferView = nullptr; // Optional
 				}

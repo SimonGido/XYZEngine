@@ -70,8 +70,8 @@ namespace XYZ {
 	}
 
 	void VulkanMaterial::RT_UpdateForRendering(
-		const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors, 
-		const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors,
+		Ref<VulkanUniformBufferSet> uniformBufferSet,
+		Ref<VulkanStorageBufferSet> storageBufferSet,
 		bool forceDescriptorAllocation
 	)
 	{	
@@ -105,9 +105,10 @@ namespace XYZ {
 		auto& writeDescriptors = m_WriteDescriptors[currentFrame].WriteDescriptors;
 		writeDescriptors.resize(resourceDescriptorCount);
 
-		
-		if (!uniformBufferDescriptors.empty())
+
+		if (uniformBufferSet.Raw())
 		{
+			const auto& uniformBufferDescriptors = uniformBufferSet->GetDescriptors(m_Shader);		
 			uint32_t set = 0;
 			for (auto& frameDesc : uniformBufferDescriptors[currentFrame])
 			{
@@ -120,9 +121,9 @@ namespace XYZ {
 				set++;
 			}
 		}
-
-		if (!storageBufferDescriptors.empty())
+		if (storageBufferSet.Raw())
 		{
+			const auto& storageBufferDescriptors = storageBufferSet->GetDescriptors(m_Shader);
 			uint32_t set = 0;
 			for (auto& frameDesc : storageBufferDescriptors[currentFrame])
 			{

@@ -17,6 +17,7 @@ namespace XYZ {
 		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) override;
 		virtual uint32_t GetBinding() const { return m_Binding; }
 
+		void RT_SetBufferInfo(uint32_t size, uint32_t offset);
 
 		const VkDescriptorBufferInfo& GetDescriptorBufferInfo() const { return m_DescriptorInfo; }
 	private:

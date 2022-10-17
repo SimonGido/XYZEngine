@@ -69,5 +69,10 @@ namespace XYZ {
 			return std::tuple<glm::vec3, glm::quat, glm::vec3>(translation, rot, scale);
 		}
 
+		int32_t RoundUp(int32_t numToRound, int32_t multiple)
+		{
+			int32_t isPositive = (int32_t)(numToRound >= 0);
+			return ((numToRound + isPositive * (multiple - 1)) / multiple) * multiple;
+		}
 	}
 }

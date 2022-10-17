@@ -8,10 +8,18 @@ namespace XYZ {
 
 	struct ParticleGPU
 	{
-		glm::vec4    TransformRow0;
-		glm::vec4    TransformRow1;
-		glm::vec4    TransformRow2;
-		glm::vec4    Color;
+		glm::vec4  TransformRow0;
+		glm::vec4  TransformRow1;
+		glm::vec4  TransformRow2;
+		
+		glm::vec4  Color;
+		glm::vec4  Position;
+		glm::vec4  Velocity;
+
+		float	   LifeRemaining;
+		bool	   Alive = false;
+		Padding<3> Padding0; // Bools are 4-bytes in GLSL
+		Padding<8> Padding1;
 		
 	};
 
@@ -20,15 +28,6 @@ namespace XYZ {
 		glm::vec4 StartPosition;
 		glm::vec4 StartVelocity;
 		glm::vec4 StartColor;
-
-		glm::vec4 Position;
-		glm::vec4 Color;
-		glm::vec4 Velocity;
-
-		float	   LifeRemaining;
-		bool	   Alive = false;
-		Padding<3> Padding0; // Bools are 4-bytes in GLSL
-		Padding<8> Padding1;
 	};
 
 	class ParticleSystemGPU : public RefCount

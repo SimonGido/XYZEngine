@@ -16,6 +16,8 @@ namespace XYZ {
 
 		virtual Ref<UniformBuffer> Get(uint32_t binding, uint32_t set = 0, uint32_t frame = 0) override;
 		virtual bool HasDescriptors(size_t hash) const override;
+		virtual void SetBufferInfo(uint32_t size, uint32_t offset, uint32_t binding, uint32_t set = 0) override;
+
 
 		const std::vector<std::vector<std::vector<VkWriteDescriptorSet>>> & GetDescriptors(size_t hash) const;
 		const std::vector<std::vector<std::vector<VkWriteDescriptorSet>>>& GetDescriptors(const Ref<Shader>& shader);

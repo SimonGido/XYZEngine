@@ -5,6 +5,8 @@
 #include "XYZ/API/Vulkan/VulkanPipelineCompute.h"
 #include "XYZ/API/Vulkan/VulkanRenderCommandBuffer.h"
 
+#include "XYZ/Utils/Math/Math.h"
+
 namespace XYZ {
 	GeometryPass::GeometryPass()
 	{
@@ -22,7 +24,6 @@ namespace XYZ {
 		m_WhiteTexture = Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>();
 
 		m_TransformData.resize(GetTransformBufferCount());
-		m_BoneTransformsData.resize(sc_MaxBoneTransforms);
 		m_InstanceData.resize(sc_InstanceVertexBufferSize);
 
 		createDepthResources();
@@ -60,6 +61,9 @@ namespace XYZ {
 	)
 	{
 		XYZ_PROFILE_FUNC("GeometryPass::Submit");
+
+		submitIndirectComputeCommands(queue, commandBuffer); // Must be called outside render pass
+
 		// Geometry
 		uint32_t geometryPassQuery = commandBuffer->BeginTimestampQuery();
 		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, false, clear);
@@ -69,6 +73,8 @@ namespace XYZ {
 		submitAnimatedMeshes(queue, commandBuffer);
 		submitInstancedMeshes(queue, commandBuffer);
 		
+		submitIndirectCommands(queue, commandBuffer);
+
 		Renderer::EndRenderPass(commandBuffer);
 		commandBuffer->EndTimestampQuery(geometryPassQuery);
 	}
@@ -81,7 +87,10 @@ namespace XYZ {
 		uint32_t transformsCount = 0;
 		uint32_t boneTransformCount = 0;
 		uint32_t instanceOffset = 0;
+		uint32_t computeDataSize = 0;
 
+		prepareIndirectComputeCommands(queue, computeDataSize);
+		prepareIndirectCommands(queue);
 		prepareStaticDrawCommands(queue, overrideCount, transformsCount);
 		prepareAnimatedDrawCommands(queue, animatedOverrideCount, transformsCount, boneTransformCount);
 		prepareInstancedDrawCommands(queue, instanceOffset);
@@ -89,14 +98,107 @@ namespace XYZ {
 
 		m_TransformVertexBufferSet->Update(m_TransformData.data(), transformsCount * sizeof(GeometryRenderQueue::TransformData));
 		m_InstanceVertexBufferSet->Update(m_InstanceData.data(), instanceOffset);
-		m_StorageBufferSet->Update(m_BoneTransformsData.data(), boneTransformCount * sizeof(GeometryRenderQueue::BoneTransforms), 0, 0, 2);
-
+		m_StorageBufferSet->Update(m_BoneTransformSSBO.Data, boneTransformCount * sizeof(GeometryRenderQueue::BoneTransforms), 0, SSBOBoneTransformData::Binding, SSBOBoneTransformData::Set);
+		m_StorageBufferSet->Update(m_ComputeStateSSBO.Data, computeDataSize, 0, SSBOComputeState::Binding, SSBOComputeState::Set);
+		m_StorageBufferSet->Update(m_IndirectBufferSSBO.Data, sizeof(m_IndirectBufferSSBO), 0, SSBOIndirectData::Binding, SSBOIndirectData::Set);
+		
 		return { 
 			static_cast<uint32_t>(overrideCount), 
 			static_cast<uint32_t>(animatedOverrideCount), 
 			transformsCount, 
 			instanceOffset 
 		};
+	}
+
+	void GeometryPass::submitIndirectComputeCommands(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer)
+	{
+		for (auto& [key, com] : queue.IndirectComputeCommands)
+		{
+			Renderer::BeginPipelineCompute(
+				commandBuffer,
+				com.Pipeline,
+				m_UniformBufferSet,
+				m_StorageBufferSet,
+				com.MaterialCompute->GetMaterial()
+			);
+
+			for (auto& command : com.Commands)
+			{
+				m_StorageBufferSet->SetBufferInfo(
+					Math::RoundUp(sizeof(IndirectIndexedDrawCommand), 16),
+					command.CommmandOffset,
+					SSBOIndirectData::Binding,
+					SSBOIndirectData::Set
+				);
+
+				m_StorageBufferSet->SetBufferInfo(
+					command.Command.DataSize,
+					command.Command.DataOffset,
+					SSBOComputeState::Binding,
+					SSBOComputeState::Set
+				);
+
+				Renderer::DispatchCompute(
+					com.Pipeline,
+					command.Command.OverrideMaterial,
+					32, 32, 1
+				);
+
+				Renderer::Submit([renderCommandBuffer = commandBuffer]() mutable
+					{
+						const uint32_t frameIndex = Renderer::GetCurrentFrame();
+						VkMemoryBarrier barrier{};
+
+						barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+						barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+						barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_MEMORY_READ_BIT;
+
+						VkCommandBuffer vulkanCommandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
+
+						vkCmdPipelineBarrier(vulkanCommandBuffer,
+							VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+							VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT | VK_PIPELINE_STAGE_VERTEX_SHADER_BIT,
+							0,
+							1, &barrier,
+							0, nullptr,
+							0, nullptr);
+					});
+			}
+
+			Renderer::EndPipelineCompute(com.Pipeline);
+		}
+	}
+
+	void GeometryPass::submitIndirectCommands(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer)
+	{
+		uint32_t offset = 0;
+		for (auto& [key, dc] : queue.IndirectDrawCommands)
+		{
+			Renderer::BindPipeline(
+				commandBuffer,
+				dc.Pipeline,
+				m_UniformBufferSet,
+				m_StorageBufferSet,
+				dc.MaterialAsset->GetMaterial()
+			);
+
+			for (auto& dcOverride : dc.OverrideCommands)
+			{
+				Renderer::RenderIndirectMesh(
+					commandBuffer,
+					dc.Pipeline,
+					dc.MaterialAsset->GetMaterialInstance(),
+					dcOverride.Mesh->GetVertexBuffer(),
+					dcOverride.Mesh->GetIndexBuffer(),
+					{ glm::mat4(1.0f) },
+					m_StorageBufferSet,
+					offset,
+					1,
+					sizeof(IndirectIndexedDrawCommand)
+				);
+				offset++;
+			}
+		}
 	}
 
 	void GeometryPass::submitStaticMeshes(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer)
@@ -110,18 +212,20 @@ namespace XYZ {
 				m_StorageBufferSet,
 				command.MaterialAsset->GetMaterial()
 			);
-
-			Renderer::RenderMesh(
-				commandBuffer,
-				command.Pipeline,
-				command.OverrideMaterial,
-				command.Mesh->GetVertexBuffer(),
-				command.Mesh->GetIndexBuffer(),
-				glm::mat4(1.0f),
-				m_TransformVertexBufferSet,
-				command.TransformOffset,
-				command.TransformInstanceCount
-			);
+			if (command.Count > 0)
+			{
+				Renderer::RenderMesh(
+					commandBuffer,
+					command.Pipeline,
+					command.OverrideMaterial,
+					command.Mesh->GetVertexBuffer(),
+					command.Mesh->GetIndexBuffer(),
+					glm::mat4(1.0f),
+					m_TransformVertexBufferSet,
+					command.TransformOffset,
+					command.TransformInstanceCount
+				);
+			}
 			for (auto& dcOverride : command.OverrideCommands)
 			{
 				Renderer::RenderMesh(
@@ -146,17 +250,20 @@ namespace XYZ {
 				m_StorageBufferSet,
 				command.MaterialAsset->GetMaterial()
 			);
-			Renderer::RenderMesh(
-				commandBuffer,
-				command.Pipeline,
-				command.OverrideMaterial,
-				command.Mesh->GetVertexBuffer(),
-				command.Mesh->GetIndexBuffer(),
-				{ glm::mat4(1.0f), command.BoneTransformsIndex },
-				m_TransformVertexBufferSet,
-				command.TransformOffset,
-				command.TransformInstanceCount
-			);
+			if (command.Count > 0)
+			{
+				Renderer::RenderMesh(
+					commandBuffer,
+					command.Pipeline,
+					command.OverrideMaterial,
+					command.Mesh->GetVertexBuffer(),
+					command.Mesh->GetIndexBuffer(),
+					{ glm::mat4(1.0f), command.BoneTransformsIndex },
+					m_TransformVertexBufferSet,
+					command.TransformOffset,
+					command.TransformInstanceCount
+				);
+			}
 			for (auto& dcOverride : command.OverrideCommands)
 			{
 				Renderer::RenderMesh(
@@ -369,6 +476,26 @@ namespace XYZ {
 			}
 		}
 	}
+
+	void GeometryPass::prepareIndirectCommands(GeometryRenderQueue& queue)
+	{
+		for (auto& [key, dc] : queue.IndirectDrawCommands)
+		{
+			dc.Pipeline = prepareGeometryPipeline(dc.MaterialAsset->GetMaterial(), dc.MaterialAsset->IsOpaque());	
+		}
+	}
+	void GeometryPass::prepareIndirectComputeCommands(GeometryRenderQueue& queue, uint32_t& computeDataSize)
+	{
+		uint32_t offset = 0;
+		for (auto& [key, dc] : queue.IndirectComputeCommands)
+		{
+			dc.Pipeline = prepareComputePipeline(dc.MaterialCompute->GetMaterial());
+			memcpy(&m_ComputeStateSSBO.Data[offset], dc.ComputeData.data(), dc.ComputeData.size());
+			offset += static_cast<uint32_t>(dc.ComputeData.size());
+		}
+		computeDataSize = offset;
+	}
+
 	void GeometryPass::prepareAnimatedDrawCommands(GeometryRenderQueue& queue, size_t& overrideCount, uint32_t& transformsCount, uint32_t& boneTransformCount)
 	{
 		for (auto& [key, dc] : queue.AnimatedMeshDrawCommands)
@@ -385,14 +512,14 @@ namespace XYZ {
 			for (const auto& bones : dc.BoneData)
 			{
 				const size_t offset = boneTransformCount * bones.size();
-				memcpy(&m_BoneTransformsData[offset], bones.data(), sizeof(GeometryRenderQueue::BoneTransforms));
+				memcpy(&m_BoneTransformSSBO.Data[offset], bones.data(), sizeof(GeometryRenderQueue::BoneTransforms));
 				boneTransformCount++;
 			}
 			for (auto& overrideDc : dc.OverrideCommands)
 			{
 				const auto& bones = overrideDc.BoneTransforms;
 				const size_t offset = boneTransformCount * bones.size();
-				memcpy(&m_BoneTransformsData[offset], bones.data(), sizeof(GeometryRenderQueue::BoneTransforms));
+				memcpy(&m_BoneTransformSSBO.Data[offset], bones.data(), sizeof(GeometryRenderQueue::BoneTransforms));
 				overrideDc.BoneTransformsIndex = boneTransformCount;
 				boneTransformCount++;
 			}
@@ -538,6 +665,19 @@ namespace XYZ {
 
 		auto& pipeline = m_GeometryPipelines[shader->GetHash()];
 		pipeline = Pipeline::Create(spec);
+		return pipeline;
+	}
+
+	Ref<PipelineCompute> GeometryPass::prepareComputePipeline(const Ref<Material>& material)
+	{
+		Ref<Shader> shader = material->GetShader();
+		auto it = m_ComputePipelines.find(shader->GetHash());
+		if (it != m_ComputePipelines.end())
+			return it->second;
+
+
+		auto& pipeline = m_ComputePipelines[shader->GetHash()];
+		pipeline = PipelineCompute::Create(shader);
 		return pipeline;
 	}
 }

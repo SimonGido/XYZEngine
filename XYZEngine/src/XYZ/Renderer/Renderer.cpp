@@ -302,12 +302,12 @@ namespace XYZ {
 		s_RendererAPI->RenderMesh(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transformBuffer, transformOffset, transformInstanceCount, instanceBuffer, instanceOffset, instanceCount);
 	}
 
-	void Renderer::RenderIndirectMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData, Ref<StorageBufferSet> indirectBuffer, uint32_t indirectOffset, uint32_t indirectCount)
+	void Renderer::RenderIndirectMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData, Ref<StorageBufferSet> indirectBuffer, uint32_t indirectOffset, uint32_t indirectCount, uint32_t indirectStride)
 	{
 		s_RendererAPI->RenderIndirect(
 			renderCommandBuffer, pipeline, material,
 			vertexBuffer, indexBuffer, constData,
-			indirectBuffer, indirectOffset, indirectCount
+			indirectBuffer, indirectOffset, indirectCount, indirectStride
 		);
 	}
 
@@ -333,9 +333,9 @@ namespace XYZ {
 	}
 
 
-	void Renderer::DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
+	void Renderer::DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ, const PushConstBuffer& constData)
 	{
-		s_RendererAPI->DispatchCompute(pipeline, material, groupCountX, groupCountY, groupCountZ);
+		s_RendererAPI->DispatchCompute(pipeline, material, groupCountX, groupCountY, groupCountZ, constData);
 	}
 
 	void Renderer::EndPipelineCompute(Ref<PipelineCompute> pipeline)

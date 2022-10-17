@@ -27,6 +27,22 @@ namespace XYZ {
 			return *this;
 		}
 
+		PushConstBuffer& operator+=(const PushConstBuffer& other)
+		{
+			XYZ_ASSERT(other.Size + Size < sc_MaxSize, "");
+			memcpy(&Bytes[Size], other.Bytes, other.Size);
+			Size += other.Size;
+			return *this;
+		}
+
+		PushConstBuffer operator+(const PushConstBuffer& other) const
+		{
+			PushConstBuffer result(*this);
+			XYZ_ASSERT(other.Size + result.Size < sc_MaxSize, "");
+			memcpy(&result.Bytes[result.Size], other.Bytes, other.Size);
+			result.Size += other.Size;
+			return result;
+		}
 
 		static constexpr size_t sc_MaxSize = 128;
 

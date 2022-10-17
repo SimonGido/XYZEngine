@@ -6,6 +6,9 @@
 #include "VulkanShader.h"
 #include "VulkanTexture.h"
 
+#include "VulkanUniformBufferSet.h"
+#include "VulkanStorageBufferSet.h"
+
 namespace XYZ {
 	class VulkanMaterial : public Material
 	{
@@ -26,8 +29,8 @@ namespace XYZ {
 
 
 		void RT_UpdateForRendering(
-			const vector3D<VkWriteDescriptorSet>& uniformBufferDescriptors,
-			const vector3D<VkWriteDescriptorSet>& storageBufferDescriptors,
+			Ref<VulkanUniformBufferSet> uniformBufferSet,
+			Ref<VulkanStorageBufferSet> storageBufferSet,
 			bool forceDescriptorAllocation = false
 		);
 		const std::vector<VkWriteDescriptorSet>& GetWriteDescriptors(uint32_t frame) const { return m_WriteDescriptors[frame].WriteDescriptors; }

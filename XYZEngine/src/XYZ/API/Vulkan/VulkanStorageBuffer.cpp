@@ -80,6 +80,21 @@ namespace XYZ {
 				instance->RT_invalidate();
 		});
 	}
+
+	void VulkanStorageBuffer::SetBufferInfo(uint32_t size, uint32_t offset)
+	{
+		Ref<VulkanStorageBuffer> instance = this;
+		Renderer::Submit([instance, size, offset]() mutable {
+
+			instance->RT_SetBufferInfo(size, offset);
+
+		});
+	}
+	void VulkanStorageBuffer::RT_SetBufferInfo(uint32_t size, uint32_t offset)
+	{
+		m_DescriptorInfo.offset = offset;
+		m_DescriptorInfo.range = size;
+	}
 	void VulkanStorageBuffer::release()
 	{
 		if (!m_MemoryAllocation)

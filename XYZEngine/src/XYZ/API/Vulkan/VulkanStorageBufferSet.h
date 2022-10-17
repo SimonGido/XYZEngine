@@ -15,8 +15,9 @@ namespace XYZ {
 		virtual void Create(uint32_t size, uint32_t set, uint32_t binding, bool indirect = false) override;
 		virtual void Set(Ref<StorageBuffer> storageBuffer, uint32_t set = 0, uint32_t frame = 0) override;
 		virtual void Resize(uint32_t size, uint32_t set, uint32_t binding) override;
-
+		virtual void SetBufferInfo(uint32_t size, uint32_t offset, uint32_t binding, uint32_t set = 0) override;
 		virtual Ref<StorageBuffer> Get(uint32_t binding, uint32_t set = 0, uint32_t frame = 0) override;
+		
 
 		const vector2D<Ref<VulkanStorageBuffer>>& GetIndirect() const { return m_IndirectBuffers; }
 		const vector3D<VkWriteDescriptorSet>&     GetDescriptors(size_t hash) const;
@@ -31,8 +32,8 @@ namespace XYZ {
 		std::unordered_map<size_t, vector3D<VkWriteDescriptorSet>> m_WriteDescriptors;
 
 		// frame->set->binding
-		std::map<uint32_t, std::map<uint32_t, std::map<uint32_t, Ref<VulkanStorageBuffer>>>> m_StorageBuffers;
-	
+		map3D<uint32_t, uint32_t, uint32_t, Ref<VulkanStorageBuffer>> m_StorageBuffers;
+
 	
 		vector2D<Ref<VulkanStorageBuffer>> m_IndirectBuffers;
 	};

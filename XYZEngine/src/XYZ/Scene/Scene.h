@@ -14,6 +14,7 @@
 #include "XYZ/Asset/Animation/AnimationController.h"
 #include "XYZ/Asset/Renderer/MeshSource.h"
 #include "XYZ/Renderer/Mesh.h"
+#include "XYZ/Particle/GPU/ParticleSystemGPU.h"
 
 #include "SceneCamera.h"
 
@@ -149,5 +150,18 @@ namespace XYZ {
         friend class ScriptEngine;
         friend class LuaEntity;
         friend class Editor::SceneHierarchyPanel;
+
+
+        void submitParticleTest(Ref<SceneRenderer> renderer);
+        void createParticleTest();
+
+        // Indirect draw test //
+        Ref<MaterialAsset>     m_IndirectCommandMaterial;
+        Ref<MaterialInstance>  m_IndirectCommandMaterialInstance;
+        Ref<ParticleSystemGPU> m_ParticleSystemGPU;
+
+        Ref<MaterialAsset>	   m_ParticleMaterialGPU;
+        Ref<MaterialInstance>  m_ParticleMaterialInstanceGPU;
+        Ref<Mesh>			   m_ParticleCubeMesh;
     };
 }

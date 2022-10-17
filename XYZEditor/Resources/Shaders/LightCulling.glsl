@@ -40,7 +40,7 @@ layout(std140, binding = 2) uniform PointLightsData
 	PointLight PointLights[MAX_POINT_LIGHTS];
 };
 
-layout(std430, binding = 14) writeonly buffer buffer_VisibleLightIndices
+layout(std430, binding = 4) writeonly buffer buffer_VisibleLightIndices
 {
 	int Indices[];
 } visibleLightIndicesBuffer;

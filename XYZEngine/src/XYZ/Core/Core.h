@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 #include <functional>
-
+#include <map>
 
 #define RENDER_THREAD_ENABLED
 
@@ -78,6 +78,11 @@ namespace XYZ {
 	template <typename Key0, typename Key1, typename Value>
 	using unordered_map2D = std::unordered_map<Key0, std::unordered_map<Key1, Value>>;
 
+	template <typename Key0, typename Key1, typename Value>
+	using map2D = std::map<Key0, std::map<Key1, Value>>;
+
+	template <typename Key0, typename Key1, typename Key2, typename Value>
+	using map3D = map2D<Key0, Key1, std::map<Key2, Value>>;
 
 	template <size_t size>
 	struct Padding

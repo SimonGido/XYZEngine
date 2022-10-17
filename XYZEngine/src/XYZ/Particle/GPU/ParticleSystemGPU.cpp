@@ -11,7 +11,7 @@ namespace XYZ {
 		Particles.resize(1024);
 		ParticleProperties.resize(1024);
 
-		MaxParticles = 1024;
+		MaxParticles = 10;
 
 		LifeTime = 5.0f;
 		Time = 0.0f;

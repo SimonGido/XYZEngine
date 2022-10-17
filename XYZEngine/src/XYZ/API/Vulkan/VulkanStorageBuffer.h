@@ -17,11 +17,13 @@ namespace XYZ {
 		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) override;
 		virtual void Update(ByteBuffer data, uint32_t size, uint32_t offset = 0) override;
 		virtual void Resize(uint32_t size) override;
-		
+		virtual void SetBufferInfo(uint32_t size, uint32_t offset) override;
+
 		virtual bool		IsIndirect() const override { return m_IsIndirect; }
 		virtual uint32_t	GetBinding() const override { return m_Binding; }
 		virtual ByteBuffer	GetBuffer() override;
 
+		void RT_SetBufferInfo(uint32_t size, uint32_t offset);
 
 		VkBuffer GetVulkanBuffer() const { return m_Buffer; }
 		const VkDescriptorBufferInfo& GetDescriptorBufferInfo() const { return m_DescriptorInfo; }
@@ -36,7 +38,6 @@ namespace XYZ {
 
 		uint32_t		  m_Size;
 		uint32_t		  m_Binding;
-		BufferLayout	  m_Layout;
 		ThreadQueue<ByteBuffer> m_Buffers;
 
 		bool m_IsIndirect;

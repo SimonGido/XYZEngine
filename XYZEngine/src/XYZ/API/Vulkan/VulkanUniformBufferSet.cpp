@@ -44,7 +44,14 @@ namespace XYZ {
 	{
 		return m_WriteDescriptors.find(hash) != m_WriteDescriptors.end();
 	}
-	
+	void VulkanUniformBufferSet::SetBufferInfo(uint32_t size, uint32_t offset, uint32_t binding, uint32_t set)
+	{
+		Ref<VulkanUniformBufferSet> instance = this;
+		Renderer::Submit([instance, binding, set, size, offset]() mutable {
+			instance->Get(binding, set, Renderer::GetCurrentFrame()).As<VulkanUniformBuffer>()->RT_SetBufferInfo(size, offset);
+		});
+	}
+
 	const std::vector<std::vector<std::vector<VkWriteDescriptorSet>>>& VulkanUniformBufferSet::GetDescriptors(size_t hash) const
 	{
 		XYZ_ASSERT(m_WriteDescriptors.find(hash) != m_WriteDescriptors.end(), "UniformBufferSet does not have descriptors");

@@ -124,7 +124,7 @@ layout(std140, binding = 2) uniform PointLightsData
 	PointLight PointLights[MAX_POINT_LIGHTS];
 };
 
-layout(std430, binding = 14) readonly buffer buffer_VisibleLightIndices
+layout(std430, binding = 4) readonly buffer buffer_VisibleLightIndices
 {
 	int Indices[];
 } visibleLightIndicesBuffer;
@@ -256,10 +256,10 @@ vec3 CalculatePointLights(in vec3 F0)
 
 
 // PBR texture inputs
-layout (binding = 3) uniform sampler2D u_AlbedoTexture;
-layout (binding = 4) uniform sampler2D u_NormalTexture;
-layout (binding = 5) uniform sampler2D u_MetalnessTexture;
-layout (binding = 6) uniform sampler2D u_RoughnessTexture;
+layout (binding = 5) uniform sampler2D u_AlbedoTexture;
+layout (binding = 6) uniform sampler2D u_NormalTexture;
+layout (binding = 7) uniform sampler2D u_MetalnessTexture;
+layout (binding = 8) uniform sampler2D u_RoughnessTexture;
 
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04);

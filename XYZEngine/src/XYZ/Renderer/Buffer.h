@@ -168,7 +168,8 @@ namespace XYZ {
 		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) {};
 		virtual void Update(ByteBuffer data, uint32_t size, uint32_t offset = 0) {}
 		virtual void Resize(uint32_t size) {};
-		
+		virtual void SetBufferInfo(uint32_t size, uint32_t offset) {};
+
 		virtual uint32_t GetBinding() const { return 0; }
 		virtual const BufferLayout& GetLayout() const { return BufferLayout(); };
 		virtual ByteBuffer GetBuffer() { return ByteBuffer(); }
@@ -204,11 +205,11 @@ namespace XYZ {
 
 	struct IndirectIndexedDrawCommand
 	{
-		uint32_t Count;         
-		uint32_t InstanceCount; 
-		uint32_t FirstIndex;    
-		uint32_t BaseVertex;    
-		uint32_t BaseInstance;  
+		uint32_t Count			= 0;         
+		uint32_t InstanceCount	= 0;
+		uint32_t FirstIndex		= 0;    
+		uint32_t BaseVertex		= 0;    
+		uint32_t BaseInstance	= 0;
 	};
 	
 

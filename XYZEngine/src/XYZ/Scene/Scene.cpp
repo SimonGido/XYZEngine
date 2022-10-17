@@ -9,6 +9,7 @@
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SortKey.h"
+#include "XYZ/Renderer/MeshFactory.h"
 
 #include "XYZ/Asset/AssetManager.h"
 
@@ -123,6 +124,8 @@ namespace XYZ {
 
 		m_Registry.on_construct<ScriptComponent>().connect<&Scene::onScriptComponentConstruct>(this);
 		m_Registry.on_destroy<ScriptComponent>().connect<&Scene::onScriptComponentDestruct>(this);
+	
+		createParticleTest();
 	}
 
 	Scene::~Scene()
@@ -446,6 +449,10 @@ namespace XYZ {
 				);
 			}
 		}
+
+		submitParticleTest(sceneRenderer);
+		submitParticleTest(sceneRenderer);
+
 		sceneRenderer->EndScene();
 	}
 
@@ -863,6 +870,47 @@ namespace XYZ {
 				});
 			}
 		}
+	}
+
+	void Scene::submitParticleTest(Ref<SceneRenderer> renderer)
+	{
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.EndColor", m_ParticleSystemGPU->EndColor);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.EndRotation", m_ParticleSystemGPU->EndRotation);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.EndSize", m_ParticleSystemGPU->EndSize);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.LifeTime", m_ParticleSystemGPU->LifeTime);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.Timestep", 0.01f);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.Speed", m_ParticleSystemGPU->Speed);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.MaxParticles", m_ParticleSystemGPU->MaxParticles);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.ParticlesEmitted", m_ParticleSystemGPU->ParticlesEmitted);
+		m_IndirectCommandMaterialInstance->Set("u_Uniforms.Loop", m_ParticleSystemGPU->Loop);
+
+
+
+		renderer->SubmitMeshIndirect(
+			m_ParticleCubeMesh,
+			m_ParticleMaterialGPU,
+			m_IndirectCommandMaterial,
+			m_ParticleSystemGPU->ParticleProperties.data(),
+			m_ParticleSystemGPU->ParticleProperties.size(),
+			m_IndirectCommandMaterialInstance
+		);
+	}
+
+	void Scene::createParticleTest()
+	{
+		m_ParticleCubeMesh = MeshFactory::CreateBox(glm::vec3(10.0f));
+		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create();
+
+		m_IndirectCommandMaterial = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleComputeShader.glsl")));
+		m_IndirectCommandMaterialInstance = m_IndirectCommandMaterial->GetMaterialInstance();
+	
+
+		
+		m_ParticleMaterialGPU = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleShaderGPU.glsl")));
+		m_ParticleMaterialInstanceGPU = m_ParticleMaterialGPU->GetMaterialInstance();
+
+		Ref<Texture2D> whiteTexture = Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>();
+		m_ParticleMaterialGPU->SetTexture("u_Texture", whiteTexture);
 	}
 
 }

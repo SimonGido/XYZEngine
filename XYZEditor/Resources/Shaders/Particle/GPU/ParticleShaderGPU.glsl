@@ -11,13 +11,19 @@ layout(location = 4) in vec2 a_TexCoord;
 struct Particle
 {
     // Data that are rendered
-	vec4    TransformRow0;
-    vec4    TransformRow1;
-    vec4    TransformRow2;
-    vec4    Color;    
+	vec4  TransformRow0;
+    vec4  TransformRow1;
+    vec4  TransformRow2;
+    vec4  Color;  
+	vec4  Position;
+    vec4  Velocity;  
+    
+    float LifeRemaining;
+    bool  Alive;
+    uint  Padding0[2];
 };
 
-layout (std140, binding = 17) buffer buffer_Particles
+layout (std430, binding = 6) buffer buffer_Particles
 {
     Particle Particles[];
 };

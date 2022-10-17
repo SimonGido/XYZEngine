@@ -10,6 +10,7 @@
 #include "PipelineCompute.h"
 #include "MaterialInstance.h"
 #include "GeometryRenderQueue.h"
+#include "SceneRendererBuffers.h"
 
 #include "RenderPasses/GeometryPass.h"
 #include "RenderPasses/DeferredLightPass.h"
@@ -73,6 +74,16 @@ namespace XYZ {
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial);
 		void SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial = nullptr);
+		void SubmitMeshIndirect(
+			const Ref<Mesh>& mesh,
+			const Ref<MaterialAsset>& material,
+			const Ref<MaterialAsset>& materialCompute,
+			const void* computeData, 
+			uint32_t computeDataSize,
+			uint32_t computeResultSize,
+			const Ref<MaterialInstance>& overrideComputeMaterial,
+			const Ref<MaterialInstance>& overrideMaterial = nullptr
+		);
 
 		void OnImGuiRender();
 
@@ -97,28 +108,12 @@ namespace XYZ {
 
 		void updateUniformBufferSet();
 	private:
-		struct UBCameraData
-		{
-			glm::mat4 ViewProjectionMatrix;
-			glm::mat4 ViewMatrix;
-			glm::vec4 ViewPosition;
-		} m_CameraDataUB;
-
-		struct UBPointLights3D
-		{
-			uint32_t	 Count{ 0 };
-			glm::vec3	 Padding{};
-			PointLight3D PointLights[1024]{};
-		} m_PointsLights3DUB;
-
-		struct UBRendererData
-		{
-			uint32_t TilesCountX{ 0 };
-			bool ShowLightComplexity = false;
-			char Padding1[3] = { 0, 0, 0 };  // Bools are 4-bytes in GLSL
-
-		} m_RendererDataUB;
+		UBCameraData	 m_CameraDataUB;
+		UBPointLights3D  m_PointsLights3DUB;
+		UBRendererData   m_RendererDataUB;
 		
+		
+
 		GeometryPass	  m_GeometryPass;
 		DeferredLightPass m_DeferredLightPass;
 		LightCullingPass  m_LightCullingPass;
@@ -158,26 +153,6 @@ namespace XYZ {
 		Ref<ShaderAsset>		   m_LightShaderAsset;
 		Ref<ShaderAsset>		   m_BloomShaderAsset;
 		
-
-
-
-		// Indirect draw test //
-		Ref<PipelineCompute>   m_CreateIndirectCommandPipeline;
-		Ref<Material>		   m_IndirectCommandMaterial;
-		Ref<MaterialInstance>  m_IndirectCommandMaterialInstance;
-		Ref<Shader>			   m_IndirectCommandComputeShader;
-		Ref<ParticleSystemGPU> m_ParticleSystemGPU;
-
-		Ref<Shader>			   m_ParticleShaderGPU;
-		Ref<Material>		   m_ParticleMaterialGPU;
-		Ref<MaterialInstance>  m_ParticleMaterialInstanceGPU;
-		Ref<Pipeline>		   m_ParticlePipelineGPU;
-		Ref<Mesh>			   m_ParticleCubeMesh;
-
-		void computeIndirectCommand();
-		void createParticleTest();
-
-		//////////////////////////////
 
 		struct RenderStatistics
 		{
