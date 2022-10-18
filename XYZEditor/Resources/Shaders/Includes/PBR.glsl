@@ -1,3 +1,4 @@
+
 const float PI = 3.141592;
 const float Epsilon = 0.00001;
 const int MAX_POINT_LIGHTS = 1024;
@@ -14,6 +15,7 @@ struct PointLight
 	bool  CastsShadows;
 };
 
+
 struct PBRParameters
 {
 	vec3 Albedo;
@@ -25,24 +27,6 @@ struct PBRParameters
 	float NdotV;
 };
 
-layout(std140, binding = 1) uniform RendererData
-{
-	int  TilesCountX;
-	bool ShowLightComplexity;
-};
-
-layout(std140, binding = 2) uniform PointLightsData
-{
-	uint NumberPointLights;
-	PointLight PointLights[MAX_POINT_LIGHTS];
-};
-
-layout(std430, binding = 14) readonly buffer buffer_VisibleLightIndices
-{
-	int Indices[];
-} visibleLightIndicesBuffer;
-
-PBRParameters m_Params;
 
 // GGX/Towbridge-Reitz normal distribution function.
 // Uses Disney's reparametrization of alpha = roughness^2
@@ -74,70 +58,40 @@ vec3 FresnelSchlickRoughness(vec3 F0, float cosTheta, float roughness)
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
 } 
 
-vec3 IBL(vec3 F0, vec3 Lr)
+vec3 IBL(in vec3 F0, in vec3 Lr, in PBRParameters params)
 {
-	vec3 F = FresnelSchlickRoughness(F0, m_Params.NdotV, m_Params.Roughness);
-	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+	vec3 F = FresnelSchlickRoughness(F0, params.NdotV, params.Roughness);
+	vec3 kd = (1.0 - F) * (1.0 - params.Metalness);
 	return kd;
 }
 
-int GetLightBufferIndex(int i)
+
+vec3 CalculatePointLight(in vec3 F0, in PointLight light, in PBRParameters params, in vec3 position)
 {
-	ivec2 tileID = ivec2(gl_FragCoord) / ivec2(16, 16);
-	uint index = tileID.y * TilesCountX + tileID.x;
-
-	uint offset = index * 1024;
-	return visibleLightIndicesBuffer.Indices[offset + i];
-}
-
-int GetPointLightCount()
-{
-	int result = 0;
-	for (int i = 0; i < NumberPointLights; i++)
-	{
-		uint lightIndex = GetLightBufferIndex(i);
-		if (lightIndex == -1)
-			break;
-
-		result++;
-	}
-	return result;
-}
-
-vec3 CalculatePointLights(in vec3 F0)
-{
-	vec3 result = vec3(0.0);
-	for (int i = 0; i < NumberPointLights; i++)
-	{
-		uint lightIndex = GetLightBufferIndex(i);
-		if (lightIndex == -1)
-			break;
-
-		PointLight light = PointLights[lightIndex];
-		vec3 Li = normalize(light.Position - v_Input.Position);
-		float lightDistance = length(light.Position - v_Input.Position);
-		vec3 Lh = normalize(Li + m_Params.View);
-
-		float attenuation = clamp(1.0 - (lightDistance * lightDistance) / (light.Radius * light.Radius), 0.0, 1.0);
-		attenuation *= mix(attenuation, 1.0, light.Falloff);
-
-		vec3 Lradiance = light.Radiance * light.Multiplier * attenuation;
-
-		// Calculate angles between surface normal and various light vectors.
-		float cosLi = max(0.0, dot(m_Params.Normal, Li));
-		float cosLh = max(0.0, dot(m_Params.Normal, Lh));
-
-		vec3 F = FresnelSchlickRoughness(F0, max(0.0, dot(Lh, m_Params.View)), m_Params.Roughness);
-		float D = NdfGGX(cosLh, m_Params.Roughness);
-		float G = GaSchlickGGX(cosLi, m_Params.NdotV, m_Params.Roughness);
-
-		vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
-		vec3 diffuseBRDF = kd * m_Params.Albedo;
-
-		// Cook-Torrance
-		vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * m_Params.NdotV);
-		specularBRDF = clamp(specularBRDF, vec3(0.0f), vec3(10.0f));
-		result += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
-	}
+	vec3 Li = normalize(light.Position - position);
+	float lightDistance = length(light.Position - position);
+	vec3 Lh = normalize(Li + params.View);
+	
+	float attenuation = clamp(1.0 - (lightDistance * lightDistance) / (light.Radius * light.Radius), 0.0, 1.0);
+	attenuation *= mix(attenuation, 1.0, light.Falloff);
+	
+	vec3 Lradiance = light.Radiance * light.Multiplier * attenuation;
+	
+	// Calculate angles between surface normal and various light vectors.
+	float cosLi = max(0.0, dot(params.Normal, Li));
+	float cosLh = max(0.0, dot(params.Normal, Lh));
+	
+	vec3 F = FresnelSchlickRoughness(F0, max(0.0, dot(Lh, params.View)), params.Roughness);
+	float D = NdfGGX(cosLh, params.Roughness);
+	float G = GaSchlickGGX(cosLi, params.NdotV, params.Roughness);
+	
+	vec3 kd = (1.0 - F) * (1.0 - params.Metalness);
+	vec3 diffuseBRDF = kd * params.Albedo;
+	
+	// Cook-Torrance
+	vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * params.NdotV);
+	specularBRDF = clamp(specularBRDF, vec3(0.0f), vec3(10.0f));
+	vec3 result = (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
+	
 	return result;
 }

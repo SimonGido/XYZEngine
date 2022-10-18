@@ -5,6 +5,7 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/Pipeline.h"
 #include "XYZ/Renderer/ShaderIncluder.h"
+#include "XYZ/Renderer/ShaderCIncluder.h"
 
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Utils/FileSystem.h"
@@ -33,7 +34,6 @@ namespace XYZ {
 		static constexpr const char* sc_InstancedKeyword = "XYZ_INSTANCED";
 
 		
-
 		static void PrintResources(
 			const spirv_cross::Compiler& compiler, 
 			const char* tag, 
@@ -273,6 +273,9 @@ namespace XYZ {
 		}	
 	}
 
+
+
+
 	VulkanShader::VulkanShader(const std::string& path, size_t sourceHash, bool forceCompile)
 		:
 		m_Compiled(false),
@@ -358,11 +361,6 @@ namespace XYZ {
 	}
 
 
-	void VulkanShader::SetLayouts(std::vector<BufferLayout> layouts)
-	{
-		m_Layouts = std::move(layouts);
-		Reload(true);
-	}
 
 	size_t VulkanShader::GetHash() const
 	{		
@@ -382,6 +380,7 @@ namespace XYZ {
 		XYZ_TRACE(" {0}", m_FilePath);
 		XYZ_TRACE("===========================");
 		m_Resources.clear();
+
 		for (auto [stage, data] : shaderData)
 		{
 			reflectStage(stage, data, preprocessData);
@@ -392,18 +391,18 @@ namespace XYZ {
 	{
 		const spirv_cross::Compiler compiler(shaderData);
 		spirv_cross::ShaderResources resources = compiler.get_shader_resources();
-	
 		
 		if (stage == VK_SHADER_STAGE_VERTEX_BIT)
 		{
 			m_Layouts = Utils::CreateBufferLayouts(compiler, resources.stage_inputs, preprocessData.LayoutInfo.at(stage));
 		}
+
 		reflectConstantBuffers(compiler, stage, resources.push_constant_buffers);
 		reflectStorageBuffers(compiler, stage, resources.storage_buffers);
 		reflectUniformBuffers(compiler, stage, resources.uniform_buffers);
 		reflectSampledImages(compiler, stage, resources.sampled_images);
 		reflectStorageImages(compiler, stage, resources.storage_images);
-
+		reflectSpecializationConstants(compiler, compiler.get_specialization_constants());
 
 		if (stage == VK_SHADER_STAGE_VERTEX_BIT || stage == VK_SHADER_STAGE_COMPUTE_BIT)
 			m_VertexBufferSize = getBuffersSize();
@@ -566,6 +565,17 @@ namespace XYZ {
 			XYZ_TRACE("  {0} ({1}, {2})", name, descriptorSet, binding);
 		}
 	}
+	void VulkanShader::reflectSpecializationConstants(const spirv_cross::Compiler& compiler, spirv_cross::SmallVector<spirv_cross::SpecializationConstant>& specializationConstants)
+	{
+		for (auto& specialization : specializationConstants)
+		{
+			const uint32_t id = specialization.constant_id;
+			const spirv_cross::SPIRConstant& constant = compiler.get_constant(specialization.id);
+			auto& type = compiler.get_type(constant.constant_type);
+			std::string name = compiler.get_name(specialization.id);
+			std::cout << "T" << std::endl;
+		}
+	}
 	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
 	{
 		XYZ_ASSERT(set < m_DescriptorSets.size(), "");
@@ -665,11 +675,13 @@ namespace XYZ {
 				// Do we need to init a compiler for each stage?
 				shaderc::Compiler compiler;
 				shaderc::CompileOptions options;
+
+				options.SetIncluder(ShaderCIncluder::Create(Renderer::GetDefaultResources().Includer));
+
 				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
 				options.SetWarningsAsErrors();
 				options.SetGenerateDebugInfo();
 
-				options.SetIncluder(ShaderIncluder::Create());
 
 				const bool optimize = false;
 				if (optimize)

@@ -119,6 +119,11 @@ namespace XYZ {
 		ShaderImageAccessBarrier
 	};
 
+	struct Specialization
+	{
+		uint32_t ID;
+	};
+
 	class Shader : public RefCount
 	{
 	public:
@@ -131,7 +136,7 @@ namespace XYZ {
 		virtual void SetFSUniforms(ByteBuffer buffer) const {};
 
 		virtual void Reload(bool forceCompile = false) = 0;
-		virtual void SetLayouts(std::vector<BufferLayout> layouts) {};
+
 
 		virtual void SetInt(const std::string& name, int value) {};
 		virtual void SetFloat(const std::string& name, float value) {};

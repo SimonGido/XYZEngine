@@ -11,6 +11,7 @@
 #include "MaterialInstance.h"
 #include "GeometryRenderQueue.h"
 #include "SceneRendererBuffers.h"
+#include "PushConstBuffer.h"
 
 #include "RenderPasses/GeometryPass.h"
 #include "RenderPasses/DeferredLightPass.h"
@@ -81,7 +82,7 @@ namespace XYZ {
 			const void* computeData, 
 			uint32_t computeDataSize,
 			uint32_t computeResultSize,
-			const Ref<MaterialInstance>& overrideComputeMaterial,
+			const PushConstBuffer& uniformComputeData,
 			const Ref<MaterialInstance>& overrideMaterial = nullptr
 		);
 

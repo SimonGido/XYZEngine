@@ -154,7 +154,7 @@ namespace XYZ {
 
 		struct IndirectComputeCommand
 		{
-			Ref<MaterialInstance>  OverrideMaterial;
+			PushConstBuffer		   OverrideUniformData;
 			std::vector<std::byte> ComputeData;
 			uint32_t			   ComputeResultSize;
 

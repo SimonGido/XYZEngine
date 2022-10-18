@@ -1,6 +1,7 @@
 //#type compute
 #version 460
 
+#include "Resources/Shaders/Includes/Math.glsl"
 
 struct DrawCommand 
 {
@@ -22,6 +23,8 @@ struct Particle
     // Current state
     vec4  Color;
     vec4  Position;
+    vec4  Rotation;
+    vec4  Scale;
     vec4  Velocity;  
     
     float LifeRemaining;
@@ -34,16 +37,18 @@ struct ParticleProperty
 {
     // Spawn state
     vec4 StartPosition;
-    vec4 StartVelocity;
-    vec4 StartColor;  
+	vec4 StartRotation;
+	vec4 StartScale;
+	vec4 StartVelocity;
+	vec4 StartColor;
 };
 
 
 layout(push_constant) uniform Uniform
 { 
     vec4  EndColor;
-    vec3  EndRotation;
-    vec3  EndSize;
+    vec4  EndRotation;
+    vec4  EndSize;
     float LifeTime;
     float Timestep;
     float Speed;
@@ -69,19 +74,11 @@ layout (std430, binding = 7) buffer buffer_ParticleProperties
 };
 
 
-mat4 TranslationMatrix(vec3 translation)
-{
-    return mat4(
-        vec4(1.0, 0.0, 0.0, 0.0),
-        vec4(0.0, 1.0, 0.0, 0.0),
-        vec4(0.0, 0.0, 1.0, 0.0),
-        vec4(translation, 1.0));
-}
-
-
 void SpawnParticle(uint id)
 {
     Particles[id].Position      = ParticleProperties[id].StartPosition;
+    Particles[id].Rotation      = ParticleProperties[id].StartRotation;
+    Particles[id].Scale         = ParticleProperties[id].StartScale;
     Particles[id].Color         = ParticleProperties[id].StartColor;
     Particles[id].Velocity      = ParticleProperties[id].StartVelocity;
     Particles[id].LifeRemaining = u_Uniforms.LifeTime;
@@ -113,17 +110,21 @@ void KillParticle(uint id)
 
 void UpdateParticle(uint id)
 {
-    Particles[id].Position.xyz += Particles[id].Velocity.xyz;
-    Particles[id].LifeRemaining -= u_Uniforms.Timestep;
+    Particles[id].Position.xyz += Particles[id].Velocity.xyz * u_Uniforms.Speed;
+    Particles[id].LifeRemaining -= u_Uniforms.Timestep * u_Uniforms.Speed;
 }
 
 void UpdateRenderData(uint id, uint instanceIndex)
 {
-    mat4 transform = TranslationMatrix(Particles[id].Position.xyz);
+    mat4 transform = TranslationMatrix(Particles[id].Position.xyz)
+                   * RotationMatrix(Particles[id].Rotation.xyz);
+
     Particles[instanceIndex].TransformRow0 = vec4(transform[0][0], transform[1][0], transform[2][0], transform[3][0]);
     Particles[instanceIndex].TransformRow1 = vec4(transform[0][1], transform[1][1], transform[2][1], transform[3][1]);
     Particles[instanceIndex].TransformRow2 = vec4(transform[0][2], transform[1][2], transform[2][2], transform[3][2]);
 }
+
+layout (constant_id = 0) const int NUM_SAMPLES = 64;
 
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 void main(void)

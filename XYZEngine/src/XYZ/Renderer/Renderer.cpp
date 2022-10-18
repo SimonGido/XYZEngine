@@ -477,20 +477,22 @@ namespace XYZ {
 		auto whiteTextureFuture						= AssetManager::GetAssetAsync<Texture2D>("Resources/Textures/WhiteTexture.tex");
 		auto defaultQuadMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/DefaultLit.mat");
 		auto defaultLineMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/DefaultLine.mat");
-		auto defaultCircleMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/DefaultCircle.mat");
+		auto defaultCircleMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/DefaultCircle.mat");
 		auto overlayQuadMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/OverlayQuad.mat");
 		auto overlayLineMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/OverlayLine.mat");
-		auto overlayCircleMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/OverlayCircle.mat");
+		auto overlayCircleMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/OverlayCircle.mat");
 		auto defaultParticleMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
-		auto defaultDepth3DMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepth.mat");
-		auto defaultDepth3DAnimMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepthAnim.mat");
-		auto defaultDepth2DMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepth2D.mat");
-		auto defaultDepthInstancedMaterialFuture		= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepthInstanced.mat");
+		auto defaultDepth3DMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepth.mat");
+		auto defaultDepth3DAnimMaterialFuture		= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepthAnim.mat");
+		auto defaultDepth2DMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepth2D.mat");
+		auto defaultDepthInstancedMaterialFuture	= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepthInstanced.mat");
 		auto lightCullingMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/LightCulling.mat");
 		auto gridMaterialFuture						= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/Grid.mat");
 		auto animationPBRMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/AnimationPBR.mat");
 		
 		
+		Includer.AddIncludes("Resources/Shaders/Includes");
+
 		auto whiteTexture = whiteTextureFuture.get();
 		whiteTexture->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["WhiteTexture"] = whiteTexture;

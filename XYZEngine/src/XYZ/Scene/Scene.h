@@ -152,13 +152,13 @@ namespace XYZ {
         friend class Editor::SceneHierarchyPanel;
 
 
-        void submitParticleTest(Ref<SceneRenderer> renderer);
+        void submitParticleTest(Ref<SceneRenderer> renderer, Ref<ParticleSystemGPU> particleSystem, Timestep ts);
         void createParticleTest();
 
         // Indirect draw test //
         Ref<MaterialAsset>     m_IndirectCommandMaterial;
-        Ref<MaterialInstance>  m_IndirectCommandMaterialInstance;
         Ref<ParticleSystemGPU> m_ParticleSystemGPU;
+        Ref<ParticleSystemGPU> m_ParticleSystemGPU2;
 
         Ref<MaterialAsset>	   m_ParticleMaterialGPU;
         Ref<MaterialInstance>  m_ParticleMaterialInstanceGPU;

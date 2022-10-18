@@ -14,9 +14,11 @@ struct Particle
 	vec4  TransformRow0;
     vec4  TransformRow1;
     vec4  TransformRow2;
-    vec4  Color;  
-	vec4  Position;
-    vec4  Velocity;  
+    vec4  Color;
+    vec4  Position;
+    vec4  Rotation;
+    vec4  Scale;
+    vec4  Velocity; 
     
     float LifeRemaining;
     bool  Alive;

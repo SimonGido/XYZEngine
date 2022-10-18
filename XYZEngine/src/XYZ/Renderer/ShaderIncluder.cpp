@@ -1,16 +1,42 @@
 #include "stdafx.h"
 #include "ShaderIncluder.h"
 
+#include "XYZ/Utils/FileSystem.h"
+#include "XYZ/Utils/StringUtils.h"
+
+#include <filesystem>
+
 namespace XYZ {
-	shaderc_include_result* ShaderIncluder::GetInclude(const char* requested_source, shaderc_include_type type, const char* requesting_source, size_t include_depth)
+
+	
+	void ShaderIncluder::AddIncludes(const std::string& filepath)
 	{
-		return nullptr;
+		processDirectory(std::filesystem::path(filepath));
 	}
-	void ShaderIncluder::ReleaseInclude(shaderc_include_result* data)
+
+	void ShaderIncluder::AddIncludeFromFile(const std::string& filepath)
 	{
+		std::string path = filepath;
+		std::replace(path.begin(), path.end(), '\\', '/');
+
+		std::string content = FileSystem::ReadFile(path);
+
+		XYZ_ASSERT(m_Includes.find(path) == m_Includes.end(), "Include already exists");
+
+		m_Includes[path] = std::move(content);
 	}
-	std::unique_ptr<shaderc::CompileOptions::IncluderInterface> ShaderIncluder::Create()
+	void ShaderIncluder::processDirectory(const std::filesystem::path& path)
 	{
-		return std::unique_ptr<shaderc::CompileOptions::IncluderInterface>(new ShaderIncluder());
+		for (auto it : std::filesystem::directory_iterator(path))
+		{
+			if (it.is_directory())
+			{
+				processDirectory(it.path());
+			}
+			else if (Utils::GetExtension(it.path().string()) == "glsl")
+			{
+				AddIncludeFromFile(it.path().string());
+			}
+		}
 	}
 }

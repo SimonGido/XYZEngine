@@ -16,6 +16,7 @@
 #include "Material.h"
 #include "StorageBufferSet.h"
 #include "VertexBufferSet.h"
+#include "ShaderIncluder.h"
 
 #include "XYZ/Asset/Renderer/MaterialAsset.h"
 
@@ -41,6 +42,7 @@ namespace XYZ {
 		void Init();
 		void Shutdown();
 
+		ShaderIncluder Includer;
 		std::unordered_map<std::string, Ref<Asset>> RendererAssets;
 	};
 

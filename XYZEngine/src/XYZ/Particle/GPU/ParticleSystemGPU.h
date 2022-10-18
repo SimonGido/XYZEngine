@@ -14,6 +14,8 @@ namespace XYZ {
 		
 		glm::vec4  Color;
 		glm::vec4  Position;
+		glm::vec4  Rotation;
+		glm::vec4  Scale;
 		glm::vec4  Velocity;
 
 		float	   LifeRemaining;
@@ -26,6 +28,8 @@ namespace XYZ {
 	struct ParticlePropertyGPU
 	{
 		glm::vec4 StartPosition;
+		glm::vec4 StartRotation;
+		glm::vec4 StartScale;
 		glm::vec4 StartVelocity;
 		glm::vec4 StartColor;
 	};
@@ -39,8 +43,8 @@ namespace XYZ {
 		std::vector<ParticlePropertyGPU> ParticleProperties;
 
 		glm::vec4  EndColor;
-		glm::vec3  EndRotation;
-		glm::vec3  EndSize;
+		glm::vec4  EndRotation;
+		glm::vec4  EndSize;
 		float	   LifeTime;
 		float	   Time = 0.0f;
 		float	   Speed = 1.0f;

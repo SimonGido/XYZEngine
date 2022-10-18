@@ -11,6 +11,8 @@ namespace XYZ {
 		PushConstBuffer(const Args&... args)
 		{
 			constexpr size_t size = (sizeof(Args) + ...);
+			XYZ_ASSERT(size < sc_MaxSize, "");
+
 			size_t offset = 0;
 			(store(args, offset), ...);
 			Size = size;

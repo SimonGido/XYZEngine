@@ -11,7 +11,7 @@ namespace XYZ {
 		Particles.resize(1024);
 		ParticleProperties.resize(1024);
 
-		MaxParticles = 10;
+		MaxParticles = 1024;
 
 		LifeTime = 5.0f;
 		Time = 0.0f;
@@ -21,7 +21,9 @@ namespace XYZ {
 		for (size_t i = 0; i < ParticleProperties.size(); ++i)
 		{
 			ParticleProperties[i].StartPosition = glm::vec4(0.0f);
-			ParticleProperties[i].StartVelocity = glm::linearRand(MinVelocity, MaxVelocity);;
+			ParticleProperties[i].StartRotation = glm::linearRand(glm::vec4(-90.0f), glm::vec4(90.0f));
+			ParticleProperties[i].StartScale = glm::linearRand(glm::vec4(0.2f), glm::vec4(2.0f));
+			ParticleProperties[i].StartVelocity = glm::linearRand(MinVelocity, MaxVelocity);
 			ParticleProperties[i].StartColor	= glm::vec4(1.0f);
 		}
 	}

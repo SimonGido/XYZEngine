@@ -298,13 +298,13 @@ namespace XYZ {
 		const void* computeData, 
 		uint32_t computeDataSize,
 		uint32_t computeResultSize,
-		const Ref<MaterialInstance>& overrideComputeMaterial,
+		const PushConstBuffer& uniformComputeData,
 		const Ref<MaterialInstance>& overrideMaterial
 	)
 	{
-		AssetHandle renderKey =  material->GetHandle();
-		AssetHandle computeKey = materialCompute->GetHandle();
 
+		// Compute command
+		AssetHandle computeKey = materialCompute->GetHandle();
 		auto& computeCommand = m_Queue.IndirectComputeCommands[computeKey];
 		computeCommand.MaterialCompute = materialCompute;
 		
@@ -314,16 +314,10 @@ namespace XYZ {
 		command.ComputeData.resize(computeDataSize);
 		memcpy(command.ComputeData.data(), computeData, computeDataSize);
 
-		if (overrideComputeMaterial.Raw())
-		{
-			command.OverrideMaterial = overrideComputeMaterial;
-		}
-		else
-		{
-			command.OverrideMaterial = materialCompute->GetMaterialInstance();
-		}
+		command.OverrideUniformData = uniformComputeData;
 
-
+		// Render command
+		AssetHandle renderKey =  material->GetHandle();
 		auto& dc = m_Queue.IndirectDrawCommands[renderKey];
 		dc.MaterialAsset = material;
 

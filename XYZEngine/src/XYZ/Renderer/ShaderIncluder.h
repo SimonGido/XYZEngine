@@ -1,23 +1,22 @@
 #pragma once
 
-#include <shaderc/shaderc.hpp>
+
 
 namespace XYZ {
 
-	class ShaderIncluder : shaderc::CompileOptions::IncluderInterface
+	class ShaderIncluder
 	{
 	public:
-		virtual shaderc_include_result* GetInclude(
-			const char* requested_source,
-			shaderc_include_type type,
-			const char* requesting_source,
-			size_t include_depth) override;
+		void AddIncludes(const std::string& filepath);
+		void AddIncludeFromFile(const std::string& filepath);
 
-		// Handles shaderc_include_result_release_fn callbacks.
-		virtual void ReleaseInclude(shaderc_include_result* data) override;
+		const std::unordered_map<std::string, std::string>& GetIncludes() const { return m_Includes; }
 
-		
-		static std::unique_ptr<shaderc::CompileOptions::IncluderInterface> Create();
+	private:
+		void processDirectory(const std::filesystem::path& path);
+
+	private:
+		std::unordered_map<std::string, std::string> m_Includes;
 	};
 
 }

@@ -154,8 +154,9 @@ namespace XYZ {
 
 				Renderer::DispatchCompute(
 					com.Pipeline,
-					command.OverrideMaterial,
-					32, 32, 1
+					nullptr,
+					32, 32, 1,
+					command.OverrideUniformData
 				);
 
 				Renderer::Submit([renderCommandBuffer = commandBuffer]() mutable
