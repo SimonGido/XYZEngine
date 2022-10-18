@@ -909,6 +909,10 @@ namespace XYZ {
 
 		Ref<Texture2D> whiteTexture = Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>();
 		m_ParticleMaterialGPU->SetTexture("u_Texture", whiteTexture);
+
+		uint32_t numSamples = 5;
+		m_IndirectCommandMaterial->GetShader()->SetSpecialization("NUM_SAMPLES", &numSamples, sizeof(uint32_t));
+		m_IndirectCommandMaterial->GetShader()->Reload();
 	}
 
 }

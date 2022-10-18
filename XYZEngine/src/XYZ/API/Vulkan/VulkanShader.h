@@ -67,6 +67,29 @@ namespace XYZ {
 			ShaderDescriptorSet	  ShaderDescriptorSet;
 		};
 
+
+		struct SpecializationInfo
+		{
+			VkSpecializationInfo Info;
+			std::vector<VkSpecializationMapEntry> MapEntries;
+		};
+
+		struct SpecializationCache
+		{
+			bool operator==(SpecializationCache& other) const
+			{
+				return Size == other.Size
+					&& Offset == other.Offset
+					&& ConstantID == other.ConstantID
+					&& Stage == other.Stage;
+			}
+			uint32_t Size;
+			uint32_t Offset;
+			uint32_t ConstantID;
+			VkShaderStageFlagBits Stage;
+			bool Overriden = false;
+		};
+
 		template <typename T>
 		using StageMap = std::unordered_map<VkShaderStageFlagBits, T>;
 
@@ -78,7 +101,8 @@ namespace XYZ {
 		virtual ~VulkanShader() override;
 
 		virtual void Reload(bool forceCompile = false) override;
-	
+		virtual void SetSpecialization(const std::string& name, const void* data, uint32_t size) override;
+
 		virtual const std::string&				 GetPath() const override { return m_FilePath; };
 		virtual const std::string&				 GetName() const override { return m_Name; }
 		virtual const std::string&				 GetSource() const override { return m_Source; };
@@ -119,9 +143,9 @@ namespace XYZ {
 		void reflectUniformBuffers(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& buffers);
 		void reflectSampledImages(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& sampledImages);
 		void reflectStorageImages(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& storageImages);
-		void reflectSpecializationConstants(const spirv_cross::Compiler& compiler, spirv_cross::SmallVector<spirv_cross::SpecializationConstant>& specializationConstants);
+		void reflectSpecializationConstants(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::SpecializationConstant>& specializationConstants);
 
-
+		void   createSpecializationInfo(SpecializationInfo& info, VkShaderStageFlagBits stage);
 		void   createDescriptorSetLayout();
 		void   destroy();	
 		bool   binaryExists(const StageMap<std::string>& sources) const;
@@ -133,18 +157,20 @@ namespace XYZ {
 		std::string				   m_Source;
 		mutable ShaderParser	   m_Parser;
 		size_t					   m_SourceHash;
+		ByteBuffer				   m_SpecializationBuffer;
+
+		std::unordered_map<std::string, SpecializationCache> m_Specializations;
 
 		std::vector<DescriptorSet> m_DescriptorSets;
 		std::vector<BufferLayout>  m_Layouts;
 
 		std::vector<VkPipelineShaderStageCreateInfo>				m_PipelineShaderStageCreateInfos;
+		std::vector<SpecializationInfo>								m_SpecializationInfos;
 
 		std::unordered_map<std::string, ShaderResourceDeclaration>	m_Resources;
 		std::vector<PushConstantRange>								m_PushConstantRanges;
 		
 		std::unordered_map<std::string, ShaderBuffer>				m_Buffers;
 		size_t														m_VertexBufferSize;
-
-		VkSpecializationMapEntry									m_Specialization;
 	};
 }
