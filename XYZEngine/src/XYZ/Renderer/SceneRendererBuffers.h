@@ -66,7 +66,7 @@ namespace XYZ {
 
 	struct SSBOComputeData
 	{
-		static constexpr uint32_t MaxSize = 10 * 1024 * 1024;
+		static constexpr uint32_t MaxSize = 30 * 1024 * 1024;
 
 		std::byte Data[MaxSize];
 
@@ -76,7 +76,7 @@ namespace XYZ {
 
 	struct SSBOComputeState
 	{
-		static constexpr uint32_t MaxSize = 10 * 1024 * 1024;
+		static constexpr uint32_t MaxSize = 30 * 1024 * 1024;
 
 		std::byte Data[MaxSize];
 
