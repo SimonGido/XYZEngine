@@ -55,6 +55,15 @@ mat4 TranslationMatrix(in vec3 translation)
         vec4(translation, 1.0));
 }
 
+mat4 TranslationMatrix(in vec3 translation, in vec3 scale)
+{
+    return mat4(
+        vec4(scale.x, 0.0, 0.0, 0.0),
+        vec4(0.0, scale.y, 0.0, 0.0),
+        vec4(0.0, 0.0, scale.z, 0.0),
+        vec4(translation, 1.0));
+}
+
 mat4 RotationMatrix(in vec3 eulerAngles)
 {
     vec4 quat = EulerToQuat(eulerAngles);

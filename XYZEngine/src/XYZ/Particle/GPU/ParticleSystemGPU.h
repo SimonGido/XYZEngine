@@ -1,4 +1,5 @@
 #pragma once
+#include "XYZ/Core/Timestep.h"
 
 #include <glm/glm.hpp>
 
@@ -8,10 +9,13 @@ namespace XYZ {
 
 	struct ParticleGPU
 	{
+		// Data that are rendered
 		glm::vec4  TransformRow0;
 		glm::vec4  TransformRow1;
 		glm::vec4  TransformRow2;
-		
+		glm::vec4  RenderColor;
+
+		// State of particle
 		glm::vec4  Color;
 		glm::vec4  Position;
 		glm::vec4  Rotation;
@@ -27,11 +31,23 @@ namespace XYZ {
 
 	struct ParticlePropertyGPU
 	{
+		// Spawn state
 		glm::vec4 StartPosition;
+		glm::vec4 StartColor;
 		glm::vec4 StartRotation;
 		glm::vec4 StartScale;
 		glm::vec4 StartVelocity;
-		glm::vec4 StartColor;
+	
+		// If module enabled, end state
+		glm::vec4 EndColor;
+		glm::vec4 EndRotation;
+		glm::vec4 EndScale;
+		glm::vec4 EndVelocity;
+
+
+		float	  LifeTime;
+	private:
+		Padding<12> Padding;
 	};
 
 	class ParticleSystemGPU : public RefCount
@@ -39,13 +55,11 @@ namespace XYZ {
 	public:
 		ParticleSystemGPU();
 
-		std::vector<ParticleGPU> Particles;
+		void Update(Timestep ts);
+
+
 		std::vector<ParticlePropertyGPU> ParticleProperties;
 
-		glm::vec4  EndColor;
-		glm::vec4  EndRotation;
-		glm::vec4  EndSize;
-		float	   LifeTime;
 		float	   Time = 0.0f;
 		float	   Speed = 1.0f;
 		uint32_t   MaxParticles;

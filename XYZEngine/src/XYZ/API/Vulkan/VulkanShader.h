@@ -74,21 +74,7 @@ namespace XYZ {
 			std::vector<VkSpecializationMapEntry> MapEntries;
 		};
 
-		struct SpecializationCache
-		{
-			bool operator==(SpecializationCache& other) const
-			{
-				return Size == other.Size
-					&& Offset == other.Offset
-					&& ConstantID == other.ConstantID
-					&& Stage == other.Stage;
-			}
-			uint32_t Size;
-			uint32_t Offset;
-			uint32_t ConstantID;
-			VkShaderStageFlagBits Stage;
-			bool Overriden = false;
-		};
+		
 
 		template <typename T>
 		using StageMap = std::unordered_map<VkShaderStageFlagBits, T>;
@@ -101,8 +87,7 @@ namespace XYZ {
 		virtual ~VulkanShader() override;
 
 		virtual void Reload(bool forceCompile = false) override;
-		virtual void SetSpecialization(const std::string& name, const void* data, uint32_t size) override;
-
+	
 		virtual const std::string&				 GetPath() const override { return m_FilePath; };
 		virtual const std::string&				 GetName() const override { return m_Name; }
 		virtual const std::string&				 GetSource() const override { return m_Source; };
@@ -112,17 +97,19 @@ namespace XYZ {
 		virtual bool							 IsCompiled() const override;
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const override { return m_Buffers; }
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override { return m_Resources; }
+		virtual const std::unordered_map<std::string, SpecializationCache>& GetSpecializationCachce() const override { return m_Specializations; }
 
-		const std::vector<DescriptorSet>&				   GetDescriptorSets()		 const { return m_DescriptorSets; }
-		const std::vector<PushConstantRange>&			   GetPushConstantRanges()	 const { return m_PushConstantRanges; }
-		const std::vector<VkPipelineShaderStageCreateInfo> GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
-		const VkWriteDescriptorSet*						   GetDescriptorSet(const std::string& name, uint32_t set) const;
-		std::pair<const VkWriteDescriptorSet*, uint32_t>   GetDescriptorSet(const std::string& name) const;
 
-		const VkWriteDescriptorSet*						   TryGetDescriptorSet(const std::string& name, uint32_t set) const;
-		std::pair<const VkWriteDescriptorSet*, uint32_t>   TryGetDescriptorSet(const std::string& name) const;
+		const std::vector<DescriptorSet>&				    GetDescriptorSets()		 const { return m_DescriptorSets; }
+		const std::vector<PushConstantRange>&			    GetPushConstantRanges()	 const { return m_PushConstantRanges; }
+		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
+		const VkWriteDescriptorSet*						    GetDescriptorSet(const std::string& name, uint32_t set) const;
+		std::pair<const VkWriteDescriptorSet*, uint32_t>    GetDescriptorSet(const std::string& name) const;
 
-		std::vector<VkDescriptorSetLayout>				   GetAllDescriptorSetLayouts() const;
+		const VkWriteDescriptorSet*						    TryGetDescriptorSet(const std::string& name, uint32_t set) const;
+		std::pair<const VkWriteDescriptorSet*, uint32_t>    TryGetDescriptorSet(const std::string& name) const;
+
+		std::vector<VkDescriptorSetLayout>				    GetAllDescriptorSetLayouts() const;
 		
 	private:
 		
@@ -145,7 +132,6 @@ namespace XYZ {
 		void reflectStorageImages(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::Resource>& storageImages);
 		void reflectSpecializationConstants(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::SpecializationConstant>& specializationConstants);
 
-		void   createSpecializationInfo(SpecializationInfo& info, VkShaderStageFlagBits stage);
 		void   createDescriptorSetLayout();
 		void   destroy();	
 		bool   binaryExists(const StageMap<std::string>& sources) const;
@@ -157,7 +143,6 @@ namespace XYZ {
 		std::string				   m_Source;
 		mutable ShaderParser	   m_Parser;
 		size_t					   m_SourceHash;
-		ByteBuffer				   m_SpecializationBuffer;
 
 		std::unordered_map<std::string, SpecializationCache> m_Specializations;
 
@@ -165,8 +150,7 @@ namespace XYZ {
 		std::vector<BufferLayout>  m_Layouts;
 
 		std::vector<VkPipelineShaderStageCreateInfo>				m_PipelineShaderStageCreateInfos;
-		std::vector<SpecializationInfo>								m_SpecializationInfos;
-
+	
 		std::unordered_map<std::string, ShaderResourceDeclaration>	m_Resources;
 		std::vector<PushConstantRange>								m_PushConstantRanges;
 		

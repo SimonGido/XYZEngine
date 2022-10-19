@@ -27,9 +27,11 @@ namespace XYZ {
 
 	struct UBPointLights3D
 	{
+		static constexpr uint32_t MaxLights = 1024;
+
 		uint32_t	 Count{ 0 };
 		glm::vec3	 Padding{};
-		PointLight3D PointLights[1024]{};
+		PointLight3D PointLights[MaxLights];
 
 		static constexpr uint32_t Binding = 2;
 		static constexpr uint32_t Set = 0;
@@ -40,7 +42,7 @@ namespace XYZ {
 		static constexpr uint32_t MaxBoneTransforms = 10 * 1024;
 
 		// NOTE: always heap allocate
-		glm::mat4 Data[MaxBoneTransforms]{ glm::mat4(1.0f) };
+		glm::mat4 Data[MaxBoneTransforms];
 
 		static constexpr uint32_t Binding = 3;
 		static constexpr uint32_t Set = 0;
@@ -64,9 +66,9 @@ namespace XYZ {
 
 	struct SSBOComputeData
 	{
-		static constexpr uint32_t MaxSize = 5 * 1024 * 1024;
+		static constexpr uint32_t MaxSize = 10 * 1024 * 1024;
 
-		std::byte Data[MaxSize]{ std::byte(0) };
+		std::byte Data[MaxSize];
 
 		static constexpr uint32_t Binding = 6;
 		static constexpr uint32_t Set = 0;
@@ -74,9 +76,9 @@ namespace XYZ {
 
 	struct SSBOComputeState
 	{
-		static constexpr uint32_t MaxSize = 5 * 1024 * 1024;
+		static constexpr uint32_t MaxSize = 10 * 1024 * 1024;
 
-		std::byte Data[MaxSize]{ std::byte(0) };
+		std::byte Data[MaxSize];
 
 		static constexpr uint32_t Binding = 7;
 		static constexpr uint32_t Set = 0;

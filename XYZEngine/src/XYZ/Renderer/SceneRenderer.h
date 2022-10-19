@@ -179,8 +179,14 @@ namespace XYZ {
 			
 			uint32_t TransformInstanceCount = 0;
 			uint32_t InstanceDataSize = 0;
+
+			uint32_t IndirectCommandCount = 0;
+			uint32_t ComputeDataSize = 0;
+			uint32_t ComputeStateSize = 0;
 		};
 		RenderStatistics m_RenderStatistics;
+		GeometryPassStatistics m_GeometryPassStatistics;
+
 
 		struct GPUTimeQueries
 		{

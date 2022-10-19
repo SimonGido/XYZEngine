@@ -8,7 +8,9 @@ namespace XYZ {
 
 	void BloomPass::Init(const BloomPassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer)
 	{
-		m_BloomComputePipeline = PipelineCompute::Create(config.Shader);
+		PipelineComputeSpecification spec;
+		spec.Shader = config.Shader;
+		m_BloomComputePipeline = PipelineCompute::Create(spec);
 		m_BloomComputeMaterial = Material::Create(config.Shader);
 		m_BloomComputeMaterialInstance = Ref<MaterialInstance>::Create(m_BloomComputeMaterial);
 		m_BloomTexture = config.BloomTexture;

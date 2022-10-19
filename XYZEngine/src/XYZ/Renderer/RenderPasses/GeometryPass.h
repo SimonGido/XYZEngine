@@ -6,6 +6,8 @@
 
 #include "XYZ/Renderer/SceneRendererBuffers.h"
 
+#include "XYZ/Renderer/PipelineCache.h"
+
 namespace XYZ {
 
 	struct GeometryPassStatistics
@@ -14,6 +16,10 @@ namespace XYZ {
 		uint32_t AnimatedMeshOverrideCount;
 		uint32_t TransformInstanceCount;
 		uint32_t InstanceDataSize;
+		uint32_t ComputeStateSize;
+		uint32_t ComputeDataSize;
+		uint32_t IndirectCommandCount;
+		uint32_t BoneTransformCount;
 	};
 
 	class GeometryPass
@@ -57,19 +63,16 @@ namespace XYZ {
 		void postDepthPass(const Ref<RenderCommandBuffer>& commandBuffer);
 
 
-		void prepareIndirectCommands(GeometryRenderQueue& queue);
-		void prepareIndirectComputeCommands(GeometryRenderQueue& queue, uint32_t& computeDataSize);
+		void prepareIndirectCommands(GeometryRenderQueue& queue, uint32_t& indirectCommandCount);
+		void prepareIndirectComputeCommands(GeometryRenderQueue& queue, uint32_t& computeStateSize, uint32_t& computeDataSize);
 		void prepareStaticDrawCommands(GeometryRenderQueue& queue, size_t& overrideCount, uint32_t& transformsCount);
 		void prepareAnimatedDrawCommands(GeometryRenderQueue& queue, size_t& overrideCount, uint32_t& transformsCount, uint32_t& boneTransformCount);
 		void prepareInstancedDrawCommands(GeometryRenderQueue& queue, uint32_t& instanceOffset);
 		void prepare2DDrawCommands(GeometryRenderQueue& queue);
 
 		void createDepthResources();
-		Ref<Pipeline> prepareGeometryPipeline(const Ref<Material>& material, bool opaque);
-		Ref<PipelineCompute> prepareComputePipeline(const Ref<Material>& material);
-
-	private:
 		
+	private:	
 		WeakRef<SceneRenderer> m_SceneRenderer;
 		Ref<Renderer2D>		   m_Renderer2D;
 		Ref<Texture2D>		   m_WhiteTexture;
@@ -77,8 +80,7 @@ namespace XYZ {
 		Ref<VertexBufferSet>   m_InstanceVertexBufferSet;
 		Ref<VertexBufferSet>   m_TransformVertexBufferSet;
 
-		std::map<size_t, Ref<Pipeline>> m_GeometryPipelines;
-		std::map<size_t, Ref<PipelineCompute>> m_ComputePipelines;
+		PipelineCache m_PipelineCache;
 
 		struct DepthPipeline
 		{
@@ -98,6 +100,5 @@ namespace XYZ {
 
 		static constexpr uint32_t sc_TransformBufferSize	  = 10 * 1024 * sizeof(GeometryRenderQueue::TransformData); // 10240 transforms
 		static constexpr uint32_t sc_InstanceVertexBufferSize = 30 * 1024 * 1024; // 30mb
-		static constexpr uint32_t sc_MaxIndirectCommands	  = 1024;
 	};
 }

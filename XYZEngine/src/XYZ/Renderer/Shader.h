@@ -113,6 +113,14 @@ namespace XYZ {
 		uint32_t Count = 0;
 	};
 
+	struct SpecializationCache
+	{
+		uint32_t Size;
+		uint32_t Offset;
+		uint32_t ConstantID;
+		ShaderType Type;
+	};
+
 	enum class ComputeBarrierType
 	{
 		ShaderStorageBarrier,
@@ -131,7 +139,6 @@ namespace XYZ {
 		virtual void SetFSUniforms(ByteBuffer buffer) const {};
 
 		virtual void Reload(bool forceCompile = false) = 0;
-		virtual void SetSpecialization(const std::string& name, const void* data, uint32_t size) {};
 
 
 		virtual void SetInt(const std::string& name, int value) {};
@@ -158,6 +165,7 @@ namespace XYZ {
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const { return {}; }
 
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const { return {}; }
+		virtual const std::unordered_map<std::string, SpecializationCache>& GetSpecializationCachce() const { return {}; }
 
 		virtual bool IsCompiled() const { return false; };
 

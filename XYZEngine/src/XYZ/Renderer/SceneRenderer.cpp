@@ -199,7 +199,7 @@ namespace XYZ {
 
 		uint32_t textureIndex = command.SetTexture(subTexture->GetTexture());
 
-		command.Material = material->GetMaterial();
+		command.MaterialAsset = material;
 		command.MaterialInstance = material->GetMaterialInstance();
 
 		command.BillboardData.push_back({ textureIndex, subTexture->GetTexCoords(), color, position, size });
@@ -212,7 +212,7 @@ namespace XYZ {
 		
 		uint32_t textureIndex = command.SetTexture(subTexture->GetTexture());
 		
-		command.Material = material->GetMaterial();
+		command.MaterialAsset = material;
 		command.MaterialInstance = material->GetMaterialInstance();
 		command.SpriteData.push_back({ textureIndex, subTexture->GetTexCoords(), color, transform });
 	}
@@ -358,7 +358,12 @@ namespace XYZ {
 			}
 			if (ImGui::BeginTable("##Specification", 2, ImGuiTableFlags_SizingFixedFit))
 			{
-				UI::TextTableRow("%s", "Max Light Count:", "%u", DeferredLightPass::GetMaxNumberOfLights());
+				UI::TextTableRow("%s", "Max Point Lights:", "%u", UBPointLights3D::MaxLights);
+				UI::TextTableRow("%s", "Max Bone Transform:", "%u", SSBOBoneTransformData::MaxBoneTransforms);
+				UI::TextTableRow("%s", "Max Indirect Commands:", "%u", SSBOIndirectData::MaxCommands);
+				UI::TextTableRow("%s", "Max Compute Data Size:", "%u", SSBOComputeData::MaxSize);
+				UI::TextTableRow("%s", "Max Compute State Size:", "%u", SSBOComputeState::MaxSize);
+
 				UI::TextTableRow("%s", "Max Transform Instances:", "%u", GeometryPass::GetTransformBufferCount());
 				UI::TextTableRow("%s", "Max Instance Data Size:", "%u", GeometryPass::GetInstanceBufferSize());
 
@@ -399,6 +404,48 @@ namespace XYZ {
 				}
 				UI::EndTreeNode();
 			}
+
+			if (UI::BeginTreeNode("Buffers Usage"))
+			{
+				if (ImGui::BeginTable("##BuffersUsage", 2, ImGuiTableFlags_SizingFixedFit))
+				{
+					const uint32_t transformsBufferUsage	= 100 * m_RenderStatistics.TransformInstanceCount / GeometryPass::GetTransformBufferCount();
+					const uint32_t bonesBufferUsage			= 100 * m_GeometryPassStatistics.BoneTransformCount / SSBOBoneTransformData::MaxBoneTransforms;
+					const uint32_t instanceBufferUsage		= 100 * m_GeometryPassStatistics.InstanceDataSize / GeometryPass::GetInstanceBufferSize();
+					const uint32_t indirectBufferUsage		= 100 * m_GeometryPassStatistics.IndirectCommandCount / SSBOIndirectData::MaxCommands;
+					const uint32_t computeDataBufferUsage	= 100 * m_GeometryPassStatistics.ComputeDataSize / SSBOComputeData::MaxSize;
+					const uint32_t computeStateBufferUsage	= 100 * m_GeometryPassStatistics.ComputeStateSize / SSBOComputeState::MaxSize;
+
+					UI::TableRow("",
+						[]() { ImGui::Text("Transform Buffer"); },
+						[&]() { ImGui::Text("%u%%", transformsBufferUsage); });
+
+					UI::TableRow("",
+						[]() { ImGui::Text("Bones Buffer"); },
+						[&]() { ImGui::Text("%u%%", bonesBufferUsage); });
+
+					UI::TableRow("",
+						[]() { ImGui::Text("Instance Buffer"); },
+						[&]() { ImGui::Text("%u%%", instanceBufferUsage); });
+
+					UI::TableRow("",
+						[]() { ImGui::Text("Indirect Buffer"); },
+						[&]() { ImGui::Text("%u%%", indirectBufferUsage); });
+
+					UI::TableRow("",
+						[]() { ImGui::Text("Compute Data Buffer"); },
+						[&]() { ImGui::Text("%u%%", computeDataBufferUsage); });
+
+					UI::TableRow("",
+						[]() { ImGui::Text("Compute State Buffer"); },
+						[&]() { ImGui::Text("%u%%", computeStateBufferUsage); });
+
+					ImGui::EndTable();
+				}
+				UI::EndTreeNode();
+			}
+
+
 			if (UI::BeginTreeNode("Render Statistics"))
 			{
 				if (ImGui::BeginTable("##RenderStatistics", 2, ImGuiTableFlags_SizingFixedFit))
@@ -414,6 +461,11 @@ namespace XYZ {
 
 
 					UI::TextTableRow("%s", "Instance Mesh Draw Count:", "%u", m_RenderStatistics.InstanceMeshDrawCommandCount);
+
+					UI::TextTableRow("%s", "Indirect Command Count:", "%u", m_RenderStatistics.IndirectCommandCount);
+					UI::TextTableRow("%s", "Compute Data Size:", "%u", m_RenderStatistics.ComputeDataSize);
+					UI::TextTableRow("%s", "Compute State Size:", "%u", m_RenderStatistics.ComputeStateSize);
+
 
 					UI::TextTableRow("%s", "Point Light2D Count:", "%u", m_RenderStatistics.PointLight2DCount);
 					UI::TextTableRow("%s", "Spot Light2D Count:", "%u", m_RenderStatistics.SpotLight2DCount);
@@ -606,23 +658,27 @@ namespace XYZ {
 	}
 	void SceneRenderer::preRender()
 	{
-		GeometryPassStatistics stats = m_GeometryPass.PreSubmit(m_Queue);
+		m_GeometryPassStatistics = m_GeometryPass.PreSubmit(m_Queue);
 		DeferredLightPassStatistics lightPassStats = m_DeferredLightPass.PreSubmit(m_ActiveScene);
 		
 		m_RenderStatistics.MeshDrawCommandCount = static_cast<uint32_t>(m_Queue.MeshDrawCommands.size());
-		m_RenderStatistics.MeshOverrideDrawCommandCount = stats.MeshOverrideCount;
+		m_RenderStatistics.MeshOverrideDrawCommandCount = m_GeometryPassStatistics.MeshOverrideCount;
 		
 		m_RenderStatistics.AnimatedMeshDrawCommandCount = static_cast<uint32_t>(m_Queue.AnimatedMeshDrawCommands.size());
-		m_RenderStatistics.AnimatedMeshOverrideDrawCommandCount = stats.AnimatedMeshOverrideCount;
+		m_RenderStatistics.AnimatedMeshOverrideDrawCommandCount = m_GeometryPassStatistics.AnimatedMeshOverrideCount;
 
 		m_RenderStatistics.InstanceMeshDrawCommandCount = static_cast<uint32_t>(m_Queue.InstanceMeshDrawCommands.size());
 		
-		m_RenderStatistics.TransformInstanceCount = stats.TransformInstanceCount;
-		m_RenderStatistics.InstanceDataSize = stats.InstanceDataSize;
+		m_RenderStatistics.TransformInstanceCount = m_GeometryPassStatistics.TransformInstanceCount;
+		m_RenderStatistics.InstanceDataSize = m_GeometryPassStatistics.InstanceDataSize;
 		m_RenderStatistics.SpriteDrawCommandCount = static_cast<uint32_t>(m_Queue.SpriteDrawCommands.size());	
 	
 		m_RenderStatistics.PointLight2DCount = lightPassStats.PointLightCount;
 		m_RenderStatistics.SpotLight2DCount = lightPassStats.SpotLightCount;
+
+		m_RenderStatistics.IndirectCommandCount = m_GeometryPassStatistics.IndirectCommandCount;
+		m_RenderStatistics.ComputeDataSize = m_GeometryPassStatistics.ComputeDataSize;
+		m_RenderStatistics.ComputeStateSize = m_GeometryPassStatistics.ComputeStateSize;
 	}
 
 	void SceneRenderer::renderGrid()

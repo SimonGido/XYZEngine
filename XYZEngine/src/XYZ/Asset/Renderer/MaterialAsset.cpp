@@ -53,7 +53,8 @@ namespace XYZ {
 	}
 	void MaterialAsset::setup()
 	{
-		m_Material = Material::Create(m_ShaderAsset->GetShader());
+		Ref<Shader> shader = m_ShaderAsset->GetShader();
+		m_Material = Material::Create(shader);
 		m_MaterialInstance = Ref<MaterialInstance>::Create(m_Material);
 
 		// We want weak ref so Material does not keep MaterialAsset alive
@@ -63,6 +64,7 @@ namespace XYZ {
 			{
 				instance->setupTextureBuffers();
 				instance->applyTexturesToMaterial();
+				instance->setupSpecialization();
 			}
 		};
 
@@ -126,6 +128,21 @@ namespace XYZ {
 				index++;
 			}
 		}
+	}
+	void MaterialAsset::setupSpecialization()
+	{
+		PipelineSpecialization newSpecialization;
+		Ref<Shader> shader = m_ShaderAsset->GetShader();
+		const auto& cache = shader->GetSpecializationCachce();
+		for (auto& spec : m_Specialization.GetValues())
+		{
+			auto it = cache.find(spec.Name);
+			if (it != cache.end())
+			{
+				newSpecialization.Set(spec.Name, spec.Data);
+			}
+		}
+		m_Specialization = std::move(newSpecialization);
 	}
 	MaterialAsset::TextureData* MaterialAsset::findTextureData(const std::string& name)
 	{

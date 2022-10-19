@@ -67,7 +67,7 @@ namespace XYZ {
 
 		struct SpriteDrawCommand
 		{
-			Ref<Material>		  Material;
+			Ref<MaterialAsset>	  MaterialAsset;
 			Ref<MaterialInstance> MaterialInstance;
 
 			std::array<Ref<Texture2D>, Renderer2D::GetMaxTextures()> Textures;

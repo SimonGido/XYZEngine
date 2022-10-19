@@ -882,13 +882,8 @@ namespace XYZ {
 			particleSystem->ParticleProperties.size() * sizeof(ParticlePropertyGPU),
 			particleSystem->MaxParticles * sizeof(ParticleGPU),
 			PushConstBuffer {
-				m_ParticleSystemGPU->EndColor,
-				m_ParticleSystemGPU->EndRotation,
-				m_ParticleSystemGPU->EndSize,
-				m_ParticleSystemGPU->LifeTime,
 				ts.GetSeconds(),
 				m_ParticleSystemGPU->Speed,
-				m_ParticleSystemGPU->MaxParticles,
 				m_ParticleSystemGPU->ParticlesEmitted,
 				m_ParticleSystemGPU->Loop
 			}
@@ -910,9 +905,11 @@ namespace XYZ {
 		Ref<Texture2D> whiteTexture = Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>();
 		m_ParticleMaterialGPU->SetTexture("u_Texture", whiteTexture);
 
-		uint32_t numSamples = 5;
-		m_IndirectCommandMaterial->GetShader()->SetSpecialization("NUM_SAMPLES", &numSamples, sizeof(uint32_t));
-		m_IndirectCommandMaterial->GetShader()->Reload();
+		int enabled = 1;
+		m_IndirectCommandMaterial->Specialize("COLOR_OVER_LIFE", enabled);
+		m_IndirectCommandMaterial->Specialize("SCALE_OVER_LIFE", enabled);
+		m_IndirectCommandMaterial->Specialize("VELOCITY_OVER_LIFE", enabled);
+		m_IndirectCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
 	}
 
 }

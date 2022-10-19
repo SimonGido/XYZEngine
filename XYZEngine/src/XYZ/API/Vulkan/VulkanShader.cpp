@@ -167,6 +167,32 @@ namespace XYZ {
 			return ShaderUniformDataType::None;
 		}
 
+		static uint32_t SPIRTypeSize(spirv_cross::SPIRType type)
+		{
+			switch (type.basetype)
+			{
+			case spirv_cross::SPIRType::Boolean:  return 4;
+			case spirv_cross::SPIRType::Int:
+				if (type.vecsize == 1)            return 4;
+				if (type.vecsize == 2)            return 2 * 4;
+				if (type.vecsize == 3)            return 3 * 4;
+				if (type.vecsize == 4)            return 4 * 4;
+
+			case spirv_cross::SPIRType::UInt:     return 4;
+			case spirv_cross::SPIRType::Float:
+				if (type.columns == 3)            return 3 * 3 * 4;
+				if (type.columns == 4)            return 4 * 4 * 4;
+
+				if (type.vecsize == 1)            return 4;
+				if (type.vecsize == 2)            return 2 * 4;
+				if (type.vecsize == 3)            return 3 * 4;
+				if (type.vecsize == 4)            return 4 * 4;
+				break;
+			}
+			XYZ_ASSERT(false, "Unknown type!");
+			return 0;
+		}
+
 		static const char* VkShaderStageCachedFileExtension(VkShaderStageFlagBits stage)
 		{
 			switch (stage)
@@ -189,6 +215,18 @@ namespace XYZ {
 			}
 			XYZ_ASSERT(false, "");
 			return (shaderc_shader_kind)0;
+		}
+
+		static ShaderType VkShaderStageToShaderType(VkShaderStageFlagBits stage)
+		{
+			switch (stage)
+			{
+			case VK_SHADER_STAGE_VERTEX_BIT:    return ShaderType::Vertex;
+			case VK_SHADER_STAGE_FRAGMENT_BIT:  return ShaderType::Fragment;
+			case VK_SHADER_STAGE_COMPUTE_BIT:   return ShaderType::Compute;
+			}
+			XYZ_ASSERT(false, "");
+			return ShaderType::None;
 		}
 
 		static VkShaderStageFlagBits ShaderStageFromString(const std::string& type)
@@ -330,6 +368,7 @@ namespace XYZ {
 		m_DescriptorSets.clear();
 		m_PushConstantRanges.clear();
 		m_Buffers.clear();
+		m_Specializations.clear();
 
 		Utils::CreateCacheDirectoryIfNeeded();
 
@@ -358,16 +397,6 @@ namespace XYZ {
 		createDescriptorSetLayout();
 		m_Compiled = true;
 		Renderer::OnShaderReload(GetHash());		
-	}
-
-	void VulkanShader::SetSpecialization(const std::string& name, const void* data, uint32_t size)
-	{
-		auto it = m_Specializations.find(name);
-		XYZ_ASSERT(it != m_Specializations.end(), "Specialization does not exist");
-
-		const uint32_t offset = it->second.Offset;
-		it->second.Overriden = true;
-		memcpy(&m_SpecializationBuffer.Data[offset], data, size);
 	}
 
 
@@ -577,8 +606,6 @@ namespace XYZ {
 	void VulkanShader::reflectSpecializationConstants(const spirv_cross::Compiler& compiler, VkShaderStageFlagBits stage, spirv_cross::SmallVector<spirv_cross::SpecializationConstant>& specializationConstants)
 	{
 		uint32_t offset = 0;		
-		std::unordered_map<std::string, SpecializationCache> newSpecializations;
-
 		for (auto& specialization : specializationConstants)
 		{
 			const spirv_cross::SPIRConstant& constant = compiler.get_constant(specialization.id);
@@ -586,38 +613,13 @@ namespace XYZ {
 			std::string name = compiler.get_name(specialization.id);
 			
 			
-			auto& spec = newSpecializations[name];
-			spec.Size = type.width;
+			auto& spec = m_Specializations[name];
+			spec.Size = Utils::SPIRTypeSize(type);
 			spec.Offset = offset;
-			spec.Stage = stage;
+			spec.Type = Utils::VkShaderStageToShaderType(stage);
 			spec.ConstantID = specialization.constant_id;
 			offset += spec.Size;
 		}
-
-		ByteBuffer newSpecializationBuffer;
-		newSpecializationBuffer.Allocate(offset);
-		newSpecializationBuffer.ZeroInitialize();
-
-		// Check old specializations, if they are still valid reuse them
-		for (auto& [name, oldSpec] : m_Specializations)
-		{
-			auto it = newSpecializations.find(name);
-			if (it != newSpecializations.end())
-			{
-				// If specializations are same, copy stored value from old buffer
-				if (it->second == oldSpec)
-				{
-					memcpy(
-						&newSpecializationBuffer[it->second.Offset],
-						&m_SpecializationBuffer.Data[oldSpec.Offset],
-						oldSpec.Size
-					);
-				}
-			}
-		}
-		m_SpecializationBuffer.Destroy(); // Destroy old buffer
-		m_SpecializationBuffer = newSpecializationBuffer; // Use new buffer
-		m_Specializations = std::move(newSpecializations); // Use new specializations
 	}
 	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
 	{
@@ -759,10 +761,6 @@ namespace XYZ {
 		const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 		m_PipelineShaderStageCreateInfos.clear();
 
-		// Pre allocate to keep pointers valid for pipeline creation
-		m_SpecializationInfos.resize(shaderData.size());
-
-		uint32_t index = 0;
 		for (auto [stage, data] : shaderData)
 		{
 			XYZ_ASSERT(data.size(), "");
@@ -780,15 +778,6 @@ namespace XYZ {
 			shaderStage.stage = stage;
 			shaderStage.module = shaderModule;
 			shaderStage.pName = "main";
-
-
-			createSpecializationInfo(m_SpecializationInfos[index], stage);
-
-			if (!m_SpecializationInfos[index].MapEntries.empty())
-			{
-				shaderStage.pSpecializationInfo = &m_SpecializationInfos[index].Info;
-			}
-			index++;
 		}
 	}
 
@@ -810,24 +799,7 @@ namespace XYZ {
 		return result;
 	}
 
-	void VulkanShader::createSpecializationInfo(SpecializationInfo& info, VkShaderStageFlagBits stage)
-	{
-		for (auto& [name, spec] : m_Specializations)
-		{
-			if (spec.Overriden && spec.Stage == stage)
-			{
-				auto& mapEntry = info.MapEntries.emplace_back();
-				mapEntry.size = spec.Size;
-				mapEntry.offset = spec.Offset;
-				mapEntry.constantID = spec.ConstantID;
-			}
-		}
-		
-		info.Info.pData = m_SpecializationBuffer.Data;
-		info.Info.dataSize = m_SpecializationBuffer.Size;
-		info.Info.mapEntryCount = static_cast<uint32_t>(info.MapEntries.size());
-		info.Info.pMapEntries = info.MapEntries.data();
-	}
+
 	void VulkanShader::createDescriptorSetLayout()
 	{
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
