@@ -26,9 +26,9 @@ namespace XYZ {
 			PipelineDependencies.clear();
 			PipelineComputeDependencies.clear();
 		}
-		std::vector<Ref<Material>> MaterialDependencies;
-		std::vector<Ref<Pipeline>> PipelineDependencies;
-		std::vector<Ref<PipelineCompute>> PipelineComputeDependencies;
+		std::vector<Ref<Material>>		    MaterialDependencies;
+		std::vector<Ref<Pipeline>>		    PipelineDependencies;
+		std::vector<Ref<PipelineCompute>>   PipelineComputeDependencies;
 	};
 
 	struct ShaderDependencyMap
@@ -41,6 +41,8 @@ namespace XYZ {
 				for (auto& material : it->second.MaterialDependencies)
 					material->Invalidate();
 				for (auto& pipeline : it->second.PipelineDependencies)
+					pipeline->Invalidate();
+				for (auto& pipeline : it->second.PipelineComputeDependencies)
 					pipeline->Invalidate();
 			}
 		}
@@ -92,6 +94,7 @@ namespace XYZ {
 	static RendererData s_Data;
 	static RendererAPI* s_RendererAPI = nullptr;
 
+
 	static RendererAPI* CreateRendererAPI()
 	{
 		switch (RendererAPI::GetType())
@@ -129,8 +132,8 @@ namespace XYZ {
 		data[3].TexCoord = glm::vec2(0, 0);
 
 		const BufferLayout layout = {
-			{ ShaderDataType::Float3, "a_Position" },
-			{ ShaderDataType::Float2, "a_TexCoord" }
+			{0, ShaderDataType::Float3, "a_Position" },
+			{1, ShaderDataType::Float2, "a_TexCoord" }
 		};
 		s_Data.FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
 		s_Data.FullscreenQuadVertexBuffer->SetLayout(layout);
@@ -145,20 +148,19 @@ namespace XYZ {
 	
 		s_Data.APIContext = APIContext::Create();
 		s_RendererAPI = CreateRendererAPI();	
-		s_Data.QueueData.Init(s_Data.Configuration.FramesInFlight);
+		s_Data.QueueData.Init(s_Data.Configuration.FramesInFlight);	
 	}
 
-	void Renderer::InitResources(bool initDefaultResources)
+	void Renderer::InitAPI(bool initDefaultResources)
 	{
-		// It is called after window and context is created	
 		s_RendererAPI->Init();
-		
-		SetupFullscreenQuad();	
+		SetupFullscreenQuad();
 		if (initDefaultResources)
 			s_Data.Resources.Init();
-		
+
 		WaitAndRenderAll();
 	}
+
 
 	void Renderer::Shutdown()
 	{	
@@ -266,10 +268,10 @@ namespace XYZ {
 	}
 
 	void Renderer::BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass,
-		bool clear)
+		bool subPass, bool clear)
 	{
 		XYZ_ASSERT(renderPass.Raw(), "Render pass can not be null");
-		s_RendererAPI->BeginRenderPass(renderCommandBuffer, renderPass, clear);
+		s_RendererAPI->BeginRenderPass(renderCommandBuffer, renderPass, subPass, clear);
 	}
 
 	void Renderer::EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer)
@@ -300,6 +302,15 @@ namespace XYZ {
 		s_RendererAPI->RenderMesh(renderCommandBuffer, pipeline, material, vertexBuffer, indexBuffer, transformBuffer, transformOffset, transformInstanceCount, instanceBuffer, instanceOffset, instanceCount);
 	}
 
+	void Renderer::RenderIndirectMesh(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData, Ref<StorageBufferSet> indirectBuffer, uint32_t indirectOffset, uint32_t indirectCount, uint32_t indirectStride)
+	{
+		s_RendererAPI->RenderIndirect(
+			renderCommandBuffer, pipeline, material,
+			vertexBuffer, indexBuffer, constData,
+			indirectBuffer, indirectOffset, indirectCount, indirectStride
+		);
+	}
+
 	void Renderer::SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material)
 	{
 		s_RendererAPI->RenderGeometry(renderCommandBuffer, pipeline, material, s_Data.FullscreenQuadVertexBuffer, s_Data.FullscreenQuadIndexBuffer);
@@ -315,14 +326,16 @@ namespace XYZ {
 		s_RendererAPI->BindPipeline(renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, material);
 	}
 
+
 	void Renderer::BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material)
 	{
 		s_RendererAPI->BeginPipelineCompute(renderCommandBuffer, pipeline, uniformBufferSet, storageBufferSet, material);
 	}
 
-	void Renderer::DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
+
+	void Renderer::DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ, const PushConstBuffer& constData)
 	{
-		s_RendererAPI->DispatchCompute(pipeline, material, groupCountX, groupCountY, groupCountZ);
+		s_RendererAPI->DispatchCompute(pipeline, material, groupCountX, groupCountY, groupCountZ, constData);
 	}
 
 	void Renderer::EndPipelineCompute(Ref<PipelineCompute> pipeline)
@@ -333,6 +346,11 @@ namespace XYZ {
 	void Renderer::UpdateDescriptors(Ref<PipelineCompute> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet)
 	{
 		s_RendererAPI->UpdateDescriptors(pipeline, material, uniformBufferSet, storageBufferSet);
+	}
+
+	void Renderer::UpdateDescriptors(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet)
+	{
+		s_RendererAPI->UpdateDescriptors(renderCommandBuffer, pipeline, material, uniformBufferSet, storageBufferSet);
 	}
 
 	void Renderer::ClearImage(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Image2D> image)
@@ -352,6 +370,8 @@ namespace XYZ {
 	{
 		s_Data.ShaderDependencies.Register(shader->GetHash(), material);
 	}
+	
+	
 	void Renderer::RemoveShaderDependency(size_t hash)
 	{
 		s_Data.ShaderDependencies.RemoveDependency(hash);
@@ -430,7 +450,7 @@ namespace XYZ {
 		return s_Data.QueueData.GetResourceQueue(s_Data.APIContext->GetCurrentFrame());
 	}
 
-	RenderCommandQueue& Renderer::getRenderCommandQueue()
+	ScopedLock<RenderCommandQueue> Renderer::getRenderCommandQueue()
 	{
 		return s_Data.QueueData.GetRenderCommandQueue();
 	}
@@ -454,59 +474,82 @@ namespace XYZ {
 	}
 	void RendererResources::Init()
 	{
-		auto whiteTexture = AssetManager::GetAsset<Texture2D>("Resources/Textures/WhiteTexture.tex");
+		auto whiteTextureFuture						= AssetManager::GetAssetAsync<Texture2D>("Resources/Textures/WhiteTexture.tex");
+		auto defaultQuadMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/DefaultLit.mat");
+		auto defaultLineMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/DefaultLine.mat");
+		auto defaultCircleMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/DefaultCircle.mat");
+		auto overlayQuadMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/OverlayQuad.mat");
+		auto overlayLineMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/OverlayLine.mat");
+		auto overlayCircleMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/OverlayCircle.mat");
+		auto defaultParticleMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
+		auto defaultDepth3DMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepth.mat");
+		auto defaultDepth3DAnimMaterialFuture		= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepthAnim.mat");
+		auto defaultDepth2DMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepth2D.mat");
+		auto defaultDepthInstancedMaterialFuture	= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepthInstanced.mat");
+		auto lightCullingMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/LightCulling.mat");
+		auto gridMaterialFuture						= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/Grid.mat");
+		auto animationPBRMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/AnimationPBR.mat");
+		
+		
+		Includer.AddIncludes("Resources/Shaders/Includes");
+
+		auto whiteTexture = whiteTextureFuture.get();
 		whiteTexture->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["WhiteTexture"] = whiteTexture;
 
-		auto defaultQuadMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultLit.mat");
+		auto defaultQuadMaterial = defaultQuadMaterialFuture.get();
 		defaultQuadMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["QuadMaterial"] = defaultQuadMaterial;
 
-		auto defaultLineMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultLine.mat");
+		auto defaultLineMaterial = defaultLineMaterialFuture.get();
 		defaultLineMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["LineMaterial"] = defaultLineMaterial;
 
-		auto defaultCircleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultCircle.mat");
+		auto defaultCircleMaterial = defaultCircleMaterialFuture.get();
 		defaultCircleMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["CircleMaterial"] = defaultCircleMaterial;
 
-		auto overlayQuadMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayQuad.mat");
+		auto overlayQuadMaterial = overlayQuadMaterialFuture.get();
 		overlayQuadMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["OverlayQuadMaterial"] = overlayQuadMaterial;
 
-		auto overlayLineMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayLine.mat");
+		auto overlayLineMaterial = overlayLineMaterialFuture.get();
 		overlayLineMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["OverlayLineMaterial"] = overlayLineMaterial;
 
-		auto overlayCircleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayCircle.mat");
+		auto overlayCircleMaterial = overlayCircleMaterialFuture.get();
 		overlayCircleMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["OverlayCircleMaterial"] = overlayCircleMaterial;
 
-		auto defaultParticleMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
+		auto defaultParticleMaterial = defaultParticleMaterialFuture.get();
 		defaultParticleMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["ParticleMaterial"] = defaultParticleMaterial;
 
-		auto defaultDepth3DMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth.mat");
+		auto defaultDepth3DMaterial = defaultDepth3DMaterialFuture.get();
 		defaultDepth3DMaterial->SetFlag(AssetFlag::ReadOnly);
-		RendererAssets["Depth3DMaterialAnim"] = defaultDepth3DMaterial;
+		RendererAssets["Depth3DMaterial"] = defaultDepth3DMaterial;
 
-		auto defaultDepth2DMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth2D.mat");
+		auto defaultDepth3DAnimMaterial = defaultDepth3DAnimMaterialFuture.get();
+		defaultDepth3DAnimMaterial->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["Depth3DMaterialAnim"] = defaultDepth3DAnimMaterial;
+
+		auto defaultDepth2DMaterial = defaultDepth2DMaterialFuture.get();
 		defaultDepth2DMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["Depth2DMaterial"] = defaultDepth2DMaterial;
 
-		auto defaultDepthInstancedMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepthInstanced.mat");
+		auto defaultDepthInstancedMaterial = defaultDepthInstancedMaterialFuture.get();
 		defaultDepthInstancedMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["DepthInstancedMaterial"] = defaultDepthInstancedMaterial;
 
-		auto lightCullingMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/LightCulling.mat");
+		auto lightCullingMaterial = lightCullingMaterialFuture.get();
 		lightCullingMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["LightCullingMaterial"] = lightCullingMaterial;
 
-		auto gridMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/Grid.mat");
+		auto gridMaterial = gridMaterialFuture.get();
 		gridMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["GridMaterial"] = gridMaterial;
 
-		auto animationPBRMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/AnimationPBR.mat");
+		auto animationPBRMaterial = animationPBRMaterialFuture.get();
 		animationPBRMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["AnimationPBR"] = animationPBRMaterial;
 	}

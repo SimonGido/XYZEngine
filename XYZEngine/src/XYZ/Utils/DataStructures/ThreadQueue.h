@@ -5,12 +5,11 @@
 
 namespace XYZ {
 	template <typename T>
-	class Queue
+	class ThreadQueue
 	{
 	public:
-		Queue() = default;
-		Queue(const Queue<T>&) = delete;
-		virtual ~Queue() { Clear(); }
+		ThreadQueue() = default;
+		ThreadQueue(const ThreadQueue<T>&) = delete;
 
 		const T& Front()
 		{

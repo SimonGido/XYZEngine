@@ -34,27 +34,26 @@ namespace XYZ {
 		m_Minimized(false),
 		m_Specification(specification)
 	{	
-		m_ThreadPool.Start(11);
+		m_ThreadPool.Start(std::thread::hardware_concurrency() - 1);
 		s_Application = this;
 		m_Running = true;
 		m_ImGuiLayer = nullptr;
 
+		AssetManager::Init();
 		if (specification.WindowCreate)
-		{
+		{		
 			Renderer::Init();
 			m_Window = Window::Create(Renderer::GetAPIContext());
 			m_Window->RegisterCallback(Hook(&Application::OnEvent, this));
 			m_Window->SetVSync(false);
-			
+				
 			if (specification.EnableImGui)
 			{			
 				m_ImGuiLayer = ImGuiLayer::Create();
 				m_LayerStack.PushOverlay(m_ImGuiLayer);
 			}
 		}
-
-		AssetManager::Init();
-		
+				
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);
 		std::wstring tmp(&NPath[0]);
@@ -72,11 +71,12 @@ namespace XYZ {
 
 		AssetManager::Shutdown();
 		Audio::ShutDown();
+		m_ThreadPool.Stop(); // Thread pool must be stopped before renderer, so resources are destroyed properly
+
 		if (m_Specification.WindowCreate)
 		{
 			Renderer::Shutdown();
 		}
-		m_ThreadPool.Stop();
 	}
 
 	void Application::Run()
@@ -239,7 +239,9 @@ namespace XYZ {
 				}
 				if (m_Specification.EnableImGui)
 				{
-					Renderer::BlockRenderThread(); // Prevents calling VkSubmitQueue from multiple threads at once
+					// We must block render thread only if multiple viewports are created
+					if (m_ImGuiLayer->IsMultiViewport())
+						Renderer::BlockRenderThread(); // Prevents calling VkSubmitQueue from multiple threads at once
 					onImGuiRender();
 				}
 				Renderer::EndFrame();

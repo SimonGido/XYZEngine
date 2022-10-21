@@ -8,11 +8,11 @@ layout(location = 1) in vec2  a_TexCoord;
 
 
 
-layout(location = 2) in vec4  a_ITransformRow0;
-layout(location = 3) in vec4  a_ITransformRow1;
-layout(location = 4) in vec4  a_ITransformRow2;
-layout(location = 5) in vec4  a_IColor;
-layout(location = 6) in vec2  a_ITexOffset;
+XYZ_INSTANCED layout(location = 2) in vec4  a_ITransformRow0;
+XYZ_INSTANCED layout(location = 3) in vec4  a_ITransformRow1;
+XYZ_INSTANCED layout(location = 4) in vec4  a_ITransformRow2;
+XYZ_INSTANCED layout(location = 5) in vec4  a_IColor;
+XYZ_INSTANCED layout(location = 6) in vec2  a_ITexOffset;
 
 layout(std140, binding = 0) uniform Camera
 {

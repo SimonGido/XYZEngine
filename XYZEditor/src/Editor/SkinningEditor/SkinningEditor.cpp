@@ -33,7 +33,7 @@ namespace XYZ {
 			m_CameraController(16.0f / 9.0f),
 			m_ButtonSize(25.0f)
 		{	
-			m_CommandBuffer = RenderCommandBuffer::Create(0, "SkinningEditor");
+			m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "SkinningEditor");
 			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
 			//Ref<MaterialAsset> quadMaterial = Ref<MaterialAsset>::Create(Renderer::GetDefaultResources().DefaultQuadMaterial->GetShaderAsset());
@@ -249,7 +249,6 @@ namespace XYZ {
 			Ref<Shader> shader = m_MaterialAsset->GetShader();
 			
 			PipelineSpecification spec;
-			spec.Layouts = shader->GetLayouts();
 			//spec.RenderPass = m_Renderer2D->GetTargetRenderPass();
 			spec.Shader = shader;
 			spec.Topology = PrimitiveTopology::Triangles;

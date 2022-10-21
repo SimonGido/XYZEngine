@@ -11,12 +11,16 @@ namespace XYZ {
 		WeakRef(Ref<T> ref)
 		{
 			m_Instance = ref.Raw();
+			if (m_Instance)
+				m_RefCount = m_Instance->m_RefCount;
 		}
 
 		WeakRef(T* instance)
 		{
 			static_assert(std::is_base_of_v<RefCount, T>, "Type T must inherit from RefCount");
 			m_Instance = instance;
+			if (m_Instance)
+				m_RefCount = m_Instance->m_RefCount;
 		}
 
 		T* operator->() { return m_Instance; }
@@ -25,7 +29,7 @@ namespace XYZ {
 		T& operator*() { return *m_Instance; }
 		const T& operator*() const { return *m_Instance; }
 
-		bool IsValid() const { return m_Instance && RefTracker::isLive(m_Instance); }
+		bool IsValid() const { return m_RefCount ? *m_RefCount != 0 : false; }
 		
 		operator bool() const { return IsValid(); }
 	
@@ -40,5 +44,6 @@ namespace XYZ {
 
 	private:
 		T* m_Instance = nullptr;
+		std::shared_ptr<const std::atomic_uint32_t> m_RefCount;
 	};
 }

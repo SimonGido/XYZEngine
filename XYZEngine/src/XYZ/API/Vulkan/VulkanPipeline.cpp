@@ -108,7 +108,7 @@ namespace XYZ {
 	{	
 		uint32_t binding = 0;
 		uint32_t location = 0;
-		for (const auto& layout : m_Specification.Layouts)
+		for (const auto& layout : m_Specification.Shader->GetLayouts())
 		{
 			VkVertexInputBindingDescription& inputBinding = bindingDescriptions.emplace_back();
 			inputBinding.binding = binding;

@@ -43,7 +43,7 @@ namespace XYZ {
 	struct Renderer2DConfiguration
 	{
 		Ref<RenderCommandBuffer> CommandBuffer;
-		Ref<UniformBufferSet>    CameraBufferSet;
+		Ref<UniformBufferSet>    UniformBufferSet;
 	};
 
 	class Renderer2D : public RefCount
@@ -55,7 +55,7 @@ namespace XYZ {
 		void BeginScene(const glm::mat4& viewMatrix);
 
 		void SetCommandBuffer(const Ref<RenderCommandBuffer>& commandBuffer);
-		void SetCameraBufferSet(const Ref<UniformBufferSet>& cameraBufferSet);
+		void SetUniformBufferSet(const Ref<UniformBufferSet>& uniformBufferSet);
 
 
 		void SubmitCircle(const glm::vec3& pos, float radius, uint32_t sides, const glm::vec4& color = glm::vec4(1.0f));
@@ -133,7 +133,7 @@ namespace XYZ {
 		};
 	private:
 		Ref<RenderCommandBuffer> m_RenderCommandBuffer;
-		Ref<UniformBufferSet>	 m_CameraBufferSet;
+		Ref<UniformBufferSet>	 m_UniformBufferSet;
 
 							 
 		Renderer2DBuffer<QuadVertex>   m_QuadBuffer;

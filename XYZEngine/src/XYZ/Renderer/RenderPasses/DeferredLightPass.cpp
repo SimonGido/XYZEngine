@@ -24,15 +24,15 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("DeferredLightPass::PreSubmit");
 		m_PointLights.clear();
 		m_SpotLights.clear();
-
+		// TODO: move this to scene
 		auto& registry = scene->GetRegistry();
 
 		// Spot lights
-		auto spotLight2DView = registry.view<TransformComponent, SpotLight2D>();
+		auto spotLight2DView = registry.view<TransformComponent, SpotLightComponent2D>();
 		for (auto entity : spotLight2DView)
 		{
 			// Render previous frame data
-			auto& [transform, light] = spotLight2DView.get<TransformComponent, SpotLight2D>(entity);
+			auto& [transform, light] = spotLight2DView.get<TransformComponent, SpotLightComponent2D>(entity);
 			auto [trans, rot, scale] = transform.GetWorldComponents();
 			
 			SpotLight spotLight{
@@ -47,10 +47,10 @@ namespace XYZ {
 		}
 
 		// Point Lights
-		auto pointLight2DView = registry.view<TransformComponent, PointLight2D>();
+		auto pointLight2DView = registry.view<TransformComponent, PointLightComponent2D>();
 		for (auto entity : pointLight2DView)
 		{
-			auto& [transform, light] = pointLight2DView.get<TransformComponent, PointLight2D>(entity);
+			auto& [transform, light] = pointLight2DView.get<TransformComponent, PointLightComponent2D>(entity);
 			auto [trans, rot, scale] = transform.GetWorldComponents();
 			
 			PointLight pointLight{
@@ -62,25 +62,7 @@ namespace XYZ {
 			m_PointLights.push_back(pointLight);
 		}
 
-		// Particle Lights
-		auto particleView = registry.view<TransformComponent, ParticleRenderer, ParticleComponent>();
-		for (auto entity : particleView)
-		{
-			auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
-		
-			auto& renderData = particleComponent.GetSystem()->GetRenderData();
-		
-			for (const auto& lightData : renderData.LightData)
-			{
-				PointLight pointLight{
-					glm::vec4(lightData.Color, 1.0f),
-					glm::vec2(lightData.Position),
-					lightData.Radius,
-					lightData.Intensity
-				};
-				m_PointLights.push_back(pointLight);
-			}
-		}
+	
 
 		if (m_SpotLights.size() > sc_MaxNumberOfLights)
 			m_SpotLights.resize(sc_MaxNumberOfLights);
@@ -127,7 +109,7 @@ namespace XYZ {
 	)
 	{
 		XYZ_PROFILE_FUNC("DeferredLightPass::Submit");
-		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, true);
+		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, false, true);
 	
 		m_Material->SetImageArray("u_Texture", colorImage, 0);
 		m_Material->SetImageArray("u_Texture", positionImage, 1);
@@ -149,12 +131,11 @@ namespace XYZ {
 	{
 		PipelineSpecification specification;
 		specification.Shader = m_Shader;
-		specification.Layouts = m_Shader->GetLayouts();
 		specification.RenderPass = m_RenderPass;
 		specification.Topology = PrimitiveTopology::Triangles;
 		specification.DepthWrite = false;
 		m_Pipeline = Pipeline::Create(specification);
 		m_Material = Material::Create(m_Shader);
-		m_MaterialInstance = Ref<XYZ::MaterialInstance>::Create(m_Material);
+		m_MaterialInstance = m_Material->CreateMaterialInstance();
 	}
 }

@@ -9,6 +9,7 @@
 #include "XYZ/Renderer/StorageBufferSet.h"
 #include "XYZ/Renderer/VertexBufferSet.h"
 #include "XYZ/Renderer/Material.h"
+#include "XYZ/Renderer/PushConstBuffer.h"
 
 namespace XYZ {
 
@@ -31,44 +32,7 @@ namespace XYZ {
 		int   MaxTextureUnits = 0;
 	};
 
-	struct PushConstBuffer
-	{
-		PushConstBuffer() = default;
-
-		template <typename ...Args>
-		PushConstBuffer(const Args&... args)
-		{
-			constexpr size_t size = (sizeof(Args) + ...);
-			size_t offset = 0;
-			(store(args, offset), ...);
-			Size = size;
-		}
-		PushConstBuffer(const PushConstBuffer& other)
-		{
-			memcpy(Bytes, other.Bytes, other.Size);
-			Size = other.Size;
-		}
-		PushConstBuffer& operator=(const PushConstBuffer& other)
-		{
-			memcpy(Bytes, other.Bytes, other.Size);
-			Size = other.Size;
-			return *this;
-		}
-
-
-		static constexpr size_t sc_MaxSize = 128;
-
-		std::byte Bytes[sc_MaxSize];
-		uint32_t  Size = 0;
-
-	private:
-		template <typename T>
-		void store(const T& val, size_t& offset)
-		{
-			memcpy(&Bytes[offset], &val, sizeof(T));
-			offset += sizeof(T);
-		}
-	};
+	
 
 	class RendererAPI
 	{
@@ -98,7 +62,7 @@ namespace XYZ {
 		// New API
 		virtual void BeginFrame() {}
 		virtual void EndFrame() {}
-		virtual void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<RenderPass> renderPass, bool explicitClear = false) {};
+		virtual void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<RenderPass> renderPass, bool subPass = false, bool explicitClear = false) {};
 		virtual void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer) {};
 		
 		virtual void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, 
@@ -121,11 +85,19 @@ namespace XYZ {
 			Ref<VertexBufferSet> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount
 		) {};
 
+		virtual void RenderIndirect(
+			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material,
+			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData,
+			Ref<StorageBufferSet> indirectBuffer, uint32_t indirectOffset, uint32_t indirectCount, uint32_t indirectStride
+		) {};
+
 		virtual void BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material) {};
 		virtual void BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material) {};
-		virtual void DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) {};
+		
+		virtual void DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ, const PushConstBuffer& constData) {};
 		virtual void EndPipelineCompute(Ref<PipelineCompute> pipeline) {};
 		virtual void UpdateDescriptors(Ref<PipelineCompute> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet) {};
+		virtual void UpdateDescriptors(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet) {};
 		virtual void ClearImage(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Image2D> image) {};
 
 		static const RenderAPICapabilities& GetCapabilities();

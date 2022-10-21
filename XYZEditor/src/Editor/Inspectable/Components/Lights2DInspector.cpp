@@ -15,7 +15,7 @@ namespace XYZ {
 		}
 		bool SpotLight2DInspector::OnEditorRender()
 		{
-			return EditorHelper::DrawComponent<SpotLight2D>("Spot Light2D", m_Context, [&](auto& component) {
+			return EditorHelper::DrawComponent<SpotLightComponent2D>("Spot Light2D", m_Context, [&](auto& component) {
 
 				UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
 				UI::ScopedColorStack color(true,
@@ -66,7 +66,7 @@ namespace XYZ {
 		}
 		bool PointLight2DInspector::OnEditorRender()
 		{
-			return EditorHelper::DrawComponent<PointLight2D>("Point Light2D", m_Context, [&](auto& component) {
+			return EditorHelper::DrawComponent<PointLightComponent2D>("Point Light2D", m_Context, [&](auto& component) {
 
 				UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
 				UI::ScopedColorStack color(true,

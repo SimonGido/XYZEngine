@@ -24,6 +24,8 @@ namespace XYZ {
 	class Material : public RefCount
 	{
 	public:
+		using OnInvalidateFunc = std::function<void()>;
+
 		virtual ~Material() {};
 
 		virtual void Invalidate() = 0;
@@ -33,16 +35,22 @@ namespace XYZ {
 		virtual void SetImage(const std::string& name, Ref<Image2D> image, int32_t mip = -1) = 0;
 
 		virtual uint64_t	GetFlags() const = 0;
-		virtual uint32_t	GetID()    const = 0;
 		virtual Ref<Shader>	GetShader()const = 0;
+		
+		Ref<MaterialInstance> CreateMaterialInstance();
+
 		
 		static Ref<Material> Create(const Ref<Shader>& shader);
 
 		friend class MaterialInstance;
-	protected:
-		void		    invalidateInstances();
+		friend class MaterialAsset;
 
-		std::unordered_set<WeakRef<MaterialInstance>> m_MaterialInstances;
+
+	protected:
+		void invalidateInstances();
+
+		std::vector<WeakRef<MaterialInstance>> m_MaterialInstances;
+		OnInvalidateFunc m_OnInvalidate;
 	};
 
 

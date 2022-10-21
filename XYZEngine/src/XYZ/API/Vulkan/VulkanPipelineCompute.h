@@ -9,9 +9,10 @@ namespace XYZ {
 	class VulkanPipelineCompute : public PipelineCompute
 	{
 	public:
-		VulkanPipelineCompute(Ref<Shader> computeShader);
+		VulkanPipelineCompute(const PipelineComputeSpecification& specification);
 		virtual ~VulkanPipelineCompute() override;
 
+		virtual void		Invalidate() override;
 		virtual void		Begin(Ref<RenderCommandBuffer> renderCommandBuffer = nullptr) override;
 		virtual void		End() override;
 		virtual Ref<Shader> GetShader() const override { return m_Shader; }
@@ -26,11 +27,14 @@ namespace XYZ {
 		VkPipelineLayout GetVulkanPipelineLayout() const { return m_ComputePipelineLayout; }
 	
 	private:
-		static void destroy(VkPipelineLayout pipelineLayout, VkPipeline vulkanPipeline, VkPipelineCache cache);
+		void destroy();
+		void RT_createPipeline();
 
-		void RT_CreatePipeline();
+		void createSpecializationInfo(VkSpecializationInfo& info, std::vector<VkSpecializationMapEntry>& mapEntries, std::vector<std::byte>& data);
+
 	private:
 		Ref<VulkanShader> m_Shader;
+		PipelineSpecialization m_Specialization;
 
 		VkPipelineLayout m_ComputePipelineLayout = nullptr;
 		VkPipelineCache m_PipelineCache = nullptr;

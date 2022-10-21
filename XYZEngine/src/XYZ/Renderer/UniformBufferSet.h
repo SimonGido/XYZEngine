@@ -5,6 +5,12 @@
 #include <map>
 
 namespace XYZ {
+	struct UniformBufferInfo
+	{
+		uint32_t Offset;
+		uint32_t Size;
+	};
+
 	class UniformBufferSet : public RefCount
 	{
 	public:
@@ -15,6 +21,8 @@ namespace XYZ {
 
 		virtual Ref<UniformBuffer> Get(uint32_t binding, uint32_t set = 0, uint32_t frame = 0) = 0;
 		virtual bool HasDescriptors(size_t hash) const = 0;
+
+		virtual void SetBufferInfo(uint32_t size, uint32_t offset, uint32_t binding, uint32_t set = 0) = 0;
 
 		static Ref<UniformBufferSet> Create(uint32_t frames);
 	};

@@ -113,6 +113,14 @@ namespace XYZ {
 		uint32_t Count = 0;
 	};
 
+	struct SpecializationCache
+	{
+		uint32_t Size;
+		uint32_t Offset;
+		uint32_t ConstantID;
+		ShaderType Type;
+	};
+
 	enum class ComputeBarrierType
 	{
 		ShaderStorageBarrier,
@@ -131,7 +139,7 @@ namespace XYZ {
 		virtual void SetFSUniforms(ByteBuffer buffer) const {};
 
 		virtual void Reload(bool forceCompile = false) = 0;
-		virtual void SetLayouts(std::vector<BufferLayout> layouts) {};
+
 
 		virtual void SetInt(const std::string& name, int value) {};
 		virtual void SetFloat(const std::string& name, float value) {};
@@ -157,12 +165,13 @@ namespace XYZ {
 		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const { return {}; }
 
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const { return {}; }
+		virtual const std::unordered_map<std::string, SpecializationCache>& GetSpecializationCachce() const { return {}; }
 
 		virtual bool IsCompiled() const { return false; };
 
-		static Ref<Shader> Create(const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile = true);
-		static Ref<Shader> Create(const std::string& name, const std::string& path, std::vector<BufferLayout> layouts, bool forceCompile = true);
-		static Ref<Shader> Create(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, std::vector<BufferLayout> layouts, bool forceCompile = true);
+		static Ref<Shader> Create(const std::string& path, size_t sourceHash = 0, bool forceCompile = true);
+		static Ref<Shader> Create(const std::string& name, const std::string& path, size_t sourceHash = 0, bool forceCompile = true);
+		static Ref<Shader> Create(const std::string& name, const std::string& vertexPath, const std::string& fragmentPath, size_t sourceHash = 0, bool forceCompile = true);
 	};
 
 }

@@ -7,6 +7,8 @@
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/Renderer2D.h"
+
+
 #include "XYZ/Utils/Math/Math.h"
 #include "XYZ/ImGui/ImGui.h"
 
@@ -24,28 +26,19 @@
 namespace XYZ {
 	namespace Editor {
 		namespace Utils {
-			template <typename T>
-			static bool CompareDeques(const std::deque<T>& a, const std::deque<T>& b)
+			template <typename T, typename Comparator>
+			static bool CompareDeques(const std::deque<T>& a, const std::deque<T>& b, Comparator&& cmp)
 			{
 				if (a.size() != b.size())
 					return false;
 				for (size_t i = 0; i < a.size(); ++i)
 				{
-					if (a[i] != b[i])
+					if (!cmp(a[i], b[i]))
 						return false;
 				}
 				return true;
-			}
+			}	
 
-			static AABB SceneEntityAABB(const SceneEntity& entity)
-			{
-				const TransformComponent& transformComponent = entity.GetComponent<TransformComponent>();
-				auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
-				return AABB(
-					translation - (scale / 2.0f),
-					translation + (scale / 2.0f)
-				);
-			}
 			static std::array<glm::vec2, 2> ImGuiViewportBounds()
 			{
 				const auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
@@ -83,48 +76,52 @@ namespace XYZ {
 
 		void ScenePanel::OnImGuiRender(bool& open)
 		{
-			UI::ScopedStyleStack styleStack(true, ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-			
-			if (ImGui::Begin("Scene", &open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 			{
-				if (m_Context.Raw())
+				UI::ScopedStyleStack styleStack(true, ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+				if (ImGui::Begin("Scene", &open, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
 				{
-					const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
-					m_ViewportBounds = Utils::ImGuiViewportBounds();
-					m_ViewportFocused = ImGui::IsWindowFocused();
-					m_ViewportHovered = ImGui::IsWindowHovered();
-
-					ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();
-					const bool blocked = imguiLayer->GetBlockedEvents();
-					// Only unlock possible here
-					imguiLayer->BlockEvents(blocked && !m_ViewportFocused && !m_ViewportHovered);
-
-
-					UI::Image(m_SceneRenderer->GetFinalPassImage(), viewportPanelSize);
-					if (m_Context->GetState() == SceneState::Edit)
-						acceptDragAndDrop();
-
-					bool handled = playBar();
-					handled |= toolsBar();
-
-					if (m_ViewportHovered && m_ViewportFocused && m_Context->GetState() == SceneState::Edit)
+					if (m_Context.Raw())
 					{
-						const SceneEntity selectedEntity = m_Context->GetSelectedEntity();
-						if (selectedEntity && m_GizmoType != sc_InvalidGizmoType)
+						const ImVec2 viewportPanelSize = ImGui::GetContentRegionAvail();
+						m_ViewportBounds = Utils::ImGuiViewportBounds();
+						m_ViewportFocused = ImGui::IsWindowFocused();
+						m_ViewportHovered = ImGui::IsWindowHovered();
+
+						ImGuiLayer* imguiLayer = Application::Get().GetImGuiLayer();
+						const bool blocked = imguiLayer->GetBlockedEvents();
+						// Only unlock possible here
+						imguiLayer->BlockEvents(blocked && !m_ViewportFocused && !m_ViewportHovered);
+
+
+						UI::Image(m_SceneRenderer->GetFinalPassImage(), viewportPanelSize);
+						if (m_Context->GetState() == SceneState::Edit)
+							acceptDragAndDrop();
+
+						bool handled = playBar();
+						handled |= toolsBar();
+
+						if (m_ViewportHovered && m_ViewportFocused && m_Context->GetState() == SceneState::Edit)
 						{
-							handleEntityTransform(m_Context->GetSelectedEntity());
+							const SceneEntity selectedEntity = m_Context->GetSelectedEntity();
+							if (selectedEntity && m_GizmoType != sc_InvalidGizmoType)
+							{
+								handleEntityTransform(m_Context->GetSelectedEntity());
+							}
+							else if (!handled)
+							{
+								auto [mx, my] = getMouseViewportSpace();
+								handleSelection({ mx,my });
+							}
 						}
-						else if (!handled)
-						{
-							auto [mx, my] = getMouseViewportSpace();
-							handleSelection({ mx,my });
-						}
+						handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });
 					}
-					handlePanelResize({ viewportPanelSize.x, viewportPanelSize.y });
-				}				
+				}
+				ImGui::End();
 			}
-			ImGui::End();
-			
+			if (m_Context.Raw())
+			{
+				m_Context->OnImGuiRender();
+			}
 		}
 
 		void ScenePanel::OnUpdate(Timestep ts)
@@ -235,30 +232,6 @@ namespace XYZ {
 			return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
 		}
 
-		std::deque<SceneEntity> ScenePanel::findSelection(const Ray& ray)
-		{
-			std::deque<SceneEntity> result;
-
-			m_Context->GetRegistry().each([&](const entt::entity entityID) {
-				SceneEntity entity(entityID, m_Context.Raw());
-				float t = 0.0f;
-				if (ray.IntersectsAABB(Utils::SceneEntityAABB(entity), t))
-				{
-					result.push_back(entity);
-				}
-			});
-
-			std::sort(result.begin(), result.end(), [&](const SceneEntity& a, const SceneEntity& b) {
-				auto& cameraPos = m_EditorCamera.GetPosition();
-				const TransformComponent& transformA = a.GetComponent<TransformComponent>();
-				const TransformComponent& transformB = b.GetComponent<TransformComponent>();
-				auto [worldPosA, worldRotA, worldScaleA] = transformA.GetWorldComponents();
-				auto [worldPosB, worldRotB, worldScaleB] = transformB.GetWorldComponents();
-				return glm::distance(worldPosA, cameraPos) < glm::distance(worldPosB, cameraPos);
-			});
-			return result;
-		}
-
 		bool ScenePanel::playBar()
 		{
 			bool handled = false;
@@ -344,8 +317,11 @@ namespace XYZ {
 				const Ray ray = { origin,direction };
 				m_Context->SetSelectedEntity(entt::null);
 
-				std::deque<SceneEntity> newSelection = findSelection(ray);
-				if (!Utils::CompareDeques(m_Selection, newSelection))
+				std::deque<SceneIntersection::HitData> newSelection = SceneIntersection::Intersect(ray, m_Context);
+				
+				if (!Utils::CompareDeques(m_Selection, newSelection, [](const SceneIntersection::HitData& a, const SceneIntersection::HitData & b) {
+					return a.Entity == b.Entity;
+				}))
 				{
 					m_Selection = std::move(newSelection);
 					m_SelectionIndex = 0;
@@ -361,8 +337,8 @@ namespace XYZ {
 
 				if (!m_Selection.empty())
 				{
-					m_Context->SetSelectedEntity(m_Selection[m_SelectionIndex].ID());
-					Application::Get().OnEvent(EntitySelectedEvent(m_Selection[m_SelectionIndex]));
+					m_Context->SetSelectedEntity(m_Selection[m_SelectionIndex].Entity.ID());
+					Application::Get().OnEvent(EntitySelectedEvent(m_Selection[m_SelectionIndex].Entity));
 				}
 			}
 		}
@@ -382,7 +358,7 @@ namespace XYZ {
 			TransformComponent& tc = selectedEntity.GetComponent<TransformComponent>();
 			const Relationship& rel = selectedEntity.GetComponent<Relationship>();
 
-			glm::mat4 transform = tc.WorldTransform;
+			glm::mat4 transform = tc->WorldTransform;
 			
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
 				(ImGuizmo::OPERATION)m_GizmoType, ImGuizmo::LOCAL, glm::value_ptr(transform),
@@ -394,14 +370,14 @@ namespace XYZ {
 				if (rel.GetParent() != entt::null)
 				{
 					auto& reg = *entity.GetRegistry();
-					const glm::mat4& parentTransform = reg.get<TransformComponent>(parent).WorldTransform;
+					const glm::mat4& parentTransform = reg.get<TransformComponent>(parent)->WorldTransform;
 					transform = glm::inverse(parentTransform) * transform;
 				}
 				auto [translation, rotation, scale] = Math::DecomposeTransform(transform);
-				glm::vec3 deltaRot = rotation - tc.Rotation;
-				tc.Translation = translation;
-				tc.Rotation += deltaRot;
-				tc.Scale = scale;
+				glm::vec3 deltaRot = rotation - tc->Rotation;
+				tc.GetTransform().Translation = translation;
+				tc.GetTransform().Rotation += deltaRot;
+				tc.GetTransform().Scale = scale;
 			}
 		}
 

@@ -7,7 +7,7 @@
 namespace XYZ {
 
 
-	Ref<RenderCommandBuffer> RenderCommandBuffer::Create(uint32_t count, const std::string& debugName)
+	Ref<PrimaryRenderCommandBuffer> PrimaryRenderCommandBuffer::Create(uint32_t count, const std::string& debugName)
 	{
 		switch (RendererAPI::GetType())
 		{
@@ -17,4 +17,5 @@ namespace XYZ {
 		XYZ_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
 	}
+
 }

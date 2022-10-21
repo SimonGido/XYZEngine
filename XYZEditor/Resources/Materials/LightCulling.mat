@@ -1,7 +1,8 @@
 Shader: a29bbe35-4b81-4c73-b642-a8aec3be16cc
 Opaque: true
 Textures:
-  []
+  - Name: u_PreDepthMap
+    Handle: 670eeb29-9103-4232-9a7b-ca0640f1c542
 TextureArrays:
   []
 MaterialData:

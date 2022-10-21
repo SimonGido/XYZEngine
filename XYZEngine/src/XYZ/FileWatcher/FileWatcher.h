@@ -2,7 +2,7 @@
 #include "FileWatcherListener.h"
 
 #include "XYZ/Utils/Delegate.h"
-#include "XYZ/Utils/DataStructures/Queue.h"
+#include "XYZ/Utils/DataStructures/ThreadQueue.h"
 
 #include <filesystem>
 
@@ -61,7 +61,7 @@ namespace XYZ {
 			ChangeType			  Type;
 			std::filesystem::path FilePath;
 		};
-		Queue<Change> m_FileChanges;
+		ThreadQueue<Change> m_FileChanges;
 	};
 
 	template<auto Callable>

@@ -8,13 +8,16 @@ namespace XYZ {
 
 	void LightCullingPass::Init(const LightCullingPassConfiguration& config)
 	{
-		m_CameraBufferSet = config.CameraBufferSet;
+		m_UniformBufferSet = config.UniformBufferSet;
+		m_StorageBufferSet = config.StorageBufferSet;
 
 		auto& defaultResources = Renderer::GetDefaultResources();
 		Ref<MaterialAsset> materialAsset = defaultResources.RendererAssets.at("LightCullingMaterial");
 		m_Material = Material::Create(materialAsset->GetShader());
-		m_MaterialInstance = Ref<MaterialInstance>::Create(m_Material);
-		m_Pipeline = PipelineCompute::Create(m_Material->GetShader());
+		m_MaterialInstance = m_Material->CreateMaterialInstance();
+		PipelineComputeSpecification spec;
+		spec.Shader = m_Material->GetShader();
+		m_Pipeline = PipelineCompute::Create(spec);
 
 	}
 
@@ -29,7 +32,7 @@ namespace XYZ {
 		m_MaterialInstance->Set("u_ScreenData.u_ScreenSize", screenSize);
 
 
-		Renderer::BeginPipelineCompute(commandBuffer, m_Pipeline, m_CameraBufferSet, m_LightsBufferSet, m_Material);
+		Renderer::BeginPipelineCompute(commandBuffer, m_Pipeline, m_UniformBufferSet, m_StorageBufferSet, m_Material);
 		Renderer::DispatchCompute(m_Pipeline, m_MaterialInstance, workGroups.x, workGroups.y, workGroups.z);
 
 		Renderer::Submit([renderCommandBuffer = commandBuffer]() mutable
@@ -40,7 +43,7 @@ namespace XYZ {
 				barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-				VkCommandBuffer vulkanCommandBuffer = (const VkCommandBuffer)renderCommandBuffer.As<VulkanPrimaryRenderCommandBuffer>()->CommandBufferHandle(frameIndex);
+				VkCommandBuffer vulkanCommandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 
 				vkCmdPipelineBarrier(vulkanCommandBuffer,
 					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,

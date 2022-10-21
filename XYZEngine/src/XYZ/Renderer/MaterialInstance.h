@@ -1,6 +1,7 @@
 #pragma once
 #include "XYZ/Core/Ref/Ref.h"
 #include "XYZ/Renderer/Shader.h"
+#include "XYZ/Renderer/PushConstBuffer.h"
 
 #include <unordered_set>
 
@@ -9,8 +10,7 @@ namespace XYZ {
 	class Material;
 	class MaterialInstance : public RefCount
 	{
-	public:
-		MaterialInstance(const Ref<Material>& material);
+	public:	
 		virtual ~MaterialInstance() override;
 
 		template <typename T>
@@ -19,19 +19,28 @@ namespace XYZ {
 		template <typename T>
 		T& Get(const std::string_view name);
 
+		template <typename T>
+		const T& Get(const std::string_view name) const;
+
+		bool HasUniform(const std::string_view name) const;
+
 		Ref<Shader>   GetShader() const;
 		Ref<Material> GetMaterial() const { return m_Material; }
 
-		const ByteBuffer GetFSUniformsBuffer() const;
-		const ByteBuffer GetVSUniformsBuffer() const;
+		PushConstBuffer GetFSUniformsBuffer() const;
+		PushConstBuffer GetVSUniformsBuffer() const;
+
+	private:
+		MaterialInstance(const Ref<Material>& material);
 
 	private:
 		void allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers) const;
 		std::pair<const ShaderUniform*, ByteBuffer*> findUniformDeclaration(const std::string_view name);
-
+		std::pair<const ShaderUniform*, ByteBuffer*> findUniformDeclaration(const std::string_view name) const;
+	
 	private:
-		Ref<Material>      m_Material;
-		mutable ByteBuffer m_UniformsBuffer;
+		Ref<Material>			m_Material;
+		mutable ByteBuffer		m_UniformsBuffer;
 
 		friend class Material;
 	};
@@ -47,6 +56,13 @@ namespace XYZ {
 	}
 	template<typename T>
 	inline T& MaterialInstance::Get(const std::string_view name)
+	{
+		auto [decl, buffer] = findUniformDeclaration(name);
+		XYZ_ASSERT(decl != nullptr, "Could not find uniform with name");
+		return buffer->Read<T>(decl->GetOffset());
+	}
+	template<typename T>
+	inline const T& MaterialInstance::Get(const std::string_view name) const
 	{
 		auto [decl, buffer] = findUniformDeclaration(name);
 		XYZ_ASSERT(decl != nullptr, "Could not find uniform with name");

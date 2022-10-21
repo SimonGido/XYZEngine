@@ -14,6 +14,7 @@
 #include "XYZ/Asset/Animation/AnimationController.h"
 #include "XYZ/Asset/Renderer/MeshSource.h"
 #include "XYZ/Renderer/Mesh.h"
+#include "XYZ/Particle/GPU/ParticleSystemGPU.h"
 
 #include "SceneCamera.h"
 
@@ -38,6 +39,26 @@ namespace XYZ {
     namespace Editor {
         class SceneHierarchyPanel;
     }
+
+
+    struct PointLight3D
+    {
+        glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+        float	  Multiplier = 0.0f;
+        glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
+        float	  MinRadius = 0.001f;
+        float	  Radius = 25.0f;
+        float	  Falloff = 1.f;
+        float	  SourceSize = 0.1f;
+        bool	  CastsShadows = true;
+        char	  Padding[3]{ 0, 0, 0 };
+    };
+    
+    struct LightEnvironment
+    {
+        std::vector<PointLight3D> PointLights3D;
+    };
+
     class Scene : public Asset
     {
     public:
@@ -60,6 +81,8 @@ namespace XYZ {
         void OnUpdateEditor(Timestep ts);
         void OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos);
 
+        
+        void OnImGuiRender();
 
         SceneEntity GetEntityByName(const std::string& name);
         SceneEntity GetEntityByGUID(const GUID& guid);
@@ -74,20 +97,41 @@ namespace XYZ {
         inline const std::string& GetName() const { return m_Name; }
 
         static AssetType GetStaticType() { return AssetType::Scene; }
+
+
+        void CreateParticleTest();
     private:
         void onScriptComponentConstruct(entt::registry& reg, entt::entity ent);
         void onScriptComponentDestruct(entt::registry& reg, entt::entity ent);
 
-        void updateHierarchy();
+        void updateScripts(Timestep ts);
+        void updateHierarchy();      
+        void updateHierarchyAsync();
+        void updateSubHierarchy(entt::entity parent);
+
+
+        void updateAnimationView(Timestep ts);
+        void updateAnimationViewAsync(Timestep ts);
+
+        void updateParticleView(Timestep ts);
+        void updateRigidBody2DView();
+
+        void updateParticleGPUView(Timestep ts);
+
         void setupPhysics();
+        void setupLightEnvironment();
+
+        void submitParticleGPUView();
+
     private:
         PhysicsWorld2D      m_PhysicsWorld;
         ContactListener     m_ContactListener;
         SceneEntity*        m_PhysicsEntityBuffer;
+        LightEnvironment    m_LightEnvironment;
 
-        entt::registry            m_Registry;
-        GUID                      m_UUID;
-        entt::entity              m_SceneEntity;
+        entt::registry      m_Registry;
+        GUID                m_UUID;
+        entt::entity        m_SceneEntity;
 
         std::string m_Name;
         SceneState  m_State;
@@ -99,11 +143,31 @@ namespace XYZ {
         uint32_t m_ViewportWidth;
         uint32_t m_ViewportHeight;
 
-   
+        std::shared_mutex m_ScriptMutex;
+
+        float m_GPUFrameTimestep; // It can be updated only once per FramesInFlight
+        uint32_t m_GPUFrameCounter;
+        
+        bool  m_UpdateAnimationAsync = false;
+        bool  m_UpdateHierarchyAsync = false;
+
+        friend SceneRenderer;
+        friend class SceneIntersection;
         friend class SceneEntity;
         friend class SceneSerializer;
         friend class ScriptEngine;
         friend class LuaEntity;
         friend class Editor::SceneHierarchyPanel;
+
+
+        
+
+        // Indirect draw test //
+        Ref<MaterialAsset>     m_IndirectCommandMaterial;
+        Ref<ParticleSystemGPU> m_ParticleSystemGPU;
+
+        Ref<MaterialAsset>	   m_ParticleMaterialGPU;
+        Ref<MaterialInstance>  m_ParticleMaterialInstanceGPU;
+        Ref<Mesh>			   m_ParticleCubeMesh;
     };
 }

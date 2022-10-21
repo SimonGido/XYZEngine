@@ -48,26 +48,26 @@ namespace XYZ {
 		return nullptr;
 	}
 
-	Ref<StorageBuffer> StorageBuffer::Create(uint32_t size, uint32_t binding)
+	Ref<StorageBuffer> StorageBuffer::Create(uint32_t size, uint32_t binding, bool indirect)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case RendererAPI::Type::OpenGL:  return Ref<OpenGLStorageBuffer>::Create((float*)NULL, size, binding, BufferUsage::Dynamic);
-		case RendererAPI::Type::Vulkan:  return Ref<VulkanStorageBuffer>::Create(size, binding);
+		case RendererAPI::Type::Vulkan:  return Ref<VulkanStorageBuffer>::Create(size, binding, indirect);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
 
-	Ref<StorageBuffer> StorageBuffer::Create(const void* data, uint32_t size, uint32_t binding, BufferUsage usage)
+	Ref<StorageBuffer> StorageBuffer::Create(const void* data, uint32_t size, uint32_t binding, bool indirect, BufferUsage usage)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
 		case RendererAPI::Type::OpenGL:  return Ref<OpenGLStorageBuffer>::Create(data, size, binding, usage);
-		case RendererAPI::Type::Vulkan:  return Ref<VulkanStorageBuffer>::Create(data, size, binding);
+		case RendererAPI::Type::Vulkan:  return Ref<VulkanStorageBuffer>::Create(data, size, binding, indirect);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
@@ -84,14 +84,8 @@ namespace XYZ {
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<IndirectBuffer> IndirectBuffer::Create(void* drawCommand, uint32_t size, uint32_t binding)
+	Ref<IndirectBuffer> IndirectBuffer::Create(const void* data, uint32_t size, uint32_t binding)
 	{
-		switch (Renderer::GetAPI())
-		{
-		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::Type::OpenGL:  return Ref<OpenGLIndirectBuffer>::Create(drawCommand, size, binding);
-		}
-
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}

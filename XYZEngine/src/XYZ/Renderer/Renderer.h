@@ -16,6 +16,8 @@
 #include "Material.h"
 #include "StorageBufferSet.h"
 #include "VertexBufferSet.h"
+#include "ShaderIncluder.h"
+
 #include "XYZ/Asset/Renderer/MaterialAsset.h"
 
 
@@ -40,6 +42,7 @@ namespace XYZ {
 		void Init();
 		void Shutdown();
 
+		ShaderIncluder Includer;
 		std::unordered_map<std::string, Ref<Asset>> RendererAssets;
 	};
 
@@ -54,7 +57,8 @@ namespace XYZ {
 	{
 	public:
 		static void Init(const RendererConfiguration& config = RendererConfiguration());
-		static void InitResources(bool initDefaultResources = true);
+		static void InitAPI(bool initDefaultResources = true);
+
 		static void Shutdown();
 
 		// Old API
@@ -78,7 +82,7 @@ namespace XYZ {
 		static void BeginFrame();
 		static void EndFrame();
 
-		static void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass, bool clear);
+		static void BeginRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer, const Ref<RenderPass>& renderPass, bool subPass, bool clear);
 		static void EndRenderPass(Ref<RenderCommandBuffer> renderCommandBuffer);
 		
 		static void RenderGeometry(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline,  Ref<MaterialInstance> material, Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, 
@@ -101,13 +105,23 @@ namespace XYZ {
 			Ref<VertexBufferSet> instanceBuffer, uint32_t instanceOffset, uint32_t instanceCount
 		);
 
+		static void RenderIndirectMesh(
+			Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material,
+			Ref<VertexBuffer> vertexBuffer, Ref<IndexBuffer> indexBuffer, const PushConstBuffer& constData,
+			Ref<StorageBufferSet> indirectBuffer, uint32_t indirectOffset, uint32_t indirectCount, uint32_t indirectStride
+		);
+
 		static void SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material);
 		static void SubmitFullscreenQuad(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<MaterialInstance> material, const PushConstBuffer& constData);
-		static void BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material);
+		
+		static void BindPipeline(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material);	
 		static void BeginPipelineCompute(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<PipelineCompute> pipeline, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet, Ref<Material> material);
-		static void DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
+
+		static void DispatchCompute(Ref<PipelineCompute> pipeline, Ref<MaterialInstance> material, uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ, const PushConstBuffer& constData = {});
 		static void EndPipelineCompute(Ref<PipelineCompute> pipeline);
 		static void UpdateDescriptors(Ref<PipelineCompute> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet);
+		static void UpdateDescriptors(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Pipeline> pipeline, Ref<Material> material, Ref<UniformBufferSet> uniformBufferSet, Ref<StorageBufferSet> storageBufferSet);
+
 		static void ClearImage(Ref<RenderCommandBuffer> renderCommandBuffer, Ref<Image2D> image);
 
 
@@ -115,8 +129,11 @@ namespace XYZ {
 		static void RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Pipeline>& pipeline);
 		static void RegisterShaderDependency(const Ref<Shader>& shader, const Ref<Material>& material);
 		
+
 		static void RemoveShaderDependency(size_t hash);
 		static void OnShaderReload(size_t hash);
+
+
 		//////////////
 		static Ref<APIContext>				GetAPIContext();
 		
@@ -149,7 +166,7 @@ namespace XYZ {
 
 	private:
 		static ScopedLock<RenderCommandQueue> getResourceQueue();
-		static RenderCommandQueue& getRenderCommandQueue();
+		static ScopedLock<RenderCommandQueue> getRenderCommandQueue();
 		static RendererStats&	   getStats();
 	};
 
@@ -162,8 +179,8 @@ namespace XYZ {
 			(*pFunc)();
 			pFunc->~FuncT(); // Call destructor
 		};
-		auto& queue = getRenderCommandQueue();
-		auto storageBuffer = queue.Allocate(renderCmd, sizeof(func));
+		ScopedLock<RenderCommandQueue> queue = getRenderCommandQueue();
+		auto storageBuffer = queue->Allocate(renderCmd, sizeof(func));
 		new (storageBuffer) FuncT(std::forward<FuncT>(func));
 		getStats().CommandsCount++;
 	}

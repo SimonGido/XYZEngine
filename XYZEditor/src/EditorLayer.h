@@ -59,7 +59,6 @@ namespace XYZ {
 			void createOverlayPipelines();
 
 			std::pair<glm::vec3, glm::vec3> cameraToAABB(const TransformComponent& transform, const SceneCamera& camera) const;
-			std::pair<glm::vec3, glm::vec3> transformToAABB(const TransformComponent& transform) const;
 		private:
 			void displayStats();
 
@@ -68,7 +67,7 @@ namespace XYZ {
 			Ref<SceneRenderer>			m_SceneRenderer;
 		
 			// Overlay rendering
-			Ref<RenderCommandBuffer>	m_CommandBuffer;
+			Ref<PrimaryRenderCommandBuffer>	m_CommandBuffer;
 			Ref<Renderer2D>				m_OverlayRenderer2D;
 			Ref<Texture2D>				m_CameraTexture;
 			

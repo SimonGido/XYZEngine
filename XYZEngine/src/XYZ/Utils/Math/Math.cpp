@@ -57,5 +57,22 @@ namespace XYZ {
 			glm::vec3 euler = glm::eulerAngles(rot);
 			return std::tuple<glm::vec3, glm::vec3, glm::vec3>(translation, euler, scale);
 		}
+
+		std::tuple<glm::vec3, glm::quat, glm::vec3> DecomposeTransformQuat(const glm::mat4& transform)
+		{
+			glm::vec3 translation;
+			glm::vec3 scale;
+			glm::quat rot;
+			glm::vec3 skew;
+			glm::vec4 perspective;
+			glm::decompose(transform, scale, rot, translation, skew, perspective);
+			return std::tuple<glm::vec3, glm::quat, glm::vec3>(translation, rot, scale);
+		}
+
+		int32_t RoundUp(int32_t numToRound, int32_t multiple)
+		{
+			int32_t isPositive = (int32_t)(numToRound >= 0);
+			return ((numToRound + isPositive * (multiple - 1)) / multiple) * multiple;
+		}
 	}
 }

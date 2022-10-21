@@ -25,6 +25,7 @@ namespace XYZ {
 		virtual void Begin() = 0;
 		virtual void End() = 0;
 		virtual void AddFont(const ImGuiFontConfig& config) {}
+		virtual bool IsMultiViewport() const { return false; }
 
 		void BlockEvents(bool block) { m_BlockEvents = block; }
 		void EnableDockspace(bool enable) { m_EnableDockspace = enable; }

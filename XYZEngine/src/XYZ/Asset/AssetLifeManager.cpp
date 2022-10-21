@@ -1,52 +1,51 @@
 #include "stdafx.h"
 #include "AssetLifeManager.h"
 
+#include "XYZ/Debug/Timer.h"
 
 namespace XYZ {
 
-	std::vector<AssetLifeManager::AssetTimer> AssetLifeManager::s_AssetTimers;
-	Queue<Ref<Asset>>						  AssetLifeManager::s_AssetQueue;
-	float									  AssetLifeManager::s_TimeAlive = 0.0f;
-	bool									  AssetLifeManager::s_Running = false;
-	std::unique_ptr<std::thread>			  AssetLifeManager::s_UpdateThread;
 
 	void AssetLifeManager::Start(float aliveSeconds)
 	{
-		s_TimeAlive = aliveSeconds;
-		s_Running = true;
-		s_UpdateThread = std::make_unique<std::thread>(&AssetLifeManager::threadFunc);
-		
-		AssetManager::s_OnAssetLoaded = [](Ref<Asset> asset) {
-			s_AssetQueue.PushBack(asset);
-		};
+		if (m_Running)
+			Stop();
+
+		m_TimeAlive = aliveSeconds;
+		m_Running = true;
+		m_UpdateThread = std::make_unique<std::thread>(&AssetLifeManager::threadFunc, this->shared_from_this());
 	}
 	void AssetLifeManager::Stop()
 	{
-		s_Running = false;
-		s_UpdateThread->join();
-		s_UpdateThread.reset();
-		s_AssetTimers.clear();
-		s_AssetQueue.Clear();
+		m_Running = false;
+		m_UpdateThread->join();
+		m_UpdateThread.reset();
+		m_AssetTimers.clear();
+		m_AssetQueue.Clear();
 	}
-	void AssetLifeManager::threadFunc()
+	void AssetLifeManager::PushAsset(Ref<Asset> asset)
+	{
+		m_AssetQueue.PushBack(asset);
+	}
+	void AssetLifeManager::threadFunc(std::shared_ptr<AssetLifeManager> lifeManager)
 	{	
 		float elapsed = 0.0f;
-		while (s_Running)
+		while (lifeManager->m_Running)
 		{
 			Stopwatch timer;
 
-			while (!s_AssetQueue.Empty())
+			while (!lifeManager->m_AssetQueue.Empty())
 			{
-				s_AssetTimers.push_back({ s_AssetQueue.PopBack(), s_TimeAlive });
+				lifeManager->m_AssetTimers.push_back({ lifeManager->m_AssetQueue.PopBack(), lifeManager->m_TimeAlive });
 			}
 
-			for (auto it = s_AssetTimers.begin(); it != s_AssetTimers.end(); )
+			for (auto it = lifeManager->m_AssetTimers.begin(); it != lifeManager->m_AssetTimers.end(); )
 			{
 				it->TimeLeft -= elapsed;
 				if (it->TimeLeft < 0.0f)
 				{
 					XYZ_CORE_INFO("Erasing asset reference");
-					it = s_AssetTimers.erase(it);
+					it = lifeManager->m_AssetTimers.erase(it);
 				}
 				else
 				{

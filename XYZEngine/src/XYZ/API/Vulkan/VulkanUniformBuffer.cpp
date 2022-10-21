@@ -44,6 +44,12 @@ namespace XYZ {
 		allocator.UnmapMemory(m_MemoryAlloc);
 	}
 	
+	void VulkanUniformBuffer::RT_SetBufferInfo(uint32_t size, uint32_t offset)
+	{
+		m_DescriptorInfo.offset = offset;
+		m_DescriptorInfo.range = size;
+	}
+
 	void VulkanUniformBuffer::RT_invalidate()
 	{
 		release();

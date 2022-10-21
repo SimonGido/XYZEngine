@@ -6,9 +6,13 @@
 #include "RenderCommandBuffer.h"
 #include "StorageBufferSet.h"
 #include "VertexBufferSet.h"
+
 #include "PipelineCompute.h"
 #include "MaterialInstance.h"
 #include "GeometryRenderQueue.h"
+#include "SceneRendererBuffers.h"
+#include "PushConstBuffer.h"
+#include "StorageBufferAllocator.h"
 
 #include "RenderPasses/GeometryPass.h"
 #include "RenderPasses/DeferredLightPass.h"
@@ -22,13 +26,15 @@
 #include "XYZ/Scene/Components.h"
 
 
+#include "XYZ/Particle/GPU/ParticleSystemGPU.h"
+
 namespace XYZ {
 
 	struct GridProperties
 	{
 		glm::mat4 Transform;
-		glm::vec2 Scale;
-		float LineWidth;
+		float Scale = 16.025f;
+		float LineWidth = 0.03f;
 	};
 
 	struct SceneRendererOptions
@@ -70,6 +76,22 @@ namespace XYZ {
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial);
 		void SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial = nullptr);
+		
+		void SubmitMeshIndirect(
+			// Rendering data
+			const Ref<Mesh>& mesh,
+			const Ref<MaterialAsset>& material,
+			const Ref<MaterialInstance>& overrideMaterial,
+			const glm::mat4& transform,
+
+			// Compute data
+			const Ref<MaterialAsset>& materialCompute,
+			const void* computeData,
+			uint32_t computeDataSize,
+			uint32_t computeResultSize,
+			Ref<StorageBufferAllocation>& allocation,
+			const PushConstBuffer& uniformComputeData
+		);
 
 		void OnImGuiRender();
 
@@ -77,7 +99,7 @@ namespace XYZ {
 		Ref<RenderPass>			 GetFinalRenderPass()	  const;
 		Ref<Image2D>			 GetFinalPassImage()	  const;
 		Ref<RenderCommandBuffer> GetRenderCommandBuffer() const { return m_CommandBuffer; }
-		Ref<UniformBufferSet>    GetCameraBufferSet()	  const { return m_CameraBufferSet; }
+		Ref<UniformBufferSet>    GetUniformBufferSet()	  const { return m_UniformBufferSet; }
 		
 		SceneRendererOptions& GetOptions();
 	private:
@@ -92,76 +114,86 @@ namespace XYZ {
 		void preRender();
 		void renderGrid();
 
-		void updateLights3D();
+		void updateUniformBufferSet();
 	private:
-		struct CameraData
-		{
-			glm::mat4 ViewProjectionMatrix;
-			glm::mat4 ViewMatrix;
-			glm::vec4 ViewPosition;
-		};
+		using TransformData = GeometryRenderQueue::TransformData;
 
-		struct PointLight3D
-		{
-			glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
-			float	  Multiplier = 0.0f;
-			glm::vec3 Radiance = { 0.0f, 0.0f, 0.0f };
-			float	  MinRadius = 0.001f;
-			float	  Radius = 25.0f;
-			float	  Falloff = 1.f;
-			float	  SourceSize = 0.1f;
-			bool	  CastsShadows = true;
-			char	  Padding[3]{ 0, 0, 0 };
-		};
+		UBCameraData	 m_CameraDataUB;
+		UBPointLights3D  m_PointsLights3DUB;
+		UBRendererData   m_RendererDataUB;
+		
+		SSBOBoneTransformData	   m_BoneTransformSSBO;
+		SSBOIndirectData		   m_IndirectBufferSSBO;
+		SSBOComputeData			   m_ComputeDataSSBO;
+		SSBOComputeState		   m_ComputeStateSSBO;
+		std::vector<TransformData> m_TransformData;
+		std::vector<std::byte>	   m_InstanceData;
 
-		std::vector<PointLight3D> m_PointLights3D;
+		GeometryPass			   m_GeometryPass;
+		DeferredLightPass		   m_DeferredLightPass;
+		LightCullingPass		   m_LightCullingPass;
+		BloomPass				   m_BloomPass;
+		CompositePass			   m_CompositePass;
 
-		GeometryPass	  m_GeometryPass;
-		DeferredLightPass m_DeferredLightPass;
-		LightCullingPass  m_LightCullingPass;
-		BloomPass		  m_BloomPass;
-		CompositePass	  m_CompositePass;
-
-		Ref<RenderPass>				  m_GeometryRenderPass;
-		Ref<RenderPass>				  m_CompositeRenderPass;
-		Ref<RenderPass>				  m_LightRenderPass;
-		Ref<RenderPass>				  m_DepthRenderPass;
-
-		Ref<Material>				  m_GridMaterial;
-		Ref<Pipeline>				  m_GridPipeline;
-		Ref<MaterialInstance>		  m_GridMaterialInstance;
+		Ref<RenderPass>			   m_GeometryRenderPass;
+		Ref<RenderPass>			   m_CompositeRenderPass;
+		Ref<RenderPass>			   m_LightRenderPass;
+		Ref<RenderPass>			   m_DepthRenderPass;
+								   
+		Ref<Material>			   m_GridMaterial;
+		Ref<Pipeline>			   m_GridPipeline;
+		Ref<MaterialInstance>	   m_GridMaterialInstance;
 
 		std::array<Ref<Texture2D>, 3> m_BloomTexture;
 
 		SceneRendererSpecification m_Specification;
 		Ref<Scene>				   m_ActiveScene;
 
-		Ref<RenderCommandBuffer>   m_CommandBuffer;
-		Ref<UniformBufferSet>      m_CameraBufferSet;
+		Ref<PrimaryRenderCommandBuffer>   m_CommandBuffer;
+
+		Ref<UniformBufferSet>      m_UniformBufferSet;
+		Ref<StorageBufferSet>	   m_StorageBufferSet;
+		Ref<StorageBufferAllocator> m_StorageBufferAllocator;
 
 		SceneRendererCamera		   m_SceneCamera;
 		SceneRendererOptions	   m_Options;
+		BloomSettings			   m_BloomSettings;
 		GridProperties			   m_GridProps;
 		glm::ivec2				   m_ViewportSize;
-	
-		CameraData				   m_CameraBuffer;
-		GeometryRenderQueue		   m_Queue;
-								   
+		glm::ivec3				   m_LightCullingWorkGroups;
+
+		GeometryRenderQueue		   m_Queue;								   
 		bool				       m_ViewportSizeChanged = false;
 	
+		Ref<ShaderAsset>		   m_CompositeShaderAsset;
+		Ref<ShaderAsset>		   m_LightShaderAsset;
+		Ref<ShaderAsset>		   m_BloomShaderAsset;
 		
+
 		struct RenderStatistics
 		{
 			uint32_t SpriteDrawCommandCount = 0;
+
 			uint32_t MeshDrawCommandCount = 0;
 			uint32_t MeshOverrideDrawCommandCount = 0;
+			
+			uint32_t AnimatedMeshDrawCommandCount = 0;
+			uint32_t AnimatedMeshOverrideDrawCommandCount = 0;
+			
 			uint32_t InstanceMeshDrawCommandCount = 0;
+			
 			uint32_t PointLight2DCount = 0;
 			uint32_t SpotLight2DCount = 0;
+			
 			uint32_t TransformInstanceCount = 0;
 			uint32_t InstanceDataSize = 0;
+
+			uint32_t IndirectCommandCount = 0;
+			uint32_t ComputeStateSize = 0;
 		};
 		RenderStatistics m_RenderStatistics;
+		GeometryPassStatistics m_GeometryPassStatistics;
+
 
 		struct GPUTimeQueries
 		{
@@ -172,5 +204,7 @@ namespace XYZ {
 			static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
 		};
 		GPUTimeQueries m_GPUTimeQueries;
+
+		friend GeometryPass;
 	};
 }

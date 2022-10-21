@@ -8,6 +8,7 @@ namespace XYZ {
 		:
 		m_Frames(frames)
 	{
+		m_IndirectBuffers.resize(frames);
 	}
 	void VulkanStorageBufferSet::Update(const void* data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set)
 	{
@@ -30,17 +31,36 @@ namespace XYZ {
 			instance->RT_createDescriptors(vulkanShader);
 		});
 	}
-	void VulkanStorageBufferSet::Create(uint32_t size, uint32_t set, uint32_t binding)
+	void VulkanStorageBufferSet::Create(uint32_t size, uint32_t set, uint32_t binding, bool indirect)
 	{
 		for (uint32_t frame = 0; frame < m_Frames; frame++)
 		{
-			Ref<StorageBuffer> storageBuffer = StorageBuffer::Create(size, binding);
+			Ref<StorageBuffer> storageBuffer = StorageBuffer::Create(size, binding, indirect);
 			Set(storageBuffer, set, frame);
 		}
 	}
 	void VulkanStorageBufferSet::Set(Ref<StorageBuffer> storageBuffer, uint32_t set, uint32_t frame)
 	{
+		if (storageBuffer->IsIndirect())
+			m_IndirectBuffers[frame].push_back(storageBuffer.As<VulkanStorageBuffer>());
+
 		m_StorageBuffers[frame][set][storageBuffer->GetBinding()] = storageBuffer.As<VulkanStorageBuffer>();
+	}
+	void VulkanStorageBufferSet::Resize(uint32_t size, uint32_t set, uint32_t binding)
+	{
+		for (uint32_t frame = 0; frame < m_Frames; frame++)
+		{
+			m_StorageBuffers.at(frame).at(set).at(binding)->Resize(size);
+		}
+	}
+	void VulkanStorageBufferSet::SetBufferInfo(uint32_t size, uint32_t offset, uint32_t binding, uint32_t set)
+	{
+		Ref<VulkanStorageBufferSet> instance = this;
+
+		Renderer::Submit([instance, size, offset, binding, set]() mutable {
+			const uint32_t frame = Renderer::GetCurrentFrame();
+			instance->Get(binding, set, frame).As<VulkanStorageBuffer>()->RT_SetBufferInfo(size, offset);
+		});
 	}
 	Ref<StorageBuffer> VulkanStorageBufferSet::Get(uint32_t binding, uint32_t set, uint32_t frame)
 	{
@@ -93,6 +113,7 @@ namespace XYZ {
 					writeDescr.descriptorCount = 1;
 
 					writeDescr.pBufferInfo = &m_StorageBuffers[frame][set][binding]->GetDescriptorBufferInfo();
+					
 					writeDescr.pImageInfo = nullptr; // Optional
 					writeDescr.pTexelBufferView = nullptr; // Optional
 				}

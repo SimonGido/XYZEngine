@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "AssetManagerViewPanel.h"
 #include "XYZ/Asset/AssetManager.h"
+#include "XYZ/Asset/Renderer/ShaderAsset.h"
 
 #include "XYZ/ImGui/ImGui.h"
 #include "XYZ/Utils/StringUtils.h"
@@ -26,14 +27,13 @@ namespace XYZ {
 			{
 				MemoryPoolView view(AssetManager::GetMemoryPool());
 				view.OnImGuiRender();
-
+				
 				if (UI::BeginTreeNode("Asset Metadata"))
 				{
 					static char searchBuffer[_MAX_PATH];
 					ImGui::InputTextWithHint("##search", "Search...", searchBuffer, _MAX_PATH);
-
+					
 					const ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingStretchProp;
-
 					if (ImGui::BeginTable("##AssetMetadata", 2, tableFlags))
 					{
 						if (searchBuffer[0] != 0)
@@ -49,7 +49,30 @@ namespace XYZ {
 						ImGui::EndTable();
 					}	
 					UI::EndTreeNode();
-				}		
+				}	
+				if (UI::BeginTreeNode("Shaders"))
+				{
+					auto shaderAssets = AssetManager::FindAllLoadedAssets<ShaderAsset>(AssetType::Shader);
+					for (auto& shaderAsset : shaderAssets)
+					{
+						const ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingStretchSame;
+
+						if (ImGui::BeginTable("##ShaderAssets", 2, tableFlags))
+						{
+							UI::TableRow("ShaderAsset",
+								[&]() { ImGui::Text(shaderAsset->GetShader()->GetPath().c_str()); },
+								[&]() { if (ImGui::Button("Reload")) 
+										{
+											shaderAsset->GetShader()->Reload(true);
+										}
+									});
+
+
+							ImGui::EndTable();
+						}
+					}
+					UI::EndTreeNode();
+				}
 			}
 			ImGui::End();
 		}

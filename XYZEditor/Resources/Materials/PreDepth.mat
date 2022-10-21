@@ -7,6 +7,3 @@ TextureArrays:
 MaterialData:
   - Name: u_Renderer.Transform
     Type: 14
-  - Name: u_Renderer.BoneIndex
-    Type: 9
-    Value: 0

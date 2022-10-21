@@ -3,12 +3,15 @@
 #type vertex
 #version 450 core
 
-layout(location = 0) in vec3  a_Position;
-layout(location = 1) in vec2  a_TexCoord;
+layout(location = 0) in vec3 a_Position;
+layout(location = 1) in vec3 a_Normal;
+layout(location = 2) in vec3 a_Tangent;
+layout(location = 3) in vec3 a_Binormal;
+layout(location = 4) in vec2 a_TexCoord;
 
-layout(location = 2) in vec4  a_TransformRow0;
-layout(location = 3) in vec4  a_TransformRow1;
-layout(location = 4) in vec4  a_TransformRow2;
+XYZ_INSTANCED layout(location = 5) in vec4  a_TransformRow0;
+XYZ_INSTANCED layout(location = 6) in vec4  a_TransformRow1;
+XYZ_INSTANCED layout(location = 7) in vec4  a_TransformRow2;
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -20,7 +23,6 @@ layout(std140, binding = 0) uniform Camera
 layout(push_constant) uniform Transform
 {
 	mat4 Transform;
-	uint BoneIndex;
 
 } u_Renderer;
 

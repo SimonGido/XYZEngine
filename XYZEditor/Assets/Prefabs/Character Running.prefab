@@ -1,0 +1,239 @@
+Scene: Prefab
+SceneEntity: 20c3d04b-62e9-48f6-bdc7-228dcccc44df
+FirstChild: 538a8cec-d2c4-4ddb-aaf6-12b174459bd2
+Entities:
+  - Entity: d506989a-e59f-4768-9347-0f391f6c3ff7
+    SceneTagComponent:
+      Name: Cube
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [-1.57079649, 0, 0]
+      Scale: [100, 99.9999924, 99.9999924]
+    AnimatedMeshComponent:
+      Mesh: 2f3adb89-c406-47bd-a0d5-ff8ae3714ac3
+      Material: 79280b4c-c21c-45d2-98e4-a7c0baf16724
+      BoneEntities:
+        - 14e19da2-3d40-43bd-bd7d-860dd5f38497
+        - 1277e0b4-9f91-4924-a029-c04e3c1690ad
+        - c618944d-368a-419d-9266-58dc909d53c2
+        - 8a65f313-dcdb-4cfc-8c65-3e97c3df6abd
+        - 5fbf68a0-a000-40ea-8d4e-b7ebeb80c4bf
+        - 5e51328f-1d9b-469f-9eb0-494fd0216041
+        - 5cda80b3-3521-4056-b642-67e79dec2f2a
+        - 07c3afa6-6e33-4c2f-940c-94cb4d3dce9c
+        - 73887ab5-1bb3-4889-9c11-e015716d1323
+        - 604d74c9-e3ec-47b9-89e7-31be2b9f9dc7
+        - 3d597beb-bf01-4c7f-92aa-998dc4bae607
+        - e2111394-58f2-4925-849c-02a8d254e759
+        - 887673ce-2148-4beb-addc-83caafa001bd
+        - 73badd10-97eb-4f1d-af2f-14058a524eee
+        - 550179f8-015f-43c0-8d83-7afb91d17943
+        - c9719e08-1052-4264-86c4-3e1b572f1de0
+    AnimationComponent:
+      Controller: 6bbc5689-dace-46a9-b0af-005addbf8178
+    Relationship:
+      Parent: 538a8cec-d2c4-4ddb-aaf6-12b174459bd2
+      PreviousSibling: 14587a46-3ac9-422c-a8f5-c771089feb10
+      Depth: 2
+  - Entity: c9719e08-1052-4264-86c4-3e1b572f1de0
+    SceneTagComponent:
+      Name: Foot.R
+    TransformComponent:
+      Position: [0, 0.0149307251, 0]
+      Rotation: [-2.70960236, 0.0126094064, -3.10065031]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 550179f8-015f-43c0-8d83-7afb91d17943
+      Depth: 2
+  - Entity: 550179f8-015f-43c0-8d83-7afb91d17943
+    SceneTagComponent:
+      Name: Lower_Leg.R
+    TransformComponent:
+      Position: [0, 0.0128250122, 0]
+      Rotation: [-1.91662085, -0.0102872951, -3.11552596]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 73badd10-97eb-4f1d-af2f-14058a524eee
+      FirstChild: c9719e08-1052-4264-86c4-3e1b572f1de0
+      Depth: 2
+  - Entity: 73badd10-97eb-4f1d-af2f-14058a524eee
+    SceneTagComponent:
+      Name: Upper_Leg.R
+    TransformComponent:
+      Position: [-0.00566864014, -1.34706497e-05, -0.0010433197]
+      Rotation: [-0.542252481, -0.00518137589, 3.13243008]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 14e19da2-3d40-43bd-bd7d-860dd5f38497
+      PreviousSibling: 3d597beb-bf01-4c7f-92aa-998dc4bae607
+      FirstChild: 550179f8-015f-43c0-8d83-7afb91d17943
+      Depth: 2
+  - Entity: 887673ce-2148-4beb-addc-83caafa001bd
+    SceneTagComponent:
+      Name: Foot.L
+    TransformComponent:
+      Position: [0, 0.0149307251, 0]
+      Rotation: [-1.54511404, -9.29366797e-06, 3.11195922]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: e2111394-58f2-4925-849c-02a8d254e759
+      Depth: 2
+  - Entity: e2111394-58f2-4925-849c-02a8d254e759
+    SceneTagComponent:
+      Name: Lower_Leg.L
+    TransformComponent:
+      Position: [0, 0.0128250122, 0]
+      Rotation: [-2.6040647, 0.0149553353, 3.10463428]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 3d597beb-bf01-4c7f-92aa-998dc4bae607
+      FirstChild: 887673ce-2148-4beb-addc-83caafa001bd
+      Depth: 2
+  - Entity: 3d597beb-bf01-4c7f-92aa-998dc4bae607
+    SceneTagComponent:
+      Name: Upper_Leg.L
+    TransformComponent:
+      Position: [0.00566864014, -1.34706497e-05, -0.0010433197]
+      Rotation: [1.10026014, -0.00987094454, -3.13491845]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 14e19da2-3d40-43bd-bd7d-860dd5f38497
+      NextSibling: 73badd10-97eb-4f1d-af2f-14058a524eee
+      PreviousSibling: 1277e0b4-9f91-4924-a029-c04e3c1690ad
+      FirstChild: e2111394-58f2-4925-849c-02a8d254e759
+      Depth: 2
+  - Entity: 604d74c9-e3ec-47b9-89e7-31be2b9f9dc7
+    SceneTagComponent:
+      Name: Hand.R
+    TransformComponent:
+      Position: [0, 0.0108337402, 0]
+      Rotation: [0.0208827518, 0.649966359, -0.228922069]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 73887ab5-1bb3-4889-9c11-e015716d1323
+      Depth: 2
+  - Entity: 73887ab5-1bb3-4889-9c11-e015716d1323
+    SceneTagComponent:
+      Name: Lower_Arm.R
+    TransformComponent:
+      Position: [0, 0.0148086548, 0]
+      Rotation: [1.58880329, 0.550078392, -1.44704282]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 07c3afa6-6e33-4c2f-940c-94cb4d3dce9c
+      FirstChild: 604d74c9-e3ec-47b9-89e7-31be2b9f9dc7
+      Depth: 2
+  - Entity: 07c3afa6-6e33-4c2f-940c-94cb4d3dce9c
+    SceneTagComponent:
+      Name: Upper_Arm.R
+    TransformComponent:
+      Position: [-0.00925445557, 0.00771713257, -0.00155735016]
+      Rotation: [0.302198321, -0.25895673, 2.87717962]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 1277e0b4-9f91-4924-a029-c04e3c1690ad
+      PreviousSibling: 5fbf68a0-a000-40ea-8d4e-b7ebeb80c4bf
+      FirstChild: 73887ab5-1bb3-4889-9c11-e015716d1323
+      Depth: 2
+  - Entity: 5cda80b3-3521-4056-b642-67e79dec2f2a
+    SceneTagComponent:
+      Name: Hand.L
+    TransformComponent:
+      Position: [0, 0.0108337402, 0]
+      Rotation: [-0.0755016431, -0.0966042876, -0.524856091]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 5e51328f-1d9b-469f-9eb0-494fd0216041
+      Depth: 2
+  - Entity: 5e51328f-1d9b-469f-9eb0-494fd0216041
+    SceneTagComponent:
+      Name: Lower_Arm.L
+    TransformComponent:
+      Position: [0, 0.0148086548, 0]
+      Rotation: [1.80481744, 0.274435163, -1.80721593]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 5fbf68a0-a000-40ea-8d4e-b7ebeb80c4bf
+      FirstChild: 5cda80b3-3521-4056-b642-67e79dec2f2a
+      Depth: 2
+  - Entity: 5fbf68a0-a000-40ea-8d4e-b7ebeb80c4bf
+    SceneTagComponent:
+      Name: Upper_Arm.L
+    TransformComponent:
+      Position: [0.00925445557, 0.00771713257, -0.00155735016]
+      Rotation: [-1.01220882, 0.64210093, 3.07338357]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 1277e0b4-9f91-4924-a029-c04e3c1690ad
+      NextSibling: 07c3afa6-6e33-4c2f-940c-94cb4d3dce9c
+      PreviousSibling: c618944d-368a-419d-9266-58dc909d53c2
+      FirstChild: 5e51328f-1d9b-469f-9eb0-494fd0216041
+      Depth: 2
+  - Entity: 8a65f313-dcdb-4cfc-8c65-3e97c3df6abd
+    SceneTagComponent:
+      Name: Head
+    TransformComponent:
+      Position: [0, 0.00302314758, 0]
+      Rotation: [0.239270896, -0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: c618944d-368a-419d-9266-58dc909d53c2
+      Depth: 2
+  - Entity: c618944d-368a-419d-9266-58dc909d53c2
+    SceneTagComponent:
+      Name: Neck
+    TransformComponent:
+      Position: [0, 0.0129547119, 0]
+      Rotation: [2.83480048, -0, 3.14159274]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 1277e0b4-9f91-4924-a029-c04e3c1690ad
+      NextSibling: 5fbf68a0-a000-40ea-8d4e-b7ebeb80c4bf
+      FirstChild: 8a65f313-dcdb-4cfc-8c65-3e97c3df6abd
+      Depth: 2
+  - Entity: 1277e0b4-9f91-4924-a029-c04e3c1690ad
+    SceneTagComponent:
+      Name: Chest
+    TransformComponent:
+      Position: [0, 0.0148239136, 0]
+      Rotation: [-0.0227882881, 0.0115460083, -0.0325423628]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 14e19da2-3d40-43bd-bd7d-860dd5f38497
+      NextSibling: 3d597beb-bf01-4c7f-92aa-998dc4bae607
+      FirstChild: c618944d-368a-419d-9266-58dc909d53c2
+      Depth: 2
+  - Entity: 14e19da2-3d40-43bd-bd7d-860dd5f38497
+    SceneTagComponent:
+      Name: Torso
+    TransformComponent:
+      Position: [0, 0, 0.0367723629]
+      Rotation: [1.63550317, -0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 14587a46-3ac9-422c-a8f5-c771089feb10
+      FirstChild: 1277e0b4-9f91-4924-a029-c04e3c1690ad
+      Depth: 2
+  - Entity: 14587a46-3ac9-422c-a8f5-c771089feb10
+    SceneTagComponent:
+      Name: Armature
+    TransformComponent:
+      Position: [0, 0, 0]
+      Rotation: [-1.57079649, 0, 0]
+      Scale: [100, 99.9999924, 99.9999924]
+    Relationship:
+      Parent: 538a8cec-d2c4-4ddb-aaf6-12b174459bd2
+      NextSibling: d506989a-e59f-4768-9347-0f391f6c3ff7
+      FirstChild: 14e19da2-3d40-43bd-bd7d-860dd5f38497
+      Depth: 2
+  - Entity: 538a8cec-d2c4-4ddb-aaf6-12b174459bd2
+    SceneTagComponent:
+      Name: Character Running
+    TransformComponent:
+      Position: [2.03718066, -1.16419327, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    Relationship:
+      Parent: 20c3d04b-62e9-48f6-bdc7-228dcccc44df
+      FirstChild: 14587a46-3ac9-422c-a8f5-c771089feb10
+      Depth: 1

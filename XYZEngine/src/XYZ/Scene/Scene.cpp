@@ -9,14 +9,15 @@
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SortKey.h"
+#include "XYZ/Renderer/MeshFactory.h"
 
 #include "XYZ/Asset/AssetManager.h"
 
 #include "XYZ/Script/ScriptEngine.h"
 #include "XYZ/Debug/Profiler.h"
 #include "XYZ/Utils/Math/Math.h"
-#include "XYZ/Scene/Prefab.h"
 
+#include "Prefab.h"
 #include "SceneEntity.h"
 #include "Components.h"
 
@@ -30,56 +31,74 @@
 
 namespace XYZ {
 
-	ozz::math::Float4x4 Float4x4FromMat4(const glm::mat4& mat)
-	{
-		ozz::math::Float4x4 result;
-		result.cols[0] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[0]));
-		result.cols[1] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[1]));
-		result.cols[2] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[2]));
-		result.cols[3] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[3]));
-		return result;
-	}
-
-	template<typename T>
-	void Clone(entt::registry& src, entt::registry& dst) 
-	{
-		auto view = src.view<T>();
-		for (auto entity : view)
+	namespace Utils {
+		static ozz::math::Float4x4 Float4x4FromMat4(const glm::mat4& mat)
 		{
-			auto& component = dst.emplace<T>(entity);
-			component = view.get<T>(entity);
+			ozz::math::Float4x4 result;
+			result.cols[0] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[0]));
+			result.cols[1] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[1]));
+			result.cols[2] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[2]));
+			result.cols[3] = ozz::math::simd_float4::LoadPtrU(glm::value_ptr(mat[3]));
+			return result;
+		}
+
+		template<typename T>
+		static void Clone(const entt::registry& src, entt::registry& dst)
+		{
+			auto view = src.view<const T>();
+			for (auto entity : view)
+			{
+				auto& component = dst.emplace<T>(entity);
+				component = view.get<const T>(entity);
+			}
+		}
+
+		template <typename ...Args>
+		static void CloneAll(const entt::registry& src, entt::registry& dst)
+		{
+			(Clone<Args>(src, dst), ...);
+		}
+
+		template<typename T>
+		static void CopyComponentIfExists(const entt::registry& src, entt::registry& dst, entt::entity srcEntity, entt::entity dstEntity)
+		{
+			if (src.any_of<const T>(srcEntity))
+			{
+				const auto& srcComponent = src.get<const T>(srcEntity);
+
+				dst.emplace_or_replace<T>(dstEntity, srcComponent);
+			}
+		}
+
+		template <typename ...Args>
+		static void CopyComponentsIfExist(const entt::registry& src, entt::registry& dst, entt::entity srcEntity, entt::entity dstEntity)
+		{
+			(CopyComponentIfExists<Args>(src, dst, srcEntity, dstEntity), ...);
+		}
+
+
+		static void CloneRegistry(const entt::registry& src, entt::registry& dst, bool clearDestination = true)
+		{
+			if (clearDestination)
+				dst = entt::registry();
+
+			dst.assign(src.data(), src.data() + src.size(), src.released()); // Copy entities
+
+			CloneAll<XYZ_COMPONENTS>(src, dst);
+		}
+
+		static void CopyRegistry(const entt::registry& src, entt::registry& dst, bool clearDestination = false)
+		{
+			if (clearDestination)
+				dst = entt::registry();
+
+			dst.each([&src, &dst](entt::entity srcEntity) {
+				entt::entity dstEntity = dst.create();
+				CopyComponentsIfExist<XYZ_COMPONENTS>(src, dst, srcEntity, dstEntity);
+				});
 		}
 	}
 	
-	void CloneRegistry(entt::registry& src, entt::registry& dst)
-	{
-		auto view = src.view<TransformComponent>();
-		dst = entt::registry();
-		dst.assign(src.data(), src.data() + src.size(), src.released()); // Copy entities
-
-		Clone<IDComponent>(src, dst);
-		Clone<TransformComponent>(src, dst);
-		Clone<SceneTagComponent>(src, dst);
-		Clone<SpriteRenderer>(src, dst);
-		Clone<MeshComponent>(src, dst);
-		Clone<AnimatedMeshComponent>(src, dst);
-		Clone<AnimationComponent>(src, dst);
-		Clone<PrefabComponent>(src, dst);
-		Clone<ParticleRenderer>(src, dst);
-		Clone<CameraComponent>(src, dst);
-		Clone<ParticleComponent>(src, dst);
-		Clone<PointLight2D>(src, dst);
-		Clone<SpotLight2D>(src, dst);
-		Clone<Relationship>(src, dst);
-		Clone<ScriptComponent>(src, dst);
-		Clone<RigidBody2DComponent>(src, dst);
-		Clone<BoxCollider2DComponent>(src, dst);
-		Clone<CircleCollider2DComponent>(src, dst);
-		Clone<PolygonCollider2DComponent>(src, dst);
-		Clone<ChainCollider2DComponent>(src, dst);
-	}
-
-
 	static entt::registry s_CopyRegistry;
 
 	Scene::Scene(const std::string& name, const GUID& guid)
@@ -91,7 +110,10 @@ namespace XYZ {
 		m_ViewportWidth(0),
 		m_ViewportHeight(0),
 		m_CameraEntity(entt::null),
-		m_SelectedEntity(entt::null)
+		m_SelectedEntity(entt::null),
+		m_GPUFrameTimestep(0.0f),
+		m_GPUFrameCounter(Renderer::GetConfiguration().FramesInFlight)
+
 	{
 		m_SceneEntity = m_Registry.create();
 
@@ -211,12 +233,13 @@ namespace XYZ {
 			particleView.get<ParticleComponent>(entity).GetSystem()->Reset();
 		}
 
-		CloneRegistry(m_Registry, s_CopyRegistry);
+
+		Utils::CloneRegistry(m_Registry, s_CopyRegistry);
 	}
 
 	void Scene::OnStop()
 	{
-		CloneRegistry(s_CopyRegistry, m_Registry);
+		Utils::CloneRegistry(s_CopyRegistry, m_Registry);
 		s_CopyRegistry = entt::registry();
 		{
 			b2World& physicsWorld = m_PhysicsWorld.GetWorld();
@@ -253,56 +276,24 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("Scene::OnUpdate");
 		m_PhysicsWorld.Step(ts);
 
-		auto rigidView = m_Registry.view<TransformComponent, RigidBody2DComponent>();
-		for (const auto entity : rigidView)
-		{
-			auto [transform, rigidBody] = rigidView.get<TransformComponent, RigidBody2DComponent>(entity);
-			const b2Body* body = static_cast<b2Body*>(rigidBody.RuntimeBody);
-			transform.Translation.x = body->GetPosition().x;
-			transform.Translation.y = body->GetPosition().y;
-			transform.Rotation.z = body->GetAngle();
-		}
-		{
-			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor particleView");
-			auto particleView = m_Registry.view<ParticleComponent, TransformComponent>();
-			for (auto entity : particleView)
-			{
-				auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
-				particleComponent.GetSystem()->Update(transformComponent.WorldTransform, ts);
-			}
-		}
+		updateRigidBody2DView();
+		
+		updateParticleView(ts);
 
-		{
-			XYZ_PROFILE_FUNC("Scene::OnUpdate animView");
-			auto animView = m_Registry.view<AnimationComponent, AnimatedMeshComponent>();
-			for (auto& entity : animView)
-			{
-				auto [anim, animMesh] = animView.get(entity);
-				if (anim.Playing && anim.Controller.Raw())
-				{
-					anim.Controller->Update(anim.AnimationTime);
-					anim.AnimationTime += ts;
-					for (size_t i = 0; i < animMesh.BoneEntities.size(); ++i)
-					{
-						auto& transform = m_Registry.get<TransformComponent>(animMesh.BoneEntities[i]);
-						transform.Translation = anim.Controller->GetTranslation(i);
-						transform.Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
-						transform.Scale = anim.Controller->GetScale(i);
-					}
-				}
-			}
-		}
+		if (m_UpdateAnimationAsync)
+			updateAnimationViewAsync(ts);
+		else
+			updateAnimationView(ts);
 
-		auto scriptView = m_Registry.view<ScriptComponent>();
-		for (auto entity : scriptView)
-		{
-			ScriptComponent& scriptComponent = scriptView.get<ScriptComponent>(entity);
-			SceneEntity sceneEntity(entity, this);
-			if (!scriptComponent.ModuleName.empty())
-				ScriptEngine::OnUpdateEntity(sceneEntity, ts);
-		}
-
+		updateScripts(ts);
 		updateHierarchy();
+
+		if (m_GPUFrameCounter == Renderer::GetConfiguration().FramesInFlight)
+		{
+			m_GPUFrameTimestep = ts;
+			m_GPUFrameCounter = 0;
+		}
+		m_GPUFrameCounter++;
 	}
 
 	void Scene::OnRender(Ref<SceneRenderer> sceneRenderer)
@@ -316,10 +307,11 @@ namespace XYZ {
 		auto& cameraComponent = cameraEntity.GetComponent<CameraComponent>();
 		auto& cameraTransform = cameraEntity.GetComponent<TransformComponent>();
 		renderCamera.Camera = cameraComponent.Camera;
-		renderCamera.ViewMatrix = glm::inverse(cameraTransform.WorldTransform);
+		renderCamera.ViewMatrix = glm::inverse(cameraTransform->WorldTransform);
 		auto [translation, rotation, scale] = cameraTransform.GetWorldComponents();
 		renderCamera.ViewPosition = translation;
 
+		setupLightEnvironment();
 		sceneRenderer->GetOptions().ShowGrid = false;
 		sceneRenderer->SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 		sceneRenderer->BeginScene(renderCamera);
@@ -329,13 +321,13 @@ namespace XYZ {
 		for (auto entity : spriteView)
 		{
 			auto& [transform, spriteRenderer] = spriteView.get<TransformComponent, SpriteRenderer>(entity);
-			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform.WorldTransform);
+			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform->WorldTransform);
 		}
 		auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
 		for (auto entity : meshView)
 		{
 			auto& [transform, meshComponent] = meshView.get<TransformComponent, MeshComponent>(entity);
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.OverrideMaterial);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform->WorldTransform, meshComponent.OverrideMaterial);
 		}
 
 		auto animMeshView = m_Registry.view<TransformComponent, AnimatedMeshComponent>();
@@ -346,9 +338,10 @@ namespace XYZ {
 			for (size_t i = 0; i < meshComponent.BoneEntities.size(); ++i)
 			{
 				const entt::entity boneEntity = meshComponent.BoneEntities[i];
-				meshComponent.BoneTransforms[i] = Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity).WorldTransform);
+				meshComponent.BoneTransforms[i] = Utils::Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity)->WorldTransform);
 			}
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
+			Ref<MeshSource> meshSource = meshComponent.Mesh->GetMeshSource();
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
 		}
 
 		auto particleView = m_Registry.view<TransformComponent, ParticleRenderer, ParticleComponent>();
@@ -374,37 +367,25 @@ namespace XYZ {
 		XYZ_PROFILE_FUNC("Scene::OnUpdateEditor");
 		m_PhysicsWorld.Step(ts);
 
-		updateHierarchy();
-		
+		if (m_UpdateHierarchyAsync)
+			updateHierarchyAsync();
+		else
+			updateHierarchy();
+
+		if (m_UpdateAnimationAsync)
+			updateAnimationViewAsync(ts);
+		else
+			updateAnimationView(ts);		
+
+		updateParticleView(ts);
+		updateParticleGPUView(ts);
+
+		if (m_GPUFrameCounter == Renderer::GetConfiguration().FramesInFlight)
 		{
-			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor animStorage");
-			auto animView = m_Registry.view<AnimationComponent, AnimatedMeshComponent>();
-			for (auto& entity : animView)
-			{
-				auto [anim, animMesh] = animView.get(entity);
-				if (anim.Playing && anim.Controller.Raw())
-				{
-					anim.Controller->Update(anim.AnimationTime);
-					anim.AnimationTime += ts;
-					for (size_t i = 0; i < animMesh.BoneEntities.size(); ++i)
-					{
-						auto& transform = m_Registry.get<TransformComponent>(animMesh.BoneEntities[i]);
-						transform.Translation = anim.Controller->GetTranslation(i);
-						transform.Rotation = glm::eulerAngles(anim.Controller->GetRotation(i));
-						transform.Scale = anim.Controller->GetScale(i);
-					}
-				}
-			}
+			m_GPUFrameTimestep = ts;
+			m_GPUFrameCounter = 0;
 		}
-		{
-			XYZ_PROFILE_FUNC("Scene::OnUpdateEditor particleView");
-			auto particleView = m_Registry.view<ParticleComponent, TransformComponent>();
-			for (auto entity : particleView)
-			{
-				auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
-				particleComponent.GetSystem()->Update(transformComponent.WorldTransform, ts);
-			}
-		}
+		m_GPUFrameCounter++;
 	}
 	
 	template <typename T>
@@ -422,9 +403,11 @@ namespace XYZ {
 	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos)
 	{
 		XYZ_PROFILE_FUNC("Scene::OnRenderEditor");
+		
+		
+		setupLightEnvironment();
 		sceneRenderer->BeginScene(viewProjection, view, camPos);
-		
-		
+	
 		auto spriteView = m_Registry.view<TransformComponent, SpriteRenderer>();
 		for (auto entity : spriteView)
 		{
@@ -432,7 +415,7 @@ namespace XYZ {
 			
 			if (!CheckAsset(spriteRenderer.Material) || !CheckAsset(spriteRenderer.SubTexture))
 				continue;
-			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform.WorldTransform);
+			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform->WorldTransform);
 		}
 		
 		auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
@@ -441,9 +424,10 @@ namespace XYZ {
 			auto& [transform, meshComponent] = meshView.get<TransformComponent, MeshComponent>(entity);
 			if (!CheckAsset(meshComponent.MaterialAsset) || !CheckAsset(meshComponent.Mesh))
 				continue;
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.OverrideMaterial);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform->WorldTransform, meshComponent.OverrideMaterial);
 		}
-
+		
+		
 		auto animMeshView = m_Registry.view<TransformComponent,AnimatedMeshComponent>();
 		for (auto entity : animMeshView)
 		{
@@ -451,13 +435,15 @@ namespace XYZ {
 			if (!CheckAsset(meshComponent.Mesh) || !CheckAsset(meshComponent.MaterialAsset))
 				continue;
 
+			
 			meshComponent.BoneTransforms.resize(meshComponent.BoneEntities.size());
 			for (size_t i = 0; i < meshComponent.BoneEntities.size(); ++i)
 			{
 				const entt::entity boneEntity = meshComponent.BoneEntities[i];
-				meshComponent.BoneTransforms[i] = Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity).WorldTransform);
+				meshComponent.BoneTransforms[i] = Utils::Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity)->WorldTransform);
 			}
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform.WorldTransform, meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
+			Ref<MeshSource> meshSource = meshComponent.Mesh->GetMeshSource();
+			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
 		}
 
 		{
@@ -479,7 +465,46 @@ namespace XYZ {
 				);
 			}
 		}
+		
+		auto particleGPUView = m_Registry.view<TransformComponent, ParticleComponentGPU>();
+		for (auto entity : particleGPUView)
+		{
+			auto& [transformComponent, particleComponent] = particleGPUView.get(entity);
+			if (particleComponent.EmittedParticles != 0)
+			{
+				sceneRenderer->SubmitMeshIndirect(
+					// Rendering data
+					particleComponent.Mesh,
+					particleComponent.RenderMaterial,
+					nullptr,
+					transformComponent->WorldTransform,
+					// Compute data
+					particleComponent.ComputeMaterial,
+					particleComponent.Buffer.GetData(),
+					particleComponent.EmittedParticles * particleComponent.System->GetStride(),
+					particleComponent.Buffer.GetMaxParticles() * sizeof(ParticleGPU),
+					particleComponent.ResultAllocation,
+					PushConstBuffer{
+						m_GPUFrameTimestep,
+						particleComponent.Speed,
+						particleComponent.EmittedParticles,
+						(int)particleComponent.Loop
+					}
+				);
+			}
+		}
 		sceneRenderer->EndScene();
+	}
+
+
+	void Scene::OnImGuiRender()
+	{
+		if (ImGui::Begin("Scene Settings"))
+		{
+			ImGui::Checkbox("Update Animation Async", &m_UpdateAnimationAsync);
+			ImGui::Checkbox("Update Hierarchy Async", &m_UpdateHierarchyAsync);
+		}
+		ImGui::End();
 	}
 
 	void Scene::SetViewportSize(uint32_t width, uint32_t height)
@@ -522,19 +547,40 @@ namespace XYZ {
 
 	void Scene::onScriptComponentConstruct(entt::registry& reg, entt::entity ent)
 	{
+		std::unique_lock lock(m_ScriptMutex);
 		ScriptEngine::CreateScriptEntityInstance({ ent, this });
 	}
 
 	void Scene::onScriptComponentDestruct(entt::registry& reg, entt::entity ent)
 	{
+		std::unique_lock lock(m_ScriptMutex);
 		ScriptEngine::DestroyScriptEntityInstance({ ent, this });
+	}
+
+	void Scene::updateScripts(Timestep ts)
+	{
+		XYZ_PROFILE_FUNC("Scene::updateScripts");
+		auto scriptView = m_Registry.view<ScriptComponent>();
+		std::shared_lock lock(m_ScriptMutex);
+		for (auto entity : scriptView)
+		{
+			ScriptComponent& scriptComponent = scriptView.get<ScriptComponent>(entity);
+			SceneEntity sceneEntity(entity, this);
+			if (!scriptComponent.ModuleName.empty())
+				ScriptEngine::OnUpdateEntity(sceneEntity, ts);
+		}
 	}
 
 	void Scene::updateHierarchy()
 	{
 		XYZ_PROFILE_FUNC("Scene::updateHierarchy");
 		std::stack<entt::entity> entities;
-		entities.push(m_SceneEntity);
+		{
+			const Relationship& relation = m_Registry.get<Relationship>(m_SceneEntity);
+			if (m_Registry.valid(relation.FirstChild))
+				entities.push(relation.FirstChild);
+		}
+
 		while (!entities.empty())
 		{
 			const entt::entity tmp = entities.top();
@@ -546,19 +592,196 @@ namespace XYZ {
 			if (m_Registry.valid(relation.FirstChild))
 				entities.push(relation.FirstChild);
 			
-			TransformComponent& transform = m_Registry.get<TransformComponent>(tmp);
-			if (m_Registry.valid(relation.Parent))
+			TransformComponent& transform = m_Registry.get<TransformComponent>(tmp);		
+			// Every entity except m_SceneEntity must have parent
+			TransformComponent& parentTransform = m_Registry.get<TransformComponent>(relation.Parent);
+			
+			if (parentTransform.m_Dirty || transform.m_Dirty)
+				transform.GetTransform().WorldTransform = parentTransform->WorldTransform * transform.GetLocalTransform();
+		}
+		
+		// We updated all transforms, they are no longer dirty
+		auto& transformStorage = m_Registry.storage<TransformComponent>();
+		for (auto& transformComponent : transformStorage)
+			transformComponent.m_Dirty = false;
+	}
+
+	void Scene::updateHierarchyAsync()
+	{
+		XYZ_PROFILE_FUNC("Scene::updateHierarchyAsync");
+		auto& threadPool = Application::Get().GetThreadPool();
+		Ref<Scene> instance = this;
+
+		const Relationship& relation = m_Registry.get<Relationship>(m_SceneEntity);
+		TransformComponent& parentTransform = m_Registry.get<TransformComponent>(m_SceneEntity);
+
+		entt::entity parent = m_SceneEntity;
+		entt::entity child = relation.GetFirstChild();
+
+		std::vector<std::future<bool>> futures;
+		while (m_Registry.valid(child))
+		{
+			const Relationship& childRelation = m_Registry.get<Relationship>(child);
+
+			TransformComponent& transform = m_Registry.get<TransformComponent>(child);
+			if (parentTransform.m_Dirty || transform.m_Dirty)
+				transform.GetTransform().WorldTransform = parentTransform->WorldTransform * transform.GetLocalTransform();
+
+			futures.emplace_back(threadPool.SubmitJob([instance, child]() mutable {
+				instance->updateSubHierarchy(child);
+				return true;
+			}));
+			child = childRelation.GetNextSibling();
+		}
+
+		for (auto& future : futures)
+			future.wait();
+
+		// We updated all transforms, they are no longer dirty
+		auto& transformStorage = m_Registry.storage<TransformComponent>();
+		for (auto& transformComponent : transformStorage)
+			transformComponent.m_Dirty = false;
+	}
+
+	void Scene::updateSubHierarchy(entt::entity parent)
+	{
+		XYZ_PROFILE_FUNC("Scene::updateSubHierarchy");
+
+		const Relationship& relation = m_Registry.get<Relationship>(parent);
+		TransformComponent& parentTransform = m_Registry.get<TransformComponent>(parent);
+
+		std::stack<entt::entity> entities;
+		{
+			const Relationship& relation = m_Registry.get<Relationship>(parent);
+			if (m_Registry.valid(relation.FirstChild))
+				entities.push(relation.FirstChild);
+		}
+
+		while (!entities.empty())
+		{
+			const entt::entity current = entities.top();
+			entities.pop();
+
+			const Relationship& relation = m_Registry.get<Relationship>(current);
+			if (m_Registry.valid(relation.NextSibling))
+				entities.push(relation.NextSibling);
+			if (m_Registry.valid(relation.FirstChild))
+				entities.push(relation.FirstChild);
+
+			TransformComponent& transform = m_Registry.get<TransformComponent>(current);
+			TransformComponent& parentTransform = m_Registry.get<TransformComponent>(relation.Parent);
+
+			if (parentTransform.m_Dirty || transform.m_Dirty)
+				transform.GetTransform().WorldTransform = parentTransform->WorldTransform * transform.GetLocalTransform();
+		}
+	}
+
+	void Scene::updateAnimationView(Timestep ts)
+	{
+		XYZ_PROFILE_FUNC("Scene::updateAnimationView");
+		auto animView = m_Registry.view<AnimationComponent, AnimatedMeshComponent>();
+		for (auto entity : animView)
+		{
+			auto [anim, animMesh] = animView.get(entity);
+			anim.Playing = true; // TODO: temporary
+			if (anim.Playing && anim.Controller.Raw())
 			{
-				TransformComponent& parentTransform = m_Registry.get<TransformComponent>(relation.Parent);
-				transform.WorldTransform = parentTransform.WorldTransform * transform.GetTransform();
-			}
-			else
-			{
-				transform.WorldTransform = transform.GetTransform();
+				anim.Controller->Update(anim.AnimationTime, anim.Context);
+				anim.AnimationTime += ts;
+				for (size_t i = 0; i < animMesh.BoneEntities.size(); ++i)
+				{
+					auto& transform = m_Registry.get<TransformComponent>(animMesh.BoneEntities[i]);
+					transform.GetTransform().Translation = anim.Context.LocalTranslations[i];
+					transform.GetTransform().Rotation = glm::eulerAngles(anim.Context.LocalRotations[i]);
+					transform.GetTransform().Scale = anim.Context.LocalScales[i];
+				}
 			}
 		}
 	}
 	
+	void Scene::updateAnimationViewAsync(Timestep ts)
+	{
+		XYZ_PROFILE_FUNC("Scene::updateAnimationViewAsync");
+		Ref<Scene> instance = this;
+		auto& threadPool = Application::Get().GetThreadPool();
+		auto animView = m_Registry.view<AnimationComponent, AnimatedMeshComponent>();
+		
+		std::vector<std::future<bool>> futures;
+		futures.reserve(animView.size_hint());
+		
+		for (auto entity : animView)
+		{
+			auto [anim, animMesh] = animView.get(entity);
+			anim.Playing = true; // TODO: temporary
+			if (anim.Playing && anim.Controller.Raw())
+			{
+				futures.emplace_back(threadPool.SubmitJob([instance, ts, &animation = anim, &animatedMesh = animMesh]() mutable {
+
+					animation.Controller->Update(animation.AnimationTime, animation.Context);
+					animation.AnimationTime += ts;
+					for (size_t i = 0; i < animatedMesh.BoneEntities.size(); ++i)
+					{
+						auto& transform = instance->m_Registry.get<TransformComponent>(animatedMesh.BoneEntities[i]);
+						transform.GetTransform().Translation = animation.Context.LocalTranslations[i];
+						transform.GetTransform().Rotation = glm::eulerAngles(animation.Context.LocalRotations[i]);
+						transform.GetTransform().Scale = animation.Context.LocalScales[i];
+					}
+					return true;
+				}));
+			}
+		}
+		for (auto& future : futures)
+			future.wait();
+	}
+
+	void Scene::updateParticleView(Timestep ts)
+	{
+		XYZ_PROFILE_FUNC("Scene::updateParticleView");
+		auto particleView = m_Registry.view<ParticleComponent, TransformComponent>();
+		for (auto entity : particleView)
+		{
+			auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
+			particleComponent.GetSystem()->Update(transformComponent->WorldTransform, ts);
+		}
+	}
+
+	void Scene::updateRigidBody2DView()
+	{
+		XYZ_PROFILE_FUNC("Scene::updateRigidBody2DView");
+		auto rigidView = m_Registry.view<TransformComponent, RigidBody2DComponent>();
+		for (const auto entity : rigidView)
+		{
+			auto [transform, rigidBody] = rigidView.get<TransformComponent, RigidBody2DComponent>(entity);
+			const b2Body* body = static_cast<b2Body*>(rigidBody.RuntimeBody);
+			transform.GetTransform().Translation.x = body->GetPosition().x;
+			transform.GetTransform().Translation.y = body->GetPosition().y;
+			transform.GetTransform().Rotation.z = body->GetAngle();
+		}
+	}
+
+
+	void Scene::updateParticleGPUView(Timestep ts)
+	{
+		XYZ_PROFILE_FUNC("Scene::updateParticleGPUView");
+		auto &particleStorage = m_Registry.storage<ParticleComponentGPU>();
+		for (auto& particleComponent : particleStorage)
+		{
+			if (particleComponent.EmittedParticles == particleComponent.Buffer.GetMaxParticles())
+			{
+				if (particleComponent.Loop)
+					particleComponent.EmittedParticles = 0;
+				else
+					continue;
+			}
+			const uint32_t bufferOffset = particleComponent.EmittedParticles * particleComponent.System->GetStride();
+			const uint32_t bufferSize = particleComponent.Buffer.GetBufferSize() - bufferOffset;
+			std::byte* particleBuffer = &particleComponent.Buffer.GetData()[bufferOffset];
+
+			particleComponent.EmittedParticles += particleComponent.System->Update(ts, particleBuffer, bufferSize);		
+		}
+	}
+
+
 	void Scene::setupPhysics()
 	{
 		auto rigidBodyView = m_Registry.view<RigidBody2DComponent>();
@@ -588,7 +811,7 @@ namespace XYZ {
 			
 			
 			bodyDef.position.Set(translation.x, translation.y);
-			bodyDef.angle = transform.Rotation.z;
+			bodyDef.angle = transform->Rotation.z;
 			bodyDef.userData.pointer = reinterpret_cast<uintptr_t>(&m_PhysicsEntityBuffer[counter]);
 			
 			b2Body* body = physicsWorld.CreateBody(&bodyDef);
@@ -664,6 +887,109 @@ namespace XYZ {
 			}
 			counter++;
 		}
+	}
+
+	void Scene::setupLightEnvironment()
+	{
+		auto pointLights3D = m_Registry.view<PointLightComponent3D, TransformComponent>();
+		m_LightEnvironment.PointLights3D.clear();
+		for (auto entity : pointLights3D)
+		{
+			auto [transformComponent, lightComponent] = pointLights3D.get<TransformComponent, PointLightComponent3D>(entity);
+			auto [translation, rotation, scale] = transformComponent.GetWorldComponents();
+
+			m_LightEnvironment.PointLights3D.push_back({
+				translation,
+				lightComponent.Intensity,
+				lightComponent.Radiance,
+				lightComponent.MinRadius,
+				lightComponent.Radius,
+				lightComponent.Falloff,
+				lightComponent.LightSize,
+				lightComponent.CastsShadows,
+				});
+		}
+
+		auto particleView = m_Registry.view<TransformComponent, ParticleRenderer, ParticleComponent>();
+
+		for (auto entity : particleView)
+		{
+			auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
+
+			auto& renderData = particleComponent.GetSystem()->GetRenderData();
+
+			for (const auto& lightData : renderData.LightData)
+			{
+				m_LightEnvironment.PointLights3D.push_back({
+					lightData.Position,
+					lightData.Intensity,
+					lightData.Color,
+					1.0f,
+					lightData.Radius,
+					1.0f,
+					0.5f,
+					true
+				});
+			}
+		}
+	}
+
+	void Scene::submitParticleGPUView()
+	{
+	}
+
+	void Scene::CreateParticleTest()
+	{
+		// NOTE: this can be generate from shader
+		ParticleSystemLayout layout({ 
+			{"StartPosition", ParticleVariableType::Vec4},
+			{"StartColor",	  ParticleVariableType::Vec4},
+			{"StartRotation", ParticleVariableType::Vec4},
+			{"StartScale",	  ParticleVariableType::Vec4},
+			{"StartVelocity", ParticleVariableType::Vec4},
+			{"EndColor",	  ParticleVariableType::Vec4},
+			{"EndRotation",   ParticleVariableType::Vec4},
+			{"EndScale",	  ParticleVariableType::Vec4},
+			{"EndVelocity",   ParticleVariableType::Vec4},
+			{"LifeTime",	  ParticleVariableType::Float},
+			{"LifeRemaining", ParticleVariableType::Float},
+			{"Padding",		  ParticleVariableType::Vec2}
+		});
+
+		m_ParticleCubeMesh = MeshFactory::CreateBox(glm::vec3(1.0f));
+		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(layout);
+
+		ParticleEmitterGPU emitter(layout.GetStride());
+		emitter.EmitterModules.push_back(Ref<BoxParticleEmitterModuleGPU>::Create(layout.GetStride(), layout.GetVariableOffset("StartPosition")));
+		emitter.EmitterModules.push_back(Ref<SpawnParticleEmitterModuleGPU>::Create(layout.GetStride(), layout.GetVariableOffset("LifeTime")));
+		emitter.EmitterModules.push_back(Ref<TestParticleEmitterModuleGPU>::Create(layout.GetStride(), layout.GetVariableOffset("StartColor")));
+		m_ParticleSystemGPU->ParticleEmitters.push_back(emitter);
+
+		m_IndirectCommandMaterial = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleComputeShader.glsl")));
+		
+		m_ParticleMaterialGPU = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleShaderGPU.glsl")));
+		m_ParticleMaterialInstanceGPU = m_ParticleMaterialGPU->GetMaterialInstance();
+
+		Ref<Texture2D> whiteTexture = Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>();
+		m_ParticleMaterialGPU->SetTexture("u_Texture", whiteTexture);
+
+		int enabled = 1;
+		m_IndirectCommandMaterial->Specialize("COLOR_OVER_LIFE", enabled);
+		m_IndirectCommandMaterial->Specialize("SCALE_OVER_LIFE", enabled);
+		m_IndirectCommandMaterial->Specialize("VELOCITY_OVER_LIFE", enabled);
+		//m_IndirectCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
+
+
+
+		SceneEntity entity = CreateEntity("Particle GPU Test");
+		auto& particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();
+	
+		particleComponent.ComputeMaterial = m_IndirectCommandMaterial;
+		particleComponent.RenderMaterial = m_ParticleMaterialGPU;
+		particleComponent.Buffer.SetMaxParticles(1024, layout.GetStride());
+
+		particleComponent.Mesh = m_ParticleCubeMesh;
+		particleComponent.System = m_ParticleSystemGPU;
 	}
 
 }

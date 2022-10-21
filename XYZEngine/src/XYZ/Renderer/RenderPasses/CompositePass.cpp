@@ -14,7 +14,7 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("CompositePass::Submit");
 
-		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, clear);
+		Renderer::BeginRenderPass(commandBuffer, m_RenderPass, false, clear);
 		m_Material->SetImage("u_GeometryTexture", lightImage);
 		m_Material->SetImage("u_BloomTexture", bloomImage);
 		Renderer::BindPipeline(
@@ -32,12 +32,11 @@ namespace XYZ {
 	{
 		PipelineSpecification specification;
 		specification.Shader = m_Shader;
-		specification.Layouts = m_Shader->GetLayouts();
 		specification.RenderPass = m_RenderPass;
 		specification.Topology = PrimitiveTopology::Triangles;
 		specification.DepthWrite = false;
 		m_Pipeline = Pipeline::Create(specification);
 		m_Material = Material::Create(m_Shader);
-		m_MaterialInstance = Ref<XYZ::MaterialInstance>::Create(m_Material);
+		m_MaterialInstance = m_Material->CreateMaterialInstance();
 	}
 }

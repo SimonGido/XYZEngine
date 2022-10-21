@@ -2,7 +2,7 @@ Shader: 12620202-22f3-436f-94ee-9c160a016786
 Opaque: true
 Textures:
   - Name: u_AlbedoTexture
-    Handle: a0ebffdc-c64e-4774-881c-83411a668465
+    Handle: 6ff81084-dbb0-4527-9a32-1ebc68e76af8
   - Name: u_MetalnessTexture
     Handle: b56f3dd3-f434-4e5b-9bd5-0f83c3add90c
   - Name: u_RoughnessTexture

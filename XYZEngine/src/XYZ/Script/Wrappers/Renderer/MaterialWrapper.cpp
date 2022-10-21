@@ -38,7 +38,7 @@ namespace XYZ {
 		}
 		Ref<MaterialInstance>* MaterialInstanceNative::Constructor(Ref<Material>* material)
 		{
-			Ref<MaterialInstance> materialInstance = Ref<MaterialInstance>::Create(*material);
+			Ref<MaterialInstance> materialInstance = (*material)->CreateMaterialInstance();
 			return new Ref<MaterialInstance>(materialInstance);
 		}
 		void MaterialInstanceNative::Destructor(Ref<MaterialInstance>* instance)

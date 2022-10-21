@@ -40,5 +40,11 @@ namespace XYZ {
 		}
 
 		std::tuple<glm::vec3, glm::vec3, glm::vec3> DecomposeTransform(const glm::mat4& transform);
+
+		std::tuple<glm::vec3, glm::quat, glm::vec3> DecomposeTransformQuat(const glm::mat4& transform);
+	
+	
+		int32_t RoundUp(int32_t numToRound, int32_t multiple);
+		
 	}
 }

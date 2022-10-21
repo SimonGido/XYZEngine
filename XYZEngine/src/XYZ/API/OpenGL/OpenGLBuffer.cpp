@@ -246,25 +246,18 @@ namespace XYZ {
 		});
 	}
 
-	void OpenGLStorageBuffer::Resize(const void* data, uint32_t size)
+	void OpenGLStorageBuffer::Resize(uint32_t size)
 	{
-		while (!m_Buffers.Empty())
-		{
-			ByteBuffer buffer = m_Buffers.PopBack();
-			delete[]buffer;
-		}
-		ByteBuffer buffer;
-		buffer = ByteBuffer::Copy(data, size);
-
+	
 		Ref<OpenGLStorageBuffer> instance = this;
-		Renderer::Submit([instance, size, buffer]() mutable {
+		Renderer::Submit([instance, size]() mutable {
 			glBindBuffer(GL_ARRAY_BUFFER, instance->m_RendererID);
 			switch (instance->m_Usage)
 			{
-			case BufferUsage::Static:    glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_STATIC_DRAW); break;
-			case BufferUsage::Dynamic:   glBufferData(GL_ARRAY_BUFFER, size, buffer, GL_DYNAMIC_DRAW); break;
+			case BufferUsage::Static:    glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_STATIC_DRAW); break;
+			case BufferUsage::Dynamic:   glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW); break;
 			}
-			instance->m_Buffers.PushBack(buffer);
+
 		});
 	}
 	void OpenGLStorageBuffer::GetSubData(void** buffer, uint32_t size, uint32_t offset)

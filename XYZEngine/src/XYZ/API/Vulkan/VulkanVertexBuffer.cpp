@@ -70,7 +70,7 @@ namespace XYZ {
 			vertexBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 			vertexBufferCreateInfo.size = instance->m_Size;
 			vertexBufferCreateInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-
+			
 			instance->m_MemoryAllocation = allocator.AllocateBuffer(vertexBufferCreateInfo, VMA_MEMORY_USAGE_CPU_TO_GPU, instance->m_VulkanBuffer);
 			instance->m_Buffers.EmplaceBack(std::move(buffer));
 		});

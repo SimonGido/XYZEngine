@@ -150,9 +150,9 @@ namespace XYZ {
                         const auto& parentTransform = m_Context->m_Registry.get<TransformComponent>(entity.ID());
                         auto& transform = m_Context->m_Registry.get<TransformComponent>(child);
                       
-                        transform.DecomposeTransform(transform.WorldTransform);      
+                        transform.DecomposeTransform(transform->WorldTransform);      
                         Relationship::SetupRelation(entity.ID(), child, m_Context->m_Registry);
-                        transform.DecomposeTransform(glm::inverse(parentTransform.WorldTransform) * transform.GetTransform());
+                        transform.DecomposeTransform(glm::inverse(parentTransform->WorldTransform) * transform.GetLocalTransform());
                     }
                 }
                 ImGui::EndDragDropTarget();

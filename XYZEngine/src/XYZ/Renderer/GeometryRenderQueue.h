@@ -16,6 +16,38 @@
 namespace XYZ {
 	struct GeometryRenderQueue
 	{
+		struct SpriteKey
+		{
+			SpriteKey(const AssetHandle& matHandle)
+				: MaterialHandle(matHandle)
+			{}
+
+			bool operator<(const SpriteKey& other) const
+			{
+				return (MaterialHandle < other.MaterialHandle);
+			}
+
+			AssetHandle MaterialHandle;
+		};
+		struct BatchMeshKey
+		{
+			AssetHandle MeshHandle;
+			AssetHandle MaterialHandle;
+
+			BatchMeshKey(AssetHandle meshHandle, AssetHandle materialHandle)
+				: MeshHandle(meshHandle), MaterialHandle(materialHandle) {}
+
+			bool operator<(const BatchMeshKey& other) const
+			{
+				if (MeshHandle < other.MeshHandle)
+					return true;
+
+				return (MeshHandle == other.MeshHandle) && (MaterialHandle < other.MaterialHandle);
+			}
+		};
+
+
+
 		struct SpriteDrawData
 		{
 			uint32_t  TextureIndex;
@@ -35,7 +67,7 @@ namespace XYZ {
 
 		struct SpriteDrawCommand
 		{
-			Ref<Material>		  Material;
+			Ref<MaterialAsset>	  MaterialAsset;
 			Ref<MaterialInstance> MaterialInstance;
 
 			std::array<Ref<Texture2D>, Renderer2D::GetMaxTextures()> Textures;
@@ -70,6 +102,7 @@ namespace XYZ {
 
 			std::vector<TransformData>	 TransformData;
 			uint32_t					 TransformOffset = 0;
+			uint32_t					 Count = 0;
 
 			std::vector<MeshDrawCommandOverride> OverrideCommands;
 		};
@@ -95,7 +128,7 @@ namespace XYZ {
 
 			std::vector<BoneTransforms>	 BoneData;
 			uint32_t					 BoneTransformsIndex = 0;
-
+			uint32_t					 Count = 0;
 			std::vector<AnimatedMeshDrawCommandOverride> OverrideCommands;
 		};
 
@@ -112,35 +145,51 @@ namespace XYZ {
 			uint32_t			   InstanceOffset = 0;
 		};
 
-		struct SpriteKey
+		struct SSBOState
 		{
-			SpriteKey(const AssetHandle& matHandle)
-				: MaterialHandle(matHandle)
-			{}
-
-			bool operator<(const SpriteKey& other) const
-			{
-				return (MaterialHandle < other.MaterialHandle);
-			}
-
-			AssetHandle MaterialHandle;
+			uint32_t Size;
+			uint32_t Offset;
 		};
-		struct BatchMeshKey
+
+
+		struct IndirectComputeCommand
 		{
-			AssetHandle MeshHandle;
-			AssetHandle MaterialHandle;
+			PushConstBuffer		   OverrideUniformData;
+			std::vector<std::byte> ComputeData;
 
-			BatchMeshKey(AssetHandle meshHandle, AssetHandle materialHandle)
-				: MeshHandle(meshHandle), MaterialHandle(materialHandle) {}
-
-			bool operator<(const BatchMeshKey& other) const
-			{
-				if (MeshHandle < other.MeshHandle)
-					return true;
-
-				return (MeshHandle == other.MeshHandle) && (MaterialHandle < other.MaterialHandle);
-			}
+			SSBOState					  IndirectCommandState;
+			SSBOState					  ComputeDataState;
+			Ref<StorageBufferAllocation>  ResultStateAllocation;	
+			bool						  ResultStateAllocationChanged = false;
 		};
+
+		struct IndirectComputeBatch
+		{
+			Ref<PipelineCompute>   Pipeline;
+			Ref<MaterialAsset>	   MaterialCompute;
+
+			std::vector<IndirectComputeCommand> Commands;
+		};
+
+		struct IndirectMeshDrawCommandOverride
+		{
+			Ref<Mesh>			  Mesh;
+			Ref<MaterialInstance> OverrideMaterial;
+			uint32_t			  ComputeDataSize;
+	
+			SSBOState			  IndirectCommandState;
+			SSBOState			  ComputeDataState;
+			Ref<StorageBufferAllocation>  ResultStateAllocation;
+		};
+
+		struct IndirectMeshDrawCommand
+		{
+			Ref<MaterialAsset>	  MaterialAsset;
+			Ref<Pipeline>		  Pipeline;
+
+			std::vector<IndirectMeshDrawCommandOverride> OverrideCommands;
+		};
+
 
 
 		std::map<SpriteKey, SpriteDrawCommand> SpriteDrawCommands;
@@ -149,5 +198,18 @@ namespace XYZ {
 		std::map<BatchMeshKey, MeshDrawCommand>			MeshDrawCommands;
 		std::map<BatchMeshKey, AnimatedMeshDrawCommand>	AnimatedMeshDrawCommands;
 		std::map<BatchMeshKey, InstanceMeshDrawCommand>	InstanceMeshDrawCommands;
+		std::map<AssetHandle,  IndirectMeshDrawCommand>	IndirectDrawCommands;
+		std::map<AssetHandle,  IndirectComputeBatch>	IndirectComputeCommands;
+		
+		void Clear()
+		{
+			SpriteDrawCommands.clear();
+			BillboardDrawCommands.clear();
+			MeshDrawCommands.clear();
+			AnimatedMeshDrawCommands.clear();
+			InstanceMeshDrawCommands.clear();
+			IndirectDrawCommands.clear();
+			IndirectComputeCommands.clear();
+		}
 	};
 }

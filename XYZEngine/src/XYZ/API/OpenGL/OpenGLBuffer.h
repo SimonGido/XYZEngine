@@ -2,7 +2,7 @@
 #include "XYZ/Renderer/Buffer.h"
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
-#include "XYZ/Utils/DataStructures/Queue.h"
+#include "XYZ/Utils/DataStructures/ThreadQueue.h"
 
 namespace XYZ {
 	class OpenGLVertexBuffer : public VertexBuffer
@@ -25,7 +25,7 @@ namespace XYZ {
 		uint32_t m_Size;
 		BufferUsage m_Usage;
 		BufferLayout m_Layout;
-		Queue<ByteBuffer> m_Buffers;
+		ThreadQueue<ByteBuffer> m_Buffers;
 	};
 
 	class OpenGLIndexBuffer : public IndexBuffer
@@ -55,7 +55,7 @@ namespace XYZ {
 		virtual void BindRange(uint32_t offset, uint32_t size) const override;
 		virtual void Bind()const override;
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) override;
-		virtual void Resize(const void* data, uint32_t size) override;
+		virtual void Resize(uint32_t size) override;
 		virtual void GetSubData(void** buffer, uint32_t size, uint32_t offset = 0) override;
 
 		virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; };;
@@ -67,7 +67,7 @@ namespace XYZ {
 		uint32_t m_Binding;
 		BufferUsage m_Usage;
 		BufferLayout m_Layout;
-		Queue<ByteBuffer> m_Buffers;
+		ThreadQueue<ByteBuffer> m_Buffers;
 	};
 
 

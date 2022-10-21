@@ -3,6 +3,8 @@
 
 #include "Renderer2D.h"
 #include "Renderer.h"
+#include "MeshFactory.h"
+
 
 #include "XYZ/Core/Input.h"
 #include "XYZ/Debug/Profiler.h"
@@ -12,12 +14,13 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Asset/AssetManager.h"
 
+#include "XYZ/Utils/Math/Math.h"
+
 #include <glm/gtx/transform.hpp>
 
 #include <imgui/imgui.h>
 
 
-#include "XYZ/Renderer/MeshFactory.h"
 
 namespace XYZ {
 
@@ -60,16 +63,14 @@ namespace XYZ {
 	}
 
 	SceneRenderer::~SceneRenderer()
-	{
-		
+	{		
 	}
-
 
 	void SceneRenderer::Init()
 	{
 		XYZ_PROFILE_FUNC("SceneRenderer::Init");
 
-		m_CommandBuffer = RenderCommandBuffer::Create(0, "SceneRenderer");
+		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "SceneRenderer");
 
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
@@ -81,19 +82,36 @@ namespace XYZ {
 		createGridResources();
 
 		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
-		m_CameraBufferSet = UniformBufferSet::Create(framesInFlight);
-		m_CameraBufferSet->Create(sizeof(m_CameraBuffer), 0, 0);
+		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
+		m_UniformBufferSet->Create(sizeof(UBCameraData), UBCameraData::Set, UBCameraData::Binding);
+		m_UniformBufferSet->Create(sizeof(UBRendererData), UBRendererData::Set, UBRendererData::Binding);
+		m_UniformBufferSet->Create(sizeof(UBPointLights3D), UBPointLights3D::Set, UBPointLights3D::Binding);
 
+		m_StorageBufferSet = StorageBufferSet::Create(framesInFlight);
+		m_StorageBufferSet->Create(1, SSBOLightCulling::Set, SSBOLightCulling::Binding);
+		m_StorageBufferSet->Create(sizeof(SSBOBoneTransformData), SSBOBoneTransformData::Set, SSBOBoneTransformData::Binding);
 		
-		Ref<ShaderAsset> compositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
-		Ref<ShaderAsset> lightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
-		Ref<ShaderAsset> bloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
+		m_StorageBufferSet->Create(sizeof(SSBOIndirectData), SSBOIndirectData::Set, SSBOIndirectData::Binding, true);
+		m_StorageBufferSet->Create(sizeof(SSBOComputeData), SSBOComputeData::Set, SSBOComputeData::Binding);
+		m_StorageBufferSet->Create(sizeof(SSBOComputeState), SSBOComputeState::Set, SSBOComputeState::Binding);
 
-		m_GeometryPass.Init({ m_GeometryRenderPass, m_DepthRenderPass, m_CameraBufferSet }, m_CommandBuffer);
-		m_DeferredLightPass.Init({ m_LightRenderPass, lightShaderAsset->GetShader() }, m_CommandBuffer);
-		m_BloomPass.Init({ bloomShaderAsset->GetShader(), m_BloomTexture }, m_CommandBuffer);
-		m_CompositePass.Init({ m_CompositeRenderPass, compositeShaderAsset->GetShader() }, m_CommandBuffer);
-		m_LightCullingPass.Init({ m_CameraBufferSet });
+		m_StorageBufferAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOComputeData));
+
+		m_CompositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
+		m_LightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
+		m_BloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
+		
+		m_GeometryPass.Init(this);
+		m_DeferredLightPass.Init({ m_LightRenderPass, m_LightShaderAsset->GetShader() }, m_CommandBuffer);
+		m_BloomPass.Init({ m_BloomShaderAsset->GetShader(), m_BloomTexture }, m_CommandBuffer);
+		m_CompositePass.Init({ m_CompositeRenderPass, m_CompositeShaderAsset->GetShader() }, m_CommandBuffer);
+		m_LightCullingPass.Init({ m_UniformBufferSet, m_StorageBufferSet });
+	
+		m_LightCullingWorkGroups = { 
+			(m_ViewportSize.x + m_ViewportSize.x % 16) / 16, 
+			(m_ViewportSize.y + m_ViewportSize.y % 16) / 16, 
+			1 
+		};
 	}
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
@@ -113,24 +131,27 @@ namespace XYZ {
 	{
 		m_SceneCamera = camera;
 
-		m_CameraBuffer.ViewProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix() * m_SceneCamera.ViewMatrix;
-		m_CameraBuffer.ViewMatrix = m_SceneCamera.ViewMatrix;
-		m_CameraBuffer.ViewPosition = glm::vec4(camera.ViewPosition, 0.0f);
+		m_CameraDataUB.ViewProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix() * m_SceneCamera.ViewMatrix;
+		m_CameraDataUB.ViewMatrix = m_SceneCamera.ViewMatrix;
+		m_CameraDataUB.ViewPosition = glm::vec4(camera.ViewPosition, 0.0f);
 		
-		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
-		m_CameraBufferSet->Get(0, 0, currentFrame)->Update(&m_CameraBuffer, sizeof(m_CameraBuffer), 0);
-	
-
-		updateLights3D();
+		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
+		m_PointsLights3DUB.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
+		memcpy(m_PointsLights3DUB.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
+		updateViewportSize();
+		updateUniformBufferSet();
 	}
 	void SceneRenderer::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition)
 	{
-		m_CameraBuffer.ViewProjectionMatrix = viewProjectionMatrix;
-		m_CameraBuffer.ViewMatrix = viewMatrix;
-		m_CameraBuffer.ViewPosition = glm::vec4(viewPosition, 0.0f);
+		m_CameraDataUB.ViewProjectionMatrix = viewProjectionMatrix;
+		m_CameraDataUB.ViewMatrix = viewMatrix;
+		m_CameraDataUB.ViewPosition = glm::vec4(viewPosition, 0.0f);
 
-		const uint32_t currentFrame = Renderer::GetAPIContext()->GetCurrentFrame();
-		m_CameraBufferSet->Get(0, 0, currentFrame)->Update(&m_CameraBuffer, sizeof(m_CameraBuffer), 0);
+		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
+		m_PointsLights3DUB.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
+		memcpy(m_PointsLights3DUB.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
+		updateViewportSize();
+		updateUniformBufferSet();
 	}
 	void SceneRenderer::EndScene()
 	{
@@ -139,21 +160,26 @@ namespace XYZ {
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 
+		Ref<Image2D> depthImage = m_DepthRenderPass->GetSpecification().TargetFramebuffer->GetDepthImage();
 		Ref<Image2D> colorImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(0);
 		Ref<Image2D> positionImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
 		Ref<Image2D> lightImage = m_LightRenderPass->GetSpecification().TargetFramebuffer->GetImage();
 
+		
+
 		const bool clearGeometryPass = !m_Options.ShowGrid;
 		if (m_Options.ShowGrid)
 		{
-			Renderer::BeginRenderPass(m_CommandBuffer, m_GeometryRenderPass, true);
+			Renderer::BeginRenderPass(m_CommandBuffer, m_GeometryRenderPass, false, true);
 			renderGrid();
 			Renderer::EndRenderPass(m_CommandBuffer);
 		}
-
-		m_GeometryPass.Submit(m_CommandBuffer, m_Queue, m_CameraBuffer.ViewMatrix, clearGeometryPass);
+		m_GeometryPass.PreDepthPass(m_CommandBuffer, m_Queue, m_CameraDataUB.ViewMatrix, true);
+		
+		m_LightCullingPass.Submit(m_CommandBuffer, depthImage, m_LightCullingWorkGroups, m_ViewportSize);
+		m_GeometryPass.Submit(m_CommandBuffer, m_Queue, m_CameraDataUB.ViewMatrix, clearGeometryPass);
 		m_DeferredLightPass.Submit(m_CommandBuffer, colorImage, positionImage);
-		m_BloomPass.Submit(m_CommandBuffer, lightImage, { 1.0f, 0.1f }, m_ViewportSize);
+		m_BloomPass.Submit(m_CommandBuffer, colorImage, m_BloomSettings, m_ViewportSize);
 		m_CompositePass.Submit(m_CommandBuffer, lightImage, m_BloomTexture[2]->GetImage(), true);
 
 
@@ -162,13 +188,8 @@ namespace XYZ {
 		m_CommandBuffer->End();
 		m_CommandBuffer->Submit();
 
-		m_Queue.SpriteDrawCommands.clear();
-		m_Queue.BillboardDrawCommands.clear();
-		m_Queue.MeshDrawCommands.clear();
-		m_Queue.AnimatedMeshDrawCommands.clear();
-		m_Queue.InstanceMeshDrawCommands.clear();
-		
-		updateViewportSize();
+		m_Queue.Clear();
+		//updateViewportSize();
 	}
 
 
@@ -180,7 +201,7 @@ namespace XYZ {
 
 		uint32_t textureIndex = command.SetTexture(subTexture->GetTexture());
 
-		command.Material = material->GetMaterial();
+		command.MaterialAsset = material;
 		command.MaterialInstance = material->GetMaterialInstance();
 
 		command.BillboardData.push_back({ textureIndex, subTexture->GetTexCoords(), color, position, size });
@@ -193,7 +214,7 @@ namespace XYZ {
 		
 		uint32_t textureIndex = command.SetTexture(subTexture->GetTexture());
 		
-		command.Material = material->GetMaterial();
+		command.MaterialAsset = material;
 		command.MaterialInstance = material->GetMaterialInstance();
 		command.SpriteData.push_back({ textureIndex, subTexture->GetTexCoords(), color, transform });
 	}
@@ -214,6 +235,7 @@ namespace XYZ {
 		}
 		else
 		{		
+			dc.Count++;
 			dc.OverrideMaterial = material->GetMaterialInstance();
 			dc.TransformInstanceCount++;
 			dc.TransformData.push_back(Mat4ToTransformData(transform));
@@ -257,11 +279,12 @@ namespace XYZ {
 		{
 			auto& dcOverride = dc.OverrideCommands.emplace_back();
 			dcOverride.OverrideMaterial = overrideMaterial;
-			dcOverride.Transform = transform * mesh->GetMeshSource()->GetTransform();
+			dcOverride.Transform = transform;
 			CopyToBoneStorage(dcOverride.BoneTransforms, boneTransforms, mesh);
 		}
 		else
 		{
+			dc.Count++;
 			dc.OverrideMaterial = material->GetMaterialInstance();
 			dc.TransformInstanceCount++;
 			dc.TransformData.push_back(Mat4ToTransformData(transform));
@@ -269,6 +292,59 @@ namespace XYZ {
 			CopyToBoneStorage(boneStorage, boneTransforms, mesh);
 		}
 	}
+
+	void SceneRenderer::SubmitMeshIndirect(
+		// Rendering data
+		const Ref<Mesh>& mesh,
+		const Ref<MaterialAsset>& material,
+		const Ref<MaterialInstance>& overrideMaterial,
+		const glm::mat4& transform,
+
+		// Compute data
+		const Ref<MaterialAsset>& materialCompute,
+		const void* computeData,
+		uint32_t computeDataSize,
+		uint32_t computeResultSize,
+		Ref<StorageBufferAllocation>& allocation,
+		const PushConstBuffer& uniformComputeData
+	)
+	{
+		// Compute command
+		AssetHandle computeKey = materialCompute->GetHandle();
+		auto& computeCommand = m_Queue.IndirectComputeCommands[computeKey];
+		computeCommand.MaterialCompute = materialCompute;
+
+		auto& command = computeCommand.Commands.emplace_back();
+		// Make sure that nobody overrides our result that we want to use
+		if (m_StorageBufferAllocator->TryAllocate(Math::RoundUp(computeResultSize, 16), allocation))
+			command.ResultStateAllocationChanged = true;
+
+		command.ResultStateAllocation = allocation;
+		command.ComputeData.resize(computeDataSize);
+		memcpy(command.ComputeData.data(), computeData, computeDataSize);
+
+		command.OverrideUniformData = uniformComputeData;
+
+		// Render command
+		AssetHandle renderKey = material->GetHandle();
+		auto& dc = m_Queue.IndirectDrawCommands[renderKey];
+		dc.MaterialAsset = material;
+
+		auto& renderCommand = dc.OverrideCommands.emplace_back();
+		renderCommand.Mesh = mesh;
+		renderCommand.ComputeDataSize = computeDataSize;
+		renderCommand.ResultStateAllocation = allocation;
+
+		if (overrideMaterial.Raw())
+		{
+			renderCommand.OverrideMaterial = overrideMaterial;
+		}
+		else
+		{
+			renderCommand.OverrideMaterial = material->GetMaterialInstance();
+		}
+	}
+
 
 	void SceneRenderer::SetGridProperties(const GridProperties& props)
 	{
@@ -291,21 +367,114 @@ namespace XYZ {
 			}
 			if (ImGui::BeginTable("##Specification", 2, ImGuiTableFlags_SizingFixedFit))
 			{
-				UI::TextTableRow("%s", "Max Light Count:", "%u", DeferredLightPass::GetMaxNumberOfLights());
+				UI::TextTableRow("%s", "Max Point Lights:", "%u", UBPointLights3D::MaxLights);
+				UI::TextTableRow("%s", "Max Bone Transform:", "%u", SSBOBoneTransformData::MaxBoneTransforms);
+				UI::TextTableRow("%s", "Max Indirect Commands:", "%u", SSBOIndirectData::MaxCommands);
+				UI::TextTableRow("%s", "Max Compute Data Size:", "%u", SSBOComputeData::MaxSize);
+				UI::TextTableRow("%s", "Max Compute State Size:", "%u", SSBOComputeState::MaxSize);
+
 				UI::TextTableRow("%s", "Max Transform Instances:", "%u", GeometryPass::GetTransformBufferCount());
 				UI::TextTableRow("%s", "Max Instance Data Size:", "%u", GeometryPass::GetInstanceBufferSize());
 
 				ImGui::EndTable();
 			}
+
+			if (UI::BeginTreeNode("Visualization"))
+			{
+				if (ImGui::BeginTable("##VisualizationTable", 2, ImGuiTableFlags_SizingFixedFit))
+				{
+					UI::TableRow("ShowLightComplexity",
+						[]() { ImGui::Text("Show Light Complexity"); },
+						[&]() { ImGui::Checkbox("##ShowLightComplexity", &m_RendererDataUB.ShowLightComplexity); }
+					);
+					UI::TableRow("ShowGridRow",
+						[]() { ImGui::Text("Show Grid"); },
+						[&]() { ImGui::Checkbox("##ShowGrid", &m_Options.ShowGrid); }
+					);
+
+					UI::TableRow("GridScaleRow",
+						[]() { ImGui::Text("Grid Scale"); },
+						[&]()
+						{	UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
+							if (UI::FloatControl("##GridScale", "##GridScaleDrag", m_GridProps.Scale, 16.025f, 0.05f))
+								m_GridMaterialInstance->Set("u_Settings.Scale", m_GridProps.Scale);
+						}
+					);
+
+					UI::TableRow("LineWidthRow",
+						[]() { ImGui::Text("Grid Line Width"); },
+						[&]()
+						{	UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
+							if (UI::FloatControl("##GridLineWidth", "##GridLineWidthDrag", m_GridProps.LineWidth, 0.025f, 0.05f))
+								m_GridMaterialInstance->Set("u_Settings.Size", m_GridProps.LineWidth);
+						}
+					);
+					ImGui::EndTable();
+				}
+				UI::EndTreeNode();
+			}
+
+			if (UI::BeginTreeNode("Buffers Usage"))
+			{
+				if (ImGui::BeginTable("##BuffersUsage", 2, ImGuiTableFlags_SizingFixedFit))
+				{
+					const uint32_t transformsBufferUsage	= 100 * m_RenderStatistics.TransformInstanceCount / GeometryPass::GetTransformBufferCount();
+					const uint32_t bonesBufferUsage			= 100 * m_GeometryPassStatistics.BoneTransformCount / SSBOBoneTransformData::MaxBoneTransforms;
+					const uint32_t instanceBufferUsage		= 100 * m_GeometryPassStatistics.InstanceDataSize / GeometryPass::GetInstanceBufferSize();
+					const uint32_t indirectBufferUsage		= 100 * m_GeometryPassStatistics.IndirectCommandCount / SSBOIndirectData::MaxCommands;
+					const uint32_t computeDataBufferUsage	= 100 * m_StorageBufferAllocator->GetAllocatedSize() / SSBOComputeData::MaxSize;
+					const uint32_t computeStateBufferUsage	= 100 * m_GeometryPassStatistics.ComputeStateSize / SSBOComputeState::MaxSize;
+
+					UI::TableRow("",
+						[]() { ImGui::Text("Transform Buffer"); },
+						[&]() { ImGui::Text("%u%%", transformsBufferUsage); });
+
+					UI::TableRow("",
+						[]() { ImGui::Text("Bones Buffer"); },
+						[&]() { ImGui::Text("%u%%", bonesBufferUsage); });
+
+					UI::TableRow("",
+						[]() { ImGui::Text("Instance Buffer"); },
+						[&]() { ImGui::Text("%u%%", instanceBufferUsage); });
+
+					UI::TableRow("",
+						[]() { ImGui::Text("Indirect Buffer"); },
+						[&]() { ImGui::Text("%u%%", indirectBufferUsage); });
+
+					UI::TableRow("",
+						[]() { ImGui::Text("Compute Data Buffer"); },
+						[&]() { ImGui::Text("%u%%", computeDataBufferUsage); });
+
+					UI::TableRow("",
+						[]() { ImGui::Text("Compute State Buffer"); },
+						[&]() { ImGui::Text("%u%%", computeStateBufferUsage); });
+
+					ImGui::EndTable();
+				}
+				UI::EndTreeNode();
+			}
+
+
 			if (UI::BeginTreeNode("Render Statistics"))
 			{
 				if (ImGui::BeginTable("##RenderStatistics", 2, ImGuiTableFlags_SizingFixedFit))
 				{
 					UI::TextTableRow("%s", "Sprite Draw Count:", "%u", m_RenderStatistics.SpriteDrawCommandCount);
+					
 					UI::TextTableRow("%s", "Mesh Draw Count:", "%u", m_RenderStatistics.MeshDrawCommandCount);
-
 					UI::TextTableRow("%s", "Mesh Override Draw Count:", "%u", m_RenderStatistics.MeshOverrideDrawCommandCount);
+
+					
+					UI::TextTableRow("%s", "Animated Mesh Draw Count:", "%u", m_RenderStatistics.AnimatedMeshDrawCommandCount);
+					UI::TextTableRow("%s", "Animated Mesh Override Draw Count:", "%u", m_RenderStatistics.AnimatedMeshOverrideDrawCommandCount);
+
+
 					UI::TextTableRow("%s", "Instance Mesh Draw Count:", "%u", m_RenderStatistics.InstanceMeshDrawCommandCount);
+
+					UI::TextTableRow("%s", "Indirect Command Count:", "%u", m_RenderStatistics.IndirectCommandCount);
+					UI::TextTableRow("%s", "Compute Data Size:", "%u", m_StorageBufferAllocator->GetAllocatedSize());
+					UI::TextTableRow("%s", "Compute State Size:", "%u", m_RenderStatistics.ComputeStateSize);
+
 
 					UI::TextTableRow("%s", "Point Light2D Count:", "%u", m_RenderStatistics.PointLight2DCount);
 					UI::TextTableRow("%s", "Spot Light2D Count:", "%u", m_RenderStatistics.SpotLight2DCount);
@@ -449,13 +618,11 @@ namespace XYZ {
 		m_GridMaterial = gridMaterialAsset->GetMaterial();
 		m_GridMaterialInstance = gridMaterialAsset->GetMaterialInstance();
 
-		const float gridScale = 16.025f;
-		const float gridSize = 0.025f;
-		m_GridMaterialInstance->Set("u_Settings.Scale", gridScale);
-		m_GridMaterialInstance->Set("u_Settings.Size", gridSize);
+
+		m_GridMaterialInstance->Set("u_Settings.Scale", m_GridProps.Scale);
+		m_GridMaterialInstance->Set("u_Settings.Size", m_GridProps.LineWidth);
 
 		PipelineSpecification spec;
-		spec.Layouts = m_GridMaterial->GetShader()->GetLayouts();
 		spec.RenderPass = m_GeometryRenderPass;
 		spec.Shader = m_GridMaterial->GetShader();
 		spec.Topology = PrimitiveTopology::Triangles;
@@ -475,6 +642,7 @@ namespace XYZ {
 				m_GeometryRenderPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 				m_LightRenderPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 				m_CompositeRenderPass->GetSpecification().TargetFramebuffer->Resize(width, height);
+				m_DepthRenderPass->GetSpecification().TargetFramebuffer->Resize(width, height);
 
 				TextureProperties props;
 				props.Storage = true;
@@ -484,63 +652,62 @@ namespace XYZ {
 				m_BloomTexture[1] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
 				m_BloomTexture[2] = Texture2D::Create(ImageFormat::RGBA32F, width, height, nullptr, props);
 				m_BloomPass.SetBloomTextures(m_BloomTexture);
+
+				m_LightCullingWorkGroups = {
+					(m_ViewportSize.x + m_ViewportSize.x % 16) / 16,
+					(m_ViewportSize.y + m_ViewportSize.y % 16) / 16,
+					1
+				};
+				m_RendererDataUB.TilesCountX = m_LightCullingWorkGroups.x;
+
+				m_StorageBufferSet->Resize(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * 4096, SSBOLightCulling::Set, SSBOLightCulling::Binding);
 			}
 			m_ViewportSizeChanged = false;
 		}
 	}
 	void SceneRenderer::preRender()
 	{
-		GeometryPassStatistics stats = m_GeometryPass.PreSubmit(m_Queue);
+		m_GeometryPassStatistics = m_GeometryPass.PreSubmit(m_Queue);
 		DeferredLightPassStatistics lightPassStats = m_DeferredLightPass.PreSubmit(m_ActiveScene);
-
+		
 		m_RenderStatistics.MeshDrawCommandCount = static_cast<uint32_t>(m_Queue.MeshDrawCommands.size());
-		m_RenderStatistics.MeshOverrideDrawCommandCount = stats.MeshOverrideCount;
+		m_RenderStatistics.MeshOverrideDrawCommandCount = m_GeometryPassStatistics.MeshOverrideCount;
+		
+		m_RenderStatistics.AnimatedMeshDrawCommandCount = static_cast<uint32_t>(m_Queue.AnimatedMeshDrawCommands.size());
+		m_RenderStatistics.AnimatedMeshOverrideDrawCommandCount = m_GeometryPassStatistics.AnimatedMeshOverrideCount;
+
 		m_RenderStatistics.InstanceMeshDrawCommandCount = static_cast<uint32_t>(m_Queue.InstanceMeshDrawCommands.size());
 		
-		m_RenderStatistics.TransformInstanceCount = stats.TransformInstanceCount;
-		m_RenderStatistics.InstanceDataSize = stats.InstanceDataSize;
+		m_RenderStatistics.TransformInstanceCount = m_GeometryPassStatistics.TransformInstanceCount;
+		m_RenderStatistics.InstanceDataSize = m_GeometryPassStatistics.InstanceDataSize;
 		m_RenderStatistics.SpriteDrawCommandCount = static_cast<uint32_t>(m_Queue.SpriteDrawCommands.size());	
 	
 		m_RenderStatistics.PointLight2DCount = lightPassStats.PointLightCount;
 		m_RenderStatistics.SpotLight2DCount = lightPassStats.SpotLightCount;
+
+		m_RenderStatistics.IndirectCommandCount = m_GeometryPassStatistics.IndirectCommandCount;
+		m_RenderStatistics.ComputeStateSize = m_GeometryPassStatistics.ComputeStateSize;
 	}
 
 	void SceneRenderer::renderGrid()
 	{
 		const glm::mat4 transform = glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)) * glm::scale(glm::mat4(1.0f), glm::vec3(8.0f));
 
-		Renderer::BindPipeline(m_CommandBuffer, m_GridPipeline, GetCameraBufferSet(), nullptr, m_GridMaterial);
+		Renderer::BindPipeline(m_CommandBuffer, m_GridPipeline, m_UniformBufferSet, nullptr, m_GridMaterial);
 		Renderer::SubmitFullscreenQuad(m_CommandBuffer, m_GridPipeline, m_GridMaterialInstance, transform);
+		
 	}
 
-	void SceneRenderer::updateLights3D()
+	void SceneRenderer::updateUniformBufferSet()
 	{
-		// Collect 3D point lights
-		m_PointLights3D.clear();
-		auto& registry = m_ActiveScene->GetRegistry();
-		// Point lights
-		auto pointLight3DView = registry.view<TransformComponent, PointLightComponent3D>();
-		for (auto entity : pointLight3DView)
-		{
-			auto [transformComponent, lightComponent] = pointLight3DView.get(entity);
-			auto [translation, rot, scale] = transformComponent.GetWorldComponents();
-			m_PointLights3D.push_back({
-				translation,
-				lightComponent.Intensity,
-				lightComponent.Radiance,
-				lightComponent.MinRadius,
-				lightComponent.Radius,
-				lightComponent.Falloff,
-				lightComponent.LightSize,
-				lightComponent.CastsShadows,
-				});
-		}
+		Ref<SceneRenderer> instance = this;
 
-		constexpr uint32_t countOffset = 16;
+		Renderer::Submit([instance]() mutable {
 
-		ByteBuffer spotLightBuffer;
-		spotLightBuffer.Allocate(countOffset + (m_PointLights3D.size() * sizeof(PointLight3D)));
-		spotLightBuffer.Write(m_PointLights3D.size(), 0);
-		spotLightBuffer.Write(m_PointLights3D.data(), m_PointLights3D.size() * sizeof(PointLight3D), countOffset);
+			const uint32_t currentFrame = Renderer::GetCurrentFrame();
+			instance->m_UniformBufferSet->Get(UBCameraData::Binding, UBCameraData::Set, currentFrame)->RT_Update(&instance->m_CameraDataUB, sizeof(UBCameraData), 0);
+			instance->m_UniformBufferSet->Get(UBRendererData::Binding, UBRendererData::Set, currentFrame)->RT_Update(&instance->m_RendererDataUB, sizeof(UBRendererData), 0);
+			instance->m_UniformBufferSet->Get(UBPointLights3D::Binding, UBPointLights3D::Set, currentFrame)->RT_Update(&instance->m_PointsLights3DUB, sizeof(UBPointLights3D), 0);
+		});
 	}
 }

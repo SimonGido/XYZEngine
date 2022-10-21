@@ -3,6 +3,7 @@
 
 #include "VulkanContext.h"
 #include "VulkanSwapChain.h"
+#include "VulkanImage.h"
 
 namespace XYZ {
 	VulkanPrimaryRenderCommandBuffer::VulkanPrimaryRenderCommandBuffer(uint32_t count, std::string debugName)
@@ -156,16 +157,14 @@ namespace XYZ {
 		// Pipeline stats query		
 		vkCmdResetQueryPool(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0, m_PipelineQueryCount);
 		vkCmdBeginQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0, 0);
+
 	}
 
 	void VulkanPrimaryRenderCommandBuffer::RT_End() 
 	{
 		const uint32_t frameIndex = VulkanContext::Get()->GetCurrentFrame();
      	const VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
-		if (!m_SecondaryVulkanCommandBuffers[frameIndex].empty())
-		{
-			vkCmdExecuteCommands(commandBuffer, m_SecondaryVulkanCommandBuffers[frameIndex].size(), m_SecondaryVulkanCommandBuffers[frameIndex].data());
-		}
+		
 		m_Begin = false;
 		vkCmdEndQuery(commandBuffer, m_PipelineStatisticsQueryPools[frameIndex], 0);
 		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
@@ -355,12 +354,11 @@ namespace XYZ {
 	VulkanSecondaryRenderCommandBuffer::~VulkanSecondaryRenderCommandBuffer()
 	{
 	}
-	void VulkanSecondaryRenderCommandBuffer::Begin(Ref<Framebuffer> frameBuffer)
+	void VulkanSecondaryRenderCommandBuffer::Begin(Ref<Framebuffer> framebuffer, bool clear)
 	{
 		Ref<VulkanSecondaryRenderCommandBuffer> instance = this;
-		Renderer::Submit([instance, frameBuffer]() mutable {
-			instance->RT_Begin(frameBuffer);
-
+		Renderer::Submit([instance, framebuffer, clear]() mutable {
+			instance->RT_Begin(framebuffer, clear);
 		});
 	}
 	void VulkanSecondaryRenderCommandBuffer::End()
@@ -368,28 +366,68 @@ namespace XYZ {
 		Ref<VulkanSecondaryRenderCommandBuffer> instance = this;
 		Renderer::Submit([instance]() mutable {
 			instance->RT_End();
-
-			});
+		});
 	}
 
-	void VulkanSecondaryRenderCommandBuffer::RT_Begin(Ref<Framebuffer> frameBuffer)
+	void VulkanSecondaryRenderCommandBuffer::RT_Begin(Ref<Framebuffer> framebuffer, bool clear)
 	{
 		const uint32_t frameIndex = VulkanContext::Get()->GetCurrentFrame();
-
-		Ref<VulkanFramebuffer> vulkanFrameBuffer = frameBuffer.As<VulkanFramebuffer>();
+		Ref<VulkanContext> vulkanContext = Renderer::GetAPIContext();
+		Ref<VulkanFramebuffer> vulkanFrameBuffer = framebuffer.As<VulkanFramebuffer>();
 
 		VkCommandBufferInheritanceInfo inheritanceInfo = {};
 		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
 		inheritanceInfo.renderPass = vulkanFrameBuffer->GetRenderPass();
 		inheritanceInfo.framebuffer = vulkanFrameBuffer->GetFramebuffer();
+		inheritanceInfo.pipelineStatistics = 
+			VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_VERTICES_BIT |
+			VK_QUERY_PIPELINE_STATISTIC_INPUT_ASSEMBLY_PRIMITIVES_BIT |
+			VK_QUERY_PIPELINE_STATISTIC_VERTEX_SHADER_INVOCATIONS_BIT |
+			VK_QUERY_PIPELINE_STATISTIC_CLIPPING_INVOCATIONS_BIT |
+			VK_QUERY_PIPELINE_STATISTIC_CLIPPING_PRIMITIVES_BIT |
+			VK_QUERY_PIPELINE_STATISTIC_FRAGMENT_SHADER_INVOCATIONS_BIT |
+			VK_QUERY_PIPELINE_STATISTIC_COMPUTE_SHADER_INVOCATIONS_BIT;
+
 
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-		beginInfo.flags = 0; // Optional
-		beginInfo.pInheritanceInfo = nullptr; // Optional
+		beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+		beginInfo.pInheritanceInfo = &inheritanceInfo;
 
 		const VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
 		VK_CHECK_RESULT(vkBeginCommandBuffer(commandBuffer, &beginInfo));
+
+		uint32_t width = framebuffer->GetSpecification().Width;
+		uint32_t height = framebuffer->GetSpecification().Height;
+
+		VkViewport viewport = { 0.0f, static_cast<float>(height) };
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		viewport.width = width;
+		viewport.height = -static_cast<float>(height);
+
+
+		VkRect2D scissor = {};
+		scissor.offset = { 0, 0 };
+		scissor.extent.width = width;
+		scissor.extent.height = height;
+
+		if (framebuffer->GetSpecification().SwapChainTarget)
+		{
+			const VulkanSwapChain& swapChain = vulkanContext->GetSwapChain();
+			const auto extent = swapChain.GetExtent();
+			viewport = { 0.0f, static_cast<float>(extent.height) };
+			viewport.width = static_cast<float>(extent.width);
+			viewport.height = -static_cast<float>(extent.height);
+			scissor.extent = extent;
+		}
+		if (clear)
+			clearFramebuffer(framebuffer.As<VulkanFramebuffer>(), commandBuffer);
+
+		// Update dynamic viewport state
+		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+		// Update dynamic scissor state				
+		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 	}
 	void VulkanSecondaryRenderCommandBuffer::RT_End()
 	{
@@ -397,5 +435,52 @@ namespace XYZ {
 		const VkCommandBuffer commandBuffer = m_CommandBuffers[frameIndex];
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+	}
+	void VulkanSecondaryRenderCommandBuffer::Submit()
+	{
+		Ref<VulkanSecondaryRenderCommandBuffer> instance = this;
+		Renderer::Submit([instance]() mutable {
+
+			const uint32_t frame = Renderer::GetCurrentFrame();
+			const VkCommandBuffer commandBuffer = (const VkCommandBuffer)instance->m_PrimaryRenderCommandBuffer->CommandBufferHandle(frame);
+			vkCmdExecuteCommands(commandBuffer, 1u, &instance->m_CommandBuffers[frame]);
+		});
+	}
+	void VulkanSecondaryRenderCommandBuffer::clearFramebuffer(Ref<VulkanFramebuffer> framebuffer, const VkCommandBuffer commandBuffer)
+	{
+		const uint32_t colorAttachmentCount = framebuffer->GetNumColorAttachments();
+		const auto& clearValues = framebuffer->GetVulkanClearValues();
+
+
+		const uint32_t width = framebuffer->GetSpecification().Width;
+		const uint32_t height = framebuffer->GetSpecification().Height;
+		std::vector<VkClearAttachment> attachments(colorAttachmentCount);
+		std::vector<VkClearRect> clearRects(colorAttachmentCount);
+		for (uint32_t i = 0; i < colorAttachmentCount; i++)
+		{
+			attachments[i].aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			attachments[i].colorAttachment = i;
+			attachments[i].clearValue = clearValues[i];
+
+			clearRects[i].rect.offset = { 0, 0 };
+			clearRects[i].rect.extent = { width, height };
+			clearRects[i].baseArrayLayer = 0;
+			clearRects[i].layerCount = 1;
+		}
+
+		if (framebuffer->HasDepthAttachment())
+		{
+			Ref<VulkanImage2D> depthImage = framebuffer->GetDepthImage();
+			attachments.push_back({});
+			clearRects.push_back({});
+			attachments[colorAttachmentCount].aspectMask = depthImage->GetImageViewAspectFlags();
+			attachments[colorAttachmentCount].clearValue = clearValues[colorAttachmentCount];
+			clearRects[colorAttachmentCount].rect.offset = { 0, 0 };
+			clearRects[colorAttachmentCount].rect.extent = { width, height };
+			clearRects[colorAttachmentCount].baseArrayLayer = 0;
+			clearRects[colorAttachmentCount].layerCount = 1;
+		}
+
+		vkCmdClearAttachments(commandBuffer, attachments.size(), attachments.data(), clearRects.size(), clearRects.data());
 	}
 }

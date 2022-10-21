@@ -9,7 +9,18 @@ namespace XYZ {
 
 	enum class ShaderDataType
 	{
-		None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Bool
+		None = 0, 
+		Float, 
+		Float2, 
+		Float3, 
+		Float4, 
+		Mat3, 
+		Mat4, 
+		Int, 
+		Int2, 
+		Int3, 
+		Int4, 
+		Bool
 	};
 
 
@@ -35,34 +46,14 @@ namespace XYZ {
 
 	struct BufferElement
 	{
-		BufferElement(ShaderDataType type, const std::string_view name)
-			: Type(type), Size(ShaderDataTypeSize(type)), Offset(0)
+		BufferElement(uint32_t location, ShaderDataType type, const std::string_view name)
+			: Type(type), Size(ShaderDataTypeSize(type)), Offset(0), Location(location)
 		{}
-
-
-		uint32_t GetComponentCount() const
-		{
-			switch (Type)
-			{
-			case ShaderDataType::Bool:   return 1;
-			case ShaderDataType::Float:  return 1;
-			case ShaderDataType::Float2: return 2;
-			case ShaderDataType::Float3: return 3;
-			case ShaderDataType::Float4: return 4;
-			case ShaderDataType::Int:    return 1;
-			case ShaderDataType::Int2:   return 2;
-			case ShaderDataType::Int3:   return 3;
-			case ShaderDataType::Int4:   return 4;
-			case ShaderDataType::Mat3:   return 9;
-			case ShaderDataType::Mat4:   return 16;
-			}
-			XYZ_ASSERT(false, "ShaderDataTypeSize(ShaderDataType::None)");
-			return 0;
-		}
 
 		ShaderDataType Type;
 		uint32_t	   Size;
 		uint32_t	   Offset;
+		uint32_t	   Location;
 	};
 
 	class BufferLayout
@@ -74,13 +65,11 @@ namespace XYZ {
 		BufferLayout(const std::initializer_list<BufferElement>& elements, bool instanced = false)
 			: m_Elements(elements), m_Instanced(instanced)
 		{
-			createMat4();
 			calculateOffsetsAndStride();
 		}
 		BufferLayout(const std::vector<BufferElement>& elements, bool instanced = false)
 			: m_Elements(elements), m_Instanced(instanced)
 		{
-			createMat4();
 			calculateOffsetsAndStride();
 		}
 
@@ -109,24 +98,6 @@ namespace XYZ {
 				m_Stride += element.Size;
 			}
 		};
-
-
-		inline void createMat4()
-		{
-			for (auto& element : m_Elements)
-			{
-				if (element.Type == ShaderDataType::Mat4)
-				{
-					element.Type = ShaderDataType::Float4;
-					element.Size = 4 * 4;
-
-					const BufferElement tmpElement = element;
-					m_Elements.push_back(BufferElement(tmpElement.Type, ""));
-					m_Elements.push_back(BufferElement(tmpElement.Type, ""));
-					m_Elements.push_back(BufferElement(tmpElement.Type, ""));
-				}
-			}
-		}
 
 	private:
 		std::vector<BufferElement> m_Elements;
@@ -184,24 +155,28 @@ namespace XYZ {
 	{
 	public:
 		virtual ~StorageBuffer() = default;
+		// Old API
 		virtual void BindBase(uint32_t binding) const {};
 		virtual void BindRange(uint32_t offset, uint32_t size) const {};
 		virtual void Bind() const {};
+		virtual void GetSubData(void** buffer, uint32_t size, uint32_t offset = 0) {};
+		virtual void SetLayout(const BufferLayout& layout) {};
+		virtual uint32_t GetRendererID() const { return 0; };
+		//
 
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) {};
 		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) {};
 		virtual void Update(ByteBuffer data, uint32_t size, uint32_t offset = 0) {}
-		virtual void Resize(const void* data, uint32_t size) {};
-		virtual void GetSubData(void** buffer, uint32_t size, uint32_t offset = 0) {};
-		virtual void SetLayout(const BufferLayout& layout) {};
+		virtual void Resize(uint32_t size) {};
+		virtual void SetBufferInfo(uint32_t size, uint32_t offset) {};
+
 		virtual uint32_t GetBinding() const { return 0; }
 		virtual const BufferLayout& GetLayout() const { return BufferLayout(); };
-		virtual uint32_t GetRendererID() const { return 0; };
 		virtual ByteBuffer GetBuffer() { return ByteBuffer(); }
-
-		static Ref<StorageBuffer> Create(uint32_t size, uint32_t binding);
-
-		static Ref<StorageBuffer> Create(const void *data, uint32_t size, uint32_t binding, BufferUsage usage = BufferUsage::Dynamic);
+		virtual bool	   IsIndirect() const { return false; }
+		
+		static Ref<StorageBuffer> Create(uint32_t size, uint32_t binding, bool indirect = false);
+		static Ref<StorageBuffer> Create(const void *data, uint32_t size, uint32_t binding, bool indirect = false, BufferUsage usage = BufferUsage::Dynamic);
 	};
 
 
@@ -220,7 +195,7 @@ namespace XYZ {
 	};
 
 
-	struct DrawArraysIndirectCommand
+	struct IndirectDrawCommand
 	{
 		uint32_t Count;
 		uint32_t InstanceCount;
@@ -228,13 +203,16 @@ namespace XYZ {
 		uint32_t BaseInstance;
 	};
 
-	struct DrawElementsIndirectCommand
+	struct IndirectIndexedDrawCommand
 	{
-		uint32_t Count;         
-		uint32_t InstanceCount; 
-		uint32_t FirstIndex;    
-		uint32_t BaseVertex;    
-		uint32_t BaseInstance;  
+		uint32_t Count			= 0;         
+		uint32_t InstanceCount	= 0;
+		uint32_t FirstIndex		= 0;    
+		uint32_t BaseVertex		= 0;    
+		uint32_t BaseInstance	= 0;
+
+	private:
+		Padding<12> Padding;
 	};
 	
 
@@ -243,10 +221,12 @@ namespace XYZ {
 	public:
 		virtual ~IndirectBuffer() = default;
 		
-		virtual void Bind() const = 0;
-		virtual void BindBase(uint32_t index) = 0;
+		virtual void Bind() const {};
+		virtual void BindBase(uint32_t index) {};
 
-		static Ref<IndirectBuffer> Create(void * drawCommand, uint32_t size, uint32_t binding);
+		virtual uint32_t GetBinding() const { return 0; }
+
+		static Ref<IndirectBuffer> Create(const void * data, uint32_t size, uint32_t binding);
 	};
 
 

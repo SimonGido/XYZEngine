@@ -7,10 +7,14 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Mesh.h"
+#include "XYZ/Renderer/StorageBufferAllocator.h"
+
 #include "XYZ/Asset/Renderer/MaterialAsset.h"
+#include "XYZ/Asset/Animation/AnimationController.h"
 
 #include "XYZ/Script/ScriptPublicField.h"
 #include "XYZ/Particle/CPU/ParticleSystem.h"
+#include "XYZ/Particle/GPU/ParticleSystemGPU.h"
 
 #include "SceneCamera.h"
 
@@ -36,26 +40,39 @@ namespace XYZ {
 
 		GUID ID;
 	};
+
 	class TransformComponent 
 	{
 	public:
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent& other);
-		TransformComponent(const glm::vec3& translation)
-			: Translation(translation)
-		{}
-				
-		glm::vec3 Translation = { 0.0f,0.0f,0.0f };
-		glm::vec3 Rotation = { 0.0f,0.0f,0.0f };
-		glm::vec3 Scale = { 1.0f,1.0f,1.0f };
-		
-		glm::mat4 WorldTransform = glm::mat4(1.0f);
+		TransformComponent(const glm::vec3& translation);
 
+		struct Transform
+		{
+			glm::vec3 Translation = { 0.0f,0.0f,0.0f };
+			glm::vec3 Rotation = { 0.0f,0.0f,0.0f };
+			glm::vec3 Scale = { 1.0f,1.0f,1.0f };
+
+			glm::mat4 WorldTransform = glm::mat4(1.0f);
+		};
+
+
+		const Transform * operator->() const { return &m_Transform; }
+
+		Transform& GetTransform() { m_Dirty = true; return m_Transform; }
+		
 		std::tuple<glm::vec3, glm::vec3, glm::vec3> GetWorldComponents() const;
 
-		glm::mat4 GetTransform() const;
+		glm::mat4 GetLocalTransform() const;
 		
 		void DecomposeTransform(const glm::mat4& transform);
+
+	private:
+		Transform m_Transform;
+		bool	  m_Dirty = true;
+
+		friend class Scene;
 	};
 	
 
@@ -132,13 +149,13 @@ namespace XYZ {
 		std::vector<entt::entity>		 BoneEntities;
 	};
 
-	class AnimationController;
 	struct AnimationComponent
 	{
 		AnimationComponent() = default;
 		AnimationComponent(const AnimationComponent& other);
 
 		Ref<AnimationController>  Controller;
+		SamplingContext			  Context; // It is not owned by controller so single controller can update on multiple threads
 		float					  AnimationTime = 0.0f;
 		bool					  Playing = false;
 	};
@@ -188,12 +205,28 @@ namespace XYZ {
 		Ref<ParticleSystem> m_System;
 	};
 
-
-	struct PointLight2D 
+	struct ParticleComponentGPU
 	{
-		PointLight2D() = default;
-		PointLight2D(const glm::vec3& color, float radius, float intensity);
-		PointLight2D(const PointLight2D& other);
+		Ref<Mesh>			  Mesh;
+		Ref<MaterialAsset>	  RenderMaterial;
+		Ref<MaterialInstance> OverrideMaterial;
+
+		Ref<MaterialAsset>			 ComputeMaterial;
+		Ref<ParticleSystemGPU>		 System;
+		Ref<StorageBufferAllocation> ResultAllocation;
+
+		ParticleBuffer		   Buffer;
+		uint32_t			   EmittedParticles = 0;
+		
+		float				   Speed	  = 1.0f;
+		bool				   Loop		  = true;
+	};
+
+	struct PointLightComponent2D 
+	{
+		PointLightComponent2D() = default;
+		PointLightComponent2D(const glm::vec3& color, float radius, float intensity);
+		PointLightComponent2D(const PointLightComponent2D& other);
 
 		glm::vec3 Color = glm::vec3(1.0f);
 		float	  Radius	= 1.0f;
@@ -201,10 +234,10 @@ namespace XYZ {
 	};
 	
 
-	struct SpotLight2D 
+	struct SpotLightComponent2D
 	{
-		SpotLight2D() = default;
-		SpotLight2D(const SpotLight2D& other);
+		SpotLightComponent2D() = default;
+		SpotLightComponent2D(const SpotLightComponent2D& other);
 
 		glm::vec3 Color  = glm::vec3(1.0f);
 		float Radius	 = 1.0f;
@@ -238,11 +271,11 @@ namespace XYZ {
 		std::vector<entt::entity> GetTree(const entt::registry& reg) const;
 		bool					  IsInHierarchy(const entt::registry& reg, entt::entity child) const;
 
-		entt::entity GetParent() const { return Parent; }
-		entt::entity GetFirstChild() const { return FirstChild; }
+		entt::entity GetParent()		  const { return Parent; }
+		entt::entity GetFirstChild()	  const { return FirstChild; }
 		entt::entity GetPreviousSibling() const { return PreviousSibling; }
-		entt::entity GetNextSibling() const { return NextSibling; }
-		uint32_t GetDepth() const { return Depth; }
+		entt::entity GetNextSibling()	  const { return NextSibling; }
+		uint32_t	 GetDepth()			  const { return Depth; }
 
 		static void SetupRelation(entt::entity parent, entt::entity child, entt::registry& reg);
 		static void RemoveRelation(entt::entity child, entt::registry& reg);
@@ -364,4 +397,29 @@ namespace XYZ {
 		bool  InvertNormals = false;
 		void* RuntimeFixture = nullptr;
 	};
+
+
+#define XYZ_COMPONENTS \
+	IDComponent, \
+	SceneTagComponent, \
+	TransformComponent, \
+	SpriteRenderer, \
+	MeshComponent, \
+	AnimatedMeshComponent, \
+	AnimationComponent, \
+	PrefabComponent, \
+	ParticleRenderer, \
+	CameraComponent,\
+	ParticleComponent, \
+	ParticleComponentGPU, \
+	PointLightComponent2D, \
+	SpotLightComponent2D, \
+	PointLightComponent3D, \
+	Relationship, \
+	ScriptComponent, \
+	RigidBody2DComponent, \
+	BoxCollider2DComponent, \
+	CircleCollider2DComponent, \
+	PolygonCollider2DComponent, \
+	ChainCollider2DComponent
 }

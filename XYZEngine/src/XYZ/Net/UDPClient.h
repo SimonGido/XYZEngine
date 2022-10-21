@@ -1,7 +1,7 @@
 #pragma once
 #include "Core.h"
 
-#include "XYZ/Utils/DataStructures/Queue.h"
+#include "XYZ/Utils/DataStructures/ThreadQueue.h"
 
 namespace XYZ {
 

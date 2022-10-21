@@ -19,6 +19,7 @@ namespace  XYZ
         virtual void Begin() override;
         virtual void End() override;
         virtual void AddFont(const ImGuiFontConfig& config) override;
+        virtual bool IsMultiViewport() const override;
 
         virtual void OnAttach() override;
         virtual void OnDetach() override;

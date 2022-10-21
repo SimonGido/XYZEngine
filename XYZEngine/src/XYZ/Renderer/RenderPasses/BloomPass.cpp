@@ -8,9 +8,11 @@ namespace XYZ {
 
 	void BloomPass::Init(const BloomPassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer)
 	{
-		m_BloomComputePipeline = PipelineCompute::Create(config.Shader);
+		PipelineComputeSpecification spec;
+		spec.Shader = config.Shader;
+		m_BloomComputePipeline = PipelineCompute::Create(spec);
 		m_BloomComputeMaterial = Material::Create(config.Shader);
-		m_BloomComputeMaterialInstance = Ref<MaterialInstance>::Create(m_BloomComputeMaterial);
+		m_BloomComputeMaterialInstance = m_BloomComputeMaterial->CreateMaterialInstance();
 		m_BloomTexture = config.BloomTexture;
 	}
 
@@ -63,12 +65,11 @@ namespace XYZ {
 
 		Ref<Material> computeMaterial = m_BloomComputeMaterial;
 		Ref<MaterialInstance> computeMaterialInst = m_BloomComputeMaterialInstance;
-		Renderer::Submit([computeMaterialInst, settings = bloomSettings, prefilter]() mutable {
-			computeMaterialInst->Set("u_Uniforms.FilterTreshold", settings.FilterTreshold);
-			computeMaterialInst->Set("u_Uniforms.FilterKnee", settings.FilterKnee);
-			computeMaterialInst->Set("u_Uniforms.Mode", prefilter);
-			//computeMaterial->Set("u_Uniforms.LOD", 0.0f);			
-			});
+
+		computeMaterialInst->Set("u_Uniforms.FilterTreshold", bloomSettings.FilterTreshold);
+		computeMaterialInst->Set("u_Uniforms.FilterKnee", bloomSettings.FilterKnee);
+		computeMaterialInst->Set("u_Uniforms.Mode", prefilter);
+	
 		computeMaterial->SetImage("o_Image", m_BloomTexture[0]->GetImage(), 0);
 		computeMaterial->SetImage("u_Texture", lightImage);
 		computeMaterial->SetImage("u_BloomTexture", lightImage);
@@ -77,9 +78,7 @@ namespace XYZ {
 		Renderer::DispatchCompute(m_BloomComputePipeline, computeMaterialInst, workGroupsX, workGroupsY, 1);
 		imageBarrier(vulkanPipeline, m_BloomTexture[0]->GetImage());
 
-		Renderer::Submit([computeMaterialInst, downsample]() mutable {
-			computeMaterialInst->Set("u_Uniforms.Mode", downsample);
-			});
+		computeMaterialInst->Set("u_Uniforms.Mode", downsample);
 
 		const uint32_t mips = m_BloomTexture[0]->GetMipLevelCount() - 2;
 		for (uint32_t mip = 1; mip < mips; ++mip)
@@ -90,9 +89,8 @@ namespace XYZ {
 
 			computeMaterial->SetImage("o_Image", m_BloomTexture[1]->GetImage(), mip);
 			computeMaterial->SetImage("u_Texture", m_BloomTexture[0]->GetImage());
-			Renderer::Submit([computeMaterialInst, mip]() mutable {
-				computeMaterialInst->Set("u_Uniforms.LOD", (float)mip - 1.0f);
-				});
+			computeMaterialInst->Set("u_Uniforms.LOD", (float)mip - 1.0f);
+				
 
 			Renderer::UpdateDescriptors(m_BloomComputePipeline, m_BloomComputeMaterial, nullptr, nullptr);
 			Renderer::DispatchCompute(m_BloomComputePipeline, computeMaterialInst, workGroupsX, workGroupsY, 1);
@@ -101,18 +99,16 @@ namespace XYZ {
 
 			computeMaterial->SetImage("o_Image", m_BloomTexture[0]->GetImage(), mip);
 			computeMaterial->SetImage("u_Texture", m_BloomTexture[1]->GetImage());
-			Renderer::Submit([computeMaterialInst, mip]() mutable {
-				computeMaterialInst->Set("u_Uniforms.LOD", (float)mip);
-				});
+			computeMaterialInst->Set("u_Uniforms.LOD", (float)mip);
+				
 			Renderer::UpdateDescriptors(m_BloomComputePipeline, m_BloomComputeMaterial, nullptr, nullptr);
 			Renderer::DispatchCompute(m_BloomComputePipeline, computeMaterialInst, workGroupsX, workGroupsY, 1);
 			imageBarrier(vulkanPipeline, m_BloomTexture[0]->GetImage());
 		}
-		Renderer::Submit([computeMaterialInst, mips, upsamplefirst]() mutable {
-			computeMaterialInst->Set("u_Uniforms.Mode", upsamplefirst);
-			computeMaterialInst->Set("u_Uniforms.LOD", mips - 2.0f);
-			});
 
+		computeMaterialInst->Set("u_Uniforms.Mode", upsamplefirst);
+		computeMaterialInst->Set("u_Uniforms.LOD", mips - 2.0f);
+			
 		m_BloomComputeMaterial->SetImage("o_Image", m_BloomTexture[2]->GetImage(), mips - 2);
 		m_BloomComputeMaterial->SetImage("u_Texture", m_BloomTexture[0]->GetImage());
 
@@ -125,9 +121,8 @@ namespace XYZ {
 		imageBarrier(vulkanPipeline, m_BloomTexture[2]->GetImage());
 
 		// Upsample stage
-		Renderer::Submit([computeMaterialInst, upsample]() mutable {
-			computeMaterialInst->Set("u_Uniforms.Mode", upsample);
-			});
+		
+		computeMaterialInst->Set("u_Uniforms.Mode", upsample);
 
 		for (int32_t mip = mips - 3; mip >= 0; mip--)
 		{
@@ -138,10 +133,7 @@ namespace XYZ {
 			m_BloomComputeMaterial->SetImage("o_Image", m_BloomTexture[2]->GetImage(), mip);
 			m_BloomComputeMaterial->SetImage("u_Texture", m_BloomTexture[0]->GetImage());
 			m_BloomComputeMaterial->SetImage("u_BloomTexture", m_BloomTexture[2]->GetImage());
-			Renderer::Submit([computeMaterialInst, mip]() mutable {
-
-				computeMaterialInst->Set("u_Uniforms.LOD", (float)mip);
-				});
+			computeMaterialInst->Set("u_Uniforms.LOD", (float)mip);
 
 			Renderer::UpdateDescriptors(m_BloomComputePipeline, m_BloomComputeMaterial, nullptr, nullptr);
 			Renderer::DispatchCompute(m_BloomComputePipeline, computeMaterialInst, workGroupsX, workGroupsY, 1);

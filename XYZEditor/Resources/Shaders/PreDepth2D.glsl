@@ -30,7 +30,6 @@ void main()
 	vec4 worldPosition = u_Renderer.Transform * vec4(a_Position, 1.0);
 
 	v_LinearDepth = -(u_ViewMatrix * worldPosition).z;
-
 	gl_Position = u_ViewProjection * worldPosition;
 }
 

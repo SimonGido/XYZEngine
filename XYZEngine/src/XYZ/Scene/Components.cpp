@@ -204,11 +204,13 @@ namespace XYZ {
 	}
 	TransformComponent::TransformComponent(const TransformComponent& other)
 		:
-		Translation(other.Translation),
-		Rotation(other.Rotation),
-		Scale(other.Scale),
-		WorldTransform(other.WorldTransform)
+		m_Transform(other.m_Transform),
+		m_Dirty(other.m_Dirty)
 	{
+	}
+	TransformComponent::TransformComponent(const glm::vec3& translation)
+	{
+		m_Transform.Translation = translation;
 	}
 	std::tuple<glm::vec3, glm::vec3, glm::vec3> TransformComponent::GetWorldComponents() const
 	{
@@ -217,16 +219,16 @@ namespace XYZ {
 		glm::quat rot;
 		glm::vec3 skew;
 		glm::vec4 perspective;
-		glm::decompose(WorldTransform, scale, rot, translation, skew, perspective);
+		glm::decompose(m_Transform.WorldTransform, scale, rot, translation, skew, perspective);
 		glm::vec3 euler = glm::eulerAngles(rot);
 		return std::tuple<glm::vec3, glm::vec3, glm::vec3>(translation, euler, scale);
 	}
-	glm::mat4 TransformComponent::GetTransform() const
+	glm::mat4 TransformComponent::GetLocalTransform() const
 	{
-		const glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
-		return glm::translate(glm::mat4(1.0f), Translation)
+		const glm::mat4 rotation = glm::toMat4(glm::quat(m_Transform.Rotation));
+		return glm::translate(glm::mat4(1.0f), m_Transform.Translation)
 			* rotation
-			* glm::scale(glm::mat4(1.0f), Scale);
+			* glm::scale(glm::mat4(1.0f), m_Transform.Scale);
 	}
 	void TransformComponent::DecomposeTransform(const glm::mat4& transform)
 	{
@@ -234,8 +236,9 @@ namespace XYZ {
 		glm::vec3 skew;
 		glm::vec4 perspective;
 
-		glm::decompose(transform, Scale, rotation, Translation, skew, perspective);
-		Rotation = glm::eulerAngles(rotation);
+		glm::decompose(transform, m_Transform.Scale, rotation, m_Transform.Translation, skew, perspective);
+		m_Transform.Rotation = glm::eulerAngles(rotation);
+		m_Dirty = true;
 	}
 	
 	MeshComponent::MeshComponent(const MeshComponent& other)
@@ -266,6 +269,12 @@ namespace XYZ {
 	{
 	}
 	AnimatedMeshComponent::AnimatedMeshComponent(const AnimatedMeshComponent& other)
+		:
+		Mesh(other.Mesh),
+		MaterialAsset(other.MaterialAsset),
+		OverrideMaterial(other.OverrideMaterial),
+		BoneTransforms(other.BoneTransforms),
+		BoneEntities(other.BoneEntities)
 	{
 	}
 	AnimatedMeshComponent::AnimatedMeshComponent(const Ref<AnimatedMesh>& mesh, const Ref<XYZ::MaterialAsset>& materialAsset)
@@ -318,21 +327,21 @@ namespace XYZ {
 		Playing(other.Playing)
 	{
 	}
-	PointLight2D::PointLight2D(const glm::vec3& color, float radius, float intensity)
+	PointLightComponent2D::PointLightComponent2D(const glm::vec3& color, float radius, float intensity)
 		:
 		Color(color),
 		Radius(radius),
 		Intensity(intensity)
 	{
 	}
-	PointLight2D::PointLight2D(const PointLight2D& other)
+	PointLightComponent2D::PointLightComponent2D(const PointLightComponent2D& other)
 		:
 		Color(other.Color),
 		Radius(other.Radius),
 		Intensity(other.Intensity)
 	{
 	}
-	SpotLight2D::SpotLight2D(const SpotLight2D& other)
+	SpotLightComponent2D::SpotLightComponent2D(const SpotLightComponent2D& other)
 		:
 		Color(other.Color),
 		Radius(other.Radius),

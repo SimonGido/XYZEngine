@@ -7,9 +7,9 @@ layout(location = 2) in vec3 a_Tangent;
 layout(location = 3) in vec3 a_Binormal;
 layout(location = 4) in vec2 a_TexCoord;
 
-layout(location = 5) in vec4  a_TransformRow0;
-layout(location = 6) in vec4  a_TransformRow1;
-layout(location = 7) in vec4  a_TransformRow2;
+XYZ_INSTANCED layout(location = 5) in vec4  a_TransformRow0;
+XYZ_INSTANCED layout(location = 6) in vec4  a_TransformRow1;
+XYZ_INSTANCED layout(location = 7) in vec4  a_TransformRow2;
 
 
 struct VertexOutput
@@ -68,7 +68,6 @@ void main()
 layout(location = 0) out vec4 o_Color;
 layout(location = 1) out vec4 o_Position;
 
-const int MAX_POINT_LIGHTS = 1024;
 
 struct VertexOutput
 {
@@ -81,64 +80,101 @@ struct VertexOutput
 	vec3 Binormal;
 };
 
-struct PointLight 
+layout(location = 0) in VertexOutput v_Input;
+
+
+#include "Resources/Shaders/Includes/PBR.glsl"
+
+
+layout(std140, binding = 1) uniform RendererData
 {
-	vec3  Position;
-	float Multiplier;
-	vec3  Radiance;
-	float MinRadius;
-	float Radius;
-	float Falloff;
-	float LightSize;
-	bool  CastsShadows;
+	int  TilesCountX;
+	bool ShowLightComplexity;
 };
 
-struct PBRParameters
-{
-	vec3 Albedo;
-	float Roughness;
-	float Metalness;
-
-	vec3 Normal;
-	vec3 View;
-	float NdotV;
-};
-
-layout(std430, binding = 4) buffer buffer_PointLights
+layout(std140, binding = 2) uniform PointLightsData
 {
 	uint NumberPointLights;
-	PointLightData PointLights[MAX_POINT_LIGHTS];
+	PointLight PointLights[MAX_POINT_LIGHTS];
 };
 
-layout(std430, binding = 14) readonly buffer buffer_VisibleLightIndices
+layout(std430, binding = 4) readonly buffer buffer_VisibleLightIndices
 {
 	int Indices[];
 } visibleLightIndicesBuffer;
 
 PBRParameters m_Params;
 
-vec3 fresnelSchlickRoughness(vec3 F0, float cosTheta, float roughness)
-{
-    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
-} 
 
-vec3 IBL(vec3 F0, vec3 Lr)
+int GetLightBufferIndex(int i)
 {
-	vec3 F = fresnelSchlickRoughness(F0, m_Params.NdotV, m_Params.Roughness);
-	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
-	return kd;
+	ivec2 tileID = ivec2(gl_FragCoord) / ivec2(16, 16);
+	uint index = tileID.y * TilesCountX + tileID.x;
+
+	uint offset = index * 1024;
+	return visibleLightIndicesBuffer.Indices[offset + i];
+}
+
+int GetPointLightCount()
+{
+	int result = 0;
+	for (int i = 0; i < NumberPointLights; i++)
+	{
+		uint lightIndex = GetLightBufferIndex(i);
+		if (lightIndex == -1)
+			break;
+
+		result++;
+	}
+	return result;
+}
+
+vec3 GetGradient(float value)
+{
+	vec3 zero = vec3(0.0, 0.0, 0.0);
+	vec3 white = vec3(0.0, 0.1, 0.9);
+	vec3 red = vec3(0.2, 0.9, 0.4);
+	vec3 blue = vec3(0.8, 0.8, 0.3);
+	vec3 green = vec3(0.9, 0.2, 0.3);
+
+	float step0 = 0.0f;
+	float step1 = 2.0f;
+	float step2 = 4.0f;
+	float step3 = 8.0f;
+	float step4 = 16.0f;
+
+	vec3 color = mix(zero, white, smoothstep(step0, step1, value));
+	color = mix(color, white, smoothstep(step1, step2, value));
+	color = mix(color, red, smoothstep(step1, step2, value));
+	color = mix(color, blue, smoothstep(step2, step3, value));
+	color = mix(color, green, smoothstep(step3, step4, value));
+
+	return color;
+}
+
+vec3 CalculatePointLights(in vec3 F0)
+{
+	vec3 result = vec3(0.0);
+	for (int i = 0; i < NumberPointLights; i++)
+	{
+		uint lightIndex = GetLightBufferIndex(i);
+		if (lightIndex == -1)
+			break;
+
+		PointLight light = PointLights[lightIndex];
+		result += CalculatePointLight(F0, light, m_Params, v_Input.Position);
+	}
+	return result;
 }
 
 
 
-layout(location = 0) in VertexOutput v_Input;
-
 
 // PBR texture inputs
-layout (binding = 1) uniform sampler2D u_AlbedoTexture;
-layout (binding = 2) uniform sampler2D u_NormalTexture;
-layout (binding = 3) uniform sampler2D u_MetalnessTexture;
-layout (binding = 4) uniform sampler2D u_RoughnessTexture;
+layout (binding = 5) uniform sampler2D u_AlbedoTexture;
+layout (binding = 6) uniform sampler2D u_NormalTexture;
+layout (binding = 7) uniform sampler2D u_MetalnessTexture;
+layout (binding = 8) uniform sampler2D u_RoughnessTexture;
 
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04);
@@ -151,6 +187,7 @@ void main()
 	m_Params.Metalness = texture(u_MetalnessTexture, v_Input.TexCoord).r;
 	m_Params.Roughness = texture(u_RoughnessTexture, v_Input.TexCoord).r;
     m_Params.Roughness = max(m_Params.Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
+	float alpha = texture(u_AlbedoTexture,	 v_Input.TexCoord).a;
 
 	// Normals (currently from vertex)
 	m_Params.Normal = normalize(v_Input.Normal);
@@ -163,9 +200,17 @@ void main()
 	// Fresnel reflectance, metals use albedo
 	vec3 F0 = mix(Fdielectric, m_Params.Albedo, m_Params.Metalness);
 
-	vec3 lightContribution = m_Params.Albedo;
-	vec3 iblContribution = IBL(F0, Lr);
+	vec3 lightContribution = CalculatePointLights(F0) + m_Params.Albedo;
+	vec3 iblContribution = IBL(F0, Lr, m_Params);
 
-	o_Color = vec4(iblContribution * lightContribution, 1.0);
+
+	o_Color = vec4(iblContribution * lightContribution, alpha);
 	o_Position = vec4(v_Input.Position, 1.0);
+
+	if (ShowLightComplexity)
+	{
+		int pointLightCount = GetPointLightCount();
+		float value = float(pointLightCount);
+		o_Color.rgb = (o_Color.rgb * 0.2) + GetGradient(value);
+	}
 }	

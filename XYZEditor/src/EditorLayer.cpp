@@ -1,6 +1,8 @@
 #include "EditorLayer.h"
 
 #include "Editor/Event/EditorEvents.h"
+#include "XYZ/Utils/Math/Math.h"
+#include "XYZ/Scene/SceneEntityUtils.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
@@ -9,7 +11,7 @@
 
 namespace XYZ {
 	namespace Editor {
-
+		
 		EditorLayer::EditorLayer()
 		{
 		}
@@ -20,8 +22,7 @@ namespace XYZ {
 		}
 
 		void EditorLayer::OnAttach()
-		{
-			Renderer::InitResources();
+		{		
 			s_Data.Init();		
 
 			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
@@ -38,7 +39,7 @@ namespace XYZ {
 			m_SceneRenderer = Ref<SceneRenderer>::Create(m_Scene, SceneRendererSpecification());
 			m_CameraTexture = Texture2D::Create("Resources/Editor/Camera.png");
 
-			m_CommandBuffer = RenderCommandBuffer::Create(0, "Editor");
+			m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "Editor");
 			m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
 			Ref<MaterialAsset> quadMaterialAsset   = Renderer::GetDefaultResources().RendererAssets.at("OverlayQuadMaterial").As<MaterialAsset>();;
@@ -57,7 +58,7 @@ namespace XYZ {
 
 			m_OverlayRenderer2D = Ref<Renderer2D>::Create(Renderer2DConfiguration{
 				m_CommandBuffer,
-				m_SceneRenderer->GetCameraBufferSet(),
+				m_SceneRenderer->GetUniformBufferSet(),
 			});
 			createOverlayPipelines();
 
@@ -83,14 +84,15 @@ namespace XYZ {
 			Renderer::WaitAndRenderAll();
 
 			const float keepAliveAssetSeconds = 60;
-			AssetLifeManager::Start(keepAliveAssetSeconds);
+			AssetManager::KeepAlive(keepAliveAssetSeconds);
+
+			m_Scene->CreateParticleTest();
 		}
 
 		void EditorLayer::OnDetach()
 		{
 			s_Data.Shutdown();
 			AssetManager::SerializeAll();
-			AssetLifeManager::Stop();
 
 			ScriptEngine::Shutdown();
 			m_EditorManager.Clear();
@@ -160,20 +162,20 @@ namespace XYZ {
 			m_CommandBuffer->Begin();
 			m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 			
-			Renderer::BeginRenderPass(m_CommandBuffer, m_SceneRenderer->GetFinalRenderPass(), false);	
+			Renderer::BeginRenderPass(m_CommandBuffer, m_SceneRenderer->GetFinalRenderPass(), false, false);	
 			
 			m_OverlayRenderer2D->BeginScene(m_EditorCamera->GetViewMatrix());	
 			renderSelected();
 			renderColliders();
 			renderCameras();
 			renderLights();	
-			Renderer::BindPipeline(m_CommandBuffer, m_OverlayQuadPipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_QuadMaterial);
+			Renderer::BindPipeline(m_CommandBuffer, m_OverlayQuadPipeline, m_SceneRenderer->GetUniformBufferSet(), nullptr, m_QuadMaterial);
 			m_OverlayRenderer2D->FlushQuads(m_OverlayQuadPipeline, m_QuadMaterialInstance, true);
 			
-			Renderer::BindPipeline(m_CommandBuffer, m_OverlayLinePipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_LineMaterial);
+			Renderer::BindPipeline(m_CommandBuffer, m_OverlayLinePipeline, m_SceneRenderer->GetUniformBufferSet(), nullptr, m_LineMaterial);
 			m_OverlayRenderer2D->FlushLines(m_OverlayLinePipeline, m_LineMaterialInstance, true);
 			
-			Renderer::BindPipeline(m_CommandBuffer, m_OverlayCirclePipeline, m_SceneRenderer->GetCameraBufferSet(), nullptr, m_CircleMaterial);
+			Renderer::BindPipeline(m_CommandBuffer, m_OverlayCirclePipeline, m_SceneRenderer->GetUniformBufferSet(), nullptr, m_CircleMaterial);
 			m_OverlayRenderer2D->FlushFilledCircles(m_OverlayCirclePipeline, m_CircleMaterialInstance, true);
 			
 			m_OverlayRenderer2D->EndScene();
@@ -183,7 +185,9 @@ namespace XYZ {
 			
 			m_CommandBuffer->End();
 			m_CommandBuffer->Submit();
-			Application::Get().GetPerformanceProfiler().PushMeasurement("EditorLayer::renderOverlay", static_cast<float>(m_GPUTimeQueries.GPUTime));
+
+			float gpuTime = m_CommandBuffer->GetExecutionGPUTime(Renderer::GetCurrentFrame(), m_GPUTimeQueries.GPUTime);
+			Application::Get().GetPerformanceProfiler().PushMeasurement("EditorLayer::renderOverlay", gpuTime);
 		}
 
 		void EditorLayer::renderColliders()
@@ -222,13 +226,13 @@ namespace XYZ {
 					auto& [transformComp, chainCollider] = chain2DColliderView.get(entity);
 					if (!chainCollider.Points.empty())
 					{
-						glm::vec4 p = transformComp.WorldTransform * glm::vec4(chainCollider.Points[0], 0.0f, 1.0f);
+						glm::vec4 p = transformComp->WorldTransform * glm::vec4(chainCollider.Points[0], 0.0f, 1.0f);
 						m_OverlayRenderer2D->SubmitFilledCircle(glm::vec3(p), glm::vec2(0.2f), 0.3f, s_Data.Color[ED::Collider2D]);
 					}
 					for (size_t i = 1; i < chainCollider.Points.size(); ++i)
 					{
-						glm::vec4 p0 = transformComp.WorldTransform * glm::vec4(chainCollider.Points[i - 1], 0.0f, 1.0f);
-						glm::vec4 p1 = transformComp.WorldTransform * glm::vec4(chainCollider.Points[i], 0.0f, 1.0f);
+						glm::vec4 p0 = transformComp->WorldTransform * glm::vec4(chainCollider.Points[i - 1], 0.0f, 1.0f);
+						glm::vec4 p1 = transformComp->WorldTransform * glm::vec4(chainCollider.Points[i], 0.0f, 1.0f);
 
 						m_OverlayRenderer2D->SubmitLine(glm::vec3(p0), glm::vec3(p1), s_Data.Color[ED::Collider2D]);
 						m_OverlayRenderer2D->SubmitFilledCircle(glm::vec3(p1), glm::vec2(0.2f), 0.3f, s_Data.Color[ED::Collider2D]);
@@ -259,9 +263,9 @@ namespace XYZ {
 			{
 				auto& registry = m_Scene->GetRegistry();
 
-				auto spotLight2DView = registry.view<TransformComponent, SpotLight2D>();
+				auto spotLight2DView = registry.view<TransformComponent, SpotLightComponent2D>();
 
-				auto pointLight2DView = registry.view<TransformComponent, PointLight2D>();
+				auto pointLight2DView = registry.view<TransformComponent, PointLightComponent2D>();
 			}
 		}
 
@@ -279,10 +283,8 @@ namespace XYZ {
 				}
 				else
 				{
-					auto& transform = selected.GetComponent<TransformComponent>();
-					auto [min, max] = transformToAABB(transform);
-					
-					m_OverlayRenderer2D->SubmitAABB(min, max, s_Data.Color[ED::BoundingBox]);
+					auto aabb = SceneEntityAABB(selected);
+					m_OverlayRenderer2D->SubmitAABB(aabb.Min, aabb.Max, s_Data.Color[ED::BoundingBox]);
 				}
 			}
 		}
@@ -292,7 +294,6 @@ namespace XYZ {
 		{
 			{
 				PipelineSpecification spec;
-				spec.Layouts = m_QuadMaterial->GetShader()->GetLayouts();
 				spec.RenderPass = m_SceneRenderer->GetFinalRenderPass();
 				spec.Shader = m_QuadMaterial->GetShader();
 				spec.Topology = PrimitiveTopology::Triangles;
@@ -302,7 +303,6 @@ namespace XYZ {
 			}
 			{
 				PipelineSpecification spec;
-				spec.Layouts = m_CircleMaterial->GetShader()->GetLayouts();
 				spec.RenderPass = m_SceneRenderer->GetFinalRenderPass();
 				spec.Shader = m_CircleMaterial->GetShader();
 				spec.Topology = PrimitiveTopology::Triangles;
@@ -312,7 +312,6 @@ namespace XYZ {
 			}
 			{
 				PipelineSpecification spec;
-				spec.Layouts = m_LineMaterial->GetShader()->GetLayouts();
 				spec.RenderPass = m_SceneRenderer->GetFinalRenderPass();
 				spec.Shader = m_LineMaterial->GetShader();
 				spec.Topology = PrimitiveTopology::Lines;
@@ -344,12 +343,6 @@ namespace XYZ {
 			return std::pair<glm::vec3, glm::vec3>();
 		}
 
-		std::pair<glm::vec3, glm::vec3> EditorLayer::transformToAABB(const TransformComponent& transform) const
-		{
-			auto [translation, rotation, scale] = transform.GetWorldComponents();
-			scale.z = 0.0f; // 2D
-			return { translation - (scale / 2.0f),translation + (scale / 2.0f) };
-		}
 
 		void EditorLayer::displayStats()
 		{
