@@ -87,10 +87,9 @@ namespace XYZ {
 		uint32_t boneTransformCount = 0;
 		uint32_t instanceOffset = 0;
 		uint32_t computeStateSize = 0;
-		uint32_t computeDataSize = 0;
 		uint32_t indirectCommandCount = 0;
 
-		prepareIndirectComputeCommands(queue, computeStateSize, computeDataSize);
+		prepareIndirectComputeCommands(queue, computeStateSize);
 		prepareIndirectCommands(queue, indirectCommandCount);
 		prepareStaticDrawCommands(queue, overrideCount, transformsCount);
 		prepareAnimatedDrawCommands(queue, animatedOverrideCount, transformsCount, boneTransformCount);
@@ -110,7 +109,6 @@ namespace XYZ {
 			transformsCount, 
 			instanceOffset,
 			computeStateSize,
-			computeDataSize,
 			indirectCommandCount,
 			boneTransformCount
 		};
@@ -145,8 +143,8 @@ namespace XYZ {
 				);
 
 				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					command.ComputeResultState.Size,
-					command.ComputeResultState.Offset,
+					command.ResultStateAllocation->GetSize(),
+					command.ResultStateAllocation->GetOffset(),
 					SSBOComputeData::Binding,
 					SSBOComputeData::Set
 				);
@@ -220,8 +218,8 @@ namespace XYZ {
 				);
 
 				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					dcOverride.ComputeResultState.Size,
-					dcOverride.ComputeResultState.Offset,
+					dcOverride.ResultStateAllocation->GetSize(),
+					dcOverride.ResultStateAllocation->GetOffset(),
 					SSBOComputeData::Binding,
 					SSBOComputeData::Set
 				);
@@ -530,7 +528,6 @@ namespace XYZ {
 	void GeometryPass::prepareIndirectCommands(GeometryRenderQueue& queue, uint32_t& indirectCommandCount)
 	{
 		uint32_t offset = 0;
-		uint32_t resultOffset = 0;
 		uint32_t commandOffset = 0;
 
 		uint32_t index = 0;
@@ -542,9 +539,7 @@ namespace XYZ {
 				cmd.ComputeDataState.Offset = offset;
 				cmd.ComputeDataState.Size = Math::RoundUp(cmd.ComputeDataSize, 16);
 
-				cmd.ComputeResultState.Offset = resultOffset;
-				cmd.ComputeResultState.Size = Math::RoundUp(cmd.ComputeResultSize, 16);
-
+				
 				cmd.IndirectCommandState.Offset = commandOffset;
 				cmd.IndirectCommandState.Size = sizeof(IndirectIndexedDrawCommand);
 			
@@ -554,17 +549,15 @@ namespace XYZ {
 				m_SceneRenderer->m_IndirectBufferSSBO.Data[index].BaseInstance = 0;
 
 				offset += Math::RoundUp(cmd.ComputeDataSize, 16);
-				resultOffset += Math::RoundUp(cmd.ComputeResultSize, 16);
 				commandOffset += sizeof(IndirectIndexedDrawCommand);
 				indirectCommandCount++;
 				index++;
 			}
 		}
 	}
-	void GeometryPass::prepareIndirectComputeCommands(GeometryRenderQueue& queue, uint32_t& computeStateSize, uint32_t& computeDataSize)
+	void GeometryPass::prepareIndirectComputeCommands(GeometryRenderQueue& queue, uint32_t& computeStateSize)
 	{
 		uint32_t offset = 0;
-		uint32_t resultOffset = 0;
 		uint32_t commandOffset = 0;
 
 		for (auto& [key, dc] : queue.IndirectComputeCommands)
@@ -575,21 +568,16 @@ namespace XYZ {
 				cmd.ComputeDataState.Offset = offset;
 				cmd.ComputeDataState.Size = Math::RoundUp(static_cast<uint32_t>(cmd.ComputeData.size()), 16);
 
-				cmd.ComputeResultState.Offset = resultOffset;
-				cmd.ComputeResultState.Size = Math::RoundUp(cmd.ComputeResultSize, 16);
-
 				cmd.IndirectCommandState.Offset = commandOffset;
 				cmd.IndirectCommandState.Size = sizeof(IndirectIndexedDrawCommand);
 
 				memcpy(&m_SceneRenderer->m_ComputeStateSSBO.Data[offset], cmd.ComputeData.data(), cmd.ComputeData.size());
 				
 				offset		  += Math::RoundUp(static_cast<uint32_t>(cmd.ComputeData.size()), 16);
-				resultOffset  += Math::RoundUp(cmd.ComputeResultSize, 16);
 				commandOffset += sizeof(IndirectIndexedDrawCommand);
 			}
 		}
 		computeStateSize = offset;
-		computeDataSize = resultOffset;
 	}
 
 	void GeometryPass::prepareAnimatedDrawCommands(GeometryRenderQueue& queue, size_t& overrideCount, uint32_t& transformsCount, uint32_t& boneTransformCount)

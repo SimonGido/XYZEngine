@@ -14,18 +14,13 @@ struct Particle
 	vec4  TransformRow0;
     vec4  TransformRow1;
     vec4  TransformRow2;
-	vec4  RenderColor;
-
-	// State of particle
     vec4  Color;
+	
+	 // Current state of particle
     vec4  Position;
-    vec4  Rotation;
-    vec4  Scale;
-    vec4  Velocity; 
-    
     float LifeRemaining;
-    bool  Alive;
-    uint  Padding0[2];
+
+    vec3  Padding;
 };
 
 layout (std430, binding = 6) buffer buffer_Particles
@@ -69,7 +64,7 @@ void main()
 
 	vec4 instancePosition = transform * u_Renderer.Transform * vec4(a_Position, 1.0);
 
-	v_Output.Color = Particles[id].RenderColor;
+	v_Output.Color = Particles[id].Color;
 	v_Output.Position = instancePosition.xyz;
 	v_Output.TexCoord  = a_TexCoord;
 	v_Output.TexOffset = vec2(0.0, 0.0);

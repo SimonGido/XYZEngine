@@ -17,7 +17,6 @@ namespace XYZ {
 		uint32_t TransformInstanceCount;
 		uint32_t InstanceDataSize;
 		uint32_t ComputeStateSize;
-		uint32_t ComputeDataSize;
 		uint32_t IndirectCommandCount;
 		uint32_t BoneTransformCount;
 	};
@@ -64,7 +63,7 @@ namespace XYZ {
 
 
 		void prepareIndirectCommands(GeometryRenderQueue& queue, uint32_t& indirectCommandCount);
-		void prepareIndirectComputeCommands(GeometryRenderQueue& queue, uint32_t& computeStateSize, uint32_t& computeDataSize);
+		void prepareIndirectComputeCommands(GeometryRenderQueue& queue, uint32_t& computeStateSize);
 		void prepareStaticDrawCommands(GeometryRenderQueue& queue, size_t& overrideCount, uint32_t& transformsCount);
 		void prepareAnimatedDrawCommands(GeometryRenderQueue& queue, size_t& overrideCount, uint32_t& transformsCount, uint32_t& boneTransformCount);
 		void prepareInstancedDrawCommands(GeometryRenderQueue& queue, uint32_t& instanceOffset);

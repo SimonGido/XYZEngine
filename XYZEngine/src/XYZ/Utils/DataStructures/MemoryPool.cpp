@@ -12,6 +12,7 @@ namespace XYZ {
 
 	MemoryPool::MemoryPool(const uint32_t blockSize)
 		:
+		m_BlockInUse(0),
 		m_BlockSize(blockSize),
 		m_NumAllocations(0),
 		m_MemoryUsed(0)

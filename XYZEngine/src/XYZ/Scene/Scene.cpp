@@ -455,21 +455,24 @@ namespace XYZ {
 		for (auto entity : particleGPUView)
 		{
 			auto& [transformComponent, particleComponent] = particleGPUView.get(entity);
-			
-			sceneRenderer->SubmitMeshIndirect(
-				particleComponent.Mesh,
-				particleComponent.RenderMaterial,
-				particleComponent.ComputeMaterial,
-				particleComponent.Buffer.GetData(),
-				particleComponent.EmittedParticles * particleComponent.System->GetStride(),
-				particleComponent.EmittedParticles * sizeof(ParticleGPU),
-				PushConstBuffer{
-					particleComponent.Timestep,
-					particleComponent.Speed,
-					particleComponent.EmittedParticles,
-					(int)particleComponent.Loop
-				}
-			);
+			if (particleComponent.EmittedParticles != 0)
+			{
+				sceneRenderer->SubmitMeshIndirect(
+					particleComponent.Mesh,
+					particleComponent.RenderMaterial,
+					particleComponent.ComputeMaterial,
+					particleComponent.Buffer.GetData(),
+					particleComponent.EmittedParticles * particleComponent.System->GetStride(),
+					particleComponent.Buffer.GetMaxParticles() * sizeof(ParticleGPU),
+					particleComponent.ResultAllocation,
+					PushConstBuffer{
+						particleComponent.Timestep,
+						particleComponent.Speed,
+						particleComponent.EmittedParticles,
+						(int)particleComponent.Loop
+					}
+				);
+			}
 		}
 		sceneRenderer->EndScene();
 	}
@@ -737,7 +740,6 @@ namespace XYZ {
 		}
 	}
 
-	static uint32_t frameCounter = 0;
 
 	void Scene::updateParticleGPUView(Timestep ts)
 	{
@@ -745,13 +747,7 @@ namespace XYZ {
 		auto &particleStorage = m_Registry.storage<ParticleComponentGPU>();
 		for (auto& particleComponent : particleStorage)
 		{
-			// This may happen only every third frame, so each frame of gpu particles have same data
-			if (frameCounter == Renderer::GetConfiguration().FramesInFlight)
-			{
-				frameCounter = 0;
-				particleComponent.Timestep = ts;
-			}
-
+			particleComponent.Timestep = ts; // TODO: This must be same for every frame in flight
 			if (particleComponent.EmittedParticles == particleComponent.Buffer.GetMaxParticles())
 				continue;
 
@@ -761,7 +757,6 @@ namespace XYZ {
 
 			particleComponent.EmittedParticles += particleComponent.System->Update(ts, particleBuffer, bufferSize);		
 		}
-		frameCounter++;
 	}
 
 
@@ -953,9 +948,9 @@ namespace XYZ {
 		m_ParticleMaterialGPU->SetTexture("u_Texture", whiteTexture);
 
 		int enabled = 1;
-		m_IndirectCommandMaterial->Specialize("COLOR_OVER_LIFE", enabled);
-		m_IndirectCommandMaterial->Specialize("SCALE_OVER_LIFE", enabled);
-		m_IndirectCommandMaterial->Specialize("VELOCITY_OVER_LIFE", enabled);
+		//m_IndirectCommandMaterial->Specialize("COLOR_OVER_LIFE", enabled);
+		//m_IndirectCommandMaterial->Specialize("SCALE_OVER_LIFE", enabled);
+		//m_IndirectCommandMaterial->Specialize("VELOCITY_OVER_LIFE", enabled);
 		//m_IndirectCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
 
 

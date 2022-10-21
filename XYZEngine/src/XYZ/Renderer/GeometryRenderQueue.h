@@ -156,11 +156,10 @@ namespace XYZ {
 		{
 			PushConstBuffer		   OverrideUniformData;
 			std::vector<std::byte> ComputeData;
-			uint32_t			   ComputeResultSize;
 
-			SSBOState			   IndirectCommandState;
-			SSBOState			   ComputeDataState;
-			SSBOState			   ComputeResultState;
+			SSBOState					  IndirectCommandState;
+			SSBOState					  ComputeDataState;
+			Ref<StorageBufferAllocation>  ResultStateAllocation;
 		};
 
 		struct IndirectComputeBatch
@@ -176,12 +175,10 @@ namespace XYZ {
 			Ref<Mesh>			  Mesh;
 			Ref<MaterialInstance> OverrideMaterial;
 			uint32_t			  ComputeDataSize;
-			uint32_t			  ComputeResultSize;
-
-			
+	
 			SSBOState			  IndirectCommandState;
 			SSBOState			  ComputeDataState;
-			SSBOState			  ComputeResultState;
+			Ref<StorageBufferAllocation>  ResultStateAllocation;
 		};
 
 		struct IndirectMeshDrawCommand

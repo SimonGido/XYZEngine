@@ -95,6 +95,8 @@ namespace XYZ {
 		m_StorageBufferSet->Create(sizeof(SSBOComputeData), SSBOComputeData::Set, SSBOComputeData::Binding);
 		m_StorageBufferSet->Create(sizeof(SSBOComputeState), SSBOComputeState::Set, SSBOComputeState::Binding);
 
+		m_StorageBufferAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOComputeData));
+
 		m_CompositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
 		m_LightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
 		m_BloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
@@ -292,39 +294,42 @@ namespace XYZ {
 	}
 
 	void SceneRenderer::SubmitMeshIndirect(
-		const Ref<Mesh>& mesh,
-		const Ref<MaterialAsset>& material,
-		const Ref<MaterialAsset>& materialCompute,
+		const Ref<Mesh>& mesh, 
+		const Ref<MaterialAsset>& material, 
+		const Ref<MaterialAsset>& materialCompute, 
 		const void* computeData, 
-		uint32_t computeDataSize,
-		uint32_t computeResultSize,
-		const PushConstBuffer& uniformComputeData,
+		uint32_t computeDataSize, 
+		uint32_t computeResultSize, 
+		Ref<StorageBufferAllocation>& allocation, 
+		const PushConstBuffer& uniformComputeData, 
 		const Ref<MaterialInstance>& overrideMaterial
 	)
 	{
+		// Make sure that nobody overrides our result that we want to use
+		m_StorageBufferAllocator->TryAllocate(Math::RoundUp(computeResultSize, 16), allocation);
 
 		// Compute command
 		AssetHandle computeKey = materialCompute->GetHandle();
 		auto& computeCommand = m_Queue.IndirectComputeCommands[computeKey];
 		computeCommand.MaterialCompute = materialCompute;
-		
+
 		auto& command = computeCommand.Commands.emplace_back();
 
-		command.ComputeResultSize = computeResultSize;
+		command.ResultStateAllocation = allocation;
 		command.ComputeData.resize(computeDataSize);
 		memcpy(command.ComputeData.data(), computeData, computeDataSize);
 
 		command.OverrideUniformData = uniformComputeData;
 
 		// Render command
-		AssetHandle renderKey =  material->GetHandle();
+		AssetHandle renderKey = material->GetHandle();
 		auto& dc = m_Queue.IndirectDrawCommands[renderKey];
 		dc.MaterialAsset = material;
 
 		auto& renderCommand = dc.OverrideCommands.emplace_back();
 		renderCommand.Mesh = mesh;
 		renderCommand.ComputeDataSize = computeDataSize;
-		renderCommand.ComputeResultSize = computeResultSize;
+		renderCommand.ResultStateAllocation = allocation;
 
 		if (overrideMaterial.Raw())
 		{
@@ -413,7 +418,7 @@ namespace XYZ {
 					const uint32_t bonesBufferUsage			= 100 * m_GeometryPassStatistics.BoneTransformCount / SSBOBoneTransformData::MaxBoneTransforms;
 					const uint32_t instanceBufferUsage		= 100 * m_GeometryPassStatistics.InstanceDataSize / GeometryPass::GetInstanceBufferSize();
 					const uint32_t indirectBufferUsage		= 100 * m_GeometryPassStatistics.IndirectCommandCount / SSBOIndirectData::MaxCommands;
-					const uint32_t computeDataBufferUsage	= 100 * m_GeometryPassStatistics.ComputeDataSize / SSBOComputeData::MaxSize;
+					const uint32_t computeDataBufferUsage	= 100 * m_StorageBufferAllocator->GetAllocatedSize() / SSBOComputeData::MaxSize;
 					const uint32_t computeStateBufferUsage	= 100 * m_GeometryPassStatistics.ComputeStateSize / SSBOComputeState::MaxSize;
 
 					UI::TableRow("",
@@ -463,7 +468,7 @@ namespace XYZ {
 					UI::TextTableRow("%s", "Instance Mesh Draw Count:", "%u", m_RenderStatistics.InstanceMeshDrawCommandCount);
 
 					UI::TextTableRow("%s", "Indirect Command Count:", "%u", m_RenderStatistics.IndirectCommandCount);
-					UI::TextTableRow("%s", "Compute Data Size:", "%u", m_RenderStatistics.ComputeDataSize);
+					UI::TextTableRow("%s", "Compute Data Size:", "%u", m_StorageBufferAllocator->GetAllocatedSize());
 					UI::TextTableRow("%s", "Compute State Size:", "%u", m_RenderStatistics.ComputeStateSize);
 
 
@@ -677,7 +682,6 @@ namespace XYZ {
 		m_RenderStatistics.SpotLight2DCount = lightPassStats.SpotLightCount;
 
 		m_RenderStatistics.IndirectCommandCount = m_GeometryPassStatistics.IndirectCommandCount;
-		m_RenderStatistics.ComputeDataSize = m_GeometryPassStatistics.ComputeDataSize;
 		m_RenderStatistics.ComputeStateSize = m_GeometryPassStatistics.ComputeStateSize;
 	}
 

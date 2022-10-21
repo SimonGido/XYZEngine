@@ -7,6 +7,8 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Mesh.h"
+#include "XYZ/Renderer/StorageBufferAllocator.h"
+
 #include "XYZ/Asset/Renderer/MaterialAsset.h"
 #include "XYZ/Asset/Animation/AnimationController.h"
 
@@ -209,8 +211,9 @@ namespace XYZ {
 		Ref<MaterialAsset>	  RenderMaterial;
 		Ref<MaterialInstance> OverrideMaterial;
 
-		Ref<MaterialAsset>	   ComputeMaterial;
-		Ref<ParticleSystemGPU> System;
+		Ref<MaterialAsset>			 ComputeMaterial;
+		Ref<ParticleSystemGPU>		 System;
+		Ref<StorageBufferAllocation> ResultAllocation;
 
 		ParticleBuffer		   Buffer;
 		uint32_t			   EmittedParticles = 0;

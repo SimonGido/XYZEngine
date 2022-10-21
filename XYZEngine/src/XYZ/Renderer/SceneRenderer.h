@@ -12,6 +12,7 @@
 #include "GeometryRenderQueue.h"
 #include "SceneRendererBuffers.h"
 #include "PushConstBuffer.h"
+#include "StorageBufferAllocator.h"
 
 #include "RenderPasses/GeometryPass.h"
 #include "RenderPasses/DeferredLightPass.h"
@@ -75,13 +76,15 @@ namespace XYZ {
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial);
 		void SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial = nullptr);
+		
 		void SubmitMeshIndirect(
 			const Ref<Mesh>& mesh,
 			const Ref<MaterialAsset>& material,
 			const Ref<MaterialAsset>& materialCompute,
-			const void* computeData, 
+			const void* computeData,
 			uint32_t computeDataSize,
 			uint32_t computeResultSize,
+			Ref<StorageBufferAllocation>& allocation,
 			const PushConstBuffer& uniformComputeData,
 			const Ref<MaterialInstance>& overrideMaterial = nullptr
 		);
@@ -146,6 +149,7 @@ namespace XYZ {
 
 		Ref<UniformBufferSet>      m_UniformBufferSet;
 		Ref<StorageBufferSet>	   m_StorageBufferSet;
+		Ref<StorageBufferAllocator> m_StorageBufferAllocator;
 
 		SceneRendererCamera		   m_SceneCamera;
 		SceneRendererOptions	   m_Options;
@@ -181,7 +185,6 @@ namespace XYZ {
 			uint32_t InstanceDataSize = 0;
 
 			uint32_t IndirectCommandCount = 0;
-			uint32_t ComputeDataSize = 0;
 			uint32_t ComputeStateSize = 0;
 		};
 		RenderStatistics m_RenderStatistics;

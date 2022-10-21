@@ -17,20 +17,13 @@ namespace XYZ {
 		glm::vec4  TransformRow0;
 		glm::vec4  TransformRow1;
 		glm::vec4  TransformRow2;
-		glm::vec4  RenderColor;
+		glm::vec4  Color;	
 
-		// State of particle
-		glm::vec4  Color;
+		// Current state of particle
 		glm::vec4  Position;
-		glm::vec4  Rotation;
-		glm::vec4  Scale;
-		glm::vec4  Velocity;
-
 		float	   LifeRemaining;
-		bool	   Alive = false;
-		Padding<3> Padding0; // Bools are 4-bytes in GLSL
-		Padding<8> Padding1;
 		
+		glm::vec3  Padding;
 	};
 
 	struct ParticlePropertyGPU
