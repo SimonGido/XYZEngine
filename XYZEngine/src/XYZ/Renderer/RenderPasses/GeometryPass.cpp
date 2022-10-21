@@ -684,7 +684,7 @@ namespace XYZ {
 			Ref<MaterialAsset> depthMaterialAsset = Renderer::GetDefaultResources().RendererAssets.at("Depth3DMaterialAnim").As<MaterialAsset>();
 			m_DepthPipeline3DAnimated.Shader = depthMaterialAsset->GetShader();
 			m_DepthPipeline3DAnimated.Material = Material::Create(depthMaterialAsset->GetShader());
-			m_DepthPipeline3DAnimated.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipeline3DAnimated.Material);
+			m_DepthPipeline3DAnimated.MaterialInstance = m_DepthPipeline3DAnimated.Material->CreateMaterialInstance();
 
 			PipelineSpecification spec;
 			spec.RenderPass = m_SceneRenderer->m_DepthRenderPass;
@@ -700,7 +700,7 @@ namespace XYZ {
 			Ref<MaterialAsset> depthMaterialAsset = Renderer::GetDefaultResources().RendererAssets.at("Depth3DMaterial").As<MaterialAsset>();
 			m_DepthPipeline3DStatic.Shader = depthMaterialAsset->GetShader();
 			m_DepthPipeline3DStatic.Material = Material::Create(depthMaterialAsset->GetShader());
-			m_DepthPipeline3DStatic.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipeline3DStatic.Material);
+			m_DepthPipeline3DStatic.MaterialInstance = m_DepthPipeline3DStatic.Material->CreateMaterialInstance();
 
 			PipelineSpecification spec;
 			spec.RenderPass = m_SceneRenderer->m_DepthRenderPass;
@@ -716,7 +716,7 @@ namespace XYZ {
 			Ref<MaterialAsset> depthMaterialAsset = Renderer::GetDefaultResources().RendererAssets.at("Depth2DMaterial").As<MaterialAsset>();
 			m_DepthPipeline2D.Shader = depthMaterialAsset->GetShader();
 			m_DepthPipeline2D.Material = Material::Create(depthMaterialAsset->GetShader());
-			m_DepthPipeline2D.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipeline2D.Material);
+			m_DepthPipeline2D.MaterialInstance = m_DepthPipeline2D.Material->CreateMaterialInstance();
 
 			PipelineSpecification spec;
 			spec.RenderPass = m_SceneRenderer->m_DepthRenderPass;
@@ -732,7 +732,7 @@ namespace XYZ {
 			Ref<MaterialAsset> depthMaterialAsset = Renderer::GetDefaultResources().RendererAssets.at("DepthInstancedMaterial").As<MaterialAsset>();
 			m_DepthPipelineInstanced.Shader = depthMaterialAsset->GetShader();
 			m_DepthPipelineInstanced.Material = Material::Create(depthMaterialAsset->GetShader());
-			m_DepthPipelineInstanced.MaterialInstance = Ref<MaterialInstance>::Create(m_DepthPipelineInstanced.Material);
+			m_DepthPipelineInstanced.MaterialInstance = m_DepthPipelineInstanced.Material->CreateMaterialInstance();
 
 			PipelineSpecification spec;
 			spec.RenderPass = m_SceneRenderer->m_DepthRenderPass;

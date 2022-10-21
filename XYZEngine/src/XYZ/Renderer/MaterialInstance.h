@@ -10,8 +10,7 @@ namespace XYZ {
 	class Material;
 	class MaterialInstance : public RefCount
 	{
-	public:
-		MaterialInstance(const Ref<Material>& material);
+	public:	
 		virtual ~MaterialInstance() override;
 
 		template <typename T>
@@ -31,12 +30,15 @@ namespace XYZ {
 		PushConstBuffer GetFSUniformsBuffer() const;
 		PushConstBuffer GetVSUniformsBuffer() const;
 
-	protected:
+	private:
+		MaterialInstance(const Ref<Material>& material);
+
+	private:
 		void allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers) const;
 		std::pair<const ShaderUniform*, ByteBuffer*> findUniformDeclaration(const std::string_view name);
 		std::pair<const ShaderUniform*, ByteBuffer*> findUniformDeclaration(const std::string_view name) const;
 	
-	protected:
+	private:
 		Ref<Material>			m_Material;
 		mutable ByteBuffer		m_UniformsBuffer;
 

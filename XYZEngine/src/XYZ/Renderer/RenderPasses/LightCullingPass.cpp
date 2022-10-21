@@ -14,7 +14,7 @@ namespace XYZ {
 		auto& defaultResources = Renderer::GetDefaultResources();
 		Ref<MaterialAsset> materialAsset = defaultResources.RendererAssets.at("LightCullingMaterial");
 		m_Material = Material::Create(materialAsset->GetShader());
-		m_MaterialInstance = Ref<MaterialInstance>::Create(m_Material);
+		m_MaterialInstance = m_Material->CreateMaterialInstance();
 		PipelineComputeSpecification spec;
 		spec.Shader = m_Material->GetShader();
 		m_Pipeline = PipelineCompute::Create(spec);

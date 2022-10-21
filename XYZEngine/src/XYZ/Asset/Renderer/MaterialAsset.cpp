@@ -55,7 +55,7 @@ namespace XYZ {
 	{
 		Ref<Shader> shader = m_ShaderAsset->GetShader();
 		m_Material = Material::Create(shader);
-		m_MaterialInstance = Ref<MaterialInstance>::Create(m_Material);
+		m_MaterialInstance = m_Material->CreateMaterialInstance();
 
 		// We want weak ref so Material does not keep MaterialAsset alive
 		WeakRef<MaterialAsset> instance = this;

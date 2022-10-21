@@ -37,16 +37,19 @@ namespace XYZ {
 		virtual uint64_t	GetFlags() const = 0;
 		virtual Ref<Shader>	GetShader()const = 0;
 		
-		
+		Ref<MaterialInstance> CreateMaterialInstance();
 
+		
 		static Ref<Material> Create(const Ref<Shader>& shader);
 
 		friend class MaterialInstance;
 		friend class MaterialAsset;
-	protected:
-		void		    invalidateInstances();
 
-		std::unordered_set<WeakRef<MaterialInstance>> m_MaterialInstances;
+
+	protected:
+		void invalidateInstances();
+
+		std::vector<WeakRef<MaterialInstance>> m_MaterialInstances;
 		OnInvalidateFunc m_OnInvalidate;
 	};
 

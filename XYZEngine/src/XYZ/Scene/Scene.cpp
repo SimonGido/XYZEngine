@@ -370,6 +370,7 @@ namespace XYZ {
 			updateAnimationView(ts);		
 
 		updateParticleView(ts);
+		updateParticleGPUView(ts);
 	}
 	
 	template <typename T>
@@ -449,10 +450,27 @@ namespace XYZ {
 				);
 			}
 		}
-
-		submitParticleTest(sceneRenderer,m_ParticleSystemGPU, 0.01f);
-		submitParticleTest(sceneRenderer, m_ParticleSystemGPU2, 0.01f);
-
+		
+		auto particleGPUView = m_Registry.view<TransformComponent, ParticleComponentGPU>();
+		for (auto entity : particleGPUView)
+		{
+			auto& [transformComponent, particleComponent] = particleGPUView.get(entity);
+			
+			sceneRenderer->SubmitMeshIndirect(
+				particleComponent.Mesh,
+				particleComponent.RenderMaterial,
+				particleComponent.ComputeMaterial,
+				particleComponent.Buffer.GetData(),
+				particleComponent.EmittedParticles * particleComponent.System->GetStride(),
+				particleComponent.EmittedParticles * sizeof(ParticleGPU),
+				PushConstBuffer{
+					particleComponent.Timestep,
+					particleComponent.Speed,
+					particleComponent.EmittedParticles,
+					(int)particleComponent.Loop
+				}
+			);
+		}
 		sceneRenderer->EndScene();
 	}
 
@@ -719,6 +737,33 @@ namespace XYZ {
 		}
 	}
 
+	static uint32_t frameCounter = 0;
+
+	void Scene::updateParticleGPUView(Timestep ts)
+	{
+		XYZ_PROFILE_FUNC("Scene::updateParticleGPUView");
+		auto &particleStorage = m_Registry.storage<ParticleComponentGPU>();
+		for (auto& particleComponent : particleStorage)
+		{
+			// This may happen only every third frame, so each frame of gpu particles have same data
+			if (frameCounter == Renderer::GetConfiguration().FramesInFlight)
+			{
+				frameCounter = 0;
+				particleComponent.Timestep = ts;
+			}
+
+			if (particleComponent.EmittedParticles == particleComponent.Buffer.GetMaxParticles())
+				continue;
+
+			const uint32_t bufferOffset = particleComponent.EmittedParticles * particleComponent.System->GetStride();
+			const uint32_t bufferSize = particleComponent.Buffer.GetBufferSize() - bufferOffset;
+			std::byte* particleBuffer = &particleComponent.Buffer.GetData()[bufferOffset];
+
+			particleComponent.EmittedParticles += particleComponent.System->Update(ts, particleBuffer, bufferSize);		
+		}
+		frameCounter++;
+	}
+
 
 	void Scene::setupPhysics()
 	{
@@ -872,32 +917,34 @@ namespace XYZ {
 		}
 	}
 
-	void Scene::submitParticleTest(Ref<SceneRenderer> renderer, Ref<ParticleSystemGPU> particleSystem, Timestep ts)
-	{
-		renderer->SubmitMeshIndirect(
-			m_ParticleCubeMesh,
-			m_ParticleMaterialGPU,
-			m_IndirectCommandMaterial,
-			particleSystem->ParticleProperties.data(),
-			particleSystem->ParticleProperties.size() * sizeof(ParticlePropertyGPU),
-			particleSystem->MaxParticles * sizeof(ParticleGPU),
-			PushConstBuffer {
-				ts.GetSeconds(),
-				m_ParticleSystemGPU->Speed,
-				m_ParticleSystemGPU->ParticlesEmitted,
-				m_ParticleSystemGPU->Loop
-			}
-		);
-	}
-
 	void Scene::createParticleTest()
 	{
+		// NOTE: this can be generate from shader
+		ParticleSystemLayout layout({ 
+			{"StartPosition", ParticleVariableType::Vec4},
+			{"StartColor",	  ParticleVariableType::Vec4},
+			{"StartRotation", ParticleVariableType::Vec4},
+			{"StartScale",	  ParticleVariableType::Vec4},
+			{"StartVelocity", ParticleVariableType::Vec4},
+			{"EndColor",	  ParticleVariableType::Vec4},
+			{"EndRotation",   ParticleVariableType::Vec4},
+			{"EndScale",	  ParticleVariableType::Vec4},
+			{"EndVelocity",   ParticleVariableType::Vec4},
+			{"LifeTime",	  ParticleVariableType::Float},
+			
+			{"Padding",		  ParticleVariableType::Vec3}
+		});
+
 		m_ParticleCubeMesh = MeshFactory::CreateBox(glm::vec3(1.0f));
-		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create();
-		m_ParticleSystemGPU2 = Ref<ParticleSystemGPU>::Create();
+		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(layout);
+
+		ParticleEmitterGPU emitter(layout.GetStride());
+		emitter.EmitterModules.push_back(Ref<BoxParticleEmitterModuleGPU>::Create(layout.GetStride(), layout.GetVariableOffset("StartPosition")));
+		emitter.EmitterModules.push_back(Ref<SpawnParticleEmitterModuleGPU>::Create(layout.GetStride(), layout.GetVariableOffset("LifeTime")));
+		emitter.EmitterModules.push_back(Ref<TestParticleEmitterModuleGPU>::Create(layout.GetStride(), layout.GetVariableOffset("StartColor")));
+		m_ParticleSystemGPU->ParticleEmitters.push_back(emitter);
 
 		m_IndirectCommandMaterial = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleComputeShader.glsl")));
-		auto test = m_IndirectCommandMaterial->GetMaterialInstance()->GetVSUniformsBuffer();
 		
 		m_ParticleMaterialGPU = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleShaderGPU.glsl")));
 		m_ParticleMaterialInstanceGPU = m_ParticleMaterialGPU->GetMaterialInstance();
@@ -909,7 +956,19 @@ namespace XYZ {
 		m_IndirectCommandMaterial->Specialize("COLOR_OVER_LIFE", enabled);
 		m_IndirectCommandMaterial->Specialize("SCALE_OVER_LIFE", enabled);
 		m_IndirectCommandMaterial->Specialize("VELOCITY_OVER_LIFE", enabled);
-		m_IndirectCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
+		//m_IndirectCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
+
+
+
+		SceneEntity entity = CreateEntity("Particle GPU Test");
+		auto& particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();
+	
+		particleComponent.ComputeMaterial = m_IndirectCommandMaterial;
+		particleComponent.RenderMaterial = m_ParticleMaterialGPU;
+		particleComponent.Buffer.SetMaxParticles(1024, layout.GetStride());
+
+		particleComponent.Mesh = m_ParticleCubeMesh;
+		particleComponent.System = m_ParticleSystemGPU;
 	}
 
 }

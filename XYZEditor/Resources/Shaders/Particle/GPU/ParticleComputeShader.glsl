@@ -123,7 +123,7 @@ void KillParticle(uint id)
 
 void UpdateParticle(uint id)
 {
-    Particles[id].Position.xyz += Particles[id].Velocity.xyz * u_Uniforms.Speed;
+    Particles[id].Position.xyz += Particles[id].Velocity.xyz * u_Uniforms.Timestep * u_Uniforms.Speed;
     Particles[id].LifeRemaining -= u_Uniforms.Timestep * u_Uniforms.Speed;
 }
 

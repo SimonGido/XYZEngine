@@ -37,6 +37,6 @@ namespace XYZ {
 		specification.DepthWrite = false;
 		m_Pipeline = Pipeline::Create(specification);
 		m_Material = Material::Create(m_Shader);
-		m_MaterialInstance = Ref<XYZ::MaterialInstance>::Create(m_Material);
+		m_MaterialInstance = m_Material->CreateMaterialInstance();
 	}
 }

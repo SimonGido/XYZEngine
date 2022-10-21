@@ -10,35 +10,18 @@ namespace XYZ {
 	class ParticleEmitterGPU : public RefCount
 	{
 	public:
-		virtual void	 Emit(uint32_t count, std::byte* buffer) = 0;
-		virtual uint32_t EmitCount(Timestep ts) = 0;
+		ParticleEmitterGPU(uint32_t stride);
 
-		virtual void	 SetEmissionRate(float rate) = 0;
+		uint32_t Emit(Timestep ts, std::byte* buffer, uint32_t bufferSize);
 
-		virtual uint32_t GetStride() const = 0;
-		virtual float	 GetEmissionRate() const = 0;
-	};
+		float    GetEmitted() const { return m_Emitted; }
 
-
-
-	class DefaultParticleEmitterGPU : public ParticleEmitterGPU
-	{
-	public:
-		DefaultParticleEmitterGPU();
-
-		virtual void	 Emit(uint32_t count, std::byte* buffer) override;
-		virtual uint32_t EmitCount(Timestep ts) override;
-		virtual void	 SetEmissionRate(float rate) override;
-
-
-		virtual uint32_t GetStride() const override;
-		virtual float	 GetEmissionRate() const override;
-
-
-		BoxParticleEmitterModuleGPU BoxEmitterModule;
-
+		std::vector<Ref<ParticleEmitterModuleGPU>> EmitterModules;
+		float EmissionRate;
+	
 	private:
-		float m_EmissionRate;
-		float m_Emitted;
+		uint32_t m_Stride;
+		float    m_Emitted;
 	};
+
 }

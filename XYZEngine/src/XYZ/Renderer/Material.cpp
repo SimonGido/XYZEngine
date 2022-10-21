@@ -7,7 +7,16 @@
 
 
 namespace XYZ {
-	
+
+
+
+	Ref<MaterialInstance> Material::CreateMaterialInstance()
+	{
+		MaterialInstance* instance = new MaterialInstance(this);
+		Ref<MaterialInstance> refInstance = Ref<MaterialInstance>(instance);
+		m_MaterialInstances.push_back(refInstance);
+		return refInstance;
+	}
 	Ref<Material> Material::Create(const Ref<Shader>& shader)
 	{
 		switch (Renderer::GetAPI())
@@ -20,9 +29,20 @@ namespace XYZ {
 		return nullptr;
 	}
 
+
 	void Material::invalidateInstances()
 	{
-		for (auto& instance : m_MaterialInstances)
-			instance->allocateStorage(GetShader()->GetBuffers());
+		for (auto it = m_MaterialInstances.begin(); it != m_MaterialInstances.end();)
+		{
+			if (it->IsValid())
+			{
+				(*it)->allocateStorage(GetShader()->GetBuffers());
+				it++;
+			}
+			else
+			{
+				it = m_MaterialInstances.erase(it);
+			}
+		}
 	}
 }

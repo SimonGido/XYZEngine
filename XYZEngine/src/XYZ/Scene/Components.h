@@ -12,7 +12,7 @@
 
 #include "XYZ/Script/ScriptPublicField.h"
 #include "XYZ/Particle/CPU/ParticleSystem.h"
-#include "XYZ/Particle/GPU/ParticleEmitterGPU.h"
+#include "XYZ/Particle/GPU/ParticleSystemGPU.h"
 
 #include "SceneCamera.h"
 
@@ -209,14 +209,15 @@ namespace XYZ {
 		Ref<MaterialAsset>	  RenderMaterial;
 		Ref<MaterialInstance> OverrideMaterial;
 
-		Ref<MaterialAsset>	  ComputeMaterial;
-		std::vector<Ref<ParticleEmitterGPU>> Emitters;
+		Ref<MaterialAsset>	   ComputeMaterial;
+		Ref<ParticleSystemGPU> System;
 
-		uint32_t   ParticlesEmitted = 0;
-		float	   Time = 0.0f;
-		float	   Speed = 1.0f;
-		float	   EmissionRate = 1.0f;
-		bool	   Loop = true;
+		ParticleBuffer		   Buffer;
+		uint32_t			   EmittedParticles = 0;
+		
+		float				   Timestep = 0.0f;
+		float				   Speed = 1.0f;
+		bool				   Loop = true;
 	};
 
 	struct PointLightComponent2D 

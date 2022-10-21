@@ -5,17 +5,9 @@
 #include "XYZ/Utils/StringUtils.h"
 
 namespace XYZ {
-	MaterialInstance::MaterialInstance(const Ref<Material>& material)
-		:
-		m_Material(material)
-	{
-		m_Material->m_MaterialInstances.insert(this);
-		allocateStorage(m_Material->GetShader()->GetBuffers());
-	}
 
 	MaterialInstance::~MaterialInstance()
 	{
-		m_Material->m_MaterialInstances.erase(this);
 	}
 
 	bool MaterialInstance::HasUniform(const std::string_view name) const
@@ -50,6 +42,13 @@ namespace XYZ {
 		memcpy(result.Bytes, m_UniformsBuffer.Data, vertexBufferSize);
 		result.Size = vertexBufferSize;
 		return result;
+	}
+
+	MaterialInstance::MaterialInstance(const Ref<Material>& material)
+		:
+		m_Material(material)
+	{
+		allocateStorage(m_Material->GetShader()->GetBuffers());
 	}
 
 	void MaterialInstance::allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers) const

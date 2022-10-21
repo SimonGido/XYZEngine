@@ -12,7 +12,7 @@ namespace XYZ {
 		spec.Shader = config.Shader;
 		m_BloomComputePipeline = PipelineCompute::Create(spec);
 		m_BloomComputeMaterial = Material::Create(config.Shader);
-		m_BloomComputeMaterialInstance = Ref<MaterialInstance>::Create(m_BloomComputeMaterial);
+		m_BloomComputeMaterialInstance = m_BloomComputeMaterial->CreateMaterialInstance();
 		m_BloomTexture = config.BloomTexture;
 	}
 

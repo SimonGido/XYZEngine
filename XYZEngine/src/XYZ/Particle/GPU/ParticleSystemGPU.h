@@ -1,6 +1,10 @@
 #pragma once
 #include "XYZ/Core/Timestep.h"
 
+#include "ParticleSystemLayout.h"
+#include "ParticleEmitterGPU.h"
+
+
 #include <glm/glm.hpp>
 
 namespace XYZ {
@@ -50,20 +54,41 @@ namespace XYZ {
 		Padding<12> Padding;
 	};
 
-	class ParticleSystemGPU : public RefCount
+
+
+
+	class ParticleSystemGPU : public RefCount // TODO: asset
 	{
 	public:
-		ParticleSystemGPU();
+		ParticleSystemGPU(ParticleSystemLayout layout);
 
-		void Update(Timestep ts);
+		uint32_t Update(Timestep ts, std::byte* particleBuffer, uint32_t bufferSize);
 
+		const ParticleSystemLayout& GetLayout() const { return m_Layout; }
+		uint32_t GetStride() const { return m_Layout.GetStride(); }
 
-		std::vector<ParticlePropertyGPU> ParticleProperties;
+		std::vector<ParticleEmitterGPU> ParticleEmitters;
 
-		float	   Time = 0.0f;
-		float	   Speed = 1.0f;
-		uint32_t   MaxParticles;
-		uint32_t   ParticlesEmitted = 0;
-		int		   Loop = 1;
+	private:
+		ParticleSystemLayout m_Layout;
+	};
+
+	class ParticleBuffer
+	{
+	public:
+		ParticleBuffer() = default;
+		ParticleBuffer(uint32_t maxParticles, uint32_t stride);
+
+		void SetMaxParticles(uint32_t maxParticles, uint32_t stride);
+
+		std::byte* GetData() { return m_Data.data(); }
+		std::byte* GetData(uint32_t particleOffset);
+		
+		uint32_t   GetStride()		 const { return m_Stride; }
+		uint32_t   GetMaxParticles() const { return m_Data.size() / m_Stride; }
+		uint32_t   GetBufferSize()   const { return static_cast<uint32_t>(m_Data.size()); }
+	private:
+		std::vector<std::byte> m_Data;
+		uint32_t			   m_Stride = 0;
 	};
 }

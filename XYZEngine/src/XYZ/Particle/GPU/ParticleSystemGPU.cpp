@@ -6,14 +6,9 @@
 #include <glm/gtc/constants.hpp>
 
 namespace XYZ {
+	/*
 	ParticleSystemGPU::ParticleSystemGPU()
-	{
-		MaxParticles = 1024;
-		ParticlesEmitted = MaxParticles;
-		ParticleProperties.resize(MaxParticles);
-
-		Time = 0.0f;
-
+	{		
 		glm::vec4 MinVelocity(-0.5f);
 		glm::vec4 MaxVelocity(0.5f);
 		for (size_t i = 0; i < ParticleProperties.size(); ++i)
@@ -35,7 +30,41 @@ namespace XYZ {
 			ParticleProperties[i].LifeTime = glm::linearRand(1.0f, 5.0f);
 		}
 	}
-	void ParticleSystemGPU::Update(Timestep ts)
+	*/
+	ParticleSystemGPU::ParticleSystemGPU(ParticleSystemLayout layout)
+		:
+		m_Layout(layout)
 	{
 	}
+	uint32_t ParticleSystemGPU::Update(Timestep ts, std::byte* particleBuffer, uint32_t bufferSize)
+	{
+		uint32_t emissionCount = 0;
+		for (auto& emitter : ParticleEmitters)
+		{
+			emissionCount += emitter.Emit(ts, particleBuffer, bufferSize);
+		}
+
+		return emissionCount;
+	}
+	
+	ParticleBuffer::ParticleBuffer(uint32_t maxParticles, uint32_t stride)
+		:
+		m_Stride(stride)
+	{
+		m_Data.resize(maxParticles * stride);
+	}
+
+	void ParticleBuffer::SetMaxParticles(uint32_t maxParticles, uint32_t stride)
+	{
+		m_Stride = stride;
+		m_Data.resize(maxParticles * stride);
+		memset(m_Data.data(), 0, m_Data.size());
+	}
+
+	std::byte* ParticleBuffer::GetData(uint32_t offsetParticles)
+	{
+		uint32_t offset = offsetParticles * m_Stride;
+		return &m_Data.data()[offset];
+	}
+
 }
