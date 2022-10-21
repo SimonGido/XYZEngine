@@ -85,6 +85,8 @@ namespace XYZ {
 
 			const float keepAliveAssetSeconds = 60;
 			AssetManager::KeepAlive(keepAliveAssetSeconds);
+
+			m_Scene->CreateParticleTest();
 		}
 
 		void EditorLayer::OnDetach()

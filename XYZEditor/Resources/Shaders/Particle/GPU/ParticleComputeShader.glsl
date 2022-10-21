@@ -24,8 +24,9 @@ struct Particle
     // Current state of particle
     vec4  Position;
     float LifeRemaining;
+    bool  Initialized;
 
-    vec3  Padding;
+    vec2  Padding;
 };
 
 struct ParticleState
@@ -54,7 +55,7 @@ struct ParticleProperty
 
 
 	float LifeTime;
-
+    
 	uint  Padding[3];
 };
 
@@ -65,6 +66,8 @@ layout(push_constant) uniform Uniform
     float Speed;
     uint  EmittedParticles;
     bool  Loop;
+    bool  Initialize;
+
 } u_Uniforms;
 
 
@@ -106,25 +109,21 @@ void UpdateRenderData(in ParticleState state, uint id, uint instanceIndex)
 }
 
 
-void TryRespawnParticle(in ParticleState state, uint id)
+void RespawnParticle(uint id)
 {
-    if (u_Uniforms.Loop)
-    {
-        state.Alive = true;
-        Particles[id].LifeRemaining = ParticleProperties[id].LifeTime;
-        Particles[id].Position = ParticleProperties[id].StartPosition;
-    }   
+    Particles[id].LifeRemaining = ParticleProperties[id].LifeTime;
+    Particles[id].Position = ParticleProperties[id].StartPosition;  
 }
 
 void UpdateParticle(uint id)
 {
     float lifeProgress = LifeProgress(id);
+ 
     ParticleState state;
-
     state.Alive = Particles[id].LifeRemaining > 0.0;
     // Particle is alive initialize it
     if (state.Alive)
-    {
+    {       
         state.Color    = ParticleProperties[id].StartColor;
         state.Scale    = ParticleProperties[id].StartScale.xyz;
         state.Velocity = ParticleProperties[id].StartVelocity.xyz;
@@ -147,15 +146,16 @@ void UpdateParticle(uint id)
             state.Rotation = mix(ParticleProperties[id].StartRotation, ParticleProperties[id].EndRotation, lifeProgress).xyz;   
         }
 
-        Particles[id].Position.xyz += state.Velocity * 0.01 * u_Uniforms.Speed;
-        Particles[id].LifeRemaining -= 0.01;
+        Particles[id].Position.xyz += state.Velocity * u_Uniforms.Timestep * u_Uniforms.Speed;
+        Particles[id].LifeRemaining -= u_Uniforms.Timestep;
 
         uint instanceIndex = atomicAdd(Command.InstanceCount, 1);
         UpdateRenderData(state, id, instanceIndex);
     }
-    else // Try to respawn particle
+    else if (u_Uniforms.Loop || !Particles[id].Initialized)
     {
-        TryRespawnParticle(state, id);
+        Particles[id].Initialized = true;
+        RespawnParticle(id);
     }
 }
 

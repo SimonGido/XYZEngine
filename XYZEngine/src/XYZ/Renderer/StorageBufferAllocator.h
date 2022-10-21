@@ -33,7 +33,7 @@ namespace XYZ {
 		~StorageBufferAllocator();
 
 		void Allocate(uint32_t size, Ref<StorageBufferAllocation>& allocation);
-		void TryAllocate(uint32_t size, Ref<StorageBufferAllocation>& allocation);
+		bool TryAllocate(uint32_t size, Ref<StorageBufferAllocation>& allocation);
 
 		uint32_t GetAllocatedSize() const;
 	private:

@@ -67,6 +67,10 @@ namespace XYZ {
 	struct SSBOComputeData
 	{
 		static constexpr uint32_t MaxSize = 30 * 1024 * 1024;
+		SSBOComputeData()
+		{
+			memset(Data, 0, MaxSize);
+		}
 
 		std::byte Data[MaxSize];
 

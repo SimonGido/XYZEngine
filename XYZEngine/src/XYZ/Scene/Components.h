@@ -218,9 +218,8 @@ namespace XYZ {
 		ParticleBuffer		   Buffer;
 		uint32_t			   EmittedParticles = 0;
 		
-		float				   Timestep = 0.0f;
-		float				   Speed = 1.0f;
-		bool				   Loop = true;
+		float				   Speed	  = 1.0f;
+		bool				   Loop		  = true;
 	};
 
 	struct PointLightComponent2D 
@@ -412,6 +411,7 @@ namespace XYZ {
 	ParticleRenderer, \
 	CameraComponent,\
 	ParticleComponent, \
+	ParticleComponentGPU, \
 	PointLightComponent2D, \
 	SpotLightComponent2D, \
 	PointLightComponent3D, \

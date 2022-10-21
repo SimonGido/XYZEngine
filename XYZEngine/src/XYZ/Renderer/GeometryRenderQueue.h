@@ -159,7 +159,8 @@ namespace XYZ {
 
 			SSBOState					  IndirectCommandState;
 			SSBOState					  ComputeDataState;
-			Ref<StorageBufferAllocation>  ResultStateAllocation;
+			Ref<StorageBufferAllocation>  ResultStateAllocation;	
+			bool						  ResultStateAllocationChanged = false;
 		};
 
 		struct IndirectComputeBatch

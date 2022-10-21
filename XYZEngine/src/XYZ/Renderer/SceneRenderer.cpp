@@ -294,26 +294,30 @@ namespace XYZ {
 	}
 
 	void SceneRenderer::SubmitMeshIndirect(
-		const Ref<Mesh>& mesh, 
-		const Ref<MaterialAsset>& material, 
-		const Ref<MaterialAsset>& materialCompute, 
-		const void* computeData, 
-		uint32_t computeDataSize, 
-		uint32_t computeResultSize, 
-		Ref<StorageBufferAllocation>& allocation, 
-		const PushConstBuffer& uniformComputeData, 
-		const Ref<MaterialInstance>& overrideMaterial
+		// Rendering data
+		const Ref<Mesh>& mesh,
+		const Ref<MaterialAsset>& material,
+		const Ref<MaterialInstance>& overrideMaterial,
+		const glm::mat4& transform,
+
+		// Compute data
+		const Ref<MaterialAsset>& materialCompute,
+		const void* computeData,
+		uint32_t computeDataSize,
+		uint32_t computeResultSize,
+		Ref<StorageBufferAllocation>& allocation,
+		const PushConstBuffer& uniformComputeData
 	)
 	{
-		// Make sure that nobody overrides our result that we want to use
-		m_StorageBufferAllocator->TryAllocate(Math::RoundUp(computeResultSize, 16), allocation);
-
 		// Compute command
 		AssetHandle computeKey = materialCompute->GetHandle();
 		auto& computeCommand = m_Queue.IndirectComputeCommands[computeKey];
 		computeCommand.MaterialCompute = materialCompute;
 
 		auto& command = computeCommand.Commands.emplace_back();
+		// Make sure that nobody overrides our result that we want to use
+		if (m_StorageBufferAllocator->TryAllocate(Math::RoundUp(computeResultSize, 16), allocation))
+			command.ResultStateAllocationChanged = true;
 
 		command.ResultStateAllocation = allocation;
 		command.ComputeData.resize(computeDataSize);

@@ -78,15 +78,19 @@ namespace XYZ {
 		void SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 		
 		void SubmitMeshIndirect(
+			// Rendering data
 			const Ref<Mesh>& mesh,
 			const Ref<MaterialAsset>& material,
+			const Ref<MaterialInstance>& overrideMaterial,
+			const glm::mat4& transform,
+
+			// Compute data
 			const Ref<MaterialAsset>& materialCompute,
 			const void* computeData,
 			uint32_t computeDataSize,
 			uint32_t computeResultSize,
 			Ref<StorageBufferAllocation>& allocation,
-			const PushConstBuffer& uniformComputeData,
-			const Ref<MaterialInstance>& overrideMaterial = nullptr
+			const PushConstBuffer& uniformComputeData
 		);
 
 		void OnImGuiRender();

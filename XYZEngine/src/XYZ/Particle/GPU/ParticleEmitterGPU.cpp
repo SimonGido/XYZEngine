@@ -12,7 +12,7 @@ namespace XYZ {
 
 	ParticleEmitterGPU::ParticleEmitterGPU(uint32_t stride)
 		:
-		EmissionRate(1.0f),
+		EmissionRate(10.0f),
 		m_Stride(stride),
 		m_Emitted(0.0f)
 	{

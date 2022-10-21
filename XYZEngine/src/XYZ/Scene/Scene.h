@@ -97,6 +97,9 @@ namespace XYZ {
         inline const std::string& GetName() const { return m_Name; }
 
         static AssetType GetStaticType() { return AssetType::Scene; }
+
+
+        void CreateParticleTest();
     private:
         void onScriptComponentConstruct(entt::registry& reg, entt::entity ent);
         void onScriptComponentDestruct(entt::registry& reg, entt::entity ent);
@@ -142,9 +145,11 @@ namespace XYZ {
 
         std::shared_mutex m_ScriptMutex;
 
-
-        bool m_UpdateAnimationAsync = false;
-        bool m_UpdateHierarchyAsync = false;
+        float m_GPUFrameTimestep; // It can be updated only once per FramesInFlight
+        uint32_t m_GPUFrameCounter;
+        
+        bool  m_UpdateAnimationAsync = false;
+        bool  m_UpdateHierarchyAsync = false;
 
         friend SceneRenderer;
         friend class SceneIntersection;
@@ -155,7 +160,7 @@ namespace XYZ {
         friend class Editor::SceneHierarchyPanel;
 
 
-        void createParticleTest();
+        
 
         // Indirect draw test //
         Ref<MaterialAsset>     m_IndirectCommandMaterial;

@@ -18,9 +18,10 @@ struct Particle
 	
 	 // Current state of particle
     vec4  Position;
-    float LifeRemaining;
+	float LifeRemaining;
+	bool  Initialized;
 
-    vec3  Padding;
+	vec2  Padding;
 };
 
 layout (std430, binding = 6) buffer buffer_Particles

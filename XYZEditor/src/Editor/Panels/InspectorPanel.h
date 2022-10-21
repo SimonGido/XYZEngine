@@ -81,7 +81,8 @@ namespace XYZ {
 				ComponentInspector<ChainCollider2DComponent,	ChainCollider2DInspector>,
 				ComponentInspector<MeshComponent,				MeshComponentInspector>,
 				ComponentInspector<AnimatedMeshComponent,		AnimatedMeshComponentInspector>,
-				ComponentInspector<AnimationComponent,			AnimationComponentInspector>
+				ComponentInspector<AnimationComponent,			AnimationComponentInspector>,
+				ComponentInspector<ParticleComponentGPU,		ParticleComponentGPUInspector>
 			> m_ComponentInspectors;
 
 			MaterialInspector			  m_MaterialInspector;

@@ -22,8 +22,9 @@ namespace XYZ {
 		// Current state of particle
 		glm::vec4  Position;
 		float	   LifeRemaining;
-		
-		glm::vec3  Padding;
+		bool	   Initialized;
+	private:
+		Padding<8> Padding;
 	};
 
 	struct ParticlePropertyGPU
@@ -43,6 +44,7 @@ namespace XYZ {
 
 
 		float	  LifeTime;
+		
 	private:
 		Padding<12> Padding;
 	};

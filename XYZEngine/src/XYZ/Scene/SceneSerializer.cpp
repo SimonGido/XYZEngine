@@ -316,6 +316,12 @@ namespace XYZ {
 		}
 		out << YAML::EndMap; // Particle Component
 	}
+
+	template <>
+	void SceneSerializer::serialize<ParticleComponentGPU>(YAML::Emitter& out, const ParticleComponentGPU& val, SceneEntity entity)
+	{
+	}
+
 	template <>
 	void SceneSerializer::serialize<MeshComponent>(YAML::Emitter& out, const MeshComponent& val, SceneEntity entity)
 	{
@@ -459,6 +465,11 @@ namespace XYZ {
 			}
 		}
 	}
+	template <>
+	void SceneSerializer::deserialize<ParticleComponentGPU>(YAML::Node& data, ParticleComponentGPU& component, SceneEntity entity)
+	{
+	}
+
 	template <>
 	void SceneSerializer::deserialize<ParticleRenderer>(YAML::Node& data, ParticleRenderer& component, SceneEntity entity)
 	{

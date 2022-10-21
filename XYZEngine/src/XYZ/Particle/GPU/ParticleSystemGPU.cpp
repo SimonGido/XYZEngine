@@ -52,6 +52,7 @@ namespace XYZ {
 		m_Stride(stride)
 	{
 		m_Data.resize(maxParticles * stride);
+		memset(m_Data.data(), 0, m_Data.size());
 	}
 
 	void ParticleBuffer::SetMaxParticles(uint32_t maxParticles, uint32_t stride)

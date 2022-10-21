@@ -12,3 +12,4 @@
 #include "TransformInspector.h"
 #include "MeshComponentInspector.h"
 #include "AnimationComponentInspector.h"
+#include "ParticleComponentGPUInspector.h"

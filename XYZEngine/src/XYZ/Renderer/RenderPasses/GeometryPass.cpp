@@ -103,6 +103,8 @@ namespace XYZ {
 		m_SceneRenderer->m_StorageBufferSet->Update(m_SceneRenderer->m_ComputeStateSSBO.Data, computeStateSize, 0, SSBOComputeState::Binding, SSBOComputeState::Set);
 		m_SceneRenderer->m_StorageBufferSet->Update(m_SceneRenderer->m_IndirectBufferSSBO.Data, indirectCommandCount * sizeof(IndirectIndexedDrawCommand), 0, SSBOIndirectData::Binding, SSBOIndirectData::Set);
 		
+		
+	
 		return { 
 			static_cast<uint32_t>(overrideCount), 
 			static_cast<uint32_t>(animatedOverrideCount), 
@@ -570,6 +572,18 @@ namespace XYZ {
 
 				cmd.IndirectCommandState.Offset = commandOffset;
 				cmd.IndirectCommandState.Size = sizeof(IndirectIndexedDrawCommand);
+
+				// If we are expecting result in different subbuffer, we must update subbuffer data
+				if (cmd.ResultStateAllocationChanged)
+				{
+					m_SceneRenderer->m_StorageBufferSet->Update(
+						&m_SceneRenderer->m_ComputeDataSSBO.Data[cmd.ResultStateAllocation->GetOffset()],
+						cmd.ResultStateAllocation->GetSize(), 
+						cmd.ResultStateAllocation->GetOffset(),
+						SSBOComputeData::Binding,
+						SSBOComputeData::Set
+					);
+				}
 
 				memcpy(&m_SceneRenderer->m_ComputeStateSSBO.Data[offset], cmd.ComputeData.data(), cmd.ComputeData.size());
 				

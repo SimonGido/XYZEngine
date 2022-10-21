@@ -53,11 +53,11 @@ namespace XYZ {
 		m_AllocatedSize += size;
 	}
 
-	void StorageBufferAllocator::TryAllocate(uint32_t size, Ref<StorageBufferAllocation>& allocation)
+	bool StorageBufferAllocator::TryAllocate(uint32_t size, Ref<StorageBufferAllocation>& allocation)
 	{
 		XYZ_PROFILE_FUNC("StorageBufferAllocator::TryAllocate");
 		if (allocation.Raw() && allocation->m_Size >= size)
-			return;
+			return false;
 
 		std::unique_lock lock(m_NextMutex);
 		XYZ_ASSERT(m_Next + size < m_Size, "");
@@ -75,6 +75,7 @@ namespace XYZ {
 		}
 		m_Next += size;
 		m_AllocatedSize += size;
+		return true;
 	}
 
 	uint32_t StorageBufferAllocator::GetAllocatedSize() const
