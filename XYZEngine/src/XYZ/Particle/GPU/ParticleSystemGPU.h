@@ -54,18 +54,23 @@ namespace XYZ {
 	{
 		glm::vec4 StartPositionMin;
 		glm::vec4 StartPositionMax;
+		glm::vec4 RandomValuePosition;
 
 		glm::vec4 StartColorMin;
 		glm::vec4 StartColorMax;
+		glm::vec4 RandomValueColor;
 
 		glm::vec4 StartRotationMin;
 		glm::vec4 StartRotationMax;
+		glm::vec4 RandomValueRotation;
 
 		glm::vec4 StartScaleMin;
 		glm::vec4 StartScaleMax;
+		glm::vec4 RandomValueScale;
 
 		glm::vec4 StartVelocityMin;
 		glm::vec4 StartVelocityMax;
+		glm::vec4 RandomValueVelocity;
 
 		glm::vec4 EndColorMin;
 		glm::vec4 EndColorMax;
@@ -79,8 +84,14 @@ namespace XYZ {
 		glm::vec4 EndVelocityMin;
 		glm::vec4 EndVelocityMax;
 
+
 		float LifeTimeMin;
 		float LifeTimeMax;
+
+		float RandomPositionRatio;
+		float RandomColorRatio;
+		float RandomScaleRatio;
+		float RandomVelocityRatio;
 
 		uint32_t Padding[2];
 	};

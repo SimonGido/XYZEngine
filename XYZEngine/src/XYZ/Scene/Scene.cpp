@@ -16,6 +16,7 @@
 #include "XYZ/Script/ScriptEngine.h"
 #include "XYZ/Debug/Profiler.h"
 #include "XYZ/Utils/Math/Math.h"
+#include "XYZ/Utils/Random.h"
 
 #include "Prefab.h"
 #include "SceneEntity.h"
@@ -963,6 +964,44 @@ namespace XYZ {
 
 		spawnData->LifeTimeMin = 1.0f;
 		spawnData->LifeTimeMax = 5.0f;
+
+
+
+
+		spawnData->RandomValuePosition = glm::vec4(
+			RandomNumber(0.0f, 1.0f),
+			RandomNumber(0.0f, 1.0f),
+			RandomNumber(0.0f, 1.0f),
+			RandomNumber(0.0f, 1.0f)
+		);
+
+		spawnData->RandomValueColor = glm::vec4(
+			RandomNumber(0.0f, 1.0f),
+			RandomNumber(0.0f, 1.0f),
+			RandomNumber(0.0f, 1.0f),
+			1.0f
+		);
+
+		spawnData->RandomValueRotation = glm::vec4(
+			RandomNumber(0.0f, 1.0f),
+			RandomNumber(0.0f, 1.0f),
+			RandomNumber(0.0f, 1.0f),
+			RandomNumber(0.0f, 1.0f)
+		);
+
+		spawnData->RandomValueScale = glm::vec4(RandomNumber(0.0f, 1.0f));
+
+		spawnData->RandomValueVelocity = glm::vec4(
+			RandomNumber(0.0f, 1.0f),
+			RandomNumber(0.0f, 1.0f),
+			RandomNumber(0.0f, 1.0f),
+			RandomNumber(0.0f, 1.0f)
+		);
+
+		spawnData->RandomPositionRatio = RandomNumber(0.0f, 1.0f);
+		spawnData->RandomColorRatio = RandomNumber(0.0f, 1.0f);
+		spawnData->RandomScaleRatio = RandomNumber(0.0f, 1.0f);
+		spawnData->RandomVelocityRatio = RandomNumber(0.0f, 1.0f);
 
 		m_ParticleCubeMesh = MeshFactory::CreateBox(glm::vec3(1.0f));
 		

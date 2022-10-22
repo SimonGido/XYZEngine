@@ -33,18 +33,23 @@ layout (std430, binding = 6) buffer buffer_ParticleInitializeData
 {
     vec4 StartPositionMin;
 	vec4 StartPositionMax;
+	vec4 RandomValuePosition;
 
     vec4 StartColorMin;
 	vec4 StartColorMax;	
+	vec4 RandomValueColor;
 
 	vec4 StartRotationMin;
 	vec4 StartRotationMax;
+	vec4 RandomValueRotation;
 
 	vec4 StartScaleMin;
 	vec4 StartScaleMax;
+	vec4 RandomValueScale;
 
 	vec4 StartVelocityMin;
 	vec4 StartVelocityMax;
+	vec4 RandomValueVelocity;
 
 	vec4 EndColorMin;
 	vec4 EndColorMax;
@@ -60,6 +65,11 @@ layout (std430, binding = 6) buffer buffer_ParticleInitializeData
 
 	float LifeTimeMin;
 	float LifeTimeMax;
+
+	float RandomPositionRatio;
+	float RandomColorRatio;
+	float RandomScaleRatio;
+	float RandomVelocityRatio;
 
 	uint Padding[2];
 };
@@ -90,33 +100,41 @@ void main(void)
 	ParticleProperties[id].StartPosition = Random(
 		StartPositionMin,
 		StartPositionMax,
-		floatID
+		RandomValuePosition * floatID,
+		RandomValuePosition * floatID,
+		floatID * RandomPositionRatio
 	);
 
 	ParticleProperties[id].StartColor = Random(
 		StartColorMin,
 		StartColorMax,
-		floatID
+		RandomValueColor * floatID,
+		RandomValueColor * floatID,
+		floatID * RandomColorRatio
 	);
 
 	ParticleProperties[id].StartRotation = Random(
 		StartRotationMin,
 		StartRotationMax,
+		RandomValueRotation * floatID,
+		RandomValueRotation * floatID,
 		floatID
 	);
 
 	ParticleProperties[id].StartScale = Random(
 		StartScaleMin,
 		StartScaleMax,
-		floatID
+		RandomValueScale * floatID,
+		RandomValueScale * floatID,
+		floatID * RandomScaleRatio
 	);
 
 	ParticleProperties[id].StartVelocity = Random(
 		StartVelocityMin,
 		StartVelocityMax,
-		vec4(gl_GlobalInvocationID.x),
-		vec4(gl_GlobalInvocationID.y),
-		floatID
+		RandomValueVelocity * floatID,
+		RandomValueVelocity * floatID,
+		floatID * RandomVelocityRatio
 	);
 
 	ParticleProperties[id].EndColor = Random(
@@ -148,6 +166,6 @@ void main(void)
 	ParticleProperties[id].LifeTime = Random(
 		LifeTimeMin,
 		LifeTimeMax,
-		floatID
+		floatID 
 	);
 }
