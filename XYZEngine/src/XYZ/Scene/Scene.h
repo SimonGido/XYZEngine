@@ -118,8 +118,7 @@ namespace XYZ {
         void updateParticleView(Timestep ts);
         void updateRigidBody2DView();
 
-        void updateParticleGPUView(Timestep ts);
-
+       
         void setupPhysics();
         void setupLightEnvironment();
 
@@ -166,8 +165,8 @@ namespace XYZ {
         
 
         // Indirect draw test //
-        Ref<MaterialAsset>     m_IndirectCommandMaterial;
-        Ref<ParticleSystemGPU> m_ParticleSystemGPU;
+        Ref<MaterialAsset>     m_UpdateCommandMaterial;
+        Ref<MaterialAsset>     m_SpawnCommandMaterial;
 
         Ref<MaterialAsset>	   m_ParticleMaterialGPU;
         Ref<MaterialInstance>  m_ParticleMaterialInstanceGPU;

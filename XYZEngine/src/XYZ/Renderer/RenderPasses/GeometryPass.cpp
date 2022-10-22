@@ -100,9 +100,7 @@ namespace XYZ {
 		m_InstanceVertexBufferSet->Update(m_SceneRenderer->m_InstanceData.data(), instanceOffset);
 		
 		m_SceneRenderer->m_StorageBufferSet->Update(m_SceneRenderer->m_BoneTransformSSBO.Data, boneTransformCount * sizeof(GeometryRenderQueue::BoneTransforms), 0, SSBOBoneTransformData::Binding, SSBOBoneTransformData::Set);
-		m_SceneRenderer->m_StorageBufferSet->Update(m_SceneRenderer->m_ComputeStateSSBO.Data, computeStateSize, 0, SSBOComputeState::Binding, SSBOComputeState::Set);
 		m_SceneRenderer->m_StorageBufferSet->Update(m_SceneRenderer->m_IndirectBufferSSBO.Data, indirectCommandCount * sizeof(IndirectIndexedDrawCommand), 0, SSBOIndirectData::Binding, SSBOIndirectData::Set);
-		
 		
 	
 		return { 
@@ -132,17 +130,17 @@ namespace XYZ {
 			for (auto& command : com.ComputeCommands)
 			{
 				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					command.ComputeDataState.Size,
-					command.ComputeDataState.Offset,
-					SSBOComputeState::Binding,
-					SSBOComputeState::Set
+					command.ReadStateAllocation->GetSize(),
+					command.ReadStateAllocation->GetOffset(),
+					command.ReadStateAllocation->GetBinding(),
+					command.ReadStateAllocation->GetSet()
 				);
 
 				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					command.ResultStateAllocation.GetSize(),
-					command.ResultStateAllocation.GetOffset(),
-					SSBOComputeData::Binding,
-					SSBOComputeData::Set
+					command.ResultStateAllocation->GetSize(),
+					command.ResultStateAllocation->GetOffset(),
+					command.ResultStateAllocation->GetBinding(),
+					command.ResultStateAllocation->GetSet()
 				);
 
 				Renderer::UpdateDescriptors(
@@ -171,17 +169,17 @@ namespace XYZ {
 				);
 
 				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					command.ComputeDataState.Size,
-					command.ComputeDataState.Offset,
-					SSBOComputeState::Binding,
-					SSBOComputeState::Set
+					command.ReadStateAllocation->GetSize(),
+					command.ReadStateAllocation->GetOffset(),
+					command.ReadStateAllocation->GetBinding(),
+					command.ReadStateAllocation->GetSet()
 				);
 
 				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					command.ResultStateAllocation.GetSize(),
-					command.ResultStateAllocation.GetOffset(),
-					SSBOComputeData::Binding,
-					SSBOComputeData::Set
+					command.ResultStateAllocation->GetSize(),
+					command.ResultStateAllocation->GetOffset(),
+					command.ResultStateAllocation->GetBinding(),
+					command.ResultStateAllocation->GetSet()
 				);
 
 				Renderer::UpdateDescriptors(
@@ -247,17 +245,10 @@ namespace XYZ {
 				);
 
 				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					dcOverride.ComputeDataState.Size,
-					dcOverride.ComputeDataState.Offset,
-					SSBOComputeState::Binding,
-					SSBOComputeState::Set
-				);
-
-				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					dcOverride.ResultStateAllocation.GetSize(),
-					dcOverride.ResultStateAllocation.GetOffset(),
-					SSBOComputeData::Binding,
-					SSBOComputeData::Set
+					dcOverride.ReadStateAllocation->GetSize(),
+					dcOverride.ReadStateAllocation->GetOffset(),
+					dcOverride.ReadStateAllocation->GetBinding(),
+					dcOverride.ReadStateAllocation->GetSet()
 				);
 
 				Renderer::UpdateDescriptors(
@@ -571,47 +562,21 @@ namespace XYZ {
 			dc.Pipeline = m_PipelineCache.PrepareComputePipeline(dc.MaterialCompute);
 			for (auto& cmd : dc.ComputeCommands)
 			{
-				cmd.ComputeDataState.Offset = computeStateOffset;
-				cmd.ComputeDataState.Size = Math::RoundUp(static_cast<uint32_t>(cmd.ComputeData.size()), 16);
-			
-				// If we are expecting result in different subbuffer, we must update subbuffer data
-				if (cmd.ResultStateAllocationChanged)
-				{
-					m_SceneRenderer->m_StorageBufferSet->Update(
-						&m_SceneRenderer->m_ComputeDataSSBO.Data[cmd.ResultStateAllocation.GetOffset()],
-						cmd.ResultStateAllocation.GetSize(),
-						cmd.ResultStateAllocation.GetOffset(),
-						SSBOComputeData::Binding,
-						SSBOComputeData::Set
-					);
-				}
+				m_SceneRenderer->m_StorageBufferSet->Update(
+					cmd.ComputeData.data(),
+					cmd.ReadStateAllocation->GetSize(), 
+					cmd.ReadStateAllocation->GetOffset(), 
+					cmd.ReadStateAllocation->GetBinding(), 
+					cmd.ReadStateAllocation->GetSet()
+				);
 
-				memcpy(&m_SceneRenderer->m_ComputeStateSSBO.Data[computeStateOffset], cmd.ComputeData.data(), cmd.ComputeData.size());
 				computeStateOffset += Math::RoundUp(static_cast<uint32_t>(cmd.ComputeData.size()), 16);
 			}
 			for (auto& cmd : dc.IndirectComputeCommands)
 			{
-				cmd.ComputeDataState.Offset = computeStateOffset;
-				cmd.ComputeDataState.Size = Math::RoundUp(static_cast<uint32_t>(cmd.ComputeData.size()), 16);
-
 				cmd.IndirectCommandState.Offset = indirectCommandOffset;
 				cmd.IndirectCommandState.Size = sizeof(IndirectIndexedDrawCommand);
 
-				// If we are expecting result in different subbuffer, we must update subbuffer data
-				if (cmd.ResultStateAllocationChanged)
-				{
-					m_SceneRenderer->m_StorageBufferSet->Update(
-						&m_SceneRenderer->m_ComputeDataSSBO.Data[cmd.ResultStateAllocation.GetOffset()],
-						cmd.ResultStateAllocation.GetSize(),
-						cmd.ResultStateAllocation.GetOffset(),
-						SSBOComputeData::Binding,
-						SSBOComputeData::Set
-					);
-				}
-
-				memcpy(&m_SceneRenderer->m_ComputeStateSSBO.Data[computeStateOffset], cmd.ComputeData.data(), cmd.ComputeData.size());
-
-				computeStateOffset += Math::RoundUp(static_cast<uint32_t>(cmd.ComputeData.size()), 16);
 				indirectCommandOffset += sizeof(IndirectIndexedDrawCommand);
 			}
 		}
@@ -629,10 +594,6 @@ namespace XYZ {
 			dc.Pipeline = m_PipelineCache.PreparePipeline(dc.MaterialAsset, m_SceneRenderer->m_GeometryRenderPass);
 			for (auto& cmd : dc.OverrideCommands)
 			{
-				cmd.ComputeDataState.Offset = offset;
-				cmd.ComputeDataState.Size = Math::RoundUp(cmd.ComputeDataSize, 16);
-
-				
 				cmd.IndirectCommandState.Offset = commandOffset;
 				cmd.IndirectCommandState.Size = sizeof(IndirectIndexedDrawCommand);
 			
@@ -641,7 +602,6 @@ namespace XYZ {
 				m_SceneRenderer->m_IndirectBufferSSBO.Data[index].BaseVertex = 0;
 				m_SceneRenderer->m_IndirectBufferSSBO.Data[index].BaseInstance = 0;
 
-				offset += Math::RoundUp(cmd.ComputeDataSize, 16);
 				commandOffset += sizeof(IndirectIndexedDrawCommand);
 				indirectCommandCount++;
 				index++;

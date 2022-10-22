@@ -77,29 +77,30 @@ namespace XYZ {
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial);
 		void SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 		
+
+		void CreateComputeAllocation(uint32_t size, uint32_t index, Ref<StorageBufferAllocation>& allocation);
+
 		void SubmitCompute(
 			const Ref<MaterialAsset>& materialCompute,
-			const void* computeData,
-			uint32_t computeDataSize,
-			uint32_t computeResultSize,
-			StorageBufferAllocation& allocation,
+			const Ref<StorageBufferAllocation>& computeStateAllocation,
+			const Ref<StorageBufferAllocation>& computeResultAllocation,
+			const void* computeData, uint32_t computeDataSize, 
 			const PushConstBuffer& uniformComputeData
 		);
 
+
 		void SubmitMeshIndirect(
 			// Rendering data
-			const Ref<Mesh>& mesh,
-			const Ref<MaterialAsset>& material,
+			const Ref<Mesh>&			 mesh,
+			const Ref<MaterialAsset>&	 material,
 			const Ref<MaterialInstance>& overrideMaterial,
-			const glm::mat4& transform,
+			const glm::mat4&			 transform,
 
 			// Compute data
-			const Ref<MaterialAsset>& materialCompute,
-			const void* computeData,
-			uint32_t    computeDataSize,
-			uint32_t    computeResultSize,
-			StorageBufferAllocation& allocation,
-			const PushConstBuffer& uniformComputeData
+			const Ref<MaterialAsset>&			materialCompute,
+			const Ref<StorageBufferAllocation>& computeStateAllocation,
+			const Ref<StorageBufferAllocation>&	computeResultAllocation,
+			const PushConstBuffer&				uniformComputeData
 		);
 
 		void OnImGuiRender();
@@ -134,7 +135,6 @@ namespace XYZ {
 		SSBOBoneTransformData	   m_BoneTransformSSBO;
 		SSBOIndirectData		   m_IndirectBufferSSBO;
 		SSBOComputeData			   m_ComputeDataSSBO;
-		SSBOComputeState		   m_ComputeStateSSBO;
 		std::vector<TransformData> m_TransformData;
 		std::vector<std::byte>	   m_InstanceData;
 
@@ -160,9 +160,10 @@ namespace XYZ {
 
 		Ref<PrimaryRenderCommandBuffer>   m_CommandBuffer;
 
-		Ref<UniformBufferSet>      m_UniformBufferSet;
-		Ref<StorageBufferSet>	   m_StorageBufferSet;
-		Ref<StorageBufferAllocator> m_StorageBufferAllocator;
+		Ref<UniformBufferSet>       m_UniformBufferSet;
+		Ref<StorageBufferSet>	    m_StorageBufferSet;
+
+		Ref<StorageBufferAllocator> m_ComputeDataAllocator[SSBOComputeData::Count];
 
 		SceneRendererCamera		   m_SceneCamera;
 		SceneRendererOptions	   m_Options;

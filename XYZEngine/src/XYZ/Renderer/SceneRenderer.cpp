@@ -92,10 +92,11 @@ namespace XYZ {
 		m_StorageBufferSet->Create(sizeof(SSBOBoneTransformData), SSBOBoneTransformData::Set, SSBOBoneTransformData::Binding);
 		
 		m_StorageBufferSet->Create(sizeof(SSBOIndirectData), SSBOIndirectData::Set, SSBOIndirectData::Binding, true);
-		m_StorageBufferSet->Create(sizeof(SSBOComputeData), SSBOComputeData::Set, SSBOComputeData::Binding);
-		m_StorageBufferSet->Create(sizeof(SSBOComputeState), SSBOComputeState::Set, SSBOComputeState::Binding);
+		m_StorageBufferSet->Create(SSBOComputeData::MaxSize, SSBOComputeData::Set, SSBOComputeData::Binding[0]);
+		m_StorageBufferSet->Create(SSBOComputeData::MaxSize, SSBOComputeData::Set, SSBOComputeData::Binding[1]);
 
-		m_StorageBufferAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOComputeData));
+		for (uint32_t i = 0; i < SSBOComputeData::Count; ++i)
+			m_ComputeDataAllocator[i] = Ref<StorageBufferAllocator>::Create(SSBOComputeData::MaxSize, SSBOComputeData::Binding[i], SSBOComputeData::Set);
 
 		m_CompositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
 		m_LightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
@@ -293,12 +294,24 @@ namespace XYZ {
 		}
 	}
 
+	void SceneRenderer::CreateComputeAllocation(uint32_t size, uint32_t index, Ref<StorageBufferAllocation>& allocation)
+	{
+		XYZ_ASSERT(index <= SSBOComputeData::Count, "");
+	
+		if (allocation.Raw())
+			allocation->ReturnAllocation();
+
+		m_ComputeDataAllocator[index]->Allocate(Math::RoundUp(size, 16), allocation);
+	}
+
+	
+
+
 	void SceneRenderer::SubmitCompute(
 		const Ref<MaterialAsset>& materialCompute,
-		const void* computeData,
-		uint32_t computeDataSize,
-		uint32_t computeResultSize,
-		StorageBufferAllocation& allocation,
+		const Ref<StorageBufferAllocation>& computeStateAllocation,
+		const Ref<StorageBufferAllocation>& computeResultAllocation,
+		const void* computeData, uint32_t computeDataSize, 
 		const PushConstBuffer& uniformComputeData
 	)
 	{
@@ -307,11 +320,9 @@ namespace XYZ {
 		computeCommand.MaterialCompute = materialCompute;
 
 		auto& command = computeCommand.ComputeCommands.emplace_back();
-		// Make sure that nobody overrides our result that we want to use
-		if (m_StorageBufferAllocator->TryAllocate(Math::RoundUp(computeResultSize, 16), allocation))
-			command.ResultStateAllocationChanged = true;
 
-		command.ResultStateAllocation = allocation;
+		command.ReadStateAllocation = computeStateAllocation;
+		command.ResultStateAllocation = computeResultAllocation;
 		command.ComputeData.resize(computeDataSize);
 		memcpy(command.ComputeData.data(), computeData, computeDataSize);
 
@@ -327,10 +338,8 @@ namespace XYZ {
 
 		// Compute data
 		const Ref<MaterialAsset>& materialCompute,
-		const void* computeData,
-		uint32_t computeDataSize,
-		uint32_t computeResultSize,
-		StorageBufferAllocation& allocation,
+		const Ref<StorageBufferAllocation>& computeStateAllocation,
+		const Ref<StorageBufferAllocation>& computeResultAllocation,
 		const PushConstBuffer& uniformComputeData
 	)
 	{
@@ -340,15 +349,9 @@ namespace XYZ {
 		computeCommand.MaterialCompute = materialCompute;
 
 		auto& command = computeCommand.IndirectComputeCommands.emplace_back();
-		// Make sure that nobody overrides our result that we want to use
-		if (m_StorageBufferAllocator->TryAllocate(Math::RoundUp(computeResultSize, 16), allocation))
-			command.ResultStateAllocationChanged = true;
-
-		command.ResultStateAllocation = allocation;
-		command.ComputeData.resize(computeDataSize);
-		memcpy(command.ComputeData.data(), computeData, computeDataSize);
-
-		command.OverrideUniformData = uniformComputeData;
+		command.ReadStateAllocation   = computeStateAllocation;
+		command.ResultStateAllocation = computeResultAllocation;
+		command.OverrideUniformData   = uniformComputeData;
 
 		// Render command
 		AssetHandle renderKey = material->GetHandle();
@@ -357,8 +360,7 @@ namespace XYZ {
 
 		auto& renderCommand = dc.OverrideCommands.emplace_back();
 		renderCommand.Mesh = mesh;
-		renderCommand.ComputeDataSize = computeDataSize;
-		renderCommand.ResultStateAllocation = allocation;
+		renderCommand.ReadStateAllocation = computeResultAllocation;
 		renderCommand.Transform = transform;
 
 		if (overrideMaterial.Raw())
@@ -397,7 +399,6 @@ namespace XYZ {
 				UI::TextTableRow("%s", "Max Bone Transform:", "%u", SSBOBoneTransformData::MaxBoneTransforms);
 				UI::TextTableRow("%s", "Max Indirect Commands:", "%u", SSBOIndirectData::MaxCommands);
 				UI::TextTableRow("%s", "Max Compute Data Size:", "%u", SSBOComputeData::MaxSize);
-				UI::TextTableRow("%s", "Max Compute State Size:", "%u", SSBOComputeState::MaxSize);
 
 				UI::TextTableRow("%s", "Max Transform Instances:", "%u", GeometryPass::GetTransformBufferCount());
 				UI::TextTableRow("%s", "Max Instance Data Size:", "%u", GeometryPass::GetInstanceBufferSize());
@@ -448,8 +449,7 @@ namespace XYZ {
 					const uint32_t bonesBufferUsage			= 100 * m_GeometryPassStatistics.BoneTransformCount / SSBOBoneTransformData::MaxBoneTransforms;
 					const uint32_t instanceBufferUsage		= 100 * m_GeometryPassStatistics.InstanceDataSize / GeometryPass::GetInstanceBufferSize();
 					const uint32_t indirectBufferUsage		= 100 * m_GeometryPassStatistics.IndirectCommandCount / SSBOIndirectData::MaxCommands;
-					const uint32_t computeDataBufferUsage	= 100 * m_StorageBufferAllocator->GetAllocatedSize() / SSBOComputeData::MaxSize;
-					const uint32_t computeStateBufferUsage	= 100 * m_GeometryPassStatistics.ComputeStateSize / SSBOComputeState::MaxSize;
+
 
 					UI::TableRow("",
 						[]() { ImGui::Text("Transform Buffer"); },
@@ -467,13 +467,6 @@ namespace XYZ {
 						[]() { ImGui::Text("Indirect Buffer"); },
 						[&]() { ImGui::Text("%u%%", indirectBufferUsage); });
 
-					UI::TableRow("",
-						[]() { ImGui::Text("Compute Data Buffer"); },
-						[&]() { ImGui::Text("%u%%", computeDataBufferUsage); });
-
-					UI::TableRow("",
-						[]() { ImGui::Text("Compute State Buffer"); },
-						[&]() { ImGui::Text("%u%%", computeStateBufferUsage); });
 
 					ImGui::EndTable();
 				}
@@ -498,7 +491,7 @@ namespace XYZ {
 					UI::TextTableRow("%s", "Instance Mesh Draw Count:", "%u", m_RenderStatistics.InstanceMeshDrawCommandCount);
 
 					UI::TextTableRow("%s", "Indirect Command Count:", "%u", m_RenderStatistics.IndirectCommandCount);
-					UI::TextTableRow("%s", "Compute Data Size:", "%u", m_StorageBufferAllocator->GetAllocatedSize());
+	
 					UI::TextTableRow("%s", "Compute State Size:", "%u", m_RenderStatistics.ComputeStateSize);
 
 

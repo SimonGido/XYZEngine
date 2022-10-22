@@ -211,15 +211,18 @@ namespace XYZ {
 		Ref<MaterialAsset>	    RenderMaterial;
 		Ref<MaterialInstance>   OverrideMaterial;
 
-		Ref<MaterialAsset>		ComputeMaterial;
-		Ref<ParticleSystemGPU>	System;
+		Ref<MaterialAsset>		UpdateComputeMaterial;
+		Ref<MaterialAsset>		SpawnComputeMaterial;
 
-		StorageBufferAllocation ResultAllocation;
-		ParticleBuffer		    Buffer;
-		uint32_t			    EmittedParticles = 0;
-		
-		float				    Speed	  = 1.0f;
-		bool				    Running	  = true;
+		Ref<StorageBufferAllocation> ReadAllocation;
+		Ref<StorageBufferAllocation> WriteAllocation;
+
+		std::vector<std::byte>  SpawnBuffer;
+
+		uint32_t				MaxParticles = 1024;
+		float				    Speed		 = 1.0f;
+		bool				    Running		 = true;
+		bool					Initialized	 = false; // Per frame in flight
 	};
 
 	struct PointLightComponent2D 

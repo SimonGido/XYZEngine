@@ -7,22 +7,34 @@
 namespace XYZ {
 	
 	class StorageBufferAllocator;
-	class StorageBufferAllocation
+	class StorageBufferAllocation : public RefCount
 	{
 	public:
-		StorageBufferAllocation();
+		~StorageBufferAllocation();
 
-		inline uint32_t GetSize() const { return m_Size; }
-		inline uint32_t GetOffset() const { return m_Offset; }
-		inline bool     Valid() const { return m_Allocator.Raw(); }
+		void ReturnAllocation();
+
+		inline uint32_t   GetSize()			const { return m_Size; }
+		inline uint32_t   GetOffset()		const { return m_Offset; }
+		inline uint32_t   GetBinding()		const { return m_StorageBufferBinding; }
+		inline uint32_t   GetSet()			const { return m_StorageBufferSet; }
 	private:
-		StorageBufferAllocation(const Ref<StorageBufferAllocator>& allocator, uint32_t size, uint32_t offset);
+		StorageBufferAllocation(
+			const Ref<StorageBufferAllocator>& allocator, 
+			uint32_t size, 
+			uint32_t offset,
+			uint32_t binding,
+			uint32_t set
+		);
 
 	private:
 		Ref<StorageBufferAllocator> m_Allocator;
+		
 		uint32_t m_Size;
 		uint32_t m_Offset;
-
+		uint32_t m_StorageBufferBinding;
+		uint32_t m_StorageBufferSet;
+		bool	 m_Valid;
 
 		friend StorageBufferAllocator;
 	};
@@ -31,13 +43,14 @@ namespace XYZ {
 	class StorageBufferAllocator : public RefCount
 	{
 	public:
-		StorageBufferAllocator(uint32_t size);
+		StorageBufferAllocator(uint32_t size, uint32_t binding, uint32_t set);
 		~StorageBufferAllocator();
 
-		void Allocate(uint32_t size, StorageBufferAllocation& allocation);
-		bool TryAllocate(uint32_t size, StorageBufferAllocation& allocation);
+		void Allocate(uint32_t size, Ref<StorageBufferAllocation>& allocation);
 
 		uint32_t GetAllocatedSize() const;
+		uint32_t GetBinding() const { return m_Binding; };
+		uint32_t GetSet() const { return m_Set; }
 	private:
 		void returnAllocation(uint32_t size, uint32_t offset);
 		void worker();
@@ -49,6 +62,8 @@ namespace XYZ {
 			uint32_t Size, Offset;
 		};
 
+		uint32_t m_Binding;
+		uint32_t m_Set;
 		uint32_t m_Size;
 
 		std::unique_ptr<std::thread> m_FreeAllocationsThread;
@@ -61,5 +76,7 @@ namespace XYZ {
 		uint32_t					 m_AllocatedSize;
 
 		bool m_Running;
+
+		friend StorageBufferAllocation;
 	};
 }

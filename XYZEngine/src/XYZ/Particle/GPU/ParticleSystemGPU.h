@@ -50,7 +50,40 @@ namespace XYZ {
 		Padding<12> Padding;
 	};
 
+	struct ParticleSpawnData
+	{
+		glm::vec4 StartPositionMin;
+		glm::vec4 StartPositionMax;
 
+		glm::vec4 StartColorMin;
+		glm::vec4 StartColorMax;
+
+		glm::vec4 StartRotationMin;
+		glm::vec4 StartRotationMax;
+
+		glm::vec4 StartScaleMin;
+		glm::vec4 StartScaleMax;
+
+		glm::vec4 StartVelocityMin;
+		glm::vec4 StartVelocityMax;
+
+		glm::vec4 EndColorMin;
+		glm::vec4 EndColorMax;
+
+		glm::vec4 EndRotationMin;
+		glm::vec4 EndRotationMax;
+
+		glm::vec4 EndScaleMin;
+		glm::vec4 EndScaleMax;
+
+		glm::vec4 EndVelocityMin;
+		glm::vec4 EndVelocityMax;
+
+		float LifeTimeMin;
+		float LifeTimeMax;
+
+		uint32_t Padding[2];
+	};
 
 
 	class ParticleSystemGPU : public RefCount // TODO: asset

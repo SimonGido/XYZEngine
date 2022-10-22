@@ -2,6 +2,7 @@
 #version 460
 
 #include "Resources/Shaders/Includes/Math.glsl"
+#include "Resources/Shaders/Includes/Random.glsl"
 
 struct DrawCommand 
 {
@@ -88,7 +89,6 @@ layout (constant_id = 0) const bool COLOR_OVER_LIFE = false;
 layout (constant_id = 1) const bool SCALE_OVER_LIFE = false;
 layout (constant_id = 2) const bool VELOCITY_OVER_LIFE = false;
 layout (constant_id = 3) const bool ROTATION_OVER_LIFE = false;
-
 
 float LifeProgress(uint id)
 {

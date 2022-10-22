@@ -5,23 +5,41 @@
 #include "XYZ/Debug/Profiler.h"
 
 namespace XYZ {
-	StorageBufferAllocation::StorageBufferAllocation()
-		:
-		m_Allocator(nullptr),
-		m_Size(0),
-		m_Offset(0)
-	{
-	}
-	StorageBufferAllocation::StorageBufferAllocation(const Ref<StorageBufferAllocator>& allocator, uint32_t size, uint32_t offset)
+
+	StorageBufferAllocation::StorageBufferAllocation(
+		const Ref<StorageBufferAllocator>& allocator,
+		uint32_t size,
+		uint32_t offset,
+		uint32_t binding,
+		uint32_t set
+	)
 		:
 		m_Allocator(allocator),
 		m_Size(size),
-		m_Offset(offset)
+		m_Offset(offset),
+		m_StorageBufferBinding(binding),
+		m_StorageBufferSet(set),
+		m_Valid(true)
 	{
 	}
 	
-	StorageBufferAllocator::StorageBufferAllocator(uint32_t size)
+	StorageBufferAllocation::~StorageBufferAllocation()
+	{
+		ReturnAllocation();
+	}
+
+	void StorageBufferAllocation::ReturnAllocation()
+	{
+		if (m_Valid)
+		{
+			m_Allocator->returnAllocation(m_Size, m_Offset);
+			m_Valid = false;
+		}
+	}
+	StorageBufferAllocator::StorageBufferAllocator(uint32_t size, uint32_t binding, uint32_t set)
 		:
+		m_Binding(binding),
+		m_Set(set),
 		m_Size(size),
 		m_Next(0),
 		m_AllocatedSize(0),
@@ -37,51 +55,31 @@ namespace XYZ {
 		m_FreeAllocationAvailableCV.notify_one();
 		m_FreeAllocationsThread->join();
 	}
+
 	
-	void StorageBufferAllocator::Allocate(uint32_t size, StorageBufferAllocation& allocation)
+	void StorageBufferAllocator::Allocate(uint32_t size, Ref<StorageBufferAllocation>& allocation)
 	{
 		XYZ_PROFILE_FUNC("StorageBufferAllocator::Allocate");
 		std::unique_lock lock(m_NextMutex);
 		XYZ_ASSERT(m_Next + size < m_Size, "");
 
-		// Make sure we first return old allocation
-		if (allocation.Valid())
+		// Allocation is not valid, create new
+		if (!allocation.Raw())
 		{
-			returnAllocation(allocation.GetSize(), allocation.GetOffset());
-			allocation.m_Size = size;
-			allocation.m_Offset = m_Next;
+			allocation = Ref<StorageBufferAllocation>(new StorageBufferAllocation(this, size, m_Next, m_Binding, m_Set));
 		}
-		else
-		{
-			allocation = StorageBufferAllocation(this, size, m_Next);
+		else 
+		{		
+			allocation->m_Allocator				= this;
+			allocation->m_Size					= size;
+			allocation->m_Offset				= m_Next;
+			allocation->m_StorageBufferBinding	= m_Binding;
+			allocation->m_StorageBufferSet		= m_Set;
+			allocation->m_Valid					= true;
 		}
+		
 		m_Next += size;
 		m_AllocatedSize += size;
-	}
-
-	bool StorageBufferAllocator::TryAllocate(uint32_t size, StorageBufferAllocation& allocation)
-	{
-		XYZ_PROFILE_FUNC("StorageBufferAllocator::TryAllocate");
-		if (allocation.Valid() && allocation.GetSize() >= size)
-			return false;
-
-		std::unique_lock lock(m_NextMutex);
-		XYZ_ASSERT(m_Next + size < m_Size, "");
-
-		// Make sure we first return old allocation
-		if (allocation.Valid())
-		{
-			returnAllocation(allocation.GetSize(), allocation.GetOffset());
-			allocation.m_Size = size;
-			allocation.m_Offset = m_Next;
-		}
-		else
-		{
-			allocation = StorageBufferAllocation(this, size, m_Next);
-		}
-		m_Next += size;
-		m_AllocatedSize += size;
-		return true;
 	}
 
 	uint32_t StorageBufferAllocator::GetAllocatedSize() const
@@ -92,6 +90,7 @@ namespace XYZ {
 	void StorageBufferAllocator::returnAllocation(uint32_t size, uint32_t offset)
 	{
 		std::unique_lock lock(m_FreeAllocationsMutex);
+		std::unique_lock nextLock(m_NextMutex);
 		if (m_Next == offset + size)
 		{
 			m_Next -= size;
