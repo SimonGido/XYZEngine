@@ -214,8 +214,9 @@ namespace XYZ {
 		Ref<MaterialAsset>		UpdateComputeMaterial;
 		Ref<MaterialAsset>		SpawnComputeMaterial;
 
-		Ref<StorageBufferAllocation> ReadAllocation;
-		Ref<StorageBufferAllocation> WriteAllocation;
+		Ref<StorageBufferAllocation> SpawnAllocation;
+		Ref<StorageBufferAllocation> PropertiesAllocation;
+		Ref<StorageBufferAllocation> ResultAllocation;
 
 		std::vector<std::byte>  SpawnBuffer;
 

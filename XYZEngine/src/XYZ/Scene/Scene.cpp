@@ -901,15 +901,19 @@ namespace XYZ {
 		{
 			auto& [transformComponent, particleComponent] = particleGPUView.get(entity);
 			
+
+			Ref<StorageBufferAllocation> alloc;
+			sceneRenderer->CreateComputeAllocation(20, 0, alloc);
+
 			if (!particleComponent.Initialized)
 			{			
-				sceneRenderer->CreateComputeAllocation(particleComponent.SpawnBuffer.size(), 0, particleComponent.ReadAllocation);
-				sceneRenderer->CreateComputeAllocation(particleComponent.MaxParticles * sizeof(ParticlePropertyGPU), 1, particleComponent.WriteAllocation);
+				sceneRenderer->CreateComputeAllocation(particleComponent.SpawnBuffer.size(), 0, particleComponent.SpawnAllocation);
+				sceneRenderer->CreateComputeAllocation(particleComponent.MaxParticles * sizeof(ParticlePropertyGPU), 1, particleComponent.PropertiesAllocation);
 
 				sceneRenderer->SubmitCompute(
 					particleComponent.SpawnComputeMaterial,
-					particleComponent.ReadAllocation,
-					particleComponent.WriteAllocation,
+					particleComponent.SpawnAllocation,
+					particleComponent.PropertiesAllocation,
 					particleComponent.SpawnBuffer.data(),
 					particleComponent.SpawnBuffer.size(),
 					{}
@@ -918,8 +922,7 @@ namespace XYZ {
 			}
 			else
 			{
-				sceneRenderer->CreateComputeAllocation(particleComponent.MaxParticles * sizeof(ParticleGPU), 0, particleComponent.WriteAllocation);
-				sceneRenderer->CreateComputeAllocation(particleComponent.MaxParticles * sizeof(ParticlePropertyGPU), 1, particleComponent.ReadAllocation);
+				sceneRenderer->CreateComputeAllocation(particleComponent.MaxParticles * sizeof(ParticleGPU), 0, particleComponent.ResultAllocation);
 
 				sceneRenderer->SubmitMeshIndirect(
 					// Rendering data
@@ -929,8 +932,8 @@ namespace XYZ {
 					transformComponent->WorldTransform,
 					// Compute data
 					particleComponent.UpdateComputeMaterial,
-					particleComponent.ReadAllocation,
-					particleComponent.WriteAllocation,
+					particleComponent.PropertiesAllocation,
+					particleComponent.ResultAllocation,
 				
 					PushConstBuffer{
 						m_GPUFrameTimestep,

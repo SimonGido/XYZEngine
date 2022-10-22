@@ -56,6 +56,8 @@ namespace XYZ {
 		void worker();
 		void mergeFreeAllocations();
 
+		bool tryAllocateFromLastFree(uint32_t size, uint32_t& offset);
+
 	private:
 		struct Allocation
 		{
@@ -71,8 +73,7 @@ namespace XYZ {
 
 		std::vector<Allocation>		 m_FreeAllocations;
 		std::mutex					 m_FreeAllocationsMutex;
-		mutable std::shared_mutex	 m_NextMutex;
-		uint32_t					 m_Next;
+		std::atomic_uint32_t		 m_Next;
 		uint32_t					 m_AllocatedSize;
 
 		bool m_Running;
