@@ -24,15 +24,14 @@ struct Particle
     // Current state of particle
     vec4  Position;
     float LifeRemaining;
-    bool  Initialized;
 
-    vec2  Padding;
+    vec3  Padding;
 };
 
 struct ParticleState
 {
     vec4  Color;
-    vec3  Rotation;
+    vec4  Rotation;
     vec3  Scale;
     vec3  Velocity;  
     bool  Alive;
@@ -64,9 +63,8 @@ layout(push_constant) uniform Uniform
 { 
     float Timestep;
     float Speed;
-    uint  EmittedParticles;
-    bool  Loop;
-    bool  Initialize;
+    uint  MaxParticles;
+    bool  Running;
 
 } u_Uniforms;
 
@@ -127,7 +125,7 @@ void UpdateParticle(uint id)
         state.Color    = ParticleProperties[id].StartColor;
         state.Scale    = ParticleProperties[id].StartScale.xyz;
         state.Velocity = ParticleProperties[id].StartVelocity.xyz;
-        state.Rotation = ParticleProperties[id].StartRotation.xyz;
+        state.Rotation = ParticleProperties[id].StartRotation;
 
         if (COLOR_OVER_LIFE)
         {
@@ -143,7 +141,7 @@ void UpdateParticle(uint id)
         }
         if (ROTATION_OVER_LIFE)
         {
-            state.Rotation = mix(ParticleProperties[id].StartRotation, ParticleProperties[id].EndRotation, lifeProgress).xyz;   
+            state.Rotation = mix(ParticleProperties[id].StartRotation, ParticleProperties[id].EndRotation, lifeProgress);   
         }
 
         Particles[id].Position.xyz += state.Velocity * u_Uniforms.Timestep * u_Uniforms.Speed;
@@ -152,9 +150,8 @@ void UpdateParticle(uint id)
         uint instanceIndex = atomicAdd(Command.InstanceCount, 1);
         UpdateRenderData(state, id, instanceIndex);
     }
-    else if (u_Uniforms.Loop || !Particles[id].Initialized)
+    else if (u_Uniforms.Running)
     {
-        Particles[id].Initialized = true;
         RespawnParticle(id);
     }
 }
@@ -162,7 +159,7 @@ void UpdateParticle(uint id)
 
 bool ValidParticle(uint id)
 {
-    if (id >= u_Uniforms.EmittedParticles)
+    if (id >= u_Uniforms.MaxParticles)
 		return false; 
     return true;
 }
@@ -175,6 +172,6 @@ void main(void)
 
     if (!ValidParticle(id))
         return;
-   
+
     UpdateParticle(id);
 }

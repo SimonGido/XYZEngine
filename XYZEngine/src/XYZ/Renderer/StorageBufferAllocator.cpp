@@ -5,7 +5,13 @@
 #include "XYZ/Debug/Profiler.h"
 
 namespace XYZ {
-
+	StorageBufferAllocation::StorageBufferAllocation()
+		:
+		m_Allocator(nullptr),
+		m_Size(0),
+		m_Offset(0)
+	{
+	}
 	StorageBufferAllocation::StorageBufferAllocation(const Ref<StorageBufferAllocator>& allocator, uint32_t size, uint32_t offset)
 		:
 		m_Allocator(allocator),
@@ -32,46 +38,46 @@ namespace XYZ {
 		m_FreeAllocationsThread->join();
 	}
 	
-	void StorageBufferAllocator::Allocate(uint32_t size, Ref<StorageBufferAllocation>& allocation)
+	void StorageBufferAllocator::Allocate(uint32_t size, StorageBufferAllocation& allocation)
 	{
 		XYZ_PROFILE_FUNC("StorageBufferAllocator::Allocate");
 		std::unique_lock lock(m_NextMutex);
 		XYZ_ASSERT(m_Next + size < m_Size, "");
 
 		// Make sure we first return old allocation
-		if (allocation.Raw())
+		if (allocation.Valid())
 		{
-			returnAllocation(allocation->GetSize(), allocation->GetOffset());
-			allocation->m_Size = size;
-			allocation->m_Offset = m_Next;
+			returnAllocation(allocation.GetSize(), allocation.GetOffset());
+			allocation.m_Size = size;
+			allocation.m_Offset = m_Next;
 		}
 		else
 		{
-			allocation = Ref<StorageBufferAllocation>(new StorageBufferAllocation(this, size, m_Next));
+			allocation = StorageBufferAllocation(this, size, m_Next);
 		}
 		m_Next += size;
 		m_AllocatedSize += size;
 	}
 
-	bool StorageBufferAllocator::TryAllocate(uint32_t size, Ref<StorageBufferAllocation>& allocation)
+	bool StorageBufferAllocator::TryAllocate(uint32_t size, StorageBufferAllocation& allocation)
 	{
 		XYZ_PROFILE_FUNC("StorageBufferAllocator::TryAllocate");
-		if (allocation.Raw() && allocation->m_Size >= size)
+		if (allocation.Valid() && allocation.GetSize() >= size)
 			return false;
 
 		std::unique_lock lock(m_NextMutex);
 		XYZ_ASSERT(m_Next + size < m_Size, "");
 
 		// Make sure we first return old allocation
-		if (allocation.Raw())
+		if (allocation.Valid())
 		{
-			returnAllocation(allocation->GetSize(), allocation->GetOffset());
-			allocation->m_Size = size;
-			allocation->m_Offset = m_Next;
+			returnAllocation(allocation.GetSize(), allocation.GetOffset());
+			allocation.m_Size = size;
+			allocation.m_Offset = m_Next;
 		}
 		else
 		{
-			allocation = Ref<StorageBufferAllocation>(new StorageBufferAllocation(this, size, m_Next));
+			allocation = StorageBufferAllocation(this, size, m_Next);
 		}
 		m_Next += size;
 		m_AllocatedSize += size;

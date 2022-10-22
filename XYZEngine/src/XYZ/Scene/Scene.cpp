@@ -287,13 +287,7 @@ namespace XYZ {
 
 		updateScripts(ts);
 		updateHierarchy();
-
-		if (m_GPUFrameCounter == Renderer::GetConfiguration().FramesInFlight)
-		{
-			m_GPUFrameTimestep = ts;
-			m_GPUFrameCounter = 0;
-		}
-		m_GPUFrameCounter++;
+		onUpdateGPUFrame(ts);
 	}
 
 	void Scene::OnRender(Ref<SceneRenderer> sceneRenderer)
@@ -359,6 +353,7 @@ namespace XYZ {
 				renderer.OverrideMaterial
 			);
 		}
+		submitParticleGPUView(sceneRenderer);
 		sceneRenderer->EndScene();
 	}
 
@@ -378,14 +373,7 @@ namespace XYZ {
 			updateAnimationView(ts);		
 
 		updateParticleView(ts);
-		updateParticleGPUView(ts);
-
-		if (m_GPUFrameCounter == Renderer::GetConfiguration().FramesInFlight)
-		{
-			m_GPUFrameTimestep = ts;
-			m_GPUFrameCounter = 0;
-		}
-		m_GPUFrameCounter++;
+		onUpdateGPUFrame(ts);
 	}
 	
 	template <typename T>
@@ -466,33 +454,7 @@ namespace XYZ {
 			}
 		}
 		
-		auto particleGPUView = m_Registry.view<TransformComponent, ParticleComponentGPU>();
-		for (auto entity : particleGPUView)
-		{
-			auto& [transformComponent, particleComponent] = particleGPUView.get(entity);
-			if (particleComponent.EmittedParticles != 0)
-			{
-				sceneRenderer->SubmitMeshIndirect(
-					// Rendering data
-					particleComponent.Mesh,
-					particleComponent.RenderMaterial,
-					nullptr,
-					transformComponent->WorldTransform,
-					// Compute data
-					particleComponent.ComputeMaterial,
-					particleComponent.Buffer.GetData(),
-					particleComponent.EmittedParticles * particleComponent.System->GetStride(),
-					particleComponent.Buffer.GetMaxParticles() * sizeof(ParticleGPU),
-					particleComponent.ResultAllocation,
-					PushConstBuffer{
-						m_GPUFrameTimestep,
-						particleComponent.Speed,
-						particleComponent.EmittedParticles,
-						(int)particleComponent.Loop
-					}
-				);
-			}
-		}
+		submitParticleGPUView(sceneRenderer);
 		sceneRenderer->EndScene();
 	}
 
@@ -543,6 +505,30 @@ namespace XYZ {
 	SceneEntity Scene::GetSelectedEntity()
 	{
 		return { m_SelectedEntity, this };
+	}
+
+	void Scene::onUpdateGPUFrame(Timestep ts)
+	{
+		auto& particleStorage = m_Registry.storage<ParticleComponentGPU>();
+		if (m_GPUFrameCounter == Renderer::GetConfiguration().FramesInFlight)
+		{
+			m_GPUFrameTimestep = ts;
+			
+			for (auto& particleComponent : particleStorage)
+			{
+				if (particleComponent.EmittedParticles == particleComponent.Buffer.GetMaxParticles()
+				|| !particleComponent.Running)
+					continue;
+
+				const uint32_t bufferOffset = particleComponent.EmittedParticles * particleComponent.System->GetStride();
+				const uint32_t bufferSize = particleComponent.Buffer.GetBufferSize() - bufferOffset;
+				std::byte* particleBuffer = &particleComponent.Buffer.GetData()[bufferOffset];
+
+				particleComponent.EmittedParticles += particleComponent.System->Update(m_GPUFrameTimestep * m_GPUFrameCounter, particleBuffer, bufferSize);
+			}
+			m_GPUFrameCounter = 0;
+		}
+		m_GPUFrameCounter++;
 	}
 
 	void Scene::onScriptComponentConstruct(entt::registry& reg, entt::entity ent)
@@ -763,16 +749,13 @@ namespace XYZ {
 	void Scene::updateParticleGPUView(Timestep ts)
 	{
 		XYZ_PROFILE_FUNC("Scene::updateParticleGPUView");
-		auto &particleStorage = m_Registry.storage<ParticleComponentGPU>();
+		auto& particleStorage = m_Registry.storage<ParticleComponentGPU>();
 		for (auto& particleComponent : particleStorage)
 		{
-			if (particleComponent.EmittedParticles == particleComponent.Buffer.GetMaxParticles())
-			{
-				if (particleComponent.Loop)
-					particleComponent.EmittedParticles = 0;
-				else
-					continue;
-			}
+			if (particleComponent.EmittedParticles == particleComponent.Buffer.GetMaxParticles()
+			|| !particleComponent.Running)
+				continue;
+
 			const uint32_t bufferOffset = particleComponent.EmittedParticles * particleComponent.System->GetStride();
 			const uint32_t bufferSize = particleComponent.Buffer.GetBufferSize() - bufferOffset;
 			std::byte* particleBuffer = &particleComponent.Buffer.GetData()[bufferOffset];
@@ -934,8 +917,35 @@ namespace XYZ {
 		}
 	}
 
-	void Scene::submitParticleGPUView()
+	void Scene::submitParticleGPUView(Ref<SceneRenderer>& sceneRenderer)
 	{
+		auto particleGPUView = m_Registry.view<TransformComponent, ParticleComponentGPU>();
+		for (auto entity : particleGPUView)
+		{
+			auto& [transformComponent, particleComponent] = particleGPUView.get(entity);
+			if (particleComponent.EmittedParticles != 0)
+			{
+				sceneRenderer->SubmitMeshIndirect(
+					// Rendering data
+					particleComponent.Mesh,
+					particleComponent.RenderMaterial,
+					nullptr,
+					transformComponent->WorldTransform,
+					// Compute data
+					particleComponent.ComputeMaterial,
+					particleComponent.Buffer.GetData(),
+					particleComponent.EmittedParticles * particleComponent.System->GetStride(),
+					particleComponent.Buffer.GetMaxParticles() * sizeof(ParticleGPU),
+					particleComponent.ResultAllocation,
+					PushConstBuffer{
+						m_GPUFrameTimestep,
+						particleComponent.Speed,
+						particleComponent.Buffer.GetMaxParticles(),
+						(int)particleComponent.Running
+					}
+				);
+			}
+		}
 	}
 
 	void Scene::CreateParticleTest()
@@ -977,7 +987,7 @@ namespace XYZ {
 		m_IndirectCommandMaterial->Specialize("COLOR_OVER_LIFE", enabled);
 		m_IndirectCommandMaterial->Specialize("SCALE_OVER_LIFE", enabled);
 		m_IndirectCommandMaterial->Specialize("VELOCITY_OVER_LIFE", enabled);
-		//m_IndirectCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
+		m_IndirectCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
 
 
 

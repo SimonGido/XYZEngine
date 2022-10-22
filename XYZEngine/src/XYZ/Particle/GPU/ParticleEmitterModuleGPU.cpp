@@ -4,6 +4,7 @@
 #include <glm/common.hpp>
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace XYZ {
 	
@@ -69,9 +70,9 @@ namespace XYZ {
 			*startColor = glm::linearRand(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), glm::vec4(1.0f));
 			currOffset += sizeof(glm::vec4);
 
-			glm::vec4* startRotation = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
-			*startRotation = glm::linearRand(glm::vec4(-90.0f), glm::vec4(90.0f));
-			currOffset += sizeof(glm::vec4);
+			glm::quat* startRotation = reinterpret_cast<glm::quat*>(&buffer[currOffset]);
+			*startRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+			currOffset += sizeof(glm::quat);
 
 			float startscale = glm::linearRand(0.1f, 2.0f);
 			float endscale = glm::linearRand(0.1f, 2.0f);
@@ -89,9 +90,9 @@ namespace XYZ {
 			*endColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 			currOffset += sizeof(glm::vec4);
 
-			glm::vec4* endRotation   = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
-			*endRotation = glm::linearRand(glm::vec4(-90.0f), glm::vec4(90.0f));
-			currOffset += sizeof(glm::vec4);
+			glm::quat* endRotation   = reinterpret_cast<glm::quat*>(&buffer[currOffset]);
+			*endRotation = glm::quat(0.6151705, -0.1455344, 0.6151705, -0.4711159);
+			currOffset += sizeof(glm::quat);
 
 			glm::vec4* endScale      = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
 			*endScale = glm::vec4(endscale);

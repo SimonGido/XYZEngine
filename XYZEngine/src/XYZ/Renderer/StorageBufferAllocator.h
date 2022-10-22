@@ -7,12 +7,14 @@
 namespace XYZ {
 	
 	class StorageBufferAllocator;
-	class StorageBufferAllocation : public RefCount
+	class StorageBufferAllocation
 	{
 	public:
+		StorageBufferAllocation();
+
 		inline uint32_t GetSize() const { return m_Size; }
 		inline uint32_t GetOffset() const { return m_Offset; }
-	
+		inline bool     Valid() const { return m_Allocator.Raw(); }
 	private:
 		StorageBufferAllocation(const Ref<StorageBufferAllocator>& allocator, uint32_t size, uint32_t offset);
 
@@ -32,8 +34,8 @@ namespace XYZ {
 		StorageBufferAllocator(uint32_t size);
 		~StorageBufferAllocator();
 
-		void Allocate(uint32_t size, Ref<StorageBufferAllocation>& allocation);
-		bool TryAllocate(uint32_t size, Ref<StorageBufferAllocation>& allocation);
+		void Allocate(uint32_t size, StorageBufferAllocation& allocation);
+		bool TryAllocate(uint32_t size, StorageBufferAllocation& allocation);
 
 		uint32_t GetAllocatedSize() const;
 	private:

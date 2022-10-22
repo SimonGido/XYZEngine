@@ -101,6 +101,8 @@ namespace XYZ {
 
         void CreateParticleTest();
     private:
+        void onUpdateGPUFrame(Timestep ts);
+
         void onScriptComponentConstruct(entt::registry& reg, entt::entity ent);
         void onScriptComponentDestruct(entt::registry& reg, entt::entity ent);
 
@@ -121,7 +123,7 @@ namespace XYZ {
         void setupPhysics();
         void setupLightEnvironment();
 
-        void submitParticleGPUView();
+        void submitParticleGPUView(Ref<SceneRenderer>& sceneRenderer);
 
     private:
         PhysicsWorld2D      m_PhysicsWorld;
@@ -145,11 +147,12 @@ namespace XYZ {
 
         std::shared_mutex m_ScriptMutex;
 
-        float m_GPUFrameTimestep; // It can be updated only once per FramesInFlight
+        float    m_GPUFrameTimestep; // It can be updated only once per FramesInFlight
         uint32_t m_GPUFrameCounter;
         
         bool  m_UpdateAnimationAsync = false;
         bool  m_UpdateHierarchyAsync = false;
+
 
         friend SceneRenderer;
         friend class SceneIntersection;

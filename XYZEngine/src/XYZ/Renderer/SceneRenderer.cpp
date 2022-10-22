@@ -293,6 +293,31 @@ namespace XYZ {
 		}
 	}
 
+	void SceneRenderer::SubmitCompute(
+		const Ref<MaterialAsset>& materialCompute,
+		const void* computeData,
+		uint32_t computeDataSize,
+		uint32_t computeResultSize,
+		StorageBufferAllocation& allocation,
+		const PushConstBuffer& uniformComputeData
+	)
+	{
+		AssetHandle computeKey = materialCompute->GetHandle();
+		auto& computeCommand = m_Queue.ComputeCommands[computeKey];
+		computeCommand.MaterialCompute = materialCompute;
+
+		auto& command = computeCommand.ComputeCommands.emplace_back();
+		// Make sure that nobody overrides our result that we want to use
+		if (m_StorageBufferAllocator->TryAllocate(Math::RoundUp(computeResultSize, 16), allocation))
+			command.ResultStateAllocationChanged = true;
+
+		command.ResultStateAllocation = allocation;
+		command.ComputeData.resize(computeDataSize);
+		memcpy(command.ComputeData.data(), computeData, computeDataSize);
+
+		command.OverrideUniformData = uniformComputeData;
+	}
+
 	void SceneRenderer::SubmitMeshIndirect(
 		// Rendering data
 		const Ref<Mesh>& mesh,
@@ -305,16 +330,16 @@ namespace XYZ {
 		const void* computeData,
 		uint32_t computeDataSize,
 		uint32_t computeResultSize,
-		Ref<StorageBufferAllocation>& allocation,
+		StorageBufferAllocation& allocation,
 		const PushConstBuffer& uniformComputeData
 	)
 	{
 		// Compute command
 		AssetHandle computeKey = materialCompute->GetHandle();
-		auto& computeCommand = m_Queue.IndirectComputeCommands[computeKey];
+		auto& computeCommand = m_Queue.ComputeCommands[computeKey];
 		computeCommand.MaterialCompute = materialCompute;
 
-		auto& command = computeCommand.Commands.emplace_back();
+		auto& command = computeCommand.IndirectComputeCommands.emplace_back();
 		// Make sure that nobody overrides our result that we want to use
 		if (m_StorageBufferAllocator->TryAllocate(Math::RoundUp(computeResultSize, 16), allocation))
 			command.ResultStateAllocationChanged = true;
@@ -334,6 +359,7 @@ namespace XYZ {
 		renderCommand.Mesh = mesh;
 		renderCommand.ComputeDataSize = computeDataSize;
 		renderCommand.ResultStateAllocation = allocation;
+		renderCommand.Transform = transform;
 
 		if (overrideMaterial.Raw())
 		{

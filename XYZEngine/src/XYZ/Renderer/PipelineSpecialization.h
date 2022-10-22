@@ -30,7 +30,12 @@ namespace XYZ {
 		{
 			if (val.Name == name)
 			{
+				// Same value, do nothing
+				if (memcmp((T*)val.Data.data(), &value, sizeof(T)) == 0)
+					return;
+
 				memcpy(val.Data.data(), &value, sizeof(T));
+				m_Dirty = true;
 				return;
 			}
 		}

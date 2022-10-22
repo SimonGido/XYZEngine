@@ -77,6 +77,15 @@ namespace XYZ {
 		void SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial);
 		void SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 		
+		void SubmitCompute(
+			const Ref<MaterialAsset>& materialCompute,
+			const void* computeData,
+			uint32_t computeDataSize,
+			uint32_t computeResultSize,
+			StorageBufferAllocation& allocation,
+			const PushConstBuffer& uniformComputeData
+		);
+
 		void SubmitMeshIndirect(
 			// Rendering data
 			const Ref<Mesh>& mesh,
@@ -87,9 +96,9 @@ namespace XYZ {
 			// Compute data
 			const Ref<MaterialAsset>& materialCompute,
 			const void* computeData,
-			uint32_t computeDataSize,
-			uint32_t computeResultSize,
-			Ref<StorageBufferAllocation>& allocation,
+			uint32_t    computeDataSize,
+			uint32_t    computeResultSize,
+			StorageBufferAllocation& allocation,
 			const PushConstBuffer& uniformComputeData
 		);
 

@@ -6,6 +6,7 @@
 
 
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace XYZ {
 	
@@ -22,9 +23,9 @@ namespace XYZ {
 		// Current state of particle
 		glm::vec4  Position;
 		float	   LifeRemaining;
-		bool	   Initialized;
+
 	private:
-		Padding<8> Padding;
+		Padding<12> Padding;
 	};
 
 	struct ParticlePropertyGPU
@@ -32,13 +33,13 @@ namespace XYZ {
 		// Spawn state
 		glm::vec4 StartPosition;
 		glm::vec4 StartColor;
-		glm::vec4 StartRotation;
+		glm::quat StartRotation;
 		glm::vec4 StartScale;
 		glm::vec4 StartVelocity;
 	
 		// If module enabled, end state
 		glm::vec4 EndColor;
-		glm::vec4 EndRotation;
+		glm::quat EndRotation;
 		glm::vec4 EndScale;
 		glm::vec4 EndVelocity;
 

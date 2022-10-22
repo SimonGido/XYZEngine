@@ -48,7 +48,7 @@ namespace XYZ {
 		static constexpr uint32_t GetTransformBufferSize() { return sc_TransformBufferSize; }
 		static constexpr uint32_t GetTransformBufferCount() { return sc_TransformBufferSize / sizeof(GeometryRenderQueue::TransformData); }
 	private:
-		void submitIndirectComputeCommands(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer);
+		void submitComputeCommands(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer);
 		void submitIndirectCommands(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer);
 		void submitStaticMeshes(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer);
 		void submitAnimatedMeshes(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer);
@@ -62,8 +62,8 @@ namespace XYZ {
 		void postDepthPass(const Ref<RenderCommandBuffer>& commandBuffer);
 
 
+		void prepareComputeCommands(GeometryRenderQueue& queue, uint32_t& computeStateSize);
 		void prepareIndirectCommands(GeometryRenderQueue& queue, uint32_t& indirectCommandCount);
-		void prepareIndirectComputeCommands(GeometryRenderQueue& queue, uint32_t& computeStateSize);
 		void prepareStaticDrawCommands(GeometryRenderQueue& queue, size_t& overrideCount, uint32_t& transformsCount);
 		void prepareAnimatedDrawCommands(GeometryRenderQueue& queue, size_t& overrideCount, uint32_t& transformsCount, uint32_t& boneTransformCount);
 		void prepareInstancedDrawCommands(GeometryRenderQueue& queue, uint32_t& instanceOffset);
