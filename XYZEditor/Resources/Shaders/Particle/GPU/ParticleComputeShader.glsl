@@ -21,12 +21,6 @@ struct Particle
     vec4  TransformRow1;
     vec4  TransformRow2;
     vec4  Color;
-
-    // Current state of particle
-    vec4  Position;
-    float LifeRemaining;
-
-    vec3  Padding;
 };
 
 struct ParticleState
@@ -53,10 +47,12 @@ struct ParticleProperty
 	vec4 EndScale;
 	vec4 EndVelocity;
 
-
+  
+    vec4  Position;
 	float LifeTime;
-    
-	uint  Padding[3];
+    float LifeRemaining;
+
+	uint  Padding[2];
 };
 
 
@@ -65,7 +61,7 @@ layout(push_constant) uniform Uniform
     float Timestep;
     float Speed;
     uint  EmittedParticles;
-    bool  Running;
+    bool  Loop;
 
 } u_Uniforms;
 
@@ -92,12 +88,12 @@ layout (constant_id = 3) const bool ROTATION_OVER_LIFE = false;
 
 float LifeProgress(uint id)
 {
-    return 1.0 - (Particles[id].LifeRemaining / ParticleProperties[id].LifeTime);
+    return 1.0 - (ParticleProperties[id].LifeRemaining / ParticleProperties[id].LifeTime);
 }
 
 void UpdateRenderData(in ParticleState state, uint id, uint instanceIndex)
 {
-    mat4 transform = TranslationMatrix(Particles[id].Position.xyz, state.Scale)
+    mat4 transform = TranslationMatrix(ParticleProperties[id].Position.xyz, state.Scale)
                    * RotationMatrix(state.Rotation);
 
     Particles[instanceIndex].TransformRow0 = vec4(transform[0][0], transform[1][0], transform[2][0], transform[3][0]);
@@ -109,8 +105,8 @@ void UpdateRenderData(in ParticleState state, uint id, uint instanceIndex)
 
 void RespawnParticle(uint id)
 {
-    Particles[id].LifeRemaining = ParticleProperties[id].LifeTime;
-    Particles[id].Position = ParticleProperties[id].StartPosition;  
+    ParticleProperties[id].LifeRemaining = ParticleProperties[id].LifeTime;
+    ParticleProperties[id].Position = ParticleProperties[id].StartPosition;  
 }
 
 void UpdateParticle(uint id)
@@ -118,7 +114,7 @@ void UpdateParticle(uint id)
     float lifeProgress = LifeProgress(id);
  
     ParticleState state;
-    state.Alive = Particles[id].LifeRemaining > 0.0;
+    state.Alive = ParticleProperties[id].LifeRemaining > 0.0;
     // Particle is alive initialize it
     if (state.Alive)
     {       
@@ -144,13 +140,13 @@ void UpdateParticle(uint id)
             state.Rotation = mix(ParticleProperties[id].StartRotation, ParticleProperties[id].EndRotation, lifeProgress);   
         }
 
-        Particles[id].Position.xyz += state.Velocity * u_Uniforms.Timestep * u_Uniforms.Speed;
-        Particles[id].LifeRemaining -= u_Uniforms.Timestep;
+        ParticleProperties[id].Position.xyz += state.Velocity * u_Uniforms.Timestep * u_Uniforms.Speed;
+        ParticleProperties[id].LifeRemaining -= u_Uniforms.Timestep;
 
         uint instanceIndex = atomicAdd(Command.InstanceCount, 1);
         UpdateRenderData(state, id, instanceIndex);
     }
-    else if (u_Uniforms.Running)
+    else if (u_Uniforms.Loop)
     {
         RespawnParticle(id);
     }

@@ -34,15 +34,15 @@ namespace XYZ {
 						[&]() { UI::FloatControl("##Speed", "##SpeedDrag", component.Speed, 1.0f, 0.1f); }
 					);
 
-					UI::TableRow("Running",
-						[]() { ImGui::Text("Running"); },
-						[&]() { ImGui::Checkbox("##Running", &component.Running); }
+					UI::TableRow("Loop",
+						[]() { ImGui::Text("Loop"); },
+						[&]() { ImGui::Checkbox("##Loop", &component.Loop); }
 					);
 
 
 					UI::TableRow("EmittedParticles",
-						[&]() { ImGui::Text("Emitted Particles %u", component.EmittedParticles); },
-						[&]() { if (ImGui::Button("Reset")) { component.EmittedParticles = 0; }; }
+						[&]() { ImGui::Text("Emitted Particles %u", component.System->GetEmittedParticles()); },
+						[&]() {  }
 					);
 					ImGui::EndTable();
 				}

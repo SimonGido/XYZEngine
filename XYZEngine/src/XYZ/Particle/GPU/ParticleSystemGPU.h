@@ -19,13 +19,6 @@ namespace XYZ {
 		glm::vec4  TransformRow1;
 		glm::vec4  TransformRow2;
 		glm::vec4  Color;	
-
-		// Current state of particle
-		glm::vec4  Position;
-		float	   LifeRemaining;
-
-	private:
-		Padding<12> Padding;
 	};
 
 	struct ParticlePropertyGPU
@@ -43,28 +36,13 @@ namespace XYZ {
 		glm::vec4 EndScale;
 		glm::vec4 EndVelocity;
 
-
-		float	  LifeTime;
-		
+		glm::vec4  Position;
+		float	   LifeTime;
+		float      LifeReamining;
 	private:
-		Padding<12> Padding;
+		Padding<8> Padding;
 	};
 
-	class ParticleSystemGPU : public RefCount // TODO: asset
-	{
-	public:
-		ParticleSystemGPU(ParticleSystemLayout layout);
-
-		uint32_t Update(Timestep ts, std::byte* particleBuffer, uint32_t bufferSize);
-
-		const ParticleSystemLayout& GetLayout() const { return m_Layout; }
-		uint32_t GetStride() const { return m_Layout.GetStride(); }
-
-		std::vector<ParticleEmitterGPU> ParticleEmitters;
-
-	private:
-		ParticleSystemLayout m_Layout;
-	};
 
 	class ParticleBuffer
 	{
@@ -76,12 +54,38 @@ namespace XYZ {
 
 		std::byte* GetData() { return m_Data.data(); }
 		std::byte* GetData(uint32_t particleOffset);
-		
+
+		const std::byte* GetData() const { return m_Data.data(); }
+
 		uint32_t   GetStride()		 const { return m_Stride; }
-		uint32_t   GetMaxParticles() const { return m_Data.size() / m_Stride; }
+		uint32_t   GetMaxParticles() const { return GetBufferSize() / m_Stride; }
 		uint32_t   GetBufferSize()   const { return static_cast<uint32_t>(m_Data.size()); }
 	private:
 		std::vector<std::byte> m_Data;
 		uint32_t			   m_Stride = 0;
 	};
+
+	class ParticleSystemGPU : public RefCount // TODO: asset
+	{
+	public:
+		ParticleSystemGPU(ParticleSystemLayout layout, uint32_t maxParticles);
+
+		uint32_t Update(Timestep ts);
+
+		const ParticleSystemLayout& GetLayout()			const { return m_Layout; }
+		const ParticleBuffer&		GetParticleBuffer() const { return m_ParticleBuffer; }
+		
+		uint32_t GetStride()		   const { return m_Layout.GetStride(); }
+		uint32_t GetEmittedParticles() const { return m_EmittedParticles; }
+		uint32_t GetMaxParticles()	   const { return m_ParticleBuffer.GetMaxParticles(); }
+
+		std::vector<ParticleEmitterGPU> ParticleEmitters;
+		
+	private:
+		ParticleSystemLayout m_Layout;
+		ParticleBuffer		 m_ParticleBuffer;
+		uint32_t			 m_EmittedParticles;
+	};
+
+	
 }

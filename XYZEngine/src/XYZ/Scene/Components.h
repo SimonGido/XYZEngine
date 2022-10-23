@@ -217,10 +217,8 @@ namespace XYZ {
 		Ref<StorageBufferAllocation> PropertiesAllocation;
 		Ref<StorageBufferAllocation> UpdateAllocation;
 
-		ParticleBuffer			Buffer;
-		uint32_t				EmittedParticles = 0;
 		float				    Speed		 = 1.0f;
-		bool				    Running		 = true;
+		bool				    Loop		 = true;
 	};
 
 	struct PointLightComponent2D 

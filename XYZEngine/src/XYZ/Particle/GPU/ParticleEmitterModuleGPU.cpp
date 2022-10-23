@@ -50,7 +50,9 @@ namespace XYZ {
 		{
 			float* elem = reinterpret_cast<float*>(&buffer[offset]);
 			*elem = glm::linearRand(MinimumLife, MaximumLife);
-			
+			float* lifeRemaining = reinterpret_cast<float*>(&buffer[offset + 4]);
+			*lifeRemaining = *elem;
+
 			offset += m_Stride;
 		}
 	}
@@ -65,7 +67,7 @@ namespace XYZ {
 		for (uint32_t i = 0; i < count; ++i)
 		{
 			uint32_t currOffset = offset;
-			glm::vec4* startColor    = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
+			glm::vec4* startColor = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
 			*startColor = glm::linearRand(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), glm::vec4(1.0f));
 			currOffset += sizeof(glm::vec4);
 
@@ -99,6 +101,10 @@ namespace XYZ {
 
 			glm::vec4* endVelocity   = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
 			*endVelocity = glm::linearRand(glm::vec4(-0.5f), glm::vec4(0.5f));
+			currOffset += sizeof(glm::vec4);
+
+			glm::vec4* position = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
+			*position = *reinterpret_cast<glm::vec4*>(&buffer[offset - 16]);
 			currOffset += sizeof(glm::vec4);
 
 			offset += m_Stride;

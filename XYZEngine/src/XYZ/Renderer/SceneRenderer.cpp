@@ -303,7 +303,7 @@ namespace XYZ {
 
 	void SceneRenderer::SubmitComputeData(const void* data, uint32_t size, uint32_t offset, const Ref<StorageBufferAllocation>& allocation)
 	{
-		XYZ_ASSERT(offset + size < allocation->GetSize(), "");
+		XYZ_ASSERT(offset + size <= allocation->GetSize(), "");
 		m_StorageBufferSet->UpdateEachFrame(data, size, allocation->GetOffset() + offset, allocation->GetBinding(), allocation->GetSet());
 	}
 	

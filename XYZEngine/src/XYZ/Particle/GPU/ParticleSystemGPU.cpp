@@ -31,20 +31,26 @@ namespace XYZ {
 		}
 	}
 	*/
-	ParticleSystemGPU::ParticleSystemGPU(ParticleSystemLayout layout)
+	ParticleSystemGPU::ParticleSystemGPU(ParticleSystemLayout layout, uint32_t maxParticles)
 		:
-		m_Layout(layout)
+		m_Layout(layout),
+		m_EmittedParticles(0)
 	{
+		m_ParticleBuffer.SetMaxParticles(maxParticles, m_Layout.GetStride());
 	}
-	uint32_t ParticleSystemGPU::Update(Timestep ts, std::byte* particleBuffer, uint32_t bufferSize)
+	uint32_t ParticleSystemGPU::Update(Timestep ts)
 	{
-		uint32_t emissionCount = 0;
+		const uint32_t bufferOffset = m_EmittedParticles * GetStride();
+		const uint32_t bufferSize = m_ParticleBuffer.GetBufferSize() - bufferOffset;
+		std::byte* particleBuffer = &m_ParticleBuffer.GetData()[bufferOffset];
+
+		uint32_t emitted = 0;
 		for (auto& emitter : ParticleEmitters)
 		{
-			emissionCount += emitter.Emit(ts, particleBuffer, bufferSize);
+			emitted += emitter.Emit(ts, particleBuffer, bufferSize);
 		}
-
-		return emissionCount;
+		m_EmittedParticles += emitted;
+		return emitted;
 	}
 	
 	ParticleBuffer::ParticleBuffer(uint32_t maxParticles, uint32_t stride)

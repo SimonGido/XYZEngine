@@ -15,12 +15,6 @@ struct Particle
     vec4  TransformRow1;
     vec4  TransformRow2;
     vec4  Color;
-	
-	 // Current state of particle
-    vec4  Position;
-	float LifeRemaining;
-
-	vec3  Padding;
 };
 
 layout (std430, binding = 6) buffer buffer_Particles

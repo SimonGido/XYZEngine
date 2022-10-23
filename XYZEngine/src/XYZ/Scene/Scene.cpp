@@ -894,11 +894,13 @@ namespace XYZ {
 			{"EndRotation",   ParticleVariableType::Vec4},
 			{"EndScale",	  ParticleVariableType::Vec4},
 			{"EndVelocity",   ParticleVariableType::Vec4},
+			{"Position",	  ParticleVariableType::Vec4},
 			{"LifeTime",	  ParticleVariableType::Float},
-			{"Padding",		  ParticleVariableType::Vec3}
+			{"LifeRemaining", ParticleVariableType::Float},
+			{"Padding",		  ParticleVariableType::Vec2}
 		});
 
-		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(layout);
+		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(layout, 100000);
 
 		ParticleEmitterGPU emitter(layout.GetStride());
 		emitter.EmitterModules.push_back(Ref<BoxParticleEmitterModuleGPU>::Create(layout.GetStride(), layout.GetVariableOffset("StartPosition")));
@@ -932,8 +934,6 @@ namespace XYZ {
 
 		particleComponent.Mesh = m_ParticleCubeMesh;
 		particleComponent.System = m_ParticleSystemGPU;
-
-		particleComponent.Buffer.SetMaxParticles(100000, layout.GetStride());
 	}
 
 }

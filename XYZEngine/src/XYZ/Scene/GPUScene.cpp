@@ -36,33 +36,26 @@ namespace XYZ {
 
 		if (m_FrameCounter == 0)
 		{
+			// This should be done per system, not per component
 			for (auto& particleComponent : particleGPUStorage)
 			{
-				sceneRenderer->CreateComputeAllocation(particleComponent.Buffer.GetMaxParticles() * sizeof(ParticleGPU), 0, particleComponent.UpdateAllocation);
-				sceneRenderer->CreateComputeAllocation(particleComponent.Buffer.GetMaxParticles() * sizeof(ParticlePropertyGPU), 1, particleComponent.PropertiesAllocation);
+				// These allocations should be owned by system, not by component
+				sceneRenderer->CreateComputeAllocation(particleComponent.System->GetMaxParticles() * sizeof(ParticleGPU), 0, particleComponent.UpdateAllocation);
+				sceneRenderer->CreateComputeAllocation(particleComponent.System->GetMaxParticles() * sizeof(ParticlePropertyGPU), 1, particleComponent.PropertiesAllocation);
 
-				if (particleComponent.EmittedParticles == particleComponent.Buffer.GetMaxParticles())
-					continue;
-
-				const uint32_t bufferOffset = particleComponent.EmittedParticles * particleComponent.System->GetStride();
-				const uint32_t bufferSize = particleComponent.Buffer.GetBufferSize() - bufferOffset;
-				std::byte* particleBuffer = &particleComponent.Buffer.GetData()[bufferOffset];
-
-				uint32_t emitted = particleComponent.System->Update(
-					m_FrameTimestep * Renderer::GetConfiguration().FramesInFlight, 
-					particleBuffer, 
-					bufferSize
-				);
+				uint32_t emitted = particleComponent.System->Update(m_FrameTimestep * Renderer::GetConfiguration().FramesInFlight);
+				uint32_t offset = (particleComponent.System->GetEmittedParticles() - emitted) * particleComponent.System->GetStride();
 
 				if (emitted != 0)
 				{
 					sceneRenderer->SubmitComputeData(
-						particleBuffer,
+						&particleComponent.System->GetParticleBuffer().GetData()[offset],
 						emitted * particleComponent.System->GetStride(),
-						particleComponent.EmittedParticles * particleComponent.System->GetStride(),
+						particleComponent.System->GetEmittedParticles() * particleComponent.System->GetStride(),
 						particleComponent.PropertiesAllocation
 					);
-					particleComponent.EmittedParticles += emitted;
+
+					// TODO: submit compute command with update, it should not be submitted byt submit mesh indirect
 				}
 			}
 		}
@@ -75,8 +68,9 @@ namespace XYZ {
 		for (auto entity : particleGPUView)
 		{
 			auto& [transformComponent, particleComponent] = particleGPUView.get(entity);
-			if (particleComponent.EmittedParticles != 0)
+			if (particleComponent.System->GetEmittedParticles() != 0)
 			{
+				// TODO: submit mesh indirect should not call compute command, it should only read data
 				sceneRenderer->SubmitMeshIndirect(
 					// Rendering data
 					particleComponent.Mesh,
@@ -91,8 +85,8 @@ namespace XYZ {
 					PushConstBuffer{
 						m_FrameTimestep,
 						particleComponent.Speed,
-						particleComponent.EmittedParticles,
-						(int)particleComponent.Running
+						particleComponent.System->GetEmittedParticles(),
+						(uint32_t)particleComponent.Loop
 					}
 				);
 			}
