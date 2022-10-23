@@ -116,9 +116,7 @@ namespace XYZ {
 		m_ViewportWidth(0),
 		m_ViewportHeight(0),
 		m_CameraEntity(entt::null),
-		m_SelectedEntity(entt::null),
-		m_GPUFrameTimestep(0.0f),
-		m_GPUFrameCounter(0)
+		m_SelectedEntity(entt::null)
 
 	{
 		m_SceneEntity = m_Registry.create();
@@ -293,7 +291,7 @@ namespace XYZ {
 
 		updateScripts(ts);
 		updateHierarchy();
-		onUpdateGPUFrame(ts);
+		m_GPUScene.OnUpdate(ts);
 	}
 
 	void Scene::OnRender(Ref<SceneRenderer> sceneRenderer)
@@ -359,10 +357,8 @@ namespace XYZ {
 				renderer.OverrideMaterial
 			);
 		}
-		submitParticleGPUView(sceneRenderer);
+		m_GPUScene.OnRender(this, sceneRenderer);
 		sceneRenderer->EndScene();
-
-		m_GPUFrameCounter++;
 	}
 
 	void Scene::OnUpdateEditor(Timestep ts)
@@ -381,7 +377,7 @@ namespace XYZ {
 			updateAnimationView(ts);		
 
 		updateParticleView(ts);
-		onUpdateGPUFrame(ts);
+		m_GPUScene.OnUpdate(ts);
 	}
 	
 	template <typename T>
@@ -462,10 +458,8 @@ namespace XYZ {
 			}
 		}
 		
-		submitParticleGPUView(sceneRenderer);
+		m_GPUScene.OnRender(this, sceneRenderer);
 		sceneRenderer->EndScene();
-
-		m_GPUFrameCounter++;
 	}
 
 
@@ -517,17 +511,6 @@ namespace XYZ {
 		return { m_SelectedEntity, this };
 	}
 
-	void Scene::onUpdateGPUFrame(Timestep ts)
-	{
-		auto& particleStorage = m_Registry.storage<ParticleComponentGPU>();
-		if (m_GPUFrameCounter == Renderer::GetConfiguration().FramesInFlight)
-		{
-			m_GPUFrameTimestep = ts;
-			m_GPUFrameCounter = 0;
-		}
-		
-	}
-
 	void Scene::onScriptComponentConstruct(entt::registry& reg, entt::entity ent)
 	{
 		std::unique_lock lock(m_ScriptMutex);
@@ -539,6 +522,8 @@ namespace XYZ {
 		std::unique_lock lock(m_ScriptMutex);
 		ScriptEngine::DestroyScriptEntityInstance({ ent, this });
 	}
+
+
 
 	void Scene::updateScripts(Timestep ts)
 	{
@@ -894,123 +879,38 @@ namespace XYZ {
 		}
 	}
 
-	void Scene::submitParticleGPUView(Ref<SceneRenderer>& sceneRenderer)
-	{
-		auto particleGPUView = m_Registry.view<TransformComponent, ParticleComponentGPU>();
-		for (auto entity : particleGPUView)
-		{
-			auto& [transformComponent, particleComponent] = particleGPUView.get(entity);
-			
-
-			Ref<StorageBufferAllocation> alloc;
-			sceneRenderer->CreateComputeAllocation(20, 0, alloc);
-
-			if (!particleComponent.Initialized)
-			{			
-				sceneRenderer->CreateComputeAllocation(particleComponent.SpawnBuffer.size(), 0, particleComponent.SpawnAllocation);
-				sceneRenderer->CreateComputeAllocation(particleComponent.MaxParticles * sizeof(ParticlePropertyGPU), 1, particleComponent.PropertiesAllocation);
-
-				sceneRenderer->SubmitCompute(
-					particleComponent.SpawnComputeMaterial,
-					particleComponent.SpawnAllocation,
-					particleComponent.PropertiesAllocation,
-					particleComponent.SpawnBuffer.data(),
-					particleComponent.SpawnBuffer.size(),
-					{}
-				);
-				particleComponent.Initialized = (m_GPUFrameCounter == Renderer::GetConfiguration().FramesInFlight - 1);
-			}
-			else
-			{
-				sceneRenderer->CreateComputeAllocation(particleComponent.MaxParticles * sizeof(ParticleGPU), 0, particleComponent.ResultAllocation);
-
-				sceneRenderer->SubmitMeshIndirect(
-					// Rendering data
-					particleComponent.Mesh,
-					particleComponent.RenderMaterial,
-					nullptr,
-					transformComponent->WorldTransform,
-					// Compute data
-					particleComponent.UpdateComputeMaterial,
-					particleComponent.PropertiesAllocation,
-					particleComponent.ResultAllocation,
-				
-					PushConstBuffer{
-						m_GPUFrameTimestep,
-						particleComponent.Speed,
-						particleComponent.MaxParticles,
-						(int)particleComponent.Running
-					}
-				);
-			}
-		}
-	}
+	
 
 	void Scene::CreateParticleTest()
 	{
-		std::vector<std::byte> spawnBuffer(sizeof(ParticleSpawnData));
-		ParticleSpawnData* spawnData = reinterpret_cast<ParticleSpawnData*>(spawnBuffer.data());
-		spawnData->StartPositionMin = glm::vec4(-5.0f);
-		spawnData->StartPositionMax = glm::vec4(5.0f);
-		
-		spawnData->StartColorMin = glm::vec4(0.1f, 0.1f, 0.1f, 1.0f);
-		spawnData->StartColorMax = glm::vec4(0.8f, 0.4f, 0.9f, 1.0f);
+		// NOTE: this can be generate from shader
+		ParticleSystemLayout layout({
+			{"StartPosition", ParticleVariableType::Vec4},
+			{"StartColor",	  ParticleVariableType::Vec4},
+			{"StartRotation", ParticleVariableType::Vec4},
+			{"StartScale",	  ParticleVariableType::Vec4},
+			{"StartVelocity", ParticleVariableType::Vec4},
+			{"EndColor",	  ParticleVariableType::Vec4},
+			{"EndRotation",   ParticleVariableType::Vec4},
+			{"EndScale",	  ParticleVariableType::Vec4},
+			{"EndVelocity",   ParticleVariableType::Vec4},
+			{"LifeTime",	  ParticleVariableType::Float},
+			{"Padding",		  ParticleVariableType::Vec3}
+		});
 
-		spawnData->StartRotationMin = glm::vec4(1.0f, 0.0f, 0.0f, 0.0f);
-		spawnData->StartRotationMax = glm::vec4(0.6151705, -0.1455344, 0.6151705, -0.4711159);
+		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(layout);
 
-		spawnData->StartScaleMin = glm::vec4(0.1f);
-		spawnData->StartScaleMax = glm::vec4(2.0f);
+		ParticleEmitterGPU emitter(layout.GetStride());
+		emitter.EmitterModules.push_back(Ref<BoxParticleEmitterModuleGPU>::Create(layout.GetStride(), layout.GetVariableOffset("StartPosition")));
+		emitter.EmitterModules.push_back(Ref<SpawnParticleEmitterModuleGPU>::Create(layout.GetStride(), layout.GetVariableOffset("LifeTime")));
+		emitter.EmitterModules.push_back(Ref<TestParticleEmitterModuleGPU>::Create(layout.GetStride(), layout.GetVariableOffset("StartColor")));
+		m_ParticleSystemGPU->ParticleEmitters.push_back(emitter);
 
-		spawnData->StartVelocityMin = glm::vec4(-8.0f);
-		spawnData->StartVelocityMax = glm::vec4( 8.0f);
-
-		spawnData->LifeTimeMin = 1.0f;
-		spawnData->LifeTimeMax = 5.0f;
-
-
-
-
-		spawnData->RandomValuePosition = glm::vec4(
-			RandomNumber(0.0f, 1.0f),
-			RandomNumber(0.0f, 1.0f),
-			RandomNumber(0.0f, 1.0f),
-			RandomNumber(0.0f, 1.0f)
-		);
-
-		spawnData->RandomValueColor = glm::vec4(
-			RandomNumber(0.0f, 1.0f),
-			RandomNumber(0.0f, 1.0f),
-			RandomNumber(0.0f, 1.0f),
-			1.0f
-		);
-
-		spawnData->RandomValueRotation = glm::vec4(
-			RandomNumber(0.0f, 1.0f),
-			RandomNumber(0.0f, 1.0f),
-			RandomNumber(0.0f, 1.0f),
-			RandomNumber(0.0f, 1.0f)
-		);
-
-		spawnData->RandomValueScale = glm::vec4(RandomNumber(0.0f, 1.0f));
-
-		spawnData->RandomValueVelocity = glm::vec4(
-			RandomNumber(0.0f, 1.0f),
-			RandomNumber(0.0f, 1.0f),
-			RandomNumber(0.0f, 1.0f),
-			RandomNumber(0.0f, 1.0f)
-		);
-
-		spawnData->RandomPositionRatio = RandomNumber(0.0f, 1.0f);
-		spawnData->RandomColorRatio = RandomNumber(0.0f, 1.0f);
-		spawnData->RandomScaleRatio = RandomNumber(0.0f, 1.0f);
-		spawnData->RandomVelocityRatio = RandomNumber(0.0f, 1.0f);
 
 		m_ParticleCubeMesh = MeshFactory::CreateBox(glm::vec3(1.0f));
 		
 
 		m_UpdateCommandMaterial = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleComputeShader.glsl")));
-		m_SpawnCommandMaterial = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleInitializeComputeShader.glsl")));
 		m_ParticleMaterialGPU = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleShaderGPU.glsl")));
 		m_ParticleMaterialInstanceGPU = m_ParticleMaterialGPU->GetMaterialInstance();
 
@@ -1018,21 +918,22 @@ namespace XYZ {
 		m_ParticleMaterialGPU->SetTexture("u_Texture", whiteTexture);
 
 		int enabled = 1;
-		//m_UpdateCommandMaterial->Specialize("COLOR_OVER_LIFE", enabled);
-		//m_UpdateCommandMaterial->Specialize("SCALE_OVER_LIFE", enabled);
-		//m_UpdateCommandMaterial->Specialize("VELOCITY_OVER_LIFE", enabled);
-		//m_UpdateCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
+		m_UpdateCommandMaterial->Specialize("COLOR_OVER_LIFE", enabled);
+		m_UpdateCommandMaterial->Specialize("SCALE_OVER_LIFE", enabled);
+		m_UpdateCommandMaterial->Specialize("VELOCITY_OVER_LIFE", enabled);
+		m_UpdateCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
 
 
 		SceneEntity entity = CreateEntity("Particle GPU Test");
 		auto& particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();
 	
 		particleComponent.UpdateComputeMaterial = m_UpdateCommandMaterial;
-		particleComponent.SpawnComputeMaterial = m_SpawnCommandMaterial;
 		particleComponent.RenderMaterial = m_ParticleMaterialGPU;
 
 		particleComponent.Mesh = m_ParticleCubeMesh;
-		particleComponent.SpawnBuffer = std::move(spawnBuffer);
+		particleComponent.System = m_ParticleSystemGPU;
+
+		particleComponent.Buffer.SetMaxParticles(100000, layout.GetStride());
 	}
 
 }

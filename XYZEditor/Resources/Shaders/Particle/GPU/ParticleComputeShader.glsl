@@ -64,7 +64,7 @@ layout(push_constant) uniform Uniform
 { 
     float Timestep;
     float Speed;
-    uint  MaxParticles;
+    uint  EmittedParticles;
     bool  Running;
 
 } u_Uniforms;
@@ -159,7 +159,7 @@ void UpdateParticle(uint id)
 
 bool ValidParticle(uint id)
 {
-    if (id >= u_Uniforms.MaxParticles)
+    if (id >= u_Uniforms.EmittedParticles)
 		return false; 
     return true;
 }

@@ -40,10 +40,10 @@ namespace XYZ {
 					);
 
 
-					//UI::TableRow("EmittedParticles",
-					//	[&]() { ImGui::Text("Emitted Particles %u", component.EmittedParticles); },
-					//	[&]() { if (ImGui::Button("Reset")) { component.EmittedParticles = 0; }; }
-					//);
+					UI::TableRow("EmittedParticles",
+						[&]() { ImGui::Text("Emitted Particles %u", component.EmittedParticles); },
+						[&]() { if (ImGui::Button("Reset")) { component.EmittedParticles = 0; }; }
+					);
 					ImGui::EndTable();
 				}
 				});

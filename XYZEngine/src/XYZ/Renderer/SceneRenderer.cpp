@@ -294,16 +294,18 @@ namespace XYZ {
 		}
 	}
 
-	void SceneRenderer::CreateComputeAllocation(uint32_t size, uint32_t index, Ref<StorageBufferAllocation>& allocation)
+	bool SceneRenderer::CreateComputeAllocation(uint32_t size, uint32_t index, Ref<StorageBufferAllocation>& allocation)
 	{
 		XYZ_ASSERT(index <= SSBOComputeData::Count, "");
 	
-		if (allocation.Raw())
-			allocation->ReturnAllocation();
-
-		m_ComputeDataAllocator[index]->Allocate(Math::RoundUp(size, 16), allocation);
+		return m_ComputeDataAllocator[index]->Allocate(Math::RoundUp(size, 16), allocation);
 	}
 
+	void SceneRenderer::SubmitComputeData(const void* data, uint32_t size, uint32_t offset, const Ref<StorageBufferAllocation>& allocation)
+	{
+		XYZ_ASSERT(offset + size < allocation->GetSize(), "");
+		m_StorageBufferSet->UpdateEachFrame(data, size, allocation->GetOffset() + offset, allocation->GetBinding(), allocation->GetSet());
+	}
 	
 
 

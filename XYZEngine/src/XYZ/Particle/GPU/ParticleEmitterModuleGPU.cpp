@@ -50,8 +50,7 @@ namespace XYZ {
 		{
 			float* elem = reinterpret_cast<float*>(&buffer[offset]);
 			*elem = glm::linearRand(MinimumLife, MaximumLife);
-			float* lifeRemaining = reinterpret_cast<float*>(&buffer[offset + 4]);
-			*lifeRemaining = *elem;
+			
 			offset += m_Stride;
 		}
 	}
