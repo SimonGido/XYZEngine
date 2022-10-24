@@ -211,14 +211,7 @@ namespace XYZ {
 		Ref<MaterialAsset>	    RenderMaterial;
 		Ref<MaterialInstance>   OverrideMaterial;
 
-		Ref<MaterialAsset>		UpdateComputeMaterial;
 		Ref<ParticleSystemGPU>  System;
-
-		Ref<StorageBufferAllocation> PropertiesAllocation;
-		Ref<StorageBufferAllocation> UpdateAllocation;
-
-		float				    Speed		 = 1.0f;
-		bool				    Loop		 = true;
 	};
 
 	struct PointLightComponent2D 

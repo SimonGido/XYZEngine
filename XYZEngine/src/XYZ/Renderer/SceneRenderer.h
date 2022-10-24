@@ -55,6 +55,13 @@ namespace XYZ {
 		bool SwapChainTarget = false;
 	};
 
+	struct ComputeData
+	{
+		Ref<StorageBufferAllocation> Allocation;
+		std::byte* Data = nullptr;
+		uint32_t   DataSize = 0;
+	};
+
 	class SceneRenderer : public RefCount
 	{
 	public:
@@ -80,29 +87,25 @@ namespace XYZ {
 		// Compute stuff
 		bool CreateComputeAllocation(uint32_t size, uint32_t index, Ref<StorageBufferAllocation>& allocation);
 
-		void SubmitComputeData(const void* data, uint32_t size, uint32_t offset, const Ref<StorageBufferAllocation>& allocation);
+		bool AllocateIndirectCommand(uint32_t count, Ref<StorageBufferAllocation>& allocation);
+
+		void SubmitComputeData(const void* data, uint32_t size, uint32_t offset, const Ref<StorageBufferAllocation>& allocation, bool allFrames = false);
+
 
 		void SubmitCompute(
 			const Ref<MaterialAsset>& materialCompute,
-			const Ref<StorageBufferAllocation>& computeStateAllocation,
-			const Ref<StorageBufferAllocation>& computeResultAllocation,
-			const void* computeData, uint32_t computeDataSize, 
+			const ComputeData* computeData, uint32_t count,
 			const PushConstBuffer& uniformComputeData
 		);
 
 
 		void SubmitMeshIndirect(
-			// Rendering data
 			const Ref<Mesh>&			 mesh,
 			const Ref<MaterialAsset>&	 material,
 			const Ref<MaterialInstance>& overrideMaterial,
 			const glm::mat4&			 transform,
-
-			// Compute data
-			const Ref<MaterialAsset>&			materialCompute,
-			const Ref<StorageBufferAllocation>& computeStateAllocation,
-			const Ref<StorageBufferAllocation>&	computeResultAllocation,
-			const PushConstBuffer&				uniformComputeData
+			const Ref<StorageBufferAllocation>&	computeReadAllocation,
+			const Ref<StorageBufferAllocation>& indirectCommandAllocation
 		);
 
 		void OnImGuiRender();
@@ -135,8 +138,6 @@ namespace XYZ {
 		UBRendererData   m_RendererDataUB;
 		
 		SSBOBoneTransformData	   m_BoneTransformSSBO;
-		SSBOIndirectData		   m_IndirectBufferSSBO;
-		SSBOComputeData			   m_ComputeDataSSBO;
 		std::vector<TransformData> m_TransformData;
 		std::vector<std::byte>	   m_InstanceData;
 
@@ -165,7 +166,8 @@ namespace XYZ {
 		Ref<UniformBufferSet>       m_UniformBufferSet;
 		Ref<StorageBufferSet>	    m_StorageBufferSet;
 
-		Ref<StorageBufferAllocator> m_ComputeDataAllocator[SSBOComputeData::Count];
+		std::array<Ref<StorageBufferAllocator>, SSBOComputeData::Count> m_ComputeDataAllocator;
+		Ref<StorageBufferAllocator> m_IndirectCommandAllocator;
 
 		SceneRendererCamera		   m_SceneCamera;
 		SceneRendererOptions	   m_Options;
@@ -199,9 +201,6 @@ namespace XYZ {
 			
 			uint32_t TransformInstanceCount = 0;
 			uint32_t InstanceDataSize = 0;
-
-			uint32_t IndirectCommandCount = 0;
-			uint32_t ComputeStateSize = 0;
 		};
 		RenderStatistics m_RenderStatistics;
 		GeometryPassStatistics m_GeometryPassStatistics;

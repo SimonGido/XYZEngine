@@ -50,6 +50,7 @@ namespace XYZ {
 		{
 			float* elem = reinterpret_cast<float*>(&buffer[offset]);
 			*elem = glm::linearRand(MinimumLife, MaximumLife);
+			
 			float* lifeRemaining = reinterpret_cast<float*>(&buffer[offset + 4]);
 			*lifeRemaining = *elem;
 
@@ -88,7 +89,6 @@ namespace XYZ {
 
 			glm::vec4* endColor      = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
 			*endColor = glm::linearRand(glm::vec4(0.3f, 0.3f, 0.3f, 1.0f), glm::vec4(1.0f));
-			*endColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 			currOffset += sizeof(glm::vec4);
 
 			glm::quat* endRotation   = reinterpret_cast<glm::quat*>(&buffer[currOffset]);

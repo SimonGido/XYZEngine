@@ -16,5 +16,6 @@ namespace XYZ {
 		static std::string UniqueFilePath(const std::string& dir, const std::string& fileName, const char* extension);
 		
 		static std::string ReadFile(const std::string_view filepath);
+		static void WriteFile(const std::string_view filepath, const std::string_view content);
 	};
 }

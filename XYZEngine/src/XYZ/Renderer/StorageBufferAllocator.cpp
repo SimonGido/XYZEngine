@@ -6,6 +6,17 @@
 
 namespace XYZ {
 
+	StorageBufferAllocation::StorageBufferAllocation()
+		:
+		m_Allocator(nullptr),
+		m_Size(0),
+		m_Offset(0),
+		m_StorageBufferBinding(0),
+		m_StorageBufferSet(0),
+		m_Valid(false)
+	{
+	}
+
 	StorageBufferAllocation::StorageBufferAllocation(
 		const Ref<StorageBufferAllocator>& allocator,
 		uint32_t size,
@@ -28,9 +39,21 @@ namespace XYZ {
 		returnAllocation();
 	}
 
+	Ref<StorageBufferAllocation> StorageBufferAllocation::CreateSubAllocation(uint32_t offset, uint32_t size)
+	{
+		XYZ_ASSERT(offset + size <= m_Size, "");
+
+		StorageBufferAllocation* subAllocation = new StorageBufferAllocation(
+			m_Allocator, size, m_Offset + offset, m_StorageBufferBinding, m_StorageBufferSet
+		);
+
+		subAllocation->m_Owner = this;
+		return Ref<StorageBufferAllocation>(subAllocation);
+	}
+
 	void StorageBufferAllocation::returnAllocation()
 	{
-		if (m_Valid)
+		if (m_Valid && !m_Owner.Raw())
 		{
 			m_Allocator->returnAllocation(m_Size, m_Offset);
 			m_Valid = false;
@@ -56,22 +79,23 @@ namespace XYZ {
 	bool StorageBufferAllocator::Allocate(uint32_t size, Ref<StorageBufferAllocation>& allocation)
 	{
 		XYZ_PROFILE_FUNC("StorageBufferAllocator::Allocate");
-		bool allocatedNew = false;
 		// Allocation is not valid, create new
 		if (!allocation.Raw())
 		{
 			allocation = createNewAllocation(size);
-			allocatedNew = true;
+			m_AllocatedSize += size;
+			m_UnusedSpace = m_Next - m_AllocatedSize;
+			return true;
 		}
 		else if (reallocationRequired(size, allocation))
 		{		
 			updateAllocation(size, allocation);
-			allocatedNew = true;
+			m_AllocatedSize += size;
+			m_UnusedSpace = m_Next - m_AllocatedSize;
+			return true;
 		}
 			
-		m_AllocatedSize += size;
-		m_UnusedSpace = m_Next - m_AllocatedSize;
-		return allocatedNew;
+		return false;
 	}
 
 	uint32_t StorageBufferAllocator::GetAllocatedSize() const

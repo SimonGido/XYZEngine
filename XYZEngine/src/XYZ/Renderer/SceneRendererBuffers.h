@@ -57,8 +57,7 @@ namespace XYZ {
 	struct SSBOIndirectData
 	{
 		static constexpr uint32_t MaxCommands = 1024;
-		
-		IndirectIndexedDrawCommand Data[MaxCommands];
+		static constexpr uint32_t MaxSize = MaxCommands * sizeof(IndirectIndexedDrawCommand);
 
 		static constexpr uint32_t Binding = 5;
 		static constexpr uint32_t Set = 0;
@@ -66,11 +65,13 @@ namespace XYZ {
 
 	struct SSBOComputeData
 	{
-		static constexpr uint32_t MaxSize = 30 * 1024 * 1024;
+		static constexpr uint32_t MaxSize = 100 * 1024 * 1024;
 		static constexpr uint32_t Count = 2;
 
 
 		static constexpr uint32_t Binding[Count] = { 6, 7 };
 		static constexpr uint32_t Set = 0;
 	};
+
+
 }

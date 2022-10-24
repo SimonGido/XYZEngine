@@ -2,7 +2,6 @@
 #version 460
 
 #include "Resources/Shaders/Includes/Math.glsl"
-#include "Resources/Shaders/Includes/Random.glsl"
 
 struct DrawCommand 
 {
@@ -11,6 +10,8 @@ struct DrawCommand
 	uint FirstIndex;    
 	uint BaseVertex;    
 	uint BaseInstance;  
+
+    uint Padding[3];
 };
 
 
@@ -58,6 +59,7 @@ struct ParticleProperty
 
 layout(push_constant) uniform Uniform
 { 
+    uint  CommandCount;
     float Timestep;
     float Speed;
     uint  EmittedParticles;
@@ -68,7 +70,7 @@ layout(push_constant) uniform Uniform
 
 layout(std430, binding = 5) buffer buffer_DrawCommand // indirect
 {
-	DrawCommand Command;
+	DrawCommand Command[];
 };
 
 layout (std430, binding = 6) buffer buffer_Particles
@@ -85,6 +87,7 @@ layout (constant_id = 0) const bool COLOR_OVER_LIFE = false;
 layout (constant_id = 1) const bool SCALE_OVER_LIFE = false;
 layout (constant_id = 2) const bool VELOCITY_OVER_LIFE = false;
 layout (constant_id = 3) const bool ROTATION_OVER_LIFE = false;
+
 
 float LifeProgress(uint id)
 {
@@ -143,7 +146,11 @@ void UpdateParticle(uint id)
         ParticleProperties[id].Position.xyz += state.Velocity * u_Uniforms.Timestep * u_Uniforms.Speed;
         ParticleProperties[id].LifeRemaining -= u_Uniforms.Timestep;
 
-        uint instanceIndex = atomicAdd(Command.InstanceCount, 1);
+        uint instanceIndex = 0;
+        for (uint i = 0; i < u_Uniforms.CommandCount; ++i)
+        {
+            instanceIndex = atomicAdd(Command[i].InstanceCount, 1);
+        }
         UpdateRenderData(state, id, instanceIndex);
     }
     else if (u_Uniforms.Loop)

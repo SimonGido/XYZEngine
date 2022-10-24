@@ -31,12 +31,12 @@ namespace XYZ {
 
 					UI::TableRow("Translation",
 						[]() { ImGui::Text("Speed"); },
-						[&]() { UI::FloatControl("##Speed", "##SpeedDrag", component.Speed, 1.0f, 0.1f); }
+						[&]() { UI::FloatControl("##Speed", "##SpeedDrag", component.System->Speed, 1.0f, 0.1f); }
 					);
 
 					UI::TableRow("Loop",
 						[]() { ImGui::Text("Loop"); },
-						[&]() { ImGui::Checkbox("##Loop", &component.Loop); }
+						[&]() { ImGui::Checkbox("##Loop", &component.System->Loop); }
 					);
 
 

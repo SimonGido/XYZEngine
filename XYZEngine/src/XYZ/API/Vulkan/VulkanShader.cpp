@@ -391,9 +391,9 @@ namespace XYZ {
 			XYZ_INFO("Compiling shader {}", m_Name);
 		}
 
-		auto shaderData = compileOrGetVulkanBinaries(preprocessData.Sources, forceCompile);
-		reflectAllStages(shaderData, preprocessData);
-		createProgram(shaderData);
+		m_ShaderData = compileOrGetVulkanBinaries(preprocessData.Sources, forceCompile);
+		reflectAllStages(m_ShaderData, preprocessData);
+		createProgram(m_ShaderData);
 		createDescriptorSetLayout();
 		m_Compiled = true;
 		Renderer::OnShaderReload(GetHash());		
@@ -403,6 +403,26 @@ namespace XYZ {
 	size_t VulkanShader::GetHash() const
 	{		
 		return std::hash<std::string>{}(m_FilePath);
+	}
+
+	const std::vector<uint32_t>& VulkanShader::GetShaderData(ShaderType type) const
+	{
+		switch (type)
+		{
+		case XYZ::ShaderType::Vertex:
+			return m_ShaderData.at(VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT);
+		case XYZ::ShaderType::Fragment:
+			return m_ShaderData.at(VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT);;
+		case XYZ::ShaderType::Compute:
+			return m_ShaderData.at(VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT);
+		}
+		XYZ_ASSERT(false, "Shader does not have shader type");
+		return {};
+	}
+
+	bool VulkanShader::IsCompute() const
+	{
+		return m_ShaderData.find(VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT) != m_ShaderData.end();
 	}
 
 	bool VulkanShader::IsCompiled() const
@@ -495,6 +515,7 @@ namespace XYZ {
 			uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 			uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
 			uint32_t size = (uint32_t)compiler.get_declared_struct_size(bufferType);
+
 
 			if (descriptorSet >= m_DescriptorSets.size())
 				m_DescriptorSets.resize(static_cast<size_t>(descriptorSet) + 1);

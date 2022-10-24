@@ -25,6 +25,7 @@ namespace XYZ {
 		AnimationController,
 		Skeleton,
 		Prefab,
+		ParticleSystemGPU,
 		NumTypes
 	};
 

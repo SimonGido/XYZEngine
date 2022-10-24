@@ -1,4 +1,6 @@
 #pragma once
+#include "XYZ/Utils/Math/Math.h"
+
 #include <stdint.h>
 #include <memory>
 

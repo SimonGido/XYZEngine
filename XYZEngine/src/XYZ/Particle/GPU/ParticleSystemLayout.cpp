@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ParticleSystemLayout.h"
 
+#include "XYZ/Utils/Math/Math.h"
+
 namespace XYZ {
 
 	static uint32_t ParticleVariableTypSize(ParticleVariableType type)
@@ -34,7 +36,9 @@ namespace XYZ {
 		return 0;
 	}
 
-	ParticleSystemLayout::ParticleSystemLayout(const std::vector<ParticleVariableInit>& particleLayout)
+	ParticleSystemLayout::ParticleSystemLayout(std::string name, const std::vector<ParticleVariableInit>& particleLayout, bool round)
+		:
+		m_Name(std::move(name))
 	{
 		m_Variables.resize(particleLayout.size());
 
@@ -48,7 +52,7 @@ namespace XYZ {
 			m_Variables[i].Offset = offset;
 			offset += m_Variables[i].Size;
 		}
-		m_Stride = offset;
+		m_Stride = Math::RoundUp(offset, 16);
 	}
 	uint32_t ParticleSystemLayout::GetVariableOffset(const std::string_view name) const
 	{

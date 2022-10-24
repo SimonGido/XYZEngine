@@ -24,72 +24,118 @@ namespace XYZ {
 
 	void GPUScene::OnRender(Ref<Scene> scene, Ref<SceneRenderer> sceneRenderer)
 	{
-		updateParticleGPUStorage(scene, sceneRenderer);
-		submitParticleGPUView(scene, sceneRenderer);
+		XYZ_PROFILE_FUNC("GPUScene::OnRender");
+		prepareCommands(scene, sceneRenderer);
+		submitParticleCommands(scene, sceneRenderer);
+		
 		m_FrameCounter++;
 	}
 
 
-	void GPUScene::updateParticleGPUStorage(Ref<Scene>& scene, Ref<SceneRenderer>& sceneRenderer)
+
+
+	void GPUScene::prepareCommands(Ref<Scene>& scene, Ref<SceneRenderer>& sceneRenderer)
 	{
-		auto& particleGPUStorage = scene->GetRegistry().storage<ParticleComponentGPU>();
+		XYZ_PROFILE_FUNC("GPUScene::prepareCommands");
+		m_Queue.Clear();
 
-		if (m_FrameCounter == 0)
-		{
-			// This should be done per system, not per component
-			for (auto& particleComponent : particleGPUStorage)
-			{
-				// These allocations should be owned by system, not by component
-				sceneRenderer->CreateComputeAllocation(particleComponent.System->GetMaxParticles() * sizeof(ParticleGPU), 0, particleComponent.UpdateAllocation);
-				sceneRenderer->CreateComputeAllocation(particleComponent.System->GetMaxParticles() * sizeof(ParticlePropertyGPU), 1, particleComponent.PropertiesAllocation);
-
-				uint32_t emitted = particleComponent.System->Update(m_FrameTimestep * Renderer::GetConfiguration().FramesInFlight);
-				uint32_t offset = (particleComponent.System->GetEmittedParticles() - emitted) * particleComponent.System->GetStride();
-
-				if (emitted != 0)
-				{
-					sceneRenderer->SubmitComputeData(
-						&particleComponent.System->GetParticleBuffer().GetData()[offset],
-						emitted * particleComponent.System->GetStride(),
-						particleComponent.System->GetEmittedParticles() * particleComponent.System->GetStride(),
-						particleComponent.PropertiesAllocation
-					);
-
-					// TODO: submit compute command with update, it should not be submitted byt submit mesh indirect
-				}
-			}
-		}
-	}
-
-	void GPUScene::submitParticleGPUView(Ref<Scene>& scene, Ref<SceneRenderer>& sceneRenderer)
-	{
 		auto particleGPUView = scene->GetRegistry().view<TransformComponent, ParticleComponentGPU>();
 
 		for (auto entity : particleGPUView)
 		{
 			auto& [transformComponent, particleComponent] = particleGPUView.get(entity);
-			if (particleComponent.System->GetEmittedParticles() != 0)
+			auto& command = m_Queue.ParticleUpdateCommands[particleComponent.System->GetHandle()];
+			command.System = particleComponent.System;
+
+			auto& drawCommand = command.DrawCommands.emplace_back();
+			drawCommand.RenderMaterial = particleComponent.RenderMaterial;
+			drawCommand.Mesh = particleComponent.Mesh;
+			drawCommand.Transform = transformComponent->WorldTransform;
+		}
+		for (auto &[handle, command] : m_Queue.ParticleUpdateCommands)
+		{
+			sceneRenderer->AllocateIndirectCommand(command.DrawCommands.size(), command.IndirectCommandAllocation);
+			uint32_t offset = 0;
+			for (auto& drawCommand : command.DrawCommands)
 			{
-				// TODO: submit mesh indirect should not call compute command, it should only read data
+				drawCommand.IndirectCommandSubAllocation = command.IndirectCommandAllocation->CreateSubAllocation(offset, sizeof(IndirectIndexedDrawCommand));
+				
+				auto& indirectCommand = command.IndirectDrawCommands.emplace_back();
+				indirectCommand.Count = drawCommand.Mesh->GetIndexBuffer()->GetCount();
+
+				offset += sizeof(IndirectIndexedDrawCommand);
+			}
+		}
+	}
+
+	void GPUScene::submitParticleCommands(Ref<Scene>& scene, Ref<SceneRenderer>& sceneRenderer)
+	{
+		XYZ_PROFILE_FUNC("GPUScene::submitParticleCommands");
+		for (auto& [handle, cmd] : m_Queue.ParticleUpdateCommands)
+		{
+			const uint32_t particleResultSize = cmd.System->GetOutputSize();
+			const uint32_t particleStateSize = cmd.System->GetInputSize();
+
+			sceneRenderer->CreateComputeAllocation(particleResultSize, 0, cmd.System->ParticlesResultAllocation);
+			sceneRenderer->CreateComputeAllocation(particleStateSize, 1, cmd.System->ParticlePropertiesAllocation);
+			
+			if (m_FrameCounter == 0)
+			{
+				const uint32_t emitted = cmd.System->Update(m_FrameTimestep * Renderer::GetConfiguration().FramesInFlight);
+				const uint32_t offsetParticles = (cmd.System->GetEmittedParticles() - emitted);
+				const uint32_t dataOffset = offsetParticles * cmd.System->GetInputStride();
+
+				if (emitted != 0)
+				{
+					// Submit emitted data
+					sceneRenderer->SubmitComputeData(
+						cmd.System->GetParticleBuffer().GetData(offsetParticles),
+						emitted * cmd.System->GetInputStride(),
+						dataOffset,
+						cmd.System->ParticlePropertiesAllocation,
+						true
+					);
+				}
+			}
+
+			std::array<ComputeData, NumTypes> computeData;
+			computeData[DataType::Properties].Allocation = cmd.System->ParticlePropertiesAllocation;
+			computeData[DataType::Result].Allocation = cmd.System->ParticlesResultAllocation;
+			computeData[DataType::IndirectCommand].Allocation = cmd.IndirectCommandAllocation;
+			computeData[DataType::IndirectCommand].Data = (std::byte*)cmd.IndirectDrawCommands.data();
+			computeData[DataType::IndirectCommand].DataSize = cmd.IndirectDrawCommands.size() * sizeof(IndirectIndexedDrawCommand);
+
+
+			sceneRenderer->SubmitCompute(
+				cmd.System->ParticleUpdateMaterial,
+				computeData.data(), computeData.size(),
+				PushConstBuffer{
+					static_cast<uint32_t>(cmd.IndirectDrawCommands.size()),
+					m_FrameTimestep,
+					cmd.System->Speed,
+					cmd.System->GetEmittedParticles(),
+					(uint32_t)cmd.System->Loop
+				}
+			);
+
+			for (auto& drawCommand : cmd.DrawCommands)
+			{
 				sceneRenderer->SubmitMeshIndirect(
 					// Rendering data
-					particleComponent.Mesh,
-					particleComponent.RenderMaterial,
+					drawCommand.Mesh,
+					drawCommand.RenderMaterial,
 					nullptr,
-					transformComponent->WorldTransform,
-					// Compute data
-					particleComponent.UpdateComputeMaterial,
-					particleComponent.PropertiesAllocation,
-					particleComponent.UpdateAllocation,
-
-					PushConstBuffer{
-						m_FrameTimestep,
-						particleComponent.Speed,
-						particleComponent.System->GetEmittedParticles(),
-						(uint32_t)particleComponent.Loop
-					}
+					drawCommand.Transform,
+					cmd.System->ParticlesResultAllocation,
+					drawCommand.IndirectCommandSubAllocation
 				);
 			}
 		}
+	}
+	
+
+	void GPUSceneQueue::Clear()
+	{
+		ParticleUpdateCommands.clear();
 	}
 }

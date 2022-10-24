@@ -6,11 +6,15 @@
 
 namespace XYZ {
 	
+
 	class StorageBufferAllocator;
 	class StorageBufferAllocation : public RefCount
 	{
 	public:
+		StorageBufferAllocation();
 		~StorageBufferAllocation();
+
+		Ref<StorageBufferAllocation> CreateSubAllocation(uint32_t offset, uint32_t size);
 
 		inline uint32_t   GetSize()			const { return m_Size; }
 		inline uint32_t   GetOffset()		const { return m_Offset; }
@@ -29,7 +33,8 @@ namespace XYZ {
 		
 	private:
 		Ref<StorageBufferAllocator> m_Allocator;
-		
+		Ref<StorageBufferAllocation> m_Owner;
+
 		uint32_t m_Size;
 		uint32_t m_Offset;
 		uint32_t m_StorageBufferBinding;
@@ -49,8 +54,9 @@ namespace XYZ {
 		bool Allocate(uint32_t size, Ref<StorageBufferAllocation>& allocation);
 
 		uint32_t GetAllocatedSize() const;
-		uint32_t GetBinding() const { return m_Binding; };
-		uint32_t GetSet() const { return m_Set; }
+		uint32_t GetBinding()		const { return m_Binding; };
+		uint32_t GetSet()			const { return m_Set; }
+		uint32_t GetSize()			const { return m_Size; }
 	private:
 		void returnAllocation(uint32_t size, uint32_t offset);
 		bool allocateFromFree(uint32_t size, uint32_t& offset);

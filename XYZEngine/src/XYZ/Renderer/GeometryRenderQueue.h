@@ -145,30 +145,13 @@ namespace XYZ {
 			uint32_t			   InstanceOffset = 0;
 		};
 
-		struct SSBOState
-		{
-			uint32_t Size;
-			uint32_t Offset;
-		};
-
-
-		struct IndirectComputeCommand
-		{
-			PushConstBuffer		    OverrideUniformData;
-
-			SSBOState				IndirectCommandState;
-
-			Ref<StorageBufferAllocation> ReadStateAllocation;
-			Ref<StorageBufferAllocation> ResultStateAllocation;	
-		};
-
 		struct IndirectMeshDrawCommandOverride
 		{
 			Ref<Mesh>			  Mesh;
 			Ref<MaterialInstance> OverrideMaterial;
 			glm::mat4			  Transform;
 	
-			SSBOState			  IndirectCommandState;	
+			Ref<StorageBufferAllocation> IndirectCommandAllocation;
 			Ref<StorageBufferAllocation> ReadStateAllocation;
 		};
 
@@ -182,11 +165,15 @@ namespace XYZ {
 
 		struct ComputeCommand
 		{
-			PushConstBuffer		   OverrideUniformData;
-			std::vector<std::byte> ComputeData;
+			PushConstBuffer	OverrideUniformData;
 
-			Ref<StorageBufferAllocation> ReadStateAllocation;
-			Ref<StorageBufferAllocation> ResultStateAllocation;
+			struct Data
+			{
+				Ref<StorageBufferAllocation> Allocation;
+				std::vector<std::byte> ComputeData;
+			};
+
+			std::vector<Data> Data;
 		};
 
 		struct ComputeCommandBatch
@@ -194,8 +181,7 @@ namespace XYZ {
 			Ref<PipelineCompute>   Pipeline;
 			Ref<MaterialAsset>	   MaterialCompute;
 
-			std::vector<ComputeCommand>			ComputeCommands;
-			std::vector<IndirectComputeCommand> IndirectComputeCommands;
+			std::vector<ComputeCommand>	ComputeCommands;
 		};
 
 

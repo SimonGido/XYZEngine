@@ -884,7 +884,7 @@ namespace XYZ {
 	void Scene::CreateParticleTest()
 	{
 		// NOTE: this can be generate from shader
-		ParticleSystemLayout layout({
+		ParticleSystemLayout inputLayout("Input",{
 			{"StartPosition", ParticleVariableType::Vec4},
 			{"StartColor",	  ParticleVariableType::Vec4},
 			{"StartRotation", ParticleVariableType::Vec4},
@@ -896,16 +896,27 @@ namespace XYZ {
 			{"EndVelocity",   ParticleVariableType::Vec4},
 			{"Position",	  ParticleVariableType::Vec4},
 			{"LifeTime",	  ParticleVariableType::Float},
-			{"LifeRemaining", ParticleVariableType::Float},
-			{"Padding",		  ParticleVariableType::Vec2}
+			{"LifeRemaining", ParticleVariableType::Float}
 		});
 
-		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(layout, 100000);
+		ParticleSystemLayout outputLayout("Output",{
+			{"TransformRow0", ParticleVariableType::Vec4},
+			{"TransformRow1", ParticleVariableType::Vec4},
+			{"TransformRow2", ParticleVariableType::Vec4},
+			{"Color",		  ParticleVariableType::Vec4}
+		});
 
-		ParticleEmitterGPU emitter(layout.GetStride());
-		emitter.EmitterModules.push_back(Ref<BoxParticleEmitterModuleGPU>::Create(layout.GetStride(), layout.GetVariableOffset("StartPosition")));
-		emitter.EmitterModules.push_back(Ref<SpawnParticleEmitterModuleGPU>::Create(layout.GetStride(), layout.GetVariableOffset("LifeTime")));
-		emitter.EmitterModules.push_back(Ref<TestParticleEmitterModuleGPU>::Create(layout.GetStride(), layout.GetVariableOffset("StartColor")));
+		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(inputLayout, outputLayout, 100000);
+
+		ParticleSystemGPUShaderGenerator generator(m_ParticleSystemGPU);
+		FileSystem::WriteFile("ParticleTest.glsl", generator.GetSource());
+
+		auto testShader = Shader::Create("ParticleTest.glsl");
+
+		ParticleEmitterGPU emitter(inputLayout.GetStride());
+		emitter.EmitterModules.push_back(Ref<BoxParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), inputLayout.GetVariableOffset("StartPosition")));
+		emitter.EmitterModules.push_back(Ref<SpawnParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), inputLayout.GetVariableOffset("LifeTime")));
+		emitter.EmitterModules.push_back(Ref<TestParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), inputLayout.GetVariableOffset("StartColor")));
 		m_ParticleSystemGPU->ParticleEmitters.push_back(emitter);
 
 
@@ -925,15 +936,26 @@ namespace XYZ {
 		m_UpdateCommandMaterial->Specialize("VELOCITY_OVER_LIFE", enabled);
 		m_UpdateCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
 
-
-		SceneEntity entity = CreateEntity("Particle GPU Test");
-		auto& particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();
+		m_ParticleSystemGPU->ParticleUpdateMaterial = m_UpdateCommandMaterial;
 	
-		particleComponent.UpdateComputeMaterial = m_UpdateCommandMaterial;
-		particleComponent.RenderMaterial = m_ParticleMaterialGPU;
+		{
+			SceneEntity entity = CreateEntity("Particle GPU Test0");
+			auto& particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();
 
-		particleComponent.Mesh = m_ParticleCubeMesh;
-		particleComponent.System = m_ParticleSystemGPU;
+
+			particleComponent.RenderMaterial = m_ParticleMaterialGPU;
+			particleComponent.Mesh = m_ParticleCubeMesh;
+			particleComponent.System = m_ParticleSystemGPU;
+		}
+		{
+			SceneEntity entity = CreateEntity("Particle GPU Test1");
+			auto& particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();
+
+
+			particleComponent.RenderMaterial = m_ParticleMaterialGPU;
+			particleComponent.Mesh = m_ParticleCubeMesh;
+			particleComponent.System = m_ParticleSystemGPU;
+		}
 	}
 
 }
