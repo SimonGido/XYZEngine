@@ -911,8 +911,6 @@ namespace XYZ {
 		ParticleSystemGPUShaderGenerator generator(m_ParticleSystemGPU);
 		FileSystem::WriteFile("ParticleTest.glsl", generator.GetSource());
 
-		auto testShader = Shader::Create("ParticleTest.glsl");
-
 		ParticleEmitterGPU emitter(inputLayout.GetStride());
 		emitter.EmitterModules.push_back(Ref<BoxParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), inputLayout.GetVariableOffset("StartPosition")));
 		emitter.EmitterModules.push_back(Ref<SpawnParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), inputLayout.GetVariableOffset("LifeTime")));

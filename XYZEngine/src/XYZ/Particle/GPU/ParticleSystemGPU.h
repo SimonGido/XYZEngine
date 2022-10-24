@@ -127,6 +127,7 @@ namespace XYZ {
 		void addUniforms(const std::string_view name, const std::string_view declName, const std::vector<Variable>& variables);
 
 		void addEntryPoint(uint32_t groupX, uint32_t groupY, uint32_t groupZ);
+		void addUpdate();
 
 		static std::vector<Variable> particleVariablesToVariables(const std::vector<ParticleVariable>& variables);
 	private:

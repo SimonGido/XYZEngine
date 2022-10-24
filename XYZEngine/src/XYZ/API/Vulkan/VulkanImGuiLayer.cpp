@@ -22,6 +22,7 @@ namespace XYZ {
 
 	static std::vector<VkCommandBuffer> s_ImGuiCommandBuffers;
 
+
 	static ImGuiID GetImageID(const Ref<VulkanImage2D>& image)
 	{
 		const auto& imageInfo = image->GetImageInfo();
@@ -50,6 +51,8 @@ namespace XYZ {
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
         io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 
+
+	
 
 		io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto/Roboto-Black.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());
 		io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto/Roboto-Light.ttf", 15.0f, nullptr, io.Fonts->GetGlyphRangesCyrillic());

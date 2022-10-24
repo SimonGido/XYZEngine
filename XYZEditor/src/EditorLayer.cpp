@@ -13,6 +13,8 @@ namespace XYZ {
 	namespace Editor {
 		
 		EditorLayer::EditorLayer()
+			:
+			m_NodeEditor("Test")
 		{
 		}
 
@@ -87,10 +89,14 @@ namespace XYZ {
 			AssetManager::KeepAlive(keepAliveAssetSeconds);
 
 			m_Scene->CreateParticleTest();
+
+			m_NodeEditor.OnStart();
 		}
 
 		void EditorLayer::OnDetach()
 		{
+			m_NodeEditor.OnStop();
+
 			s_Data.Shutdown();
 			AssetManager::SerializeAll();
 
@@ -132,6 +138,8 @@ namespace XYZ {
 		{
 			m_SceneRenderer->OnImGuiRender();
 			m_EditorManager.OnImGuiRender();
+
+			m_NodeEditor.OnUpdate(0.01f);
 		}
 
 		bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)

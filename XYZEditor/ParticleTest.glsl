@@ -62,4 +62,5 @@ void main(void)
 	uint id = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
 	if (id >= u_Uniforms.EmittedParticles)
 		return;
+	Update(id);
 }

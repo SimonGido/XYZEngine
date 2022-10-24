@@ -63,6 +63,7 @@ namespace XYZ {
 			void displayStats();
 
 		private:
+			ImGuiNodeEditor			    m_NodeEditor;
 			Ref<Scene>					m_Scene;
 			Ref<SceneRenderer>			m_SceneRenderer;
 		

@@ -192,9 +192,13 @@ namespace XYZ {
 			"	uint id = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;\n"																													   \
 			"	if (id >= u_Uniforms.EmittedParticles)\n"
 			"		return;\n"
+			"	Update(id);\n"
 			"}";
 	}
+	void ParticleSystemGPUShaderGenerator::addUpdate()
+	{
 
+	}
 
 	std::vector<ParticleSystemGPUShaderGenerator::Variable> ParticleSystemGPUShaderGenerator::particleVariablesToVariables(const std::vector<ParticleVariable>& variables)
 	{
