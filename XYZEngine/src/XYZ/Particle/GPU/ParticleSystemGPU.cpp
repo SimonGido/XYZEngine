@@ -7,27 +7,6 @@
 
 namespace XYZ {
 	
-	std::string ParticleVariable::GLSLType() const
-	{
-		switch (Type)
-		{
-		case ParticleVariableType::None: break;
-		case ParticleVariableType::Float: return "float";			
-		case ParticleVariableType::Vec2:  return "vec2";
-		case ParticleVariableType::Vec3:  return "vec3";
-		case ParticleVariableType::Vec4:  return "vec4";
-
-		case ParticleVariableType::Int:	  return "int";
-		case ParticleVariableType::IVec2: return "ivec2";
-		case ParticleVariableType::IVec3: return "ivec3";
-		case ParticleVariableType::IVec4: return "ivec4";
-
-		case ParticleVariableType::Bool:  return "bool";
-		};
-
-		XYZ_ASSERT(false, "Invalid type");
-		return std::string();
-	}
 
 	ParticleSystemGPU::ParticleSystemGPU(ParticleSystemLayout inputLayout, ParticleSystemLayout outputLayout, uint32_t maxParticles)
 		:
@@ -205,7 +184,7 @@ namespace XYZ {
 		std::vector<Variable> tempVariables;
 		tempVariables.reserve(variables.size());
 		for (auto& var : variables)
-			tempVariables.push_back(Variable{ var.GLSLType(), var.Name, var.Size, var.IsArray });
+			tempVariables.push_back(Variable{ VariableTypeToGLSL(var.Type), var.Name, var.Size, var.IsArray});
 
 		return tempVariables;
 	}

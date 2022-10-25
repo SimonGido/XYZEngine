@@ -13,8 +13,6 @@ namespace XYZ {
 	namespace Editor {
 		
 		EditorLayer::EditorLayer()
-			:
-			m_NodeEditor("Test")
 		{
 		}
 
@@ -69,6 +67,8 @@ namespace XYZ {
 			EditorLogger::Init(consolePanel->GetStream());
 			ScriptEngine::SetLogger(EditorLogger::GetLogger());
 
+			m_Scene->CreateParticleTest();
+
 			m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
 			m_EditorManager.RegisterPanel<Editor::InspectorPanel>("InspectorPanel");
 			m_EditorManager.RegisterPanel<Editor::SceneHierarchyPanel>("SceneHierarchyPanel");
@@ -76,7 +76,7 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::AssetManagerViewPanel>("AssetManagerViewPanel");
 			m_EditorManager.RegisterPanel<Editor::AssetBrowser>("AssetBrowser");
 			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
-	
+			m_EditorManager.RegisterPanel<Editor::ParticleEditorGPU>("ParticleEditorGPU");
 
 			std::shared_ptr<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
 		
@@ -88,15 +88,10 @@ namespace XYZ {
 			const float keepAliveAssetSeconds = 60;
 			AssetManager::KeepAlive(keepAliveAssetSeconds);
 
-			m_Scene->CreateParticleTest();
-
-			m_NodeEditor.OnStart();
 		}
 
 		void EditorLayer::OnDetach()
 		{
-			m_NodeEditor.OnStop();
-
 			s_Data.Shutdown();
 			AssetManager::SerializeAll();
 
@@ -138,8 +133,6 @@ namespace XYZ {
 		{
 			m_SceneRenderer->OnImGuiRender();
 			m_EditorManager.OnImGuiRender();
-
-			m_NodeEditor.OnUpdate(0.01f);
 		}
 
 		bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)

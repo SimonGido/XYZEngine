@@ -10,47 +10,16 @@ namespace XYZ {
 	{
 		m_SaveFile = m_Name + ".json";
 	}
+	ImGuiNodeEditor::~ImGuiNodeEditor()
+	{
+		for (auto node : m_Nodes)
+			delete node;
+	}
 	void ImGuiNodeEditor::OnStart()
 	{
 		ed::Config config;
 		config.SettingsFile = m_SaveFile.c_str();
 		m_Context = ed::CreateEditor(&config);
-		
-		{
-			auto& node = m_Nodes.emplace_back();
-			node.Name = "Particle Properties";
-			node.ID = m_UniqueID++;
-			
-			auto& value0 = node.Values.emplace_back();		
-			value0.InputPinID = m_UniqueID++;
-			value0.OutputPinID = m_UniqueID++;
-			value0.Type = ImGuiNodeValue::Float;
-			value0.Name = "Speed";
-
-			auto& value1 = node.Values.emplace_back();
-			value1.InputPinID = m_UniqueID++;
-			value1.OutputPinID = m_UniqueID++;
-			value1.Type = ImGuiNodeValue::Vec3;
-			value1.Name = "Velocity";
-		}
-
-		{
-			auto& node = m_Nodes.emplace_back();
-			node.Name = "Particle Properties";
-			node.ID = m_UniqueID++;
-
-			auto& value0 = node.Values.emplace_back();
-			value0.InputPinID = m_UniqueID++;
-			value0.OutputPinID = m_UniqueID++;
-			value0.Type = ImGuiNodeValue::Float;
-			value0.Name = "Speed";
-
-			auto& value1 = node.Values.emplace_back();
-			value1.InputPinID = m_UniqueID++;
-			value1.OutputPinID = m_UniqueID++;
-			value1.Type = ImGuiNodeValue::Vec3;
-			value1.Name = "Velocity";
-		}
 	}
 	void ImGuiNodeEditor::OnStop()
 	{
@@ -66,9 +35,9 @@ namespace XYZ {
 			ed::SetCurrentEditor(m_Context);
 			ed::Begin(m_Name.c_str());
 			
-			for (auto& node : m_Nodes)
+			for (auto node : m_Nodes)
 			{
-				node.OnImGuiRender(this);
+				node->OnImGuiRender();
 			}
 			// Submit Links
 			for (auto& linkInfo : m_Links)
@@ -78,10 +47,13 @@ namespace XYZ {
 			deleteLinks();
 	
 			ed::Suspend();
-			if (ed::ShowLinkContextMenu(&m_ContextLinkID))
+			if (ed::ShowBackgroundContextMenu())
+				ImGui::OpenPopup("Background Menu");
+			else if (ed::ShowLinkContextMenu(&m_ContextLinkID))
 				ImGui::OpenPopup("Link Context Menu");
 
-			handleDeleteLink(m_ContextLinkID);
+			handleBackgroundMenu();
+			handleLinkMenu(m_ContextLinkID);
 			ed::Resume();
 
 			ed::End();
@@ -90,19 +62,19 @@ namespace XYZ {
 		ImGui::End();
 	}
 
-	ImGuiNodeValue* ImGuiNodeEditor::FindNodeValue(ed::PinId pinID)
+	
+
+	void ImGuiNodeEditor::RemoveNode(const std::string_view name)
 	{
-		for (auto& node : m_Nodes)
+		for (auto it = m_Nodes.begin(); it != m_Nodes.end(); ++it)
 		{
-			for (auto& val : node.Values)
+			if ((*it)->GetName() == name)
 			{
-				if (val.InputPinID == pinID)
-					return &val;
-				if (val.OutputPinID == pinID)
-					return &val;
+				delete (*it);
+				m_Nodes.erase(it);
+				return;
 			}
 		}
-		return nullptr;
 	}
 
 	ImGuiLink* ImGuiNodeEditor::FindLink(ed::PinId pinID)
@@ -127,6 +99,17 @@ namespace XYZ {
 		return nullptr;
 	}
 
+	VariableType ImGuiNodeEditor::FindPinType(ed::PinId pinID)
+	{
+		for (auto node : m_Nodes)
+		{
+			auto type = node->FindPinType(pinID);
+			if (type != VariableType::None)
+				return type;
+		}
+		return VariableType::None;
+	}
+
 	void ImGuiNodeEditor::createLinks()
 	{
 		// Handle creation action, returns true if editor want to create new object (node or link)
@@ -137,9 +120,7 @@ namespace XYZ {
 			{
 				if (inputPinID && outputPinID) // both are valid, let's accept link
 				{
-					auto inputNode = FindNodeValue(inputPinID);
-					auto outputNode = FindNodeValue(outputPinID);
-					if (inputNode->Type == outputNode->Type)
+					if (acceptLink(inputPinID, outputPinID))
 					{
 						// ed::AcceptNewItem() return true when user release mouse button.
 						if (ed::AcceptNewItem())
@@ -186,7 +167,18 @@ namespace XYZ {
 
 
 
-	void ImGuiNodeEditor::handleDeleteLink(ed::LinkId id)
+	void ImGuiNodeEditor::handleBackgroundMenu()
+	{
+		if (ImGui::BeginPopup("Background Menu"))
+		{
+			if (OnBackgroundMenu)
+				OnBackgroundMenu();
+
+			ImGui::EndPopup();
+		}
+	}
+
+	void ImGuiNodeEditor::handleLinkMenu(ed::LinkId id)
 	{
 		if (ImGui::BeginPopup("Link Context Menu"))
 		{
@@ -200,5 +192,25 @@ namespace XYZ {
 			}
 			ImGui::EndPopup();
 		}
+	}
+
+	bool ImGuiNodeEditor::acceptLink(ed::PinId inputPinID, ed::PinId outputPinID) const
+	{
+		for (auto node : m_Nodes)
+		{
+			if (node->AcceptLink(inputPinID, outputPinID))
+				return true;
+		}
+		return false;
+	}
+
+	uint32_t ImGuiNodeEditor::getNextID()
+	{
+		if (m_FreeIDs.empty())
+			return m_UniqueID++;
+
+		uint32_t result = m_FreeIDs.back();
+		m_FreeIDs.pop();
+		return result;
 	}
 }

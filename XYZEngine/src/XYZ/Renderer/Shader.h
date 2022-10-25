@@ -50,6 +50,8 @@ namespace XYZ {
 		if (type == "sampler2D")	return ShaderUniformDataType::Sampler2D;
 		return ShaderUniformDataType::None;
 	}
+
+
 	static uint32_t SizeOfUniformType(ShaderUniformDataType type)
 	{
 		switch (type)

@@ -11,6 +11,7 @@
 #include "Editor/Panels/InspectorPanel.h"
 #include "Editor/Panels/ImGuiStylePanel.h"
 #include "Editor/Panels/SceneHierarchyPanel.h"
+#include "Editor/ParticleEditorGPU/ParticleEditorGPU.h"
 #include "Editor/Asset/AssetManagerViewPanel.h"
 #include "Editor/Asset/AssetBrowser.h"
 #include "Editor/Script/ScriptPanel.h"
@@ -63,7 +64,6 @@ namespace XYZ {
 			void displayStats();
 
 		private:
-			ImGuiNodeEditor			    m_NodeEditor;
 			Ref<Scene>					m_Scene;
 			Ref<SceneRenderer>			m_SceneRenderer;
 		

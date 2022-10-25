@@ -885,25 +885,25 @@ namespace XYZ {
 	{
 		// NOTE: this can be generate from shader
 		ParticleSystemLayout inputLayout("Input",{
-			{"StartPosition", ParticleVariableType::Vec4},
-			{"StartColor",	  ParticleVariableType::Vec4},
-			{"StartRotation", ParticleVariableType::Vec4},
-			{"StartScale",	  ParticleVariableType::Vec4},
-			{"StartVelocity", ParticleVariableType::Vec4},
-			{"EndColor",	  ParticleVariableType::Vec4},
-			{"EndRotation",   ParticleVariableType::Vec4},
-			{"EndScale",	  ParticleVariableType::Vec4},
-			{"EndVelocity",   ParticleVariableType::Vec4},
-			{"Position",	  ParticleVariableType::Vec4},
-			{"LifeTime",	  ParticleVariableType::Float},
-			{"LifeRemaining", ParticleVariableType::Float}
+			{"StartPosition", VariableType::Vec4},
+			{"StartColor",	  VariableType::Vec4},
+			{"StartRotation", VariableType::Vec4},
+			{"StartScale",	  VariableType::Vec4},
+			{"StartVelocity", VariableType::Vec4},
+			{"EndColor",	  VariableType::Vec4},
+			{"EndRotation",   VariableType::Vec4},
+			{"EndScale",	  VariableType::Vec4},
+			{"EndVelocity",   VariableType::Vec4},
+			{"Position",	  VariableType::Vec4},
+			{"LifeTime",	  VariableType::Float},
+			{"LifeRemaining", VariableType::Float}
 		});
 
 		ParticleSystemLayout outputLayout("Output",{
-			{"TransformRow0", ParticleVariableType::Vec4},
-			{"TransformRow1", ParticleVariableType::Vec4},
-			{"TransformRow2", ParticleVariableType::Vec4},
-			{"Color",		  ParticleVariableType::Vec4}
+			{"TransformRow0", VariableType::Vec4},
+			{"TransformRow1", VariableType::Vec4},
+			{"TransformRow2", VariableType::Vec4},
+			{"Color",		  VariableType::Vec4}
 		});
 
 		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(inputLayout, outputLayout, 100000);
