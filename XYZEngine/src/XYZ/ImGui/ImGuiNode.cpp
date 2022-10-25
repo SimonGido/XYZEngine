@@ -123,7 +123,7 @@ namespace XYZ {
         ImGui::TextColored(sc_VariableColor, VariableTypeToImGui(m_Type).c_str());
         ImGui::SameLine();
 
-        ed::BeginPin(OutputPinID, ed::PinKind::Input);
+        ed::BeginPin(OutputPinID, ed::PinKind::Output);
         SetPinPadding(nodeID, padding);
         ImGui::Text("->");
         ed::EndPin();
