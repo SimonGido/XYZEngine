@@ -25,7 +25,7 @@ namespace XYZ {
 	{
 		ImGuiNodeValue(ImGuiNode* parent);
 
-		void OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID, float& padding);
+		void OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID, float padding);
 
 		ed::PinId InputPinID;
 		ed::PinId OutputPinID;
@@ -41,15 +41,13 @@ namespace XYZ {
 		VariableType m_Type = VariableType::None;
 
 		ImGuiNode* m_Parent;
-
-		bool m_RecalcPadding = true;
 	};
 
 	struct ImGuiNodeArgument
 	{
 		ImGuiNodeArgument(ImGuiNode* parent);
 
-		void OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID, float& padding);
+		void OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID);
 
 		ed::PinId InputPinID;
 
@@ -65,15 +63,13 @@ namespace XYZ {
 		VariableType m_Type = VariableType::None;
 		
 		ImGuiNode* m_Parent;
-
-		bool m_RecalcPadding = true;
 	};
 
 	struct ImGuiNodeOutput
 	{
 		ImGuiNodeOutput(ImGuiNode* parent);
 
-		void OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID, float& padding);
+		void OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID, float padding);
 
 		ed::PinId OutputPinID;
 
@@ -83,10 +79,9 @@ namespace XYZ {
 
 	private:
 		VariableType m_Type = VariableType::None;
+		float		 m_TypeTextSize = 0.0f;
 
 		ImGuiNode* m_Parent;
-
-		bool m_RecalcPadding = true;
 	};
 
 	class ImGuiNode
@@ -116,6 +111,7 @@ namespace XYZ {
 		ImGuiNodeEditor* m_Editor;
 
 		float m_OutputPadding = 0.0f;
+		bool  m_RecalcPadding = true;
 
 		friend ImGuiNodeEditor;
 		friend ImGuiNodeValue;
@@ -145,6 +141,8 @@ namespace XYZ {
 	private:
 		void renderHeader();
 
+		void calculatePadding();
+
 	private:
 		std::vector<ImGuiNodeValue> m_Values;
 		
@@ -171,26 +169,17 @@ namespace XYZ {
 
 		ImGuiNodeArgument* FindInputArgument(ed::PinId pinID);
 		const ImGuiNodeArgument* FindInputArgument(ed::PinId pinID) const;
-
-
-		void SetOutputType(VariableType type);
-
-		VariableType GetOutputType() const { return m_OutputType; }
-
 		
 	private:
 		void renderHeader();
 		void renderOutputValuePin();
 
+		void calculatePadding();
 	private:
 		std::vector<ImGuiNodeArgument> m_InputArguments;
 		std::vector<ImGuiNodeOutput>   m_Outputs;
 
-		VariableType m_OutputType = VariableType::None;
-		ed::PinId	 m_OutputValuePinID;
 		ed::PinId	 m_InputPinID;
-		ed::PinId	 m_OutputPinID;
-
-		bool m_RecalcPadding = true;
+		ed::PinId	 m_OutputPinID;		
 	};
 }

@@ -21,7 +21,17 @@ namespace XYZ {
 					if (ImGui::MenuItem(name.c_str()))
 					{
 						auto funcNode = m_NodeEditor.AddNode<ImGuiFunctionNode>(name);
-						funcNode->SetOutputType(func.OutputType);
+						funcNode->AddOutput(func.OutputType);
+						funcNode->AddOutput(func.OutputType);
+						funcNode->AddOutput(func.OutputType);
+						funcNode->AddOutput(func.OutputType);
+						funcNode->AddOutput(func.OutputType);
+						funcNode->AddOutput(func.OutputType);
+						funcNode->AddOutput(func.OutputType);
+						funcNode->AddOutput(func.OutputType);
+						funcNode->AddOutput(func.OutputType);
+						funcNode->AddOutput(func.OutputType);
+						funcNode->AddOutput(func.OutputType);
 						for (auto& arg : func.InputArguments)
 						{
 							funcNode->AddInputArgument(arg.Name, arg.Type);
@@ -75,7 +85,11 @@ namespace XYZ {
 			{
 				ParticleEditorFunction func;
 				func.Name = "Vec4ToVec3";
-				func.InputArguments.push_back({ VariableType::Vec4, "input" });
+				func.InputArguments.push_back({ VariableType::Vec4, "inputasdasdasdsdsdsd" });
+				func.InputArguments.push_back({ VariableType::Vec4, "inputasdsdsd" });
+				func.InputArguments.push_back({ VariableType::Vec4, "inputasdasasdsdsdsd" });
+				func.InputArguments.push_back({ VariableType::Vec4, "inputasdasdasdsdsdsfghfgh" });
+
 				func.OutputType = VariableType::Vec3;
 				func.SourceCode = 
 					"vec3 result = input.xyz;\n"
