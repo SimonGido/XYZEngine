@@ -18,9 +18,8 @@ namespace XYZ {
 		{
 			m_Variables[i].Name = particleLayout[i].first;
 			m_Variables[i].Type = particleLayout[i].second;
-			m_Variables[i].Size = VariableSizeGLSL(m_Variables[i].Type);
 			m_Variables[i].Offset = offset;
-			offset += m_Variables[i].Size;
+			offset += m_Variables[i].Type.Size;
 		}
 		m_Stride = Math::RoundUp(offset, 16);
 	}

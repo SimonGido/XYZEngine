@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Asset/Asset.h"
-#include "XYZ/Utils/VariableTypes.h"
+#include "BlueprintVariableType.h"
 
 namespace XYZ {
 
@@ -25,13 +25,12 @@ namespace XYZ {
 		std::string SourceCode;
 
 		std::vector<BlueprintInputArgument> Arguments;
-		VariableType					    OutputType = VariableType::Void;
+		bool								Entry = false;
 	};
 
 	struct BlueprintFunctionCall
 	{
 		std::string		  Name;
-		VariableType	  OutputType;
 		std::vector<BlueprintInputArgument> Arguments;
 	};
 

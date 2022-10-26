@@ -111,6 +111,48 @@ namespace XYZ {
 		return nullptr;
 	}
 
+	ImGuiNodeValue* ImGuiNodeEditor::FindNodeValue(ed::PinId id)
+	{
+		for (auto node : m_Nodes)
+		{
+			if (auto valueNode = dynamic_cast<ImGuiValueNode*>(node))
+			{
+				auto result = valueNode->FindValue(id);
+				if (result)
+					return result;
+			}
+		}
+		return nullptr;
+	}
+
+	ImGuiFunctionNode* ImGuiNodeEditor::FindFunctionNode(ed::PinId id)
+	{
+		for (auto node : m_Nodes)
+		{
+			if (auto funcNode = dynamic_cast<ImGuiFunctionNode*>(node))
+			{
+				if (funcNode->GetOutputPinID() == id)
+					return funcNode;
+				if (funcNode->GetInputPinID() == id)
+					return funcNode;
+			}
+		}
+		return nullptr;
+	}
+
+	ImGuiFunctionNode* ImGuiNodeEditor::FindFunctionNodeByInput(ed::PinId id)
+	{
+		for (auto node : m_Nodes)
+		{
+			if (auto funcNode = dynamic_cast<ImGuiFunctionNode*>(node))
+			{
+				if (funcNode->GetInputPinID() == id)
+					return funcNode;
+			}
+		}
+		return nullptr;
+	}
+
 	const ImGuiLink* ImGuiNodeEditor::FindLink(ed::PinId pinID) const
 	{
 		for (auto& link : m_Links)
@@ -143,15 +185,15 @@ namespace XYZ {
 		return nullptr;
 	}
 
-	VariableType ImGuiNodeEditor::FindPinType(ed::PinId pinID)
+	const VariableType* ImGuiNodeEditor::FindPinType(ed::PinId pinID) const
 	{
 		for (auto node : m_Nodes)
 		{
 			auto type = node->FindPinType(pinID);
-			if (type != VariableType::None)
+			if (type != nullptr)
 				return type;
 		}
-		return VariableType::None;
+		return nullptr;
 	}
 	std::vector<ImGuiValueNode*> ImGuiNodeEditor::FindValueNodes() const
 	{

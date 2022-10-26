@@ -6,9 +6,9 @@
 #include "XYZ/Utils/FileSystem.h"
 
 namespace XYZ {
-	static void AddInputArgument(std::string& result, VariableType type, const std::string& name, bool isOutput)
+	static void AddInputArgument(std::string& result, const VariableType& type, const std::string& name, bool isOutput)
 	{
-		if (VariableSizeGLSL(type) >= 16)
+		if (type.Size >= 16)
 		{
 			result += "in";
 		}
@@ -16,16 +16,16 @@ namespace XYZ {
 		{
 			result + "out";
 		}
-		result += " " + VariableTypeToGLSL(type) + " " + name;
+		result += " " + type.Name + " " + name;
 	}
 
-	static void AddOutputArgument(std::string& result, VariableType type, const std::string& name)
+	static void AddOutputArgument(std::string& result, const VariableType& type, const std::string& name)
 	{
-		if (VariableSizeGLSL(type) >= 16)
+		if (type.Size >= 16)
 		{
 			result += "in";
 		}
-		result += "out " + VariableTypeToGLSL(type) + " " + name;
+		result += "out " + type.Name + " " + name;
 	}
 
 
@@ -72,11 +72,11 @@ namespace XYZ {
 			{
 				if (var.IsArray)
 				{
-					m_SourceCode += fmt::format("	{} {}[];\n", VariableTypeToGLSL(var.Type), var.Name);
+					m_SourceCode += fmt::format("	{} {}[];\n", var.Type.Name, var.Name);
 				}
 				else
 				{
-					m_SourceCode += fmt::format("	{} {};\n", VariableTypeToGLSL(var.Type), var.Name);
+					m_SourceCode += fmt::format("	{} {};\n", var.Type.Name, var.Name);
 				}
 				offset += var.Size;
 			}
@@ -92,6 +92,7 @@ namespace XYZ {
 
 	void Blueprint::addFunctionDefinition(const BlueprintFunction& func)
 	{
+		XYZ_ASSERT(!func.Entry, "");
 		addBeginFunction(func);
 
 		m_SourceCode += func.SourceCode;
@@ -100,6 +101,12 @@ namespace XYZ {
 
 	void Blueprint::addFunctionSequence(const BlueprintFunctionSequence& seq)
 	{
+		XYZ_ASSERT(seq.EntryPoint.Entry, "Entry point is not marked as entry");
+		//m_SourceCode += fmt::format(
+		//	"layout(local_size.x = {}, local_size_y = {}, local_size_z = {}) in",
+		//	
+		//	);
+		
 		addBeginFunction(seq.EntryPoint);
 
 		for (auto& call : seq.FunctionCalls)
@@ -125,7 +132,7 @@ namespace XYZ {
 
 	void Blueprint::addBeginFunction(const BlueprintFunction& func)
 	{
-		m_SourceCode += VariableTypeToGLSL(func.OutputType) + " " + func.Name + "(";
+		m_SourceCode += "void " + func.Name + "(";
 
 		for (size_t i = 0; i < func.Arguments.size(); ++i)
 		{

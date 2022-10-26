@@ -183,8 +183,8 @@ namespace XYZ {
 	{
 		std::vector<Variable> tempVariables;
 		tempVariables.reserve(variables.size());
-		for (auto& var : variables)
-			tempVariables.push_back(Variable{ VariableTypeToGLSL(var.Type), var.Name, var.Size, var.IsArray});
+		//for (auto& var : variables)
+		//	tempVariables.push_back(Variable{ VariableTypeToGLSL(var.Type), var.Name, var.Size, var.IsArray});
 
 		return tempVariables;
 	}

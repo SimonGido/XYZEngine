@@ -12,7 +12,8 @@ namespace XYZ {
 		ParticleEditorGPU::ParticleEditorGPU(std::string name)
 			:
 			EditorPanel(name),
-			m_NodeEditor("Particle Editor")
+			m_NodeEditor("Particle Editor"),
+			m_BlueprintManager(&m_VariableManager)
 		{
 			m_NodeEditor.OnStart();
 			m_NodeEditor.OnBackgroundMenu = [this]() {
@@ -129,8 +130,6 @@ namespace XYZ {
 						else
 							funcNode->AddInputArgument(arg.Name, arg.Type);
 					}
-					if (func.OutputType != VariableType::Void)
-						funcNode->AddOutput(func.OutputType);
 				}
 			}
 		}
@@ -155,11 +154,11 @@ namespace XYZ {
 
 				if (ImGui::BeginPopup(popupName.c_str()))
 				{
-					for (const auto& varType : VariableTypes())
+					for (const auto& [name, type] : m_VariableManager.GetVariableTypes())
 					{
-						if (ImGui::MenuItem(varType.TypeString.c_str()))
+						if (ImGui::MenuItem(name.c_str()))
 						{
-							structType.Variables[selectedIndex].Type = varType.Type;
+							structType.Variables[selectedIndex].Type = type;
 						}
 					}
 					ImGui::EndPopup();
@@ -173,7 +172,7 @@ namespace XYZ {
 						UI::TableRow(indexStr.c_str(),
 							[&]() 
 							{
-								ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), VariableTypeToImGui(var.Type).c_str());
+								ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), var.Type.Name.c_str());
 								// Type was selected
 								if (UI::IsTextDeactivated())
 								{
@@ -241,7 +240,6 @@ namespace XYZ {
 					
 					auto& funcCall = sequence.FunctionCalls.emplace_back();
 					funcCall.Name = blueprintFunction.Name;
-					funcCall.OutputType = blueprintFunction.OutputType;
 					funcCall.Arguments = blueprintFunction.Arguments;
 				}
 				result->SetFunctionSequence(sequence);

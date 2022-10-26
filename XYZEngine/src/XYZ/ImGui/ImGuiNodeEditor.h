@@ -3,6 +3,7 @@
 #include "XYZ/Core/Timestep.h"
 
 #include "ImGuiNode.h"
+#include "ImGuiVariableTypeExtension.h"
 
 #include <imgui.h>
 #include <imgui_node_editor.h>
@@ -32,16 +33,21 @@ namespace XYZ {
 		void RemoveNode(ed::NodeId id);
 
 		ImGuiNode*			FindNode(ed::NodeId id);
+		ImGuiNodeValue*		FindNodeValue(ed::PinId id);
+		ImGuiFunctionNode*  FindFunctionNode(ed::PinId id);
+		ImGuiFunctionNode*  FindFunctionNodeByInput(ed::PinId id);
+
 		const ImGuiLink*	FindLink(ed::PinId pinID) const;
 		const ImGuiLink*	FindLink(ed::PinId inputID, ed::PinId outputID) const;
 		const ImGuiLink*	FindLink(ed::LinkId linkID) const;
-		VariableType		FindPinType(ed::PinId pinID);
+		const VariableType*	FindPinType(ed::PinId pinID) const;
 
 		std::vector<ImGuiValueNode*>	FindValueNodes() const;
 		std::vector<ImGuiFunctionNode*> FindFunctionSequence() const;
 
 		std::function<void()> OnBackgroundMenu;
 
+		ImGuiVariableTypeExtension VariableExtension;
 	private:
 		void addOutputFunctionSequence(ImGuiFunctionNode* last, std::vector<ImGuiFunctionNode*>& result) const;
 		void createLinks();

@@ -5,36 +5,17 @@
 namespace XYZ {
 	namespace Editor {
 
-		static void AddInputArgument(std::string& result, VariableType type, const std::string& name, bool isOutput)
-		{
-			if (VariableSizeGLSL(type) >= 16)
-			{
-				result += "in";
-			}
-			if (isOutput)
-			{
-				result + "out";
-			}
-			result += " " + VariableTypeToGLSL(type) + " " + name;
-		}
+	
 
-		static void AddOutputArgument(std::string& result, VariableType type, const std::string& name)
-		{
-			if (VariableSizeGLSL(type) >= 16)
-			{
-				result += "in";
-			}
-			result += "out " + VariableTypeToGLSL(type) + " " + name;
-		}
-
-		BlueprintManager::BlueprintManager()
+		BlueprintManager::BlueprintManager(VariableManager* manager)
+			:
+			m_VariableManager(manager)
 		{
 			{
 				BlueprintFunction func;
 				func.Name = "Vec4ToVec3";
-				func.Arguments.push_back({ VariableType::Vec4, "input" });
-				func.Arguments.push_back({ VariableType::Vec3, "output", true });
-				func.OutputType = VariableType::Void;
+				func.Arguments.push_back({ manager->GetVariable("vec4"), "input"});
+				func.Arguments.push_back({ manager->GetVariable("vec3"), "output", true});
 
 				func.SourceCode = "vec3 output = input.xyz;\n";
 
@@ -44,10 +25,10 @@ namespace XYZ {
 			{
 				BlueprintFunction func;
 				func.Name = "TranslationMatrix";
-				func.Arguments.push_back({ VariableType::Vec3, "translation" });
-				func.Arguments.push_back({ VariableType::Vec3, "scale" });
-				func.Arguments.push_back({ VariableType::Mat4, "transform", true });
-				func.OutputType = VariableType::Void;
+				func.Arguments.push_back({ manager->GetVariable("vec3"), "translation" });
+				func.Arguments.push_back({ manager->GetVariable("vec3"), "scale" });
+				func.Arguments.push_back({ manager->GetVariable("mat4"), "transform", true });
+
 				func.SourceCode =
 					"transform = mat4(\n"
 					"	vec4(scale.x, 0.0, 0.0, 0.0),\n"
@@ -61,11 +42,11 @@ namespace XYZ {
 			{
 				BlueprintFunction func;
 				func.Name = "SplitTransform";
-				func.Arguments.push_back({ VariableType::Mat4, "transform" });
+				func.Arguments.push_back({ manager->GetVariable("mat4"), "transform" });
 
-				func.Arguments.push_back({ VariableType::Vec4, "transformRow0", true });
-				func.Arguments.push_back({ VariableType::Vec4, "transformRow1", true });
-				func.Arguments.push_back({ VariableType::Vec4, "transformRow2", true });
+				func.Arguments.push_back({ manager->GetVariable("vec4"), "transformRow0", true });
+				func.Arguments.push_back({ manager->GetVariable("vec4"), "transformRow1", true });
+				func.Arguments.push_back({ manager->GetVariable("vec4"), "transformRow2", true });
 
 				func.SourceCode =
 					"transformRow0 = vec4(transform[0][0], transform[1][0], transform[2][0], transform[3][0]);\n"
@@ -78,36 +59,14 @@ namespace XYZ {
 
 			{
 				BlueprintFunction func;
-				func.Name = "EntryPoint";
-
+				func.Name = "main";
+				func.Entry = true;
+				func.Arguments.push_back({ manager->GetVariable("ivec3"), "workgroups" });
 				m_Functions.emplace_back(std::move(func));
 			}
 
 		}
-		std::string BlueprintManager::GetFunctionString(const std::string& name) const
-		{
-			const auto& func = *FindFunction(name);
-			
-			std::string result;
-			result += VariableTypeToGLSL(func.OutputType) + " " + func.Name + "(";
-
-			for (size_t i = 0; i < func.Arguments.size(); ++i)
-			{
-				auto& arg = func.Arguments[i];
-
-				AddInputArgument(result, arg.Type, arg.Name, arg.Output);
-				if (i == func.Arguments.size() - 1)
-					result += ")";
-				else
-					result += ",";
-			}
-			result += "\n";
-			result += "{\n";
-			result += func.SourceCode;
-			result += "\n}\n";
-
-			return result;
-		}
+		
 		BlueprintFunction* BlueprintManager::FindFunction(const std::string_view name)
 		{
 			for (auto& func : m_Functions)

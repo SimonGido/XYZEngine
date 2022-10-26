@@ -39,6 +39,7 @@ namespace XYZ {
 
 			std::unordered_map<std::string, size_t> m_PerTypeSelection;
 
+			VariableManager	 m_VariableManager;
 			BlueprintManager m_BlueprintManager;
 		};
 	}

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "XYZ/Utils/VariableTypes.h"
+#include "XYZ/Scene/BlueprintVariableType.h"
 
 #include <imgui.h>
 #include <imgui_node_editor.h>
@@ -19,69 +19,75 @@ namespace XYZ {
 
 	
 	class ImGuiNodeEditor;
+	
 	class ImGuiNode;
+	class ImGuiValueNode;
+	class ImGuiFunctionNode;
 
 	struct ImGuiNodeValue
 	{
-		ImGuiNodeValue(ImGuiNode* parent);
+		ImGuiNodeValue(ImGuiValueNode* parent);
 
-		void OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID, float padding);
+		void OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID);
 
-		ed::PinId InputPinID;
-		ed::PinId OutputPinID;
 
 		void SetName(std::string name);
-		void SetType(VariableType type);
+		void SetType(const VariableType& type);
 
 		const std::string& GetName() const { return m_Name; }
-		VariableType GetType() const { return m_Type; }
+		const VariableType& GetType() const { return m_Type; }
+
+		
+		std::array<std::byte, 128> Data;
 
 	private:
-		std::string  m_Name;
-		VariableType m_Type = VariableType::None;
+		ImGuiValueNode*  m_Parent;
+		std::string		 m_Name;
+		VariableType	 m_Type;
+		ed::PinId		 m_OutputPinID;
 
-		ImGuiNode* m_Parent;
+		friend ImGuiValueNode;
 	};
 
 	struct ImGuiNodeArgument
 	{
-		ImGuiNodeArgument(ImGuiNode* parent);
+		ImGuiNodeArgument(ImGuiFunctionNode* parent);
 
 		void OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID);
 
 		ed::PinId InputPinID;
 
 		void SetName(std::string name);
-		void SetType(VariableType type);
+		void SetType(const VariableType& type);
 
 		const std::string& GetName() const { return m_Name; }
-		VariableType GetType() const { return m_Type; }
+		const VariableType& GetType() const { return m_Type; }
 
 
 	private:
 		std::string  m_Name;
-		VariableType m_Type = VariableType::None;
+		VariableType m_Type;
 		
-		ImGuiNode* m_Parent;
+		ImGuiFunctionNode* m_Parent;
 	};
 
 	struct ImGuiNodeOutput
 	{
-		ImGuiNodeOutput(ImGuiNode* parent);
+		ImGuiNodeOutput(ImGuiFunctionNode* parent);
 
 		void OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID, float padding);
 
 		ed::PinId OutputPinID;
 
-		void SetType(VariableType type);
+		void SetType(const VariableType& type);
 
-		VariableType GetType() const { return m_Type; }
+		const VariableType& GetType() const { return m_Type; }
 
 	private:
-		VariableType m_Type = VariableType::None;
+		VariableType m_Type;
 		float		 m_TypeTextSize = 0.0f;
 
-		ImGuiNode* m_Parent;
+		ImGuiFunctionNode* m_Parent;
 	};
 
 	class ImGuiNode
@@ -97,7 +103,7 @@ namespace XYZ {
 
 		virtual void DeleteLinks() = 0;
 
-		virtual VariableType FindPinType(ed::PinId id) const = 0;
+		virtual const VariableType* FindPinType(ed::PinId id) const = 0;
 		
 		const std::string& GetName() const { return m_Name; }
 		const ed::NodeId   GetID() const { return m_ID; }
@@ -111,14 +117,8 @@ namespace XYZ {
 
 	protected:
 		ImGuiNodeEditor* m_Editor;
-
-		float m_OutputPadding = 0.0f;
-		bool  m_RecalcPadding = true;
-
+		
 		friend ImGuiNodeEditor;
-		friend ImGuiNodeValue;
-		friend ImGuiNodeArgument;
-		friend ImGuiNodeOutput;
 	};
 
 
@@ -135,9 +135,9 @@ namespace XYZ {
 
 		virtual void DeleteLinks() override;
 
-		virtual VariableType FindPinType(ed::PinId id) const override;
+		virtual const VariableType* FindPinType(ed::PinId id) const override;
 
-		void AddValue(std::string name, VariableType type);
+		void AddValue(std::string name, const VariableType& type);
 
 		ImGuiNodeValue* FindValue(ed::PinId pinID);
 		const ImGuiNodeValue* FindValue(ed::PinId pinID) const;
@@ -148,10 +148,13 @@ namespace XYZ {
 		void renderHeader();
 
 		void calculatePadding();
-
 	private:
 		std::vector<ImGuiNodeValue> m_Values;
 		
+		float m_Padding = 0.0f;
+		bool  m_RecalcPadding = true;
+
+		friend ImGuiNodeValue;
 	};
 
 
@@ -168,11 +171,11 @@ namespace XYZ {
 
 		virtual void DeleteLinks() override;
 
-		virtual VariableType FindPinType(ed::PinId id) const override;
+		virtual const VariableType* FindPinType(ed::PinId id) const override;
 
-		void AddInputArgument(std::string name, VariableType type);
+		void AddInputArgument(std::string name, const VariableType& type);
 
-		void AddOutput(VariableType type);
+		void AddOutput(const VariableType& type);
 
 		ed::PinId GetInputPinID() const { return m_InputPinID;  }
 		ed::PinId GetOutputPinID() const { return m_OutputPinID; }
@@ -195,6 +198,12 @@ namespace XYZ {
 		std::vector<ImGuiNodeOutput>   m_Outputs;
 
 		ed::PinId	 m_InputPinID;
-		ed::PinId	 m_OutputPinID;		
+		ed::PinId	 m_OutputPinID;	
+
+		float m_OutputPadding = 0.0f;
+		bool  m_RecalcPadding = true;
+
+		friend ImGuiNodeOutput;
+		friend ImGuiNodeArgument;
 	};
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/Utils/VariableTypes.h"
+#include "XYZ/Scene/BlueprintVariableType.h"
 
 namespace XYZ {
 
@@ -7,10 +7,9 @@ namespace XYZ {
 	struct ParticleVariable
 	{
 		std::string			 Name;
-		VariableType		 Type = VariableType::None;
+		VariableType		 Type;
 		bool				 IsArray = false;
 		uint32_t			 Offset = 0;
-		uint32_t			 Size = 0;
 	};
 
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/Utils/VariableTypes.h"
+#include "XYZ/Scene/BlueprintVariableType.h"
 #include "XYZ/Scene/Blueprint.h"
 
 #include <string>
@@ -12,9 +12,8 @@ namespace XYZ {
 		class BlueprintManager
 		{
 		public:
-			BlueprintManager();
+			BlueprintManager(VariableManager* manager);
 
-			std::string GetFunctionString(const std::string& name) const;
 
 
 			BlueprintFunction* FindFunction(const std::string_view name);
@@ -29,8 +28,9 @@ namespace XYZ {
 
 			
 		private:
-			std::vector<BlueprintStruct>	   m_Types;
+			std::vector<BlueprintStruct>   m_Types;
 			std::vector<BlueprintFunction> m_Functions;
+			VariableManager*			   m_VariableManager;
 		};
 
 	}
