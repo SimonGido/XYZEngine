@@ -158,6 +158,7 @@ namespace XYZ {
 
     ImGuiValueNode::~ImGuiValueNode()
     {
+        DeleteLinks();
         for (auto& val : m_Values)
         {
             m_Editor->m_FreeIDs.push(val.InputPinID.Get());
@@ -200,6 +201,27 @@ namespace XYZ {
                 return true;
         }
         return false;
+    }
+
+    void ImGuiValueNode::DeleteLinks()
+    {
+        for (auto it = m_Editor->m_Links.begin(); it != m_Editor->m_Links.end();)
+        {
+            for (auto& val : m_Values)
+            {
+                if (it->InputID == val.InputPinID 
+                 || it->InputID == val.OutputPinID
+                 || it->OutputID == val.InputPinID
+                 || it->OutputID == val.OutputPinID)
+                {
+                    it = m_Editor->m_Links.erase(it);
+                }
+                else
+                {
+                    it++;
+                }
+            }
+        }
     }
 
     VariableType ImGuiValueNode::FindPinType(ed::PinId id) const
@@ -266,6 +288,7 @@ namespace XYZ {
     }
     ImGuiFunctionNode::~ImGuiFunctionNode()
     {
+        DeleteLinks();
         for (auto& val : m_InputArguments)
         {
             m_Editor->m_FreeIDs.push(val.InputPinID.Get());
@@ -307,8 +330,7 @@ namespace XYZ {
             auto& outputValue = m_Outputs[i];
             outputValue.OnImGuiRender(m_Editor, GetID(), m_OutputPadding);
         }
-         
-        renderOutputValuePin();
+        
 
         ed::EndNode();
         m_RecalcPadding = false;
@@ -323,7 +345,30 @@ namespace XYZ {
             if (inputType == output->GetType())
                 return true;
         }
+        // Connecting functions
+        if (inputType == VariableType::Function)
+        {
+            if (outputPinID == m_OutputPinID || outputPinID == m_InputPinID)
+                return true;
+        }
         return false;
+    }
+    void ImGuiFunctionNode::DeleteLinks()
+    {
+        deleteInputArgumentLinks();
+        deleteOutputArgumentLinks();
+        for (auto it = m_Editor->m_Links.begin(); it != m_Editor->m_Links.end();)
+        {
+            if (it->InputID == m_InputPinID
+             || it->InputID == m_OutputPinID)
+            {
+                it = m_Editor->m_Links.erase(it);
+            }
+            else
+            {
+                it++;
+            }
+        }
     }
     VariableType ImGuiFunctionNode::FindPinType(ed::PinId id) const
     {
@@ -338,6 +383,9 @@ namespace XYZ {
             if (var.InputPinID == id)
                 return var.GetType();
         }
+        if (id == m_InputPinID || id == m_OutputPinID)
+            return VariableType::Function;
+ 
         return VariableType::None;
     }
     void ImGuiFunctionNode::AddInputArgument(std::string name, VariableType type)
@@ -390,11 +438,7 @@ namespace XYZ {
     }
 
 
-    void ImGuiFunctionNode::renderOutputValuePin()
-    {
-        
-    }
-
+ 
     void ImGuiFunctionNode::calculatePadding()
     {
         // Header
@@ -421,5 +465,41 @@ namespace XYZ {
                 m_OutputPadding = std::max(padding, m_OutputPadding);
             }
         }
-    }  
+    }
+    void ImGuiFunctionNode::deleteInputArgumentLinks()
+    {
+        for (auto it = m_Editor->m_Links.begin(); it != m_Editor->m_Links.end();)
+        {
+            for (auto& arg : m_InputArguments)
+            {
+                if (it->InputID == arg.InputPinID
+                    || it->OutputID == arg.InputPinID)
+                {
+                    it = m_Editor->m_Links.erase(it);
+                }
+                else
+                {
+                    it++;
+                }
+            }
+        }
+    }
+    void ImGuiFunctionNode::deleteOutputArgumentLinks()
+    {
+        for (auto it = m_Editor->m_Links.begin(); it != m_Editor->m_Links.end();)
+        {
+            for (auto& arg : m_Outputs)
+            {
+                if (it->InputID == arg.OutputPinID
+                 || it->OutputID == arg.OutputPinID)
+                {
+                    it = m_Editor->m_Links.erase(it);
+                }
+                else
+                {
+                    it++;
+                }
+            }
+        }
+    }
 }

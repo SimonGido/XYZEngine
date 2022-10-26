@@ -25,6 +25,7 @@ namespace XYZ {
 		AnimationController,
 		Skeleton,
 		Prefab,
+		Blueprint,
 		ParticleSystemGPU,
 		NumTypes
 	};
@@ -58,7 +59,8 @@ namespace XYZ {
 			if (assetType == "AnimationController")		  return AssetType::AnimationController;
 			if (assetType == "Skeleton")				  return AssetType::Skeleton;
 			if (assetType == "Prefab")					  return AssetType::Prefab;
-			
+			if (assetType == "Blueprint")				  return AssetType::Blueprint;
+			if (assetType == "ParticleSystemGPU")		  return AssetType::ParticleSystemGPU;
 
 			XYZ_ASSERT(false, "Unknown Asset Type");
 			return AssetType::None;
@@ -83,6 +85,8 @@ namespace XYZ {
 			case XYZ::AssetType::AnimationController:			return "AnimationController";
 			case XYZ::AssetType::Skeleton:						return "Skeleton";
 			case XYZ::AssetType::Prefab:						return "Prefab";
+			case XYZ::AssetType::Blueprint:						return "Blueprint";
+			case XYZ::AssetType::ParticleSystemGPU:				return "ParticleSystemGPU";
 			default:
 				break;
 			}

@@ -29,37 +29,48 @@ namespace XYZ {
 	void ImGuiNodeEditor::OnUpdate(Timestep ts)
 	{
 		auto& io = ImGui::GetIO();
-
-		if (ImGui::Begin(m_Name.c_str()))
-		{
-			ed::SetCurrentEditor(m_Context);
-			ed::Begin(m_Name.c_str());
-			
-			for (auto node : m_Nodes)
-			{
-				node->OnImGuiRender();
-			}
-			// Submit Links
-			for (auto& linkInfo : m_Links)
-				ed::Link(linkInfo.ID, linkInfo.InputID, linkInfo.OutputID);
 		
-			createLinks();
-			deleteLinks();
-	
-			ed::Suspend();
-			if (ed::ShowBackgroundContextMenu())
-				ImGui::OpenPopup("Background Menu");
-			else if (ed::ShowLinkContextMenu(&m_ContextLinkID))
-				ImGui::OpenPopup("Link Context Menu");
-
-			handleBackgroundMenu();
-			handleLinkMenu(m_ContextLinkID);
-			ed::Resume();
-
-			ed::End();
-			ed::SetCurrentEditor(nullptr);
+		ed::SetCurrentEditor(m_Context);
+		ed::Begin(m_Name.c_str());
+		
+		for (auto node : m_Nodes)
+		{
+			node->OnImGuiRender();
 		}
-		ImGui::End();
+		// Submit Links
+		for (auto& linkInfo : m_Links)
+			ed::Link(linkInfo.ID, linkInfo.InputID, linkInfo.OutputID);
+		
+		createLinks();
+		deleteLinks();
+	
+		ed::Suspend();
+		if (ed::ShowBackgroundContextMenu())
+			ImGui::OpenPopup("Background Menu");
+		else if (ed::ShowNodeContextMenu(&m_ContextNodeID))
+			ImGui::OpenPopup("Node Context Menu");
+		else if (ed::ShowLinkContextMenu(&m_ContextLinkID))
+			ImGui::OpenPopup("Link Context Menu");
+
+		handleBackgroundMenu();
+		handleNodeMenu(m_ContextNodeID);
+		handleLinkMenu(m_ContextLinkID);
+		ed::Resume();
+
+		ed::End();
+		ed::SetCurrentEditor(nullptr);
+	}
+
+	void ImGuiNodeEditor::Clear()
+	{
+		for (auto node : m_Nodes)
+			delete node;
+
+		m_Nodes.clear();
+
+		m_Links.clear();
+		m_FreeIDs = std::queue<uint32_t>();
+		m_UniqueID = 1;
 	}
 
 	
@@ -77,7 +88,30 @@ namespace XYZ {
 		}
 	}
 
-	ImGuiLink* ImGuiNodeEditor::FindLink(ed::PinId pinID)
+	void ImGuiNodeEditor::RemoveNode(ed::NodeId id)
+	{
+		for (auto it = m_Nodes.begin(); it != m_Nodes.end(); ++it)
+		{
+			if ((*it)->GetID() == id)
+			{
+				delete (*it);
+				m_Nodes.erase(it);
+				return;
+			}
+		}
+	}
+
+	ImGuiNode* ImGuiNodeEditor::FindNode(ed::NodeId id)
+	{
+		for (auto node : m_Nodes)
+		{
+			if (node->GetID() == id)
+				return node;
+		}
+		return nullptr;
+	}
+
+	const ImGuiLink* ImGuiNodeEditor::FindLink(ed::PinId pinID) const
 	{
 		for (auto& link : m_Links)
 		{
@@ -89,7 +123,17 @@ namespace XYZ {
 		return nullptr;
 	}
 
-	ImGuiLink* ImGuiNodeEditor::FindLink(ed::LinkId linkID)
+	const ImGuiLink* ImGuiNodeEditor::FindLink(ed::PinId inputID, ed::PinId outputID) const
+	{
+		for (auto& link : m_Links)
+		{
+			if (link.InputID == inputID && link.OutputID == outputID)
+				return &link;
+		}
+		return nullptr;
+	}
+
+	const ImGuiLink* ImGuiNodeEditor::FindLink(ed::LinkId linkID) const
 	{
 		for (auto& link : m_Links)
 		{
@@ -109,6 +153,58 @@ namespace XYZ {
 		}
 		return VariableType::None;
 	}
+	std::vector<ImGuiValueNode*> ImGuiNodeEditor::FindValueNodes() const
+	{
+		std::vector<ImGuiValueNode*> result;
+		for (auto node : m_Nodes)
+		{
+			if (auto valueNode = dynamic_cast<ImGuiValueNode*>(node))
+			{
+				result.push_back(valueNode);
+			}
+		}
+		return result;
+	}
+
+	std::vector<ImGuiFunctionNode*> ImGuiNodeEditor::FindFunctionSequence() const
+	{
+		std::vector<ImGuiFunctionNode*> result;
+		// Find first node in sequence
+		for (auto node : m_Nodes)
+		{
+			if (auto funcNode = dynamic_cast<ImGuiFunctionNode*>(node))
+			{
+				// Nothing is connected to the input => it is root
+				if (!FindLink(funcNode->GetInputPinID()))
+				{
+					result.push_back(funcNode);
+					break;
+				}
+			}
+		}
+		if (!result.empty())
+		{
+			addOutputFunctionSequence(result.back(), result);
+		}
+		return result;
+	}
+
+	void ImGuiNodeEditor::addOutputFunctionSequence(ImGuiFunctionNode* last, std::vector<ImGuiFunctionNode*>& result) const
+	{
+		for (auto node : m_Nodes)
+		{
+			if (auto funcNode = dynamic_cast<ImGuiFunctionNode*>(node))
+			{
+				auto link = FindLink(last->GetOutputPinID(), funcNode->GetInputPinID());
+				if (link)
+				{
+					result.push_back(funcNode);
+					addOutputFunctionSequence(result.back(), result);
+					return;
+				}
+			}
+		}
+	}
 
 	void ImGuiNodeEditor::createLinks()
 	{
@@ -119,11 +215,11 @@ namespace XYZ {
 			if (ed::QueryNewLink(&inputPinID, &outputPinID))
 			{
 				if (inputPinID && outputPinID) // both are valid, let's accept link
-				{
-					if (acceptLink(inputPinID, outputPinID))
+				{				
+					// ed::AcceptNewItem() return true when user release mouse button.
+					if (ed::AcceptNewItem())
 					{
-						// ed::AcceptNewItem() return true when user release mouse button.
-						if (ed::AcceptNewItem())
+						if (acceptLink(inputPinID, outputPinID))
 						{
 							// Since we accepted new link, lets add one to our list of links.
 							m_Links.push_back({ ed::LinkId(m_UniqueID++), inputPinID, outputPinID });
@@ -132,6 +228,7 @@ namespace XYZ {
 							ed::Link(m_Links.back().ID, m_Links.back().InputID, m_Links.back().OutputID);
 						}
 					}
+					
 				}
 			}
 		}
@@ -174,6 +271,18 @@ namespace XYZ {
 			if (OnBackgroundMenu)
 				OnBackgroundMenu();
 
+			ImGui::EndPopup();
+		}
+	}
+
+	void ImGuiNodeEditor::handleNodeMenu(ed::NodeId id)
+	{
+		if (ImGui::BeginPopup("Node Context Menu"))
+		{
+			if (ImGui::MenuItem("Delete"))
+			{
+				RemoveNode(id);
+			}
 			ImGui::EndPopup();
 		}
 	}

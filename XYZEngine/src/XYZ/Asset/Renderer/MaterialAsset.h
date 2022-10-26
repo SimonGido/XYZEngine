@@ -28,12 +28,15 @@ namespace XYZ {
 		virtual ~MaterialAsset() override;
 
 		void SetShaderAsset(Ref<ShaderAsset> shaderAsset);
+		// Regular textures
 		void SetTexture(const std::string& name, Ref<Texture2D> texture);
+		// Texture arrays
 		void SetTexture(const std::string& name, Ref<Texture2D> texture, uint32_t index);
 
-
+		// NOTE: unused
 		void SetOpaque(bool opaque) { m_Opaque = opaque; }
 		bool IsOpaque() const { return m_Opaque; }
+		/////////////////
 
 		template <typename T>
 		void Set(const std::string_view name, const T& val);
@@ -70,7 +73,7 @@ namespace XYZ {
 		Ref<MaterialInstance>		  m_MaterialInstance;
 		std::vector<TextureData>	  m_Textures;
 		std::vector<TextureArrayData> m_TextureArrays;
-		bool						  m_Opaque = true;
+		bool						  m_Opaque = true; // NOTE: unused
 
 		// NOTE: this is used only in compute pipeline now
 		PipelineSpecialization m_Specialization;

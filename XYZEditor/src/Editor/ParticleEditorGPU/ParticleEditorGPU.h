@@ -1,10 +1,13 @@
 #pragma once
 #include "XYZ/ImGui/ImGuiNodeEditor.h"
+#include "XYZ/Scene/Blueprint.h"
+
 #include "Editor/EditorPanel.h"
-#include "ParticleEditorFunctions.h"
+#include "Editor/Blueprint/BlueprintManager.h"
 
 namespace XYZ {
 	namespace Editor {
+		//TODO: rename to blueprint editor
 		class ParticleEditorGPU : public EditorPanel
 		{
 		public:
@@ -18,14 +21,25 @@ namespace XYZ {
 			virtual void SetSceneContext(const Ref<Scene>& scene) override;
 
 		private:
-			void createDefaultFunctions();
+			void onBackgroundMenu();
 
+			void onParticleSystemSelected();
+
+			void editBlueprintTypes();
+
+			Ref<Blueprint> createBlueprint() const;
 		private:
-			ImGuiNodeEditor	m_NodeEditor;
-			Ref<Scene>		m_Scene;
-			float			m_Timestep = 0.0f;
+			ImGuiNodeEditor	       m_NodeEditor;
+			Ref<Scene>			   m_Scene;
+			Ref<ParticleSystemGPU> m_ParticleSystem;
+			Ref<Blueprint>		   m_Blueprint;
 
-			std::unordered_map<std::string, ParticleEditorFunction> m_Functions;
+			float				   m_Timestep = 0.0f;
+			float				   m_SplitterWidth = 200.0f;
+
+			std::unordered_map<std::string, size_t> m_PerTypeSelection;
+
+			BlueprintManager m_BlueprintManager;
 		};
 	}
 }

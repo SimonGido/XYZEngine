@@ -22,22 +22,33 @@ namespace XYZ {
 		
 		void OnUpdate(Timestep ts);
 
+		void Clear();
+
 		template <typename T>
 		T* AddNode(std::string name);
 
 		void RemoveNode(const std::string_view name);
 		
-		ImGuiLink*	FindLink(ed::PinId pinID);
-		ImGuiLink*	FindLink(ed::LinkId linkID);
-		VariableType FindPinType(ed::PinId pinID);
+		void RemoveNode(ed::NodeId id);
+
+		ImGuiNode*			FindNode(ed::NodeId id);
+		const ImGuiLink*	FindLink(ed::PinId pinID) const;
+		const ImGuiLink*	FindLink(ed::PinId inputID, ed::PinId outputID) const;
+		const ImGuiLink*	FindLink(ed::LinkId linkID) const;
+		VariableType		FindPinType(ed::PinId pinID);
+
+		std::vector<ImGuiValueNode*>	FindValueNodes() const;
+		std::vector<ImGuiFunctionNode*> FindFunctionSequence() const;
 
 		std::function<void()> OnBackgroundMenu;
 
 	private:
+		void addOutputFunctionSequence(ImGuiFunctionNode* last, std::vector<ImGuiFunctionNode*>& result) const;
 		void createLinks();
 		void deleteLinks();
 
 		void handleBackgroundMenu();
+		void handleNodeMenu(ed::NodeId id);
 		void handleLinkMenu(ed::LinkId id);
 
 		bool acceptLink(ed::PinId inputPinID, ed::PinId outputPinID) const;
@@ -52,9 +63,10 @@ namespace XYZ {
 		std::vector<ImGuiNode*> m_Nodes;
 		std::vector<ImGuiLink>  m_Links;
 
-		uint32_t m_UniqueID = 0;
+		uint32_t m_UniqueID = 1;
 
 		ed::LinkId m_ContextLinkID;
+		ed::NodeId m_ContextNodeID;
 
 		std::queue<uint32_t> m_FreeIDs;
 

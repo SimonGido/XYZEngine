@@ -95,6 +95,8 @@ namespace XYZ {
 
 		virtual bool AcceptLink(ed::PinId inputPinID, ed::PinId outputPinID) = 0;
 
+		virtual void DeleteLinks() = 0;
+
 		virtual VariableType FindPinType(ed::PinId id) const = 0;
 		
 		const std::string& GetName() const { return m_Name; }
@@ -131,12 +133,16 @@ namespace XYZ {
 
 		virtual bool AcceptLink(ed::PinId inputPinID, ed::PinId outputPinID) override;
 
+		virtual void DeleteLinks() override;
+
 		virtual VariableType FindPinType(ed::PinId id) const override;
 
 		void AddValue(std::string name, VariableType type);
 
 		ImGuiNodeValue* FindValue(ed::PinId pinID);
 		const ImGuiNodeValue* FindValue(ed::PinId pinID) const;
+
+		const std::vector<ImGuiNodeValue>& GetValues() const { return m_Values; }
 
 	private:
 		void renderHeader();
@@ -160,21 +166,30 @@ namespace XYZ {
 
 		virtual bool AcceptLink(ed::PinId inputPinID, ed::PinId outputPinID) override;
 
+		virtual void DeleteLinks() override;
+
 		virtual VariableType FindPinType(ed::PinId id) const override;
 
 		void AddInputArgument(std::string name, VariableType type);
 
 		void AddOutput(VariableType type);
 
+		ed::PinId GetInputPinID() const { return m_InputPinID;  }
+		ed::PinId GetOutputPinID() const { return m_OutputPinID; }
 
 		ImGuiNodeArgument* FindInputArgument(ed::PinId pinID);
 		const ImGuiNodeArgument* FindInputArgument(ed::PinId pinID) const;
 		
+
+		const std::vector<ImGuiNodeArgument>& GetInputArguments() const { return m_InputArguments;}
+		const std::vector<ImGuiNodeOutput>  & GetOutputArguments() const { return m_Outputs; }
 	private:
 		void renderHeader();
-		void renderOutputValuePin();
 
 		void calculatePadding();
+
+		void deleteInputArgumentLinks();
+		void deleteOutputArgumentLinks();
 	private:
 		std::vector<ImGuiNodeArgument> m_InputArguments;
 		std::vector<ImGuiNodeOutput>   m_Outputs;
