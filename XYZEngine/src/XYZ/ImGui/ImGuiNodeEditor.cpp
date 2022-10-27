@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ImGuiNodeEditor.h"
 
+#include "XYZ/Debug/Profiler.h"
+
 namespace ed = ax::NodeEditor;
 
 namespace XYZ {
@@ -28,6 +30,7 @@ namespace XYZ {
 
 	void ImGuiNodeEditor::OnUpdate(Timestep ts)
 	{
+		XYZ_PROFILE_FUNC("ImGuiNodeEditor::OnUpdate");
 		auto& io = ImGui::GetIO();
 		
 		ed::SetCurrentEditor(m_Context);
@@ -250,6 +253,7 @@ namespace XYZ {
 
 	void ImGuiNodeEditor::createLinks()
 	{
+		XYZ_PROFILE_FUNC("ImGuiNodeEditor::createLinks");
 		// Handle creation action, returns true if editor want to create new object (node or link)
 		if (ed::BeginCreate())
 		{
@@ -278,6 +282,7 @@ namespace XYZ {
 	}
 	void ImGuiNodeEditor::deleteLinks()
 	{
+		XYZ_PROFILE_FUNC("ImGuiNodeEditor::deleteLinks");
 		if (ed::BeginDelete())
 		{
 			// There may be many links marked for deletion, let's loop over them.

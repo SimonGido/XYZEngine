@@ -6,6 +6,9 @@
 #include "XYZ/Utils/FileSystem.h"
 
 namespace XYZ {
+
+	
+
 	static void AddInputArgument(std::string& result, const VariableType& type, const std::string& name, bool isOutput)
 	{
 		if (type.Size >= 16)
@@ -14,7 +17,7 @@ namespace XYZ {
 		}
 		if (isOutput)
 		{
-			result + "out";
+			result += "out";
 		}
 		result += " " + type.Name + " " + name;
 	}
@@ -41,6 +44,12 @@ namespace XYZ {
 		m_BuildRequired = true;
 	}
 
+	void Blueprint::AddBuffer(const BlueprintBuffer& buffer)
+	{
+		m_Buffers.push_back(buffer);
+		m_BuildRequired = true;
+	}
+
 	void Blueprint::SetFunctionSequence(const BlueprintFunctionSequence& seq)
 	{
 		m_Sequence = seq;
@@ -53,6 +62,10 @@ namespace XYZ {
 		{
 			addStructDefinition(str);
 		}
+		for (auto& buffer : m_Buffers)
+		{
+			addBufferDefinition(buffer);
+		}
 		for (auto& func : m_Functions)
 		{
 			addFunctionDefinition(func);
@@ -61,6 +74,29 @@ namespace XYZ {
 		m_BuildRequired = false;
 
 		FileSystem::WriteFile("Blueprint.glsl", m_SourceCode);
+	}
+	void Blueprint::addBufferDefinition(const BlueprintBuffer& buffer)
+	{
+		m_SourceCode += fmt::format("layout({}, set = {}, binding = {}) {} buffer_{}\n", 
+			BufferLayoutToString(buffer.LayoutType), 
+			buffer.Set,
+			buffer.Binding,
+			BufferTypeToString(buffer.Type),
+			buffer.Name
+		);
+		m_SourceCode += "{\n";
+		for (const auto& var : buffer.Variables)
+		{
+			if (var.IsArray)
+			{
+				m_SourceCode += fmt::format("	{} {}[];\n", var.Type.Name, var.Name);
+			}
+			else
+			{
+				m_SourceCode += fmt::format("	{} {};\n", var.Type.Name, var.Name);
+			}
+		}
+		m_SourceCode += "\n};\n";
 	}
 	void Blueprint::addStructDefinition(const BlueprintStruct& str)
 	{

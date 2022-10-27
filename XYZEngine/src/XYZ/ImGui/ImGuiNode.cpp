@@ -47,28 +47,41 @@ namespace XYZ {
     void ImGuiNodeValue::OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID)
     {
         static std::string editID = "##EditValue";
-        static ImVec2 arrowSize = ImGui::CalcTextSize("->");
 
-        // Display value
-        float cursorX = ImGui::GetCursorPosX();
-        ImGui::TextColored(sc_VariableColor, m_Type.Name.c_str());
-        ImGui::SameLine();
-        ImGui::Text(m_Name.c_str());
-        ImGui::SameLine();
-
-        ImGui::SetCursorPosX(cursorX + m_Parent->m_Padding);
+        if (!m_AllowEditData)
         {
-            UI::ScopedWidth scopedWidth(150.0f);
-            editor->VariableExtension.EditValue(m_Type.Name, editID.c_str(), Data.data());
+            ed::BeginPin(m_InputPinID, ed::PinKind::Input);
+            ImGui::Text("->");
+            ed::EndPin();
+            ImGui::SameLine();
         }
-        ImGui::SameLine();
 
+        UI::CursrorMoverX cursorMover;
+        {
+            ImGui::TextColored(sc_VariableColor, m_Type.Name.c_str());
+            ImGui::SameLine();
+
+            cursorMover.Move(m_Parent->m_ValueTypeMaxWidth + ImGui::GetStyle().ItemSpacing.x);
+            ImGui::Text(m_Name.c_str());
+           
+            ImGui::SameLine();
+            cursorMover.Move(m_Parent->m_ValueNameMaxWidth + ImGui::GetStyle().ItemSpacing.x);
+        }
+
+        if (m_AllowEditData)
+        {
+            UI::ScopedWidth scopedWidth(m_EditValueWidth);
+            editor->VariableExtension.EditValue(m_Type.Name, editID.c_str(), Data.data());
+            ImGui::SameLine();
+        }
+       
         // Output pin
-        ed::BeginPin(m_OutputPinID, ed::PinKind::Output);      
-        ImGui::Text("->");   
+        ed::BeginPin(m_OutputPinID, ed::PinKind::Output);
+        ImGui::Text("->");
         ed::EndPin();
     }
 
+   
 
     void ImGuiNodeValue::SetName(std::string name)
     {
@@ -81,6 +94,16 @@ namespace XYZ {
         m_Parent->m_RecalcPadding = true;
     }
 
+    void ImGuiNodeValue::SetEditValueWidth(float width)
+    {
+        m_EditValueWidth = width;
+        m_Parent->m_RecalcPadding = true;
+    }
+    void ImGuiNodeValue::SetAllowEdit(bool val)
+    {
+        m_AllowEditData = val;
+        m_Parent->m_RecalcPadding = true;
+    }
     ImGuiNodeArgument::ImGuiNodeArgument(ImGuiFunctionNode* parent)
         :
         m_Parent(parent)
@@ -93,6 +116,7 @@ namespace XYZ {
         ed::BeginPin(InputPinID, ed::PinKind::Input);
         ImGui::Text("->");
         ed::EndPin();
+
         // Display value
         ImGui::SameLine();
         ImGui::TextColored(sc_VariableColor, m_Type.Name.c_str());
@@ -118,15 +142,12 @@ namespace XYZ {
     {
     }
 
-    void ImGuiNodeOutput::OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID, float padding)
+    void ImGuiNodeOutput::OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID)
     {   
-        auto nodePosition = ed::GetNodePosition(nodeID);
-        ImGui::SetCursorPosX(nodePosition.x + padding - m_TypeTextSize - ImGui::GetStyle().ItemSpacing.x);
         ImGui::TextColored(sc_VariableColor, m_Type.Name.c_str());
         ImGui::SameLine();
 
         ed::BeginPin(OutputPinID, ed::PinKind::Output);
-        SetPinPadding(nodeID, padding);
         ImGui::Text("->");
         ed::EndPin();
     }
@@ -135,7 +156,6 @@ namespace XYZ {
     {
         m_Type = type;
         m_Parent->m_RecalcPadding = true;
-        m_TypeTextSize = ImGui::CalcTextSize(m_Type.Name.c_str()).x;
     }
 
 
@@ -163,6 +183,7 @@ namespace XYZ {
         for (auto& val : m_Values)
         {
             m_Editor->m_FreeIDs.push(val.m_OutputPinID.Get());
+            m_Editor->m_FreeIDs.push(val.m_InputPinID.Get());
         }
         m_Editor->m_FreeIDs.push(GetID().Get());
     }
@@ -175,7 +196,7 @@ namespace XYZ {
         if (m_RecalcPadding)
             calculatePadding();
 
-        renderHeader();
+        ImGui::TextColored(sc_StructHeaderColor, GetName().c_str());
 
         for (auto& value : m_Values)
         {
@@ -187,6 +208,14 @@ namespace XYZ {
 
     bool ImGuiValueNode::AcceptLink(ed::PinId inputPinID, ed::PinId outputPinID)
     {
+        auto inputType = m_Editor->FindPinType(inputPinID);
+        auto outputValue = FindValue(outputPinID);
+
+        if (outputValue && inputType)
+        {
+            if (*inputType == outputValue->GetType())
+                return true;
+        }
         return false;
     }
 
@@ -197,6 +226,8 @@ namespace XYZ {
             for (auto& val : m_Values)
             {
                 if (it->InputID == val.m_OutputPinID
+                 || it->OutputID == val.m_OutputPinID
+                 || it->InputID == val.m_InputPinID
                  || it->OutputID == val.m_OutputPinID)
                 {
                     it = m_Editor->m_Links.erase(it);
@@ -215,23 +246,33 @@ namespace XYZ {
         {
             if (var.m_OutputPinID == id)
                 return &var.m_Type;
+            if (var.m_InputPinID == id)
+                return &var.m_Type;
         }
         return nullptr;
     }
 
-    void ImGuiValueNode::AddValue(std::string name, const VariableType& type)
+    void ImGuiValueNode::AddValue(std::string name, const VariableType& type, bool allowEdit)
     {
         auto& val = m_Values.emplace_back(this);
         val.SetType(type);
         val.SetName(std::move(name));
+        val.SetAllowEdit(allowEdit);
         val.m_OutputPinID = m_Editor->getNextID();
+        val.m_InputPinID = m_Editor->getNextID();
+    }
+
+    void ImGuiValueNode::AllowEditValue(bool val)
+    {
+        for (auto& value : m_Values)
+            value.SetAllowEdit(val);
     }
 
     ImGuiNodeValue* ImGuiValueNode::FindValue(ed::PinId pinID)
     {
         for (auto& val : m_Values)
         {
-            if (val.m_OutputPinID == pinID)
+            if (val.m_OutputPinID == pinID || val.m_InputPinID == pinID)
                 return &val;
         }
         return nullptr;
@@ -245,22 +286,23 @@ namespace XYZ {
         }
         return nullptr;
     }
-    void ImGuiValueNode::renderHeader()
-    {
-        ImGui::TextColored(sc_StructHeaderColor, GetName().c_str());
-    }
 
     void ImGuiValueNode::calculatePadding()
     {
-        m_Padding = 0.0f;
+        m_ValueNameMaxWidth = 0.0f;
+        m_ValueTypeMaxWidth = 0.0f;
+        m_ValueEditMaxWidth = 0.0f;
+
         m_RecalcPadding = false;
         for (auto& value : m_Values)
         {
-            float size = ImGui::CalcTextSize(value.m_Name.c_str()).x 
-                       + ImGui::CalcTextSize(value.m_Type.Name.c_str()).x
-                       + 2 * ImGui::GetStyle().ItemSpacing.x;
+            const float nameWidth = ImGui::CalcTextSize(value.GetName().c_str()).x;
+            m_ValueNameMaxWidth = std::max(nameWidth, m_ValueNameMaxWidth);
 
-            m_Padding = std::max(size, m_Padding);
+            const float typeWidth = ImGui::CalcTextSize(value.GetType().Name.c_str()).x;
+            m_ValueTypeMaxWidth = std::max(typeWidth, m_ValueTypeMaxWidth);
+
+            m_ValueEditMaxWidth = std::max(value.m_EditValueWidth, m_ValueEditMaxWidth);
         }
     }
 
@@ -294,7 +336,8 @@ namespace XYZ {
         ed::BeginNode(GetID());
 
         renderHeader();
-
+        const float offset = m_ValueTypeMaxWidth + m_ValueNameMaxWidth + 3 * ImGui::GetStyle().ItemSpacing.x;
+        const float cursorPos = ImGui::GetCursorPosX();
         size_t outputIndex = 0;
         for (size_t i = 0; i < m_InputArguments.size(); ++i)
         {
@@ -304,13 +347,15 @@ namespace XYZ {
             {
                 auto& outputValue = m_Outputs[outputIndex++];
                 ImGui::SameLine();
-                outputValue.OnImGuiRender(m_Editor, GetID(), m_OutputPadding);
+                ImGui::SetCursorPosX(cursorPos + offset);
+                outputValue.OnImGuiRender(m_Editor, GetID());
             }
         }
         for (size_t i = outputIndex; i < m_Outputs.size(); ++i)
         {
             auto& outputValue = m_Outputs[i];
-            outputValue.OnImGuiRender(m_Editor, GetID(), m_OutputPadding);
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + offset);
+            outputValue.OnImGuiRender(m_Editor, GetID());
         }
         
 
@@ -410,12 +455,15 @@ namespace XYZ {
         ImGui::Text("->");
         ed::EndPin();
 
+        UI::CursrorMoverX cursorMover;
         ImGui::SameLine();
         ImGui::TextColored(sc_FunctionHeaderColor, GetName().c_str());
         ImGui::SameLine();
 
+        float offset = (2 * ImGui::GetStyle().ItemSpacing.x) + (2 * m_ValueTypeMaxWidth) + m_ValueNameMaxWidth;
+        cursorMover.Move(offset);
+
         ed::BeginPin(m_OutputPinID, ed::PinKind::Output);
-        SetPinPadding(GetID(), m_OutputPadding);
         ImGui::Text("->");
         ed::EndPin();
     }
@@ -425,40 +473,22 @@ namespace XYZ {
     void ImGuiFunctionNode::calculatePadding()
     {
         m_RecalcPadding = false;
-        m_OutputPadding = 0.0f;
-        // Header
-        m_OutputPadding = std::max(CalculateOffsets("->", "->", GetName()), m_OutputPadding);
+        
+        m_ValueNameMaxWidth = 0.0f;
+        m_ValueTypeMaxWidth = 0.0f;
 
-        // Values
-        for (size_t i = 0; i < m_Outputs.size(); ++i)
+        for (auto& value : m_Outputs)
         {
-            auto& outputValue = m_Outputs[i];
-            if (i < m_InputArguments.size())
-            {
-                auto& inputValue = m_InputArguments[i];
-                float padding = CalculateOffsets(
-                    "-> ",
-                    inputValue.GetType().Name,
-                    outputValue.GetType().Name,
-                    inputValue.GetName()
-                );
-                m_OutputPadding = std::max(padding, m_OutputPadding);
-            }
-            else
-            {
-                float padding = CalculateOffsets(outputValue.GetType().Name);
-                m_OutputPadding = std::max(padding, m_OutputPadding);
-            }
+            const float typeWidth = ImGui::CalcTextSize(value.GetType().Name.c_str()).x;
+            m_ValueTypeMaxWidth = std::max(typeWidth, m_ValueTypeMaxWidth);
         }
-        for (size_t i = 0; i < m_InputArguments.size(); ++i)
+        for (auto& value : m_InputArguments)
         {
-            auto& inputValue = m_InputArguments[i];
-            float padding = CalculateOffsets(
-                "-> ",
-                inputValue.GetType().Name,
-                inputValue.GetName()
-            );
-            m_OutputPadding = std::max(padding, m_OutputPadding);
+            const float nameWidth = ImGui::CalcTextSize(value.GetName().c_str()).x;
+            m_ValueNameMaxWidth = std::max(nameWidth, m_ValueNameMaxWidth);
+
+            const float typeWidth = ImGui::CalcTextSize(value.GetType().Name.c_str()).x + ImGui::CalcTextSize("->").x;
+            m_ValueTypeMaxWidth = std::max(typeWidth, m_ValueTypeMaxWidth);
         }
     }
     void ImGuiFunctionNode::deleteInputArgumentLinks()

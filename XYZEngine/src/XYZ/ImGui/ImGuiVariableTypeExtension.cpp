@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "ImGuiVariableTypeExtension.h"
+#include "XYZ/Scene/Blueprint.h"
+
+#include "ImGui.h"
 
 #include <imgui.h>
 
@@ -7,6 +10,24 @@ namespace XYZ {
 	
 	ImGuiVariableTypeExtension::ImGuiVariableTypeExtension()
 	{
+		RegisterEditFunction("BufferType", [](const char* id, std::byte* data) {
+			
+			BlueprintBufferType& type = (BlueprintBufferType&)*data;
+			const std::string bufferTypeString = BufferTypeToString(type);
+			const std::string inputID = "##" + bufferTypeString;
+			
+			ImGui::InputText(inputID.c_str(), UI::Utils::GetPathBuffer(bufferTypeString), MAX_PATH, ImGuiInputTextFlags_ReadOnly);
+			if (ImGui::IsItemClicked(ImGuiMouseButton_Left))
+			{
+				if (type == BlueprintBufferType::Uniform)
+					type = BlueprintBufferType::Storage;
+				else
+					type = BlueprintBufferType::Uniform;
+			}
+			
+			return false;
+		});
+
 		RegisterEditFunction("float", [](const char*id, std::byte* data) {
 			return ImGui::InputFloat(id, (float*)data);
 		});
@@ -21,6 +42,10 @@ namespace XYZ {
 
 		RegisterEditFunction("vec4", [](const char* id, std::byte* data) {
 			return ImGui::InputFloat4(id, (float*)data);
+			});
+
+		RegisterEditFunction("uint", [](const char* id, std::byte* data) {
+			return ImGui::InputInt(id, (int*)data);
 			});
 
 		RegisterEditFunction("int", [](const char* id, std::byte* data) {

@@ -458,7 +458,7 @@ namespace XYZ {
 			}
 		}
 		
-		m_GPUScene.OnRender(this, sceneRenderer);
+		//m_GPUScene.OnRender(this, sceneRenderer);
 		sceneRenderer->EndScene();
 	}
 

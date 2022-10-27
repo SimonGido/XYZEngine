@@ -4,8 +4,10 @@
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Components.h"
 #include "XYZ/ImGui/ImGui.h"
+#include "XYZ/Debug/Profiler.h"
 
 #include "Editor/Event/EditorEvents.h"
+
 
 namespace XYZ {
 	namespace Editor {
@@ -87,6 +89,10 @@ namespace XYZ {
 			auto& inputLayout = particleComponent.System->GetInputLayout();
 
 
+
+			m_VariableManager.RegisterVariable(outputLayout.GetName(), outputLayout.GetStride());
+			m_VariableManager.RegisterVariable(inputLayout.GetName(), inputLayout.GetStride());
+			
 			{
 				auto& type = m_BlueprintManager.GetStructTypes().emplace_back();
 				type.Name = outputLayout.GetName();
@@ -103,17 +109,30 @@ namespace XYZ {
 					type.Variables.push_back({ var.Name, var.Type});
 				}
 			}
+
 			ImGuiValueNode* outputNode = m_NodeEditor.AddNode<ImGuiValueNode>(outputLayout.GetName());
 			for (auto& variable : outputLayout.GetVariables())
 			{
-				outputNode->AddValue(variable.Name, variable.Type);
+				outputNode->AddValue(variable.Name, variable.Type, false);
 			}
 
 			ImGuiValueNode* inputNode = m_NodeEditor.AddNode<ImGuiValueNode>(inputLayout.GetName());
 			for (auto& variable : inputLayout.GetVariables())
 			{
-				inputNode->AddValue(variable.Name, variable.Type);
+				inputNode->AddValue(variable.Name, variable.Type, false);
 			}
+
+			ImGuiValueNode* outputBufferNode = m_NodeEditor.AddNode<ImGuiValueNode>(outputLayout.GetName());
+			outputBufferNode->AddValue("binding", m_VariableManager.GetVariable("uint"));
+			outputBufferNode->AddValue("set", m_VariableManager.GetVariable("uint"));
+			outputBufferNode->AddValue("type", m_VariableManager.GetVariable("BufferType"));
+			outputBufferNode->AddValue("output", m_VariableManager.GetVariable(outputLayout.GetName()));
+
+			ImGuiValueNode* inputBufferNode = m_NodeEditor.AddNode<ImGuiValueNode>(inputLayout.GetName());
+			inputBufferNode->AddValue("binding", m_VariableManager.GetVariable("uint"));
+			inputBufferNode->AddValue("set", m_VariableManager.GetVariable("uint"));
+			inputBufferNode->AddValue("type", m_VariableManager.GetVariable("BufferType"));
+			inputBufferNode->AddValue("input", m_VariableManager.GetVariable(inputLayout.GetName()));
 		}
 	
 		void ParticleEditorGPU::onBackgroundMenu()

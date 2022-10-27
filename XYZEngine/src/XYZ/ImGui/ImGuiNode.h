@@ -17,9 +17,9 @@ namespace XYZ {
 		ed::PinId  OutputID;
 	};
 
-	
+
 	class ImGuiNodeEditor;
-	
+
 	class ImGuiNode;
 	class ImGuiValueNode;
 	class ImGuiFunctionNode;
@@ -30,21 +30,24 @@ namespace XYZ {
 
 		void OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID);
 
-
 		void SetName(std::string name);
 		void SetType(const VariableType& type);
+		void SetEditValueWidth(float width);
+		void SetAllowEdit(bool val);
 
 		const std::string& GetName() const { return m_Name; }
 		const VariableType& GetType() const { return m_Type; }
 
-		
-		std::array<std::byte, 128> Data;
 
+		std::array<std::byte, 128> Data;
 	private:
 		ImGuiValueNode*  m_Parent;
 		std::string		 m_Name;
 		VariableType	 m_Type;
+		ed::PinId		 m_InputPinID;
 		ed::PinId		 m_OutputPinID;
+		float			 m_EditValueWidth = 150.0f;
+		bool			 m_AllowEditData = true;
 
 		friend ImGuiValueNode;
 	};
@@ -67,15 +70,17 @@ namespace XYZ {
 	private:
 		std::string  m_Name;
 		VariableType m_Type;
-		
+
 		ImGuiFunctionNode* m_Parent;
 	};
+
+
 
 	struct ImGuiNodeOutput
 	{
 		ImGuiNodeOutput(ImGuiFunctionNode* parent);
 
-		void OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID, float padding);
+		void OnImGuiRender(ImGuiNodeEditor* editor, ed::NodeId nodeID);
 
 		ed::PinId OutputPinID;
 
@@ -85,7 +90,6 @@ namespace XYZ {
 
 	private:
 		VariableType m_Type;
-		float		 m_TypeTextSize = 0.0f;
 
 		ImGuiFunctionNode* m_Parent;
 	};
@@ -99,25 +103,25 @@ namespace XYZ {
 
 		virtual void OnImGuiRender() = 0;
 
-		virtual bool AcceptLink(ed::PinId inputPinID, ed::PinId outputPinID) = 0;
+		virtual bool AcceptLink(ed::PinId inputPinID, ed::PinId outputPinID) { return false; };
 
 		virtual void DeleteLinks() = 0;
 
 		virtual const VariableType* FindPinType(ed::PinId id) const = 0;
-		
+
 		const std::string& GetName() const { return m_Name; }
 		const ed::NodeId   GetID() const { return m_ID; }
 
 	private:
 		std::string	m_Name;
-		ed::NodeId	m_ID;	
+		ed::NodeId	m_ID;
 
 	protected:
 		uint32_t getNextID();
 
 	protected:
 		ImGuiNodeEditor* m_Editor;
-		
+
 		friend ImGuiNodeEditor;
 	};
 
@@ -126,7 +130,7 @@ namespace XYZ {
 	{
 	public:
 		ImGuiValueNode(std::string name, ImGuiNodeEditor* editor);
-		
+
 		virtual ~ImGuiValueNode() override;
 
 		virtual void OnImGuiRender() override;
@@ -137,7 +141,9 @@ namespace XYZ {
 
 		virtual const VariableType* FindPinType(ed::PinId id) const override;
 
-		void AddValue(std::string name, const VariableType& type);
+		void AddValue(std::string name, const VariableType& type, bool allowEdit = true);
+
+		void AllowEditValue(bool val);
 
 		ImGuiNodeValue* FindValue(ed::PinId pinID);
 		const ImGuiNodeValue* FindValue(ed::PinId pinID) const;
@@ -145,13 +151,15 @@ namespace XYZ {
 		const std::vector<ImGuiNodeValue>& GetValues() const { return m_Values; }
 
 	private:
-		void renderHeader();
-
 		void calculatePadding();
+
 	private:
 		std::vector<ImGuiNodeValue> m_Values;
 		
-		float m_Padding = 0.0f;
+		float m_ValueTypeMaxWidth = 0.0f;
+		float m_ValueNameMaxWidth = 0.0f;
+		float m_ValueEditMaxWidth = 0.0f;
+
 		bool  m_RecalcPadding = true;
 
 		friend ImGuiNodeValue;
@@ -177,15 +185,15 @@ namespace XYZ {
 
 		void AddOutput(const VariableType& type);
 
-		ed::PinId GetInputPinID() const { return m_InputPinID;  }
+		ed::PinId GetInputPinID() const { return m_InputPinID; }
 		ed::PinId GetOutputPinID() const { return m_OutputPinID; }
 
 		ImGuiNodeArgument* FindInputArgument(ed::PinId pinID);
 		const ImGuiNodeArgument* FindInputArgument(ed::PinId pinID) const;
-		
 
-		const std::vector<ImGuiNodeArgument>& GetInputArguments() const { return m_InputArguments;}
-		const std::vector<ImGuiNodeOutput>  & GetOutputArguments() const { return m_Outputs; }
+
+		const std::vector<ImGuiNodeArgument>& GetInputArguments() const { return m_InputArguments; }
+		const std::vector<ImGuiNodeOutput>& GetOutputArguments() const { return m_Outputs; }
 	private:
 		void renderHeader();
 
@@ -198,9 +206,11 @@ namespace XYZ {
 		std::vector<ImGuiNodeOutput>   m_Outputs;
 
 		ed::PinId	 m_InputPinID;
-		ed::PinId	 m_OutputPinID;	
+		ed::PinId	 m_OutputPinID;
 
-		float m_OutputPadding = 0.0f;
+		float m_ValueTypeMaxWidth = 0.0f;
+		float m_ValueNameMaxWidth = 0.0f;
+		
 		bool  m_RecalcPadding = true;
 
 		friend ImGuiNodeOutput;

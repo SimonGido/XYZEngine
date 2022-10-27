@@ -46,6 +46,54 @@ namespace XYZ {
 		std::vector<BlueprintFunctionCall> FunctionCalls;
 	};
 
+	enum class BlueprintBufferType
+	{
+		Uniform, Storage
+	};
+
+	enum class BlueprintBufferLayout
+	{
+		STD140,
+		STD430
+	};
+
+	static std::string BufferTypeToString(BlueprintBufferType type)
+	{
+		switch (type)
+		{
+		case XYZ::BlueprintBufferType::Uniform:
+			return "uniform";
+		case XYZ::BlueprintBufferType::Storage:
+			return "buffer";
+		}
+		XYZ_ASSERT(false, "");
+		return "";
+	}
+
+	static std::string BufferLayoutToString(BlueprintBufferLayout layout)
+	{
+		switch (layout)
+		{
+		case XYZ::BlueprintBufferLayout::STD140:
+			return "std140";
+		case XYZ::BlueprintBufferLayout::STD430:
+			return "std430";
+		}
+		return "";
+	}
+
+	struct BlueprintBuffer
+	{
+		std::string Name;
+		uint32_t	Binding;
+		uint32_t    Set = 0;
+
+		BlueprintBufferType Type;
+		BlueprintBufferLayout LayoutType;
+
+		std::vector<BlueprintVariable> Variables;
+	};
+
 	class Blueprint : public Asset
 	{
 	public:
@@ -54,6 +102,8 @@ namespace XYZ {
 		void AddStruct(const BlueprintStruct& str);
 
 		void AddFunction(const BlueprintFunction& func);
+
+		void AddBuffer(const BlueprintBuffer& buffer);
 
 		void SetFunctionSequence(const BlueprintFunctionSequence& seq);
 
@@ -64,6 +114,7 @@ namespace XYZ {
 		static AssetType GetStaticType() { return AssetType::Blueprint; }
 
 	private:
+		void addBufferDefinition(const BlueprintBuffer& buffer);
 		void addStructDefinition(const BlueprintStruct& str);
 		void addFunctionDefinition(const BlueprintFunction& func);
 		void addFunctionSequence(const BlueprintFunctionSequence& seq);
@@ -73,6 +124,8 @@ namespace XYZ {
 	private:
 		std::vector<BlueprintStruct>   m_Structs;
 		std::vector<BlueprintFunction> m_Functions;
+		std::vector<BlueprintBuffer>   m_Buffers;
+
 		BlueprintFunctionSequence	   m_Sequence;
 		std::string				       m_SourceCode;
 		bool						   m_BuildRequired = false;

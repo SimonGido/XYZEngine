@@ -28,6 +28,7 @@ namespace XYZ {
 
 		void HelpMarker(const char* desc);
 		
+		bool IsTextActivated();
 		bool IsTextDeactivated();
 
 		void Image(const Ref<Image2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
@@ -319,6 +320,25 @@ namespace XYZ {
 			template <typename T>
 			ScopedID(T id) { ImGui::PushID(id); }
 			~ScopedID() { ImGui::PopID(); }
+		};
+
+
+		class CursrorMoverX
+		{
+		public:
+			CursrorMoverX()
+			{
+				m_CursorPos = ImGui::GetCursorPosX();
+			}
+
+			void Move(float width)
+			{
+				m_CursorPos = m_CursorPos + width;
+				ImGui::SetCursorPosX(m_CursorPos);
+			}
+
+		private:
+			float m_CursorPos;
 		};
 
 		class ScopedWidth

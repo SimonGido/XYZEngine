@@ -190,10 +190,24 @@ namespace XYZ {
 			}
 		}
 
+		bool IsTextActivated()
+		{
+			if (ImGui::IsItemHovered())
+			{
+				return ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+			}
+			return false;
+		}
+
 		bool IsTextDeactivated()
 		{
 			if (ImGui::IsItemHovered())
 			{
+				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+				{
+					std::cout << "DA heck";
+				}
+
 				return ImGui::IsMouseReleased(ImGuiMouseButton_Left);
 			}
 			return false;
