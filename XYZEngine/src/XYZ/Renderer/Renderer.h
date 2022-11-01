@@ -48,7 +48,7 @@ namespace XYZ {
 
 	struct RendererConfiguration
 	{
-		uint32_t FramesInFlight = 3;
+		uint32_t FramesInFlight = 2;
 	};
 
 

@@ -69,7 +69,7 @@ namespace XYZ {
 
 			m_Scene->CreateParticleTest();
 
-			m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
+			// m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
 			m_EditorManager.RegisterPanel<Editor::InspectorPanel>("InspectorPanel");
 			m_EditorManager.RegisterPanel<Editor::SceneHierarchyPanel>("SceneHierarchyPanel");
 			m_EditorManager.RegisterPanel<Editor::ImGuiStylePanel>("ImGuiStylePanel");
@@ -78,10 +78,10 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
 			m_EditorManager.RegisterPanel<Editor::ParticleEditorGPU>("ParticleEditorGPU");
 
-			std::shared_ptr<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
+			//std::shared_ptr<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
 		
-			scenePanel->SetSceneRenderer(m_SceneRenderer);
-			m_EditorCamera = &scenePanel->GetEditorCamera();
+			//scenePanel->SetSceneRenderer(m_SceneRenderer);
+			//m_EditorCamera = &scenePanel->GetEditorCamera();
 
 			Renderer::WaitAndRenderAll();
 
@@ -101,6 +101,7 @@ namespace XYZ {
 		void EditorLayer::OnUpdate(Timestep ts)
 		{
 			m_EditorManager.OnUpdate(ts);
+			/*
 			if (m_Scene->GetState() == SceneState::Edit)
 				renderOverlay();
 
@@ -109,6 +110,7 @@ namespace XYZ {
 			{
 				m_SelectedEntity = m_Scene->GetSelectedEntity();
 			}
+			*/
 		}
 
 		void EditorLayer::OnEvent(Event& event)

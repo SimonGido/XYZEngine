@@ -10,7 +10,8 @@ namespace XYZ {
 	{
 		bool operator==(const VariableType& other) const
 		{
-			return Name == other.Name;
+			return Name == other.Name 
+				&& Size == other.Size;
 		}
 		std::string Name;
 		uint32_t	Size;

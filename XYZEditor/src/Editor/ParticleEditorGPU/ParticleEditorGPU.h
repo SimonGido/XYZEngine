@@ -1,5 +1,5 @@
 #pragma once
-#include "XYZ/ImGui/ImGuiNodeEditor.h"
+#include "XYZ/ImGui/Node/ImGuiNodeContext.h"
 #include "XYZ/Scene/Blueprint.h"
 
 #include "Editor/EditorPanel.h"
@@ -29,7 +29,7 @@ namespace XYZ {
 
 			Ref<Blueprint> createBlueprint() const;
 		private:
-			ImGuiNodeEditor	       m_NodeEditor;
+			std::shared_ptr<XYZ::UI::ImGuiNodeContext> m_NodeEditor;
 			Ref<Scene>			   m_Scene;
 			Ref<ParticleSystemGPU> m_ParticleSystem;
 			Ref<Blueprint>		   m_Blueprint;

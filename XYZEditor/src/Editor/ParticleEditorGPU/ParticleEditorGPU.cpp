@@ -14,17 +14,17 @@ namespace XYZ {
 		ParticleEditorGPU::ParticleEditorGPU(std::string name)
 			:
 			EditorPanel(name),
-			m_NodeEditor("Particle Editor"),
 			m_BlueprintManager(&m_VariableManager)
 		{
-			m_NodeEditor.OnStart();
-			m_NodeEditor.OnBackgroundMenu = [this]() {
+			m_NodeEditor = std::make_shared<XYZ::UI::ImGuiNodeContext>("Blueprint Editor");
+			m_NodeEditor->OnStart();
+			m_NodeEditor->OnBackgroundMenu = [this]() {
 				onBackgroundMenu();
 			};
 		}
 		ParticleEditorGPU::~ParticleEditorGPU()
 		{
-			m_NodeEditor.OnStop();
+			m_NodeEditor->OnStop();
 		}
 		void ParticleEditorGPU::OnImGuiRender(bool& open)
 		{
@@ -43,7 +43,7 @@ namespace XYZ {
 						},
 						[&]() 
 						{
-							m_NodeEditor.OnUpdate(m_Timestep);			
+							m_NodeEditor->OnUpdate(m_Timestep);
 						});					
 				}
 				ImGui::End();
@@ -110,44 +110,76 @@ namespace XYZ {
 				}
 			}
 
-			ImGuiValueNode* outputNode = m_NodeEditor.AddNode<ImGuiValueNode>(outputLayout.GetName());
+			uint32_t nodeFlags =
+				  XYZ::UI::ImGuiNodeFlags_AllowInput
+				| XYZ::UI::ImGuiNodeFlags_AllowOutput
+				| XYZ::UI::ImGuiNodeFlags_AllowName;
+
+
+
+			uint32_t valueFlags =
+				  XYZ::UI::ImGuiNodeValueFlags_AllowOutput
+				| XYZ::UI::ImGuiNodeValueFlags_AllowName;
+
+		
+			XYZ::UI::ImGuiNode* outputNode = m_NodeEditor->AddNode(nodeFlags);
+			outputNode->SetType(m_VariableManager.GetVariable(outputLayout.GetName()));
 			for (auto& variable : outputLayout.GetVariables())
 			{
-				outputNode->AddValue(variable.Name, variable.Type, false);
+				outputNode->AddValue(variable.Name, variable.Type, valueFlags);
 			}
 
-			ImGuiValueNode* inputNode = m_NodeEditor.AddNode<ImGuiValueNode>(inputLayout.GetName());
+			XYZ::UI::ImGuiNode* inputNode = m_NodeEditor->AddNode(nodeFlags);
+			inputNode->SetType(m_VariableManager.GetVariable(inputLayout.GetName()));
 			for (auto& variable : inputLayout.GetVariables())
 			{
-				inputNode->AddValue(variable.Name, variable.Type, false);
+				inputNode->AddValue(variable.Name, variable.Type, valueFlags);
 			}
 
-			ImGuiValueNode* outputBufferNode = m_NodeEditor.AddNode<ImGuiValueNode>(outputLayout.GetName());
-			outputBufferNode->AddValue("binding", m_VariableManager.GetVariable("uint"));
-			outputBufferNode->AddValue("set", m_VariableManager.GetVariable("uint"));
-			outputBufferNode->AddValue("type", m_VariableManager.GetVariable("BufferType"));
-			outputBufferNode->AddValue("output", m_VariableManager.GetVariable(outputLayout.GetName()));
+			valueFlags |= XYZ::UI::ImGuiNodeValueFlags_AllowEdit;
 
-			ImGuiValueNode* inputBufferNode = m_NodeEditor.AddNode<ImGuiValueNode>(inputLayout.GetName());
-			inputBufferNode->AddValue("binding", m_VariableManager.GetVariable("uint"));
-			inputBufferNode->AddValue("set", m_VariableManager.GetVariable("uint"));
-			inputBufferNode->AddValue("type", m_VariableManager.GetVariable("BufferType"));
-			inputBufferNode->AddValue("input", m_VariableManager.GetVariable(inputLayout.GetName()));
+			XYZ::UI::ImGuiNode* outputBufferNode = m_NodeEditor->AddNode(0);
+			outputBufferNode->AddValue("binding", m_VariableManager.GetVariable("uint"), valueFlags);
+			outputBufferNode->AddValue("set", m_VariableManager.GetVariable("uint"), valueFlags);
+			outputBufferNode->AddValue("type", m_VariableManager.GetVariable("BufferType"), valueFlags);
+			outputBufferNode->AddValue("output", m_VariableManager.GetVariable(outputLayout.GetName()), valueFlags);
+			
+			XYZ::UI::ImGuiNode* inputBufferNode = m_NodeEditor->AddNode(0);
+			inputBufferNode->AddValue("binding", m_VariableManager.GetVariable("uint"), valueFlags);
+			inputBufferNode->AddValue("set", m_VariableManager.GetVariable("uint"), valueFlags);
+			inputBufferNode->AddValue("type", m_VariableManager.GetVariable("BufferType"), valueFlags);
+			inputBufferNode->AddValue("input", m_VariableManager.GetVariable(inputLayout.GetName()), valueFlags);
 		}
 	
 		void ParticleEditorGPU::onBackgroundMenu()
 		{
+			const uint32_t nodeFlags =
+				XYZ::UI::ImGuiNodeFlags_AllowInput
+				| XYZ::UI::ImGuiNodeFlags_AllowOutput
+				| XYZ::UI::ImGuiNodeFlags_AllowName;
+
+			const uint32_t inputValueFlags =
+				XYZ::UI::ImGuiNodeValueFlags_AllowInput;
+				
+			const uint32_t outputValueFlags =
+				XYZ::UI::ImGuiNodeValueFlags_AllowOutput;
+
 			for (auto& func : m_BlueprintManager.GetFunctions())
 			{
 				if (ImGui::MenuItem(func.Name.c_str()))
 				{
-					auto funcNode = m_NodeEditor.AddNode<ImGuiFunctionNode>(func.Name);
+					auto funcNode = m_NodeEditor->AddNode(nodeFlags);
+					funcNode->SetName(func.Name);
+					funcNode->SetType(m_VariableManager.GetVariable("function"));
+					for (auto& arg : func.Arguments)
+					{
+						if (!arg.Output)
+							funcNode->AddValue(arg.Name, arg.Type, inputValueFlags);
+					}
 					for (auto& arg : func.Arguments)
 					{
 						if (arg.Output)
-							funcNode->AddOutput(arg.Type);
-						else
-							funcNode->AddInputArgument(arg.Name, arg.Type);
+							funcNode->AddValue(arg.Name, arg.Type, outputValueFlags);
 					}
 				}
 			}
@@ -160,7 +192,7 @@ namespace XYZ {
 			}
 			else
 			{
-				m_NodeEditor.Clear();
+				m_NodeEditor->Clear();
 			}
 		}
 		void ParticleEditorGPU::editBlueprintTypes()
@@ -214,7 +246,7 @@ namespace XYZ {
 		Ref<Blueprint> ParticleEditorGPU::createBlueprint() const
 		{
 			Ref<Blueprint> result = Ref<Blueprint>::Create();
-
+			/*
 			auto funcSequenceNodes = m_NodeEditor.FindFunctionSequence();
 			auto valueNodes = m_NodeEditor.FindValueNodes();
 
@@ -263,7 +295,7 @@ namespace XYZ {
 				}
 				result->SetFunctionSequence(sequence);
 			}
-
+			*/
 			result->Rebuild();
 			return result;
 		}

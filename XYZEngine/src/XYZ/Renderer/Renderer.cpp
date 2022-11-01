@@ -35,6 +35,7 @@ namespace XYZ {
 	{
 		void OnReload(size_t hash)
 		{
+			std::scoped_lock lock(m_Mutex);
 			auto it = m_Dependencies.find(hash);
 			if (it != m_Dependencies.end())
 			{
@@ -48,18 +49,22 @@ namespace XYZ {
 		}
 		void Register(size_t hash, const Ref<Material>& material)
 		{
+			std::scoped_lock lock(m_Mutex);
 			m_Dependencies[hash].MaterialDependencies.push_back(material);
 		}
 		void Register(size_t hash, const Ref<Pipeline>& pipeline)
 		{
+			std::scoped_lock lock(m_Mutex);
 			m_Dependencies[hash].PipelineDependencies.push_back(pipeline);
 		}
 		void Register(size_t hash, const Ref<PipelineCompute>& pipeline)
 		{
+			std::scoped_lock lock(m_Mutex);
 			m_Dependencies[hash].PipelineComputeDependencies.push_back(pipeline);
 		}
 		void RemoveDependency(size_t hash)
 		{
+			std::scoped_lock lock(m_Mutex);
 			auto it = m_Dependencies.find(hash);
 			if (it != m_Dependencies.end())
 				it->second.Clear();
@@ -67,11 +72,13 @@ namespace XYZ {
 
 		void Clear()
 		{
+			std::scoped_lock lock(m_Mutex);
 			for (auto&& [hash, dep] : m_Dependencies)
 				dep.Clear();
 		}
 	private:
 		std::unordered_map<size_t, ShaderDependencies> m_Dependencies;
+		std::mutex m_Mutex;
 	};
 
 	
