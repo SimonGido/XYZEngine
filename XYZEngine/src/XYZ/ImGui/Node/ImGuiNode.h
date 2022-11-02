@@ -72,11 +72,17 @@ namespace XYZ {
 			void SetValueName(std::string name);
 			void SetValueType(VariableType type);
 			void SetFlags(uint32_t flags);
-			
+			void SetArray(bool val);
+
 			bool HasFlag(uint32_t flag) const { return IS_SET(m_Flags, flag); }
+			bool IsArray() const { return m_IsArray; }
+			
 			uint32_t GetFlags() const { return m_Flags; }
 			const std::string& GetName() const { return m_Name; }
 			const VariableType& GetType() const { return m_Type; }
+			
+			template <typename T>
+			const T& GetValue() const { return *reinterpret_cast<const T*>(m_Data.Data); }
 
 			const ImGuiNodeID& GetInputID() const { return m_InputPinID; }
 			const ImGuiNodeID& GetOutputID() const { return m_OutputPinID; }
@@ -92,6 +98,7 @@ namespace XYZ {
 
 			ByteBuffer		m_Data;
 			uint32_t		m_Flags = 0;
+			bool			m_IsArray = false;
 		};
 
 
@@ -110,14 +117,14 @@ namespace XYZ {
 			void Render();
 
 			bool AcceptLink(ed::PinId inputID, ed::PinId outputID) const;
-			void AddValue(std::string name, const VariableType& type, uint32_t flags);
+			ImGuiNodeValue& AddValue(std::string name, const VariableType& type, uint32_t flags);
 
 			void SetName(std::string name);
 			void SetType(const VariableType& type);
 			void SetFlags(uint32_t flags);
 
+			const std::string& GetName() const { return m_Name; }
 			const VariableType& GetType() const { return m_Type; }
-
 			const ImGuiNodeID& GetID() const { return m_ID; }
 			const ImGuiNodeID& GetInputID() const { return m_InputID; }
 			const ImGuiNodeID& GetOutputID() const { return m_OutputID; }

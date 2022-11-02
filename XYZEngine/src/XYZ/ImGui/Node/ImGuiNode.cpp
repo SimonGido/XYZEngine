@@ -70,8 +70,15 @@ namespace XYZ {
             }
 
             ImGui::SetCursorPosX(cursorPosX + inputOffset);
-            ImGui::TextColored(sc_VariableColor, m_Type.Name.c_str());
-            
+            if (m_IsArray)
+            {
+                const std::string arrayType = m_Type.Name + "[ ]";
+                ImGui::TextColored(sc_VariableColor, arrayType.c_str());
+            }
+            else
+            {
+                ImGui::TextColored(sc_VariableColor, m_Type.Name.c_str());
+            }
             if (IS_SET(m_Flags, ImGuiNodeValueFlags_AllowName))
             {
                 ImGui::SameLine();
@@ -118,6 +125,12 @@ namespace XYZ {
         void ImGuiNodeValue::SetFlags(uint32_t flags)
         {
             m_Flags = flags;
+            m_Parent.m_RecalcPadding = true;
+        }
+
+        void ImGuiNodeValue::SetArray(bool val)
+        {
+            m_IsArray = val;
             m_Parent.m_RecalcPadding = true;
         }
 
@@ -204,12 +217,13 @@ namespace XYZ {
             m_RecalcPadding = true;
         }
 
-        void ImGuiNode::AddValue(std::string name, const VariableType& type, uint32_t flags)
+        ImGuiNodeValue& ImGuiNode::AddValue(std::string name, const VariableType& type, uint32_t flags)
         {
             auto& val = m_Values.emplace_back(m_Context, *this, flags);
             val.SetValueName(std::move(name));
             val.SetValueType(type);
             m_RecalcPadding = true;
+            return val;
         }
 
         void ImGuiNode::calculatePadding()
@@ -240,7 +254,9 @@ namespace XYZ {
                     m_ValueEditMaxWidth = sc_EditValueWidth;
                 }
             
-                const float typeWidth = ImGui::CalcTextSize(value.GetType().Name.c_str()).x + ImGui::CalcTextSize("->").x;
+                float typeWidth = ImGui::CalcTextSize(value.GetType().Name.c_str()).x + ImGui::CalcTextSize("->").x;
+                if (value.IsArray())
+                    typeWidth += ImGui::CalcTextSize("[ ]").x;
                 m_ValueTypeMaxWidth = std::max(typeWidth, m_ValueTypeMaxWidth);
             }
         }

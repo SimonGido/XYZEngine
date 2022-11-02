@@ -135,6 +135,26 @@ namespace XYZ {
 			}
 			return nullptr;
 		}
+
+		std::vector<const ImGuiNode*> ImGuiNodeContext::FindNodeSequence(const std::string& entryName) const
+		{
+			std::vector<const ImGuiNode*> result;
+			// Find first node in sequence
+			for (auto node : m_Nodes)
+			{
+				if (node->GetName() == entryName)
+				{
+					result.push_back(node);
+					break;
+				}
+			}
+			if (!result.empty())
+			{
+				addToNodeSequence(result.back(), result);
+			}
+			return result;
+		}
+
 		const ImGuiLink* ImGuiNodeContext::findLink(ed::LinkId id) const
 		{
 			for (auto& link : m_Links)
@@ -144,6 +164,34 @@ namespace XYZ {
 			}
 			return nullptr;
 		}
+
+		const ImGuiLink* ImGuiNodeContext::findLink(ed::PinId inputID, ed::PinId outputID) const
+		{
+			for (auto& link : m_Links)
+			{
+				if (link.InputID == inputID 
+				 && link.OutputID == outputID)
+					return &link;
+			}
+			return nullptr;
+		}
+
+		
+
+		void ImGuiNodeContext::addToNodeSequence(const ImGuiNode* last, std::vector<const ImGuiNode*>& result) const
+		{
+			for (auto node : m_Nodes)
+			{
+				auto link = findLink(last->GetOutputID(), node->GetInputID());
+				if (link)
+				{
+					result.push_back(node);
+					addToNodeSequence(result.back(), result);
+					return;
+				}
+			}
+		}
+
 		void ImGuiNodeContext::createLinks()
 		{
 			XYZ_PROFILE_FUNC("ImGuiNodeEditor::createLinks");

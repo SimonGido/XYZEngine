@@ -32,12 +32,18 @@ namespace XYZ {
 			const ImGuiNodeValue* FindValueByOutputID(ed::PinId id) const;
 			const ImGuiNodeValue* FindValueByInputID(ed::PinId id) const;
 
+			std::vector<const ImGuiNode*> FindNodeSequence(const std::string& entryName) const;
+			const std::vector<ImGuiNode*>& GetNodes() const { return m_Nodes; }
+
 			std::function<void()> OnBackgroundMenu;
 
 			ImGuiVariableTypeExtension VariableExtension;
 		private:
 			const ImGuiLink* findLink(ed::LinkId id) const;
+			const ImGuiLink* findLink(ed::PinId inputID, ed::PinId outputID) const;
 
+			void addToNodeSequence(const ImGuiNode* last, std::vector<const ImGuiNode*>& result) const;
+			
 			void createLinks();
 			void deleteLinks();
 

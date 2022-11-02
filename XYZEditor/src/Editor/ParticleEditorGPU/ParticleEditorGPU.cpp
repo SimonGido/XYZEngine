@@ -110,45 +110,47 @@ namespace XYZ {
 				}
 			}
 
-			uint32_t nodeFlags =
-				  XYZ::UI::ImGuiNodeFlags_AllowInput
-				| XYZ::UI::ImGuiNodeFlags_AllowOutput
-				| XYZ::UI::ImGuiNodeFlags_AllowName;
-
-
-
-			uint32_t valueFlags =
-				  XYZ::UI::ImGuiNodeValueFlags_AllowOutput
-				| XYZ::UI::ImGuiNodeValueFlags_AllowName;
-
 		
-			XYZ::UI::ImGuiNode* outputNode = m_NodeEditor->AddNode(nodeFlags);
+			XYZ::UI::ImGuiNode* outputNode = m_NodeEditor->AddNode(XYZ::UI::ImGuiNodeFlags_AllowName);
 			outputNode->SetType(m_VariableManager.GetVariable(outputLayout.GetName()));
 			for (auto& variable : outputLayout.GetVariables())
 			{
-				outputNode->AddValue(variable.Name, variable.Type, valueFlags);
+				outputNode->AddValue(variable.Name, variable.Type, 
+					XYZ::UI::ImGuiNodeValueFlags_AllowName
+				  | XYZ::UI::ImGuiNodeValueFlags_AllowInput);
 			}
 
-			XYZ::UI::ImGuiNode* inputNode = m_NodeEditor->AddNode(nodeFlags);
+			XYZ::UI::ImGuiNode* inputNode = m_NodeEditor->AddNode(XYZ::UI::ImGuiNodeFlags_AllowInput
+																| XYZ::UI::ImGuiNodeFlags_AllowName);
+
 			inputNode->SetType(m_VariableManager.GetVariable(inputLayout.GetName()));
 			for (auto& variable : inputLayout.GetVariables())
 			{
-				inputNode->AddValue(variable.Name, variable.Type, valueFlags);
+				inputNode->AddValue(variable.Name, variable.Type, XYZ::UI::ImGuiNodeValueFlags_AllowOutput
+																| XYZ::UI::ImGuiNodeValueFlags_AllowName);
 			}
 
-			valueFlags |= XYZ::UI::ImGuiNodeValueFlags_AllowEdit;
+			const uint32_t valueFlags =
+				  XYZ::UI::ImGuiNodeValueFlags_AllowOutput
+				| XYZ::UI::ImGuiNodeValueFlags_AllowName
+				| XYZ::UI::ImGuiNodeValueFlags_AllowEdit;
 
-			XYZ::UI::ImGuiNode* outputBufferNode = m_NodeEditor->AddNode(0);
+
+			XYZ::UI::ImGuiNode* outputBufferNode = m_NodeEditor->AddNode(XYZ::UI::ImGuiNodeFlags_AllowInput);
+			outputBufferNode->SetName("buffer_Particles");
+			outputBufferNode->SetType(m_VariableManager.GetVariable("buffer"));
 			outputBufferNode->AddValue("binding", m_VariableManager.GetVariable("uint"), valueFlags);
 			outputBufferNode->AddValue("set", m_VariableManager.GetVariable("uint"), valueFlags);
-			outputBufferNode->AddValue("type", m_VariableManager.GetVariable("BufferType"), valueFlags);
-			outputBufferNode->AddValue("output", m_VariableManager.GetVariable(outputLayout.GetName()), valueFlags);
-			
+			auto& outputVal = outputBufferNode->AddValue("output", m_VariableManager.GetVariable(outputLayout.GetName()), XYZ::UI::ImGuiNodeValueFlags_AllowInput);
+			outputVal.SetArray(true);
+
 			XYZ::UI::ImGuiNode* inputBufferNode = m_NodeEditor->AddNode(0);
+			inputBufferNode->SetName("buffer_ParticleProperties");
+			inputBufferNode->SetType(m_VariableManager.GetVariable("buffer"));
 			inputBufferNode->AddValue("binding", m_VariableManager.GetVariable("uint"), valueFlags);
 			inputBufferNode->AddValue("set", m_VariableManager.GetVariable("uint"), valueFlags);
-			inputBufferNode->AddValue("type", m_VariableManager.GetVariable("BufferType"), valueFlags);
-			inputBufferNode->AddValue("input", m_VariableManager.GetVariable(inputLayout.GetName()), valueFlags);
+			auto& inputVal = inputBufferNode->AddValue("input", m_VariableManager.GetVariable(inputLayout.GetName()), valueFlags);
+			inputVal.SetArray(true);
 		}
 	
 		void ParticleEditorGPU::onBackgroundMenu()
@@ -159,7 +161,8 @@ namespace XYZ {
 				| XYZ::UI::ImGuiNodeFlags_AllowName;
 
 			const uint32_t inputValueFlags =
-				XYZ::UI::ImGuiNodeValueFlags_AllowInput;
+				XYZ::UI::ImGuiNodeValueFlags_AllowInput
+			  | XYZ::UI::ImGuiNodeValueFlags_AllowName;
 				
 			const uint32_t outputValueFlags =
 				XYZ::UI::ImGuiNodeValueFlags_AllowOutput;
@@ -246,16 +249,24 @@ namespace XYZ {
 		Ref<Blueprint> ParticleEditorGPU::createBlueprint() const
 		{
 			Ref<Blueprint> result = Ref<Blueprint>::Create();
-			/*
-			auto funcSequenceNodes = m_NodeEditor.FindFunctionSequence();
-			auto valueNodes = m_NodeEditor.FindValueNodes();
+			
+			auto funcSequenceNodes = m_NodeEditor->FindNodeSequence("main");
+			auto nodes = m_NodeEditor->GetNodes();
 
-			for (auto valNode : valueNodes)
+			std::unordered_map<std::string, XYZ::UI::ImGuiNode*> uniqueStructs;
+			for (auto node : nodes)
 			{
-				auto& values = valNode->GetValues();
+				if (node->GetType().Name != "function"
+				&&  node->GetType().Name != "buffer")
+					uniqueStructs[node->GetType().Name] = node;
+			}
+
+			// Add struct definitions
+			for (auto& [typeName, node] : uniqueStructs)
+			{
 				BlueprintStruct blueprintStruct;
-				blueprintStruct.Name = valNode->GetName();
-				for (auto& value : values)
+				blueprintStruct.Name = typeName;
+				for (auto& value : node->GetValues())
 				{
 					auto& blueprintVar = blueprintStruct.Variables.emplace_back();
 					blueprintVar.Name = value.GetName();
@@ -264,7 +275,36 @@ namespace XYZ {
 				result->AddStruct(blueprintStruct);
 			}
 
+			// Add buffers
+			for (auto node : nodes)
+			{
+				if (node->GetType() == m_VariableManager.GetVariable("buffer"))
+				{
+					BlueprintBuffer buffer;
+					buffer.Name = node->GetName();
+					buffer.LayoutType = BlueprintBufferLayout::STD430;
+					buffer.Type = BlueprintBufferType::Storage;
+
+					for (auto& val : node->GetValues())
+					{
+						if (val.GetName() == "binding")
+							buffer.Binding = val.GetValue<uint32_t>();
+						else if (val.GetName() == "set")
+							buffer.Set = val.GetValue<uint32_t>();
+						else
+						{
+							BlueprintVariable variable;
+							variable.Name = val.GetName();
+							variable.Type = val.GetType();
+							variable.IsArray = val.IsArray();
+							buffer.Variables.push_back(variable);
+						}
+					}
+					result->AddBuffer(buffer);
+				}
+			}
 		
+			// Add functions
 			for (auto& blueprintFunction : m_BlueprintManager.GetFunctions())
 			{
 				// Start from one, skip entry point
@@ -295,7 +335,7 @@ namespace XYZ {
 				}
 				result->SetFunctionSequence(sequence);
 			}
-			*/
+			
 			result->Rebuild();
 			return result;
 		}

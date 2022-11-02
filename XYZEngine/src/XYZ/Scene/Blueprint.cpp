@@ -77,7 +77,7 @@ namespace XYZ {
 	}
 	void Blueprint::addBufferDefinition(const BlueprintBuffer& buffer)
 	{
-		m_SourceCode += fmt::format("layout({}, set = {}, binding = {}) {} buffer_{}\n", 
+		m_SourceCode += fmt::format("layout({}, set = {}, binding = {}) {} {}\n", 
 			BufferLayoutToString(buffer.LayoutType), 
 			buffer.Set,
 			buffer.Binding,
@@ -155,6 +155,16 @@ namespace XYZ {
 
 	void Blueprint::addFunctionCall(const BlueprintFunctionCall& call)
 	{
+		// Declare output variables
+		for (size_t i = 0; i < call.Arguments.size(); ++i)
+		{
+			auto& arg = call.Arguments[i];
+			if (arg.Output)
+			{
+				m_SourceCode += arg.Type.Name + " " + arg.Name + ";\n";
+			}
+		}
+
 		m_SourceCode += call.Name + "(";
 		for (size_t i = 0; i < call.Arguments.size(); ++i)
 		{
@@ -178,12 +188,10 @@ namespace XYZ {
 			else
 				AddInputArgument(m_SourceCode, arg.Type, arg.Name, arg.Output);
 			
-			if (i == func.Arguments.size() - 1)
-				m_SourceCode += ")";
-			else
+			if (i != func.Arguments.size() - 1)
 				m_SourceCode += ",";
 		}
-		m_SourceCode += "\n";
+		m_SourceCode += ")\n";
 		m_SourceCode += "{\n";
 	}
 

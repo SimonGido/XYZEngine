@@ -20,34 +20,17 @@ struct Input
 	float LifeTime;
 	float LifeRemaining;
 };
-void Vec4ToVec3(in vec4 input,out vec3 output)
+layout(std430, set = 0, binding = 0) buffer buffer_Particles
 {
-vec3 output = input.xyz;
+	Output output[];
 
-}
-void TranslationMatrix( vec3 translation, vec3 scale,inout mat4 transform)
+};
+layout(std430, set = 0, binding = 0) buffer buffer_ParticleProperties
 {
-transform = mat4(
-	vec4(scale.x, 0.0, 0.0, 0.0),
-	vec4(0.0, scale.y, 0.0, 0.0),
-	vec4(0.0, 0.0, scale.z, 0.0),
-	vec4(translation, 1.0));
+	Input input[];
 
-}
-void SplitTransform(in mat4 transform,inout vec4 transformRow0,inout vec4 transformRow1,inout vec4 transformRow2)
+};
+void main( ivec3 workgroups)
 {
-transformRow0 = vec4(transform[0][0], transform[1][0], transform[2][0], transform[3][0]);
-
-}
-void EntryPoint(
-{
-
-}
-void EntryPoint(
-{
-Vec4ToVec3(input,output);
-Vec4ToVec3(input,output);
-TranslationMatrix(translation,scale,transform);
-SplitTransform(transform,transformRow0,transformRow1,transformRow2);
 
 }

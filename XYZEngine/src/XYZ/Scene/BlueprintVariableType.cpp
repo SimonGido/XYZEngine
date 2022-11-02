@@ -6,6 +6,8 @@ namespace XYZ {
 	VariableManager::VariableManager()
 	{
 		RegisterVariable("BufferType",	4);
+		RegisterVariable("uniform",		0);
+		RegisterVariable("buffer",		0);
 		RegisterVariable("function",	0);
 		RegisterVariable("void",		0);
 		RegisterVariable("float",		4);
