@@ -59,9 +59,8 @@ namespace XYZ {
 
 			{
 				BlueprintFunction func;
-				func.Name = "main";
+				func.Name = "EntryPoint";
 				func.Entry = true;
-				func.Arguments.push_back({ manager->GetVariable("ivec3"), "workgroups" });
 				m_Functions.emplace_back(std::move(func));
 			}
 

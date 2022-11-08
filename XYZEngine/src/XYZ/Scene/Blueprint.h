@@ -2,6 +2,8 @@
 #include "XYZ/Asset/Asset.h"
 #include "BlueprintVariableType.h"
 
+#include <glm/glm.hpp>
+
 namespace XYZ {
 
 	struct BlueprintVariable
@@ -97,6 +99,8 @@ namespace XYZ {
 	class Blueprint : public Asset
 	{
 	public:
+		Blueprint();
+
 		virtual AssetType GetAssetType() const override { return AssetType::Blueprint; }
 
 		void AddStruct(const BlueprintStruct& str);
@@ -106,6 +110,8 @@ namespace XYZ {
 		void AddBuffer(const BlueprintBuffer& buffer);
 
 		void SetFunctionSequence(const BlueprintFunctionSequence& seq);
+
+		void SetWorkgroups(const glm::ivec3& workgroups);
 
 		void Rebuild();
 
@@ -120,12 +126,13 @@ namespace XYZ {
 		void addFunctionSequence(const BlueprintFunctionSequence& seq);
 		void addFunctionCall(const BlueprintFunctionCall& call);
 		void addBeginFunction(const BlueprintFunction& func);
+		void addMain(const BlueprintFunctionSequence& seq);
 
 	private:
 		std::vector<BlueprintStruct>   m_Structs;
 		std::vector<BlueprintFunction> m_Functions;
 		std::vector<BlueprintBuffer>   m_Buffers;
-
+		glm::ivec3					   m_Workgroups;
 		BlueprintFunctionSequence	   m_Sequence;
 		std::string				       m_SourceCode;
 		bool						   m_BuildRequired = false;

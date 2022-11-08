@@ -250,7 +250,7 @@ namespace XYZ {
 		{
 			Ref<Blueprint> result = Ref<Blueprint>::Create();
 			
-			auto funcSequenceNodes = m_NodeEditor->FindNodeSequence("main");
+			auto funcSequenceNodes = m_NodeEditor->FindNodeSequence("EntryPoint");
 			auto nodes = m_NodeEditor->GetNodes();
 
 			std::unordered_map<std::string, XYZ::UI::ImGuiNode*> uniqueStructs;

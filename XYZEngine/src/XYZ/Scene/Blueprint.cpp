@@ -32,6 +32,12 @@ namespace XYZ {
 	}
 
 
+	Blueprint::Blueprint()
+		:
+		m_Workgroups(32, 32, 1)
+	{
+	}
+
 	void Blueprint::AddStruct(const BlueprintStruct& str)
 	{
 		m_Structs.push_back(str);
@@ -55,6 +61,11 @@ namespace XYZ {
 		m_Sequence = seq;
 		m_BuildRequired = true;
 	}
+	void Blueprint::SetWorkgroups(const glm::ivec3& workgroups)
+	{
+		m_Workgroups = workgroups;
+		m_BuildRequired = true;
+	}
 	void Blueprint::Rebuild()
 	{
 		m_SourceCode.clear();
@@ -71,6 +82,7 @@ namespace XYZ {
 			addFunctionDefinition(func);
 		}
 		addFunctionSequence(m_Sequence);
+		addMain(m_Sequence);
 		m_BuildRequired = false;
 
 		FileSystem::WriteFile("Blueprint.glsl", m_SourceCode);
@@ -137,12 +149,6 @@ namespace XYZ {
 
 	void Blueprint::addFunctionSequence(const BlueprintFunctionSequence& seq)
 	{
-		XYZ_ASSERT(seq.EntryPoint.Entry, "Entry point is not marked as entry");
-		//m_SourceCode += fmt::format(
-		//	"layout(local_size.x = {}, local_size_y = {}, local_size_z = {}) in",
-		//	
-		//	);
-		
 		addBeginFunction(seq.EntryPoint);
 
 		for (auto& call : seq.FunctionCalls)
@@ -193,6 +199,21 @@ namespace XYZ {
 		}
 		m_SourceCode += ")\n";
 		m_SourceCode += "{\n";
+	}
+
+	void Blueprint::addMain(const BlueprintFunctionSequence& seq)
+	{
+		XYZ_ASSERT(seq.EntryPoint.Entry, "Entry point is not marked as entry");
+		m_SourceCode += fmt::format(
+			"layout(local_size.x = {}, local_size_y = {}, local_size_z = {}) in;\n",
+			m_Workgroups.x, m_Workgroups.y, m_Workgroups.z
+		);
+
+		m_SourceCode += "void main()\n{\n";
+
+		m_SourceCode += fmt::format("	{}();\n", seq.EntryPoint.Name);
+
+		m_SourceCode += "}";
 	}
 
 }
