@@ -4,19 +4,15 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
+
+#include <mutex>
+
 struct LogStream : public Assimp::LogStream
 {
-	static void Initialize()
-	{
-		if (Assimp::DefaultLogger::isNullLogger())
-		{
-			Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE);
-			Assimp::DefaultLogger::get()->attachStream(new LogStream, Assimp::Logger::Err | Assimp::Logger::Warn);
-		}
-	}
+	
+	static void Initialize();
+	
 
-	virtual void write(const char* message) override
-	{
-		XYZ_CORE_ERROR("Assimp error: {0}", message);
-	}
+	virtual void write(const char* message) override;
+	
 };

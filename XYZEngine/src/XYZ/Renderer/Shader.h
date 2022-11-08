@@ -50,6 +50,8 @@ namespace XYZ {
 		if (type == "sampler2D")	return ShaderUniformDataType::Sampler2D;
 		return ShaderUniformDataType::None;
 	}
+
+
 	static uint32_t SizeOfUniformType(ShaderUniformDataType type)
 	{
 		switch (type)
@@ -167,6 +169,9 @@ namespace XYZ {
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const { return {}; }
 		virtual const std::unordered_map<std::string, SpecializationCache>& GetSpecializationCachce() const { return {}; }
 
+		virtual const std::vector<uint32_t>& GetShaderData(ShaderType type) const { return {}; }
+
+		virtual bool IsCompute()  const { return false; }
 		virtual bool IsCompiled() const { return false; };
 
 		static Ref<Shader> Create(const std::string& path, size_t sourceHash = 0, bool forceCompile = true);

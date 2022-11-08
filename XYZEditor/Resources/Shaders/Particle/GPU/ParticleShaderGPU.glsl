@@ -15,13 +15,6 @@ struct Particle
     vec4  TransformRow1;
     vec4  TransformRow2;
     vec4  Color;
-	
-	 // Current state of particle
-    vec4  Position;
-	float LifeRemaining;
-	bool  Initialized;
-
-	vec2  Padding;
 };
 
 layout (std430, binding = 6) buffer buffer_Particles
@@ -56,14 +49,14 @@ layout(push_constant) uniform Transform
 void main()
 {
 	int id = gl_InstanceIndex;
-	mat4 transform = mat4(
+	mat4 instanceTransform = mat4(
 		vec4(Particles[id].TransformRow0.x, Particles[id].TransformRow1.x, Particles[id].TransformRow2.x, 0.0),
 		vec4(Particles[id].TransformRow0.y, Particles[id].TransformRow1.y, Particles[id].TransformRow2.y, 0.0),
 		vec4(Particles[id].TransformRow0.z, Particles[id].TransformRow1.z, Particles[id].TransformRow2.z, 0.0),
 		vec4(Particles[id].TransformRow0.w, Particles[id].TransformRow1.w, Particles[id].TransformRow2.w, 1.0)
 	);
 
-	vec4 instancePosition = transform * u_Renderer.Transform * vec4(a_Position, 1.0);
+	vec4 instancePosition = u_Renderer.Transform * instanceTransform * vec4(a_Position, 1.0);
 
 	v_Output.Color = Particles[id].Color;
 	v_Output.Position = instancePosition.xyz;

@@ -4,6 +4,7 @@
 #include <glm/common.hpp>
 #include <glm/gtc/random.hpp>
 #include <glm/gtc/constants.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace XYZ {
 	
@@ -49,8 +50,10 @@ namespace XYZ {
 		{
 			float* elem = reinterpret_cast<float*>(&buffer[offset]);
 			*elem = glm::linearRand(MinimumLife, MaximumLife);
+			
 			float* lifeRemaining = reinterpret_cast<float*>(&buffer[offset + 4]);
 			*lifeRemaining = *elem;
+
 			offset += m_Stride;
 		}
 	}
@@ -65,13 +68,13 @@ namespace XYZ {
 		for (uint32_t i = 0; i < count; ++i)
 		{
 			uint32_t currOffset = offset;
-			glm::vec4* startColor    = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
+			glm::vec4* startColor = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
 			*startColor = glm::linearRand(glm::vec4(0.5f, 0.5f, 0.5f, 1.0f), glm::vec4(1.0f));
 			currOffset += sizeof(glm::vec4);
 
-			glm::vec4* startRotation = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
-			*startRotation = glm::linearRand(glm::vec4(-90.0f), glm::vec4(90.0f));
-			currOffset += sizeof(glm::vec4);
+			glm::quat* startRotation = reinterpret_cast<glm::quat*>(&buffer[currOffset]);
+			*startRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+			currOffset += sizeof(glm::quat);
 
 			float startscale = glm::linearRand(0.1f, 2.0f);
 			float endscale = glm::linearRand(0.1f, 2.0f);
@@ -86,12 +89,11 @@ namespace XYZ {
 
 			glm::vec4* endColor      = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
 			*endColor = glm::linearRand(glm::vec4(0.3f, 0.3f, 0.3f, 1.0f), glm::vec4(1.0f));
-			*endColor = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 			currOffset += sizeof(glm::vec4);
 
-			glm::vec4* endRotation   = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
-			*endRotation = glm::linearRand(glm::vec4(-90.0f), glm::vec4(90.0f));
-			currOffset += sizeof(glm::vec4);
+			glm::quat* endRotation   = reinterpret_cast<glm::quat*>(&buffer[currOffset]);
+			*endRotation = glm::quat(0.6151705, -0.1455344, 0.6151705, -0.4711159);
+			currOffset += sizeof(glm::quat);
 
 			glm::vec4* endScale      = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
 			*endScale = glm::vec4(endscale);
@@ -99,6 +101,10 @@ namespace XYZ {
 
 			glm::vec4* endVelocity   = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
 			*endVelocity = glm::linearRand(glm::vec4(-0.5f), glm::vec4(0.5f));
+			currOffset += sizeof(glm::vec4);
+
+			glm::vec4* position = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
+			*position = *reinterpret_cast<glm::vec4*>(&buffer[offset - 16]);
 			currOffset += sizeof(glm::vec4);
 
 			offset += m_Stride;

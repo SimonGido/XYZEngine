@@ -22,6 +22,20 @@ namespace XYZ {
 			buffer.Destroy();
 		});
 	}
+	void VulkanStorageBufferSet::UpdateEachFrame(const void* data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set)
+	{
+		Ref<VulkanStorageBufferSet> instance = this;
+		ByteBuffer buffer = ByteBuffer::Copy(data, size);
+
+		Renderer::Submit([buffer, instance, size, offset, binding, set]() mutable {
+			for (uint32_t frame = 0; frame < Renderer::GetConfiguration().FramesInFlight; ++frame)
+			{
+				instance->Get(binding, set, frame)->RT_Update(buffer, size, offset);
+			}
+			buffer.Destroy();
+		});
+	}
+
 	void VulkanStorageBufferSet::CreateDescriptors(const Ref<Shader>& shader)
 	{
 		Ref<const VulkanShader> vulkanShader = shader;

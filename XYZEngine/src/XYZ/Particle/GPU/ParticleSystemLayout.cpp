@@ -1,40 +1,14 @@
 #include "stdafx.h"
 #include "ParticleSystemLayout.h"
 
+#include "XYZ/Utils/Math/Math.h"
+
 namespace XYZ {
 
-	static uint32_t ParticleVariableTypSize(ParticleVariableType type)
-	{
-		switch (type)
-		{
-		case XYZ::ParticleVariableType::None:
-			XYZ_ASSERT(false, "Invalid type");
-			return 0;
-		case XYZ::ParticleVariableType::Float:
-			return 4;
-		case XYZ::ParticleVariableType::Vec2:
-			return 8;
-		case XYZ::ParticleVariableType::Vec3:
-			return 12;
-		case XYZ::ParticleVariableType::Vec4:
-			return 16;
-		case XYZ::ParticleVariableType::Int:
-			return 4;
-		case XYZ::ParticleVariableType::IVec2:
-			return 8;
-		case XYZ::ParticleVariableType::IVec3:
-			return 12;
-		case XYZ::ParticleVariableType::IVec4:
-			return 16;
-		case XYZ::ParticleVariableType::Bool: // Bool has 4 bytes size in GLSL
-			return 4;
-		default:
-			break;
-		}
-		return 0;
-	}
-
-	ParticleSystemLayout::ParticleSystemLayout(const std::vector<ParticleVariableInit>& particleLayout)
+	
+	ParticleSystemLayout::ParticleSystemLayout(std::string name, const std::vector<ParticleVariableInit>& particleLayout, bool round)
+		:
+		m_Name(std::move(name))
 	{
 		m_Variables.resize(particleLayout.size());
 
@@ -44,11 +18,10 @@ namespace XYZ {
 		{
 			m_Variables[i].Name = particleLayout[i].first;
 			m_Variables[i].Type = particleLayout[i].second;
-			m_Variables[i].Size = ParticleVariableTypSize(m_Variables[i].Type);
 			m_Variables[i].Offset = offset;
-			offset += m_Variables[i].Size;
+			offset += m_Variables[i].Type.Size;
 		}
-		m_Stride = offset;
+		m_Stride = Math::RoundUp(offset, 16);
 	}
 	uint32_t ParticleSystemLayout::GetVariableOffset(const std::string_view name) const
 	{

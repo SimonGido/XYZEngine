@@ -11,6 +11,7 @@ namespace XYZ {
 			void        SetPathBuffer(const char* value, size_t size);
 			void	    SetPathBuffer(const std::string& value);
 			char*	    GetPathBuffer();
+			char*		GetPathBuffer(const std::string& value);
 			void		PushID();
 			void		PopID();
 
@@ -27,6 +28,9 @@ namespace XYZ {
 
 		void HelpMarker(const char* desc);
 		
+		bool IsTextActivated();
+		bool IsTextDeactivated();
+
 		void Image(const Ref<Image2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
 		bool ImageButton(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, int framePadding, const ImVec4& bgColor = ImVec4(1, 1, 1, 1), const ImVec4& tintColor = ImVec4(1, 1, 1, 1), const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
 		bool ImageButtonTransparent(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, const ImVec4& hoverColor, const ImVec4& clickColor, const ImVec4& tintColor = ImVec4(1, 1, 1, 1), const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
@@ -59,13 +63,13 @@ namespace XYZ {
 		}
 
 		template <size_t numHeaders, typename T, typename Func>
-		void ContainerControl(const char* name, T& container, const std::array<const char*, numHeaders>& headerNames, size_t& selectedIndex, Func&& elementControl)
+		void ContainerControl(const char* name, T& container, const std::array<const char*, numHeaders>& headerNames, size_t& selectedIndex, Func&& elementControl, ImGuiTableFlags flags = ImGuiTableFlags_SizingStretchSame)
 		{
-			const size_t oldSelectedIndex = selectedIndex;
 			if (ImGui::TreeNode(name))
 			{
-				//ImGui::Text(name);
-				if (ImGui::BeginTable(name, numHeaders, ImGuiTableFlags_SizingStretchSame))
+				const size_t oldSelectedIndex = selectedIndex;
+				
+				if (ImGui::BeginTable(name, numHeaders, flags))
 				{
 					for (auto& header : headerNames)
 						ImGui::TableSetupColumn(header);
@@ -82,7 +86,9 @@ namespace XYZ {
 
 				UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, glm::vec2(0.0f));
 				if (ImGui::Button("+"))
+				{
 					container.push_back({});
+				}
 				ImGui::SameLine();
 				if (ImGui::Button("-"))
 				{
@@ -96,11 +102,14 @@ namespace XYZ {
 						container.pop_back();
 					}
 				}
-				// Mouse released and no new selection happend
-				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) && oldSelectedIndex == selectedIndex)
+				
+				// Mouse clicked
+				if (ImGui::IsMouseReleased(ImGuiMouseButton_Left) 
+					&& selectedIndex == oldSelectedIndex) // No new selection happend
 				{
 					selectedIndex = SIZE_MAX;
 				}
+
 				ImGui::TreePop();
 			}
 		}
@@ -311,6 +320,25 @@ namespace XYZ {
 			template <typename T>
 			ScopedID(T id) { ImGui::PushID(id); }
 			~ScopedID() { ImGui::PopID(); }
+		};
+
+
+		class CursrorMoverX
+		{
+		public:
+			CursrorMoverX()
+			{
+				m_CursorPos = ImGui::GetCursorPosX();
+			}
+
+			void Move(float width)
+			{
+				m_CursorPos = m_CursorPos + width;
+				ImGui::SetCursorPosX(m_CursorPos);
+			}
+
+		private:
+			float m_CursorPos;
 		};
 
 		class ScopedWidth

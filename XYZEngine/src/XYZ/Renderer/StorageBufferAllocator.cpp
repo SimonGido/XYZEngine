@@ -6,76 +6,96 @@
 
 namespace XYZ {
 
-	StorageBufferAllocation::StorageBufferAllocation(const Ref<StorageBufferAllocator>& allocator, uint32_t size, uint32_t offset)
+	StorageBufferAllocation::StorageBufferAllocation()
+		:
+		m_Allocator(nullptr),
+		m_Size(0),
+		m_Offset(0),
+		m_StorageBufferBinding(0),
+		m_StorageBufferSet(0),
+		m_Valid(false)
+	{
+	}
+
+	StorageBufferAllocation::StorageBufferAllocation(
+		const Ref<StorageBufferAllocator>& allocator,
+		uint32_t size,
+		uint32_t offset,
+		uint32_t binding,
+		uint32_t set
+	)
 		:
 		m_Allocator(allocator),
 		m_Size(size),
-		m_Offset(offset)
+		m_Offset(offset),
+		m_StorageBufferBinding(binding),
+		m_StorageBufferSet(set),
+		m_Valid(true)
 	{
 	}
 	
-	StorageBufferAllocator::StorageBufferAllocator(uint32_t size)
+	StorageBufferAllocation::~StorageBufferAllocation()
+	{
+		returnAllocation();
+	}
+
+	Ref<StorageBufferAllocation> StorageBufferAllocation::CreateSubAllocation(uint32_t offset, uint32_t size)
+	{
+		XYZ_ASSERT(offset + size <= m_Size, "");
+
+		StorageBufferAllocation* subAllocation = new StorageBufferAllocation(
+			m_Allocator, size, m_Offset + offset, m_StorageBufferBinding, m_StorageBufferSet
+		);
+
+		subAllocation->m_Owner = this;
+		return Ref<StorageBufferAllocation>(subAllocation);
+	}
+
+	void StorageBufferAllocation::returnAllocation()
+	{
+		if (m_Valid && !m_Owner.Raw())
+		{
+			m_Allocator->returnAllocation(m_Size, m_Offset);
+			m_Valid = false;
+		}
+	}
+	StorageBufferAllocator::StorageBufferAllocator(uint32_t size, uint32_t binding, uint32_t set)
 		:
+		m_Binding(binding),
+		m_Set(set),
 		m_Size(size),
 		m_Next(0),
 		m_AllocatedSize(0),
-		m_Running(true)
+		m_UnusedSpace(0),
+		m_SortRequired(false)
 	{
-		Ref<StorageBufferAllocator> instance = this;
-		m_FreeAllocationsThread = std::make_unique<std::thread>(&StorageBufferAllocator::worker, instance);
 	}
 
 	StorageBufferAllocator::~StorageBufferAllocator()
 	{
-		m_Running = false;
-		m_FreeAllocationAvailableCV.notify_one();
-		m_FreeAllocationsThread->join();
 	}
+
 	
-	void StorageBufferAllocator::Allocate(uint32_t size, Ref<StorageBufferAllocation>& allocation)
+	bool StorageBufferAllocator::Allocate(uint32_t size, Ref<StorageBufferAllocation>& allocation)
 	{
 		XYZ_PROFILE_FUNC("StorageBufferAllocator::Allocate");
-		std::unique_lock lock(m_NextMutex);
-		XYZ_ASSERT(m_Next + size < m_Size, "");
-
-		// Make sure we first return old allocation
-		if (allocation.Raw())
+		// Allocation is not valid, create new
+		if (!allocation.Raw())
 		{
-			returnAllocation(allocation->GetSize(), allocation->GetOffset());
-			allocation->m_Size = size;
-			allocation->m_Offset = m_Next;
+			allocation = createNewAllocation(size);
+			m_AllocatedSize += size;
+			m_UnusedSpace = m_Next - m_AllocatedSize;
+			return true;
 		}
-		else
-		{
-			allocation = Ref<StorageBufferAllocation>(new StorageBufferAllocation(this, size, m_Next));
+		else if (reallocationRequired(size, allocation))
+		{		
+			updateAllocation(size, allocation);
+			m_AllocatedSize += size;
+			m_UnusedSpace = m_Next - m_AllocatedSize;
+			return true;
 		}
-		m_Next += size;
-		m_AllocatedSize += size;
-	}
-
-	bool StorageBufferAllocator::TryAllocate(uint32_t size, Ref<StorageBufferAllocation>& allocation)
-	{
-		XYZ_PROFILE_FUNC("StorageBufferAllocator::TryAllocate");
-		if (allocation.Raw() && allocation->m_Size >= size)
-			return false;
-
-		std::unique_lock lock(m_NextMutex);
-		XYZ_ASSERT(m_Next + size < m_Size, "");
-
-		// Make sure we first return old allocation
-		if (allocation.Raw())
-		{
-			returnAllocation(allocation->GetSize(), allocation->GetOffset());
-			allocation->m_Size = size;
-			allocation->m_Offset = m_Next;
-		}
-		else
-		{
-			allocation = Ref<StorageBufferAllocation>(new StorageBufferAllocation(this, size, m_Next));
-		}
-		m_Next += size;
-		m_AllocatedSize += size;
-		return true;
+			
+		return false;
 	}
 
 	uint32_t StorageBufferAllocator::GetAllocatedSize() const
@@ -85,63 +105,94 @@ namespace XYZ {
 
 	void StorageBufferAllocator::returnAllocation(uint32_t size, uint32_t offset)
 	{
-		std::unique_lock lock(m_FreeAllocationsMutex);
-		if (m_Next == offset + size)
-		{
-			m_Next -= size;
-		}
-		else
-		{
-			m_FreeAllocations.push_back({ size, offset });
-			m_FreeAllocationAvailableCV.notify_one();
-		}
+		m_FreeAllocations.push_back({ size, offset });
 		m_AllocatedSize -= size;
+		m_UnusedSpace = m_Next - m_AllocatedSize;
+		m_SortRequired = true;
 	}
 
-	void StorageBufferAllocator::worker()
+	bool StorageBufferAllocator::allocateFromFree(uint32_t size, uint32_t& offset)
 	{
-		while (true)
-		{		
-			std::unique_lock lock(m_FreeAllocationsMutex);
-			m_FreeAllocationAvailableCV.wait(lock, [&] { return !m_FreeAllocations.empty() || !m_Running; });
-			
-			if (!m_Running)
-				return;
-
-			mergeFreeAllocations();
+		XYZ_PROFILE_FUNC("StorageBufferAllocator::allocateFromFree");
+		
+		if (m_SortRequired)
+		{
+			std::sort(m_FreeAllocations.begin(), m_FreeAllocations.end(), [](const Allocation& a, const Allocation& b) {
+				return a.Offset < b.Offset;
+				});
+			m_SortRequired = false;
 		}
-	}
-	void StorageBufferAllocator::mergeFreeAllocations()
-	{
-		XYZ_PROFILE_FUNC("StorageBufferAllocator::mergeFreeAllocations");
-		// Sort allocations based on offset
-		std::sort(m_FreeAllocations.begin(), m_FreeAllocations.end(), [](const Allocation a, const Allocation b) {
-			return a.Offset < b.Offset;
-			});
 
-		for (size_t i = m_FreeAllocations.size() - 1; i >= 1; --i)
+		// Merge free allocations
+		for (int64_t i = m_FreeAllocations.size() - 1; i >= 1; --i)
 		{
 			auto& last = m_FreeAllocations[i];
 			auto& prev = m_FreeAllocations[i - 1];
 
+			
 			if (last.Offset == prev.Offset + prev.Size)
 			{
-				// Try merge last free allocation with previous free allocation to decrease fragmentation
+				// Merge last allocation with previous allocation if possible
 				prev.Size += last.Size;
 				m_FreeAllocations.erase(m_FreeAllocations.begin() + i);
-			}
+			}			
 		}
-		if (!m_FreeAllocations.empty())
+
+		// Try to find suitable free allocation
+		for (int64_t i = m_FreeAllocations.size() - 1; i >= 0; --i)
 		{
-			auto last = m_FreeAllocations.back();
-			// If last free allocation is dirrectly connected to next, just decrease next and remove free allocation
-			if (last.Offset + last.Size == m_Next)
+			auto& last = m_FreeAllocations[i];
+			if (last.Size > size)
 			{
-				std::unique_lock nextLock(m_NextMutex);
-				m_Next -= last.Size;
-				m_FreeAllocations.erase(m_FreeAllocations.end() - 1);
+				// Cut required size from free allocation
+				last.Size -= size;
+				offset = last.Offset + last.Size;
+				return true;
+			}
+			else if (last.Size == size)
+			{
+				// Take whole free allocation
+				offset = last.Offset;
+				m_FreeAllocations.erase(m_FreeAllocations.begin() + i);
+				return true;
 			}
 		}
+		return false;
+	}
+
+	bool StorageBufferAllocator::reallocationRequired(uint32_t size, Ref<StorageBufferAllocation>& allocation)
+	{
+		return allocation->m_Size < size			 // Size is not sufficient
+			|| allocation->GetBinding() != m_Binding // Allocation is not owned by this allocator
+			|| allocation->GetSet() != m_Set;		 // Allocation is not owned by this allocator
+	}
+
+	Ref<StorageBufferAllocation> StorageBufferAllocator::createNewAllocation(uint32_t size)
+	{
+		uint32_t offset = m_Next;
+		if (!allocateFromFree(size, offset))
+		{
+			XYZ_ASSERT(m_Next + size < m_Size, "");
+			m_Next += size;
+		}
+		return Ref<StorageBufferAllocation>(new StorageBufferAllocation(this, size, offset, m_Binding, m_Set));
+	}
+	void StorageBufferAllocator::updateAllocation(uint32_t size, Ref<StorageBufferAllocation>& allocation)
+	{
+		uint32_t offset = m_Next;
+		if (!allocateFromFree(size, offset))
+		{
+			XYZ_ASSERT(m_Next + size < m_Size, "");
+			m_Next += size;
+		}
+		allocation->returnAllocation();
+		allocation->m_Allocator = this;
+		allocation->m_Size = size;
+		allocation->m_Offset = offset;
+		allocation->m_StorageBufferBinding = m_Binding;
+		allocation->m_StorageBufferSet = m_Set;
+		allocation->m_Valid = true;
+		m_Next += size;
 	}
 
 }

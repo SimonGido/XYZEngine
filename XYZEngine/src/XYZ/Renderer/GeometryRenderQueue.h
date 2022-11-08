@@ -145,41 +145,14 @@ namespace XYZ {
 			uint32_t			   InstanceOffset = 0;
 		};
 
-		struct SSBOState
-		{
-			uint32_t Size;
-			uint32_t Offset;
-		};
-
-
-		struct IndirectComputeCommand
-		{
-			PushConstBuffer		   OverrideUniformData;
-			std::vector<std::byte> ComputeData;
-
-			SSBOState					  IndirectCommandState;
-			SSBOState					  ComputeDataState;
-			Ref<StorageBufferAllocation>  ResultStateAllocation;	
-			bool						  ResultStateAllocationChanged = false;
-		};
-
-		struct IndirectComputeBatch
-		{
-			Ref<PipelineCompute>   Pipeline;
-			Ref<MaterialAsset>	   MaterialCompute;
-
-			std::vector<IndirectComputeCommand> Commands;
-		};
-
 		struct IndirectMeshDrawCommandOverride
 		{
 			Ref<Mesh>			  Mesh;
 			Ref<MaterialInstance> OverrideMaterial;
-			uint32_t			  ComputeDataSize;
+			glm::mat4			  Transform;
 	
-			SSBOState			  IndirectCommandState;
-			SSBOState			  ComputeDataState;
-			Ref<StorageBufferAllocation>  ResultStateAllocation;
+			Ref<StorageBufferAllocation> IndirectCommandAllocation;
+			Ref<StorageBufferAllocation> ReadStateAllocation;
 		};
 
 		struct IndirectMeshDrawCommand
@@ -190,6 +163,26 @@ namespace XYZ {
 			std::vector<IndirectMeshDrawCommandOverride> OverrideCommands;
 		};
 
+		struct ComputeCommand
+		{
+			PushConstBuffer	OverrideUniformData;
+
+			struct Data
+			{
+				Ref<StorageBufferAllocation> Allocation;
+				std::vector<std::byte> ComputeData;
+			};
+
+			std::vector<Data> Data;
+		};
+
+		struct ComputeCommandBatch
+		{
+			Ref<PipelineCompute>   Pipeline;
+			Ref<MaterialAsset>	   MaterialCompute;
+
+			std::vector<ComputeCommand>	ComputeCommands;
+		};
 
 
 		std::map<SpriteKey, SpriteDrawCommand> SpriteDrawCommands;
@@ -199,8 +192,8 @@ namespace XYZ {
 		std::map<BatchMeshKey, AnimatedMeshDrawCommand>	AnimatedMeshDrawCommands;
 		std::map<BatchMeshKey, InstanceMeshDrawCommand>	InstanceMeshDrawCommands;
 		std::map<AssetHandle,  IndirectMeshDrawCommand>	IndirectDrawCommands;
-		std::map<AssetHandle,  IndirectComputeBatch>	IndirectComputeCommands;
-		
+		std::map<AssetHandle,  ComputeCommandBatch>	    ComputeCommands;
+
 		void Clear()
 		{
 			SpriteDrawCommands.clear();
@@ -209,7 +202,7 @@ namespace XYZ {
 			AnimatedMeshDrawCommands.clear();
 			InstanceMeshDrawCommands.clear();
 			IndirectDrawCommands.clear();
-			IndirectComputeCommands.clear();
+			ComputeCommands.clear();
 		}
 	};
 }

@@ -22,6 +22,7 @@ project "XYZEditor"
 			"%{IncludeDir.entt}",
 			"%{IncludeDir.ozz_animation}",
 			"%{IncludeDir.ImGui}",
+			"%{IncludeDir.ImGuiNode}",
 			"%{IncludeDir.ImGuizmo}",
 			"%{IncludeDir.yaml}",
 			"%{IncludeDir.glm}",

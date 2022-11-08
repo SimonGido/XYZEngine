@@ -61,7 +61,7 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("GeometryPass::Submit");
 
-		submitIndirectComputeCommands(queue, commandBuffer); // Must be called outside render pass
+		submitComputeCommands(queue, commandBuffer); // Must be called outside render pass
 
 		// Geometry
 		uint32_t geometryPassQuery = commandBuffer->BeginTimestampQuery();
@@ -86,11 +86,9 @@ namespace XYZ {
 		uint32_t transformsCount = 0;
 		uint32_t boneTransformCount = 0;
 		uint32_t instanceOffset = 0;
-		uint32_t computeStateSize = 0;
-		uint32_t indirectCommandCount = 0;
 
-		prepareIndirectComputeCommands(queue, computeStateSize);
-		prepareIndirectCommands(queue, indirectCommandCount);
+		prepareComputeCommands(queue);
+		prepareIndirectCommands(queue);
 		prepareStaticDrawCommands(queue, overrideCount, transformsCount);
 		prepareAnimatedDrawCommands(queue, animatedOverrideCount, transformsCount, boneTransformCount);
 		prepareInstancedDrawCommands(queue, instanceOffset);
@@ -100,25 +98,19 @@ namespace XYZ {
 		m_InstanceVertexBufferSet->Update(m_SceneRenderer->m_InstanceData.data(), instanceOffset);
 		
 		m_SceneRenderer->m_StorageBufferSet->Update(m_SceneRenderer->m_BoneTransformSSBO.Data, boneTransformCount * sizeof(GeometryRenderQueue::BoneTransforms), 0, SSBOBoneTransformData::Binding, SSBOBoneTransformData::Set);
-		m_SceneRenderer->m_StorageBufferSet->Update(m_SceneRenderer->m_ComputeStateSSBO.Data, computeStateSize, 0, SSBOComputeState::Binding, SSBOComputeState::Set);
-		m_SceneRenderer->m_StorageBufferSet->Update(m_SceneRenderer->m_IndirectBufferSSBO.Data, indirectCommandCount * sizeof(IndirectIndexedDrawCommand), 0, SSBOIndirectData::Binding, SSBOIndirectData::Set);
 		
-		
-	
 		return { 
 			static_cast<uint32_t>(overrideCount), 
 			static_cast<uint32_t>(animatedOverrideCount), 
 			transformsCount, 
 			instanceOffset,
-			computeStateSize,
-			indirectCommandCount,
 			boneTransformCount
 		};
 	}
 
-	void GeometryPass::submitIndirectComputeCommands(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer)
+	void GeometryPass::submitComputeCommands(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer)
 	{
-		for (auto& [key, com] : queue.IndirectComputeCommands)
+		for (auto& [key, com] : queue.ComputeCommands)
 		{
 			Renderer::BeginPipelineCompute(
 				commandBuffer,
@@ -128,29 +120,19 @@ namespace XYZ {
 				com.MaterialCompute->GetMaterial()
 			);
 
-			for (auto& command : com.Commands)
+			// Regular compute commands
+			for (auto& command : com.ComputeCommands)
 			{
-				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					command.IndirectCommandState.Size,
-					command.IndirectCommandState.Offset,
-					SSBOIndirectData::Binding,
-					SSBOIndirectData::Set
-				);
-
-				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					command.ComputeDataState.Size,
-					command.ComputeDataState.Offset,
-					SSBOComputeState::Binding,
-					SSBOComputeState::Set
-				);
-
-				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					command.ResultStateAllocation->GetSize(),
-					command.ResultStateAllocation->GetOffset(),
-					SSBOComputeData::Binding,
-					SSBOComputeData::Set
-				);
-
+				for (auto& data : command.Data)
+				{
+					m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
+						data.Allocation->GetSize(),
+						data.Allocation->GetOffset(),
+						data.Allocation->GetBinding(),
+						data.Allocation->GetSet()
+					);
+				}
+				
 				Renderer::UpdateDescriptors(
 					com.Pipeline,
 					com.MaterialCompute->GetMaterial(),
@@ -184,11 +166,14 @@ namespace XYZ {
 							0, nullptr,
 							0, nullptr);
 					});
+
+
 			}
 
 			Renderer::EndPipelineCompute(com.Pipeline);
 		}
 	}
+
 
 	void GeometryPass::submitIndirectCommands(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer)
 	{
@@ -206,24 +191,17 @@ namespace XYZ {
 			for (auto& dcOverride : dc.OverrideCommands)
 			{
 				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					dcOverride.IndirectCommandState.Size,
-					dcOverride.IndirectCommandState.Offset,
-					SSBOIndirectData::Binding,
-					SSBOIndirectData::Set
+					dcOverride.IndirectCommandAllocation->GetSize(),
+					dcOverride.IndirectCommandAllocation->GetOffset(),
+					dcOverride.IndirectCommandAllocation->GetBinding(),
+					dcOverride.IndirectCommandAllocation->GetSet()
 				);
 
 				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					dcOverride.ComputeDataState.Size,
-					dcOverride.ComputeDataState.Offset,
-					SSBOComputeState::Binding,
-					SSBOComputeState::Set
-				);
-
-				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					dcOverride.ResultStateAllocation->GetSize(),
-					dcOverride.ResultStateAllocation->GetOffset(),
-					SSBOComputeData::Binding,
-					SSBOComputeData::Set
+					dcOverride.ReadStateAllocation->GetSize(),
+					dcOverride.ReadStateAllocation->GetOffset(),
+					dcOverride.ReadStateAllocation->GetBinding(),
+					dcOverride.ReadStateAllocation->GetSet()
 				);
 
 				Renderer::UpdateDescriptors(
@@ -240,9 +218,9 @@ namespace XYZ {
 					dc.MaterialAsset->GetMaterialInstance(),
 					dcOverride.Mesh->GetVertexBuffer(),
 					dcOverride.Mesh->GetIndexBuffer(),
-					{ glm::mat4(1.0f) },
+					{ dcOverride.Transform },
 					m_SceneRenderer->m_StorageBufferSet,
-					dcOverride.IndirectCommandState.Offset,
+					dcOverride.IndirectCommandAllocation->GetOffset(),
 					1,
 					sizeof(IndirectIndexedDrawCommand)
 				);
@@ -526,73 +504,39 @@ namespace XYZ {
 			}
 		}
 	}
-
-	void GeometryPass::prepareIndirectCommands(GeometryRenderQueue& queue, uint32_t& indirectCommandCount)
+	void GeometryPass::prepareComputeCommands(GeometryRenderQueue& queue)
 	{
-		uint32_t offset = 0;
-		uint32_t commandOffset = 0;
+		for (auto& [key, dc] : queue.ComputeCommands)
+		{
+			dc.Pipeline = m_PipelineCache.PrepareComputePipeline(dc.MaterialCompute);
+			for (auto& cmd : dc.ComputeCommands)
+			{
+				for (auto& data : cmd.Data)
+				{
+					if (data.ComputeData.empty())
+						continue;
 
-		uint32_t index = 0;
+					m_SceneRenderer->m_StorageBufferSet->Update(
+						data.ComputeData.data(),
+						data.Allocation->GetSize(),
+						data.Allocation->GetOffset(),
+						data.Allocation->GetBinding(),
+						data.Allocation->GetSet()
+					);
+				}
+			}
+		}
+	}
+
+	void GeometryPass::prepareIndirectCommands(GeometryRenderQueue& queue)
+	{
 		for (auto& [key, dc] : queue.IndirectDrawCommands)
 		{
 			dc.Pipeline = m_PipelineCache.PreparePipeline(dc.MaterialAsset, m_SceneRenderer->m_GeometryRenderPass);
-			for (auto& cmd : dc.OverrideCommands)
-			{
-				cmd.ComputeDataState.Offset = offset;
-				cmd.ComputeDataState.Size = Math::RoundUp(cmd.ComputeDataSize, 16);
-
-				
-				cmd.IndirectCommandState.Offset = commandOffset;
-				cmd.IndirectCommandState.Size = sizeof(IndirectIndexedDrawCommand);
 			
-				m_SceneRenderer->m_IndirectBufferSSBO.Data[index].Count = cmd.Mesh->GetIndexBuffer()->GetCount();
-				m_SceneRenderer->m_IndirectBufferSSBO.Data[index].FirstIndex = 0;
-				m_SceneRenderer->m_IndirectBufferSSBO.Data[index].BaseVertex = 0;
-				m_SceneRenderer->m_IndirectBufferSSBO.Data[index].BaseInstance = 0;
-
-				offset += Math::RoundUp(cmd.ComputeDataSize, 16);
-				commandOffset += sizeof(IndirectIndexedDrawCommand);
-				indirectCommandCount++;
-				index++;
-			}
 		}
 	}
-	void GeometryPass::prepareIndirectComputeCommands(GeometryRenderQueue& queue, uint32_t& computeStateSize)
-	{
-		uint32_t offset = 0;
-		uint32_t commandOffset = 0;
-
-		for (auto& [key, dc] : queue.IndirectComputeCommands)
-		{			
-			dc.Pipeline = m_PipelineCache.PrepareComputePipeline(dc.MaterialCompute);
-			for (auto& cmd : dc.Commands)
-			{
-				cmd.ComputeDataState.Offset = offset;
-				cmd.ComputeDataState.Size = Math::RoundUp(static_cast<uint32_t>(cmd.ComputeData.size()), 16);
-
-				cmd.IndirectCommandState.Offset = commandOffset;
-				cmd.IndirectCommandState.Size = sizeof(IndirectIndexedDrawCommand);
-
-				// If we are expecting result in different subbuffer, we must update subbuffer data
-				if (cmd.ResultStateAllocationChanged)
-				{
-					m_SceneRenderer->m_StorageBufferSet->Update(
-						&m_SceneRenderer->m_ComputeDataSSBO.Data[cmd.ResultStateAllocation->GetOffset()],
-						cmd.ResultStateAllocation->GetSize(), 
-						cmd.ResultStateAllocation->GetOffset(),
-						SSBOComputeData::Binding,
-						SSBOComputeData::Set
-					);
-				}
-
-				memcpy(&m_SceneRenderer->m_ComputeStateSSBO.Data[offset], cmd.ComputeData.data(), cmd.ComputeData.size());
-				
-				offset		  += Math::RoundUp(static_cast<uint32_t>(cmd.ComputeData.size()), 16);
-				commandOffset += sizeof(IndirectIndexedDrawCommand);
-			}
-		}
-		computeStateSize = offset;
-	}
+	
 
 	void GeometryPass::prepareAnimatedDrawCommands(GeometryRenderQueue& queue, size_t& overrideCount, uint32_t& transformsCount, uint32_t& boneTransformCount)
 	{

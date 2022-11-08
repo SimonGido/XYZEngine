@@ -17,6 +17,7 @@
 #include "XYZ/Particle/GPU/ParticleSystemGPU.h"
 
 #include "SceneCamera.h"
+#include "GPUScene.h"
 
 #include <entt/entt.hpp>
 
@@ -103,6 +104,7 @@ namespace XYZ {
     private:
         void onScriptComponentConstruct(entt::registry& reg, entt::entity ent);
         void onScriptComponentDestruct(entt::registry& reg, entt::entity ent);
+  
 
         void updateScripts(Timestep ts);
         void updateHierarchy();      
@@ -116,18 +118,16 @@ namespace XYZ {
         void updateParticleView(Timestep ts);
         void updateRigidBody2DView();
 
-        void updateParticleGPUView(Timestep ts);
-
+       
         void setupPhysics();
         void setupLightEnvironment();
-
-        void submitParticleGPUView();
 
     private:
         PhysicsWorld2D      m_PhysicsWorld;
         ContactListener     m_ContactListener;
         SceneEntity*        m_PhysicsEntityBuffer;
         LightEnvironment    m_LightEnvironment;
+        GPUScene            m_GPUScene;
 
         entt::registry      m_Registry;
         GUID                m_UUID;
@@ -144,12 +144,10 @@ namespace XYZ {
         uint32_t m_ViewportHeight;
 
         std::shared_mutex m_ScriptMutex;
-
-        float m_GPUFrameTimestep; // It can be updated only once per FramesInFlight
-        uint32_t m_GPUFrameCounter;
         
         bool  m_UpdateAnimationAsync = false;
         bool  m_UpdateHierarchyAsync = false;
+
 
         friend SceneRenderer;
         friend class SceneIntersection;
@@ -163,11 +161,11 @@ namespace XYZ {
         
 
         // Indirect draw test //
-        Ref<MaterialAsset>     m_IndirectCommandMaterial;
-        Ref<ParticleSystemGPU> m_ParticleSystemGPU;
+        Ref<MaterialAsset>     m_UpdateCommandMaterial;
 
         Ref<MaterialAsset>	   m_ParticleMaterialGPU;
         Ref<MaterialInstance>  m_ParticleMaterialInstanceGPU;
         Ref<Mesh>			   m_ParticleCubeMesh;
+        Ref<ParticleSystemGPU> m_ParticleSystemGPU;
     };
 }

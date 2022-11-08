@@ -170,10 +170,10 @@ namespace XYZ {
 		virtual void Resize(uint32_t size) {};
 		virtual void SetBufferInfo(uint32_t size, uint32_t offset) {};
 
-		virtual uint32_t GetBinding() const { return 0; }
+		virtual uint32_t			GetBinding() const { return 0; }
 		virtual const BufferLayout& GetLayout() const { return BufferLayout(); };
-		virtual ByteBuffer GetBuffer() { return ByteBuffer(); }
-		virtual bool	   IsIndirect() const { return false; }
+		virtual ByteBuffer			GetBuffer() { return ByteBuffer(); }
+		virtual bool				IsIndirect() const { return false; }
 		
 		static Ref<StorageBuffer> Create(uint32_t size, uint32_t binding, bool indirect = false);
 		static Ref<StorageBuffer> Create(const void *data, uint32_t size, uint32_t binding, bool indirect = false, BufferUsage usage = BufferUsage::Dynamic);

@@ -45,7 +45,11 @@ namespace XYZ {
 			{
 				return s_PathBuffer;
 			}
-
+			char* GetPathBuffer(const std::string& value)
+			{
+				SetPathBuffer(value);
+				return s_PathBuffer;
+			}
 			void PushID()
 			{
 				ImGui::PushID(s_UIContextID++);
@@ -184,6 +188,29 @@ namespace XYZ {
 				ImGui::PopTextWrapPos();
 				ImGui::EndTooltip();
 			}
+		}
+
+		bool IsTextActivated()
+		{
+			if (ImGui::IsItemHovered())
+			{
+				return ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+			}
+			return false;
+		}
+
+		bool IsTextDeactivated()
+		{
+			if (ImGui::IsItemHovered())
+			{
+				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+				{
+					std::cout << "DA heck";
+				}
+
+				return ImGui::IsMouseReleased(ImGuiMouseButton_Left);
+			}
+			return false;
 		}
 
 		void Image(const Ref<Image2D>& image, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1)

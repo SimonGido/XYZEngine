@@ -69,3 +69,8 @@ mat4 RotationMatrix(in vec3 eulerAngles)
     vec4 quat = EulerToQuat(eulerAngles);
     return QuatToMat4(quat);
 }
+
+mat4 RotationMatrix(in vec4 quat)
+{
+    return QuatToMat4(quat);
+}

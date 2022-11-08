@@ -94,10 +94,12 @@ namespace XYZ {
 		virtual const std::vector<BufferLayout>& GetLayouts() const override { return m_Layouts; }
 		virtual size_t							 GetHash() const override;
 		virtual size_t							 GetVertexBufferSize() const override{ return m_VertexBufferSize; }
+		virtual const std::vector<uint32_t>&	 GetShaderData(ShaderType type) const override;
+		virtual bool							 IsCompute()  const override;
 		virtual bool							 IsCompiled() const override;
-		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const override { return m_Buffers; }
+		virtual const std::unordered_map<std::string, ShaderBuffer>&			  GetBuffers() const override { return m_Buffers; }
 		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const override { return m_Resources; }
-		virtual const std::unordered_map<std::string, SpecializationCache>& GetSpecializationCachce() const override { return m_Specializations; }
+		virtual const std::unordered_map<std::string, SpecializationCache>&		  GetSpecializationCachce() const override { return m_Specializations; }
 
 
 		const std::vector<DescriptorSet>&				    GetDescriptorSets()		 const { return m_DescriptorSets; }
@@ -143,6 +145,8 @@ namespace XYZ {
 		std::string				   m_Source;
 		mutable ShaderParser	   m_Parser;
 		size_t					   m_SourceHash;
+
+		StageMap<std::vector<uint32_t>> m_ShaderData;
 
 		std::unordered_map<std::string, SpecializationCache> m_Specializations;
 

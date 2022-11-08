@@ -207,19 +207,11 @@ namespace XYZ {
 
 	struct ParticleComponentGPU
 	{
-		Ref<Mesh>			  Mesh;
-		Ref<MaterialAsset>	  RenderMaterial;
-		Ref<MaterialInstance> OverrideMaterial;
+		Ref<Mesh>			    Mesh;
+		Ref<MaterialAsset>	    RenderMaterial;
+		Ref<MaterialInstance>   OverrideMaterial;
 
-		Ref<MaterialAsset>			 ComputeMaterial;
-		Ref<ParticleSystemGPU>		 System;
-		Ref<StorageBufferAllocation> ResultAllocation;
-
-		ParticleBuffer		   Buffer;
-		uint32_t			   EmittedParticles = 0;
-		
-		float				   Speed	  = 1.0f;
-		bool				   Loop		  = true;
+		Ref<ParticleSystemGPU>  System;
 	};
 
 	struct PointLightComponent2D 

@@ -184,6 +184,14 @@ namespace XYZ {
 		return result;
 	}
 
+	void FileSystem::WriteFile(const std::string_view filepath, const std::string_view content)
+	{
+		std::ofstream file;
+		file.open(filepath, std::ios::trunc | std::ios::in);
+		file << content;
+		file.close();
+	}
+
 	bool FileSystem::DeleteFileAtPath(const std::string& filepath)
 	{
 		s_IgnoreNextChange = true;

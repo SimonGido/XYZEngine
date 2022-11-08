@@ -58,7 +58,7 @@ namespace XYZ {
 			return;
 		VulkanAllocator allocator("VulkanStorageBuffer");
 		uint8_t* pData = allocator.MapMemory<uint8_t>(m_MemoryAllocation);
-		memcpy(pData, (uint8_t*)data + offset, size);
+		memcpy(pData + offset, (uint8_t*)data, size);
 		allocator.UnmapMemory(m_MemoryAllocation);
 	}
 	void VulkanStorageBuffer::Update(ByteBuffer data, uint32_t size, uint32_t offset)
