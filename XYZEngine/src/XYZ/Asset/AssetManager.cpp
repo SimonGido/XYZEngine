@@ -8,13 +8,6 @@
 
 namespace XYZ
 {
-	MemoryPool												AssetManager::s_Pool = MemoryPool(1024 * 1024 * 10);
-	AssetRegistry											AssetManager::s_Registry;
-	ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>			AssetManager::s_LoadedAssets;
-	ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>			AssetManager::s_MemoryAssets;
-	std::shared_ptr<FileWatcher>							AssetManager::s_FileWatcher;
-	std::shared_ptr<AssetLifeManager>						AssetManager::s_AssetLifeManager;
-
 	static std::filesystem::path s_Directory = "Assets";
 
 	void AssetManager::Init()

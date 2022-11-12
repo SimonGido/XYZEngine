@@ -9,7 +9,7 @@
 namespace XYZ {
 
 	
-	class SceneSerializer
+	class XYZ_API SceneSerializer
 	{
 	public:
 		void Serialize(const std::string& filepath, WeakRef<Scene> scene);

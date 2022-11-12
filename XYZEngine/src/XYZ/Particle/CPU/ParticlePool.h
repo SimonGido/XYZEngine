@@ -9,7 +9,7 @@
 namespace XYZ {
 
     
-	class ParticlePool
+	class XYZ_API ParticlePool
 	{
 	public:
         ParticlePool(const uint32_t maxParticles);

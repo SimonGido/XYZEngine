@@ -3,7 +3,7 @@
 #include "AssetSerializer.h"
 
 namespace XYZ {
-	class AssetImporter
+	class XYZ_API AssetImporter
 	{
 	public:
 		static void Init();

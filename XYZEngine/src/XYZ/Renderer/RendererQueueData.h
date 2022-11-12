@@ -10,7 +10,7 @@
 namespace XYZ {
 
 
-	class RendererQueueData
+	class XYZ_API RendererQueueData
 	{
 	public:
 		void Init(uint32_t framesInFlight);

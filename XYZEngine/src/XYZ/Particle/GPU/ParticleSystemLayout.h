@@ -13,7 +13,7 @@ namespace XYZ {
 	};
 
 
-	struct ParticleSystemLayout
+	struct XYZ_API ParticleSystemLayout
 	{
 		using ParticleVariableInit = std::pair<std::string, VariableType>;
 

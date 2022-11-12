@@ -1,12 +1,9 @@
 #pragma once
-
-
-
-
+#include "XYZ/Core/Core.h"
 
 namespace XYZ {
 	
-	class ScriptEngineRegistry
+	class XYZ_API ScriptEngineRegistry
 	{
 	public:
 		static void RegisterAll();

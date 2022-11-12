@@ -1,7 +1,8 @@
 #pragma once
+#include "XYZ/Core/Core.h"
 
 namespace XYZ {
-    class CustomBuffer
+    class XYZ_API CustomBuffer
     {
     public:
         CustomBuffer();

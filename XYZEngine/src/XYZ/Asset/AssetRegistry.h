@@ -12,7 +12,7 @@ namespace XYZ {
 		}
 	};
 
-	class AssetRegistry
+	class XYZ_API AssetRegistry
 	{
 	public:
 		void StoreMetadata(const AssetMetadata& metadata);

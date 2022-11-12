@@ -44,7 +44,7 @@ namespace XYZ {
 		return 0;
 	}
 
-	struct BufferElement
+	struct XYZ_API BufferElement
 	{
 		BufferElement(uint32_t location, ShaderDataType type, const std::string_view name)
 			: Type(type), Size(ShaderDataTypeSize(type)), Offset(0), Location(location)
@@ -56,7 +56,7 @@ namespace XYZ {
 		uint32_t	   Location;
 	};
 
-	class BufferLayout
+	class XYZ_API BufferLayout
 	{
 	public:
 		BufferLayout(bool instanced = false)
@@ -112,7 +112,7 @@ namespace XYZ {
 		None = 0, Static = 1, Dynamic = 2
 	};
 
-	class VertexBuffer : public RefCount
+	class XYZ_API VertexBuffer : public RefCount
 	{
 	public:
 		virtual ~VertexBuffer() = default;
@@ -136,7 +136,7 @@ namespace XYZ {
 		Uint8, Uint16, Uint32
 	};
 
-	class IndexBuffer : public RefCount
+	class XYZ_API IndexBuffer : public RefCount
 	{
 	public:
 		virtual ~IndexBuffer() = default;
@@ -151,7 +151,7 @@ namespace XYZ {
 
 
 
-	class StorageBuffer : public RefCount
+	class XYZ_API StorageBuffer : public RefCount
 	{
 	public:
 		virtual ~StorageBuffer() = default;
@@ -180,7 +180,7 @@ namespace XYZ {
 	};
 
 
-	class AtomicCounter : public RefCount
+	class XYZ_API AtomicCounter : public RefCount
 	{
 	public:
 		virtual ~AtomicCounter() = default;
@@ -195,7 +195,7 @@ namespace XYZ {
 	};
 
 
-	struct IndirectDrawCommand
+	struct XYZ_API IndirectDrawCommand
 	{
 		uint32_t Count;
 		uint32_t InstanceCount;
@@ -203,7 +203,7 @@ namespace XYZ {
 		uint32_t BaseInstance;
 	};
 
-	struct IndirectIndexedDrawCommand
+	struct XYZ_API IndirectIndexedDrawCommand
 	{
 		uint32_t Count			= 0;         
 		uint32_t InstanceCount	= 0;
@@ -216,7 +216,7 @@ namespace XYZ {
 	};
 	
 
-	class IndirectBuffer : public RefCount
+	class XYZ_API IndirectBuffer : public RefCount
 	{
 	public:
 		virtual ~IndirectBuffer() = default;
@@ -230,7 +230,7 @@ namespace XYZ {
 	};
 
 
-	class UniformBuffer : public RefCount
+	class XYZ_API UniformBuffer : public RefCount
 	{
 	public:
 		virtual ~UniformBuffer() = default;

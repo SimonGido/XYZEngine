@@ -13,7 +13,7 @@ namespace XYZ {
 		PipelineSpecialization Specialization;
 	};
 
-	class PipelineCompute : public RefCount
+	class XYZ_API PipelineCompute : public RefCount
 	{
 	public:
 		virtual ~PipelineCompute() = default;

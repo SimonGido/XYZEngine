@@ -13,7 +13,7 @@ namespace XYZ {
 	*/
 
 
-	class Layer
+	class XYZ_API Layer
 	{
 		friend class LayerStack;
 	public:

@@ -10,7 +10,7 @@
 #include "ShaderAsset.h"
 namespace XYZ {
 
-	class MaterialAsset : public Asset
+	class XYZ_API MaterialAsset : public Asset
 	{
 	public:
 		struct TextureData

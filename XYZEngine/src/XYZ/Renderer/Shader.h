@@ -68,7 +68,7 @@ namespace XYZ {
 		return 0;
 	}
 
-	class ShaderUniform
+	class XYZ_API ShaderUniform
 	{
 	public:
 		ShaderUniform() = default;
@@ -129,7 +129,7 @@ namespace XYZ {
 		ShaderImageAccessBarrier
 	};
 
-	class Shader : public RefCount
+	class XYZ_API Shader : public RefCount
 	{
 	public:
 		virtual ~Shader() = default;

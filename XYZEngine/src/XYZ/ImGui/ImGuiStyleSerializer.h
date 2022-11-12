@@ -2,7 +2,7 @@
 
 
 namespace XYZ {
-	class ImGuiStyleSerializer
+	class XYZ_API ImGuiStyleSerializer
 	{
 	public:
 		ImGuiStyleSerializer(bool srgb);

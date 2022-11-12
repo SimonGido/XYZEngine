@@ -1,7 +1,8 @@
 #pragma once
+#include "XYZ/Core/Core.h"
 
 namespace XYZ {
-	class FileSystem
+	class XYZ_API FileSystem
 	{
 	public:
 		static std::string OpenFile(void* windowHandle, const char* filter = "All\0*.*\0");

@@ -9,10 +9,11 @@
 #include <mutex>
 
 #include "XYZ/Utils/DataStructures/ThreadPass.h"
+#include "XYZ/Core/Core.h"
 
 namespace XYZ {
 
-	class Scopewatch
+	class XYZ_API Scopewatch
 	{
 	public:
 		Scopewatch()
@@ -34,7 +35,7 @@ namespace XYZ {
 		TimePoint m_Start, m_End;
 	};
 
-	class Stopwatch
+	class XYZ_API Stopwatch
 	{
 	public:
 		Stopwatch()
@@ -69,7 +70,7 @@ namespace XYZ {
 	};
 
 
-	class PerformanceProfiler
+	class XYZ_API PerformanceProfiler
 	{
 	public:
 		using PerformanceMap = std::unordered_map<const char*, float>;
@@ -91,7 +92,7 @@ namespace XYZ {
 	};
 
 
-	class ScopePerfTimer
+	class XYZ_API ScopePerfTimer
 	{
 	public:
 		ScopePerfTimer(const char* name, PerformanceProfiler& profiler)

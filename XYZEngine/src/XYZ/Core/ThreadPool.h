@@ -1,6 +1,7 @@
 #pragma once
 #include "XYZ/Utils/DataStructures/ThreadQueue.h"
 #include "XYZ/Utils/DataStructures/FreeList.h"
+#include "XYZ/Core/Core.h"
 
 #include <thread>
 #include <future>
@@ -9,7 +10,7 @@
 
 namespace XYZ {
 
-	class ThreadPool
+	class XYZ_API ThreadPool
 	{
 		using Job = std::function<void()>;
 	public:

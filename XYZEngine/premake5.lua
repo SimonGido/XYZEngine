@@ -1,5 +1,11 @@
 project "XYZEngine"
-		kind "StaticLib"
+		filter "options:static"
+			kind "StaticLib"
+		filter "options:sharedexport"
+			kind "SharedLib"
+		filter "options:sharedimport"
+			kind "SharedLib"
+		filter{}
 		language "C++"
 		cppdialect "C++17"
 		staticruntime "off"
@@ -44,6 +50,19 @@ project "XYZEngine"
 			"vendor/VulkanMemoryAllocator/**.cpp"
 
 		}
+
+		filter "options:sharedimport"
+			defines
+			{
+				"XYZ_API_IMPORT"
+			}
+		filter "options:sharedexport"
+			defines
+			{
+				"XYZ_API_EXPORT"
+			}
+			
+		filter{}
 
 		defines
 		{
@@ -107,6 +126,11 @@ project "XYZEngine"
 		
 		filter "system:windows"
 				systemversion "latest"
+
+		disablewarnings
+		{
+			"4251"
+		}
 		files
 		{
 			"src/XYZ/Platform/Windows/**.h",

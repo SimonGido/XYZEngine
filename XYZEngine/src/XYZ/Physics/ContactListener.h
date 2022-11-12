@@ -2,7 +2,7 @@
 #include <box2d/box2d.h>
 
 namespace XYZ {
-	class ContactListener : public b2ContactListener
+	class XYZ_API ContactListener : public b2ContactListener
 	{
 	public:
 		virtual void BeginContact(b2Contact* contact) override;

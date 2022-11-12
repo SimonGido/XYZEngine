@@ -7,7 +7,7 @@
 namespace XYZ {
 
 	template <typename T>
-	class DoubleBuffer
+	class XYZ_API DoubleBuffer
 	{
 	public:
 		DoubleBuffer(size_t size);
@@ -61,7 +61,7 @@ namespace XYZ {
 
 
 	template <typename T>
-	class ThreadPass
+	class XYZ_API ThreadPass
 	{
 	public:
 		ThreadPass();

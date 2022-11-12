@@ -8,7 +8,7 @@ namespace XYZ {
 	* @interface VertexArray
 	* pure virtual (interface) class.
 	*/
-	class VertexArray : public RefCount
+	class XYZ_API VertexArray : public RefCount
 	{
 	public:
 		virtual ~VertexArray() {}

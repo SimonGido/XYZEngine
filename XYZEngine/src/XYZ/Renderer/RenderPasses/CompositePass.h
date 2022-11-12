@@ -10,7 +10,7 @@ namespace XYZ {
 		Ref<Shader>		Shader;
 	};
 
-	class CompositePass
+	class XYZ_API CompositePass
 	{
 	public:
 		void Init(const CompositePassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer);

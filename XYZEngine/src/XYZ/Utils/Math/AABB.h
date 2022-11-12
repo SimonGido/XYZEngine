@@ -1,11 +1,12 @@
 #pragma once
+#include "XYZ/Core/Core.h"
 
 #include <glm/glm.hpp>
 #include <algorithm>
 
 namespace XYZ {
 
-	struct AABB
+	struct XYZ_API AABB
 	{
 		glm::vec3 Min, Max;
 

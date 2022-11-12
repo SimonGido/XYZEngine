@@ -8,7 +8,6 @@
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/SceneRenderer.h"
 #include "XYZ/Renderer/Renderer2D.h"
-#include "XYZ/Renderer/SortKey.h"
 #include "XYZ/Renderer/MeshFactory.h"
 
 #include "XYZ/Asset/AssetManager.h"

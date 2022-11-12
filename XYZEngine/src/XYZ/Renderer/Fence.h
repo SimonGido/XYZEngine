@@ -3,7 +3,7 @@
 
 namespace XYZ {
 
-	class Fence : public RefCount
+	class XYZ_API Fence : public RefCount
 	{
 	public:
 		static Ref<Fence> Create(uint64_t timeOut);

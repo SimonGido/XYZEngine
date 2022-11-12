@@ -33,7 +33,7 @@ project "XYZGame"
 		
 		links
 		{
-			"XYZEngine"
+			"ImGui"
 		}
 		
 		filter "system:windows"

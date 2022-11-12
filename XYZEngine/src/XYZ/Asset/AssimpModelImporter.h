@@ -6,7 +6,7 @@
 
 namespace XYZ {
 	
-	class AssimpModelImporter
+	class XYZ_API AssimpModelImporter
 	{
 	public:
 		AssimpModelImporter(const std::string& targetDirectory, const std::string& filepath);

@@ -9,7 +9,7 @@ namespace XYZ {
 		Ref<Framebuffer> TargetFramebuffer;
 	};
 
-	class RenderPass : public RefCount
+	class XYZ_API RenderPass : public RefCount
 	{
 	public:
 		virtual ~RenderPass() = default;

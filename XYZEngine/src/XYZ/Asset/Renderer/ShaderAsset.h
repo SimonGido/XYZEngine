@@ -6,7 +6,7 @@
 
 namespace XYZ {
 
-	class ShaderAsset : public Asset
+	class XYZ_API ShaderAsset : public Asset
 	{
 	public:
 		ShaderAsset(Ref<Shader> shader);

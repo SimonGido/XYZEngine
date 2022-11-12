@@ -12,7 +12,7 @@
 namespace XYZ {
 
 	
-	class Mesh : public Asset
+	class XYZ_API Mesh : public Asset
 	{
 	public:
 		Mesh(const Ref<MeshSource>& meshSource);
@@ -30,7 +30,7 @@ namespace XYZ {
 		// TODO: materials
 	};
 	
-	class AnimatedMesh : public Asset
+	class XYZ_API AnimatedMesh : public Asset
 	{
 	public:
 		AnimatedMesh(const Ref<MeshSource>& meshSource);

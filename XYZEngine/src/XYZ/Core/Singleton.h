@@ -1,10 +1,10 @@
 #pragma once
-
+#include "Core.h"
 
 
 namespace XYZ {
     template <typename T>
-    class Singleton
+    class XYZ_API Singleton
     {  
     public:
         Singleton(const Singleton&) = delete;

@@ -22,7 +22,7 @@ namespace XYZ {
 
 
 	template <typename VertexType>
-	struct Renderer2DBuffer
+	struct XYZ_API Renderer2DBuffer
 	{
 		Renderer2DBuffer() = default;
 		~Renderer2DBuffer();
@@ -46,7 +46,7 @@ namespace XYZ {
 		Ref<UniformBufferSet>    UniformBufferSet;
 	};
 
-	class Renderer2D : public RefCount
+	class XYZ_API Renderer2D : public RefCount
 	{
 	public:
 		Renderer2D(const Renderer2DConfiguration& config);

@@ -9,7 +9,7 @@ namespace XYZ {
 		None, Sampler2D
 	};
 	
-	class ShaderResourceDeclaration
+	class XYZ_API ShaderResourceDeclaration
 	{
 	public:
 		ShaderResourceDeclaration() = default;

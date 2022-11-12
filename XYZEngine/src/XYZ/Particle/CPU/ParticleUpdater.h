@@ -8,7 +8,7 @@
 
 namespace XYZ {
 
-	class LightUpdater
+	class XYZ_API LightUpdater
 	{
 	public:
 		LightUpdater();
@@ -28,7 +28,7 @@ namespace XYZ {
 		bool				   Enabled = true;
 	};
 
-	class TextureAnimationUpdater
+	class XYZ_API TextureAnimationUpdater
 	{
 	public:
 		TextureAnimationUpdater();
@@ -41,7 +41,7 @@ namespace XYZ {
 		bool	   Enabled = true;
 	};
 
-	class RotationOverLife
+	class XYZ_API RotationOverLife
 	{
 	public:
 		RotationOverLife();

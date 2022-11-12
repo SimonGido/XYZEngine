@@ -4,7 +4,7 @@
 #include <tuple>
 
 namespace XYZ {
-	class ImGuiStyleReflection
+	class XYZ_API ImGuiStyleReflection
 	{
 	public:
 		static auto StyleToTuple()

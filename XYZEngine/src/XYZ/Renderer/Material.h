@@ -21,7 +21,7 @@ namespace XYZ {
 	};
 
 
-	class Material : public RefCount
+	class XYZ_API Material : public RefCount
 	{
 	public:
 		using OnInvalidateFunc = std::function<void()>;

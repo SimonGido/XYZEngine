@@ -3,7 +3,7 @@
 
 namespace XYZ {
 
-	class MemoryPool
+	class XYZ_API MemoryPool
 	{
 	public:
 		struct Block

@@ -60,7 +60,7 @@ namespace XYZ {
         std::vector<PointLight3D> PointLights3D;
     };
 
-    class Scene : public Asset
+    class XYZ_API Scene : public Asset
     {
     public:
         Scene(const std::string& name, const GUID& guid = GUID());

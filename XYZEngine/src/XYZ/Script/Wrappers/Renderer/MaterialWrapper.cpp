@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "MaterialWrapper.h"
+#include "XYZ/Scene/Prefab.h"
+
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>

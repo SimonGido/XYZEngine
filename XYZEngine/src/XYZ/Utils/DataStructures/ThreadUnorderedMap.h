@@ -1,4 +1,5 @@
 #pragma once
+#include "XYZ/Core/Core.h"
 
 #include <unordered_map>
 #include <shared_mutex>
@@ -6,7 +7,7 @@
 
 namespace XYZ {
 	template <typename Key, typename Value, typename HashFunc = std::hash<Key>>
-	class ThreadUnorderedMap
+	class XYZ_API ThreadUnorderedMap
 	{
 	public:
 		void Set(const Key& key, const Value& val)

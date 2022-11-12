@@ -1,9 +1,10 @@
 #pragma once
 
+#include "XYZ/Core/Core.h"
 
 
 namespace XYZ {
-	class Timestep
+	class XYZ_API Timestep
 	{
 	public:
 		Timestep() {}

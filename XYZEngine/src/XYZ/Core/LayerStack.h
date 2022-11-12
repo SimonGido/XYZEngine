@@ -3,7 +3,7 @@
 
 
 namespace XYZ {
-	class LayerStack
+	class XYZ_API LayerStack
 	{
 	public:
 		LayerStack() = default;

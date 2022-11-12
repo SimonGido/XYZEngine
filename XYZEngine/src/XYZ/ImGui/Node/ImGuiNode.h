@@ -14,7 +14,7 @@ namespace XYZ {
 		class ImGuiNodeContext;
 		class ImGuiNode;
 
-		struct ImGuiNodeID
+		struct XYZ_API ImGuiNodeID
 		{
 			ImGuiNodeID(std::shared_ptr<ImGuiNodeContext> context);
 		
@@ -43,7 +43,7 @@ namespace XYZ {
 			uint32_t m_ID;
 		};
 
-		struct ImGuiLink
+		struct XYZ_API ImGuiLink
 		{
 			ImGuiLink(const std::shared_ptr<ImGuiNodeContext>& context);
 
@@ -61,10 +61,10 @@ namespace XYZ {
 			ImGuiNodeValueFlags_AllowName		= BIT(3)
 		};
 
-		class ImGuiNodeValue
+		class XYZ_API ImGuiNodeValue
 		{
 		public:
-			ImGuiNodeValue(std::shared_ptr<ImGuiNodeContext> context, ImGuiNode& parent, uint32_t flags);
+			ImGuiNodeValue(std::shared_ptr<ImGuiNodeContext> context, ImGuiNode* parent, uint32_t flags);
 			~ImGuiNodeValue();
 
 			void Render();
@@ -89,7 +89,7 @@ namespace XYZ {
 
 		private:
 			std::shared_ptr<ImGuiNodeContext> m_Context;
-			ImGuiNode&		m_Parent;
+			ImGuiNode*		m_Parent;
 			std::string		m_Name;
 			VariableType	m_Type;
 			
@@ -109,7 +109,7 @@ namespace XYZ {
 			ImGuiNodeFlags_AllowName	 = BIT(2)
 		};
 
-		class ImGuiNode
+		class XYZ_API ImGuiNode
 		{
 		public:
 			ImGuiNode(std::shared_ptr<ImGuiNodeContext> context, uint32_t flags);

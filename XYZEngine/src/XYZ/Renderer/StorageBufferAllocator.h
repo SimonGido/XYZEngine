@@ -8,7 +8,7 @@ namespace XYZ {
 	
 
 	class StorageBufferAllocator;
-	class StorageBufferAllocation : public RefCount
+	class XYZ_API StorageBufferAllocation : public RefCount
 	{
 	public:
 		StorageBufferAllocation();
@@ -45,7 +45,7 @@ namespace XYZ {
 	};
 
 
-	class StorageBufferAllocator : public RefCount
+	class XYZ_API StorageBufferAllocator : public RefCount
 	{
 	public:
 		StorageBufferAllocator(uint32_t size, uint32_t binding, uint32_t set);

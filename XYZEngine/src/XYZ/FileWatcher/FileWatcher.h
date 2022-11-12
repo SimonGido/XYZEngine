@@ -8,7 +8,7 @@
 
 namespace XYZ {
 
-	class FileWatcher : public std::enable_shared_from_this<FileWatcher>
+	class XYZ_API FileWatcher : public std::enable_shared_from_this<FileWatcher>
 	{
 	public:
 		enum class ChangeType { Modified, Added, Removed, RenamedOld, RenamedNew };

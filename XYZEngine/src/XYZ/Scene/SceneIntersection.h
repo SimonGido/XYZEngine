@@ -2,12 +2,13 @@
 
 #include "SceneEntity.h"
 #include "Scene.h"
+#include "Prefab.h"
 
 #include "XYZ/Utils/Math/Ray.h"
 
 
 namespace XYZ {
-	class SceneIntersection
+	class XYZ_API SceneIntersection
 	{
 	public:
 		struct HitData

@@ -5,48 +5,49 @@
 #include <imgui_internal.h>
 
 namespace XYZ {
+
 	namespace UI {
 		namespace Utils {
-			const char* GenerateID();
-			void        SetPathBuffer(const char* value, size_t size);
-			void	    SetPathBuffer(const std::string& value);
-			char*	    GetPathBuffer();
-			char*		GetPathBuffer(const std::string& value);
-			void		PushID();
-			void		PopID();
+			XYZ_API const char* GenerateID();
+			XYZ_API void        SetPathBuffer(const char* value, size_t size);
+			XYZ_API void	    SetPathBuffer(const std::string& value);
+			XYZ_API char*	    GetPathBuffer();
+			XYZ_API char*		GetPathBuffer(const std::string& value);
+			XYZ_API void		PushID();
+			XYZ_API void		PopID();
 
-			float Convert_Linear_ToSRGB(float theLinearValue);
+			XYZ_API float Convert_Linear_ToSRGB(float theLinearValue);
 			
-			float Convert_SRGB_ToLinear(float thesRGBValue);
+			XYZ_API float Convert_SRGB_ToLinear(float thesRGBValue);
 			
-			ImVec4 ConvertToSRGB(const ImVec4& colour);
+			XYZ_API ImVec4 ConvertToSRGB(const ImVec4& colour);
 			
-			ImVec4 ConvertToLinear(const ImVec4& colour);	
+			XYZ_API ImVec4 ConvertToLinear(const ImVec4& colour);
 
-			bool IsItemDoubleClicked(ImGuiMouseButton button);
+			XYZ_API bool IsItemDoubleClicked(ImGuiMouseButton button);
 		}
 
-		void HelpMarker(const char* desc);
+		XYZ_API void HelpMarker(const char* desc);
 		
-		bool IsTextActivated();
-		bool IsTextDeactivated();
+		XYZ_API bool IsTextActivated();
+		XYZ_API bool IsTextDeactivated();
 
-		void Image(const Ref<Image2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
-		bool ImageButton(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, int framePadding, const ImVec4& bgColor = ImVec4(1, 1, 1, 1), const ImVec4& tintColor = ImVec4(1, 1, 1, 1), const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
-		bool ImageButtonTransparent(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, const ImVec4& hoverColor, const ImVec4& clickColor, const ImVec4& tintColor = ImVec4(1, 1, 1, 1), const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
+		XYZ_API void Image(const Ref<Image2D>& image, const ImVec2& size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
+		XYZ_API bool ImageButton(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, int framePadding, const ImVec4& bgColor = ImVec4(1, 1, 1, 1), const ImVec4& tintColor = ImVec4(1, 1, 1, 1), const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
+		XYZ_API bool ImageButtonTransparent(const char* stringID, const Ref<Image2D>& image, const ImVec2& size, const ImVec4& hoverColor, const ImVec4& clickColor, const ImVec4& tintColor = ImVec4(1, 1, 1, 1), const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1));
 	
-		bool BeginTreeNode(const char* name, bool defaultOpen = true);		
-		void EndTreeNode();	
+		XYZ_API bool BeginTreeNode(const char* name, bool defaultOpen = true);		
+		XYZ_API void EndTreeNode();	
 
 		
 
-		bool Vec2Control(const std::array<const char*, 2>& names, glm::vec2& values, float resetValue = 0.0f, float speed = 0.05f);
-		bool Vec3Control(const std::array<const char*, 3>& names, glm::vec3& values, float resetValue = 0.0f, float speed = 0.05f);
-		bool Vec4Control(const std::array<const char*, 4>& names, glm::vec4& values, float resetValue = 0.0f, float speed = 0.05f);
+		XYZ_API bool Vec2Control(const std::array<const char*, 2>& names, glm::vec2& values, float resetValue = 0.0f, float speed = 0.05f);
+		XYZ_API bool Vec3Control(const std::array<const char*, 3>& names, glm::vec3& values, float resetValue = 0.0f, float speed = 0.05f);
+		XYZ_API bool Vec4Control(const std::array<const char*, 4>& names, glm::vec4& values, float resetValue = 0.0f, float speed = 0.05f);
 
-		bool IVec2Control(const std::array<const char*, 2>& names, glm::ivec2& values, float resetValue = 0.0f, float speed = 0.05f);
-		bool IVec3Control(const std::array<const char*, 3>& names, glm::ivec3& values, float resetValue = 0.0f, float speed = 0.05f);
-		bool IVec4Control(const std::array<const char*, 4>& names, glm::ivec4& values, float resetValue = 0.0f, float speed = 0.05f);
+		XYZ_API bool IVec2Control(const std::array<const char*, 2>& names, glm::ivec2& values, float resetValue = 0.0f, float speed = 0.05f);
+		XYZ_API bool IVec3Control(const std::array<const char*, 3>& names, glm::ivec3& values, float resetValue = 0.0f, float speed = 0.05f);
+		XYZ_API bool IVec4Control(const std::array<const char*, 4>& names, glm::ivec4& values, float resetValue = 0.0f, float speed = 0.05f);
 		
 		template <size_t size = 256>
 		bool InputText(const char* name, std::string& value, ImGuiInputTextFlags flags = 0)

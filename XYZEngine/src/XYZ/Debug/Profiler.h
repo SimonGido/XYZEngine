@@ -1,16 +1,32 @@
 #pragma once
+#include "XYZ/Core/Core.h"
 
 
-#include <optick.h>
+
+namespace XYZ {
+	class XYZ_API Profiler
+	{
+	public:
+		static void Frame(const char *name);
+
+		static void Event(const char* functionName);
+	
+		static void EventDynamic(const char* name);
+
+		static void Thread(const char* name);
+
+		static void Shutdown();
+
+	};
+}
 
 #define XYZ_ENABLE_PROFILING 1
 #if XYZ_ENABLE_PROFILING
-#define XYZ_PROFILE_FRAME(...)           OPTICK_FRAME(__VA_ARGS__)
-#define XYZ_PROFILE_FUNC(...)            OPTICK_EVENT(__VA_ARGS__)
-#define XYZ_PROFILE_TAG(NAME, ...)       OPTICK_TAG(NAME, __VA_ARGS__)
-#define XYZ_PROFILE_SCOPE_DYNAMIC(NAME)  OPTICK_EVENT_DYNAMIC(NAME)
-#define XYZ_PROFILE_THREAD(...)          OPTICK_THREAD(__VA_ARGS__)
-#define XYZ_PROFILER_SHUTDOWN			 OPTICK_SHUTDOWN();
+#define XYZ_PROFILE_FRAME(...)            ::XYZ::Profiler::Frame(__VA_ARGS__)
+#define XYZ_PROFILE_FUNC(...)             ::XYZ::Profiler::Event(__VA_ARGS__)
+#define XYZ_PROFILE_SCOPE_DYNAMIC(NAME)   ::XYZ::Profiler::EventDynamic(NAME)
+#define XYZ_PROFILE_THREAD(NAME)          ::XYZ::Profiler::Thread(NAME)
+#define XYZ_PROFILER_SHUTDOWN			  ::XYZ::Profiler::Shutdown();
 #else
 #define XYZ_PROFILE_FRAME(...)
 #define XYZ_PROFILE_FUNC()

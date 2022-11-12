@@ -4,9 +4,11 @@
 #include <functional>
 #include <string>
 
+#include "XYZ/Core/Core.h"
+
 namespace XYZ {
 
-	class GUID
+	class XYZ_API GUID
 	{
 	public:
 		GUID();

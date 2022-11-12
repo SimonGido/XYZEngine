@@ -59,7 +59,7 @@ namespace XYZ {
 		class AssetBrowser;
 	}
 
-	class AssetManager
+	class XYZ_API AssetManager
 	{
 	public:
 		static void Init();
@@ -127,13 +127,13 @@ namespace XYZ {
 		static void onFileChange(FileWatcher::ChangeType type, const std::filesystem::path& path);
 
 	private:
-		static MemoryPool											  s_Pool;
-		static AssetRegistry										  s_Registry;
-		static ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>		  s_LoadedAssets;
-		static ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>        s_MemoryAssets;
+		static inline MemoryPool										  s_Pool = MemoryPool(1024 * 1024 * 10);
+		static inline AssetRegistry										  s_Registry;
+		static inline ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>	  s_LoadedAssets;
+		static inline ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>     s_MemoryAssets;
 
-		static std::shared_ptr<FileWatcher>							  s_FileWatcher;
-		static std::shared_ptr<AssetLifeManager>					  s_AssetLifeManager;
+		static inline std::shared_ptr<FileWatcher>						  s_FileWatcher;
+		static inline std::shared_ptr<AssetLifeManager>					  s_AssetLifeManager;
 
 	private:
 		friend Editor::AssetBrowser;

@@ -4,7 +4,7 @@
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"
 
 namespace XYZ {
-	class VertexBufferSet : public RefCount
+	class XYZ_API VertexBufferSet : public RefCount
 	{
 	public:
 		VertexBufferSet(uint32_t frames, uint32_t size);

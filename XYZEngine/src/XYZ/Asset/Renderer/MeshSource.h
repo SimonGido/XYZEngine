@@ -19,11 +19,6 @@ struct aiAnimation;
 struct aiNodeAnim;
 struct aiScene;
 
-namespace Assimp {
-	class Importer;
-}
-
-
 namespace XYZ {
 	struct Vertex
 	{
@@ -34,7 +29,7 @@ namespace XYZ {
 		glm::vec2 TexCoord;
 	};
 
-	struct AnimatedVertex
+	struct XYZ_API AnimatedVertex
 	{
 		glm::vec3 Position;
 		glm::vec3 Normal;
@@ -52,7 +47,7 @@ namespace XYZ {
 		glm::vec3 V0, V1, V2;
 	};
 
-	struct BoneInfo
+	struct XYZ_API BoneInfo
 	{
 		BoneInfo() = default;
 		BoneInfo(const ozz::math::Float4x4& offset, const ozz::math::Float4x4& invTransform, uint32_t jointIndex)
@@ -64,7 +59,7 @@ namespace XYZ {
 	};
 
 
-	class MeshSource : public Asset
+	class XYZ_API MeshSource : public Asset
 	{
 	public:
 		MeshSource(const std::string& filepath);
@@ -104,7 +99,7 @@ namespace XYZ {
 		uint32_t findJointIndex(const std::string& name) const;
 	private:
 		std::string						  m_SourceFilePath;
-		std::unique_ptr<Assimp::Importer> m_Importer;
+		
 
 		std::vector<AnimatedVertex> m_AnimatedVertices;
 		std::vector<Vertex>			m_StaticVertices;

@@ -6,7 +6,7 @@
 
 namespace XYZ {
 
-	class StorageBufferSet : public RefCount
+	class XYZ_API StorageBufferSet : public RefCount
 	{
 	public:
 		virtual void Update(const void* data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set = 0) = 0;

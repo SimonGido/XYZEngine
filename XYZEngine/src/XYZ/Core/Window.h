@@ -16,7 +16,7 @@ namespace XYZ {
 		FULLSCREEN = 1 << 2
 	};
 
-	struct WindowProperties
+	struct XYZ_API WindowProperties
 	{
 		std::string Title;
 		uint32_t Width;
@@ -32,7 +32,7 @@ namespace XYZ {
 		}
 	};
 
-	class Window : public EventCaller
+	class XYZ_API Window : public EventCaller
 	{
 	public:
 		virtual ~Window() = default;

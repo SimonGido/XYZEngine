@@ -1,12 +1,13 @@
 #pragma once
+#include "XYZ/Core/Core.h"
+#include "AABB.h"
 
 #include <glm/glm.hpp>
 
-#include "AABB.h"
 
 namespace XYZ {
 
-    struct Ray
+    struct XYZ_API Ray
     {
         glm::vec3 Origin, Direction;
 

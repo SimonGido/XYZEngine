@@ -22,7 +22,7 @@ struct aiNode;
 
 namespace XYZ {
 
-	class SkeletonAsset : public Asset
+	class XYZ_API SkeletonAsset : public Asset
 	{
 	public:
 		SkeletonAsset(const std::string& filename);

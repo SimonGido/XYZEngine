@@ -7,7 +7,7 @@
 
 namespace XYZ {
 	
-	class CustomRenderer2DLayout
+	class XYZ_API CustomRenderer2DLayout
 	{
 	public:
 		CustomRenderer2DLayout();
@@ -33,7 +33,7 @@ namespace XYZ {
 		friend class CustomRenderer2D;
 	};
 
-	struct CustomRenderer2DData
+	struct XYZ_API CustomRenderer2DData
 	{
 		static constexpr uint32_t MaxTextures = 32;
 		static constexpr uint32_t QuadBufferSize = 1024 * 1024;
@@ -82,7 +82,7 @@ namespace XYZ {
 		CustomRenderer2DLayout Layout;
 	};
 
-	class CustomRenderer2D
+	class XYZ_API CustomRenderer2D
 	{
 	public:
 		static void Init();

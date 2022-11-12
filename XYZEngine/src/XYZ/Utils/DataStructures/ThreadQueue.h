@@ -1,11 +1,12 @@
 #pragma once
+#include "XYZ/Core/Core.h"
 
 #include <mutex>
 #include <deque>
 
 namespace XYZ {
 	template <typename T>
-	class ThreadQueue
+	class XYZ_API ThreadQueue
 	{
 	public:
 		ThreadQueue() = default;

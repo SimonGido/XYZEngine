@@ -8,7 +8,7 @@
 namespace XYZ {
 	
 	class Material;
-	class MaterialInstance : public RefCount
+	class XYZ_API MaterialInstance : public RefCount
 	{
 	public:	
 		virtual ~MaterialInstance() override;

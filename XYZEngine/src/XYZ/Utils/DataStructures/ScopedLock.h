@@ -1,10 +1,12 @@
 #pragma once
+#include "XYZ/Core/Core.h"
+
 #include <mutex>
 #include <shared_mutex>
 
 namespace XYZ {
 	template <typename T>
-	class ScopedLock
+	class XYZ_API ScopedLock
 	{
 	public:
 		ScopedLock(std::shared_mutex* mut, T& ref);

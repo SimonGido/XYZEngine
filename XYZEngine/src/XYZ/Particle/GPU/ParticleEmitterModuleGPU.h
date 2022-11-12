@@ -13,7 +13,7 @@ namespace XYZ {
 		NumTypes
 	};
 
-	class ParticleEmitterModuleGPU : public RefCount
+	class XYZ_API ParticleEmitterModuleGPU : public RefCount
 	{
 	public:
 		ParticleEmitterModuleGPU(ParticleEmitterModuleType type, uint32_t stride, uint32_t strideOffset);

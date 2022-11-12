@@ -2,6 +2,7 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Debug/Profiler.h"
 #include "XYZ/Scene/Scene.h"
+#include "XYZ/Scene/Prefab.h"
 
 namespace XYZ {
 
@@ -17,7 +18,7 @@ namespace XYZ {
 		uint32_t SpotLightCount;
 	};
 
-	class DeferredLightPass
+	class XYZ_API DeferredLightPass
 	{
 	public:
 		void Init(const DeferredLightPassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer);

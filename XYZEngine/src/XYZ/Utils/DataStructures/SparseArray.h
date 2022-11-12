@@ -1,10 +1,11 @@
 #pragma once
+#include "XYZ/Core/Core.h"
 
 #include <optional>
 
 namespace XYZ {
 
-	class OptionalIndex
+	class XYZ_API OptionalIndex
 	{
 	public:
 		OptionalIndex() = default;
@@ -20,7 +21,7 @@ namespace XYZ {
 	};
 
 	template <typename T>
-	class SparseArray
+	class XYZ_API SparseArray
 	{
 	public:
 		SparseArray() = default;

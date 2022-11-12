@@ -17,7 +17,7 @@ namespace XYZ {
 		int32_t XAdvance;
 	};
 
-	class Font : public Asset
+	class XYZ_API Font : public Asset
 	{
 	public:
 		Font(uint32_t pixelSize, const std::string& path);

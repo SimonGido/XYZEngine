@@ -8,7 +8,7 @@ namespace XYZ {
 		Ref<UniformBufferSet> UniformBufferSet;
 		Ref<StorageBufferSet> StorageBufferSet;
 	};
-	class LightCullingPass
+	class XYZ_API LightCullingPass
 	{
 	public:
 		void Init(const LightCullingPassConfiguration& config);

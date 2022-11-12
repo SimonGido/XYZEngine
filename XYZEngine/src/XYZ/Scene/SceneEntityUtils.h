@@ -1,9 +1,9 @@
 #pragma once
 #include "SceneEntity.h"
-
+#include "Prefab.h"
 
 
 namespace XYZ {
-	AABB SceneEntityAABB(const SceneEntity& entity);
+	XYZ_API AABB SceneEntityAABB(const SceneEntity& entity);
 	
 }

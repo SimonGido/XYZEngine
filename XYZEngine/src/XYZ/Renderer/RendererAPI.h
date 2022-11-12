@@ -34,7 +34,7 @@ namespace XYZ {
 
 	
 
-	class RendererAPI
+	class XYZ_API RendererAPI
 	{
 	public:
 		enum class Type

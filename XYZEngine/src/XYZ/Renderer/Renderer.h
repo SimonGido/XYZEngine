@@ -37,7 +37,7 @@ namespace XYZ {
 		uint32_t CommandsCount;
 	};
 
-	struct RendererResources
+	struct XYZ_API RendererResources
 	{
 		void Init();
 		void Shutdown();
@@ -53,7 +53,7 @@ namespace XYZ {
 
 
 
-	class Renderer
+	class XYZ_API Renderer
 	{
 	public:
 		static void Init(const RendererConfiguration& config = RendererConfiguration());

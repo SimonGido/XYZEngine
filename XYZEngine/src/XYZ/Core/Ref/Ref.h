@@ -1,12 +1,14 @@
 #pragma once
+#include "XYZ/Core/Core.h"
 
 #include <stdint.h>
 #include <atomic>
 #include <functional>
 #include <memory>
 
+
 namespace XYZ {
-	class RefCount
+	class XYZ_API RefCount
 	{
 	public:
 		RefCount()

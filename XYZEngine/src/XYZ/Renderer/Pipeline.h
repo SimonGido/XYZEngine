@@ -46,7 +46,7 @@ namespace XYZ {
 		static constexpr uint32_t Count() { return sizeof(PipelineStatistics) / sizeof(uint64_t); }
 	};
 
-	class Pipeline : public RefCount
+	class XYZ_API Pipeline : public RefCount
 	{
 	public:
 		virtual ~Pipeline() = default;

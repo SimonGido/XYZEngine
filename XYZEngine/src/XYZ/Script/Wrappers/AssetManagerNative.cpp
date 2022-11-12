@@ -2,6 +2,8 @@
 #include "AssetManagerNative.h"
 
 #include "XYZ/Asset/AssetManager.h"
+#include "XYZ/Scene/Prefab.h"
+
 
 #include "XYZ/Asset/Renderer/ShaderAsset.h"
 #include "XYZ/Asset/Renderer/MaterialAsset.h"

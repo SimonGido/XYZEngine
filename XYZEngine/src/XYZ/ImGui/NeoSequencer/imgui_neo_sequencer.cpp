@@ -8,6 +8,7 @@
 #include "imgui_internal.h"
 #include "imgui_neo_internal.h"
 
+
 #include <stack>
 #include <unordered_set>
 
@@ -336,7 +337,7 @@ namespace ImGui {
     {
         IM_ASSERT(!frameData.InSequencer && "Called when while in other NeoSequencer, that won't work, call End!");
 
-        ImGuiContext& g = *GImGui;
+        ImGuiContext& g = *ImGui::GetCurrentContext();
         ImGuiWindow* window = GetCurrentWindow();
         const auto& imStyle = GetStyle();
         auto& neoStyle = GetNeoSequencerStyle();
@@ -412,6 +413,7 @@ namespace ImGui {
         processCurrentFrame(frame, context);
         context.KeyFramesEdited = context.Selector.HandleEditSelection(context);
         context.Selector.HandleMultiSelection(context);
+
         return true;
     }
 
@@ -552,6 +554,9 @@ namespace ImGui {
 
     bool NeoZoomControl(const char* label, float* zoom, uint32_t* offsetFrame, float speed, bool overlay)
     {
+        bool result = false;
+       
+        ImGuiContext* imContext = ImGui::GetCurrentContext();
         auto& imStyle = GetStyle();
         const auto& context = sequencerData[frameData.CurrentSequencer];
 
@@ -566,10 +571,10 @@ namespace ImGui {
             ImGui::SetCursorPos(newCursorPos);
         }
 
-        bool result = false;
+        
         float viewStart = static_cast<float>(*offsetFrame);
         const float viewWidth = context.EndFrame - context.StartFrame;
-        const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * GImGui->Font->Scale * 2.0f;
+        const float lineHeight = imContext->Font->FontSize + imContext->Style.FramePadding.y * imContext->Font->Scale * 2.0f;
         float sliderWidth = context.Size.x - 2 * lineHeight;
 
         ImGui::PushItemWidth(sliderWidth);
@@ -603,7 +608,7 @@ namespace ImGui {
           
         if (overlay)
             ImGui::SetCursorPos(oldPos);
-
+       
         return result;
     }
 

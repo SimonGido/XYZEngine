@@ -3,7 +3,7 @@
 
 namespace XYZ {
 
-	class ImGuiVariableTypeExtension
+	class XYZ_API ImGuiVariableTypeExtension
 	{
 		using EditFunction = std::function<bool(const char* id, std::byte* data)>;
 	public:

@@ -14,7 +14,7 @@ namespace XYZ {
 		Circle
 	};
 
-	struct EmitterBurst
+	struct XYZ_API EmitterBurst
 	{
 		EmitterBurst() = default;
 		EmitterBurst(uint32_t count, float time, float probability);
@@ -26,7 +26,7 @@ namespace XYZ {
 	};
 
 
-	class ParticleEmitter
+	class XYZ_API ParticleEmitter
 	{
 	public:
 		ParticleEmitter();

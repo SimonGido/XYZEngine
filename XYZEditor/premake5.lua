@@ -31,11 +31,18 @@ project "XYZEditor"
 			"%{IncludeDir.Vulkan}",
 			"%{IncludeDir.optick}"
 		}
-		
-		links
-		{
-			"XYZEngine"
-		}
+		filter "options:sharedimport"
+			links
+			{
+				"ozz-animation",
+				"ImGui",
+				"XYZEngine"
+			}
+		filter "options:static"
+			links
+			{
+				"XYZEngine"
+			}
 		
 		filter "system:windows"
 				systemversion "latest"

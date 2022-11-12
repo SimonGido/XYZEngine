@@ -1,8 +1,8 @@
 #pragma once
-
+#include "Core.h"
 
 namespace XYZ {
-	class Platform
+	class XYZ_API Platform
 	{
 	public:
 		std::string RunShellCommand(const char* command);

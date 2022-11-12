@@ -16,6 +16,7 @@
 #include <sstream>
 #include <random>
 #include <stack>
+#include <array>
 #include "XYZ/Core/Logger.h"
 #include "XYZ/Core/Assert.h"
 

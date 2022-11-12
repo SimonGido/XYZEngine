@@ -5,7 +5,7 @@
 #include <shaderc/shaderc.hpp>
 
 namespace XYZ {
-	class ShaderCIncluder : public shaderc::CompileOptions::IncluderInterface
+	class XYZ_API ShaderCIncluder : public shaderc::CompileOptions::IncluderInterface
 	{
 	public:
 		ShaderCIncluder(const ShaderIncluder& includer);

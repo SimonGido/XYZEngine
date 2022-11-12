@@ -1,7 +1,7 @@
 #pragma once
 
 namespace XYZ {
-	struct PipelineSpecializationValue
+	struct XYZ_API PipelineSpecializationValue
 	{
 		PipelineSpecializationValue(std::string name);
 			

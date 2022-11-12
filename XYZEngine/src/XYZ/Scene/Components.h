@@ -26,7 +26,7 @@
 
 namespace XYZ {
 
-	struct IDComponent 
+	struct XYZ_API IDComponent
 	{
 		IDComponent() = default;
 		IDComponent(const IDComponent& other);
@@ -41,7 +41,7 @@ namespace XYZ {
 		GUID ID;
 	};
 
-	class TransformComponent 
+	class XYZ_API TransformComponent
 	{
 	public:
 		TransformComponent() = default;
@@ -76,7 +76,7 @@ namespace XYZ {
 	};
 	
 
-	struct SceneTagComponent 
+	struct XYZ_API SceneTagComponent
 	{
 		std::string Name;
 		SceneTagComponent() = default;
@@ -98,7 +98,7 @@ namespace XYZ {
 		operator const  std::string& () const { return Name; }
 	};
 
-	class SpriteRenderer 
+	class XYZ_API SpriteRenderer
 	{
 	public:
 		SpriteRenderer() = default;
@@ -124,7 +124,7 @@ namespace XYZ {
 		bool	  Visible = true;
 	};
 
-	struct MeshComponent
+	struct XYZ_API MeshComponent
 	{
 		MeshComponent() = default;
 		MeshComponent(const MeshComponent& other);
@@ -135,7 +135,7 @@ namespace XYZ {
 		Ref<MaterialInstance> OverrideMaterial;
 	};
 
-	struct AnimatedMeshComponent
+	struct XYZ_API AnimatedMeshComponent
 	{
 		AnimatedMeshComponent() = default;
 		AnimatedMeshComponent(const AnimatedMeshComponent& other);
@@ -149,7 +149,7 @@ namespace XYZ {
 		std::vector<entt::entity>		 BoneEntities;
 	};
 
-	struct AnimationComponent
+	struct XYZ_API AnimationComponent
 	{
 		AnimationComponent() = default;
 		AnimationComponent(const AnimationComponent& other);
@@ -161,7 +161,7 @@ namespace XYZ {
 	};
 
 	class Prefab;
-	struct PrefabComponent
+	struct XYZ_API PrefabComponent
 	{
 		PrefabComponent() = default;
 		PrefabComponent(const PrefabComponent& other);
@@ -171,7 +171,7 @@ namespace XYZ {
 		entt::entity Owner = entt::null;
 	};
 
-	struct ParticleRenderer
+	struct XYZ_API ParticleRenderer
 	{
 		ParticleRenderer() = default;
 		ParticleRenderer(const ParticleRenderer& other);
@@ -183,7 +183,7 @@ namespace XYZ {
 		Ref<MaterialInstance> OverrideMaterial;
 	};
 
-	struct CameraComponent 
+	struct XYZ_API CameraComponent
 	{
 		SceneCamera Camera;
 
@@ -192,7 +192,7 @@ namespace XYZ {
 	};
 
 
-	struct ParticleComponent
+	struct XYZ_API ParticleComponent
 	{
 		ParticleComponent();
 		ParticleComponent(const ParticleComponent& other);
@@ -214,7 +214,7 @@ namespace XYZ {
 		Ref<ParticleSystemGPU>  System;
 	};
 
-	struct PointLightComponent2D 
+	struct XYZ_API PointLightComponent2D
 	{
 		PointLightComponent2D() = default;
 		PointLightComponent2D(const glm::vec3& color, float radius, float intensity);
@@ -226,7 +226,7 @@ namespace XYZ {
 	};
 	
 
-	struct SpotLightComponent2D
+	struct XYZ_API SpotLightComponent2D
 	{
 		SpotLightComponent2D() = default;
 		SpotLightComponent2D(const SpotLightComponent2D& other);
@@ -251,7 +251,7 @@ namespace XYZ {
 		float	  Falloff = 1.f;
 	};
 
-	struct Relationship 
+	struct XYZ_API Relationship
 	{
 		Relationship();
 		Relationship(const Relationship& other);
@@ -306,10 +306,10 @@ namespace XYZ {
 			if (reg.valid(relationship.FirstChild))
 				temp.push(relationship.FirstChild);
 		}
-		return Entity();
+		return entt::entity{};
 	}
 
-	struct ScriptComponent 
+	struct XYZ_API ScriptComponent
 	{
 		std::string ModuleName;
 
@@ -322,7 +322,7 @@ namespace XYZ {
 	};
 
 
-	struct RigidBody2DComponent 
+	struct XYZ_API RigidBody2DComponent
 	{
 		enum class BodyType { Static, Dynamic, Kinematic };
 
@@ -332,7 +332,7 @@ namespace XYZ {
 	};
 
 
-	struct BoxCollider2DComponent 
+	struct XYZ_API BoxCollider2DComponent
 	{
 		BoxCollider2DComponent() = default;
 		BoxCollider2DComponent(const BoxCollider2DComponent& other);
@@ -346,7 +346,7 @@ namespace XYZ {
 	};
 
 
-	struct CircleCollider2DComponent 
+	struct XYZ_API CircleCollider2DComponent
 	{
 		CircleCollider2DComponent() = default;
 		CircleCollider2DComponent(const CircleCollider2DComponent& other);
@@ -360,7 +360,7 @@ namespace XYZ {
 	};
 
 
-	struct PolygonCollider2DComponent 
+	struct XYZ_API PolygonCollider2DComponent
 	{
 		PolygonCollider2DComponent() = default;
 		PolygonCollider2DComponent(const PolygonCollider2DComponent& other);
@@ -373,7 +373,7 @@ namespace XYZ {
 		void* RuntimeFixture = nullptr;
 	};
 	
-	struct ChainCollider2DComponent 
+	struct XYZ_API ChainCollider2DComponent
 	{
 		ChainCollider2DComponent()
 		{

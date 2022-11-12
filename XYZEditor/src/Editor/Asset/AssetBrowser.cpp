@@ -3,6 +3,7 @@
 
 #include "XYZ/Utils/StringUtils.h"
 #include "XYZ/Utils/FileSystem.h"
+#include "XYZ/Platform/Windows/WindowsFilesystem.cpp"
 
 #include "XYZ/Asset/AssetManager.h"
 #include "XYZ/Asset/AssimpModelImporter.h"

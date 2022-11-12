@@ -2,7 +2,7 @@
 
 
 namespace XYZ {
-	class ShaderParser
+	class XYZ_API ShaderParser
 	{
 	public:
 		struct ShaderLayoutInfo

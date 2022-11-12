@@ -6,7 +6,7 @@
 namespace XYZ {
 
 	template <typename Event>
-	class EventHandler
+	class  EventHandler
 	{
 	public:	
 		size_t AddCallback(const EventCallback<Event>& func)

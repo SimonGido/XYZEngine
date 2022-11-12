@@ -11,7 +11,7 @@
 
 namespace XYZ {
 	namespace UI {
-		class ImGuiNodeContext : public std::enable_shared_from_this<ImGuiNodeContext>
+		class XYZ_API ImGuiNodeContext : public std::enable_shared_from_this<ImGuiNodeContext>
 		{
 		public:
 			ImGuiNodeContext(const std::string& name);

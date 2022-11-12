@@ -3,8 +3,10 @@
 #include "SceneEntity.h"
 #include "Scene.h"
 
+#include "XYZ/Core/Core.h"
+
 namespace XYZ {
-	class Prefab : public Asset
+	class XYZ_API Prefab : public Asset
 	{
 	public:
 		Prefab();

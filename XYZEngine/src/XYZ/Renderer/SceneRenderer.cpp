@@ -20,8 +20,6 @@
 
 #include <imgui/imgui.h>
 
-
-
 namespace XYZ {
 
 	static ThreadPool s_ThreadPool;

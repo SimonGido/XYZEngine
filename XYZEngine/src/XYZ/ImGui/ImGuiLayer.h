@@ -16,7 +16,7 @@ namespace XYZ {
 		const ImWchar* GlyphRange;
 	};
 
-	class ImGuiLayer : public Layer
+	class XYZ_API ImGuiLayer : public Layer
 	{
 	public:
 		ImGuiLayer();

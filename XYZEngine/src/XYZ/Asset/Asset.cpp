@@ -3,25 +3,7 @@
 
 
 namespace XYZ {
-	Asset::AssetInfoContainer  Asset::s_AssetExtensions = {
-		"none",
-		"xyz",
-		"tex",
-		"subtex",
-		"mat",
-		"shader",
-		"font",
-		"audio",
-		"cs",
-		"mesh",
-		"animmesh",
-		"meshsrc",
-		"anim",
-		"controller",
-		"skeleton",
-		"prefab"
-	};
-	
+
 	bool Asset::IsValid() const
 	{
 		const bool missing = m_Flags & (uint16_t)AssetFlag::Missing;

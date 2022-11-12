@@ -25,7 +25,7 @@ namespace XYZ {
 
 	using CollisionCallback = std::function<bool(int32_t)>;
 
-	class DynamicTree
+	class XYZ_API DynamicTree
 	{
 	public:
 		bool RayCast(const Ray& ray, uint32_t& result);

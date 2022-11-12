@@ -4,7 +4,7 @@
 
 namespace XYZ {
 
-	class ByteBuffer
+	class XYZ_API ByteBuffer
 	{
 	public:
 		ByteBuffer()

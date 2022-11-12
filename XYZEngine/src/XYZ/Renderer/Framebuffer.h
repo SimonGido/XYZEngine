@@ -17,7 +17,7 @@ namespace XYZ {
 		Additive,
 		Zero_SrcColor
 	};
-	struct FramebufferTextureSpecification
+	struct XYZ_API FramebufferTextureSpecification
 	{
 		FramebufferTextureSpecification() = default;
 		FramebufferTextureSpecification(ImageFormat format, bool generateMips = false)
@@ -43,7 +43,7 @@ namespace XYZ {
 	};
 
 
-	class Framebuffer : public RefCount
+	class XYZ_API Framebuffer : public RefCount
 	{
 	public:
 		virtual ~Framebuffer() = default;

@@ -5,7 +5,7 @@
 #include <memory>
 
 namespace XYZ {
-	struct PushConstBuffer
+	struct XYZ_API PushConstBuffer
 	{
 		PushConstBuffer();
 

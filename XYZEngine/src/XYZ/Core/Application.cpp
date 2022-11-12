@@ -23,7 +23,7 @@
 #include <backends/imgui_impl_glfw.h>
 
 namespace XYZ {
-	Application* Application::s_Application = nullptr;
+	static Application* s_Application = nullptr;
 
 
 	Application::Application(const ApplicationSpecification& specification)
@@ -111,6 +111,11 @@ namespace XYZ {
 	void Application::Stop()
 	{
 		m_Running = false;
+	}
+
+	Application& Application::Get()
+	{
+		return *s_Application;
 	}
 
 	bool Application::onWindowResized(WindowResizeEvent& event)

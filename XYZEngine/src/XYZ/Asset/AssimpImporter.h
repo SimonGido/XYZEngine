@@ -17,7 +17,7 @@ struct aiNodeAnim;
 struct aiScene;
 
 namespace XYZ {
-	class AssimpImporter
+	class XYZ_API AssimpImporter
 	{
 	public:
 		static bool ExtractRawSkeleton(const aiScene* scene, ozz::animation::offline::RawSkeleton& rawSkeleton);

@@ -11,7 +11,7 @@ namespace XYZ {
 		uint32_t Size;
 	};
 
-	class UniformBufferSet : public RefCount
+	class XYZ_API UniformBufferSet : public RefCount
 	{
 	public:
 		virtual void Create(uint32_t size, uint32_t set, uint32_t binding) = 0;

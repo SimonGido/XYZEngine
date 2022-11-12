@@ -98,7 +98,7 @@ namespace XYZ {
 
 	using AssetHandle = GUID;
 
-	class Asset : public RefCount
+	class XYZ_API Asset : public RefCount
 	{
 	public:
 		using AssetInfoContainer = std::array<std::string, ToUnderlying(AssetType::NumTypes)>;
@@ -123,7 +123,24 @@ namespace XYZ {
 
 		
 
-		static AssetInfoContainer s_AssetExtensions;
+		inline static AssetInfoContainer s_AssetExtensions = {
+			"none",
+			"xyz",
+			"tex",
+			"subtex",
+			"mat",
+			"shader",
+			"font",
+			"audio",
+			"cs",
+			"mesh",
+			"animmesh",
+			"meshsrc",
+			"anim",
+			"controller",
+			"skeleton",
+			"prefab"
+		};
 
 		friend class AssetManager;
 		friend class AssetImporter;

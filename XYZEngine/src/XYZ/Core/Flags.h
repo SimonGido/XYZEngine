@@ -1,4 +1,6 @@
 #pragma once
+#include "Core.h"
+
 #include <type_traits>
 #include <bitset>
 
@@ -11,7 +13,7 @@ namespace XYZ {
 	class Flags;
 
 	template<typename Enum>
-	class Flags<Enum, true>
+	class XYZ_API Flags<Enum, true>
 	{
 	public:
 		constexpr const static int number_of_bits = std::numeric_limits<typename std::underlying_type<Enum>::type>::digits;

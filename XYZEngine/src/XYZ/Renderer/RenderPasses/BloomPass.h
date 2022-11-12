@@ -16,7 +16,7 @@ namespace XYZ {
 		float FilterKnee = 0.1f;
 	};
 
-	class BloomPass
+	class XYZ_API BloomPass
 	{
 	public:
 		void Init(const BloomPassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer);

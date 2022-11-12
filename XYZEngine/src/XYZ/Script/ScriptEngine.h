@@ -20,7 +20,7 @@ namespace XYZ {
 	
 	struct EntityScriptClass;
 
-	struct ScriptEntityInstance
+	struct XYZ_API ScriptEntityInstance
 	{
 		MonoObject* GetInstance();
 		bool		IsRuntimeAvailable() const;
@@ -31,7 +31,7 @@ namespace XYZ {
 		PublicFieldData			 FieldsData;
 	};
 
-	class ScriptEngine
+	class XYZ_API ScriptEngine
 	{
 	public:
 		static void Init(const std::string& assemblyPath);

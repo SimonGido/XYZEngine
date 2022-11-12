@@ -10,7 +10,7 @@
 
 namespace XYZ {
 
-	class PhysicsWorld2D
+	class XYZ_API PhysicsWorld2D
 	{
 	public:
 		static constexpr uint32_t sc_NumCollisionLayers = 16;

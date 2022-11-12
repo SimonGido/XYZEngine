@@ -10,7 +10,7 @@ namespace XYZ {
 		uint32_t ComputePipelinesCount = 0;
 	};
 
-	class PipelineCache
+	class XYZ_API PipelineCache
 	{
 	public:
 		Ref<Pipeline> PreparePipeline(const Ref<MaterialAsset>& materialAsset, const Ref<RenderPass>& renderPass);

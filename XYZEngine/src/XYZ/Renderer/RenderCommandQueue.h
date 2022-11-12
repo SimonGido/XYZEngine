@@ -2,9 +2,11 @@
 #include <tuple>
 #include <mutex>
 
+#include "XYZ/Core/Core.h"
+
 namespace XYZ {
 
-	class RenderCommandQueue
+	class XYZ_API RenderCommandQueue
 	{
 	public:
 		typedef void(*RenderCommandFn)(void*);

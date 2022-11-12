@@ -4,7 +4,7 @@
 
 namespace XYZ {
 
-	class ShaderIncluder
+	class XYZ_API ShaderIncluder
 	{
 	public:
 		void AddIncludes(const std::string& filepath);

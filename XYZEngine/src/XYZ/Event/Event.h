@@ -1,7 +1,7 @@
 #pragma once 
+#include "XYZ/Core/Core.h"
 #include "XYZ/Core/Logger.h"
 #include "XYZ/Core/Assert.h"
-
 
 
 namespace XYZ {
@@ -16,7 +16,7 @@ namespace XYZ {
 	using EventCallback = std::function<bool(Type&)>;
 
 	
-	class Event
+	class XYZ_API Event
 	{
 	public:
 		virtual EventType GetEventType() const = 0;
@@ -24,7 +24,7 @@ namespace XYZ {
 		bool Handled = false;
 	};
 
-	class EventCaller
+	class XYZ_API EventCaller
 	{
 	public:
 		void RegisterCallback(const EventCallback<Event>& callback)
@@ -40,7 +40,7 @@ namespace XYZ {
 		EventCallback<Event> m_Callback;
 	};
 	
-	class EventDispatcher
+	class XYZ_API EventDispatcher
 	{
 	public:
 		EventDispatcher(Event& event)

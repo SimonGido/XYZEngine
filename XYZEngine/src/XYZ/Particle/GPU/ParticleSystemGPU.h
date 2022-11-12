@@ -46,7 +46,7 @@ namespace XYZ {
 	};
 
 
-	class ParticleBuffer
+	class XYZ_API ParticleBuffer
 	{
 	public:
 		ParticleBuffer() = default;

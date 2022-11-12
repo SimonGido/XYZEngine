@@ -19,7 +19,7 @@ namespace XYZ {
 		uint32_t BoneTransformCount;
 	};
 
-	class GeometryPass
+	class XYZ_API GeometryPass
 	{
 	public:
 		GeometryPass();

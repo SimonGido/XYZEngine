@@ -12,9 +12,10 @@
 
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Components.h"
+#include "XYZ/Scene/Prefab.h"
 
 namespace XYZ {
-	struct GeometryRenderQueue
+	struct XYZ_API GeometryRenderQueue
 	{
 		struct SpriteKey
 		{

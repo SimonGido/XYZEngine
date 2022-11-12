@@ -17,7 +17,7 @@ namespace XYZ {
 		uint32_t	Size;
 	};
 
-	class VariableManager
+	class XYZ_API VariableManager
 	{
 	public:
 		VariableManager();

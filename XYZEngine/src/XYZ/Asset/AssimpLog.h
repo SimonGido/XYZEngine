@@ -7,7 +7,7 @@
 
 #include <mutex>
 
-struct LogStream : public Assimp::LogStream
+struct XYZ_API LogStream : public Assimp::LogStream
 {
 	
 	static void Initialize();

@@ -96,7 +96,7 @@ namespace XYZ {
 		std::vector<BlueprintVariable> Variables;
 	};
 
-	class Blueprint : public Asset
+	class XYZ_API Blueprint : public Asset
 	{
 	public:
 		Blueprint();

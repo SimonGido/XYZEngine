@@ -7,7 +7,7 @@
 namespace XYZ {
 
 	
-	class Graph
+	class XYZ_API Graph
 	{	
 	public:
 		struct Vertex

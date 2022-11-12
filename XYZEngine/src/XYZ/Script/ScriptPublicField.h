@@ -22,7 +22,7 @@ namespace XYZ {
 		Vec4
 	};
 
-	struct PublicField
+	struct XYZ_API PublicField
 	{
 		PublicField(const std::string& name, PublicFieldType type, 
 			uint32_t offset, ByteBuffer* data, uint32_t instanceHandle, MonoClassField* monoClassField);

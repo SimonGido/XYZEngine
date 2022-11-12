@@ -3,7 +3,7 @@
 
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/Components.h"
-
+#include "XYZ/Scene/Prefab.h"
 #include "XYZ/Script/ScriptEngine.h"
 
 #include <glm/gtc/type_ptr.hpp>

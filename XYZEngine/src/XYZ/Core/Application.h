@@ -5,7 +5,7 @@
 
 #include "XYZ/ImGui/ImGuiLayer.h"
 #include "XYZ/Debug/Timer.h"
-
+#include "XYZ/Core/Core.h"
 
 namespace XYZ {
 
@@ -15,7 +15,7 @@ namespace XYZ {
 		bool WindowCreate = true;
 	};
 	
-	class Application
+	class XYZ_API Application
 	{
 	public:
 		Application(const ApplicationSpecification& specification = {});
@@ -36,7 +36,7 @@ namespace XYZ {
 		const std::string&				GetApplicationDir() const { return m_ApplicationDir; }
 		const ApplicationSpecification& GetSpecification() const  { return m_Specification;}
 		
-		inline static Application&		Get() { return *s_Application; }
+		static Application& Get();
 
 		static Application* CreateApplication();
 
@@ -68,8 +68,6 @@ namespace XYZ {
 		ApplicationSpecification m_Specification;
 		PerformanceProfiler		 m_Profiler;
 		std::string				 m_ApplicationDir;
-
-		static Application*		 s_Application;
 	};
 
 }

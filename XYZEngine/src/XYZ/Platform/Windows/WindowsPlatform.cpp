@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "XYZ/Core/Platform.h"
 
+#include <array>
 
 namespace XYZ {
 	std::string Platform::RunShellCommand(const char* command)

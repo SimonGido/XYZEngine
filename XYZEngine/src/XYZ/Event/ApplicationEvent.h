@@ -6,7 +6,7 @@ namespace XYZ {
 	/*! @class WindowResizeEvent
 	*	@brief Occurs when a window is resized
 	*/
-	class WindowResizeEvent : public Event
+	class XYZ_API WindowResizeEvent : public Event
 	{
 	public:
 		WindowResizeEvent(int width, int height)
@@ -35,7 +35,7 @@ namespace XYZ {
 	/*! @class WindowCloseEvent
 	*	@brief Occurs when a window is closed
 	*/
-	class WindowCloseEvent : public Event
+	class XYZ_API WindowCloseEvent : public Event
 	{
 	public:
 		WindowCloseEvent()

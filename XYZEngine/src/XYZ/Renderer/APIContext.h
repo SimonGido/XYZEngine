@@ -2,12 +2,14 @@
 #include "RenderCommandBuffer.h"
 #include "RenderPass.h"
 
+#include "XYZ/Core/Core.h"
+
 #include <glm/glm.hpp>
 
 
 struct GLFWwindow;
 namespace XYZ {
-	class APIContext : public RefCount
+	class XYZ_API APIContext : public RefCount
 	{
 	public:
 		virtual ~APIContext() = default;

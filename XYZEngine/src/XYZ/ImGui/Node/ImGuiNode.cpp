@@ -37,7 +37,7 @@ namespace XYZ {
         {
         }
 
-		ImGuiNodeValue::ImGuiNodeValue(std::shared_ptr<ImGuiNodeContext> context, ImGuiNode& parent, uint32_t flags)
+		ImGuiNodeValue::ImGuiNodeValue(std::shared_ptr<ImGuiNodeContext> context, ImGuiNode* parent, uint32_t flags)
 			:
 			m_Context(std::move(context)),
             m_Parent(parent),
@@ -57,9 +57,9 @@ namespace XYZ {
             
             const float cursorPosX = ImGui::GetCursorPosX();
             const float inputOffset = ImGui::CalcTextSize("->").x + ImGui::GetStyle().ItemSpacing.x;
-            const float typeOffset = m_Parent.m_ValueTypeMaxWidth + ImGui::GetStyle().ItemSpacing.x;
-            const float nameOffset = m_Parent.m_ValueNameMaxWidth + ImGui::GetStyle().ItemSpacing.x;
-            const float editOffset = m_Parent.m_ValueEditMaxWidth + ImGui::GetStyle().ItemSpacing.x;
+            const float typeOffset = m_Parent->m_ValueTypeMaxWidth + ImGui::GetStyle().ItemSpacing.x;
+            const float nameOffset = m_Parent->m_ValueNameMaxWidth + ImGui::GetStyle().ItemSpacing.x;
+            const float editOffset = m_Parent->m_ValueEditMaxWidth + ImGui::GetStyle().ItemSpacing.x;
 
             if (IS_SET(m_Flags, ImGuiNodeValueFlags_AllowInput))
             {
@@ -111,13 +111,13 @@ namespace XYZ {
         void ImGuiNodeValue::SetValueName(std::string name)
         {
             m_Name = std::move(name);
-            m_Parent.m_RecalcPadding = true;
+            m_Parent->m_RecalcPadding = true;
         }
 
         void ImGuiNodeValue::SetValueType(VariableType type)
         {
             m_Type = std::move(type);
-            m_Parent.m_RecalcPadding = true;
+            m_Parent->m_RecalcPadding = true;
             m_Data.Allocate(m_Type.Size);
             m_Data.ZeroInitialize();
         }
@@ -125,13 +125,13 @@ namespace XYZ {
         void ImGuiNodeValue::SetFlags(uint32_t flags)
         {
             m_Flags = flags;
-            m_Parent.m_RecalcPadding = true;
+            m_Parent->m_RecalcPadding = true;
         }
 
         void ImGuiNodeValue::SetArray(bool val)
         {
             m_IsArray = val;
-            m_Parent.m_RecalcPadding = true;
+            m_Parent->m_RecalcPadding = true;
         }
 
         ImGuiNode::ImGuiNode(std::shared_ptr<ImGuiNodeContext> context, uint32_t flags)
@@ -219,7 +219,7 @@ namespace XYZ {
 
         ImGuiNodeValue& ImGuiNode::AddValue(std::string name, const VariableType& type, uint32_t flags)
         {
-            auto& val = m_Values.emplace_back(m_Context, *this, flags);
+            auto& val = m_Values.emplace_back(m_Context, this, flags);
             val.SetValueName(std::move(name));
             val.SetValueType(type);
             m_RecalcPadding = true;

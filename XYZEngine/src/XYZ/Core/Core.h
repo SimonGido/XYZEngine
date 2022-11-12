@@ -30,6 +30,14 @@
 #endif
 
 
+#ifdef XYZ_API_EXPORT
+	#define XYZ_API __declspec(dllexport)
+#elif XYZ_API_IMPORT
+	#define XYZ_API __declspec(dllimport)
+#else
+	#define XYZ_API
+#endif
+
 #define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
 #define BIT(x) (1 << x)
@@ -85,7 +93,7 @@ namespace XYZ {
 	using map3D = map2D<Key0, Key1, std::map<Key2, Value>>;
 
 	template <size_t size>
-	struct Padding
+	struct  Padding
 	{
 		Padding() { memset(m_Bytes, 0, size); }
 	private:

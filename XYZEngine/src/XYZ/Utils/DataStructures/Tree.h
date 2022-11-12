@@ -5,7 +5,7 @@
 namespace XYZ {
 
 	template <typename T>
-	class Tree
+	class XYZ_API Tree
 	{
 	public:
 		int32_t Insert(T* data);

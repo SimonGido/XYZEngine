@@ -1,4 +1,5 @@
 #pragma once
+#include "XYZ/Core/Core.h"
 
 #include <algorithm>
 #include <utility>
@@ -7,7 +8,7 @@
 namespace XYZ {
 
 	template <typename T>
-	class FreeListIterator
+	class XYZ_API FreeListIterator
 	{
 	public:
 		using iterator_category = std::random_access_iterator_tag;
@@ -52,7 +53,7 @@ namespace XYZ {
 	};
 
 	template <typename T>
-	class FreeList
+	class XYZ_API FreeList
 	{
 	public:
 		using iterator = FreeListIterator<T>;

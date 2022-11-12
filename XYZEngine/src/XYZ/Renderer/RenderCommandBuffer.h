@@ -6,7 +6,7 @@ namespace XYZ {
 
 	class SecondaryRenderCommandBuffer;
 
-	class RenderCommandBuffer : public RefCount
+	class XYZ_API RenderCommandBuffer : public RefCount
 	{
 	public:
 		virtual ~RenderCommandBuffer() {}
@@ -15,7 +15,7 @@ namespace XYZ {
 	};
 
 
-	class PrimaryRenderCommandBuffer : public RenderCommandBuffer
+	class XYZ_API PrimaryRenderCommandBuffer : public RenderCommandBuffer
 	{
 	public:
 		virtual ~PrimaryRenderCommandBuffer() {}
@@ -42,7 +42,7 @@ namespace XYZ {
 	};
 
 
-	class SecondaryRenderCommandBuffer : public RenderCommandBuffer
+	class XYZ_API SecondaryRenderCommandBuffer : public RenderCommandBuffer
 	{
 	public:
 		virtual void Begin(Ref<Framebuffer> framebuffer, bool clear) = 0;

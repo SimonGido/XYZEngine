@@ -1,10 +1,12 @@
 #pragma once
+#include "Core.h"
+#include "KeyCodes.h"
+#include "MouseCodes.h"
+
 #include <glm/glm.hpp>
 #include <utility>
 #include <memory>
 
-#include "KeyCodes.h"
-#include "MouseCodes.h"
 
 /**	@class Input
  *  Singleton class with virtual implementation, OS dependent.
@@ -13,7 +15,7 @@
  *
  */
 namespace XYZ {
-	class Input
+	class XYZ_API Input
 	{
 
 	public:

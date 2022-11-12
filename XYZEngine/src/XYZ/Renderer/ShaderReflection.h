@@ -2,7 +2,7 @@
 #include "Shader.h"
 
 namespace XYZ {
-	class ShaderReflection
+	class XYZ_API ShaderReflection
 	{
 	public:
 

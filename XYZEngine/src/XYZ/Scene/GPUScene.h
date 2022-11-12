@@ -9,7 +9,7 @@
 namespace XYZ {
 
 
-	struct GPUSceneQueue
+	struct XYZ_API GPUSceneQueue
 	{
 		struct IndirectDrawCommand
 		{
@@ -39,7 +39,7 @@ namespace XYZ {
 	
 	class SceneRenderer;
 	class Scene;
-	class GPUScene // TODO: find more suitable name
+	class XYZ_API GPUScene // TODO: find more suitable name
 	{
 		enum DataType
 		{

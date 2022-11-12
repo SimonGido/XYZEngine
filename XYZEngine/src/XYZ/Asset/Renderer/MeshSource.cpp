@@ -77,8 +77,8 @@ namespace XYZ {
 		m_SourceFilePath(filepath)
 	{
 		LogStream::Initialize();
-		m_Importer = std::make_unique<Assimp::Importer>();
-		const aiScene* scene = m_Importer->ReadFile(m_SourceFilePath, s_MeshImportFlags);
+		auto importer = std::make_unique<Assimp::Importer>();
+		const aiScene* scene = importer->ReadFile(m_SourceFilePath, s_MeshImportFlags);
 		if (!scene || !scene->HasMeshes() || scene->mNumMeshes > 1)
 		{
 			XYZ_CORE_ERROR("Failed to load mesh file: {0}", m_SourceFilePath);

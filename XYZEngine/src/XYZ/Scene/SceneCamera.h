@@ -4,7 +4,7 @@
 
 namespace XYZ {
 
-	class SceneCamera : public Camera
+	class XYZ_API SceneCamera : public Camera
 	{
 	public:
 		SceneCamera();

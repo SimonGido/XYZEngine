@@ -5,7 +5,7 @@ namespace XYZ {
 
 	
 
-	class MeshFactory
+	class XYZ_API MeshFactory
 	{
 	public:
 		static Ref<MeshSource> CreateQuad(const glm::vec2& size);

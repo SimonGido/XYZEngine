@@ -1,4 +1,6 @@
 #pragma once
+#include "XYZ/Core/Core.h"
+
 #include <glm/glm.hpp>
 
 
@@ -26,7 +28,7 @@ namespace XYZ {
 	};
 
 
-	class Camera
+	class XYZ_API Camera
 	{
 	public:
 		Camera() = default;

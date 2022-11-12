@@ -62,7 +62,7 @@ namespace XYZ {
 		uint32_t   DataSize = 0;
 	};
 
-	class SceneRenderer : public RefCount
+	class XYZ_API SceneRenderer : public RefCount
 	{
 	public:
 		SceneRenderer(Ref<Scene> scene, SceneRendererSpecification specification = {});

@@ -1,9 +1,10 @@
 #pragma once
+#include "XYZ/Core/Core.h"
 
 #include <string>
 
 namespace XYZ {
-	class FileWatcherListener
+	class XYZ_API FileWatcherListener
 	{
 	public:
 		virtual ~FileWatcherListener() = default;

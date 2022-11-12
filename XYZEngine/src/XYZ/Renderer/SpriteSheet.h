@@ -6,10 +6,10 @@
 namespace XYZ {
 	using UV = std::array<glm::vec2, 2>;
 	
-	UV Calculate(const glm::vec2& coords, const glm::vec2& size, const glm::vec2& textureSize);
+	XYZ_API UV Calculate(const glm::vec2& coords, const glm::vec2& size, const glm::vec2& textureSize);
 	
 	
-	class SpriteSheet : public RefCount
+	class XYZ_API SpriteSheet : public RefCount
 	{
 	public:
 		SpriteSheet(const Ref<Texture2D>& texture, uint32_t columns, uint32_t rows);

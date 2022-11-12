@@ -1,9 +1,10 @@
 #pragma once
+#include "XYZ/Core/Core.h"
 
 
 namespace XYZ {
 
-	class DynamicPool
+	class XYZ_API DynamicPool
 	{
 	public:
 		struct Base

@@ -1,4 +1,5 @@
 #pragma once
+#include "XYZ/Core/Core.h"
 
 #include <glm/glm.hpp>
 
@@ -7,17 +8,17 @@ namespace XYZ {
 
 	namespace Math {
 
-		std::pair<glm::vec2, glm::vec2> CalculateVelocitiesAfterContact(
+		XYZ_API std::pair<glm::vec2, glm::vec2> CalculateVelocitiesAfterContact(
 			const glm::vec2& firstVelocity, const glm::vec2& secondVelocity, float firstMass, float secondMass
 		);
 
-		glm::vec2 CalculateMirrorVector(const glm::vec2& dir, const glm::vec2& hitNormal);
+		XYZ_API glm::vec2 CalculateMirrorVector(const glm::vec2& dir, const glm::vec2& hitNormal);
 
-		float PythagoreanSolve(float a, float b);
+		XYZ_API float PythagoreanSolve(float a, float b);
 
-		void DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale);
+		XYZ_API void DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::vec3& rotation, glm::vec3& scale);
 	
-		glm::vec3 TransformToTranslation(const glm::mat4& transform);
+		XYZ_API glm::vec3 TransformToTranslation(const glm::mat4& transform);
 
 		inline float Sign(const glm::vec2& p1, const glm::vec2& p2, const glm::vec2& p3)
 		{
@@ -39,12 +40,12 @@ namespace XYZ {
 			return !(has_neg && has_pos);
 		}
 
-		std::tuple<glm::vec3, glm::vec3, glm::vec3> DecomposeTransform(const glm::mat4& transform);
+		XYZ_API std::tuple<glm::vec3, glm::vec3, glm::vec3> DecomposeTransform(const glm::mat4& transform);
 
-		std::tuple<glm::vec3, glm::quat, glm::vec3> DecomposeTransformQuat(const glm::mat4& transform);
+		XYZ_API std::tuple<glm::vec3, glm::quat, glm::vec3> DecomposeTransformQuat(const glm::mat4& transform);
 	
 	
-		int32_t RoundUp(int32_t numToRound, int32_t multiple);
+		XYZ_API int32_t RoundUp(int32_t numToRound, int32_t multiple);
 		
 	}
 }

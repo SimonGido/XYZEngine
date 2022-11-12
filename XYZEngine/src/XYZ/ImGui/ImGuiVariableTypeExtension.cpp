@@ -6,6 +6,8 @@
 
 #include <imgui.h>
 
+#define MAX_PATH 260
+
 namespace XYZ {
 	
 	ImGuiVariableTypeExtension::ImGuiVariableTypeExtension()

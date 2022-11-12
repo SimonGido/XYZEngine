@@ -7,7 +7,7 @@
 
 namespace XYZ {
 
-	class SceneEntity
+	class XYZ_API SceneEntity
 	{
 	public:
 		SceneEntity();

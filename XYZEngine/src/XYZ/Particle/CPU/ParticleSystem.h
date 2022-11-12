@@ -29,7 +29,7 @@ namespace XYZ {
 		float     Intensity;
 	};
 
-	class ParticleSystem : public RefCount
+	class XYZ_API ParticleSystem : public RefCount
 	{
 	public:
 		struct RenderData

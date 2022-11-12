@@ -6,7 +6,7 @@
 
 namespace XYZ {
 
-	class SubTexture : public Asset
+	class XYZ_API SubTexture : public Asset
 	{
 	public:
 		SubTexture(const Ref<Texture2D>& texture, const glm::vec4& texCoords);

@@ -15,7 +15,7 @@
 
 namespace XYZ {
 
-	struct SamplingContext
+	struct XYZ_API SamplingContext
 	{
 		SamplingContext();
 		SamplingContext(const SamplingContext& other);
@@ -42,7 +42,7 @@ namespace XYZ {
 	};
 
 	// Controls which animation (or animations) is playing on a mesh.
-	class AnimationController : public Asset
+	class XYZ_API AnimationController : public Asset
 	{
 	public:
 		virtual ~AnimationController() = default;

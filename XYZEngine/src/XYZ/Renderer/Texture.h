@@ -16,7 +16,7 @@ namespace XYZ {
 		ReadWrite
 	};
 
-	class Texture : public Asset
+	class XYZ_API Texture : public Asset
 	{
 	public:
 		virtual ~Texture() = default;
@@ -37,7 +37,7 @@ namespace XYZ {
 	};
 
 
-	class Texture2D : public Texture
+	class XYZ_API Texture2D : public Texture
 	{
 	public:
 		virtual void Resize(uint32_t width, uint32_t height) = 0;

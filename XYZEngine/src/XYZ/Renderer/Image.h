@@ -75,7 +75,7 @@ namespace XYZ {
 		std::string DebugName;
 	};
 
-	class Image : public RefCount
+	class XYZ_API Image : public RefCount
 	{
 	public:
 		virtual ~Image() {}
