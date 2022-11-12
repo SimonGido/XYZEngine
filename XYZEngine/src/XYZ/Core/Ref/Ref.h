@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <atomic>
 #include <functional>
+#include <memory>
 
 namespace XYZ {
 	class RefCount
