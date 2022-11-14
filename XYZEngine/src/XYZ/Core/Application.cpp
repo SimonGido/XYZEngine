@@ -103,6 +103,12 @@ namespace XYZ {
 		m_LayerStack.PushOverlay(overlayer);		
 	}
 
+	void Application::SetImGuiLayer(ImGuiLayer* layer)
+	{
+		m_ImGuiLayer = layer;
+		m_LayerStack.PushOverlay(m_ImGuiLayer);
+	}
+
 	void Application::PopLayer(Layer* layer)
 	{
 		m_LayerStack.PopLayer(layer);
@@ -242,7 +248,7 @@ namespace XYZ {
 					for (Layer* layer : m_LayerStack)
 						layer->OnUpdate(m_Timestep);
 				}
-				if (m_Specification.EnableImGui)
+				if (m_ImGuiLayer != nullptr)
 				{
 					// We must block render thread only if multiple viewports are created
 					if (m_ImGuiLayer->IsMultiViewport())

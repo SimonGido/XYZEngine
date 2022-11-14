@@ -9,6 +9,7 @@
 namespace XYZ
 {
 	static std::filesystem::path s_Directory = "Assets";
+	static AssetManager s_Instance;
 
 	void AssetManager::Init()
 	{
@@ -17,31 +18,31 @@ namespace XYZ
 		processDirectory("Resources");
 
 		std::wstring wdir = s_Directory.wstring();
-		s_FileWatcher = std::make_shared<FileWatcher>(wdir);
+		s_Instance.m_FileWatcher = std::make_shared<FileWatcher>(wdir);
 		
-		s_FileWatcher->AddOnFileChanged<&onFileChange>();
-		s_FileWatcher->Start();
+		s_Instance.m_FileWatcher->AddOnFileChanged<&onFileChange>();
+		s_Instance.m_FileWatcher->Start();
 	}
 	void AssetManager::Shutdown()
 	{
-		s_LoadedAssets.Clear();
-		s_MemoryAssets.Clear();
-		s_FileWatcher->Stop();
-		if (s_AssetLifeManager)
-			s_AssetLifeManager->Stop();
+		s_Instance.m_LoadedAssets.Clear();
+		s_Instance.m_MemoryAssets.Clear();
+		s_Instance.m_FileWatcher->Stop();
+		if (s_Instance.m_AssetLifeManager)
+			s_Instance.m_AssetLifeManager->Stop();
 	}
 
 	void AssetManager::KeepAlive(float seconds)
 	{
-		if (!s_AssetLifeManager)
-			s_AssetLifeManager = std::make_shared<AssetLifeManager>();
+		if (!s_Instance.m_AssetLifeManager)
+			s_Instance.m_AssetLifeManager = std::make_shared<AssetLifeManager>();
 
-		s_AssetLifeManager->Start(seconds);
+		s_Instance.m_AssetLifeManager->Start(seconds);
 	}
 
 	void AssetManager::SerializeAll()
 	{
-		s_LoadedAssets.ForEach([](const AssetHandle& handle, WeakRef<Asset> asset) {
+		s_Instance.m_LoadedAssets.ForEach([](const AssetHandle& handle, WeakRef<Asset> asset) {
 			if (asset.IsValid())
 			{
 				const auto& metadata = GetMetadata(handle);
@@ -54,7 +55,7 @@ namespace XYZ
 	{
 
 		WeakRef<Asset> asset;
-		bool found = s_LoadedAssets.Find(assetHandle, asset);
+		bool found = s_Instance.m_LoadedAssets.Find(assetHandle, asset);
 		if (found && asset.IsValid())
 		{
 			const auto& metadata = GetMetadata(assetHandle);
@@ -68,15 +69,15 @@ namespace XYZ
 
 	void AssetManager::Update(Timestep ts)
 	{
-		s_FileWatcher->ProcessChanges();
+		s_Instance.m_FileWatcher->ProcessChanges();
 	}
 
 	std::vector<AssetMetadata> AssetManager::FindAllMetadata(AssetType type)
 	{
 		std::vector<AssetMetadata> result;
 
-		s_LoadedAssets.ForEach([type, &result](const AssetHandle& handle, WeakRef<Asset> asset) {
-			auto metadata = s_Registry.GetMetadata(handle);
+		s_Instance.m_LoadedAssets.ForEach([type, &result](const AssetHandle& handle, WeakRef<Asset> asset) {
+			auto metadata = s_Instance.m_Registry.GetMetadata(handle);
 			if (metadata->Type == type)
 			{
 				result.push_back(*metadata);
@@ -87,7 +88,7 @@ namespace XYZ
 	}
 	void AssetManager::ReloadAsset(const std::filesystem::path& filepath)
 	{
-		const auto metadata = s_Registry.GetMetadata(filepath);
+		const auto metadata = s_Instance.m_Registry.GetMetadata(filepath);
 		if (metadata)
 		{
 			Ref<Asset> asset = nullptr;
@@ -99,27 +100,27 @@ namespace XYZ
 			}
 
 			WeakRef<Asset> weakAsset;
-			bool found = s_LoadedAssets.Find(metadata->Handle, weakAsset);
+			bool found = s_Instance.m_LoadedAssets.Find(metadata->Handle, weakAsset);
 
-			auto it = s_LoadedAssets.find(metadata->Handle);
+			auto it = s_Instance.m_LoadedAssets.find(metadata->Handle);
 			if (found)
 			{
 				weakAsset->SetFlag(AssetFlag::Reloaded);
 			}
-			s_LoadedAssets.Set(asset->GetHandle(), asset);
+			s_Instance.m_LoadedAssets.Set(asset->GetHandle(), asset);
 		}
 	}
 
 	const AssetMetadata& AssetManager::GetMetadata(const AssetHandle& handle)
 	{
-		auto metadata = s_Registry.GetMetadata(handle);
+		auto metadata = s_Instance.m_Registry.GetMetadata(handle);
 		XYZ_ASSERT(metadata, "Metadata does not exist");
 		return *metadata;
 	}
 
 	const AssetMetadata& AssetManager::GetMetadata(const std::filesystem::path& filepath)
 	{
-		auto metadata = s_Registry.GetMetadata(filepath);
+		auto metadata = s_Instance.m_Registry.GetMetadata(filepath);
 		XYZ_ASSERT(metadata, "Metadata does not exist");
 		return *metadata;
 	}
@@ -131,12 +132,17 @@ namespace XYZ
 	
 	bool AssetManager::Exist(const AssetHandle& handle)
 	{
-		return s_Registry.GetMetadata(handle) != nullptr;
+		return s_Instance.m_Registry.GetMetadata(handle) != nullptr;
 	}
 
 	bool AssetManager::Exist(const std::filesystem::path& filepath)
 	{
-		return s_Registry.GetMetadata(filepath) != nullptr;
+		return s_Instance.m_Registry.GetMetadata(filepath) != nullptr;
+	}
+
+	AssetManager& AssetManager::Get()
+	{
+		return s_Instance;
 	}
 
 	void AssetManager::loadAssetMetadata(const std::filesystem::path& filepath)
@@ -158,7 +164,7 @@ namespace XYZ
 			metadata.Handle = guid;
 			metadata.FilePath = filePath.as<std::string>();
 			metadata.Type = Utils::AssetTypeFromString(type.as<std::string>());
-			s_Registry.StoreMetadata(metadata);
+			s_Instance.m_Registry.StoreMetadata(metadata);
 		}
 		else
 		{
@@ -179,6 +185,7 @@ namespace XYZ
 		std::ofstream fout(filepath + ".meta");
 		fout << out.c_str();
 	}
+
 	void AssetManager::processDirectory(const std::filesystem::path& path)
 	{
 		for (auto it : std::filesystem::directory_iterator(path))
@@ -212,11 +219,11 @@ namespace XYZ
 		}
 		else if (type == FileWatcher::ChangeType::Removed)
 		{
-			const auto metadata = s_Registry.GetMetadata(path);
+			const auto metadata = s_Instance.m_Registry.GetMetadata(path);
 			if (metadata)
 			{
-				s_Registry.RemoveMetadata((*metadata).Handle);
-				s_LoadedAssets.Erase((*metadata).Handle);
+				s_Instance.m_Registry.RemoveMetadata((*metadata).Handle);
+				s_Instance.m_LoadedAssets.Erase((*metadata).Handle);
 			}
 		}
 		else if (type == FileWatcher::ChangeType::RenamedOld)
@@ -225,16 +232,16 @@ namespace XYZ
 		}
 		else if (type == FileWatcher::ChangeType::RenamedNew)
 		{
-			const auto ptrMetadata = s_Registry.GetMetadata(s_RenamedFileOldPath);;
+			const auto ptrMetadata = s_Instance.m_Registry.GetMetadata(s_RenamedFileOldPath);;
 			if (ptrMetadata)
 			{
 				auto metadata = *ptrMetadata;
-				s_Registry.RemoveMetadata(metadata.Handle);
+				s_Instance.m_Registry.RemoveMetadata(metadata.Handle);
 
 				FileSystem::Rename(s_RenamedFileOldPath.string() + ".meta", Utils::GetFilename(path.string()));
 
 				metadata.FilePath = path;
-				s_Registry.StoreMetadata(metadata);
+				s_Instance.m_Registry.StoreMetadata(metadata);
 				writeAssetMetadata(metadata);
 			}
 		}

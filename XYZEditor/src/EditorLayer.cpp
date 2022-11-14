@@ -22,7 +22,7 @@ namespace XYZ {
 		}
 
 		void EditorLayer::OnAttach()
-		{		
+		{
 			s_Data.Init();		
 
 			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");

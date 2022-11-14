@@ -10,7 +10,15 @@ project "XYZEditor"
 		files
 		{
 			"src/**.h",
-			"src/**.cpp"
+			"src/**.cpp",
+			"vendor/ImGuizmo/ImGuizmo.h",
+			"vendor/ImGuizmo/ImGuizmo.cpp",
+
+			"vendor/ImGuizmo/ImCurveEdit.h",
+			"vendor/ImGuizmo/ImCurveEdit.cpp",
+
+			"vendor/ImGuizmo/ImSequencer.h",
+			"vendor/ImGuizmo/ImSequencer.cpp",
 		}
 		
 		includedirs
@@ -34,9 +42,11 @@ project "XYZEditor"
 		filter "options:sharedimport"
 			links
 			{
-				"ozz-animation",
 				"ImGui",
-				"XYZEngine"
+				"ozz_base",
+				"ozz_animation",
+				"ozz_animation_offline", 
+				"%{wks.location}/bin/" .. outputdir .."/XYZEngine/XYZEngine.lib"
 			}
 		filter "options:static"
 			links

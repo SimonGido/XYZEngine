@@ -24,6 +24,8 @@ namespace XYZ {
 		void Run();
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlayer);
+		void SetImGuiLayer(ImGuiLayer* layer);
+
 		void PopLayer(Layer* layer);
 		void Stop();
 		bool OnEvent(Event& event);
