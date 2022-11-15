@@ -19,6 +19,7 @@ IncludeDir["optick"] = "%{wks.location}/XYZEngine/vendor/optick/src"
 IncludeDir["delaunator"] = "%{wks.location}/XYZEngine/vendor/delaunator/include"
 IncludeDir["ozz_animation"] = "%{wks.location}/XYZEngine/vendor/ozz-animation/include"
 IncludeDir["entt"]  = "%{wks.location}/XYZEngine/vendor/entt/include"
+IncludeDir["cr"]  = "%{wks.location}/XYZEngine/vendor/cr"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 
 LibraryDir = {}
