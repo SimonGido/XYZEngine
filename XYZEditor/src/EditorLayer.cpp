@@ -132,6 +132,7 @@ namespace XYZ {
 
 		void EditorLayer::OnImGuiRender()
 		{
+			ImGui::SetCurrentContext(XYZ::UI::GetImGuiContext());
 			m_SceneRenderer->OnImGuiRender();
 			m_EditorManager.OnImGuiRender();
 		}

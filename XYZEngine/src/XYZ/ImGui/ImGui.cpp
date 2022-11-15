@@ -177,6 +177,11 @@ namespace XYZ {
 			}
 		}
 
+		XYZ_API ImGuiContext* GetImGuiContext()
+		{
+			return ImGui::GetCurrentContext();
+		}
+
 		void HelpMarker(const char* desc)
 		{
 			ImGui::TextDisabled("(?)");

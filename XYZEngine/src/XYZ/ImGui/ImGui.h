@@ -27,6 +27,8 @@ namespace XYZ {
 			XYZ_API bool IsItemDoubleClicked(ImGuiMouseButton button);
 		}
 
+		XYZ_API ImGuiContext* GetImGuiContext();
+
 		XYZ_API void HelpMarker(const char* desc);
 		
 		XYZ_API bool IsTextActivated();

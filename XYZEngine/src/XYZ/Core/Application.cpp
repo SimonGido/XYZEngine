@@ -103,11 +103,6 @@ namespace XYZ {
 		m_LayerStack.PushOverlay(overlayer);		
 	}
 
-	void Application::SetImGuiLayer(ImGuiLayer* layer)
-	{
-		m_ImGuiLayer = layer;
-		m_LayerStack.PushOverlay(m_ImGuiLayer);
-	}
 
 	void Application::PopLayer(Layer* layer)
 	{
