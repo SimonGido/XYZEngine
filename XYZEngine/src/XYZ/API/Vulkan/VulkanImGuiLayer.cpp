@@ -9,9 +9,6 @@
 #include "XYZ/ImGui/ImGui.h"
 
 #include <ImGuizmo.h>
-#ifndef IMGUI_IMPL_API
-#define IMGUI_IMPL_API
-#endif
 
 #include <backends/imgui_impl_vulkan_with_textures.h>
 #include <backends/imgui_impl_glfw.h>

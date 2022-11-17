@@ -11,14 +11,6 @@ project "XYZEditor"
 		{
 			"src/**.h",
 			"src/**.cpp",
-			"vendor/ImGuizmo/ImGuizmo.h",
-			"vendor/ImGuizmo/ImGuizmo.cpp",
-
-			"vendor/ImGuizmo/ImCurveEdit.h",
-			"vendor/ImGuizmo/ImCurveEdit.cpp",
-
-			"vendor/ImGuizmo/ImSequencer.h",
-			"vendor/ImGuizmo/ImSequencer.cpp",
 		}
 		
 		includedirs
@@ -43,6 +35,7 @@ project "XYZEditor"
 			links
 			{
 				"ImGui",
+				"ImGuizmo",
 				"ozz_base",
 				"ozz_animation",
 				"ozz_animation_offline", 
@@ -61,7 +54,7 @@ project "XYZEditor"
 				defines "XYZ_DEBUG"
 				runtime "Debug"
 				symbols "on"
-		
+						
 		postbuildcommands 
 		{
 			'{COPY} "../XYZEngine/vendor/mono/bin/Debug/mono-2.0-sgen.dll" "%{cfg.targetdir}"',

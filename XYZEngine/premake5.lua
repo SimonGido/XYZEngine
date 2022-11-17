@@ -103,6 +103,7 @@ project "XYZEngine"
 			"opengl32",
 			"ImGui",
 			"ImGuiNode",
+			"ImGuizmo",
 			"box2d",
 			"optick",
 			"ozz_base",

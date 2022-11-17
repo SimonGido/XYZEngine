@@ -1,7 +1,0 @@
-Shader: 49ce52b6-f823-4a8a-ab53-1a7b3a0a3928
-Opaque: false
-Textures:
-  - Name: u_Texture
-    Handle: 670eeb29-9103-4232-9a7b-ca0640f1c542
-TextureArrays:
-  []
