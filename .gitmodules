@@ -13,9 +13,6 @@
 [submodule "XYZEngine/vendor/box2d"]
 	path = XYZEngine/vendor/box2d
 	url = https://github.com/SimonGido/box2d.git
-[submodule "XYZEngine/vendor/ImGuizmo"]
-	path = XYZEngine/vendor/ImGuizmo
-	url = https://github.com/SimonGido/ImGuizmo.git
 [submodule "XYZEngine/vendor/spdlog"]
 	path = XYZEngine/vendor/spdlog
 	url = https://github.com/SimonGido/spdlog.git
@@ -31,3 +28,6 @@
 [submodule "XYZEngine/vendor/imgui-node-editor"]
 	path = XYZEngine/vendor/imgui-node-editor
 	url = https://github.com/SimonGido/imgui-node-editor.git
+[submodule "XYZEditor/vendor/ImGuizmo"]
+	path = XYZEditor/vendor/ImGuizmo
+	url = https://github.com/SimonGido/ImGuizmo.git
