@@ -37,15 +37,6 @@ project "XYZEngine"
 			"vendor/asio/include/**.hpp",
 			"vendor/asio/include/**.h",
 
-			"vendor/ImGuizmo/ImGuizmo.h",
-			"vendor/ImGuizmo/ImGuizmo.cpp",
-
-			"vendor/ImGuizmo/ImCurveEdit.h",
-			"vendor/ImGuizmo/ImCurveEdit.cpp",
-
-			"vendor/ImGuizmo/ImSequencer.h",
-			"vendor/ImGuizmo/ImSequencer.cpp",
-
 			"vendor/VulkanMemoryAllocator/**.h",
 			"vendor/VulkanMemoryAllocator/**.cpp"
 
