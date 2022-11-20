@@ -6,7 +6,7 @@
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/Asset/AssetManager.h"
 #include "XYZ/Audio/Audio.h"
-
+#include "XYZ/Plugin/PluginManager.h"
 
 #include "XYZ/API/Vulkan/VulkanContext.h"
 #include "XYZ/API/Vulkan/VulkanAllocator.h"
@@ -82,6 +82,7 @@ namespace XYZ {
 	void Application::Run()
 	{
 		m_Timer.Restart();
+		
 		if (m_Specification.WindowCreate)
 		{
 			onRunWindow();
@@ -238,6 +239,8 @@ namespace XYZ {
 
 				m_Window->BeginFrame();
 				Renderer::BeginFrame();
+
+				PluginManager::Update(m_Timestep);
 				{
 					XYZ_SCOPE_PERF("Application Layer::OnUpdate");
 					for (Layer* layer : m_LayerStack)
@@ -265,6 +268,7 @@ namespace XYZ {
 			updateTimestep();
 			
 			{
+				PluginManager::Update(m_Timestep);
 				XYZ_SCOPE_PERF("Application Layer::OnUpdate");
 				for (Layer* layer : m_LayerStack)
 					layer->OnUpdate(m_Timestep);

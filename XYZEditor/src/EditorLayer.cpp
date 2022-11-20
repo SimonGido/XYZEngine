@@ -87,7 +87,7 @@ namespace XYZ {
 
 			const float keepAliveAssetSeconds = 60;
 			AssetManager::KeepAlive(keepAliveAssetSeconds);
-
+			PluginManager::OpenPlugin("XYZNative.dll");
 		}
 
 		void EditorLayer::OnDetach()
@@ -100,6 +100,7 @@ namespace XYZ {
 		}
 		void EditorLayer::OnUpdate(Timestep ts)
 		{
+			
 			m_EditorManager.OnUpdate(ts);
 			
 			if (m_Scene->GetState() == SceneState::Edit)

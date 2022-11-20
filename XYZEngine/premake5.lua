@@ -36,6 +36,7 @@ project "XYZEngine"
 
 			"vendor/asio/include/**.hpp",
 			"vendor/asio/include/**.h",
+			"vendor/cr/cr.h",
 
 			"vendor/VulkanMemoryAllocator/**.h",
 			"vendor/VulkanMemoryAllocator/**.cpp"

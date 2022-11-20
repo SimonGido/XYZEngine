@@ -30,10 +30,14 @@
 #endif
 
 
+#define XYZ_EXPORT __declspec(dllexport)
+#define XYZ_IMPORT __declspec(dllimport)
+
 #ifdef XYZ_API_EXPORT
-	#define XYZ_API __declspec(dllexport)
+	#define XYZ_API XYZ_EXPORT
+	#define CR_HOST
 #elif XYZ_API_IMPORT
-	#define XYZ_API __declspec(dllimport)
+	#define XYZ_API XYZ_IMPORT
 #else
 	#define XYZ_API
 #endif

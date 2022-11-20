@@ -42,7 +42,7 @@
 
 //------Scripting-------//
 #include "XYZ/Script/ScriptEngine.h"
-
+#include "XYZ/Plugin/PluginManager.h"
 
 //------Utils-------//
 #include "XYZ/Utils/DataStructures/ByteBuffer.h"

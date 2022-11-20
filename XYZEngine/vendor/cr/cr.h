@@ -470,7 +470,7 @@ enum cr_failure {
 
 struct cr_plugin;
 
-typedef int (*cr_plugin_main_func)(struct cr_plugin* ctx, enum cr_op operation);
+typedef int (*cr_plugin_main_func)(struct cr_plugin* ctx, enum cr_op operation, float dt);
 
 // public interface for the plugin context, this has some user facing
 // variables that may be used to manage reload feedback.
@@ -487,6 +487,8 @@ struct cr_plugin {
     unsigned int next_version;
     unsigned int last_working_version;
 };
+
+
 
 #ifndef CR_HOST
 
@@ -684,7 +686,7 @@ static void cr_plugin_reload(cr_plugin& ctx);
 static int cr_plugin_unload(cr_plugin& ctx, bool rollback, bool close);
 static bool cr_plugin_changed(cr_plugin& ctx);
 static bool cr_plugin_rollback(cr_plugin& ctx);
-static int cr_plugin_main(cr_plugin& ctx, cr_op operation);
+static int cr_plugin_main(cr_plugin& ctx, cr_op operation, float dt);
 
 void cr_set_temporary_path(cr_plugin& ctx, const std::string& path) {
     auto pimpl = (cr_internal*)ctx.p;
@@ -1183,12 +1185,12 @@ static int cr_seh_filter(cr_plugin& ctx, unsigned long seh) {
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
-static int cr_plugin_main(cr_plugin& ctx, cr_op operation) {
+static int cr_plugin_main(cr_plugin& ctx, cr_op operation, float dt) {
     auto p = (cr_internal*)ctx.p;
 #ifndef __MINGW32__
     __try {
         if (p->main) {
-            return p->main(&ctx, operation);
+            return p->main(&ctx, operation, dt);
         }
     }
     __except (cr_seh_filter(ctx, GetExceptionCode())) {
@@ -1683,7 +1685,7 @@ static cr_failure cr_signal_to_failure(int sig) {
     return static_cast<cr_failure>(CR_OTHER + sig);
 }
 
-static int cr_plugin_main(cr_plugin& ctx, cr_op operation) {
+static int cr_plugin_main(cr_plugin& ctx, cr_op operation, float dt) {
     if (int sig = sigsetjmp(env, 1)) {
         ctx.version = ctx.last_working_version;
         ctx.failure = cr_signal_to_failure(sig);
@@ -1694,7 +1696,7 @@ static int cr_plugin_main(cr_plugin& ctx, cr_op operation) {
         auto p = (cr_internal*)ctx.p;
         CR_ASSERT(p);
         if (p->main) {
-            return p->main(&ctx, operation);
+            return p->main(&ctx, operation, dt);
         }
     }
 
@@ -1911,7 +1913,7 @@ static int cr_plugin_unload(cr_plugin& ctx, bool rollback, bool close) {
     int r = 0;
     if (p->handle) {
         if (!rollback) {
-            r = cr_plugin_main(ctx, close ? CR_CLOSE : CR_UNLOAD);
+            r = cr_plugin_main(ctx, close ? CR_CLOSE : CR_UNLOAD, 0.0f);
             // Don't store state if unload crashed.  Rollback will use backup.
             if (r < 0) {
                 CR_LOG("4 FAILURE: %d\n", r);
@@ -1935,7 +1937,7 @@ static bool cr_plugin_rollback(cr_plugin& ctx) {
     CR_TRACE
         auto loaded = cr_plugin_load_internal(ctx, true);
     if (loaded) {
-        loaded = cr_plugin_main(ctx, CR_LOAD) >= 0;
+        loaded = cr_plugin_main(ctx, CR_LOAD, 0.0f) >= 0;
         if (loaded) {
             ctx.failure = CR_NONE;
         }
@@ -1954,7 +1956,7 @@ static void cr_plugin_reload(cr_plugin& ctx) {
             if (!cr_plugin_load_internal(ctx, false)) {
                 return;
             }
-        int r = cr_plugin_main(ctx, CR_LOAD);
+        int r = cr_plugin_main(ctx, CR_LOAD, 0.0f);
         if (r < 0 && !ctx.failure) {
             CR_LOG("2 FAILURE: %d\n", r);
             ctx.failure = CR_USER;
@@ -1966,7 +1968,7 @@ static void cr_plugin_reload(cr_plugin& ctx) {
 // frequently as your core logic/application needs. -1 and -2 are the only
 // possible return values from cr meaning a fatal error (causes rollback),
 // other return values are returned directly from `cr_main`.
-extern "C" int cr_plugin_update(cr_plugin & ctx, bool reloadCheck = true) {
+extern "C" int cr_plugin_update(cr_plugin & ctx, float dt, bool reloadCheck = true) {
     if (ctx.failure) {
         CR_LOG("1 ROLLBACK version was %d\n", ctx.version);
         cr_plugin_rollback(ctx);
@@ -1989,7 +1991,7 @@ extern "C" int cr_plugin_update(cr_plugin & ctx, bool reloadCheck = true) {
         return -2;
     }
 
-    int r = cr_plugin_main(ctx, CR_STEP);
+    int r = cr_plugin_main(ctx, CR_STEP, dt);
     if (r < 0 && !ctx.failure) {
         CR_LOG("4 FAILURE: CR_USER\n");
         ctx.failure = CR_USER;
