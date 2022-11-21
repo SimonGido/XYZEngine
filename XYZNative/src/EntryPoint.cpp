@@ -27,7 +27,7 @@ EXPORT int on_close()
     return 0;
 }
 
-EXPORT int EntryPoint(struct cr_plugin* ctx, enum cr_op operation, float dt)
+EXPORT int EntryPoint(struct cr_plugin* ctx, enum cr_op operation)
 {
     assert(ctx);
     switch (operation) 
@@ -37,5 +37,5 @@ EXPORT int EntryPoint(struct cr_plugin* ctx, enum cr_op operation, float dt)
     case CR_CLOSE:  return on_close();
     }
     // CR_STEP
-    return on_update(dt);
+    return on_update(Application::Get().GetTimestep());
 }

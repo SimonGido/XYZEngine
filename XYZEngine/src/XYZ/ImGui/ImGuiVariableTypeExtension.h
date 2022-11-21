@@ -13,7 +13,7 @@ namespace XYZ {
 
 		bool EditValue(const std::string& name, const char*id, std::byte* data);
 
-
+		bool HasEdit(const std::string& name) const;
 
 	private:
 		std::unordered_map<std::string, EditFunction> m_EditFunctions;

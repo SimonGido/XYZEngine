@@ -2,6 +2,11 @@
 #include "PluginManager.h"
 
 #define CR_MAIN_FUNC "EntryPoint"
+#define CR_HOST
+#ifdef XYZ_DEBUG
+	#define CR_DEBUG
+#endif
+
 
 #include <cr.h>
 
@@ -12,7 +17,7 @@ namespace XYZ {
 		cr_plugin   Context;
 	};
 
-	static std::vector<Plugin> m_Plugins;
+	static std::vector<Plugin> s_Plugins;
 
 
 	void PluginManager::OpenPlugin(const std::string& path)
@@ -21,7 +26,7 @@ namespace XYZ {
 		plugin.Filepath = path;
 		if (cr_plugin_open(plugin.Context, plugin.Filepath.c_str()))
 		{
-			m_Plugins.push_back(plugin);
+			s_Plugins.push_back(plugin);
 		}
 		else
 		{
@@ -31,12 +36,12 @@ namespace XYZ {
 
 	void PluginManager::ClosePlugin(const std::string& path)
 	{
-		for (auto it = m_Plugins.begin(); it != m_Plugins.end(); ++it)
+		for (auto it = s_Plugins.begin(); it != s_Plugins.end(); ++it)
 		{
 			if (it->Filepath == path)
 			{
 				cr_plugin_close(it->Context);
-				m_Plugins.erase(it);
+				s_Plugins.erase(it);
 				return;
 			}
 		}
@@ -44,9 +49,9 @@ namespace XYZ {
 
 	void PluginManager::Update(Timestep ts)
 	{
-		for (auto& plugin : m_Plugins)
+		for (auto& plugin : s_Plugins)
 		{
-			int result = cr_plugin_update(plugin.Context, ts);
+			int result = cr_plugin_update(plugin.Context);
 		}
 	}
 

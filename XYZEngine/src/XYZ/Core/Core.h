@@ -35,7 +35,7 @@
 
 #ifdef XYZ_API_EXPORT
 	#define XYZ_API XYZ_EXPORT
-	#define CR_HOST
+	
 #elif XYZ_API_IMPORT
 	#define XYZ_API XYZ_IMPORT
 #else

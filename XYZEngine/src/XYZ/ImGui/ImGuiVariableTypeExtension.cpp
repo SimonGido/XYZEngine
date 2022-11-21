@@ -102,4 +102,13 @@ namespace XYZ {
 		return it->second(id, data);
 	}
 
+	bool ImGuiVariableTypeExtension::HasEdit(const std::string& name) const
+	{
+		auto it = m_EditFunctions.find(name);
+		if (it == m_EditFunctions.end())
+			return false;
+
+		return true;
+	}
+
 }

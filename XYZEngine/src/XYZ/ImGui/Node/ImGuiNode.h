@@ -73,6 +73,7 @@ namespace XYZ {
 			void SetValueType(VariableType type);
 			void SetFlags(uint32_t flags);
 			void SetArray(bool val);
+			ImGuiNodeValue& AddValue(std::string name, const VariableType& type, uint32_t flags);
 
 			bool HasFlag(uint32_t flag) const { return IS_SET(m_Flags, flag); }
 			bool IsArray() const { return m_IsArray; }
@@ -86,9 +87,10 @@ namespace XYZ {
 
 			const ImGuiNodeID& GetInputID() const { return m_InputPinID; }
 			const ImGuiNodeID& GetOutputID() const { return m_OutputPinID; }
-
+			const std::vector<ImGuiNodeValue>& GetValues() const { return m_Values; }
 		private:
 			std::shared_ptr<ImGuiNodeContext> m_Context;
+			std::vector<ImGuiNodeValue> m_Values;
 			ImGuiNode*		m_Parent;
 			std::string		m_Name;
 			VariableType	m_Type;

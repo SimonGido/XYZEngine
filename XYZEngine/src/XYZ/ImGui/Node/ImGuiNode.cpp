@@ -89,11 +89,14 @@ namespace XYZ {
 
             if (IS_SET(m_Flags, ImGuiNodeValueFlags_AllowEdit))
             {
-                ImGui::SameLine();
-                ImGui::SetCursorPosX(cursorPosX + inputOffset + typeOffset + nameOffset);
-                
-                UI::ScopedWidth scopedWidth(sc_EditValueWidth);
-                m_Context->VariableExtension.EditValue(m_Type.Name, editID.c_str(), (std::byte*)m_Data.Data);
+                if (m_Context->VariableExtension.HasEdit(m_Type.Name))
+                {
+                    ImGui::SameLine();
+                    ImGui::SetCursorPosX(cursorPosX + inputOffset + typeOffset + nameOffset);
+
+                    UI::ScopedWidth scopedWidth(sc_EditValueWidth);
+                    m_Context->VariableExtension.EditValue(m_Type.Name, editID.c_str(), (std::byte*)m_Data.Data);
+                }
             }
 
             if (IS_SET(m_Flags, ImGuiNodeValueFlags_AllowOutput))
@@ -106,6 +109,9 @@ namespace XYZ {
                 ImGui::Text("->");
                 ed::EndPin();
             }
+
+            for (auto& val : m_Values)
+                val.Render();
         }
 
         void ImGuiNodeValue::SetValueName(std::string name)
@@ -132,6 +138,15 @@ namespace XYZ {
         {
             m_IsArray = val;
             m_Parent->m_RecalcPadding = true;
+        }
+
+        ImGuiNodeValue& ImGuiNodeValue::AddValue(std::string name, const VariableType& type, uint32_t flags)
+        {
+            auto& val = m_Values.emplace_back(m_Context, m_Parent, flags);
+            val.SetValueName(std::move(name));
+            val.SetValueType(type);
+            m_Parent->m_RecalcPadding = true;
+            return val;
         }
 
         ImGuiNode::ImGuiNode(std::shared_ptr<ImGuiNodeContext> context, uint32_t flags)

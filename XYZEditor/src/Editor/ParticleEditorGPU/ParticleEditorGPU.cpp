@@ -110,29 +110,9 @@ namespace XYZ {
 				}
 			}
 
-		
-			XYZ::UI::ImGuiNode* outputNode = m_NodeEditor->AddNode(XYZ::UI::ImGuiNodeFlags_AllowName);
-			outputNode->SetType(m_VariableManager.GetVariable(outputLayout.GetName()));
-			for (auto& variable : outputLayout.GetVariables())
-			{
-				outputNode->AddValue(variable.Name, variable.Type, 
-					XYZ::UI::ImGuiNodeValueFlags_AllowName
-				  | XYZ::UI::ImGuiNodeValueFlags_AllowInput);
-			}
-
-			XYZ::UI::ImGuiNode* inputNode = m_NodeEditor->AddNode(XYZ::UI::ImGuiNodeFlags_AllowInput
-																| XYZ::UI::ImGuiNodeFlags_AllowName);
-
-			inputNode->SetType(m_VariableManager.GetVariable(inputLayout.GetName()));
-			for (auto& variable : inputLayout.GetVariables())
-			{
-				inputNode->AddValue(variable.Name, variable.Type, XYZ::UI::ImGuiNodeValueFlags_AllowOutput
-																| XYZ::UI::ImGuiNodeValueFlags_AllowName);
-			}
 
 			const uint32_t valueFlags =
-				  XYZ::UI::ImGuiNodeValueFlags_AllowOutput
-				| XYZ::UI::ImGuiNodeValueFlags_AllowName
+				  XYZ::UI::ImGuiNodeValueFlags_AllowName
 				| XYZ::UI::ImGuiNodeValueFlags_AllowEdit;
 
 
@@ -141,16 +121,29 @@ namespace XYZ {
 			outputBufferNode->SetType(m_VariableManager.GetVariable("buffer"));
 			outputBufferNode->AddValue("binding", m_VariableManager.GetVariable("uint"), valueFlags);
 			outputBufferNode->AddValue("set", m_VariableManager.GetVariable("uint"), valueFlags);
-			auto& outputVal = outputBufferNode->AddValue("output", m_VariableManager.GetVariable(outputLayout.GetName()), XYZ::UI::ImGuiNodeValueFlags_AllowInput);
+			auto& outputVal = outputBufferNode->AddValue("output", m_VariableManager.GetVariable(outputLayout.GetName()), 0);
 			outputVal.SetArray(true);
+			for (auto& variable : outputLayout.GetVariables())
+			{
+				outputVal.AddValue(variable.Name, variable.Type,
+					XYZ::UI::ImGuiNodeValueFlags_AllowName
+				  | XYZ::UI::ImGuiNodeValueFlags_AllowInput);
+			}
+
 
 			XYZ::UI::ImGuiNode* inputBufferNode = m_NodeEditor->AddNode(0);
 			inputBufferNode->SetName("buffer_ParticleProperties");
 			inputBufferNode->SetType(m_VariableManager.GetVariable("buffer"));
 			inputBufferNode->AddValue("binding", m_VariableManager.GetVariable("uint"), valueFlags);
 			inputBufferNode->AddValue("set", m_VariableManager.GetVariable("uint"), valueFlags);
-			auto& inputVal = inputBufferNode->AddValue("input", m_VariableManager.GetVariable(inputLayout.GetName()), valueFlags);
+			auto& inputVal = inputBufferNode->AddValue("input", m_VariableManager.GetVariable(inputLayout.GetName()), XYZ::UI::ImGuiNodeValueFlags_AllowName);
 			inputVal.SetArray(true);
+			for (auto& variable : inputLayout.GetVariables())
+			{
+				inputVal.AddValue(variable.Name, variable.Type, 
+					  XYZ::UI::ImGuiNodeValueFlags_AllowOutput
+					| XYZ::UI::ImGuiNodeValueFlags_AllowName);
+			}
 		}
 	
 		void ParticleEditorGPU::onBackgroundMenu()
@@ -242,9 +235,7 @@ namespace XYZ {
 				
 				if (editType)
 					ImGui::OpenPopup(popupName.c_str());		
-			}
-
-			
+			}			
 		}
 		Ref<Blueprint> ParticleEditorGPU::createBlueprint() const
 		{

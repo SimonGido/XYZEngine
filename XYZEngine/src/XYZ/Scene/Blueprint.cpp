@@ -60,6 +60,23 @@ namespace XYZ {
 	{
 		m_Sequence = seq;
 		m_BuildRequired = true;
+		
+		std::unordered_map<std::string, uint32_t> variableNameCount;
+		for (auto& call : m_Sequence.FunctionCalls)
+		{
+			for (auto& arg : call.Arguments)
+				variableNameCount[arg.Name] = 0;
+		}
+		// Make sure local output variables have unique names
+		for (auto& call : m_Sequence.FunctionCalls)
+		{
+			for (auto& arg : call.Arguments)
+			{
+				auto it = variableNameCount.find(arg.Name);
+				arg.Name = arg.Name + std::to_string(it->second);
+				it->second++;
+			}
+		}
 	}
 	void Blueprint::SetWorkgroups(const glm::ivec3& workgroups)
 	{

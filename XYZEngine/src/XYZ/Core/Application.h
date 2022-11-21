@@ -28,6 +28,7 @@ namespace XYZ {
 		void PopLayer(Layer* layer);
 		void Stop();
 		bool OnEvent(Event& event);
+		Timestep GetTimestep() const { return m_Timestep; }
 
 		Window&							GetWindow() const		  { return *m_Window; }
 		ThreadPool&						GetThreadPool()			  { return m_ThreadPool; }
