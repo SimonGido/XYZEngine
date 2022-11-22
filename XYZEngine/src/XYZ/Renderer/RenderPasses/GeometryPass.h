@@ -32,6 +32,9 @@ namespace XYZ {
 			const glm::mat4& viewMatrix,
 			bool clear
 		);
+		void SubmitCompute(
+			Ref<PrimaryRenderCommandBuffer> commandBuffer,
+			GeometryRenderQueue& queue);
 
 		void Submit(
 			Ref<PrimaryRenderCommandBuffer> commandBuffer,

@@ -1,7 +1,7 @@
 
 const float PI = 3.141592;
 const float Epsilon = 0.00001;
-const int MAX_POINT_LIGHTS = 1024;
+const int MAX_POINT_LIGHTS = 4096;
 
 struct PointLight 
 {

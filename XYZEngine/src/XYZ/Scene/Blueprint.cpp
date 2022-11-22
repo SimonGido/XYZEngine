@@ -143,7 +143,7 @@ namespace XYZ {
 				{
 					m_SourceCode += fmt::format("	{} {};\n", var.Type.Name, var.Name);
 				}
-				offset += var.Size;
+				offset += var.Type.Size;
 			}
 
 			uint32_t paddingSize = Math::RoundUp(offset, 16) - offset;

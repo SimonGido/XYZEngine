@@ -6,7 +6,7 @@
 // #type compute
 #version 450 core
 
-const int MAX_POINT_LIGHTS = 1024;
+#include "Resources/Shaders/Includes/PBR.glsl"
 
 layout(std140, binding = 0) uniform Camera
 {
@@ -15,26 +15,13 @@ layout(std140, binding = 0) uniform Camera
 	mat4 u_ViewMatrix;
 };
 
-struct PointLight
-{
-	vec3  Position;
-	float Multiplier;
-	vec3  Radiance;
-	float MinRadius;
-	float Radius;
-	float Falloff;
-	float LightSize;
-	bool  CastsShadows;
-};
-
-
 layout(push_constant) uniform ScreenData
 {
 	ivec2 u_ScreenSize;
 } u_ScreenData;
 
 
-layout(std140, binding = 2) uniform PointLightsData
+layout(std140, binding = 2) buffer buffer_PointLightsData
 {
 	uint NumberPointLights;
 	PointLight PointLights[MAX_POINT_LIGHTS];
@@ -129,13 +116,14 @@ void main()
 	// Step 3: Cull lights.
 	// Parallelize the threads against the lights now.
 	// Can handle 256 simultaniously. Anymore lights than that and additional passes are performed
+	uint numberPointLights = min(NumberPointLights, MAX_POINT_LIGHTS); // If we write to buffer from compute shaders
 	uint threadCount = TILE_SIZE * TILE_SIZE;
-	uint passCount = (NumberPointLights + threadCount - 1) / threadCount;
+	uint passCount = (numberPointLights + threadCount - 1) / threadCount;
 	for (uint i = 0; i < passCount; i++)
 	{
 		// Get the lightIndex to test for this thread / pass. If the index is >= light count, then this thread can stop testing lights
 		uint lightIndex = i * threadCount + gl_LocalInvocationIndex;
-		if (lightIndex >= NumberPointLights)
+		if (lightIndex >= numberPointLights)
 			break;
 
 		vec4 position = vec4(PointLights[lightIndex].Position, 1.0f);

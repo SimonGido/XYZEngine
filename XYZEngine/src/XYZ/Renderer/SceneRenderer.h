@@ -129,14 +129,14 @@ namespace XYZ {
 		void preRender();
 		void renderGrid();
 
-		void updateUniformBufferSet();
+		void updateBufferSets();
 	private:
 		using TransformData = GeometryRenderQueue::TransformData;
 
 		UBCameraData	 m_CameraDataUB;
-		UBPointLights3D  m_PointsLights3DUB;
 		UBRendererData   m_RendererDataUB;
 		
+		SSBOPointLights3D		   m_PointsLights3DSSBO;
 		SSBOBoneTransformData	   m_BoneTransformSSBO;
 		std::vector<TransformData> m_TransformData;
 		std::vector<std::byte>	   m_InstanceData;

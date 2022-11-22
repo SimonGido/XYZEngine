@@ -46,6 +46,8 @@ namespace XYZ {
 			auto& [transformComponent, particleComponent] = particleGPUView.get(entity);
 			auto& command = m_Queue.ParticleUpdateCommands[particleComponent.System->GetHandle()];
 			command.System = particleComponent.System;
+			auto& transform = command.PerCommandData.Transform[command.PerCommandData.CommandCount++];
+			transform = transformComponent->WorldTransform;
 
 			auto& drawCommand = command.DrawCommands.emplace_back();
 			drawCommand.RenderMaterial = particleComponent.RenderMaterial;
@@ -55,11 +57,13 @@ namespace XYZ {
 		for (auto &[handle, command] : m_Queue.ParticleUpdateCommands)
 		{
 			sceneRenderer->AllocateIndirectCommand(command.DrawCommands.size(), command.IndirectCommandAllocation);
+			sceneRenderer->CreateComputeAllocation(command.DrawCommands.size(), 2, command.CommandDataAllocation);
+
 			uint32_t offset = 0;
 			for (auto& drawCommand : command.DrawCommands)
 			{
 				drawCommand.IndirectCommandSubAllocation = command.IndirectCommandAllocation->CreateSubAllocation(offset, sizeof(IndirectIndexedDrawCommand));
-				
+			
 				auto& indirectCommand = command.IndirectDrawCommands.emplace_back();
 				indirectCommand.Count = drawCommand.Mesh->GetIndexBuffer()->GetCount();
 
@@ -99,18 +103,22 @@ namespace XYZ {
 			}
 
 			std::array<ComputeData, NumTypes> computeData;
-			computeData[DataType::Properties].Allocation = cmd.System->ParticlePropertiesAllocation;
-			computeData[DataType::Result].Allocation = cmd.System->ParticlesResultAllocation;
-			computeData[DataType::IndirectCommand].Allocation = cmd.IndirectCommandAllocation;
-			computeData[DataType::IndirectCommand].Data = (std::byte*)cmd.IndirectDrawCommands.data();
-			computeData[DataType::IndirectCommand].DataSize = cmd.IndirectDrawCommands.size() * sizeof(IndirectIndexedDrawCommand);
+			computeData[DataType::Properties].Allocation		= cmd.System->ParticlePropertiesAllocation;
+			computeData[DataType::Result].Allocation			= cmd.System->ParticlesResultAllocation;
+			
+			computeData[DataType::CommandData].Allocation		= cmd.CommandDataAllocation;
+			computeData[DataType::CommandData].Data				= (std::byte*)&cmd.PerCommandData;
+			computeData[DataType::CommandData].DataSize			= cmd.PerCommandData.ReadSize();
+
+			computeData[DataType::IndirectCommand].Allocation	= cmd.IndirectCommandAllocation;
+			computeData[DataType::IndirectCommand].Data			= (std::byte*)cmd.IndirectDrawCommands.data();
+			computeData[DataType::IndirectCommand].DataSize		= cmd.IndirectDrawCommands.size() * sizeof(IndirectIndexedDrawCommand);
 
 
 			sceneRenderer->SubmitCompute(
 				cmd.System->ParticleUpdateMaterial,
 				computeData.data(), computeData.size(),
 				PushConstBuffer{
-					static_cast<uint32_t>(cmd.IndirectDrawCommands.size()),
 					m_FrameTimestep,
 					cmd.System->Speed,
 					cmd.System->GetEmittedParticles(),

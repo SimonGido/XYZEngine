@@ -92,7 +92,7 @@ layout(std140, binding = 1) uniform RendererData
 	bool ShowLightComplexity;
 };
 
-layout(std140, binding = 2) uniform PointLightsData
+layout(std140, binding = 2) buffer buffer_PointLightsData
 {
 	uint NumberPointLights;
 	PointLight PointLights[MAX_POINT_LIGHTS];

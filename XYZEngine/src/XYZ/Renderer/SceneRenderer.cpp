@@ -83,18 +83,19 @@ namespace XYZ {
 		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
 		m_UniformBufferSet->Create(sizeof(UBCameraData), UBCameraData::Set, UBCameraData::Binding);
 		m_UniformBufferSet->Create(sizeof(UBRendererData), UBRendererData::Set, UBRendererData::Binding);
-		m_UniformBufferSet->Create(sizeof(UBPointLights3D), UBPointLights3D::Set, UBPointLights3D::Binding);
 
 		m_StorageBufferSet = StorageBufferSet::Create(framesInFlight);
+		m_StorageBufferSet->Create(sizeof(SSBOPointLights3D), SSBOPointLights3D::Set, SSBOPointLights3D::Binding);
 		m_StorageBufferSet->Create(1, SSBOLightCulling::Set, SSBOLightCulling::Binding);
 		m_StorageBufferSet->Create(sizeof(SSBOBoneTransformData), SSBOBoneTransformData::Set, SSBOBoneTransformData::Binding);
 		
 		m_StorageBufferSet->Create(SSBOIndirectData::MaxSize, SSBOIndirectData::Set, SSBOIndirectData::Binding, true);
-		m_StorageBufferSet->Create(SSBOComputeData::MaxSize, SSBOComputeData::Set, SSBOComputeData::Binding[0]);
-		m_StorageBufferSet->Create(SSBOComputeData::MaxSize, SSBOComputeData::Set, SSBOComputeData::Binding[1]);
-
+	
 		for (uint32_t i = 0; i < SSBOComputeData::Count; ++i)
+		{
+			m_StorageBufferSet->Create(SSBOComputeData::MaxSize, SSBOComputeData::Set, SSBOComputeData::Binding[i]);
 			m_ComputeDataAllocator[i] = Ref<StorageBufferAllocator>::Create(SSBOComputeData::MaxSize, SSBOComputeData::Binding[i], SSBOComputeData::Set);
+		}
 		m_IndirectCommandAllocator = Ref<StorageBufferAllocator>::Create(SSBOIndirectData::MaxSize, SSBOIndirectData::Binding, SSBOIndirectData::Set);
 
 		m_CompositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
@@ -136,10 +137,10 @@ namespace XYZ {
 		m_CameraDataUB.ViewPosition = glm::vec4(camera.ViewPosition, 0.0f);
 		
 		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
-		m_PointsLights3DUB.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
-		memcpy(m_PointsLights3DUB.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
+		m_PointsLights3DSSBO.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
+		memcpy(m_PointsLights3DSSBO.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
 		updateViewportSize();
-		updateUniformBufferSet();
+		updateBufferSets();
 	}
 	void SceneRenderer::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition)
 	{
@@ -148,10 +149,10 @@ namespace XYZ {
 		m_CameraDataUB.ViewPosition = glm::vec4(viewPosition, 0.0f);
 
 		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
-		m_PointsLights3DUB.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
-		memcpy(m_PointsLights3DUB.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
+		m_PointsLights3DSSBO.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
+		memcpy(m_PointsLights3DSSBO.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
 		updateViewportSize();
-		updateUniformBufferSet();
+		updateBufferSets();
 	}
 	void SceneRenderer::EndScene()
 	{
@@ -175,7 +176,7 @@ namespace XYZ {
 			Renderer::EndRenderPass(m_CommandBuffer);
 		}
 		m_GeometryPass.PreDepthPass(m_CommandBuffer, m_Queue, m_CameraDataUB.ViewMatrix, true);
-		
+		m_GeometryPass.SubmitCompute(m_CommandBuffer, m_Queue);
 		m_LightCullingPass.Submit(m_CommandBuffer, depthImage, m_LightCullingWorkGroups, m_ViewportSize);
 		m_GeometryPass.Submit(m_CommandBuffer, m_Queue, m_CameraDataUB.ViewMatrix, clearGeometryPass);
 		m_DeferredLightPass.Submit(m_CommandBuffer, colorImage, positionImage);
@@ -293,6 +294,8 @@ namespace XYZ {
 		}
 	}
 
+
+
 	bool SceneRenderer::CreateComputeAllocation(uint32_t size, uint32_t index, Ref<StorageBufferAllocation>& allocation)
 	{
 		XYZ_ASSERT(index <= SSBOComputeData::Count, "");
@@ -389,7 +392,7 @@ namespace XYZ {
 			}
 			if (ImGui::BeginTable("##Specification", 2, ImGuiTableFlags_SizingFixedFit))
 			{
-				UI::TextTableRow("%s", "Max Point Lights:", "%u", UBPointLights3D::MaxLights);
+				UI::TextTableRow("%s", "Max Point Lights:", "%u", SSBOPointLights3D::MaxLights);
 				UI::TextTableRow("%s", "Max Bone Transform:", "%u", SSBOBoneTransformData::MaxBoneTransforms);
 				UI::TextTableRow("%s", "Max Indirect Commands:", "%u", SSBOIndirectData::MaxCommands);
 				UI::TextTableRow("%s", "Max Compute Data Size:", "%u", SSBOComputeData::MaxSize);
@@ -711,7 +714,7 @@ namespace XYZ {
 		
 	}
 
-	void SceneRenderer::updateUniformBufferSet()
+	void SceneRenderer::updateBufferSets()
 	{
 		Ref<SceneRenderer> instance = this;
 
@@ -720,7 +723,7 @@ namespace XYZ {
 			const uint32_t currentFrame = Renderer::GetCurrentFrame();
 			instance->m_UniformBufferSet->Get(UBCameraData::Binding, UBCameraData::Set, currentFrame)->RT_Update(&instance->m_CameraDataUB, sizeof(UBCameraData), 0);
 			instance->m_UniformBufferSet->Get(UBRendererData::Binding, UBRendererData::Set, currentFrame)->RT_Update(&instance->m_RendererDataUB, sizeof(UBRendererData), 0);
-			instance->m_UniformBufferSet->Get(UBPointLights3D::Binding, UBPointLights3D::Set, currentFrame)->RT_Update(&instance->m_PointsLights3DUB, sizeof(UBPointLights3D), 0);
+			instance->m_StorageBufferSet->Get(SSBOPointLights3D::Binding, SSBOPointLights3D::Set, currentFrame)->RT_Update(&instance->m_PointsLights3DSSBO, sizeof(SSBOPointLights3D), 0);
 		});
 	}
 }

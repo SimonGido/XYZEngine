@@ -2,6 +2,7 @@
 #version 460
 
 #include "Resources/Shaders/Includes/Math.glsl"
+#include "Resources/Shaders/Includes/PBR.glsl"
 
 struct DrawCommand 
 {
@@ -59,7 +60,6 @@ struct ParticleProperty
 
 layout(push_constant) uniform Uniform
 { 
-    uint  CommandCount;
     float Timestep;
     float Speed;
     uint  EmittedParticles;
@@ -67,6 +67,11 @@ layout(push_constant) uniform Uniform
 
 } u_Uniforms;
 
+layout(std140, binding = 2) buffer buffer_PointLightsData
+{
+	uint NumberPointLights;
+	PointLight PointLights[MAX_POINT_LIGHTS];
+};
 
 layout(std430, binding = 5) buffer buffer_DrawCommand // indirect
 {
@@ -83,11 +88,18 @@ layout (std430, binding = 7) buffer buffer_ParticleProperties
     ParticleProperty ParticleProperties[];
 };
 
+layout(std430, binding = 8) buffer buffer_CommandData
+{
+	uint CommandCount;
+    uint Padding[3];
+	mat4 Transform[];
+};
+
 layout (constant_id = 0) const bool COLOR_OVER_LIFE = false;
 layout (constant_id = 1) const bool SCALE_OVER_LIFE = false;
 layout (constant_id = 2) const bool VELOCITY_OVER_LIFE = false;
 layout (constant_id = 3) const bool ROTATION_OVER_LIFE = false;
-
+layout (constant_id = 4) const bool SPAWN_LIGHTS = false;
 
 float LifeProgress(uint id)
 {
@@ -110,6 +122,36 @@ void RespawnParticle(uint id)
 {
     ParticleProperties[id].LifeRemaining = ParticleProperties[id].LifeTime;
     ParticleProperties[id].Position = ParticleProperties[id].StartPosition;  
+}
+
+
+void SpawnLight(uint id, uint lightIndex, uint commandIndex, in ParticleState state)
+{
+    if (lightIndex < MAX_POINT_LIGHTS)
+    {
+        mat4 particleTransform = TranslationMatrix(ParticleProperties[id].Position.xyz, state.Scale)
+                   * RotationMatrix(state.Rotation);
+        
+        mat4 transform = Transform[commandIndex] * particleTransform;
+
+        vec3 translation = transform[3].xyz;
+
+        PointLights[lightIndex] = PointLights[0];
+        PointLights[lightIndex].Position = translation;
+    }
+}
+
+void CommandsUpdate(uint id, out uint instanceIndex, in ParticleState state)
+{
+    for (uint i = 0; i < CommandCount; ++i)
+    {
+        instanceIndex = atomicAdd(Command[i].InstanceCount, 1);
+        if (SPAWN_LIGHTS)
+        {
+            uint lightIndex = atomicAdd(NumberPointLights, 1);
+            SpawnLight(id, lightIndex, i, state);
+        }
+    }
 }
 
 void UpdateParticle(uint id)
@@ -142,15 +184,13 @@ void UpdateParticle(uint id)
         {
             state.Rotation = mix(ParticleProperties[id].StartRotation, ParticleProperties[id].EndRotation, lifeProgress);   
         }
+        
 
         ParticleProperties[id].Position.xyz += state.Velocity * u_Uniforms.Timestep * u_Uniforms.Speed;
         ParticleProperties[id].LifeRemaining -= u_Uniforms.Timestep;
 
         uint instanceIndex = 0;
-        for (uint i = 0; i < u_Uniforms.CommandCount; ++i)
-        {
-            instanceIndex = atomicAdd(Command[i].InstanceCount, 1);
-        }
+        CommandsUpdate(id, instanceIndex, state);
         UpdateRenderData(state, id, instanceIndex);
     }
     else if (u_Uniforms.Loop)

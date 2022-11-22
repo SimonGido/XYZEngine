@@ -119,7 +119,6 @@ namespace XYZ {
 
 	{
 		m_SceneEntity = m_Registry.create();
-
 		m_Registry.emplace<Relationship>(m_SceneEntity);
 		m_Registry.emplace<IDComponent>(m_SceneEntity, guid);
 		m_Registry.emplace<TransformComponent>(m_SceneEntity);
@@ -457,7 +456,7 @@ namespace XYZ {
 			}
 		}
 		
-		//m_GPUScene.OnRender(this, sceneRenderer);
+		m_GPUScene.OnRender(this, sceneRenderer);
 		sceneRenderer->EndScene();
 	}
 
@@ -882,7 +881,7 @@ namespace XYZ {
 
 	void Scene::CreateParticleTest()
 	{
-		// NOTE: this can be generate from shader
+		// NOTE: this can be generated from shader
 		ParticleSystemLayout inputLayout("Input",{
 			{"StartPosition", VariableType{"vec4", 16}},
 			{"StartColor",	  VariableType{"vec4", 16}},
@@ -905,7 +904,7 @@ namespace XYZ {
 			{"Color",		  VariableType{"vec4", 16}}
 		});
 
-		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(inputLayout, outputLayout, 100000);
+		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(inputLayout, outputLayout, 1000);
 
 		ParticleSystemGPUShaderGenerator generator(m_ParticleSystemGPU);
 		FileSystem::WriteFile("ParticleTest.glsl", generator.GetSource());
@@ -932,6 +931,7 @@ namespace XYZ {
 		m_UpdateCommandMaterial->Specialize("SCALE_OVER_LIFE", enabled);
 		m_UpdateCommandMaterial->Specialize("VELOCITY_OVER_LIFE", enabled);
 		m_UpdateCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
+		m_UpdateCommandMaterial->Specialize("SPAWN_LIGHTS", enabled);
 
 		m_ParticleSystemGPU->ParticleUpdateMaterial = m_UpdateCommandMaterial;
 	

@@ -19,13 +19,27 @@ namespace XYZ {
 			glm::mat4 Transform;
 		};
 
+		struct CommandData
+		{
+			static constexpr uint32_t sc_TransformCount = 1024;
+
+			uint32_t  CommandCount;
+			Padding<12> Padding;
+			glm::mat4 Transform[sc_TransformCount];
+
+			uint32_t ReadSize() const
+			{
+				return sizeof(CommandCount) + sizeof(Padding) + (CommandCount * sizeof(glm::mat4));
+			}
+		};
 
 		struct ParticleSystemCommand
 		{
-			
-
 			Ref<ParticleSystemGPU>					System;
 			Ref<StorageBufferAllocation>			IndirectCommandAllocation;
+			Ref<StorageBufferAllocation>			CommandDataAllocation;
+			
+			CommandData								PerCommandData;
 			std::vector<IndirectIndexedDrawCommand> IndirectDrawCommands;
 			std::vector<IndirectDrawCommand>		DrawCommands;
 		};
@@ -43,7 +57,7 @@ namespace XYZ {
 	{
 		enum DataType
 		{
-			Properties, Result, IndirectCommand, NumTypes
+			Properties, Result, CommandData, IndirectCommand, NumTypes
 		};
 	public:
 		GPUScene();
