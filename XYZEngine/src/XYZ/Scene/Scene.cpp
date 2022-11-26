@@ -281,6 +281,7 @@ namespace XYZ {
 		updateRigidBody2DView();
 		
 		updateParticleView(ts);
+		updateGPUParticleView(ts);
 
 		if (m_UpdateAnimationAsync)
 			updateAnimationViewAsync(ts);
@@ -375,6 +376,8 @@ namespace XYZ {
 			updateAnimationView(ts);		
 
 		updateParticleView(ts);
+		updateGPUParticleView(ts);
+
 		m_GPUScene.OnUpdate(ts);
 	}
 	
@@ -708,6 +711,16 @@ namespace XYZ {
 		{
 			auto& [particleComponent, transformComponent] = particleView.get<ParticleComponent, TransformComponent>(entity);
 			particleComponent.GetSystem()->Update(transformComponent->WorldTransform, ts);
+		}
+	}
+
+	void Scene::updateGPUParticleView(Timestep ts)
+	{
+		XYZ_PROFILE_FUNC("Scene::updateParticleView");
+		auto& particleStorage = m_Registry.storage<ParticleComponentGPU>();
+		for (auto particleComponent : particleStorage)
+		{
+			particleComponent.System->Update(ts);
 		}
 	}
 

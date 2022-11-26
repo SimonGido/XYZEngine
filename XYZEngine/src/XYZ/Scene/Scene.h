@@ -116,6 +116,7 @@ namespace XYZ {
         void updateAnimationViewAsync(Timestep ts);
 
         void updateParticleView(Timestep ts);
+        void updateGPUParticleView(Timestep ts);
         void updateRigidBody2DView();
 
        

@@ -12,7 +12,8 @@ namespace XYZ {
 		:
 		m_InputLayout(std::move(inputLayout)),
 		m_OutputLayout(std::move(outputLayout)),
-		m_EmittedParticles(0)
+		m_EmittedParticles(0),
+		m_EmissionCount(0)
 	{
 		m_ParticleBuffer.SetMaxParticles(maxParticles, m_InputLayout.GetStride());
 	}
@@ -28,7 +29,19 @@ namespace XYZ {
 			emitted += emitter.Emit(ts, particleBuffer, bufferSize);
 		}
 		m_EmittedParticles += emitted;
+		m_EmissionCount += emitted;
 		return emitted;
+	}
+
+	const EmissionResult ParticleSystemGPU::LastEmission() const
+	{
+		const uint32_t offsetParticles = m_EmittedParticles - m_EmissionCount;
+		const uint32_t dataOffset = offsetParticles * m_ParticleBuffer.GetStride();
+		const uint32_t size = offsetParticles * m_ParticleBuffer.GetStride();
+
+		EmissionResult result(m_ParticleBuffer.GetData(offsetParticles), size, dataOffset);
+		m_EmissionCount = 0;
+		return result;
 	}
 	
 	ParticleBuffer::ParticleBuffer(uint32_t maxParticles, uint32_t stride)
@@ -187,5 +200,12 @@ namespace XYZ {
 		//	tempVariables.push_back(Variable{ VariableTypeToGLSL(var.Type), var.Name, var.Size, var.IsArray});
 
 		return tempVariables;
+	}
+	EmissionResult::EmissionResult(const std::byte* data, uint32_t size, uint32_t offset)
+		:
+		EmittedData(data),
+		EmittedDataSize(size),
+		DataOffset(offset)
+	{
 	}
 }

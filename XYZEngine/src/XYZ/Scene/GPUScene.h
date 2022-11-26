@@ -14,9 +14,9 @@ namespace XYZ {
 		struct IndirectDrawCommand
 		{
 			Ref<StorageBufferAllocation> IndirectCommandSubAllocation;
-			Ref<MaterialAsset> RenderMaterial;
-			Ref<Mesh> Mesh;
-			glm::mat4 Transform;
+			Ref<MaterialAsset>			 RenderMaterial;
+			Ref<Mesh>					 Mesh;
+			glm::mat4					 Transform;
 		};
 
 		struct CommandData
@@ -36,6 +36,8 @@ namespace XYZ {
 		struct ParticleSystemCommand
 		{
 			Ref<ParticleSystemGPU>					System;
+			Ref<StorageBufferAllocation>			ParticlePropertiesAllocation;
+			Ref<StorageBufferAllocation>			ParticlesResultAllocation;
 			Ref<StorageBufferAllocation>			IndirectCommandAllocation;
 			Ref<StorageBufferAllocation>			CommandDataAllocation;
 			
@@ -45,7 +47,7 @@ namespace XYZ {
 		};
 
 
-		std::map<AssetHandle, ParticleSystemCommand> ParticleUpdateCommands;
+		std::map<AssetHandle, ParticleSystemCommand> ParticleCommands;
 
 		void Clear();
 	};
@@ -67,13 +69,28 @@ namespace XYZ {
 		void OnRender(Ref<Scene> scene, Ref<SceneRenderer> sceneRenderer);
 
 	private:
+		void cacheAllocations();
 
 		void prepareCommands(Ref<Scene>& scene, Ref<SceneRenderer>& sceneRenderer);
 		void submitParticleCommands(Ref<Scene>& scene, Ref<SceneRenderer>& sceneRenderer);
+
+		void createParticleCommandAllocations(GPUSceneQueue::ParticleSystemCommand& command, Ref<SceneRenderer>& sceneRenderer);
+		void storeParticleAllocationsCache(GPUSceneQueue::ParticleSystemCommand& command);
+		
+		void submitParticleCommandEmission(GPUSceneQueue::ParticleSystemCommand& command, Ref<SceneRenderer>& sceneRenderer);
+		void submitParticleCommandCompute(GPUSceneQueue::ParticleSystemCommand& command, Ref<SceneRenderer>& sceneRenderer);
 	private:
 		float    m_FrameTimestep; // It can be updated only once per FramesInFlight
 		uint32_t m_FrameCounter;
 		GPUSceneQueue m_Queue;
 
+		struct ParticleAllocation
+		{
+			Ref<StorageBufferAllocation> ParticlePropertiesAllocation;
+			Ref<StorageBufferAllocation> ParticlesResultAllocation;
+			Ref<StorageBufferAllocation> IndirectCommandAllocation;
+		};
+
+		std::unordered_map<AssetHandle, ParticleAllocation> m_AllocationCache;
 	};
 }
