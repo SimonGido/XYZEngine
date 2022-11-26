@@ -36,6 +36,7 @@ namespace XYZ {
 		struct ParticleSystemCommand
 		{
 			Ref<ParticleSystemGPU>					System;
+			
 			Ref<StorageBufferAllocation>			ParticlePropertiesAllocation;
 			Ref<StorageBufferAllocation>			ParticlesResultAllocation;
 			Ref<StorageBufferAllocation>			IndirectCommandAllocation;
@@ -89,6 +90,7 @@ namespace XYZ {
 			Ref<StorageBufferAllocation> ParticlePropertiesAllocation;
 			Ref<StorageBufferAllocation> ParticlesResultAllocation;
 			Ref<StorageBufferAllocation> IndirectCommandAllocation;
+			Ref<StorageBufferAllocation> CommandDataAllocation;
 		};
 
 		std::unordered_map<AssetHandle, ParticleAllocation> m_AllocationCache;

@@ -393,13 +393,13 @@ namespace XYZ {
 		return true;
 	}
 
-	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos)
+	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::mat4& projection)
 	{
 		XYZ_PROFILE_FUNC("Scene::OnRenderEditor");
 		
 		
 		setupLightEnvironment();
-		sceneRenderer->BeginScene(viewProjection, view, camPos);
+		sceneRenderer->BeginScene(viewProjection, view, projection);
 	
 		auto spriteView = m_Registry.view<TransformComponent, SpriteRenderer>();
 		for (auto entity : spriteView)
@@ -917,7 +917,7 @@ namespace XYZ {
 			{"Color",		  VariableType{"vec4", 16}}
 		});
 
-		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(inputLayout, outputLayout, 1000);
+		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(inputLayout, outputLayout, 10);
 
 		ParticleSystemGPUShaderGenerator generator(m_ParticleSystemGPU);
 		FileSystem::WriteFile("ParticleTest.glsl", generator.GetSource());

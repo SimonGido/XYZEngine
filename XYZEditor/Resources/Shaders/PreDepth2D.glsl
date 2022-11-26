@@ -12,8 +12,8 @@ layout(location = 4) in float a_TilingFactor;
 layout(std140, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjection;
-	mat4 u_ViewMatrix;
-	vec4 u_ViewPosition;
+	mat4 u_Projection;
+	mat4 u_View;
 };
 
 layout(push_constant) uniform Transform
@@ -29,7 +29,7 @@ void main()
 {
 	vec4 worldPosition = u_Renderer.Transform * vec4(a_Position, 1.0);
 
-	v_LinearDepth = -(u_ViewMatrix * worldPosition).z;
+	v_LinearDepth = -(u_View * worldPosition).z;
 	gl_Position = u_ViewProjection * worldPosition;
 }
 

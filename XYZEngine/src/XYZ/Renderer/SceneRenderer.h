@@ -74,7 +74,7 @@ namespace XYZ {
 		void SetGridProperties(const GridProperties& props);
 
 		void BeginScene(const SceneRendererCamera& camera);
-		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition);
+		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::mat4& projection);
 		void EndScene();
 
 		void SubmitBillboard(const Ref<MaterialAsset>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size);

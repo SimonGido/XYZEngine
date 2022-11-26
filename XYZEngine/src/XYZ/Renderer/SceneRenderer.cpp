@@ -133,8 +133,8 @@ namespace XYZ {
 		m_SceneCamera = camera;
 
 		m_CameraDataUB.ViewProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix() * m_SceneCamera.ViewMatrix;
+		m_CameraDataUB.ProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix();
 		m_CameraDataUB.ViewMatrix = m_SceneCamera.ViewMatrix;
-		m_CameraDataUB.ViewPosition = glm::vec4(camera.ViewPosition, 0.0f);
 		
 		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
 		m_PointsLights3DSSBO.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
@@ -142,11 +142,11 @@ namespace XYZ {
 		updateViewportSize();
 		updateBufferSets();
 	}
-	void SceneRenderer::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition)
+	void SceneRenderer::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::mat4& projection)
 	{
 		m_CameraDataUB.ViewProjectionMatrix = viewProjectionMatrix;
+		m_CameraDataUB.ProjectionMatrix = projection;
 		m_CameraDataUB.ViewMatrix = viewMatrix;
-		m_CameraDataUB.ViewPosition = glm::vec4(viewPosition, 0.0f);
 
 		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
 		m_PointsLights3DSSBO.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());

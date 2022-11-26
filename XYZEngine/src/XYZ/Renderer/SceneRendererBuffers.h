@@ -8,8 +8,8 @@ namespace XYZ {
 	struct UBCameraData
 	{
 		glm::mat4 ViewProjectionMatrix;
+		glm::mat4 ProjectionMatrix;
 		glm::mat4 ViewMatrix;
-		glm::vec4 ViewPosition;
 
 		static constexpr uint32_t Binding = 0;
 		static constexpr uint32_t Set = 0;

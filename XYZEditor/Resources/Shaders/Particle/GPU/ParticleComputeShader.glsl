@@ -88,10 +88,9 @@ layout (std430, binding = 7) buffer buffer_ParticleProperties
     ParticleProperty ParticleProperties[];
 };
 
-layout(std430, binding = 8) buffer buffer_CommandData
+layout(std140, binding = 8) buffer buffer_CommandData
 {
 	uint CommandCount;
-    uint Padding[3];
 	mat4 Transform[];
 };
 
@@ -100,6 +99,9 @@ layout (constant_id = 1) const bool SCALE_OVER_LIFE = false;
 layout (constant_id = 2) const bool VELOCITY_OVER_LIFE = false;
 layout (constant_id = 3) const bool ROTATION_OVER_LIFE = false;
 layout (constant_id = 4) const bool SPAWN_LIGHTS = false;
+
+
+shared uint pointLightsCount;
 
 float LifeProgress(uint id)
 {
@@ -134,10 +136,11 @@ void SpawnLight(uint id, uint lightIndex, uint commandIndex, in ParticleState st
         
         mat4 transform = Transform[commandIndex] * particleTransform;
 
-        vec3 translation = transform[3].xyz;
+        vec3 translation = vec3(40, 10, 0);
 
         PointLights[lightIndex] = PointLights[0];
         PointLights[lightIndex].Position = translation;
+        atomicAdd(NumberPointLights, 1);
     }
 }
 
@@ -148,7 +151,7 @@ void CommandsUpdate(uint id, out uint instanceIndex, in ParticleState state)
         instanceIndex = atomicAdd(Command[i].InstanceCount, 1);
         if (SPAWN_LIGHTS)
         {
-            uint lightIndex = atomicAdd(NumberPointLights, 1);
+            uint lightIndex = atomicAdd(pointLightsCount, 1);
             SpawnLight(id, lightIndex, i, state);
         }
     }
@@ -199,7 +202,6 @@ void UpdateParticle(uint id)
     }
 }
 
-
 bool ValidParticle(uint id)
 {
     if (id >= u_Uniforms.EmittedParticles)
@@ -211,8 +213,12 @@ bool ValidParticle(uint id)
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 void main(void)
 {
-    uint id = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
+    if (gl_LocalInvocationIndex == 0)   
+        pointLightsCount = NumberPointLights;
+    barrier();
 
+    uint id = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
+    
     if (!ValidParticle(id))
         return;
 

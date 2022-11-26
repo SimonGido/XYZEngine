@@ -46,8 +46,8 @@ layout(push_constant) uniform Transform
 layout(std140, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjection;
-	mat4 u_ViewMatrix;
-	vec4 u_ViewPosition;
+	mat4 u_Projection;
+	mat4 u_View;
 };
 
 

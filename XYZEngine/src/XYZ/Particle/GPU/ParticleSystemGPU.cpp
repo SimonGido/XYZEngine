@@ -37,7 +37,7 @@ namespace XYZ {
 	{
 		const uint32_t offsetParticles = m_EmittedParticles - m_EmissionCount;
 		const uint32_t dataOffset = offsetParticles * m_ParticleBuffer.GetStride();
-		const uint32_t size = offsetParticles * m_ParticleBuffer.GetStride();
+		const uint32_t size = m_EmissionCount * m_ParticleBuffer.GetStride();
 
 		EmissionResult result(m_ParticleBuffer.GetData(offsetParticles), size, dataOffset);
 		m_EmissionCount = 0;

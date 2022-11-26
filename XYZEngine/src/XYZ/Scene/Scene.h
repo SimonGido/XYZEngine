@@ -80,7 +80,7 @@ namespace XYZ {
         void OnUpdate(Timestep ts);
         void OnRender(Ref<SceneRenderer> sceneRenderer);
         void OnUpdateEditor(Timestep ts);
-        void OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::vec3& camPos);
+        void OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::mat4& projection);
 
         
         void OnImGuiRender();

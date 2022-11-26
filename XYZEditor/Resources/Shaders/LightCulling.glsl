@@ -10,9 +10,9 @@
 
 layout(std140, binding = 0) uniform Camera
 {
-	mat4 u_ViewProjectionMatrix;
-	mat4 u_ProjectionMatrix;
-	mat4 u_ViewMatrix;
+	mat4 u_ViewProjection;
+	mat4 u_Projection;
+	mat4 u_View;
 };
 
 layout(push_constant) uniform ScreenData
@@ -69,7 +69,7 @@ void main()
 	vec2 tc = vec2(location) / u_ScreenData.u_ScreenSize;
 	float depth = texture(u_PreDepthMap, tc).r;
 	// Linearize depth value (keeping in mind Vulkan depth is 0->1 and we're using GLM_FORCE_DEPTH_ZERO_TO_ONE)
-	depth = u_ProjectionMatrix[3][2] / (depth + u_ProjectionMatrix[2][2]);
+	depth = u_Projection[3][2] / (depth + u_Projection[2][2]);
 
 	// Convert depth to uint so we can do atomic min and max comparisons between the threads
 	uint depthInt = floatBitsToUint(depth);
@@ -100,14 +100,14 @@ void main()
 		// Transform the first four planes
 		for (uint i = 0; i < 4; i++)
 		{
-			frustumPlanes[i] *= u_ViewProjectionMatrix;
+			frustumPlanes[i] *= u_ViewProjection;
 			frustumPlanes[i] /= length(frustumPlanes[i].xyz);
 		}
 
 		// Transform the depth planes
-		frustumPlanes[4] *= u_ViewMatrix;
+		frustumPlanes[4] *= u_View;
 		frustumPlanes[4] /= length(frustumPlanes[4].xyz);
-		frustumPlanes[5] *= u_ViewMatrix;
+		frustumPlanes[5] *= u_View;
 		frustumPlanes[5] /= length(frustumPlanes[5].xyz);
 	}
 

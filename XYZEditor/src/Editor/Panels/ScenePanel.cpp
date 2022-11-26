@@ -133,7 +133,7 @@ namespace XYZ {
 					if (m_ViewportHovered && m_ViewportFocused)
 						m_EditorCamera.OnUpdate(ts);
 					m_Context->OnUpdateEditor(ts);
-					m_Context->OnRenderEditor(m_SceneRenderer, m_EditorCamera.GetViewProjection(), m_EditorCamera.GetViewMatrix(), m_EditorCamera.GetPosition());
+					m_Context->OnRenderEditor(m_SceneRenderer, m_EditorCamera.GetViewProjection(), m_EditorCamera.GetViewMatrix(), m_EditorCamera.GetProjectionMatrix());
 				}
 				else
 				{

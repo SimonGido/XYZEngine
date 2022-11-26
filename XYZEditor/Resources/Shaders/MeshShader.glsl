@@ -24,9 +24,9 @@ layout(location = 0) out VertexOutput v_Output;
 
 layout(std140, binding = 0) uniform Camera
 {
-	mat4 u_ViewProjection;
+	mat4 u_ViewProjectionMatrix;
+	mat4 u_ProjectionMatrix;
 	mat4 u_ViewMatrix;
-	vec4 u_ViewPosition;
 };
 
 layout(push_constant) uniform Transform
