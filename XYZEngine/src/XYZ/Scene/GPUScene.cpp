@@ -6,6 +6,15 @@
 
 namespace XYZ {
 
+	static GPUSceneQueue::TransformData Mat4ToTransformData(const glm::mat4& transform)
+	{
+		GPUSceneQueue::TransformData data;
+		data.TransformRow[0] = { transform[0][0], transform[1][0], transform[2][0], transform[3][0] };
+		data.TransformRow[1] = { transform[0][1], transform[1][1], transform[2][1], transform[3][1] };
+		data.TransformRow[2] = { transform[0][2], transform[1][2], transform[2][2], transform[3][2] };
+		return data;
+	}
+
 	GPUScene::GPUScene()
 		:
 		m_FrameTimestep(0.0f),
@@ -45,7 +54,7 @@ namespace XYZ {
 			auto& command = m_Queue.ParticleCommands[particleComponent.System->GetHandle()];
 			command.System = particleComponent.System;
 			auto& transform = command.PerCommandData.Transform[command.PerCommandData.CommandCount++];
-			transform = transformComponent->WorldTransform;
+			transform = Mat4ToTransformData(transformComponent->WorldTransform);
 			
 			storeParticleAllocationsCache(command);
 

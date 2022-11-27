@@ -15,14 +15,18 @@ struct DrawCommand
     uint Padding[3];
 };
 
+struct Transform
+{
+    vec4  TransformRow0;
+    vec4  TransformRow1;
+    vec4  TransformRow2;
+};
 
 struct Particle
 {
     // Data that are rendered
-	vec4  TransformRow0;
-    vec4  TransformRow1;
-    vec4  TransformRow2;
-    vec4  Color;
+	Transform Tr;
+    vec4      Color;
 };
 
 struct ParticleState
@@ -88,10 +92,11 @@ layout (std430, binding = 7) buffer buffer_ParticleProperties
     ParticleProperty ParticleProperties[];
 };
 
-layout(std140, binding = 8) buffer buffer_CommandData
+layout(std430, binding = 8) buffer buffer_CommandData
 {
 	uint CommandCount;
-	mat4 Transform[];
+    uint Padding[3];
+	Transform Transforms[];
 };
 
 layout (constant_id = 0) const bool COLOR_OVER_LIFE = false;
@@ -113,9 +118,9 @@ void UpdateRenderData(in ParticleState state, uint id, uint instanceIndex)
     mat4 transform = TranslationMatrix(ParticleProperties[id].Position.xyz, state.Scale)
                    * RotationMatrix(state.Rotation);
 
-    Particles[instanceIndex].TransformRow0 = vec4(transform[0][0], transform[1][0], transform[2][0], transform[3][0]);
-    Particles[instanceIndex].TransformRow1 = vec4(transform[0][1], transform[1][1], transform[2][1], transform[3][1]);
-    Particles[instanceIndex].TransformRow2 = vec4(transform[0][2], transform[1][2], transform[2][2], transform[3][2]);
+    Particles[instanceIndex].Tr.TransformRow0 = vec4(transform[0][0], transform[1][0], transform[2][0], transform[3][0]);
+    Particles[instanceIndex].Tr.TransformRow1 = vec4(transform[0][1], transform[1][1], transform[2][1], transform[3][1]);
+    Particles[instanceIndex].Tr.TransformRow2 = vec4(transform[0][2], transform[1][2], transform[2][2], transform[3][2]);
     Particles[instanceIndex].Color = state.Color;
 }
 
@@ -134,12 +139,16 @@ void SpawnLight(uint id, uint lightIndex, uint commandIndex, in ParticleState st
         mat4 particleTransform = TranslationMatrix(ParticleProperties[id].Position.xyz, state.Scale)
                    * RotationMatrix(state.Rotation);
         
-        mat4 transform = Transform[commandIndex] * particleTransform;
 
-        vec3 translation = vec3(40, 10, 0);
+        mat4 transform = TransformFromRows(
+            Transforms[commandIndex].TransformRow0,
+            Transforms[commandIndex].TransformRow1,
+            Transforms[commandIndex].TransformRow2
+        ) * particleTransform;
+
 
         PointLights[lightIndex] = PointLights[0];
-        PointLights[lightIndex].Position = translation;
+        PointLights[lightIndex].Position = transform[3].xyz;
         atomicAdd(NumberPointLights, 1);
     }
 }

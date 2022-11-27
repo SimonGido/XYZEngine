@@ -74,3 +74,13 @@ mat4 RotationMatrix(in vec4 quat)
 {
     return QuatToMat4(quat);
 }
+
+mat4 TransformFromRows(in vec4 transformRow0, in vec4 transformRow1, in vec4 transformRow2)
+{
+    return mat4(
+		vec4(transformRow0.x, transformRow1.x, transformRow2.x, 0.0),
+		vec4(transformRow0.y, transformRow1.y, transformRow2.y, 0.0),
+		vec4(transformRow0.z, transformRow1.z, transformRow2.z, 0.0),
+		vec4(transformRow0.w, transformRow1.w, transformRow2.w, 1.0)
+	);
+}

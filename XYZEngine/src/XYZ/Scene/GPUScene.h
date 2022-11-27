@@ -11,6 +11,10 @@ namespace XYZ {
 
 	struct XYZ_API GPUSceneQueue
 	{
+		struct TransformData
+		{
+			glm::vec4 TransformRow[3];
+		};
 		struct IndirectDrawCommand
 		{
 			Ref<StorageBufferAllocation> IndirectCommandSubAllocation;
@@ -23,13 +27,13 @@ namespace XYZ {
 		{
 			static constexpr uint32_t sc_TransformCount = 1024;
 
-			uint32_t  CommandCount;
-			Padding<12> Padding;
-			glm::mat4 Transform[sc_TransformCount];
+			uint32_t	  CommandCount;
+			Padding<12>   Padding;
+			TransformData Transform[sc_TransformCount];
 
 			uint32_t ReadSize() const
 			{
-				return sizeof(CommandCount) + sizeof(Padding) + (CommandCount * sizeof(glm::mat4));
+				return sizeof(CommandCount) + sizeof(Padding) + (CommandCount * sizeof(TransformData));
 			}
 		};
 
