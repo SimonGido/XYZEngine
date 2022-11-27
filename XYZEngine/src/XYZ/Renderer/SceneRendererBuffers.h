@@ -27,7 +27,7 @@ namespace XYZ {
 
 	struct SSBOPointLights3D
 	{
-		static constexpr uint32_t MaxLights = 4096;
+		static constexpr uint32_t MaxLights = 1024;
 
 		uint32_t	 Count{ 0 };
 		glm::vec3	 Padding{};
