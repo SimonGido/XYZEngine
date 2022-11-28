@@ -56,6 +56,7 @@
 #include "XYZ/Net/NetServer.h"
 #include "XYZ/Net/NetClient.h"
 #include "XYZ/Net/NetConnection.h"
+#include "XYZ/Net/UDPServer.h"
 
 
 //------Asset---------//

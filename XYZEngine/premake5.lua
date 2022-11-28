@@ -92,6 +92,7 @@ project "XYZEngine"
 			"%{IncludeDir.mono}",
 			"%{IncludeDir.box2d}",
 			"%{IncludeDir.optick}",
+			"%{IncludeDir.OpenXR}",
 			"%{IncludeDir.VulkanSDK}"
 		}
 
@@ -141,7 +142,8 @@ project "XYZEngine"
 					"%{Library.Assimp_Debug}",
 					"%{Library.ShaderC_Debug}",
 					"%{Library.SPIRV_Cross_Debug}",
-					"%{Library.SPIRV_Cross_GLSL_Debug}"
+					"%{Library.SPIRV_Cross_GLSL_Debug}",
+					"%{Library.OpenXR_Debug}"
 				}
 
 
@@ -155,5 +157,6 @@ project "XYZEngine"
 					"%{Library.Assimp_Release}",
 					"%{Library.ShaderC_Release}",
 					"%{Library.SPIRV_Cross_Release}",
-					"%{Library.SPIRV_Cross_GLSL_Release}"
+					"%{Library.SPIRV_Cross_GLSL_Release}",
+					"%{Library.OpenXR_Release}"
 				}

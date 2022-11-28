@@ -14,6 +14,7 @@
 
 #include "XYZ/ImGui/ImGui.h"
 
+#include "XYZ/Platform/OpenXR/OpenXRInstance.h"
 
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -38,7 +39,7 @@ namespace XYZ {
 		s_Application = this;
 		m_Running = true;
 		m_ImGuiLayer = nullptr;
-
+		//OpenXRInstance instance(OpenXRVersion{ 1, 0, 22 });
 		AssetManager::Init();
 		if (specification.WindowCreate)
 		{		
