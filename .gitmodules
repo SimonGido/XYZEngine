@@ -31,3 +31,6 @@
 [submodule "XYZEngine/vendor/ImGuizmo"]
 	path = XYZEngine/vendor/ImGuizmo
 	url = https://github.com/SimonGido/ImGuizmo.git
+[submodule "XYZEngine/vendor/OpenXR-SDK"]
+	path = XYZEngine/vendor/OpenXR-SDK
+	url = https://github.com/SimonGido/OpenXR-SDK.git
