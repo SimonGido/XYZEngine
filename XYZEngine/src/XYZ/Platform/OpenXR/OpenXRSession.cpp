@@ -40,13 +40,14 @@ namespace XYZ {
 		PFN_xrGetVulkanGraphicsRequirements2KHR getVulkanGraphicsRequirements;
 		XR_CHECK_RESULT(xrGetInstanceProcAddr(instance->GetXrInstance(), "xrGetVulkanGraphicsRequirements2KHR", (PFN_xrVoidFunction*)&getVulkanGraphicsRequirements));
 
+		
 		XrGraphicsRequirementsVulkan2KHR graphicsRequirements;
 		graphicsRequirements.type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN2_KHR;
 	
 		XR_CHECK_RESULT(getVulkanGraphicsRequirements(instance->GetXrInstance(), instance->GetXrSystemID(), &graphicsRequirements));
 
 		
-
+		
 		PFN_xrGetVulkanGraphicsDevice2KHR getVulkanGraphicsDevice;
 		XR_CHECK_RESULT(xrGetInstanceProcAddr(instance->GetXrInstance(), "xrGetVulkanGraphicsDevice2KHR", (PFN_xrVoidFunction*)&getVulkanGraphicsDevice));
 		
@@ -64,7 +65,7 @@ namespace XYZ {
 
 		XrGraphicsBindingVulkan2KHR graphicsBindings;
 		graphicsBindings.type = XR_TYPE_GRAPHICS_BINDING_VULKAN2_KHR;
-		graphicsBindings.device = vulkanContext->GetDevice()->GetVulkanDevice(); // NOTE: maybe use retrieved device from getVulkanGraphicsDevice
+		graphicsBindings.device = vulkanContext->GetDevice()->GetVulkanDevice();
 		graphicsBindings.physicalDevice = physicalDevice->GetVulkanPhysicalDevice();
 		graphicsBindings.instance = vulkanContext->GetInstance();
 		graphicsBindings.queueFamilyIndex = physicalDevice->GetQueueFamilyIndices().Presentation;

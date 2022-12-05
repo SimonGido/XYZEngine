@@ -4,7 +4,29 @@
 
 #include "XYZ/Renderer/Renderer.h"
 
+#include "XYZ/API/Vulkan/VulkanContext.h"
+
+#include <openxr/openxr_platform.h>
+
 namespace XYZ {
+
+	std::vector<const char*> ParseExtensionString(char* names) 
+	{
+		std::vector<const char*> list;
+		while (*names != 0) 
+		{
+			list.push_back(names);
+			while (*(++names) != 0)
+			{
+				if (*names == ' ') 
+				{
+					*names++ = '\0';
+					break;
+				}
+			}
+		}
+		return list;
+	}
 
 	static const char* SelectAPIExtension()
 	{
@@ -23,6 +45,7 @@ namespace XYZ {
 	{
 		selectUsedExtensions();
 		m_UsedExtensions.push_back(SelectAPIExtension());
+		//m_UsedExtensions.push_back("XR_KHR_vulkan_enable");
 		#ifdef XYZ_DEBUG
 			m_UsedExtensions.push_back(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		#endif
@@ -48,9 +71,8 @@ namespace XYZ {
 		info.next = nullptr;
 
 		XR_CHECK_RESULT(xrCreateInstance(&info, &m_Instance));
-		
-
 		TryGetSystem();
+		//createVulkanDevice();
 	}
 
 	OpenXRInstance::~OpenXRInstance()
@@ -110,6 +132,48 @@ namespace XYZ {
 			else
 			{
 				XYZ_CORE_WARN("Extension {} is not supported", extName);
+			}
+		}
+	}
+	void OpenXRInstance::createVulkanDevice()
+	{
+		{
+			PFN_xrGetVulkanInstanceExtensionsKHR pfnGetVulkanInstanceExtensionsKHR = nullptr;
+			XR_CHECK_RESULT(xrGetInstanceProcAddr(m_Instance, "xrGetVulkanInstanceExtensionsKHR",
+				reinterpret_cast<PFN_xrVoidFunction*>(&pfnGetVulkanInstanceExtensionsKHR)));
+
+			uint32_t extensionNamesSize = 0;
+			XR_CHECK_RESULT(pfnGetVulkanInstanceExtensionsKHR(m_Instance, m_SystemID, 0, &extensionNamesSize, nullptr));
+
+			std::vector<char> extensionNames(extensionNamesSize);
+			XR_CHECK_RESULT(pfnGetVulkanInstanceExtensionsKHR(m_Instance, m_SystemID, extensionNamesSize, &extensionNamesSize,
+				&extensionNames[0]));
+			{
+				// Note: This cannot outlive the extensionNames above, since it's just a collection of views into that string!
+				std::vector<const char*> extensions = ParseExtensionString(&extensionNames[0]);
+			}
+		}
+		{
+			PFN_xrGetVulkanDeviceExtensionsKHR pfnGetVulkanDeviceExtensionsKHR = nullptr;
+			XR_CHECK_RESULT(xrGetInstanceProcAddr(m_Instance, "xrGetVulkanDeviceExtensionsKHR",
+				reinterpret_cast<PFN_xrVoidFunction*>(&pfnGetVulkanDeviceExtensionsKHR)));
+
+			uint32_t deviceExtensionNamesSize = 0;
+			XR_CHECK_RESULT(pfnGetVulkanDeviceExtensionsKHR(m_Instance, m_SystemID, 0, &deviceExtensionNamesSize, nullptr));
+			std::vector<char> deviceExtensionNames(deviceExtensionNamesSize);
+			if (deviceExtensionNamesSize > 0) 
+			{
+				XR_CHECK_RESULT(pfnGetVulkanDeviceExtensionsKHR(m_Instance, m_SystemID, deviceExtensionNamesSize,
+					&deviceExtensionNamesSize, &deviceExtensionNames[0]));
+			}
+			{
+				// Note: This cannot outlive the extensionNames above, since it's just a collection of views into that string!
+				std::vector<const char*> extensions;
+
+				if (deviceExtensionNamesSize > 0) 
+				{
+					extensions = ParseExtensionString(&deviceExtensionNames[0]);
+				}
 			}
 		}
 	}

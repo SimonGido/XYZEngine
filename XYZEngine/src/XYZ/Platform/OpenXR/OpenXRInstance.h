@@ -2,6 +2,7 @@
 #include "OpenXR.h"
 
 #include <openxr/openxr.h>
+#include <vulkan/vulkan.h>
 
 namespace XYZ {
 
@@ -29,14 +30,16 @@ namespace XYZ {
 
 		XrInstance GetXrInstance() const { return m_Instance; }
 		XrSystemId GetXrSystemID() const { return m_SystemID; }
-
+		VkDevice GetVkDevice()	   const { return m_VkDevice; }
 	private:
 		static std::vector<XrExtensionProperties> listSupportedExtensions();
 		void selectUsedExtensions();
+		void createVulkanDevice();
 
 	private:
 		XrInstance				 m_Instance;
 		XrSystemId				 m_SystemID;
+		VkDevice				 m_VkDevice;
 		bool				     m_SystemCreated;
 
 		std::vector<const char*> m_UsedExtensions;
