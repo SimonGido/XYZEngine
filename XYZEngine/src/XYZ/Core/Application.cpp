@@ -54,17 +54,16 @@ namespace XYZ {
 			
 			// NOTE: this is probably not going to work on Oculus without Android studio
 			// NOTE: define in XYZEngine premake "XR_USE_PLATFORM_ANDROID"
-			/*
+			
 				OpenXRInstanceConfiguration config;
 				config.Version = OpenXRVersion{ 1, 0, 22 };
 				config.ApplicationName = "Test";
 				config.EngineName = "Test Engine";
-				config.Extensions.push_back(XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME);
-
-
+				//config.Extensions.push_back(XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME);
+			
 				Ref<OpenXRInstance> instance = Ref<OpenXRInstance>::Create(config);
 				Ref<OpenXRSession> session = Ref<OpenXRSession>::Create(instance);
-			*/
+			
 			if (specification.EnableImGui)
 			{			
 				m_ImGuiLayer = ImGuiLayer::Create();

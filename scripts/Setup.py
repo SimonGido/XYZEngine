@@ -25,5 +25,5 @@ if (premakeInstalled):
 
     print("\nSetup completed!")
 else:
-    print("Hazel requires Premake to generate project files.")
+    print("XYZEngine requires Premake to generate project files.")
 

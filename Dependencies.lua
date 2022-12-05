@@ -21,6 +21,7 @@ IncludeDir["ozz_animation"] = "%{wks.location}/XYZEngine/vendor/ozz-animation/in
 IncludeDir["entt"]  = "%{wks.location}/XYZEngine/vendor/entt/include"
 IncludeDir["cr"]  = "%{wks.location}/XYZEngine/vendor/cr"
 IncludeDir["OpenXR"] = "%{wks.location}/XYZEngine/vendor/OpenXR-SDK/include"
+IncludeDir["OpenXR-Oculus"] = "%{wks.location}/XYZEngine/vendor/Oculus-OpenXR-Mobile-SDK/OpenXR/Include"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 
 LibraryDir = {}
@@ -29,16 +30,12 @@ LibraryDir["mono"] = "vendor/mono/lib/Debug/mono-2.0-sgen.lib"
 LibraryDir["VulkanSDK"] = "%{VULKAN_SDK}/Lib"
 LibraryDir["VulkanSDK_Debug"] = "%{VULKAN_SDK}/Lib"
 LibraryDir["VulkanSDK_DebugDLL"] = "%{VULKAN_SDK}/Bin"
-LibraryDir["OpenXR_Debug"] = "%{wks.location}/XYZEngine/vendor/OpenXR-SDK/src/loader/Debug"
-LibraryDir["OpenXR_Release"] = "%{wks.location}/XYZEngine/vendor/OpenXR-SDK/src/loader/Release"
 
 Library = {}
 Library["Assimp_Debug"] = "%{wks.location}/XYZEngine/vendor/assimp/bin/Debug/assimp-vc142-mtd.lib"
 Library["Assimp_Release"] = "%{wks.location}/XYZEngine/vendor/assimp/bin/Release/assimp-vc142-mt.lib"
 Library["Vulkan"] = "%{LibraryDir.VulkanSDK}/vulkan-1.lib"
 Library["VulkanUtils"] = "%{LibraryDir.VulkanSDK}/VkLayer_utils.lib"
-Library["OpenXR_Debug"] = "%{LibraryDir.OpenXR_Debug}/openxr_loaderd.lib"
-Library["OpenXR_Release"] = "%{LibraryDir.OpenXR}/openxr_loader.lib"
 
 Library["ShaderC_Debug"] = "%{LibraryDir.VulkanSDK}/shaderc_sharedd.lib"
 Library["SPIRV_Cross_Debug"] = "%{LibraryDir.VulkanSDK}/spirv-cross-cored.lib"

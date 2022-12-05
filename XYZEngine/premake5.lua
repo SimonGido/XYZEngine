@@ -112,6 +112,7 @@ project "XYZEngine"
 			"ozz_base",
 			"ozz_animation",
 			"ozz_animation_offline",   
+			"OpenXR-SDK",
 			"%{LibraryDir.mono}",
 			"%{Library.Vulkan}",
 			"%{Library.VulkanUtils}"
@@ -143,8 +144,7 @@ project "XYZEngine"
 					"%{Library.Assimp_Debug}",
 					"%{Library.ShaderC_Debug}",
 					"%{Library.SPIRV_Cross_Debug}",
-					"%{Library.SPIRV_Cross_GLSL_Debug}",
-					"%{Library.OpenXR_Debug}"
+					"%{Library.SPIRV_Cross_GLSL_Debug}"
 				}
 
 
@@ -158,6 +158,5 @@ project "XYZEngine"
 					"%{Library.Assimp_Release}",
 					"%{Library.ShaderC_Release}",
 					"%{Library.SPIRV_Cross_Release}",
-					"%{Library.SPIRV_Cross_GLSL_Release}",
-					"%{Library.OpenXR_Release}"
+					"%{Library.SPIRV_Cross_GLSL_Release}"
 				}
