@@ -37,35 +37,12 @@ namespace XYZ {
 	}
 	XrSession OpenXRSession::createVulkanSession(const Ref<OpenXRInstance>& instance)
 	{
-		PFN_xrGetVulkanGraphicsRequirements2KHR getVulkanGraphicsRequirements;
-		XR_CHECK_RESULT(xrGetInstanceProcAddr(instance->GetXrInstance(), "xrGetVulkanGraphicsRequirements2KHR", (PFN_xrVoidFunction*)&getVulkanGraphicsRequirements));
-
-		
-		XrGraphicsRequirementsVulkan2KHR graphicsRequirements;
-		graphicsRequirements.type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN2_KHR;
-	
-		XR_CHECK_RESULT(getVulkanGraphicsRequirements(instance->GetXrInstance(), instance->GetXrSystemID(), &graphicsRequirements));
-
-		
-		
-		PFN_xrGetVulkanGraphicsDevice2KHR getVulkanGraphicsDevice;
-		XR_CHECK_RESULT(xrGetInstanceProcAddr(instance->GetXrInstance(), "xrGetVulkanGraphicsDevice2KHR", (PFN_xrVoidFunction*)&getVulkanGraphicsDevice));
-		
 		Ref<VulkanContext> vulkanContext = Renderer::GetAPIContext().As<VulkanContext>();
 		Ref<VulkanPhysicalDevice> physicalDevice = vulkanContext->GetDevice()->GetPhysicalDevice();
-		
-		XrVulkanGraphicsDeviceGetInfoKHR info;
-		info.type = XR_TYPE_VULKAN_GRAPHICS_DEVICE_GET_INFO_KHR;
-		info.systemId = instance->GetXrSystemID();
-		info.vulkanInstance = vulkanContext->GetInstance();
-		
-		VkPhysicalDevice vulkanPhysicalDevice;
-		XR_CHECK_RESULT(getVulkanGraphicsDevice(instance->GetXrInstance(), &info, &vulkanPhysicalDevice));
-
 
 		XrGraphicsBindingVulkan2KHR graphicsBindings;
 		graphicsBindings.type = XR_TYPE_GRAPHICS_BINDING_VULKAN2_KHR;
-		graphicsBindings.device = vulkanContext->GetDevice()->GetVulkanDevice();
+		graphicsBindings.device = vulkanContext->GetCurrentDevice()->GetVulkanDevice();
 		graphicsBindings.physicalDevice = physicalDevice->GetVulkanPhysicalDevice();
 		graphicsBindings.instance = vulkanContext->GetInstance();
 		graphicsBindings.queueFamilyIndex = physicalDevice->GetQueueFamilyIndices().Presentation;

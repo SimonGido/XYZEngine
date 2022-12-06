@@ -205,3 +205,37 @@ namespace XYZ {
 	XrResult res = (f);\
 	::XYZ::Utils::OpenXRCheckResult(res);\
 }
+
+namespace XYZ {
+	namespace Utils {
+		template <typename ...Args>
+		inline XrResult ExecuteFunctionXr(XrInstance instance, const char* funcName, Args ...args)
+		{
+			typedef XrResult(XRAPI_PTR* Func)(Args ...args);
+			Func func = nullptr;
+			XR_CHECK_RESULT(xrGetInstanceProcAddr(instance, funcName,
+				reinterpret_cast<PFN_xrVoidFunction*>(&func)));
+
+			return func(std::forward<Args>(args)...);
+		}
+
+		template <typename R, typename ...Args>
+		inline std::vector<R> ExecuteFunctionBufferXr(XrInstance instance, const char* funcName, Args ...args)
+		{
+			typedef XrResult(XRAPI_PTR* Func)(Args ...args, uint32_t, uint32_t*, R*);
+
+			Func func = nullptr;
+			XR_CHECK_RESULT(xrGetInstanceProcAddr(instance, funcName,
+				reinterpret_cast<PFN_xrVoidFunction*>(&func)));
+
+
+			uint32_t count = 0;
+			XR_CHECK_RESULT(func(std::forward<Args>(args)..., 0, &count, nullptr));
+			
+			std::vector<R> buffer(count);
+
+			XR_CHECK_RESULT(func(std::forward<Args>(args)..., count, &count, buffer.data()));
+			return buffer;
+		}
+	}
+}

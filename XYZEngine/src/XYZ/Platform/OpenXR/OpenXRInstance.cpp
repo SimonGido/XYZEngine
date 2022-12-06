@@ -6,9 +6,32 @@
 
 #include "XYZ/API/Vulkan/VulkanContext.h"
 
-#include <openxr/openxr_platform.h>
+
 
 namespace XYZ {
+
+	static XrBool32 XRAPI_CALL XrDebugReportCallback(
+		XrDebugUtilsMessageSeverityFlagsEXT              messageSeverity,
+		XrDebugUtilsMessageTypeFlagsEXT                  messageTypes,
+		const XrDebugUtilsMessengerCallbackDataEXT* callbackData,
+		void* userData
+	)
+	{
+		if (messageSeverity | XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+		{
+			XYZ_CORE_INFO("OpenXRDebugCallback:\n  Function: {0}\n  Message: {1}", callbackData->functionName, callbackData->message);
+		}
+		else if (messageSeverity | XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+		{
+			XYZ_CORE_WARN("OpenXRDebugCallback:\n  Function: {0}\n  Message: {1}", callbackData->functionName, callbackData->message);
+		}
+		else if (messageSeverity | XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+		{
+			XYZ_CORE_ERROR("OpenXRDebugCallback:\n  Function: {0}\n  Message: {1}", callbackData->functionName, callbackData->message);
+		}
+			
+		return XR_FALSE;
+	}
 
 	std::vector<const char*> ParseExtensionString(char* names) 
 	{
@@ -43,9 +66,9 @@ namespace XYZ {
 		m_RequestedExtensions(config.Extensions),
 		m_SystemCreated(false)
 	{
+
 		selectUsedExtensions();
 		m_UsedExtensions.push_back(SelectAPIExtension());
-		//m_UsedExtensions.push_back("XR_KHR_vulkan_enable");
 		#ifdef XYZ_DEBUG
 			m_UsedExtensions.push_back(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
 		#endif
@@ -53,7 +76,7 @@ namespace XYZ {
 		auto version = XR_MAKE_VERSION(config.Version.Major, config.Version.Minor, config.Version.Patch);
 		
 		XrInstanceCreateInfo info;
-
+		
 		info.type = XR_TYPE_INSTANCE_CREATE_INFO;
 		memcpy(info.applicationInfo.applicationName, config.ApplicationName.c_str(), config.ApplicationName.size());
 		info.applicationInfo.applicationName[config.ApplicationName.size()] = '\0';
@@ -72,12 +95,25 @@ namespace XYZ {
 
 		XR_CHECK_RESULT(xrCreateInstance(&info, &m_Instance));
 		TryGetSystem();
-		//createVulkanDevice();
+		getGraphicsRequirements(); // It must be called at least once before creating session
+	
+#ifdef XYZ_DEBUG
+		setupDebugCallback();
+#endif
 	}
 
 	OpenXRInstance::~OpenXRInstance()
 	{
+#ifdef XYZ_DEBUG
+		XR_CHECK_RESULT(Utils::ExecuteFunctionXr(m_Instance, "xrDestroyDebugUtilsMessengerEXT",
+			// Args
+			m_DebugMessenger
+		));
+#endif
+
 		XR_CHECK_RESULT(xrDestroyInstance(m_Instance));
+		PFN_xrDestroyDebugUtilsMessengerEXT;
+
 	}
 
 	bool OpenXRInstance::TryGetSystem()
@@ -112,6 +148,20 @@ namespace XYZ {
 
 		return extensions;
 	}
+	XrGraphicsRequirementsVulkan2KHR OpenXRInstance::getGraphicsRequirements() const
+	{
+		PFN_xrGetVulkanGraphicsRequirements2KHR getVulkanGraphicsRequirements;
+		XR_CHECK_RESULT(xrGetInstanceProcAddr(m_Instance, "xrGetVulkanGraphicsRequirements2KHR", (PFN_xrVoidFunction*)&getVulkanGraphicsRequirements));
+
+
+		XrGraphicsRequirementsVulkan2KHR graphicsRequirements;
+		graphicsRequirements.type = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN2_KHR;
+
+		XR_CHECK_RESULT(getVulkanGraphicsRequirements(m_Instance, m_SystemID, &graphicsRequirements));
+
+
+		return graphicsRequirements;
+	}
 	void OpenXRInstance::selectUsedExtensions()
 	{
 		auto supportedExtensions = listSupportedExtensions();
@@ -135,46 +185,31 @@ namespace XYZ {
 			}
 		}
 	}
-	void OpenXRInstance::createVulkanDevice()
+	void OpenXRInstance::setupDebugCallback()
 	{
-		{
-			PFN_xrGetVulkanInstanceExtensionsKHR pfnGetVulkanInstanceExtensionsKHR = nullptr;
-			XR_CHECK_RESULT(xrGetInstanceProcAddr(m_Instance, "xrGetVulkanInstanceExtensionsKHR",
-				reinterpret_cast<PFN_xrVoidFunction*>(&pfnGetVulkanInstanceExtensionsKHR)));
+		
+		XrDebugUtilsMessengerCreateInfoEXT messengerCreateInfo;
+		messengerCreateInfo.type = XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+		messengerCreateInfo.messageTypes =
+			XR_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
+			| XR_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
+			| XR_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT
+			| XR_DEBUG_UTILS_MESSAGE_TYPE_CONFORMANCE_BIT_EXT;
 
-			uint32_t extensionNamesSize = 0;
-			XR_CHECK_RESULT(pfnGetVulkanInstanceExtensionsKHR(m_Instance, m_SystemID, 0, &extensionNamesSize, nullptr));
+		messengerCreateInfo.messageSeverities =
+			XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT |
+			XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+			XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+			XR_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
 
-			std::vector<char> extensionNames(extensionNamesSize);
-			XR_CHECK_RESULT(pfnGetVulkanInstanceExtensionsKHR(m_Instance, m_SystemID, extensionNamesSize, &extensionNamesSize,
-				&extensionNames[0]));
-			{
-				// Note: This cannot outlive the extensionNames above, since it's just a collection of views into that string!
-				std::vector<const char*> extensions = ParseExtensionString(&extensionNames[0]);
-			}
-		}
-		{
-			PFN_xrGetVulkanDeviceExtensionsKHR pfnGetVulkanDeviceExtensionsKHR = nullptr;
-			XR_CHECK_RESULT(xrGetInstanceProcAddr(m_Instance, "xrGetVulkanDeviceExtensionsKHR",
-				reinterpret_cast<PFN_xrVoidFunction*>(&pfnGetVulkanDeviceExtensionsKHR)));
+		messengerCreateInfo.userCallback = XrDebugReportCallback;
+		messengerCreateInfo.userData = nullptr;
 
-			uint32_t deviceExtensionNamesSize = 0;
-			XR_CHECK_RESULT(pfnGetVulkanDeviceExtensionsKHR(m_Instance, m_SystemID, 0, &deviceExtensionNamesSize, nullptr));
-			std::vector<char> deviceExtensionNames(deviceExtensionNamesSize);
-			if (deviceExtensionNamesSize > 0) 
-			{
-				XR_CHECK_RESULT(pfnGetVulkanDeviceExtensionsKHR(m_Instance, m_SystemID, deviceExtensionNamesSize,
-					&deviceExtensionNamesSize, &deviceExtensionNames[0]));
-			}
-			{
-				// Note: This cannot outlive the extensionNames above, since it's just a collection of views into that string!
-				std::vector<const char*> extensions;
-
-				if (deviceExtensionNamesSize > 0) 
-				{
-					extensions = ParseExtensionString(&deviceExtensionNames[0]);
-				}
-			}
-		}
+		XR_CHECK_RESULT(Utils::ExecuteFunctionXr(m_Instance, "xrCreateDebugUtilsMessengerEXT",
+			//Args
+			m_Instance,
+			&messengerCreateInfo,
+			&m_DebugMessenger
+		));
 	}
 }
