@@ -25,14 +25,22 @@ namespace XYZ {
 	class XYZ_API OpenXRInstance : public RefCount
 	{
 	public:
+		using XrEventCallbackFn = std::function<void(const XrEventDataBaseHeader*)>;
+
 		OpenXRInstance(const OpenXRInstanceConfiguration& config);
 		~OpenXRInstance();
 
 		bool TryGetSystem();
 
+		void ProcessEvents();
+
 
 		XrInstance GetXrInstance() const { return m_Instance; }
 		XrSystemId GetXrSystemID() const { return m_SystemID; }
+
+
+		XrEventCallbackFn EventCallback;
+
 	private:
 		static std::vector<XrExtensionProperties> listSupportedExtensions();
 		
@@ -40,10 +48,12 @@ namespace XYZ {
 		void selectUsedExtensions();
 		void setupDebugCallback();
 
+		const XrEventDataBaseHeader* tryReadNextEvent();
 	private:
 		XrInstance				 m_Instance;
 		XrSystemId				 m_SystemID;
 		XrDebugUtilsMessengerEXT m_DebugMessenger;
+		XrEventDataBuffer		 m_EventDataBuffer;
 		bool				     m_SystemCreated;
 
 		std::vector<const char*> m_UsedExtensions;

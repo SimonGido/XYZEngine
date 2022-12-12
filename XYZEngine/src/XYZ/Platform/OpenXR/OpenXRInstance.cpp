@@ -135,6 +135,18 @@ namespace XYZ {
 		return true;
 	}
 
+	void OpenXRInstance::ProcessEvents()
+	{
+		XrEventDataBuffer eventDataBuffer;
+		eventDataBuffer.type = XR_TYPE_EVENT_DATA_BUFFER;
+
+		while (const XrEventDataBaseHeader* event = tryReadNextEvent())
+		{
+			if (EventCallback)
+				EventCallback(event);
+		}
+	}
+
 	std::vector<XrExtensionProperties> OpenXRInstance::listSupportedExtensions()
 	{
 		uint32_t extensionCount = 0;
@@ -211,5 +223,24 @@ namespace XYZ {
 			&messengerCreateInfo,
 			&m_DebugMessenger
 		));
+	}
+	const XrEventDataBaseHeader* OpenXRInstance::tryReadNextEvent()
+	{
+		XrEventDataBaseHeader* baseHeader = reinterpret_cast<XrEventDataBaseHeader*>(&m_EventDataBuffer);
+		*baseHeader = { XR_TYPE_EVENT_DATA_BUFFER };
+		const XrResult xr = xrPollEvent(m_Instance, &m_EventDataBuffer);
+		if (xr == XR_SUCCESS) 
+		{
+			if (baseHeader->type == XR_TYPE_EVENT_DATA_EVENTS_LOST) 
+			{
+				const XrEventDataEventsLost* const eventsLost = reinterpret_cast<const XrEventDataEventsLost*>(baseHeader);
+				XYZ_CORE_INFO("{} events lost", eventsLost->lostEventCount);
+			}
+			return baseHeader;
+		}
+		if (xr == XR_EVENT_UNAVAILABLE) 
+		{
+			return nullptr;
+		}
 	}
 }

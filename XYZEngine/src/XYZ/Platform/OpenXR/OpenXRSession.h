@@ -16,14 +16,20 @@ namespace XYZ {
 		void BeginSession();
 		void EndSession();
 
-		XrSession GetXrSession() const { return m_Session; }
 
+		XrSession GetXrSession() const { return m_Session; }
+		XrSpace   GetXrSpace() const { return m_Space; }
+		bool IsRunning() const { return m_Running; }
 	private:
 		static XrSession createSession(const Ref<OpenXRInstance>& instance);
 
 		static XrSession createVulkanSession(const Ref<OpenXRInstance>& instance);
 
+		void createSpace();
+		
 	private:
 		XrSession m_Session;
+		XrSpace   m_Space;
+		bool	  m_Running;
 	};
 }

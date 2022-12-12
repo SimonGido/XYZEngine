@@ -9,11 +9,15 @@
 
 namespace XYZ {
 	OpenXRSession::OpenXRSession(const Ref<OpenXRInstance>& instance)
+		:
+		m_Running(false)
 	{	
 		m_Session = createSession(instance);
+		createSpace();
 	}
 	OpenXRSession::~OpenXRSession()
 	{
+		XR_CHECK_RESULT(xrDestroySpace(m_Space));
 		XR_CHECK_RESULT(xrDestroySession(m_Session));
 	}
 	void OpenXRSession::BeginSession()
@@ -22,11 +26,14 @@ namespace XYZ {
 		beginInfo.type = XR_TYPE_SESSION_BEGIN_INFO;
 		beginInfo.primaryViewConfigurationType = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 		XR_CHECK_RESULT(xrBeginSession(m_Session, &beginInfo));
+		m_Running = true;
 	}
 	void OpenXRSession::EndSession()
 	{
 		XR_CHECK_RESULT(xrEndSession(m_Session));
+		m_Running = false;
 	}
+
 	XrSession OpenXRSession::createSession(const Ref<OpenXRInstance>& instance)
 	{
 		switch (Renderer::GetAPI())
@@ -59,5 +66,17 @@ namespace XYZ {
 
 		XR_CHECK_RESULT(xrCreateSession(instance->GetXrInstance(), &sessionCreateInfo, &session));
 		return session;
+	}
+	void OpenXRSession::createSpace()
+	{
+		XrReferenceSpaceCreateInfo spaceCreateInfo;
+		spaceCreateInfo.type = XR_TYPE_REFERENCE_SPACE_CREATE_INFO;
+		spaceCreateInfo.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_VIEW;
+
+		spaceCreateInfo.poseInReferenceSpace.position = { 0.0f, 0.0f, 0.0f };
+		spaceCreateInfo.poseInReferenceSpace.orientation = { 1.0f, 0.0f, 0.0f, 0.0f };
+
+
+		XR_CHECK_RESULT(xrCreateReferenceSpace(m_Session, &spaceCreateInfo, &m_Space));
 	}
 }
