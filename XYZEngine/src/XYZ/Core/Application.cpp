@@ -232,7 +232,6 @@ namespace XYZ {
 
 	void Application::onRunWindow()
 	{
-
 		OpenXRInstanceConfiguration config;
 		config.Version = OpenXRVersion{ 1, 0, 22 };
 		config.ApplicationName = "Test";

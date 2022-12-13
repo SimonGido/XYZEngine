@@ -23,7 +23,7 @@ namespace XYZ {
 			glm::mat4					 Transform;
 		};
 
-		struct CommandData
+		struct XYZ_API CommandData
 		{
 			static constexpr uint32_t sc_TransformCount = 1024;
 

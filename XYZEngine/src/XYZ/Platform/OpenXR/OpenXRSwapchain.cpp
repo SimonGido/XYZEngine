@@ -165,7 +165,7 @@ namespace XYZ {
 		XrSwapchainCreateInfo createInfo;
 		createInfo.type = XR_TYPE_SWAPCHAIN_CREATE_INFO;
 
-		createInfo.arraySize = 2;
+		createInfo.arraySize = static_cast<uint32_t>(m_ConfigurationViews.size());
 		createInfo.format = m_ColorFormat;
 		createInfo.width = view.recommendedImageRectWidth;
 		createInfo.height = view.recommendedImageRectHeight;
