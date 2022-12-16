@@ -97,7 +97,6 @@ namespace XYZ {
 			viewport.width = width;
 			viewport.height = -static_cast<float>(height);
 
-
 			VkRenderPassBeginInfo renderPassBeginInfo = {};
 			renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 			renderPassBeginInfo.pNext = nullptr;
@@ -106,7 +105,7 @@ namespace XYZ {
 			renderPassBeginInfo.renderArea.extent.width = width;
 			renderPassBeginInfo.renderArea.extent.height = height;
 			renderPassBeginInfo.framebuffer = framebuffer->GetFramebuffer();
-
+			
 			renderPassBeginInfo.clearValueCount = framebuffer->GetVulkanClearValues().size();
 			renderPassBeginInfo.pClearValues = framebuffer->GetVulkanClearValues().data();
 		

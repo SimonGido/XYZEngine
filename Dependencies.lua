@@ -20,6 +20,8 @@ IncludeDir["delaunator"] = "%{wks.location}/XYZEngine/vendor/delaunator/include"
 IncludeDir["ozz_animation"] = "%{wks.location}/XYZEngine/vendor/ozz-animation/include"
 IncludeDir["entt"]  = "%{wks.location}/XYZEngine/vendor/entt/include"
 IncludeDir["cr"]  = "%{wks.location}/XYZEngine/vendor/cr"
+IncludeDir["OpenXR"] = "%{wks.location}/XYZEngine/vendor/OpenXR-SDK/include"
+IncludeDir["OpenXR-Oculus"] = "%{wks.location}/XYZEngine/vendor/Oculus-OpenXR-Mobile-SDK/OpenXR/Include"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 
 LibraryDir = {}

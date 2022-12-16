@@ -11,7 +11,7 @@
 
 namespace XYZ {
 	namespace Editor {
-		
+
 		EditorLayer::EditorLayer()
 		{
 		}
@@ -100,7 +100,6 @@ namespace XYZ {
 		}
 		void EditorLayer::OnUpdate(Timestep ts)
 		{
-			
 			m_EditorManager.OnUpdate(ts);
 			
 			if (m_Scene->GetState() == SceneState::Edit)

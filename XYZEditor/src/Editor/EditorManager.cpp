@@ -4,6 +4,8 @@
 #include "XYZ/Core/Application.h"
 
 #include "XYZ/Scene/SceneSerializer.h"
+#include "XYZ/Project/ProjectSerializer.h"
+
 #include "XYZ/Utils/FileSystem.h"
 
 #include "Editor/Event/EditorEvents.h"
@@ -88,13 +90,22 @@ namespace XYZ {
 				if (ImGui::BeginMenu("File"))
 				{
 					if (ImGui::MenuItem("Open...", "Ctrl+O"))
-					{}
+					{
+						
+					}
 
 					if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
 					{
-						std::string filepath = FileSystem::OpenFile(Application::Get().GetWindow().GetNativeWindow(), ".xyz");
-						SceneSerializer serializer;
-						serializer.Serialize(filepath, m_Scene);
+						std::string filepath = FileSystem::OpenFile(Application::Get().GetWindow().GetNativeWindow(), ".xyzproj");
+						std::filesystem::path projectPath(filepath);
+						Project::SaveActive(projectPath);
+					}
+
+					if (ImGui::MenuItem("New Project..."))
+					{
+						std::string directory = FileSystem::OpenFolder(Application::Get().GetWindow().GetNativeWindow(), "");
+						Project::New();
+
 					}
 					if (ImGui::MenuItem("Exit"))
 					{

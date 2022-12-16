@@ -7,6 +7,8 @@ project "XYZEditor"
 		targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
 		objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 		
+		XYZEngineDll = "%{wks.location}/bin/" .. outputdir .."/XYZEngine/XYZEngine.dll"
+
 		files
 		{
 			"src/**.h",
@@ -78,3 +80,10 @@ project "XYZEditor"
 			'{COPY} "Assets" "%{cfg.targetdir}/Assets"',
 			'{COPY} "mono" "%{cfg.targetdir}/mono"'
 		}
+
+		filter{}
+		filter "options:sharedimport"
+			postbuildcommands
+			{
+				'{COPY} "%{XYZEngineDll}" "%{wks.location}/XYZEditor"'
+			}

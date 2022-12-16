@@ -135,15 +135,15 @@ namespace XYZ {
 
 		struct InstanceMeshDrawCommand
 		{
-			Ref<Mesh>			  Mesh;
-			Ref<MaterialAsset>	  MaterialAsset;
-			Ref<MaterialInstance> OverrideMaterial;
-			Ref<Pipeline>		  Pipeline;
-			glm::mat4			  Transform;
-
-			std::vector<std::byte> InstanceData;
-			uint32_t			   InstanceCount = 0;
-			uint32_t			   InstanceOffset = 0;
+			Ref<Mesh>					 Mesh;
+			Ref<MaterialAsset>			 MaterialAsset;
+			Ref<MaterialInstance>		 OverrideMaterial;
+			Ref<Pipeline>				 Pipeline;
+			glm::mat4					 Transform;
+	
+			std::vector<std::byte>		 InstanceData;
+			uint32_t					 InstanceCount = 0;
+			uint32_t					 InstanceOffset = 0;
 		};
 
 		struct IndirectMeshDrawCommandOverride

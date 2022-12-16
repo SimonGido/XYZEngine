@@ -14,6 +14,9 @@
 
 #include "XYZ/ImGui/ImGui.h"
 
+#include "XYZ/Platform/OpenXR/OpenXRInstance.h"
+#include "XYZ/Platform/OpenXR/OpenXRSession.h"
+#include "XYZ/Platform/OpenXR/OpenXRSwapchain.h"
 
 #include <GLFW/glfw3.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -38,15 +41,17 @@ namespace XYZ {
 		s_Application = this;
 		m_Running = true;
 		m_ImGuiLayer = nullptr;
+		
 
 		AssetManager::Init();
 		if (specification.WindowCreate)
 		{		
 			Renderer::Init();
+			
 			m_Window = Window::Create(Renderer::GetAPIContext());
 			m_Window->RegisterCallback(Hook(&Application::OnEvent, this));
 			m_Window->SetVSync(false);
-				
+			
 			if (specification.EnableImGui)
 			{			
 				m_ImGuiLayer = ImGuiLayer::Create();
@@ -227,17 +232,53 @@ namespace XYZ {
 
 	void Application::onRunWindow()
 	{
+		OpenXRInstanceConfiguration config;
+		config.Version = OpenXRVersion{ 1, 0, 22 };
+		config.ApplicationName = "Test";
+		config.EngineName = "Test Engine";
+
+		Ref<OpenXRInstance> instance = Ref<OpenXRInstance>::Create(config);
+
+		Ref<OpenXRSession> session = Ref<OpenXRSession>::Create(instance);
+
+		Ref<OpenXRSwapchain> swapchain = Ref<OpenXRSwapchain>::Create(instance, session);
+
+		instance->EventCallback = [session](const XrEventDataBaseHeader* event) mutable {
+			if (event->type == XR_TYPE_EVENT_DATA_SESSION_STATE_CHANGED)
+			{
+				XrEventDataSessionStateChanged* tmp = (XrEventDataSessionStateChanged*)event;
+				auto sessionState = (*tmp).state;
+				
+				if (sessionState == XR_SESSION_STATE_READY)
+				{
+					session->BeginSession();
+				}
+				else if (sessionState == XR_SESSION_STATE_STOPPING)
+				{
+					session->EndSession();
+				}
+				else if (sessionState == XR_SESSION_STATE_LOSS_PENDING)
+				{
+
+				}
+			}
+		};
+
 		while (m_Running)
 		{
 			XYZ_PROFILE_FRAME("MainThread");
 			updateTimestep();
 			m_Window->ProcessEvents();
+			instance->ProcessEvents();
+
 			if (!m_Minimized)
 			{
 				Renderer::BlockRenderThread(); // Sync before new frame				
 				Renderer::Render();
 
 				m_Window->BeginFrame();
+				if (session->IsRunning())
+					swapchain->BeginFrame();
 				Renderer::BeginFrame();
 
 				PluginManager::Update(m_Timestep);
@@ -255,6 +296,8 @@ namespace XYZ {
 				}
 				Renderer::EndFrame();
 				m_Window->SwapBuffers();
+				if (session->IsRunning())
+					swapchain->EndFrame();
 			}
 			AssetManager::Update(m_Timestep);
 		}

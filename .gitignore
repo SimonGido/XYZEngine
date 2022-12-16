@@ -11,6 +11,7 @@ XYZEditor/Assets/Scripts/XYZScript.dll
 XYZEditor/Assets/Scripts/XYZScript.pdb
 XYZEditor/Assets/Scripts/XYZScriptCore.dll
 XYZEditor/Assets/Scripts/XYZScriptCore.pdb
+XYZEditor/XYZEngine.dll
 __pycache__
 Intermediates/
 
@@ -34,5 +35,6 @@ Intermediates/
 
 # Makefiles
 **/Makefile
+
 
 

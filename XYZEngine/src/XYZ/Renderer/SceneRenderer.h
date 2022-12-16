@@ -74,7 +74,7 @@ namespace XYZ {
 		void SetGridProperties(const GridProperties& props);
 
 		void BeginScene(const SceneRendererCamera& camera);
-		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::vec3& viewPosition);
+		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::mat4& projection);
 		void EndScene();
 
 		void SubmitBillboard(const Ref<MaterialAsset>& material, const Ref<SubTexture>& subTexture, uint32_t sortLayer, const glm::vec4& color, const glm::vec3& position, const glm::vec2& size);
@@ -129,14 +129,14 @@ namespace XYZ {
 		void preRender();
 		void renderGrid();
 
-		void updateUniformBufferSet();
+		void updateBufferSets();
 	private:
 		using TransformData = GeometryRenderQueue::TransformData;
 
 		UBCameraData	 m_CameraDataUB;
-		UBPointLights3D  m_PointsLights3DUB;
 		UBRendererData   m_RendererDataUB;
 		
+		SSBOPointLights3D		   m_PointsLights3DSSBO;
 		SSBOBoneTransformData	   m_BoneTransformSSBO;
 		std::vector<TransformData> m_TransformData;
 		std::vector<std::byte>	   m_InstanceData;

@@ -10,7 +10,6 @@ namespace XYZ {
 	{
 		std::string  Name;
 		VariableType Type;
-		uint32_t     Size = 0; // only when adding structs
 		bool		 IsArray = false;
 	};
 

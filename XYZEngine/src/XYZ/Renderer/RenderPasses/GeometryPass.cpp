@@ -51,6 +51,13 @@ namespace XYZ {
 		commandBuffer->EndTimestampQuery(depthPassQuery);
 	}
 
+	void GeometryPass::SubmitCompute(Ref<PrimaryRenderCommandBuffer> commandBuffer, GeometryRenderQueue& queue)
+	{
+		XYZ_PROFILE_FUNC("GeometryPass::SubmitCompute");
+
+		submitComputeCommands(queue, commandBuffer); // Must be called outside render pass
+	}
+
 
 	void GeometryPass::Submit(
 		Ref<PrimaryRenderCommandBuffer> commandBuffer,
@@ -60,8 +67,6 @@ namespace XYZ {
 	)
 	{
 		XYZ_PROFILE_FUNC("GeometryPass::Submit");
-
-		submitComputeCommands(queue, commandBuffer); // Must be called outside render pass
 
 		// Geometry
 		uint32_t geometryPassQuery = commandBuffer->BeginTimestampQuery();

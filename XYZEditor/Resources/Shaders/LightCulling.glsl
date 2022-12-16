@@ -6,27 +6,14 @@
 // #type compute
 #version 450 core
 
-const int MAX_POINT_LIGHTS = 1024;
+#include "Resources/Shaders/Includes/PBR.glsl"
 
 layout(std140, binding = 0) uniform Camera
 {
-	mat4 u_ViewProjectionMatrix;
-	mat4 u_ProjectionMatrix;
-	mat4 u_ViewMatrix;
+	mat4 u_ViewProjection;
+	mat4 u_Projection;
+	mat4 u_View;
 };
-
-struct PointLight
-{
-	vec3  Position;
-	float Multiplier;
-	vec3  Radiance;
-	float MinRadius;
-	float Radius;
-	float Falloff;
-	float LightSize;
-	bool  CastsShadows;
-};
-
 
 layout(push_constant) uniform ScreenData
 {
@@ -34,7 +21,7 @@ layout(push_constant) uniform ScreenData
 } u_ScreenData;
 
 
-layout(std140, binding = 2) uniform PointLightsData
+layout(std140, binding = 2) buffer buffer_PointLightsData
 {
 	uint NumberPointLights;
 	PointLight PointLights[MAX_POINT_LIGHTS];
@@ -82,7 +69,7 @@ void main()
 	vec2 tc = vec2(location) / u_ScreenData.u_ScreenSize;
 	float depth = texture(u_PreDepthMap, tc).r;
 	// Linearize depth value (keeping in mind Vulkan depth is 0->1 and we're using GLM_FORCE_DEPTH_ZERO_TO_ONE)
-	depth = u_ProjectionMatrix[3][2] / (depth + u_ProjectionMatrix[2][2]);
+	depth = u_Projection[3][2] / (depth + u_Projection[2][2]);
 
 	// Convert depth to uint so we can do atomic min and max comparisons between the threads
 	uint depthInt = floatBitsToUint(depth);
@@ -113,14 +100,14 @@ void main()
 		// Transform the first four planes
 		for (uint i = 0; i < 4; i++)
 		{
-			frustumPlanes[i] *= u_ViewProjectionMatrix;
+			frustumPlanes[i] *= u_ViewProjection;
 			frustumPlanes[i] /= length(frustumPlanes[i].xyz);
 		}
 
 		// Transform the depth planes
-		frustumPlanes[4] *= u_ViewMatrix;
+		frustumPlanes[4] *= u_View;
 		frustumPlanes[4] /= length(frustumPlanes[4].xyz);
-		frustumPlanes[5] *= u_ViewMatrix;
+		frustumPlanes[5] *= u_View;
 		frustumPlanes[5] /= length(frustumPlanes[5].xyz);
 	}
 
@@ -129,13 +116,14 @@ void main()
 	// Step 3: Cull lights.
 	// Parallelize the threads against the lights now.
 	// Can handle 256 simultaniously. Anymore lights than that and additional passes are performed
+	uint numberPointLights = min(NumberPointLights, MAX_POINT_LIGHTS); // If we write to buffer from compute shaders
 	uint threadCount = TILE_SIZE * TILE_SIZE;
-	uint passCount = (NumberPointLights + threadCount - 1) / threadCount;
+	uint passCount = (numberPointLights + threadCount - 1) / threadCount;
 	for (uint i = 0; i < passCount; i++)
 	{
 		// Get the lightIndex to test for this thread / pass. If the index is >= light count, then this thread can stop testing lights
 		uint lightIndex = i * threadCount + gl_LocalInvocationIndex;
-		if (lightIndex >= NumberPointLights)
+		if (lightIndex >= numberPointLights)
 			break;
 
 		vec4 position = vec4(PointLights[lightIndex].Position, 1.0f);

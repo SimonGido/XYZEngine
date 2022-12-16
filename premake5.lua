@@ -17,15 +17,19 @@ newoption
 }
 
 workspace "XYZEngine"
-		architecture "x64"
 		startproject "XYZEditor"
+		
+		configurations { "Debug", "Release", "Debug_Arm64", "Release_Arm64" }
 
-		configurations
-		{
-			"Debug",
-			"Release"
-		}
+		filter "configurations:Debug"
+			architecture "x64"
+		filter "configurations:Release"
+			architecture "x64"
+		filter "configurations:*Arm64"
+			architecture "ARM64"
 
+		filter{}
+		
 		flags
 		{
 			"MultiProcessorCompile"

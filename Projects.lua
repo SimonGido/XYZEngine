@@ -11,6 +11,7 @@ group "Dependencies"
 		include "XYZEngine/vendor/box2d"
 		include "XYZEngine/vendor/optick"
 		include "XYZEngine/vendor/ozz-animation"
+		include "XYZEngine/vendor/OpenXR-SDK"
 group ""
 
 include "XYZEngine"

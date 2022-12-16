@@ -31,6 +31,7 @@
 namespace XYZ {
 	namespace Editor {
 
+		
 		class EditorLayer : public Layer
 		{
 		public:

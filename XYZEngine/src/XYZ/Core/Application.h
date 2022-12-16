@@ -55,6 +55,7 @@ namespace XYZ {
 
 		void onRunWindow();
 		void onRunWindowless();
+
 	private:
 		LayerStack m_LayerStack;
 		ImGuiLayer* m_ImGuiLayer;

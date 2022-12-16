@@ -188,6 +188,7 @@ namespace XYZ {
 		// Use subpass dependencies for layout transitions
 		std::vector<VkSubpassDependency> dependencies;
 		createDependencies(dependencies);
+	
 
 		// Create the actual renderpass
 		VkRenderPassCreateInfo renderPassInfo = {};
@@ -199,6 +200,28 @@ namespace XYZ {
 		renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 		renderPassInfo.pDependencies = dependencies.data();
 
+		if (m_Specification.Multiview)
+		{	/*
+				Bit mask that specifies which view rendering is broadcast to
+				0011 = Broadcast to first and second view (layer)
+			*/
+			const uint32_t viewMask = 0b00000011;
+
+			/*
+				Bit mask that specifies correlation between views
+				An implementation may use this for optimizations (concurrent render)
+			*/
+			const uint32_t correlationMask = 0b00000011;
+
+			VkRenderPassMultiviewCreateInfo multiViewCreateInfo = {};
+			multiViewCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+			multiViewCreateInfo.subpassCount = 1;
+			multiViewCreateInfo.pViewMasks = &viewMask;
+			multiViewCreateInfo.correlationMaskCount = 1;
+			multiViewCreateInfo.pCorrelationMasks = &correlationMask;
+
+			renderPassInfo.pNext = &multiViewCreateInfo;		
+		}
 		VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass));
 
 		std::vector<VkImageView> attachments(m_AttachmentImages.size());

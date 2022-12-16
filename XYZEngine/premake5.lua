@@ -61,7 +61,8 @@ project "XYZEngine"
 			"_CRT_SECURE_NO_WARNINGS",
 			"GLFW_INCLUDE_NONE",
 			"GLEW_STATIC",
-			"AL_LIBTYPE_STATIC"	
+			"AL_LIBTYPE_STATIC",
+			"XR_USE_GRAPHICS_API_VULKAN"
 		}
 
 		includedirs
@@ -92,6 +93,7 @@ project "XYZEngine"
 			"%{IncludeDir.mono}",
 			"%{IncludeDir.box2d}",
 			"%{IncludeDir.optick}",
+			"%{IncludeDir.OpenXR}",
 			"%{IncludeDir.VulkanSDK}"
 		}
 
@@ -110,6 +112,7 @@ project "XYZEngine"
 			"ozz_base",
 			"ozz_animation",
 			"ozz_animation_offline",   
+			"OpenXR-SDK",
 			"%{LibraryDir.mono}",
 			"%{Library.Vulkan}",
 			"%{Library.VulkanUtils}"

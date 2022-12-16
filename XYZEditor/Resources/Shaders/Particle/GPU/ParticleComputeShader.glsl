@@ -2,6 +2,7 @@
 #version 460
 
 #include "Resources/Shaders/Includes/Math.glsl"
+#include "Resources/Shaders/Includes/PBR.glsl"
 
 struct DrawCommand 
 {
@@ -14,14 +15,18 @@ struct DrawCommand
     uint Padding[3];
 };
 
+struct Transform
+{
+    vec4  TransformRow0;
+    vec4  TransformRow1;
+    vec4  TransformRow2;
+};
 
 struct Particle
 {
     // Data that are rendered
-	vec4  TransformRow0;
-    vec4  TransformRow1;
-    vec4  TransformRow2;
-    vec4  Color;
+	Transform Tr;
+    vec4      Color;
 };
 
 struct ParticleState
@@ -59,7 +64,6 @@ struct ParticleProperty
 
 layout(push_constant) uniform Uniform
 { 
-    uint  CommandCount;
     float Timestep;
     float Speed;
     uint  EmittedParticles;
@@ -67,6 +71,11 @@ layout(push_constant) uniform Uniform
 
 } u_Uniforms;
 
+layout(std140, binding = 2) buffer buffer_PointLightsData
+{
+	uint NumberPointLights;
+	PointLight PointLights[MAX_POINT_LIGHTS];
+};
 
 layout(std430, binding = 5) buffer buffer_DrawCommand // indirect
 {
@@ -83,11 +92,21 @@ layout (std430, binding = 7) buffer buffer_ParticleProperties
     ParticleProperty ParticleProperties[];
 };
 
+layout(std430, binding = 8) buffer buffer_CommandData
+{
+	uint CommandCount;
+    uint Padding[3];
+	Transform Transforms[];
+};
+
 layout (constant_id = 0) const bool COLOR_OVER_LIFE = false;
 layout (constant_id = 1) const bool SCALE_OVER_LIFE = false;
 layout (constant_id = 2) const bool VELOCITY_OVER_LIFE = false;
 layout (constant_id = 3) const bool ROTATION_OVER_LIFE = false;
+layout (constant_id = 4) const bool SPAWN_LIGHTS = false;
 
+
+shared uint pointLightsCount;
 
 float LifeProgress(uint id)
 {
@@ -99,9 +118,9 @@ void UpdateRenderData(in ParticleState state, uint id, uint instanceIndex)
     mat4 transform = TranslationMatrix(ParticleProperties[id].Position.xyz, state.Scale)
                    * RotationMatrix(state.Rotation);
 
-    Particles[instanceIndex].TransformRow0 = vec4(transform[0][0], transform[1][0], transform[2][0], transform[3][0]);
-    Particles[instanceIndex].TransformRow1 = vec4(transform[0][1], transform[1][1], transform[2][1], transform[3][1]);
-    Particles[instanceIndex].TransformRow2 = vec4(transform[0][2], transform[1][2], transform[2][2], transform[3][2]);
+    Particles[instanceIndex].Tr.TransformRow0 = vec4(transform[0][0], transform[1][0], transform[2][0], transform[3][0]);
+    Particles[instanceIndex].Tr.TransformRow1 = vec4(transform[0][1], transform[1][1], transform[2][1], transform[3][1]);
+    Particles[instanceIndex].Tr.TransformRow2 = vec4(transform[0][2], transform[1][2], transform[2][2], transform[3][2]);
     Particles[instanceIndex].Color = state.Color;
 }
 
@@ -110,6 +129,41 @@ void RespawnParticle(uint id)
 {
     ParticleProperties[id].LifeRemaining = ParticleProperties[id].LifeTime;
     ParticleProperties[id].Position = ParticleProperties[id].StartPosition;  
+}
+
+
+void SpawnLight(uint id, uint lightIndex, uint commandIndex, in ParticleState state)
+{
+    if (lightIndex < MAX_POINT_LIGHTS)
+    {
+        mat4 particleTransform = TranslationMatrix(ParticleProperties[id].Position.xyz, state.Scale)
+                   * RotationMatrix(state.Rotation);
+        
+
+        mat4 transform = TransformFromRows(
+            Transforms[commandIndex].TransformRow0,
+            Transforms[commandIndex].TransformRow1,
+            Transforms[commandIndex].TransformRow2
+        ) * particleTransform;
+
+
+        PointLights[lightIndex] = PointLights[0];
+        PointLights[lightIndex].Position = transform[3].xyz;
+        atomicAdd(NumberPointLights, 1);
+    }
+}
+
+void CommandsUpdate(uint id, out uint instanceIndex, in ParticleState state)
+{
+    for (uint i = 0; i < CommandCount; ++i)
+    {
+        instanceIndex = atomicAdd(Command[i].InstanceCount, 1);
+        if (SPAWN_LIGHTS)
+        {
+            uint lightIndex = atomicAdd(pointLightsCount, 1);
+            SpawnLight(id, lightIndex, i, state);
+        }
+    }
 }
 
 void UpdateParticle(uint id)
@@ -142,15 +196,13 @@ void UpdateParticle(uint id)
         {
             state.Rotation = mix(ParticleProperties[id].StartRotation, ParticleProperties[id].EndRotation, lifeProgress);   
         }
+        
 
         ParticleProperties[id].Position.xyz += state.Velocity * u_Uniforms.Timestep * u_Uniforms.Speed;
         ParticleProperties[id].LifeRemaining -= u_Uniforms.Timestep;
 
         uint instanceIndex = 0;
-        for (uint i = 0; i < u_Uniforms.CommandCount; ++i)
-        {
-            instanceIndex = atomicAdd(Command[i].InstanceCount, 1);
-        }
+        CommandsUpdate(id, instanceIndex, state);
         UpdateRenderData(state, id, instanceIndex);
     }
     else if (u_Uniforms.Loop)
@@ -158,7 +210,6 @@ void UpdateParticle(uint id)
         RespawnParticle(id);
     }
 }
-
 
 bool ValidParticle(uint id)
 {
@@ -171,8 +222,12 @@ bool ValidParticle(uint id)
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 void main(void)
 {
-    uint id = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
+    if (gl_LocalInvocationIndex == 0)   
+        pointLightsCount = NumberPointLights;
+    barrier();
 
+    uint id = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
+    
     if (!ValidParticle(id))
         return;
 

@@ -69,7 +69,16 @@ namespace XYZ {
 		uint32_t			   m_Stride = 0;
 	};
 
-	class ParticleSystemGPU : public Asset
+	struct XYZ_API EmissionResult
+	{
+		EmissionResult(const std::byte* data, uint32_t size, uint32_t offset);
+
+		const std::byte* const EmittedData;
+		uint32_t			   EmittedDataSize;
+		uint32_t			   DataOffset;
+	};
+
+	class XYZ_API ParticleSystemGPU : public Asset
 	{
 	public:
 		ParticleSystemGPU(ParticleSystemLayout inputLayout, ParticleSystemLayout outputLayout, uint32_t maxParticles);
@@ -82,6 +91,7 @@ namespace XYZ {
 		const ParticleSystemLayout& GetInputLayout()	const { return m_InputLayout; }
 		const ParticleSystemLayout& GetOutputLayout()	const { return m_OutputLayout; }
 		const ParticleBuffer&		GetParticleBuffer() const { return m_ParticleBuffer; }
+		const EmissionResult		LastEmission()		const;
 		
 		uint32_t GetInputSize()  const { return m_ParticleBuffer.GetBufferSize(); }
 		uint32_t GetOutputSize() const { return GetMaxParticles() * m_OutputLayout.GetStride(); }
@@ -94,9 +104,6 @@ namespace XYZ {
 		
 		Ref<MaterialAsset>				ParticleUpdateMaterial;
 
-		Ref<StorageBufferAllocation>	ParticlePropertiesAllocation;
-		Ref<StorageBufferAllocation>	ParticlesResultAllocation;
-
 		float    Speed = 1.0f;
 		bool	 Loop  = true;
 	private:
@@ -105,6 +112,7 @@ namespace XYZ {
 
 		ParticleBuffer		 m_ParticleBuffer;
 		uint32_t			 m_EmittedParticles;
+		mutable uint32_t	 m_EmissionCount;
 	};
 
 	class ParticleSystemGPUShaderGenerator

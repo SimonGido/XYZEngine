@@ -338,7 +338,15 @@ namespace XYZ {
 		// If the device will be used for presenting to a display via a swapchain we need to request the swapchain extension
 		XYZ_ASSERT(m_PhysicalDevice->IsExtensionSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME), "");
 		deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-
+		deviceExtensions.push_back("VK_KHR_swapchain");
+		deviceExtensions.push_back("VK_KHR_external_memory");
+		deviceExtensions.push_back("VK_KHR_external_memory_win32");
+		deviceExtensions.push_back("VK_KHR_external_fence");
+		deviceExtensions.push_back("VK_KHR_external_fence_win32");
+		deviceExtensions.push_back("VK_KHR_external_semaphore");
+		deviceExtensions.push_back("VK_KHR_external_semaphore_win32");
+		deviceExtensions.push_back("VK_KHR_get_memory_requirements2");
+		deviceExtensions.push_back("VK_KHR_dedicated_allocation");
 
 		if (m_PhysicalDevice->IsExtensionSupported(VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME))
 			deviceExtensions.push_back(VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME);

@@ -161,6 +161,7 @@ namespace XYZ {
 		enabledFeatures.fillModeNonSolid = true;
 		enabledFeatures.pipelineStatisticsQuery = true;
 		enabledFeatures.inheritedQueries = true;
+		enabledFeatures.shaderStorageImageMultisample = true; // Required for VR
 
 		m_Device = Ref<VulkanDevice>::Create(enabledFeatures);
 	}

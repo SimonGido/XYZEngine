@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "AssetManager.h"
+#include "XYZ/Project/Project.h"
 
 #include <filesystem>
 
@@ -39,6 +40,8 @@ namespace XYZ
 
 		s_Instance.m_AssetLifeManager->Start(seconds);
 	}
+
+
 
 	void AssetManager::SerializeAll()
 	{

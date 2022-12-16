@@ -40,6 +40,7 @@ namespace XYZ {
 		std::vector<FramebufferTextureSpecification> Attachments;
 
 		bool SwapChainTarget = false;
+		bool Multiview = false;
 	};
 
 
