@@ -1,6 +1,8 @@
 #pragma once
 #include "EditorPanel.h"
 
+#include "XYZ/ImGui/ImGuiDialog.h"
+
 namespace XYZ {
 	namespace Editor {
 		class EditorManager
@@ -36,6 +38,7 @@ namespace XYZ {
 			};
 			std::vector<View>		 m_EditorPanels;
 			Ref<Scene>				 m_Scene;
+			ImGuiDialogQueue		 m_DialogQueue;
 		};
 		template<typename T>
 		inline std::shared_ptr<T> EditorManager::RegisterPanel(std::string name, bool open)

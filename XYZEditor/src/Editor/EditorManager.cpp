@@ -29,6 +29,7 @@ namespace XYZ {
 					view.Panel->OnImGuiRender(view.Open);
 				}
 			}
+			m_DialogQueue.Update();
 		}
 		void EditorManager::OnUpdate(Timestep ts)
 		{
@@ -103,9 +104,16 @@ namespace XYZ {
 
 					if (ImGui::MenuItem("New Project..."))
 					{
-						std::string directory = FileSystem::OpenFolder(Application::Get().GetWindow().GetNativeWindow(), "");
-						Project::New();
+						//std::string directory = FileSystem::OpenFolder(Application::Get().GetWindow().GetNativeWindow(), "");
+						m_DialogQueue.Push("New Project", []() -> bool {
 
+							if (ImGui::Button("Create"))
+							{
+								Project::New();
+								return true;
+							}
+							return false;
+						});
 					}
 					if (ImGui::MenuItem("Exit"))
 					{

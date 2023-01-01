@@ -232,6 +232,7 @@ namespace XYZ {
 
 	void Application::onRunWindow()
 	{
+		/*
 		OpenXRInstanceConfiguration config;
 		config.Version = OpenXRVersion{ 1, 0, 22 };
 		config.ApplicationName = "Test";
@@ -263,13 +264,13 @@ namespace XYZ {
 				}
 			}
 		};
-
+		*/
 		while (m_Running)
 		{
 			XYZ_PROFILE_FRAME("MainThread");
 			updateTimestep();
 			m_Window->ProcessEvents();
-			instance->ProcessEvents();
+			//instance->ProcessEvents();
 
 			if (!m_Minimized)
 			{
@@ -277,8 +278,8 @@ namespace XYZ {
 				Renderer::Render();
 
 				m_Window->BeginFrame();
-				if (session->IsRunning())
-					swapchain->BeginFrame();
+				//if (session->IsRunning())
+				//	swapchain->BeginFrame();
 				Renderer::BeginFrame();
 
 				PluginManager::Update(m_Timestep);
@@ -296,8 +297,8 @@ namespace XYZ {
 				}
 				Renderer::EndFrame();
 				m_Window->SwapBuffers();
-				if (session->IsRunning())
-					swapchain->EndFrame();
+				//if (session->IsRunning())
+				//	swapchain->EndFrame();
 			}
 			AssetManager::Update(m_Timestep);
 		}

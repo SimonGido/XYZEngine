@@ -76,6 +76,7 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::AssetManagerViewPanel>("AssetManagerViewPanel");
 			m_EditorManager.RegisterPanel<Editor::AssetBrowser>("AssetBrowser");
 			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
+
 			//m_EditorManager.RegisterPanel<Editor::ParticleEditorGPU>("ParticleEditorGPU");
 
 			std::shared_ptr<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
