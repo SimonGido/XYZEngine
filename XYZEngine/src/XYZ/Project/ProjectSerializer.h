@@ -7,5 +7,7 @@ namespace XYZ {
 	{
 	public:
 		static void Serialize(const std::filesystem::path& filepath, Ref<Project> project);
+
+		static Ref<Project> Deserialize(const std::filesystem::path& filepath);
 	};
 }

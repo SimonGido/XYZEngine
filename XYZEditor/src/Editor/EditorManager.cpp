@@ -7,6 +7,7 @@
 #include "XYZ/Project/ProjectSerializer.h"
 
 #include "XYZ/Utils/FileSystem.h"
+#include "XYZ/ImGui/ImGui.h"
 
 #include "Editor/Event/EditorEvents.h"
 
@@ -105,13 +106,13 @@ namespace XYZ {
 					if (ImGui::MenuItem("New Project..."))
 					{
 						//std::string directory = FileSystem::OpenFolder(Application::Get().GetWindow().GetNativeWindow(), "");
-						m_DialogQueue.Push("New Project", []() -> bool {
+						m_DialogQueue.Push("New Project", [splitterHeight = 300.0f]() mutable -> bool {
 
 							if (ImGui::Button("Create"))
 							{
 								Project::New();
 								return true;
-							}
+							}									
 							return false;
 						});
 					}

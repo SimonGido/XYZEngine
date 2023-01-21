@@ -33,6 +33,7 @@ namespace XYZ {
 
 		static uint32_t CalculateMipMapCount(uint32_t width, uint32_t height);
 
+		virtual AssetType GetAssetType() const override { return AssetType::Texture; }
 		static AssetType GetStaticType() { return AssetType::Texture; }
 	};
 

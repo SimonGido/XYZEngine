@@ -17,8 +17,7 @@ namespace XYZ {
 	}
 	Ref<Project> Project::Load(const std::filesystem::path& path)
 	{
-		// Deserialize
-
+		s_ActiveProject = ProjectSerializer::Deserialize(path);
 		return s_ActiveProject;
 	}
 	bool Project::SaveActive(const std::filesystem::path& path)

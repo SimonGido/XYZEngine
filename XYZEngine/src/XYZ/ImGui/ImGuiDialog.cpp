@@ -20,13 +20,12 @@ namespace XYZ {
 			auto& last = m_Dialogs.back();
 
 			if (ImGui::Begin(last.Name.c_str(), &last.Open, ImGuiWindowFlags_NoDocking))
-			{
-				ImGui::SetWindowFocus(last.Name.c_str());
+			{				
 				finished = last.Func();
 			}
 			ImGui::End();
 
-			if (finished)
+			if (finished || !last.Open)
 				m_Dialogs.pop();
 		}
 	}

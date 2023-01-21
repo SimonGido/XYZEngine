@@ -19,6 +19,7 @@ namespace XYZ {
 				out << YAML::Key << "StartScene" << YAML::Value << config.StartScene.string();
 				out << YAML::Key << "AssetDirectory" << YAML::Value << config.AssetDirectory.string();
 				out << YAML::Key << "ScriptModulePath" << YAML::Value << config.ScriptModulePath.string();
+				out << YAML::Key << "Flags" << YAML::Value << config.Flags;
 				out << YAML::EndMap; // Project
 			}
 			out << YAML::EndMap; // Root
@@ -27,5 +28,23 @@ namespace XYZ {
 		std::ofstream fout(filepath);
 		fout << out.c_str();
 
+	}
+	Ref<Project> ProjectSerializer::Deserialize(const std::filesystem::path& filepath)
+	{
+		std::ifstream stream(filepath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+		YAML::Node projectData = data["Project"];
+
+		Ref<Project> result = Ref<Project>::Create();
+		result->Configuration.Name = projectData["Name"].as<std::string>();
+		result->Configuration.StartScene = projectData["StartScene"].as<std::string>();
+		result->Configuration.AssetDirectory = projectData["AssetDirectory"].as<std::string>();
+		result->Configuration.ScriptModulePath = projectData["ScriptModulePath"].as<std::string>();
+		result->Configuration.Flags = projectData["Flags"].as<uint32_t>();
+
+		return result;
 	}
 }

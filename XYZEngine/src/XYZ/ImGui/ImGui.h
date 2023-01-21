@@ -117,6 +117,37 @@ namespace XYZ {
 			}
 		}
 
+		template <typename Func0, typename Func1>
+		void SplitterH(float* size, const char* stringID0, const char* stringID1, const Func0& func0, const Func1& func1)
+		{
+			ImVec2 spacing = ImGui::GetStyle().ItemSpacing;
+			ScopedStyleStack styleSpacing(true, ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
+			ImGui::BeginChild(stringID0, ImVec2(0, *size), true);
+
+			{
+				ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, spacing);
+				func0();
+			}
+
+			float w = ImGui::GetWindowWidth();
+			ImGui::EndChild();
+
+			ImGui::SameLine();
+
+			ImGui::InvisibleButton("splitterButton", ImVec2(w, 8.0f));
+			if (ImGui::IsItemActive())
+				*size += ImGui::GetIO().MouseDelta.y;
+
+			ImGui::SameLine();
+
+			ImGui::BeginChild(stringID1, ImVec2(0, 0), true);
+			{
+				ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, spacing);
+				func1();
+			}
+			ImGui::EndChild();
+		}
+
 
 		template <typename Func0, typename Func1>
 		void SplitterV(float* size, const char* stringID0, const char* stringID1, const Func0& func0, const Func1& func1)

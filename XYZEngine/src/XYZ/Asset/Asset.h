@@ -27,6 +27,7 @@ namespace XYZ {
 		Prefab,
 		Blueprint,
 		ParticleSystemGPU,
+		Plugin,
 		NumTypes
 	};
 
@@ -61,6 +62,7 @@ namespace XYZ {
 			if (assetType == "Prefab")					  return AssetType::Prefab;
 			if (assetType == "Blueprint")				  return AssetType::Blueprint;
 			if (assetType == "ParticleSystemGPU")		  return AssetType::ParticleSystemGPU;
+			if (assetType == "Plugin")					  return AssetType::Plugin;
 
 			XYZ_ASSERT(false, "Unknown Asset Type");
 			return AssetType::None;
@@ -87,6 +89,7 @@ namespace XYZ {
 			case XYZ::AssetType::Prefab:						return "Prefab";
 			case XYZ::AssetType::Blueprint:						return "Blueprint";
 			case XYZ::AssetType::ParticleSystemGPU:				return "ParticleSystemGPU";
+			case XYZ::AssetType::Plugin:						return "Plugin";
 			default:
 				break;
 			}
@@ -106,7 +109,7 @@ namespace XYZ {
 	public:
 		virtual ~Asset() = default;
 	
-		virtual AssetType GetAssetType() const { return AssetType::None; }
+		virtual AssetType GetAssetType() const = 0;
 		const AssetHandle& GetHandle() const { return m_Handle; }
 		
 		bool IsValid() const;
@@ -125,7 +128,7 @@ namespace XYZ {
 
 		inline static AssetInfoContainer s_AssetExtensions = {
 			"none",
-			"xyz",
+			"scene",
 			"tex",
 			"subtex",
 			"mat",

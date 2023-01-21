@@ -87,6 +87,7 @@ namespace XYZ {
 	void Application::Run()
 	{
 		m_Timer.Restart();
+
 		
 		if (m_Specification.WindowCreate)
 		{
@@ -281,13 +282,12 @@ namespace XYZ {
 				//if (session->IsRunning())
 				//	swapchain->BeginFrame();
 				Renderer::BeginFrame();
-
-				PluginManager::Update(m_Timestep);
 				{
 					XYZ_SCOPE_PERF("Application Layer::OnUpdate");
 					for (Layer* layer : m_LayerStack)
 						layer->OnUpdate(m_Timestep);
 				}
+				PluginManager::Update(m_Timestep);
 				if (m_ImGuiLayer != nullptr)
 				{
 					// We must block render thread only if multiple viewports are created

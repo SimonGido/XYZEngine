@@ -67,6 +67,8 @@ namespace XYZ {
 		MeshSource(std::vector<Vertex> vertices, std::vector<uint32_t> indices);
 		MeshSource(std::vector<AnimatedVertex> vertices, std::vector<uint32_t> indices);
 
+		virtual AssetType GetAssetType() const override { return AssetType::MeshSource; }
+
 		const std::vector<AnimatedVertex>& GetAnimatedVertices() const { return m_AnimatedVertices; }
 		const std::vector<Vertex>&		   GetVertices() const { return m_StaticVertices; }
 		const std::vector<uint32_t>&	   GetIndices() const { return m_Indices; }

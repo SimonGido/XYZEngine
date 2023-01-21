@@ -1,41 +1,31 @@
 
 #include <XYZ.h>
 
+#include "XYZ/Project/Project.h"
+
 #include <cr.h>
 
 #define EXPORT extern "C" __declspec(dllexport)
 
 using namespace XYZ;
 
-EXPORT int on_load()
+
+
+Ref<Scene> ActiveScene;
+
+EXPORT void OnLoad()
 {
-    return 0;
+	ActiveScene = AssetManager::GetAsset<Scene>("Assets/Scenes/Scene.xyz");
+	ActiveScene->CreateEntity("Entity From Plugin");
 }
 
-EXPORT int on_unload()
+EXPORT void OnClose()
 {
-    return 0;
+
 }
 
-EXPORT int on_update(float dt)
+EXPORT void OnUpdate(Timestep ts)
 {
-    return 0;
+	
 }
 
-EXPORT int on_close()
-{
-    return 0;
-}
-
-EXPORT int EntryPoint(struct cr_plugin* ctx, enum cr_op operation)
-{
-    assert(ctx);
-    switch (operation) 
-    {
-    case CR_LOAD:   return on_load(); // loading back from a reload
-    case CR_UNLOAD: return on_unload(); // preparing to a new reload
-    case CR_CLOSE:  return on_close();
-    }
-    // CR_STEP
-    return on_update(Application::Get().GetTimestep());
-}

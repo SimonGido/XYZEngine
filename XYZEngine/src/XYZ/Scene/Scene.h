@@ -97,6 +97,8 @@ namespace XYZ {
         inline const GUID& GetUUID() const { return m_UUID; }
         inline const std::string& GetName() const { return m_Name; }
 
+
+        virtual AssetType GetAssetType() const override { return AssetType::Scene; }
         static AssetType GetStaticType() { return AssetType::Scene; }
 
 

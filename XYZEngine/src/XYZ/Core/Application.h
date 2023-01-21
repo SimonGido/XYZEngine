@@ -61,7 +61,6 @@ namespace XYZ {
 		ImGuiLayer* m_ImGuiLayer;
 		std::unique_ptr<Window> m_Window;
 
-
 		bool       				 m_Running;
 		bool	   				 m_Minimized;
 		float      				 m_LastFrameTime;

@@ -21,6 +21,8 @@ namespace XYZ {
 
 		const Ref<Texture2D>& GetTexture() const { return m_Texture; }
 
+		virtual AssetType GetAssetType() const override { return AssetType::SubTexture; }
+
 		static AssetType GetStaticType() { return AssetType::SubTexture; }
 	private:
 		Ref<Texture2D> m_Texture;

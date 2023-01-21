@@ -391,6 +391,7 @@ namespace XYZ {
 	};
 
 
+
 #define XYZ_COMPONENTS \
 	IDComponent, \
 	SceneTagComponent, \

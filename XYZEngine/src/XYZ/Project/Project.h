@@ -4,14 +4,23 @@
 
 namespace XYZ {
 
+	
+
 	struct ProjectConfig
 	{
+		enum Flags
+		{
+			VR = BIT(0)
+		};
+
 		std::string Name = "Untitled";
 
 		std::filesystem::path StartScene;
 
 		std::filesystem::path AssetDirectory;
 		std::filesystem::path ScriptModulePath;
+
+		uint32_t Flags = 0;
 	};
 
 	class XYZ_API Project : public RefCount

@@ -12,6 +12,9 @@
 
 #include "XYZ/Asset/AssetManager.h"
 
+#include "XYZ/Plugin/PluginManager.h"
+#include "XYZ/Plugin/Plugin.h"
+
 #include "XYZ/Script/ScriptEngine.h"
 #include "XYZ/Debug/Profiler.h"
 #include "XYZ/Utils/Math/Math.h"
@@ -229,6 +232,7 @@ namespace XYZ {
 			ScriptEngine::OnCreateEntity(sceneEntity);
 		}
 	
+		// Reset particles
 		auto particleView = m_Registry.view<ParticleComponent>();
 		for (auto entity : particleView)
 		{
@@ -237,10 +241,17 @@ namespace XYZ {
 
 
 		Utils::CloneRegistry(m_Registry, s_CopyRegistry);
+
+		// Open plugins
+		std::vector<Ref<Plugin>> plugins = AssetManager::FindAllAssets<Plugin>(AssetType::Plugin);
+		for (const auto& plugin : plugins)
+			PluginManager::OpenPlugin(plugin->GetFilepath().string());
 	}
 
 	void Scene::OnStop()
 	{
+		PluginManager::CloseAll();
+
 		Utils::CloneRegistry(s_CopyRegistry, m_Registry);
 		s_CopyRegistry = entt::registry();
 		{

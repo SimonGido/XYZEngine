@@ -14,7 +14,7 @@ namespace XYZ {
 		ShaderAsset(const std::string& name, const std::string& filepath, size_t sourceHash);
 		~ShaderAsset();
 
-
+		virtual AssetType GetAssetType() const override { return AssetType::Shader; }
 
 		Ref<Shader> GetShader() const { return m_Shader; }
 		size_t	    GetSourceHash() const;

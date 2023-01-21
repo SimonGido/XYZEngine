@@ -18,6 +18,7 @@ namespace XYZ {
 		Mesh(const Ref<MeshSource>& meshSource);
 		
 		virtual ~Mesh() override;
+		virtual AssetType GetAssetType() const override { return AssetType::Mesh; }
 
 		Ref<MeshSource>		GetMeshSource() const { return m_MeshSource; }
 		Ref<VertexBuffer>   GetVertexBuffer() const { return m_MeshSource->GetVertexBuffer(); }
@@ -35,6 +36,8 @@ namespace XYZ {
 	public:
 		AnimatedMesh(const Ref<MeshSource>& meshSource);
 		
+		virtual AssetType GetAssetType() const override { return AssetType::AnimatedMesh; }
+
 		Ref<MeshSource>		GetMeshSource() const { return m_MeshSource; }
 		Ref<VertexBuffer>   GetVertexBuffer() const { return m_MeshSource->GetVertexBuffer(); }
 		Ref<IndexBuffer>    GetIndexBuffer()  const { return m_MeshSource->GetIndexBuffer(); }
