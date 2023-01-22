@@ -97,15 +97,43 @@ namespace XYZ {
 			XYZ_ASSERT(false, "Unknown Asset Type");
 			return "None";
 		}
+
+		inline const char* AssetTypeToExtension(AssetType type)
+		{
+			switch (type)
+			{
+			case XYZ::AssetType::None:							return "none";
+			case XYZ::AssetType::Scene:		 					return "scene";
+			case XYZ::AssetType::Texture:						return "tex";
+			case XYZ::AssetType::SubTexture:					return "subtex";
+			case XYZ::AssetType::Material:						return "mat";
+			case XYZ::AssetType::Shader:						return "shader";
+			case XYZ::AssetType::Font:							return "font";
+			case XYZ::AssetType::Audio:							return "audio";
+			case XYZ::AssetType::Script:						return "cs";
+			case XYZ::AssetType::Mesh:							return "mesh";
+			case XYZ::AssetType::AnimatedMesh:					return "animmesh";
+			case XYZ::AssetType::MeshSource:					return "meshsrc";
+			case XYZ::AssetType::Animation:						return "anim";
+			case XYZ::AssetType::AnimationController:			return "controller";
+			case XYZ::AssetType::Skeleton:						return "skeleton";
+			case XYZ::AssetType::Prefab:						return "prefab";
+			case XYZ::AssetType::Blueprint:						return "blueprint";
+			case XYZ::AssetType::ParticleSystemGPU:				return "particle";
+			case XYZ::AssetType::Plugin:						return "plugin";
+			default:
+				break;
+			}
+
+			XYZ_ASSERT(false, "Unknown Asset Type");
+			return "None";
+		}
 	}
 
 	using AssetHandle = GUID;
 
 	class XYZ_API Asset : public RefCount
 	{
-	public:
-		using AssetInfoContainer = std::array<std::string, ToUnderlying(AssetType::NumTypes)>;
-
 	public:
 		virtual ~Asset() = default;
 	
@@ -119,31 +147,11 @@ namespace XYZ {
 		
 		
 		static AssetType GetStaticType() { return AssetType::None; }
-		static const std::string& GetExtension(AssetType type) { return s_AssetExtensions[ToUnderlying(type)]; }
+		static const char* GetExtension(AssetType type) { return Utils::AssetTypeToExtension(type); }
 	private:
 		AssetHandle m_Handle;
 		uint16_t    m_Flags = 0;
 
-		
-
-		inline static AssetInfoContainer s_AssetExtensions = {
-			"none",
-			"scene",
-			"tex",
-			"subtex",
-			"mat",
-			"shader",
-			"font",
-			"audio",
-			"cs",
-			"mesh",
-			"animmesh",
-			"meshsrc",
-			"anim",
-			"controller",
-			"skeleton",
-			"prefab"
-		};
 
 		friend class AssetManager;
 		friend class AssetImporter;

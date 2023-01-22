@@ -29,17 +29,12 @@ project "XYZNative"
 			"%{IncludeDir.Asio}",
 			"%{IncludeDir.box2d}",
 			"%{IncludeDir.Vulkan}",
-			"%{IncludeDir.optick}",
-			"%{IncludeDir.cr}"
+			"%{IncludeDir.optick}"
 		}
 	
 		links
 		{
-			"ImGui",
-			"ImGuizmo",
-			"ozz_base",
-			"ozz_animation",
-			"ozz_animation_offline", 
+			
 			"%{wks.location}/bin/" .. outputdir .."/XYZEngine/XYZEngine.lib"
 		}
 		

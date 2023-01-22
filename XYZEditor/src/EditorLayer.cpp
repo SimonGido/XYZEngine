@@ -27,7 +27,7 @@ namespace XYZ {
 
 			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
 
-			m_Scene = AssetManager::GetAsset<Scene>("Assets/Scenes/Scene.xyz");
+			m_Scene = AssetManager::GetAsset<Scene>("Assets/Scenes/Scene.scene");
 
 			ScriptEngine::SetSceneContext(m_Scene);
 
@@ -88,6 +88,8 @@ namespace XYZ {
 
 			const float keepAliveAssetSeconds = 60;
 			AssetManager::KeepAlive(keepAliveAssetSeconds);
+
+			PluginManager::OpenPlugin("Assets/Plugins/XYZNative.dll");
 		}
 
 		void EditorLayer::OnDetach()
@@ -100,6 +102,7 @@ namespace XYZ {
 		}
 		void EditorLayer::OnUpdate(Timestep ts)
 		{
+			PluginManager::Update(ts);
 			m_EditorManager.OnUpdate(ts);
 			
 			if (m_Scene->GetState() == SceneState::Edit)

@@ -3,8 +3,6 @@
 
 #include "XYZ/Project/Project.h"
 
-#include <cr.h>
-
 #define EXPORT extern "C" __declspec(dllexport)
 
 using namespace XYZ;
@@ -15,7 +13,7 @@ Ref<Scene> ActiveScene;
 
 EXPORT void OnLoad()
 {
-	ActiveScene = AssetManager::GetAsset<Scene>("Assets/Scenes/Scene.xyz");
+	ActiveScene = AssetManager::GetAsset<Scene>("Assets/Scenes/Scene.scene");
 	ActiveScene->CreateEntity("Entity From Plugin");
 }
 

@@ -65,6 +65,7 @@ project "XYZEngine"
 			"XR_USE_GRAPHICS_API_VULKAN"
 		}
 
+	
 		includedirs
 		{
 			"src",
@@ -124,6 +125,11 @@ project "XYZEngine"
 		filter "system:windows"
 				systemversion "latest"
 
+		buildoptions
+		{
+			"/bigobj"
+		}
+		
 		disablewarnings
 		{
 			"4251"
