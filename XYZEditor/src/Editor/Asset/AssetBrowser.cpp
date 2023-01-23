@@ -149,11 +149,6 @@ namespace XYZ {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::SceneIcon)
 				});
-
-			m_FileManager.RegisterExtension("dll", {
-				EditorLayer::GetData().IconsTexture,
-				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::CursorIcon)
-				});
 		}
 
 		AssetBrowser::~AssetBrowser()

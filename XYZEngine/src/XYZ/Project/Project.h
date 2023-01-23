@@ -20,6 +20,8 @@ namespace XYZ {
 		std::filesystem::path AssetDirectory;
 		std::filesystem::path ScriptModulePath;
 
+		std::vector<std::filesystem::path> PluginPaths;
+
 		uint32_t Flags = 0;
 	};
 
@@ -32,6 +34,9 @@ namespace XYZ {
 		static Ref<Project> Load(const std::filesystem::path& path);
 
 		static bool SaveActive(const std::filesystem::path& path);
+
+
+		void ReloadPlugins();
 
 		ProjectConfig Configuration;
 

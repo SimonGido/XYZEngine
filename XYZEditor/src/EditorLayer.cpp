@@ -88,8 +88,6 @@ namespace XYZ {
 
 			const float keepAliveAssetSeconds = 60;
 			AssetManager::KeepAlive(keepAliveAssetSeconds);
-
-			PluginManager::OpenPlugin("Assets/Plugins/XYZNative.dll");
 		}
 
 		void EditorLayer::OnDetach()

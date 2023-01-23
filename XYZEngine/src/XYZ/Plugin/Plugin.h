@@ -1,21 +1,18 @@
 #pragma once
 #include "XYZ/Asset/Asset.h"
+#include "XYZ/Core/Timestep.h"
 
 namespace XYZ {
 
-	class Plugin : public Asset
+
+	class PluginInterface
 	{
 	public:
-		Plugin(std::filesystem::path path);
+		virtual ~PluginInterface() = default;
 
-		virtual AssetType GetAssetType() const override { return AssetType::Plugin; }
+		virtual void OnCreate() = 0;
+		virtual void OnDestroy() = 0;
 
-
-		const std::filesystem::path& GetFilepath() const { return m_Filepath; }
-
-		static AssetType GetStaticType() { return AssetType::Plugin; }
-	private:
-		std::filesystem::path m_Filepath;
+		virtual void OnUpdate(Timestep ts) = 0;
 	};
-
 }

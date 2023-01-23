@@ -21,6 +21,21 @@ namespace XYZ {
 			return "";
 		}
 
+		static std::string CppDialectToString(CppDialect dialect)
+		{
+			switch (dialect)
+			{
+			case XYZ::Utils::CppDialect::CPP14:
+				return "C++14";
+			case XYZ::Utils::CppDialect::CPP17:
+				return "C++17";
+			case XYZ::Utils::CppDialect::CPP20:
+				return "C++20";
+			}
+			XYZ_ASSERT(false, "");
+			return "";
+		}
+
 		PremakeGenerator::PremakeGenerator(std::filesystem::path projectPath, const PremakeProject& project)
 			:
 			m_ProjectPath(std::move(projectPath)),
@@ -33,7 +48,7 @@ namespace XYZ {
 			result += fmt::format("project \"{}\"\n", m_Project.Name);
 			result += fmt::format("\tkind \"{}\"\n", KindToString(m_Project.Kind));
 			result += fmt::format("\tlanguage \"C++\"\n");
-			result += fmt::format("\tcppdialect \"C++17\"\n");
+			result += fmt::format("\tcppdialect \"{}\"\n", CppDialectToString(m_Project.Dialect));
 			result += fmt::format("\tstaticruntime \"off\"\n");
 
 			result += fmt::format("\ttargetdir\"{}\"\n", m_Project.TargetPath);

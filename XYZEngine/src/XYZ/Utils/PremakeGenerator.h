@@ -11,12 +11,20 @@ namespace XYZ {
 			Executable
 		};
 
+		enum class CppDialect
+		{
+			CPP14,
+			CPP17,
+			CPP20
+		};
+
 		struct PremakeProject
 		{
 			std::string				 Name;
 			std::filesystem::path	 TargetPath;
 			std::filesystem::path	 ObjPath;
 			std::vector<std::string> IncludedModules;
+			CppDialect				 Dialect;
 			ProjectKind				 Kind;
 		};
 

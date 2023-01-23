@@ -1,7 +1,6 @@
 #pragma once
 #include "XYZ/Core/Timestep.h"
 
-#include "Plugin.h"
 
 namespace XYZ {
 	class XYZ_API PluginManager

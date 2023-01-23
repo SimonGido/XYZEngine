@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "PluginManager.h"
 #include "PluginLoader.h"
+#include "Plugin.h"
 
-#include "XYZ/Asset/Asset.h"
 
 #define CR_MAIN_FUNC "EntryPoint"
 #define CR_HOST
@@ -16,41 +16,33 @@
 
 namespace XYZ {
 
-	typedef void (*PluginLoadPoint)();
-	typedef void (*PluginClosePoint)();
-	typedef void (*PluginUpdatePoint)(Timestep ts);
+	typedef PluginInterface* (*PluginCreatePoint)();
+	typedef void(*PluginDestroyPoint)(PluginInterface* plugin);
 
-#define BEGIN_FUNCTION "OnLoad"
-#define END_FUNCTION "OnClose"
-#define UPDATE_FUNCTION "OnUpdate"
+#define CREATE_PLUGIN_FUNCTION "CreatePlugin"
+#define DESTROY_PLUGIN_FUNCTION "DestroyPlugin";
 
 	struct PluginRuntime
 	{
-		PluginLoadPoint  OnLoad;
-		PluginClosePoint OnClose;
-		PluginUpdatePoint OnUpdate;
+		PluginInterface* Plugin;
 		void* Handle;
 	};
 
 
 	static std::unordered_map<std::string, PluginRuntime> s_PluginsRuntime;
 
-	static bool LoadPluginRuntime(PluginRuntime& plugin, const std::string& filepath)
+	static bool LoadPluginRuntime(PluginRuntime& runtime, const std::string& filepath)
 	{
-		plugin.Handle = PluginLoader::LoadPlugin(filepath);
-		if (plugin.Handle == nullptr)
+		runtime.Handle = PluginLoader::LoadPlugin(filepath);
+		if (runtime.Handle == nullptr)
 			return false;
 
-		plugin.OnLoad = (PluginLoadPoint)PluginLoader::LoadFunction(plugin.Handle, BEGIN_FUNCTION);
-		if (plugin.OnLoad == nullptr)
+		PluginCreatePoint createFunction = (PluginCreatePoint)PluginLoader::LoadFunction(runtime.Handle, CREATE_PLUGIN_FUNCTION);
+		if (createFunction == nullptr)
 			return false;
 
-		plugin.OnClose = (PluginClosePoint)PluginLoader::LoadFunction(plugin.Handle, END_FUNCTION);
-		if (plugin.OnClose == nullptr)
-			return false;
-
-		plugin.OnUpdate = (PluginUpdatePoint)PluginLoader::LoadFunction(plugin.Handle, UPDATE_FUNCTION);
-		if (plugin.OnUpdate == nullptr)
+		runtime.Plugin = createFunction();
+		if (runtime.Plugin == nullptr)
 			return false;
 	}
 
@@ -61,7 +53,7 @@ namespace XYZ {
 		if (LoadPluginRuntime(plugin, filepath))
 		{
 			s_PluginsRuntime[filepath] = plugin;
-			plugin.OnLoad();
+			plugin.Plugin->OnCreate();
 		}
 		else
 		{
@@ -76,7 +68,19 @@ namespace XYZ {
 		if (it != s_PluginsRuntime.end())
 		{
 			PluginRuntime& runtime = it->second;
-			runtime.OnClose();
+			runtime.Plugin->OnDestroy();
+	
+			PluginDestroyPoint destroyFunction = (PluginDestroyPoint)PluginLoader::LoadFunction(runtime.Handle, CREATE_PLUGIN_FUNCTION);
+			if (destroyFunction == nullptr)
+			{
+				XYZ_CORE_WARN("Failed to destroy plugin {}", filepath);
+			}
+			else
+			{
+				destroyFunction(runtime.Plugin);
+			}
+
+
 			PluginLoader::UnloadPlugin(runtime.Handle);
 			s_PluginsRuntime.erase(it);
 		}
@@ -95,8 +99,7 @@ namespace XYZ {
 	{
 		for (auto &it : s_PluginsRuntime)
 		{
-			it.second.OnUpdate(ts);
+			it.second.Plugin->OnUpdate(ts);
 		}
 	}
-
 }

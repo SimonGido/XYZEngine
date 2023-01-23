@@ -22,6 +22,7 @@ IncludeDir["entt"]  = "%{wks.location}/XYZEngine/vendor/entt/include"
 IncludeDir["cr"]  = "%{wks.location}/XYZEngine/vendor/cr"
 IncludeDir["OpenXR"] = "%{wks.location}/XYZEngine/vendor/OpenXR-SDK/include"
 IncludeDir["OpenXR-Oculus"] = "%{wks.location}/XYZEngine/vendor/Oculus-OpenXR-Mobile-SDK/OpenXR/Include"
+IncludeDir["spdlog"] = "%{wks.location}/XYZEngine/vendor/spdlog/include"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
 
 LibraryDir = {}

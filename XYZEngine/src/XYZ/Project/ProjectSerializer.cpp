@@ -20,6 +20,12 @@ namespace XYZ {
 				out << YAML::Key << "AssetDirectory" << YAML::Value << config.AssetDirectory.string();
 				out << YAML::Key << "ScriptModulePath" << YAML::Value << config.ScriptModulePath.string();
 				out << YAML::Key << "Flags" << YAML::Value << config.Flags;
+				out << YAML::Key << "Plugins" << YAML::BeginSeq << YAML::Flow; // Plugins
+				for (auto& pluginPath : project->Configuration.PluginPaths)
+				{
+					out << pluginPath.string();
+				}
+				out << YAML::EndSeq; // Plugins
 				out << YAML::EndMap; // Project
 			}
 			out << YAML::EndMap; // Root
@@ -44,7 +50,11 @@ namespace XYZ {
 		result->Configuration.AssetDirectory = projectData["AssetDirectory"].as<std::string>();
 		result->Configuration.ScriptModulePath = projectData["ScriptModulePath"].as<std::string>();
 		result->Configuration.Flags = projectData["Flags"].as<uint32_t>();
-
+		YAML::Node pluginsData = data["Plugins"];
+		for (auto it : data)
+		{
+			result->Configuration.PluginPaths.push_back(it.as<std::string>());
+		}
 		return result;
 	}
 }

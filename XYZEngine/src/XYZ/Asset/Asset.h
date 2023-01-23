@@ -27,7 +27,6 @@ namespace XYZ {
 		Prefab,
 		Blueprint,
 		ParticleSystemGPU,
-		Plugin,
 		NumTypes
 	};
 
@@ -62,7 +61,6 @@ namespace XYZ {
 			if (assetType == "Prefab")					  return AssetType::Prefab;
 			if (assetType == "Blueprint")				  return AssetType::Blueprint;
 			if (assetType == "ParticleSystemGPU")		  return AssetType::ParticleSystemGPU;
-			if (assetType == "Plugin")					  return AssetType::Plugin;
 
 			XYZ_ASSERT(false, "Unknown Asset Type");
 			return AssetType::None;
@@ -89,7 +87,6 @@ namespace XYZ {
 			case XYZ::AssetType::Prefab:						return "Prefab";
 			case XYZ::AssetType::Blueprint:						return "Blueprint";
 			case XYZ::AssetType::ParticleSystemGPU:				return "ParticleSystemGPU";
-			case XYZ::AssetType::Plugin:						return "Plugin";
 			default:
 				break;
 			}
@@ -120,7 +117,6 @@ namespace XYZ {
 			case XYZ::AssetType::Prefab:						return "prefab";
 			case XYZ::AssetType::Blueprint:						return "blueprint";
 			case XYZ::AssetType::ParticleSystemGPU:				return "particle";
-			case XYZ::AssetType::Plugin:						return "plugin";
 			default:
 				break;
 			}

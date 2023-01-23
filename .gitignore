@@ -1,6 +1,7 @@
 # Binaries
 **/bin/
 !vendor/premake/bin
+!XYZTools/XYZPluginGenerator/vendor/premake/bin
 !XYZEngine/vendor/mono/bin
 !XYZEngine/vendor/assimp/bin
 bin-int/

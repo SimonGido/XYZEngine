@@ -14,8 +14,10 @@ group "Dependencies"
 		include "XYZEngine/vendor/OpenXR-SDK"
 group ""
 
+group "Tools"
+		include "XYZTools/XYZPluginGenerator"
+group ""
+
 include "XYZEngine"
 include "XYZEditor"	
 include "XYZScriptCore"
-include "XYZScript"
-include "XYZNative"

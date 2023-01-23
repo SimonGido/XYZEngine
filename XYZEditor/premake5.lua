@@ -8,6 +8,7 @@ project "XYZEditor"
 		objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 		
 		XYZEngineDll = "%{wks.location}/bin/" .. outputdir .."/XYZEngine/XYZEngine.dll"
+		XYZEngineDir = "%{wks.location}/bin/" .. outputdir .."/XYZEngine"
 
 		files
 		{
@@ -43,6 +44,8 @@ project "XYZEditor"
 				"ozz_animation_offline", 
 				"%{wks.location}/bin/" .. outputdir .."/XYZEngine/XYZEngine.lib"
 			}
+			
+			
 		filter "options:static"
 			links
 			{
