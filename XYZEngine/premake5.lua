@@ -10,7 +10,10 @@ project "XYZEngine"
 		cppdialect "C++17"
 		staticruntime "off"
 
-		targetdir("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+
+		targetDirectory = "%{wks.location}/bin/" .. outputdir .. "/%{prj.name}"
+
+		targetdir(targetDirectory)
 		objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
 		pchheader "stdafx.h"
@@ -62,7 +65,8 @@ project "XYZEngine"
 			"GLFW_INCLUDE_NONE",
 			"GLEW_STATIC",
 			"AL_LIBTYPE_STATIC",
-			"XR_USE_GRAPHICS_API_VULKAN"
+			"XR_USE_GRAPHICS_API_VULKAN",
+			'XYZ_OUTPUT_DIR="%{targetDirectory}"'
 		}
 
 	

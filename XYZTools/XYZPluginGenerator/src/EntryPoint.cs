@@ -38,11 +38,12 @@ namespace XYZPluginGenerator
 
         static void Main(string[] args)
         {
-            //Debug.Assert(args.Length == 1);
-            //
-            //string codeToCompile = File.ReadAllText(args[0]);
+            Debug.Assert(args.Length == 2);
 
-            Assembly assembly = CreateAssemblyFromScript("C:\\Users\\Gido\\Projects\\XYZEngine\\XYZPlugin\\XYZPlugin.cs", out var compileErrors);
+            string engineDirectory = args[0];
+            string projectBuildFile = args[1];
+
+            Assembly assembly = CreateAssemblyFromScript(projectBuildFile, out var compileErrors);
             foreach (var error in compileErrors)
             {
                 Console.WriteLine(error);
@@ -52,7 +53,7 @@ namespace XYZPluginGenerator
 
   
             var type = assembly.GetTypes()[0]; 
-            var project = Activator.CreateInstance(type);
+            var project = Activator.CreateInstance(type, engineDirectory);
 
             ProjectInfo projectInfo = new ProjectInfo(project, type);
             var validationErrors = projectInfo.Validate();

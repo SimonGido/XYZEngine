@@ -8,7 +8,7 @@
 #include "XYZ/Core/Ref/Ref.h"
 #include "XYZ/Core/Ref/WeakRef.h"
 #include "XYZ/Debug/Timer.h"
-
+#include "XYZ/Core/Platform.h"
 
 //-----Events-----//
 #include "XYZ/Event/ApplicationEvent.h"

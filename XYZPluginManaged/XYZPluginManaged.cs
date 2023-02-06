@@ -6,7 +6,8 @@ public class XYZPluginManaged
 
     public string ProjectKind;
 
-    public XYZPluginManaged()
+
+    public XYZPluginManaged(string engineDirectory)
     {
         Language = "C#";
         ProjectKind = "SharedLib";

@@ -25,7 +25,7 @@ namespace XYZ {
 		{
 			s_Data.Init();		
 
-			ScriptEngine::Init("Assets/Scripts/XYZScript.dll");
+			ScriptEngine::Init("Assets/Plugins/XYZScript.dll");
 
 			m_Scene = AssetManager::GetAsset<Scene>("Assets/Scenes/Scene.scene");
 
@@ -103,6 +103,18 @@ namespace XYZ {
 			PluginManager::Update(ts);
 			m_EditorManager.OnUpdate(ts);
 			
+			if (ImGui::Begin("Plugin Window"))
+			{
+				if (ImGui::Button("Create Plugin"))
+				{
+					const auto& appDir = Application::Get().GetApplicationDir();
+					const auto buildFile = FileSystem::OpenFile(Application::Get().GetWindow().GetNativeWindow());
+				}
+				//Platform::RunShellCommand()
+			}
+			ImGui::End();
+
+
 			if (m_Scene->GetState() == SceneState::Edit)
 				renderOverlay();
 

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "ScriptEngine.h"
+#include "XYZ/Core/Application.h"
 
 #include <mono/jit/jit.h>
 #include <mono/metadata/assembly.h>
@@ -339,7 +340,10 @@ namespace XYZ {
 			cleanup = true;
 		}
 
-		s_CoreAssembly = LoadAssembly("Assets/Scripts/XYZScriptCore.dll");
+		std::filesystem::path coreAssemblyPath = std::filesystem::path(XYZ_OUTPUT_DIR).parent_path();
+		coreAssemblyPath /= "XYZScriptCore/XYZScriptCore.dll";
+
+		s_CoreAssembly = LoadAssembly(coreAssemblyPath.string());
 		s_CoreAssemblyImage = GetAssemblyImage(s_CoreAssembly);
 
 		MonoAssembly* appAssembly = nullptr;
