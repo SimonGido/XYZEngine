@@ -10,10 +10,12 @@ project "XYZEngine"
 		cppdialect "C++17"
 		staticruntime "off"
 
+		Definitions = {}
 
-		targetDirectory = "%{wks.location}/bin/" .. outputdir .. "/%{prj.name}"
+		Definitions["TargetDirectory"] = "%{wks.location}/bin/" .. outputdir .. "/%{prj.name}"
+		Definitions["SourceDirectory"] = "%{wks.location}/%{prj.name}"
 
-		targetdir(targetDirectory)
+		targetdir("%{Definitions.TargetDirectory}")
 		objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
 		pchheader "stdafx.h"
@@ -58,6 +60,7 @@ project "XYZEngine"
 			}
 			
 		filter{}
+		
 
 		defines
 		{
@@ -66,7 +69,8 @@ project "XYZEngine"
 			"GLEW_STATIC",
 			"AL_LIBTYPE_STATIC",
 			"XR_USE_GRAPHICS_API_VULKAN",
-			'XYZ_OUTPUT_DIR="%{targetDirectory}"'
+			'XYZ_OUTPUT_DIR="%{Definitions.TargetDirectory}"',
+			'XYZ_SOURCE_DIR="%{Definitions.SourceDirectory}"'
 		}
 
 	

@@ -63,6 +63,9 @@ namespace XYZ {
 		GetCurrentDirectory(MAX_PATH, NPath);
 		std::wstring tmp(&NPath[0]);
 		m_ApplicationDir = std::string(tmp.begin(), tmp.end());	
+
+		m_ApplicationBinaryDir = std::filesystem::path(XYZ_OUTPUT_DIR).parent_path().string();
+		std::replace(m_ApplicationBinaryDir.begin(), m_ApplicationBinaryDir.end(), '\\', '/');
 	}
 
 	Application::~Application()

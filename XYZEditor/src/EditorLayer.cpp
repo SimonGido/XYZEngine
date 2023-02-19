@@ -24,8 +24,8 @@ namespace XYZ {
 		void EditorLayer::OnAttach()
 		{
 			s_Data.Init();		
-
-			ScriptEngine::Init("Assets/Plugins/XYZScript.dll");
+			std::string assembly = "C:/Users/Gido/Projects/XYZEngine/XYZPluginManaged/bin/Debug-windows-x86_64/XYZPluginManaged.dll";
+			ScriptEngine::Init(assembly);
 
 			m_Scene = AssetManager::GetAsset<Scene>("Assets/Scenes/Scene.scene");
 
@@ -103,16 +103,7 @@ namespace XYZ {
 			PluginManager::Update(ts);
 			m_EditorManager.OnUpdate(ts);
 			
-			if (ImGui::Begin("Plugin Window"))
-			{
-				if (ImGui::Button("Create Plugin"))
-				{
-					const auto& appDir = Application::Get().GetApplicationDir();
-					const auto buildFile = FileSystem::OpenFile(Application::Get().GetWindow().GetNativeWindow());
-				}
-				//Platform::RunShellCommand()
-			}
-			ImGui::End();
+		
 
 
 			if (m_Scene->GetState() == SceneState::Edit)
@@ -148,6 +139,24 @@ namespace XYZ {
 			ImGui::SetCurrentContext(XYZ::UI::GetImGuiContext());
 			m_SceneRenderer->OnImGuiRender();
 			m_EditorManager.OnImGuiRender();
+
+			if (ImGui::Begin("Plugin Window"))
+			{
+				if (ImGui::Button("Create Plugin"))
+				{				
+					std::string projectDir = FileSystem::OpenFolder(Application::Get().GetWindow().GetNativeWindow(), Application::Get().GetApplicationDir());
+					std::string binaryDir = Application::Get().GetApplicationBinaryDir();
+
+					
+					std::filesystem::path commandPath = std::filesystem::path(binaryDir + "/XYZPluginGenerator/XYZPluginGenerator.exe");
+					std::string command = std::filesystem::absolute(commandPath).string();
+					std::string args = fmt::format("{} {} {}", "XYZPluginGenerator.exe", projectDir, binaryDir);
+
+
+					Platform::RunShellCommand(command.c_str(), args.data());
+				}
+			}
+			ImGui::End();
 		}
 
 		bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)

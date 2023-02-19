@@ -4,22 +4,42 @@
 #include <array>
 
 namespace XYZ {
-	std::string Platform::RunShellCommand(const char* command)
+	void Platform::RunShellCommand(std::string app, const std::string& args)
 	{
-        std::array<char, 128> buffer;
-        std::string result;
-   
-        FILE* pipe = _popen(command, "r");
-        if (pipe) 
-        {
-            XYZ_CORE_ERROR("Failed to run shell command {}", command);
+        std::replace(app.begin(), app.end(), '/', '\\');
+
+        STARTUPINFOA si;
+        PROCESS_INFORMATION pi;
+
+        // set the size of the structures
+        ZeroMemory(&si, sizeof(si));
+        si.cb = sizeof(si);
+        ZeroMemory(&pi, sizeof(pi));
+        si.wShowWindow = SW_SHOW;
+        si.dwFlags = STARTF_USESHOWWINDOW;
+        si.lpTitle = strdup(app.c_str());
        
-            while (fgets(buffer.data(), buffer.size(), pipe) != nullptr) 
-            {
-                result += buffer.data();
-            }
-            _pclose(pipe);
+        LPSTR argsTemp = strdup(args.c_str());
+        BOOL success = CreateProcessA(
+            app.c_str(),
+            argsTemp,
+            NULL,
+            NULL,
+            FALSE,
+            CREATE_NEW_CONSOLE,
+            NULL,
+            NULL,
+            &si,
+            &pi
+        );
+        if (!success)
+        {
+            XYZ_CORE_ERROR("Failed to run shell command {}", app);
         }
-        return result;
+        // Close process and thread handles. 
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        free(si.lpTitle);
+        free(argsTemp);
 	}
 }

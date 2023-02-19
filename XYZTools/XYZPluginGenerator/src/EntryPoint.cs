@@ -20,6 +20,8 @@ namespace XYZPluginGenerator
     {
         static string logFile = "PluginGeneratorLog.log";
 
+        static string buildFileEnd = ".Build.cs";
+
         static Assembly CreateAssemblyFromScript(string scriptPath, out List<CompilerError> errors)
         {
             string codeToCompile = File.ReadAllText(scriptPath);
@@ -36,37 +38,81 @@ namespace XYZPluginGenerator
         }
 
 
+        static string FindBuildFile(string path)
+        {
+            var files = Directory.EnumerateFiles(path);
+            foreach (var file in files)
+            {
+                if (file.EndsWith(buildFileEnd))
+                    return file;
+            }
+            return null;
+        }
+
+
         static void Main(string[] args)
         {
-            Debug.Assert(args.Length == 2);
-
-            string engineDirectory = args[0];
-            string projectBuildFile = args[1];
-
-            Assembly assembly = CreateAssemblyFromScript(projectBuildFile, out var compileErrors);
-            foreach (var error in compileErrors)
+            try
             {
-                Console.WriteLine(error);
-                File.AppendAllText(logFile, error.ToString());
+                string projectDirectory = args[0];
+                string engineDirectory = args[1];
+
+                Console.WriteLine("Generating " + projectDirectory);
+                Console.WriteLine("Engine directory " + engineDirectory);
+
+                string projectBuildFile = FindBuildFile(projectDirectory);
+                if (projectBuildFile == null)
+                {
+                    Console.WriteLine(projectDirectory + " does not contain build file");
+                    Console.ReadKey();
+                    return;
+                }
+
+
+                Assembly assembly = CreateAssemblyFromScript(projectBuildFile, out var compileErrors);
+                foreach (var error in compileErrors)
+                {
+                    Console.WriteLine(error);
+                    File.AppendAllText(logFile, error.ToString());
+                }
+                if (compileErrors.Count > 0)
+                {
+                    Console.ReadKey();
+                    return;
+                }
+
+
+                var type = assembly.GetTypes()[0];
+                var project = Activator.CreateInstance(type, engineDirectory);
+
+                ProjectInfo projectInfo = new ProjectInfo(project, type);
+                var validationErrors = projectInfo.Validate();
+                foreach (var error in validationErrors)
+                {
+                    Console.WriteLine(error);
+                    File.AppendAllText(logFile, error);
+                }
+                if (validationErrors.Count > 0)
+                {
+                    Console.ReadKey();
+                    return;
+                }
+
+
+                string premake = Premake.GeneratePremake(projectInfo, type.Name);
+                File.WriteAllText(projectDirectory + "\\premake5.lua", premake);
+
+                Console.WriteLine("Successfully generated " + projectBuildFile);
+
+
+                Console.ReadKey();
             }
-            if (compileErrors.Count > 0) { return; }
-
-  
-            var type = assembly.GetTypes()[0]; 
-            var project = Activator.CreateInstance(type, engineDirectory);
-
-            ProjectInfo projectInfo = new ProjectInfo(project, type);
-            var validationErrors = projectInfo.Validate();
-            foreach (var error in validationErrors)
+            catch(Exception ex)
             {
-                Console.WriteLine(error);
-                File.AppendAllText(logFile, error);
+                Console.WriteLine(ex.Message); 
+                Console.ReadKey();
+
             }
-            if (validationErrors.Count > 0) { return; }
-
-
-            string premake = Premake.GeneratePremake(projectInfo, type.Name);
-            File.WriteAllText("premake5.lua", premake);
         }
     }
 }

@@ -46,7 +46,7 @@ namespace XYZPluginGenerator
 
         private void TryExtract(FieldInfo dstInfo, object srcIntance, FieldInfo srcInfo)
         {
-            if (dstInfo.Name == srcInfo.Name)
+            if (dstInfo.Name == srcInfo.Name && dstInfo.FieldType.Name == srcInfo.FieldType.Name)
                 dstInfo.SetValue(this, srcInfo.GetValue(srcIntance));
         }
     }

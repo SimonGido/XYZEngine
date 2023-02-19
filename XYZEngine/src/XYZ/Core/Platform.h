@@ -5,6 +5,6 @@ namespace XYZ {
 	class XYZ_API Platform
 	{
 	public:
-		static std::string RunShellCommand(const char* command);
+		static void RunShellCommand(std::string app, const std::string& args);
 	};
 }

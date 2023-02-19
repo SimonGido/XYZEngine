@@ -35,8 +35,9 @@ namespace XYZ {
 		ImGuiLayer*						GetImGuiLayer()	const	  { return m_ImGuiLayer; }
 		PerformanceProfiler&			GetPerformanceProfiler()  { return m_Profiler; }
 		
-		const std::string&				GetApplicationDir() const { return m_ApplicationDir; }
-		const ApplicationSpecification& GetSpecification() const  { return m_Specification;}
+		const std::string&				GetApplicationDir()			const { return m_ApplicationDir; }
+		const std::string&				GetApplicationBinaryDir()	const { return m_ApplicationBinaryDir; }
+		const ApplicationSpecification& GetSpecification()			const  { return m_Specification;}
 		
 		static Application& Get();
 
@@ -69,7 +70,9 @@ namespace XYZ {
 		ThreadPool 				 m_ThreadPool;
 		ApplicationSpecification m_Specification;
 		PerformanceProfiler		 m_Profiler;
+
 		std::string				 m_ApplicationDir;
+		std::string				 m_ApplicationBinaryDir;
 	};
 
 }

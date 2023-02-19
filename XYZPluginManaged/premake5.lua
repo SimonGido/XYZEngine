@@ -21,24 +21,24 @@ files
 
 includedirs
 {
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/vendor",
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/src",
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/vendor/spdlog/include",
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/vendor/imgui",
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/vendor/ImGuizmo",
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/vendor/imgui-node-editor",
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/vendor/glm",
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/vendor/ozz-animation/include",
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/vendor/box2d/include",
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/vendor/entt/include",
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/vendor/OpenXR-SDK/include",
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/vendor/optick/src",
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/vendor/yaml-cpp/include",
-"C:/Users/Gido/Projects/XYZEngine/XYZEngine/vendor/asio/include"
+"C:/Users/Gido/XYZEngine/vendor",
+"C:/Users/Gido/XYZEngine/src",
+"C:/Users/Gido/XYZEngine/vendor/spdlog/include",
+"C:/Users/Gido/XYZEngine/vendor/imgui",
+"C:/Users/Gido/XYZEngine/vendor/ImGuizmo",
+"C:/Users/Gido/XYZEngine/vendor/imgui-node-editor",
+"C:/Users/Gido/XYZEngine/vendor/glm",
+"C:/Users/Gido/XYZEngine/vendor/ozz-animation/include",
+"C:/Users/Gido/XYZEngine/vendor/box2d/include",
+"C:/Users/Gido/XYZEngine/vendor/entt/include",
+"C:/Users/Gido/XYZEngine/vendor/OpenXR-SDK/include",
+"C:/Users/Gido/XYZEngine/vendor/optick/src",
+"C:/Users/Gido/XYZEngine/vendor/yaml-cpp/include",
+"C:/Users/Gido/XYZEngine/vendor/asio/include"
 }
 
 links
 {
-"C:/Users/Gido/Projects/XYZEngine/bin/Debug-windows-x86_64/XYZScriptCore/XYZScriptCore.dll"
+"C:/Users/Gido/Projects/XYZEngine/XYZScriptCore/XYZScriptCore.dll"
 }
 
