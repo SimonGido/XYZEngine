@@ -9,22 +9,38 @@ namespace XYZPluginGenerator
 {
     internal class ProjectInfo
     {
+        public string ProjectName;
+
         public string Language;
 
-        public string ProjectKind;
-
+        public string Kind;
+        
         public ProjectInfo(object project, Type type)
         {
             ExtractFields(project, type);
+        }
+
+        public Dictionary<string, string> ToDictionary()
+        {
+            var result = new Dictionary<string, string>();
+            Type thisType = GetType();
+            foreach (var thisField in thisType.GetFields())
+            {
+                string value = thisField.GetValue(this).ToString();
+                result.Add(thisField.Name, value);
+            }
+
+            return result;
         }
 
         public List<string> Validate()
         {
             List<string> errors = new List<string>();
             Type thisType = GetType();
+            
             foreach (var thisField in thisType.GetFields())
             {
-                if (thisField.GetValue(this) == null)
+                if (thisField.IsPublic && thisField.GetValue(this) == null)
                 {
                     errors.Add("Missing value " + thisField.Name);
                 }
@@ -39,15 +55,20 @@ namespace XYZPluginGenerator
             {
                 foreach (var field in type.GetFields())
                 {
-                    TryExtract(thisField, project, field);
+                    if (TryExtract(thisField, project, field))
+                        break;
                 }
             }
         }
 
-        private void TryExtract(FieldInfo dstInfo, object srcIntance, FieldInfo srcInfo)
+        private bool TryExtract(FieldInfo dstInfo, object srcIntance, FieldInfo srcInfo)
         {
             if (dstInfo.Name == srcInfo.Name && dstInfo.FieldType.Name == srcInfo.FieldType.Name)
+            {
                 dstInfo.SetValue(this, srcInfo.GetValue(srcIntance));
+                return true;
+            }
+            return false;
         }
     }
 }

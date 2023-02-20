@@ -106,6 +106,7 @@ namespace XYZ {
 		{
 			return NULL;
 		}
+		
 		const auto assemb = mono_assembly_load_from_full(image, filepath, &status, 0);
 		free(file_data);
 		CloseHandle(file);
@@ -304,22 +305,33 @@ namespace XYZ {
 	}
 
 
-	void ScriptEngine::Init(const std::string& assemblyPath)
+	void ScriptEngine::Init()
 	{
-		s_AssemblyPath = assemblyPath;
-
 		InitMono();
-		LoadRuntimeAssembly(s_AssemblyPath);
+
+		std::filesystem::path coreAssemblyPath = std::filesystem::path(XYZ_OUTPUT_DIR).parent_path();
+		coreAssemblyPath /= "XYZScriptCore/XYZScriptCore.dll";
+
+		s_CoreAssembly = LoadAssembly(coreAssemblyPath.string());
+		s_CoreAssemblyImage = GetAssemblyImage(s_CoreAssembly);
+
+		s_ExceptionMethod = GetMethod(s_CoreAssemblyImage, "XYZ.RuntimeException:OnException(object)");
+		s_EntityClass = mono_class_from_name(s_CoreAssemblyImage, "XYZ", "Entity");
 	}
 
 	void ScriptEngine::Shutdown()
 	{
-		for (auto& it : s_ScriptEntityInstances)
-			DestroyInstance(it.Handle);
+		shutdownRuntimeAssembly();
 
 		auto garbageCollectMethod = GetMethod(s_CoreAssemblyImage, "XYZ.Core::CollectGarbage()");
 		MonoObject* result = mono_runtime_invoke(garbageCollectMethod, nullptr, nullptr, nullptr);
 
+
+		mono_assembly_close(s_CoreAssembly);
+		mono_domain_unload(s_MonoDomain);
+		s_CoreAssembly = nullptr;
+		s_CoreAssemblyImage = nullptr;
+		s_MonoDomain = nullptr;
 
 		s_ScriptEntityInstances.Clear();
 		s_EntityClassMap.clear();
@@ -330,54 +342,22 @@ namespace XYZ {
 
 	void ScriptEngine::LoadRuntimeAssembly(const std::string& path)
 	{
-		MonoDomain* domain = nullptr;
-		bool cleanup = false;
-		if (s_MonoDomain)
-		{
-			domain = mono_domain_create_appdomain("XYZ Runtime", nullptr);
-			mono_domain_set(domain, false);
-
-			cleanup = true;
-		}
-
-		std::filesystem::path coreAssemblyPath = std::filesystem::path(XYZ_OUTPUT_DIR).parent_path();
-		coreAssemblyPath /= "XYZScriptCore/XYZScriptCore.dll";
-
-		s_CoreAssembly = LoadAssembly(coreAssemblyPath.string());
-		s_CoreAssemblyImage = GetAssemblyImage(s_CoreAssembly);
-
-		MonoAssembly* appAssembly = nullptr;
-		appAssembly = LoadAssembly(path);
-
-		const auto appAssemblyImage = GetAssemblyImage(appAssembly);
+		s_AssemblyPath = path;
+		shutdownRuntimeAssembly();
+		s_AppAssembly = LoadAssembly(path);
+		s_AppAssemblyImage = GetAssemblyImage(s_AppAssembly);
 		ScriptEngineRegistry::RegisterAll();
 
-		if (cleanup)
-		{
-			mono_domain_unload(s_MonoDomain);
-			s_MonoDomain = domain;
-		}
-		s_ExceptionMethod = GetMethod(s_CoreAssemblyImage, "XYZ.RuntimeException:OnException(object)");
-		s_EntityClass = mono_class_from_name(s_CoreAssemblyImage, "XYZ", "Entity");
-
-		s_AppAssembly = appAssembly;
-		s_AppAssemblyImage = appAssemblyImage;
 		createModules();
-	}
-	void ScriptEngine::ReloadAssembly(const std::string& path)
-	{
-		Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
-		XYZ_ASSERT(scene.Raw(), "No active scene!");
-		auto scriptView = scene->m_Registry.view<ScriptComponent>();
-		for (auto ent : scriptView)
-		{
-			DestroyScriptEntityInstance({ ent, scene.Raw() });
-		}
 
-		LoadRuntimeAssembly(path);
-		for (auto ent : scriptView)
+		Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+		if (scene.Raw())
 		{
-			CreateScriptEntityInstance({ ent, scene.Raw() });
+			auto scriptView = scene->m_Registry.view<ScriptComponent>();
+			for (auto ent : scriptView)
+			{
+				CreateScriptEntityInstance({ ent, scene.Raw() });
+			}
 		}
 	}
 
@@ -554,8 +534,11 @@ namespace XYZ {
 
 	void ScriptEngine::DestroyScriptEntityInstance(const SceneEntity& entity)
 	{
-		DestroyInstance(s_ScriptEntityInstances.GetData(entity).Handle);
-		s_ScriptEntityInstances.Erase(entity);
+		if (s_ScriptEntityInstances.IsValid(entity))
+		{
+			DestroyInstance(s_ScriptEntityInstances.GetData(entity).Handle);
+			s_ScriptEntityInstances.Erase(entity);
+		}
 	}
 
 	void ScriptEngine::CopyPublicFieldsToRuntime(const SceneEntity& entity)
@@ -594,6 +577,22 @@ namespace XYZ {
 		{
 			if (ModuleExists(mod))
 				CreateModule(mod);
+		}
+	}
+
+	void ScriptEngine::shutdownRuntimeAssembly()
+	{
+		if (s_AppAssembly != nullptr)
+			mono_assembly_close(s_AppAssembly);
+
+		Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
+		if (scene.Raw())
+		{
+			auto scriptView = scene->m_Registry.view<ScriptComponent>();
+			for (auto ent : scriptView)
+			{
+				DestroyScriptEntityInstance({ ent, scene.Raw() });
+			}
 		}
 	}
 

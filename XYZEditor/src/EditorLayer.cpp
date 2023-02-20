@@ -25,7 +25,8 @@ namespace XYZ {
 		{
 			s_Data.Init();		
 			std::string assembly = "C:/Users/Gido/Projects/XYZEngine/XYZPluginManaged/bin/Debug-windows-x86_64/XYZPluginManaged.dll";
-			ScriptEngine::Init(assembly);
+			ScriptEngine::Init();
+			//ScriptEngine::LoadRuntimeAssembly(assembly);
 
 			m_Scene = AssetManager::GetAsset<Scene>("Assets/Scenes/Scene.scene");
 
@@ -144,16 +145,34 @@ namespace XYZ {
 			{
 				if (ImGui::Button("Create Plugin"))
 				{				
-					std::string projectDir = FileSystem::OpenFolder(Application::Get().GetWindow().GetNativeWindow(), Application::Get().GetApplicationDir());
-					std::string binaryDir = Application::Get().GetApplicationBinaryDir();
+					std::string appDir = Application::Get().GetApplicationDirectory().string();
+					std::string projectDir = FileSystem::OpenFolder(Application::Get().GetWindow().GetNativeWindow(), appDir);
+			
 
-					
-					std::filesystem::path commandPath = std::filesystem::path(binaryDir + "/XYZPluginGenerator/XYZPluginGenerator.exe");
-					std::string command = std::filesystem::absolute(commandPath).string();
-					std::string args = fmt::format("{} {} {}", "XYZPluginGenerator.exe", projectDir, binaryDir);
+					const std::filesystem::path engineBinaryDir = std::filesystem::absolute(Application::Get().GetEngineBinaryDirectory());
+					const std::filesystem::path engineSourceDir = std::filesystem::absolute(Application::Get().GetEngineSourceDirectory());
 
+					std::filesystem::path command = engineBinaryDir.parent_path() / "XYZPluginGenerator/XYZPluginGenerator.exe";	
+					std::string args = fmt::format("{} {} {} {}", projectDir, engineBinaryDir, engineSourceDir);
 
-					Platform::RunShellCommand(command.c_str(), args.data());
+					std::string result;
+					if (Platform::ExecuteCommand(command.string().c_str(), args.data(), result))
+					{
+						Ref<Project> project = Project::GetActive();
+						// TODO: load info from file
+						Plugin plugin;
+						plugin.PluginDirectory = projectDir;
+						plugin.Language = PluginLanguage::CS;
+						plugin.PluginName = "XYZPluginManaged";
+
+						project->Configuration.Plugins.push_back(plugin);
+						project->ReloadPlugins();
+					}
+					else
+					{
+						XYZ_CORE_WARN("Failed to create plugin");
+					}
+					XYZ_CORE_INFO(result);
 				}
 			}
 			ImGui::End();

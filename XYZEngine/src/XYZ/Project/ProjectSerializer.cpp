@@ -18,12 +18,12 @@ namespace XYZ {
 				out << YAML::Key << "Name" << YAML::Value << config.Name;
 				out << YAML::Key << "StartScene" << YAML::Value << config.StartScene.string();
 				out << YAML::Key << "AssetDirectory" << YAML::Value << config.AssetDirectory.string();
-				out << YAML::Key << "ScriptModulePath" << YAML::Value << config.ScriptModulePath.string();
+				
 				out << YAML::Key << "Flags" << YAML::Value << config.Flags;
 				out << YAML::Key << "Plugins" << YAML::BeginSeq << YAML::Flow; // Plugins
-				for (auto& pluginPath : project->Configuration.PluginPaths)
+				for (const auto& plugin : project->Configuration.Plugins)
 				{
-					out << pluginPath.string();
+					out << plugin.PluginDirectory.string();
 				}
 				out << YAML::EndSeq; // Plugins
 				out << YAML::EndMap; // Project
@@ -48,12 +48,13 @@ namespace XYZ {
 		result->Configuration.Name = projectData["Name"].as<std::string>();
 		result->Configuration.StartScene = projectData["StartScene"].as<std::string>();
 		result->Configuration.AssetDirectory = projectData["AssetDirectory"].as<std::string>();
-		result->Configuration.ScriptModulePath = projectData["ScriptModulePath"].as<std::string>();
 		result->Configuration.Flags = projectData["Flags"].as<uint32_t>();
 		YAML::Node pluginsData = data["Plugins"];
 		for (auto it : data)
 		{
-			result->Configuration.PluginPaths.push_back(it.as<std::string>());
+			Plugin plugin;
+			plugin.PluginDirectory = it.as<std::string>();
+			result->Configuration.Plugins.push_back(plugin);
 		}
 		return result;
 	}

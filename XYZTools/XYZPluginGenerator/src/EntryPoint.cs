@@ -13,6 +13,8 @@ using System.CodeDom.Compiler;
 
 using Microsoft.CSharp;
 
+using YamlDotNet.Serialization;
+
 namespace XYZPluginGenerator
 {
 
@@ -22,7 +24,9 @@ namespace XYZPluginGenerator
 
         static string buildFileEnd = ".Build.cs";
 
-        static Assembly CreateAssemblyFromScript(string scriptPath, out List<CompilerError> errors)
+        static string pluginExtension = ".xyzplugin";
+
+        private static Assembly CreateAssemblyFromScript(string scriptPath, out List<CompilerError> errors)
         {
             string codeToCompile = File.ReadAllText(scriptPath);
 
@@ -38,7 +42,7 @@ namespace XYZPluginGenerator
         }
 
 
-        static string FindBuildFile(string path)
+        private static string FindBuildFile(string path)
         {
             var files = Directory.EnumerateFiles(path);
             foreach (var file in files)
@@ -49,69 +53,81 @@ namespace XYZPluginGenerator
             return null;
         }
 
+        private static Assembly CreateAndValidateAssembly(string projectBuildFile)
+        {
+            Assembly assembly = CreateAssemblyFromScript(projectBuildFile, out var compileErrors);
+            foreach (var error in compileErrors)
+            {
+                Console.WriteLine(error);
+                File.AppendAllText(logFile, error.ToString());
+            }
+            if (compileErrors.Count > 0)
+            {
+                return null;
+            }
+            return assembly;
+        }
 
+        private static ProjectInfo CreateAndValidateProjectInfo(Assembly assembly, EngineInfo engineInfo)
+        {
+            var type = assembly.GetTypes()[0];
+            var project = Activator.CreateInstance(type, engineInfo.EngineLibDirectory, engineInfo.EngineSourceDirectory);
+
+            ProjectInfo projectInfo = new ProjectInfo(project, type);
+            var validationErrors = projectInfo.Validate();
+            foreach (var error in validationErrors)
+            {
+                Console.WriteLine(error);
+                File.AppendAllText(logFile, error);
+            }
+            if (validationErrors.Count > 0)
+            {
+                return null;
+            }
+            return projectInfo;
+        }
+
+        private static void SerializeProjectInfo(string path, ProjectInfo projectInfo)
+        {
+            string saveFile = path + "/" + projectInfo.ProjectName + pluginExtension;
+            Dictionary<string, string> yamlValues = projectInfo.ToDictionary();
+            var writer = new StreamWriter(saveFile);
+            Serializer serializer = new Serializer();
+            serializer.Serialize(writer, yamlValues);
+            writer.Dispose();
+        }
         static void Main(string[] args)
         {
             try
             {
                 string projectDirectory = args[0];
-                string engineDirectory = args[1];
 
-                Console.WriteLine("Generating " + projectDirectory);
-                Console.WriteLine("Engine directory " + engineDirectory);
+                EngineInfo engineInfo = new EngineInfo(args[1], args[2]);
 
                 string projectBuildFile = FindBuildFile(projectDirectory);
                 if (projectBuildFile == null)
                 {
                     Console.WriteLine(projectDirectory + " does not contain build file");
-                    Console.ReadKey();
                     return;
                 }
 
 
-                Assembly assembly = CreateAssemblyFromScript(projectBuildFile, out var compileErrors);
-                foreach (var error in compileErrors)
-                {
-                    Console.WriteLine(error);
-                    File.AppendAllText(logFile, error.ToString());
-                }
-                if (compileErrors.Count > 0)
-                {
-                    Console.ReadKey();
+                Assembly assembly = CreateAndValidateAssembly(projectBuildFile);
+                if (assembly == null) 
                     return;
-                }
 
-
-                var type = assembly.GetTypes()[0];
-                var project = Activator.CreateInstance(type, engineDirectory);
-
-                ProjectInfo projectInfo = new ProjectInfo(project, type);
-                var validationErrors = projectInfo.Validate();
-                foreach (var error in validationErrors)
-                {
-                    Console.WriteLine(error);
-                    File.AppendAllText(logFile, error);
-                }
-                if (validationErrors.Count > 0)
-                {
-                    Console.ReadKey();
+                ProjectInfo projectInfo = CreateAndValidateProjectInfo(assembly, engineInfo);
+                if (projectInfo == null)
                     return;
-                }
 
-
-                string premake = Premake.GeneratePremake(projectInfo, type.Name);
+                string premake = Premake.GeneratePremake(projectInfo, engineInfo);
                 File.WriteAllText(projectDirectory + "\\premake5.lua", premake);
-
+                SerializeProjectInfo(projectDirectory, projectInfo);
                 Console.WriteLine("Successfully generated " + projectBuildFile);
-
-
-                Console.ReadKey();
             }
             catch(Exception ex)
             {
                 Console.WriteLine(ex.Message); 
-                Console.ReadKey();
-
             }
         }
     }

@@ -70,7 +70,8 @@ project "XYZEngine"
 			"AL_LIBTYPE_STATIC",
 			"XR_USE_GRAPHICS_API_VULKAN",
 			'XYZ_OUTPUT_DIR="%{Definitions.TargetDirectory}"',
-			'XYZ_SOURCE_DIR="%{Definitions.SourceDirectory}"'
+			'XYZ_SOURCE_DIR="%{Definitions.SourceDirectory}"',
+			'XYZ_BINARY_DIR="%{outputdir}"'
 		}
 
 	

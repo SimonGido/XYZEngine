@@ -34,12 +34,11 @@ namespace XYZ {
 	class XYZ_API ScriptEngine
 	{
 	public:
-		static void Init(const std::string& assemblyPath);
+		static void Init();
 		static void Shutdown();
 
 		static void LoadRuntimeAssembly(const std::string& path);
-		static void ReloadAssembly(const std::string& path);
-
+	
 		static void SetSceneContext(const Ref<Scene>& scene);
 		static const Ref<Scene>& GetCurrentSceneContext();
 
@@ -67,7 +66,7 @@ namespace XYZ {
 		static const std::vector<std::string>&			GetEntityClasses();
 	private:
 		static void createModules();
-	
+		static void shutdownRuntimeAssembly();
 	};
 
 }

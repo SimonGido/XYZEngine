@@ -3,9 +3,24 @@
 
 #include "ProjectSerializer.h"
 #include "XYZ/Plugin/PluginManager.h"
+#include "XYZ/Script/ScriptEngine.h"
 
 namespace XYZ {
 	static Ref<Project> s_ActiveProject;
+
+	std::string Plugin::BinaryPath() const
+	{
+		std::string result = PluginDirectory.string() + "/bin";
+		result += "/" + std::string(XYZ_BINARY_DIR);
+		result += "/" + PluginName;
+
+#ifdef XYZ_PLATFORM_WINDOWS
+		result += ".dll";
+#elif XYZ_PLATFORM_UNIX
+		result += ".so";
+#endif
+		return result;
+	}
 
 	Ref<Project> Project::GetActive()
 	{
@@ -19,15 +34,25 @@ namespace XYZ {
 	Ref<Project> Project::Load(const std::filesystem::path& path)
 	{
 		// Close old plugins
-		for (const auto& pluginPath : s_ActiveProject->Configuration.PluginPaths)
+		for (const auto& plugin : s_ActiveProject->Configuration.Plugins)
 		{
-			PluginManager::ClosePlugin(pluginPath.string());
+			if (plugin.Language == PluginLanguage::CPP)
+			{
+				PluginManager::ClosePlugin(plugin.BinaryPath());
+			}
 		}
 
 		s_ActiveProject = ProjectSerializer::Deserialize(path);
-		for (const auto& pluginPath : s_ActiveProject->Configuration.PluginPaths)
+		for (const auto& plugin : s_ActiveProject->Configuration.Plugins)
 		{
-			PluginManager::OpenPlugin(pluginPath.string());
+			if (plugin.Language == PluginLanguage::CPP)
+			{
+				PluginManager::OpenPlugin(plugin.BinaryPath());
+			}
+			else if (plugin.Language == PluginLanguage::CS)
+			{
+				ScriptEngine::LoadRuntimeAssembly(plugin.BinaryPath());
+			}
 		}
 		return s_ActiveProject;
 	}
@@ -39,13 +64,24 @@ namespace XYZ {
 	}
 	void Project::ReloadPlugins()
 	{
-		for (const auto& pluginPath : Configuration.PluginPaths)
+		for (const auto& plugin : s_ActiveProject->Configuration.Plugins)
 		{
-			PluginManager::ClosePlugin(pluginPath.string());
+			if (plugin.Language == PluginLanguage::CPP)
+			{
+				PluginManager::ClosePlugin(plugin.BinaryPath());
+			}
 		}
-		for (const auto& pluginPath : Configuration.PluginPaths)
+		for (const auto& plugin : s_ActiveProject->Configuration.Plugins)
 		{
-			PluginManager::OpenPlugin(pluginPath.string());
+			if (plugin.Language == PluginLanguage::CPP)
+			{
+				PluginManager::OpenPlugin(plugin.BinaryPath());
+			}
+			else if (plugin.Language == PluginLanguage::CS)
+			{
+				ScriptEngine::LoadRuntimeAssembly(plugin.BinaryPath());
+			}
 		}
 	}
+
 }

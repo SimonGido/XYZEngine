@@ -62,10 +62,10 @@ namespace XYZ {
 		TCHAR NPath[MAX_PATH];
 		GetCurrentDirectory(MAX_PATH, NPath);
 		std::wstring tmp(&NPath[0]);
-		m_ApplicationDir = std::string(tmp.begin(), tmp.end());	
+		m_ApplicationDirectory = std::string(tmp.begin(), tmp.end());	
 
-		m_ApplicationBinaryDir = std::filesystem::path(XYZ_OUTPUT_DIR).parent_path().string();
-		std::replace(m_ApplicationBinaryDir.begin(), m_ApplicationBinaryDir.end(), '\\', '/');
+		m_EngineBinaryDirectory = std::filesystem::path(XYZ_OUTPUT_DIR);
+		m_EngineSourceDirectory = std::filesystem::path(XYZ_SOURCE_DIR);
 	}
 
 	Application::~Application()

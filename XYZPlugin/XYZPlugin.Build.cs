@@ -1,6 +1,7 @@
 
 
-public class XYZPluginManaged
+
+public class XYZPlugin
 {
     public string ProjectName;
 
@@ -8,9 +9,9 @@ public class XYZPluginManaged
 
     public string Kind;
 
-    public XYZPluginManaged(string engineDirectory, string engineSourceDirectory)
+    public XYZPlugin(string engineDirectory, string engineSourceDirectory)
     {
-        ProjectName = "XYZPluginManaged";
+        ProjectName = "XYZPlugin";
         Language = "C#";
         Kind = "SharedLib";
     }

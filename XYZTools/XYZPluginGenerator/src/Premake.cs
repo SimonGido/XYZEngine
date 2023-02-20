@@ -8,6 +8,21 @@ using System.Threading.Tasks;
 
 namespace XYZPluginGenerator
 {
+    internal class EngineInfo
+    {
+        public string EngineLibDirectory => engineLibDirectory;
+        public string EngineSourceDirectory => engineSourceDirectory;
+        
+        internal EngineInfo(string engineLibDirectory, string engineSourceDirectory)
+        {
+            this.engineLibDirectory = engineLibDirectory.Replace('\\', '/');
+            this.engineSourceDirectory = engineSourceDirectory.Replace('\\', '/');
+        }
+       
+
+        private string engineLibDirectory;
+        private string engineSourceDirectory;
+    }
     internal class Premake
     {
         private static string cppDialect = "C++17";
@@ -18,15 +33,7 @@ namespace XYZPluginGenerator
 
         private static string objDir = "bin-int";
 
-        private static string engineSourceDirectory = "../../../XYZEngine";
-
-        private static string engineLibDirectory = "../XYZEngine";
-
         private static string engineScriptLibDirectory = "../XYZScriptCore";
-
-        private static string engineSourceFullDirectory;
-
-        private static string engineLibFullDirectory;
 
         private static string engineScriptLibFullDirectory;
 
@@ -34,32 +41,26 @@ namespace XYZPluginGenerator
         private static Dictionary<string, string> modules;
 
         static Premake()
-        {
-            engineSourceFullDirectory = Path.GetFullPath(engineSourceDirectory);
-            engineLibFullDirectory = Path.GetFullPath(engineLibDirectory);
+        {     
             engineScriptLibFullDirectory = Path.GetFullPath(engineScriptLibDirectory);
-
-            engineSourceFullDirectory = engineSourceFullDirectory.Replace('\\', '/');
-            engineLibFullDirectory = engineLibFullDirectory.Replace("\\", "/");
-            engineScriptLibFullDirectory = engineScriptLibFullDirectory.Replace("\\", "/");
-
-            RegisterModules();
+            engineScriptLibFullDirectory = engineScriptLibFullDirectory.Replace("\\", "/");          
         }
         
         
-        public static string GeneratePremake(ProjectInfo info, string projectName)
+        public static string GeneratePremake(ProjectInfo info, EngineInfo engineInfo)
         {
+            RegisterModules(engineInfo.EngineSourceDirectory);
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine(GenerateWorkSpace(projectName));
-            builder.AppendLine(GenerateProjectSetup(info, projectName));
+            builder.AppendLine(GenerateWorkSpace(info.ProjectName));
+            builder.AppendLine(GenerateProjectSetup(info));
             builder.AppendLine(GenerateIncludedFiles());
-            builder.AppendLine(GenerateIncludedDirs(info));
-            builder.AppendLine(GenerateLinks(info));
+            builder.AppendLine(GenerateIncludedDirs(engineInfo.EngineSourceDirectory));
+            builder.AppendLine(GenerateLinks(info, engineInfo.EngineLibDirectory));
 
             return builder.ToString();
         }
 
-        private static void RegisterModules()
+        private static void RegisterModules(string engineSourceFullDirectory)
         {
             modules = new Dictionary<string, string>();
             modules.Add("spdlog", engineSourceFullDirectory + "/vendor/spdlog/include");
@@ -86,11 +87,11 @@ namespace XYZPluginGenerator
             return builder.ToString();
         }
 
-        private static string GenerateProjectSetup(ProjectInfo info, string projectName)
+        private static string GenerateProjectSetup(ProjectInfo info)
         {
             StringBuilder builder = new StringBuilder();
-            builder.AppendLine(KeyValue("project", projectName));
-            builder.AppendLine(KeyValue("\tkind", info.ProjectKind));
+            builder.AppendLine(KeyValue("project", info.ProjectName));
+            builder.AppendLine(KeyValue("\tkind", info.Kind));
             builder.AppendLine(KeyValue("\tlanguage", info.Language));
 
             if (info.Language == "C++")
@@ -120,7 +121,7 @@ namespace XYZPluginGenerator
             return builder.ToString();
         }
 
-        private static string GenerateIncludedDirs(ProjectInfo info)
+        private static string GenerateIncludedDirs(string engineSourceFullDirectory)
         {
             StringBuilder builder = new StringBuilder();
 
@@ -139,7 +140,7 @@ namespace XYZPluginGenerator
             return builder.ToString();
         }
 
-        private static string GenerateLinks(ProjectInfo info)
+        private static string GenerateLinks(ProjectInfo info, string engineLibFullDirectory)
         {
             StringBuilder builder = new StringBuilder();
 

@@ -34,6 +34,8 @@
 #include "XYZ/Scene/SceneSerializer.h"
 
 
+#include "XYZ/Project/Project.h"
+
 
 //-----Audio-----//
 #include "XYZ/Audio/Audio.h"

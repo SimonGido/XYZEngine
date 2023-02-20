@@ -4,7 +4,21 @@
 
 namespace XYZ {
 
+	enum class PluginLanguage
+	{
+		None,
+		CPP,
+		CS
+	};
 	
+	struct Plugin
+	{
+		std::string			  PluginName;
+		std::filesystem::path PluginDirectory;
+		PluginLanguage		  Language;
+
+		std::string BinaryPath() const;
+	};
 
 	struct ProjectConfig
 	{
@@ -18,9 +32,8 @@ namespace XYZ {
 		std::filesystem::path StartScene;
 
 		std::filesystem::path AssetDirectory;
-		std::filesystem::path ScriptModulePath;
 
-		std::vector<std::filesystem::path> PluginPaths;
+		std::vector<Plugin> Plugins;
 
 		uint32_t Flags = 0;
 	};

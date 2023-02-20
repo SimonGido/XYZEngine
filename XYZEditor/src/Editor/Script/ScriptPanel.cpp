@@ -24,8 +24,9 @@ namespace XYZ {
 				}
 
 				if (ImGui::Button("Reload"))
-					ScriptEngine::ReloadAssembly("Assets/Scripts/XYZScript.dll");
-
+				{
+					ScriptEngine::LoadRuntimeAssembly("Assets/Scripts/XYZScript.dll");
+				}
 
 
 				if (scene->GetState() == SceneState::Play)

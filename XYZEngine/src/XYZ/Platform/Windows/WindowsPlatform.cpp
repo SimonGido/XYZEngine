@@ -1,45 +1,43 @@
+
 #include "stdafx.h"
 #include "XYZ/Core/Platform.h"
+
+#ifdef XYZ_PLATFORM_WINDOWS
+
+#include <windows.h>
+#include <atlstr.h>
 
 #include <array>
 
 namespace XYZ {
-	void Platform::RunShellCommand(std::string app, const std::string& args)
-	{
+ 
+    bool Platform::ExecuteCommand(std::string app, const std::string& args, std::string& output)
+    {
+        const int bufferSize = 1024;
+        char buffer[bufferSize];
+        FILE* pipe;
+
         std::replace(app.begin(), app.end(), '/', '\\');
+        std::string fullCommand = app + " " + args;
 
-        STARTUPINFOA si;
-        PROCESS_INFORMATION pi;
+        pipe = _popen(fullCommand.c_str(), "r");
+        if (pipe == nullptr)
+            return false;
 
-        // set the size of the structures
-        ZeroMemory(&si, sizeof(si));
-        si.cb = sizeof(si);
-        ZeroMemory(&pi, sizeof(pi));
-        si.wShowWindow = SW_SHOW;
-        si.dwFlags = STARTF_USESHOWWINDOW;
-        si.lpTitle = strdup(app.c_str());
-       
-        LPSTR argsTemp = strdup(args.c_str());
-        BOOL success = CreateProcessA(
-            app.c_str(),
-            argsTemp,
-            NULL,
-            NULL,
-            FALSE,
-            CREATE_NEW_CONSOLE,
-            NULL,
-            NULL,
-            &si,
-            &pi
-        );
-        if (!success)
+        while (fgets(buffer, bufferSize, pipe))
         {
-            XYZ_CORE_ERROR("Failed to run shell command {}", app);
+            output += buffer;
         }
-        // Close process and thread handles. 
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
-        free(si.lpTitle);
-        free(argsTemp);
-	}
+
+        int endOfFileVal = feof(pipe);
+        int closeReturnVal = _pclose(pipe); // Close pipe
+
+        if (!endOfFileVal)
+        {
+            XYZ_CORE_ERROR("Failed to read the pipe to the end");
+            return false;
+        }     
+        return true;
+    }
 }
+#endif

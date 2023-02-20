@@ -12,15 +12,20 @@ project "XYZPluginGenerator"
 		{
 			"src/**.cs", 
 		}
-
+		buildcommands 
+		{
+			"dotnet add package YamlDotNet --version 13.0.1"
+		}
+		
 		nuget
 		{
-			"System.CodeDom:7.0.0"
+			"System.CodeDom:7.0.0",
+			"YamlDotNet:13.0.1"
 		}
 
 		links
 		{
 			"System"
 		}
-		
+
 		dotnetframework("4.7.2")
