@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "PluginManager.h"
 #include "PluginLoader.h"
-#include "Plugin.h"
+#include "PluginInterface.h"
 
 
 #define CR_MAIN_FUNC "EntryPoint"

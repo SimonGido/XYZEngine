@@ -158,14 +158,8 @@ namespace XYZ {
 					std::string result;
 					if (Platform::ExecuteCommand(command.string().c_str(), args.data(), result))
 					{
-						Ref<Project> project = Project::GetActive();
-						// TODO: load info from file
-						Plugin plugin;
-						plugin.PluginDirectory = projectDir;
-						plugin.Language = PluginLanguage::CS;
-						plugin.PluginName = "XYZPluginManaged";
-
-						project->Configuration.Plugins.push_back(plugin);
+						Ref<Project> project = Project::GetActive();			
+						project->Configuration.PluginPaths.push_back(projectDir);
 						project->ReloadPlugins();
 					}
 					else

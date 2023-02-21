@@ -21,9 +21,9 @@ namespace XYZ {
 				
 				out << YAML::Key << "Flags" << YAML::Value << config.Flags;
 				out << YAML::Key << "Plugins" << YAML::BeginSeq << YAML::Flow; // Plugins
-				for (const auto& plugin : project->Configuration.Plugins)
+				for (const auto& plugin : project->Configuration.PluginPaths)
 				{
-					out << plugin.PluginDirectory.string();
+					out << plugin.string();
 				}
 				out << YAML::EndSeq; // Plugins
 				out << YAML::EndMap; // Project
@@ -52,9 +52,7 @@ namespace XYZ {
 		YAML::Node pluginsData = data["Plugins"];
 		for (auto it : data)
 		{
-			Plugin plugin;
-			plugin.PluginDirectory = it.as<std::string>();
-			result->Configuration.Plugins.push_back(plugin);
+			result->Configuration.PluginPaths.push_back(it.as<std::string>());
 		}
 		return result;
 	}
