@@ -10,48 +10,6 @@
 namespace XYZ {
 	namespace Utils {
 
-		enum class PluginLanguage
-		{
-			None,
-			CPP,
-			CS
-		};
-
-		std::string PluginLanguageToString(PluginLanguage language)
-		{
-			switch (language)
-			{
-			case XYZ::Utils::PluginLanguage::None:
-				XYZ_ASSERT(false, "");
-				return "None";
-			case XYZ::Utils::PluginLanguage::CPP:
-				return "CPP";
-			case XYZ::Utils::PluginLanguage::CS:
-				return "CS";
-			}
-			XYZ_ASSERT(false, "");
-			return "";
-		}
-
-		PluginLanguage StringToPluginLanguage(const std::string& str)
-		{
-			if (str == "CPP")
-				return PluginLanguage::CPP;
-			if (str == "CS")
-				return PluginLanguage::CS;
-
-			XYZ_ASSERT(false, "");
-			return PluginLanguage::None;
-		}
-
-
-		struct Plugin
-		{
-			std::string		PluginName;
-			std::string		BinaryPath;
-			PluginLanguage	Language;
-		};
-
 		static std::string PluginBinaryPath(const std::filesystem::path& pluginDirectory, const std::string& pluginName)
 		{
 			std::string result = pluginDirectory.string() + "/bin";
@@ -68,9 +26,9 @@ namespace XYZ {
 
 		static std::filesystem::path FindPluginInDirectory(const std::filesystem::path& dir)
 		{
-			for (auto it : dir)
-			{
-				if (it.extension() == ".xyzplugin")
+			for (auto it : std::filesystem::directory_iterator(dir))
+			{				
+				if (it.path().extension() == ".xyzplugin")
 					return it;
 			}
 		}
@@ -86,8 +44,8 @@ namespace XYZ {
 			YAML::Node data = YAML::Load(strStream.str());
 
 			Plugin result;
-			result.PluginName = data["PluginName"].as<std::string>();
-			result.Language = StringToPluginLanguage(data["Language"].as<std::string>());
+			result.PluginName = data["ProjectName"].as<std::string>();
+			result.Language = Plugin::StringToPluginLanguage(data["Language"].as<std::string>());
 			result.BinaryPath = PluginBinaryPath(dir, result.PluginName);
 			return result;
 		}
@@ -111,8 +69,8 @@ namespace XYZ {
 		// Close old plugins
 		for (const auto& path : s_ActiveProject->Configuration.PluginPaths)
 		{
-			Utils::Plugin plugin = Utils::LoadPluginInDirectory(path);
-			if (plugin.Language == Utils::PluginLanguage::CPP)
+			Plugin plugin = Utils::LoadPluginInDirectory(path);
+			if (plugin.Language == PluginLanguage::CPP)
 			{
 				PluginManager::ClosePlugin(plugin.BinaryPath);
 			}
@@ -121,14 +79,17 @@ namespace XYZ {
 		s_ActiveProject = ProjectSerializer::Deserialize(path);
 		for (const auto& path: s_ActiveProject->Configuration.PluginPaths)
 		{
-			Utils::Plugin plugin = Utils::LoadPluginInDirectory(path);
-			if (plugin.Language == Utils::PluginLanguage::CPP)
+			Plugin plugin = Utils::LoadPluginInDirectory(path);
+			if (plugin.Language == PluginLanguage::CPP)
 			{
 				PluginManager::OpenPlugin(plugin.BinaryPath);
 			}
-			else if (plugin.Language == Utils::PluginLanguage::CS)
+			else if (plugin.Language == PluginLanguage::CS)
 			{
-				ScriptEngine::LoadRuntimeAssembly(plugin.BinaryPath);
+				if (std::filesystem::exists(plugin.BinaryPath))
+					ScriptEngine::LoadRuntimeAssembly(plugin.BinaryPath);
+				else
+					XYZ_CORE_WARN("Failed to open plugin {}", plugin.BinaryPath);
 			}
 		}
 		return s_ActiveProject;
@@ -143,24 +104,54 @@ namespace XYZ {
 	{
 		for (const auto& path : s_ActiveProject->Configuration.PluginPaths)
 		{
-			Utils::Plugin plugin = Utils::LoadPluginInDirectory(path);
-			if (plugin.Language == Utils::PluginLanguage::CPP)
+			Plugin plugin = Utils::LoadPluginInDirectory(path);
+			if (plugin.Language == PluginLanguage::CPP)
 			{
 				PluginManager::ClosePlugin(plugin.BinaryPath);
 			}
 		}
 		for (const auto& path : s_ActiveProject->Configuration.PluginPaths)
 		{
-			Utils::Plugin plugin = Utils::LoadPluginInDirectory(path);
-			if (plugin.Language == Utils::PluginLanguage::CPP)
+			Plugin plugin = Utils::LoadPluginInDirectory(path);
+			if (plugin.Language == PluginLanguage::CPP)
 			{
 				PluginManager::OpenPlugin(plugin.BinaryPath);
 			}
-			else if (plugin.Language == Utils::PluginLanguage::CS)
+			else if (plugin.Language == PluginLanguage::CS)
 			{
-				ScriptEngine::LoadRuntimeAssembly(plugin.BinaryPath);
+				if (std::filesystem::exists(plugin.BinaryPath))
+					ScriptEngine::LoadRuntimeAssembly(plugin.BinaryPath);
+				else
+					XYZ_CORE_WARN("Failed to open plugin {}", plugin.BinaryPath);
 			}
 		}
+	}
+
+	std::string Plugin::PluginLanguageToString(PluginLanguage language)
+	{
+		switch (language)
+		{
+		case PluginLanguage::None:
+			XYZ_ASSERT(false, "");
+			return "None";
+		case PluginLanguage::CPP:
+			return "C++";
+		case PluginLanguage::CS:
+			return "C#";
+		}
+		XYZ_ASSERT(false, "");
+		return "";
+	}
+
+	PluginLanguage Plugin::StringToPluginLanguage(const std::string& str)
+	{
+		if (str == "C++")
+			return PluginLanguage::CPP;
+		if (str == "C#")
+			return PluginLanguage::CS;
+
+		XYZ_ASSERT(false, "");
+		return PluginLanguage::None;
 	}
 
 }

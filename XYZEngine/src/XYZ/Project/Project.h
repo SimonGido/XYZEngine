@@ -4,7 +4,23 @@
 
 namespace XYZ {
 
-	
+	enum class PluginLanguage
+	{
+		None,
+		CPP,
+		CS
+	};
+
+
+	struct XYZ_API Plugin
+	{
+		std::string		PluginName;
+		std::string		BinaryPath;
+		PluginLanguage	Language;
+
+		static std::string	PluginLanguageToString(PluginLanguage language);
+		static PluginLanguage StringToPluginLanguage(const std::string& str);
+	};
 
 	struct ProjectConfig
 	{

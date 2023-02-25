@@ -2,6 +2,7 @@
 #include <XYZ.h>
 
 #include "XYZ/Project/Project.h"
+#include "XYZ/Plugin/PluginInterface.h"
 
 #define EXPORT extern "C" __declspec(dllexport)
 

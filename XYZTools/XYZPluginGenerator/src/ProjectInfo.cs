@@ -12,8 +12,6 @@ namespace XYZPluginGenerator
         public string ProjectName;
 
         public string Language;
-
-        public string Kind;
         
         public ProjectInfo(object project, Type type)
         {

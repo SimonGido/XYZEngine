@@ -26,6 +26,9 @@ namespace XYZPluginGenerator
 
         static string pluginExtension = ".xyzplugin";
 
+        static string premakeExe = "vendor/premake/bin/premake5.exe";
+
+        static string defaultEditor = "vs2022";
         private static Assembly CreateAssemblyFromScript(string scriptPath, out List<CompilerError> errors)
         {
             string codeToCompile = File.ReadAllText(scriptPath);
@@ -96,6 +99,32 @@ namespace XYZPluginGenerator
             serializer.Serialize(writer, yamlValues);
             writer.Dispose();
         }
+
+        private static void LaunchCommandLineApp(string executable, params string[] args)
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.CreateNoWindow = false;
+            startInfo.UseShellExecute = false;
+            startInfo.FileName = executable;
+            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+
+            string arguments = "";
+            for (int i = 0; i < args.Length - 1; i++)
+            {
+                arguments += args[i] + " ";
+            }
+            arguments += args.Last();
+
+            startInfo.Arguments = arguments;
+
+            // Start the process with the info we specified.
+            // Call WaitForExit and then the using statement will close.
+            using (Process exeProcess = Process.Start(startInfo))
+            {
+                exeProcess.WaitForExit();
+            }       
+        }
+
         static void Main(string[] args)
         {
             try
@@ -123,6 +152,10 @@ namespace XYZPluginGenerator
                 string premake = Premake.GeneratePremake(projectInfo, engineInfo);
                 File.WriteAllText(projectDirectory + "\\premake5.lua", premake);
                 SerializeProjectInfo(projectDirectory, projectInfo);
+
+                string premakeTarget = "--file=" + projectDirectory + "\\premake5.lua";
+                LaunchCommandLineApp(premakeExe, defaultEditor, premakeTarget);
+                
                 Console.WriteLine("Successfully generated " + projectBuildFile);
             }
             catch(Exception ex)

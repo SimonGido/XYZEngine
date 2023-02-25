@@ -65,7 +65,7 @@ namespace XYZ {
 		static const SparseArray<ScriptEntityInstance>& GetScriptEntityInstances();
 		static const std::vector<std::string>&			GetEntityClasses();
 	private:
-		static void createModules();
+		static void createEntityModules();
 		static void shutdownRuntimeAssembly();
 	};
 

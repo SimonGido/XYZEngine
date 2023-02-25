@@ -238,7 +238,7 @@ namespace XYZ {
 		return class_vec;
 	}
 
-	static std::vector<std::string> GetModules(MonoImage* image)
+	static std::vector<std::string> GetEntityModules(MonoImage* image)
 	{
 		std::vector<std::string> class_vec;
 		const MonoTableInfo* table_info = mono_image_get_table_info(image, MONO_TABLE_TYPEDEF);
@@ -253,12 +253,15 @@ namespace XYZ {
 			mono_metadata_decode_row(table_info, i, cols, MONO_TYPEDEF_SIZE);
 			const char* name_space = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAMESPACE]);
 			const char* name = mono_metadata_string_heap(image, cols[MONO_TYPEDEF_NAME]);
-			
-			std::string moduleName(name_space);
-			moduleName += ".";
-			moduleName += name;
-
-			class_vec.push_back(moduleName);
+			_class = mono_class_from_name(image, name_space, name);
+			auto isEntitySubclass = mono_class_is_subclass_of(_class, s_EntityClass, 0);
+			if (isEntitySubclass)
+			{
+				std::string moduleName(name_space);
+				moduleName += ".";
+				moduleName += name;
+				class_vec.push_back(moduleName);
+			}
 		}
 		return class_vec;
 	}
@@ -348,7 +351,7 @@ namespace XYZ {
 		s_AppAssemblyImage = GetAssemblyImage(s_AppAssembly);
 		ScriptEngineRegistry::RegisterAll();
 
-		createModules();
+		createEntityModules();
 
 		Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 		if (scene.Raw())
@@ -569,14 +572,13 @@ namespace XYZ {
 		return s_EntityClasses;
 	}
 
-	void ScriptEngine::createModules()
+	void ScriptEngine::createEntityModules()
 	{
-		s_EntityClasses = GetModules(s_AppAssemblyImage);
+		s_EntityClasses = GetEntityModules(s_AppAssemblyImage);
 		s_EntityClasses.erase(s_EntityClasses.begin()); //TODO: Weird module name at the beginning
 		for (const auto& mod : s_EntityClasses)
 		{
-			if (ModuleExists(mod))
-				CreateModule(mod);
+			CreateModule(mod);
 		}
 	}
 

@@ -28,4 +28,9 @@ project "XYZPluginGenerator"
 			"System"
 		}
 
+		postbuildcommands 
+		{
+			"{COPYDIR} \"%{wks.location}/vendor\" \"vendor\""
+		}
+
 		dotnetframework("4.7.2")

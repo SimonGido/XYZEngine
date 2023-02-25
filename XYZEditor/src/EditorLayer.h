@@ -11,6 +11,8 @@
 #include "Editor/Panels/InspectorPanel.h"
 #include "Editor/Panels/ImGuiStylePanel.h"
 #include "Editor/Panels/SceneHierarchyPanel.h"
+#include "Editor/Panels/PluginPanel.h"
+
 
 #include "Editor/ParticleEditorGPU/ParticleEditorGPU.h"
 #include "Editor/Asset/AssetManagerViewPanel.h"

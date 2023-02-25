@@ -7,12 +7,10 @@ public class XYZPlugin
 
     public string Language;
 
-    public string Kind;
 
     public XYZPlugin(string engineDirectory, string engineSourceDirectory)
     {
         ProjectName = "XYZPlugin";
-        Language = "C#";
-        Kind = "SharedLib";
+        Language = "CPP";
     }
 }

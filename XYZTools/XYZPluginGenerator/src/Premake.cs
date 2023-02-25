@@ -91,7 +91,7 @@ namespace XYZPluginGenerator
         {
             StringBuilder builder = new StringBuilder();
             builder.AppendLine(KeyValue("project", info.ProjectName));
-            builder.AppendLine(KeyValue("\tkind", info.Kind));
+            builder.AppendLine(KeyValue("\tkind", "SharedLib"));
             builder.AppendLine(KeyValue("\tlanguage", info.Language));
 
             if (info.Language == "C++")

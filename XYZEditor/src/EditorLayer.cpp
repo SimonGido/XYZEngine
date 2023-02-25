@@ -23,10 +23,10 @@ namespace XYZ {
 
 		void EditorLayer::OnAttach()
 		{
+			Project::New();
+
 			s_Data.Init();		
-			std::string assembly = "C:/Users/Gido/Projects/XYZEngine/XYZPluginManaged/bin/Debug-windows-x86_64/XYZPluginManaged.dll";
 			ScriptEngine::Init();
-			//ScriptEngine::LoadRuntimeAssembly(assembly);
 
 			m_Scene = AssetManager::GetAsset<Scene>("Assets/Scenes/Scene.scene");
 
@@ -77,6 +77,7 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::AssetManagerViewPanel>("AssetManagerViewPanel");
 			m_EditorManager.RegisterPanel<Editor::AssetBrowser>("AssetBrowser");
 			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
+			m_EditorManager.RegisterPanel<Editor::PluginPanel>("PluginPanel");
 
 			//m_EditorManager.RegisterPanel<Editor::ParticleEditorGPU>("ParticleEditorGPU");
 
@@ -139,37 +140,7 @@ namespace XYZ {
 		{
 			ImGui::SetCurrentContext(XYZ::UI::GetImGuiContext());
 			m_SceneRenderer->OnImGuiRender();
-			m_EditorManager.OnImGuiRender();
-
-			if (ImGui::Begin("Plugin Window"))
-			{
-				if (ImGui::Button("Create Plugin"))
-				{				
-					std::string appDir = Application::Get().GetApplicationDirectory().string();
-					std::string projectDir = FileSystem::OpenFolder(Application::Get().GetWindow().GetNativeWindow(), appDir);
-			
-
-					const std::filesystem::path engineBinaryDir = std::filesystem::absolute(Application::Get().GetEngineBinaryDirectory());
-					const std::filesystem::path engineSourceDir = std::filesystem::absolute(Application::Get().GetEngineSourceDirectory());
-
-					std::filesystem::path command = engineBinaryDir.parent_path() / "XYZPluginGenerator/XYZPluginGenerator.exe";	
-					std::string args = fmt::format("{} {} {} {}", projectDir, engineBinaryDir, engineSourceDir);
-
-					std::string result;
-					if (Platform::ExecuteCommand(command.string().c_str(), args.data(), result))
-					{
-						Ref<Project> project = Project::GetActive();			
-						project->Configuration.PluginPaths.push_back(projectDir);
-						project->ReloadPlugins();
-					}
-					else
-					{
-						XYZ_CORE_WARN("Failed to create plugin");
-					}
-					XYZ_CORE_INFO(result);
-				}
-			}
-			ImGui::End();
+			m_EditorManager.OnImGuiRender();			
 		}
 
 		bool EditorLayer::onMouseButtonPress(MouseButtonPressEvent& event)

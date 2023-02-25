@@ -51,7 +51,8 @@ namespace XYZ {
 			m_Window = Window::Create(Renderer::GetAPIContext());
 			m_Window->RegisterCallback(Hook(&Application::OnEvent, this));
 			m_Window->SetVSync(false);
-			
+			Renderer::InitAPI();
+
 			if (specification.EnableImGui)
 			{			
 				m_ImGuiLayer = ImGuiLayer::Create();
