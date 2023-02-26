@@ -232,7 +232,7 @@ namespace XYZ {
 		// Make sure we actually finished all commands submitted last frame
 		Renderer::BlockRenderThread(); // Sync before new frame				
 		Renderer::Render();
-		XYZ_PROFILER_SHUTDOWN;
+		XYZ_PROFILER_SHUTDOWN();
 	}
 
 	void Application::onRunWindow()

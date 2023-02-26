@@ -64,17 +64,25 @@ namespace XYZ {
 		}
 		void RemoveDependency(size_t hash)
 		{
-			std::scoped_lock lock(m_Mutex);
-			auto it = m_Dependencies.find(hash);
-			if (it != m_Dependencies.end())
-				it->second.Clear();
+			ShaderDependencies dependency;
+			{
+				std::scoped_lock lock(m_Mutex);
+				auto it = m_Dependencies.find(hash);
+				if (it != m_Dependencies.end())
+				{
+					dependency = std::move(it->second);
+					m_Dependencies.erase(it);
+				}
+			}
+			dependency.Clear();
 		}
 
 		void Clear()
 		{
-			std::scoped_lock lock(m_Mutex);
-			for (auto&& [hash, dep] : m_Dependencies)
-				dep.Clear();
+			while (!m_Dependencies.empty())
+			{
+				RemoveDependency(m_Dependencies.begin()->first);
+			}
 		}
 	private:
 		std::unordered_map<size_t, ShaderDependencies> m_Dependencies;

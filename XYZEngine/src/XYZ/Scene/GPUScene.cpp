@@ -4,6 +4,8 @@
 #include "Scene.h"
 #include "XYZ/Renderer/SceneRenderer.h"
 
+#include "XYZ/Debug/Profiler.h"
+
 namespace XYZ {
 
 	static GPUSceneQueue::TransformData Mat4ToTransformData(const glm::mat4& transform)

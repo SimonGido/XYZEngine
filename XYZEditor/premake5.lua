@@ -42,6 +42,7 @@ project "XYZEditor"
 				"ozz_base",
 				"ozz_animation",
 				"ozz_animation_offline", 
+				"optick",
 				"%{wks.location}/bin/" .. outputdir .."/XYZEngine/XYZEngine.lib"
 			}
 			

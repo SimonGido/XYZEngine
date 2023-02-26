@@ -4,6 +4,8 @@
 #include "XYZ/API/Vulkan/VulkanRendererAPI.h"
 #include "XYZ/API/Vulkan/VulkanPipelineCompute.h"
 
+#include "XYZ/Debug/Profiler.h"
+
 namespace XYZ {
 
 	void BloomPass::Init(const BloomPassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer)

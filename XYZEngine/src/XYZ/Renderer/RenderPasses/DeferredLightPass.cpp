@@ -4,6 +4,8 @@
 
 #include "XYZ/Scene/Components.h"
 
+#include "XYZ/Debug/Profiler.h"
+
 namespace XYZ {
 
 	void DeferredLightPass::Init(const DeferredLightPassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer)

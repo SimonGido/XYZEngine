@@ -4,6 +4,8 @@
 #include "XYZ/API/Vulkan/Vulkan.h"
 #include "XYZ/API/Vulkan/VulkanRenderCommandBuffer.h"
 
+#include "XYZ/Debug/Profiler.h"
+
 namespace XYZ {
 
 	void LightCullingPass::Init(const LightCullingPassConfiguration& config)

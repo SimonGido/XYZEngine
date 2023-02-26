@@ -9,6 +9,8 @@
 
 #include "XYZ/Utils/Math/Math.h"
 
+#include "XYZ/Debug/Profiler.h"
+
 namespace XYZ {
 	GeometryPass::GeometryPass()
 	{

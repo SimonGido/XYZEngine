@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Renderer/Renderer.h"
-#include "XYZ/Debug/Profiler.h"
+
 #include "XYZ/Renderer/Renderer2D.h"
 #include "XYZ/Renderer/GeometryRenderQueue.h"
 

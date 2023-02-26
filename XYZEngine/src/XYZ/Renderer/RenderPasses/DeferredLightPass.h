@@ -1,6 +1,6 @@
 #pragma once
 #include "XYZ/Renderer/Renderer.h"
-#include "XYZ/Debug/Profiler.h"
+
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/Prefab.h"
 

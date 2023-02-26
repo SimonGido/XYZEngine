@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CompositePass.h"
 
+#include "XYZ/Debug/Profiler.h"
 
 namespace XYZ {
 	void CompositePass::Init(const CompositePassConfiguration& config, const Ref<RenderCommandBuffer>& commandBuffer)
