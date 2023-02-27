@@ -128,7 +128,7 @@ namespace XYZ {
 	{
 		MeshComponent() = default;
 		MeshComponent(const MeshComponent& other);
-		MeshComponent(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& materialAsset);
+		MeshComponent(const Ref<StaticMesh>& mesh, const Ref<MaterialAsset>& materialAsset);
 
 		Ref<StaticMesh>		  Mesh;
 		Ref<MaterialAsset>    MaterialAsset;

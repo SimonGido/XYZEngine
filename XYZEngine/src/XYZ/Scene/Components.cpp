@@ -249,7 +249,7 @@ namespace XYZ {
 	{
 	}
 
-	MeshComponent::MeshComponent(const Ref<XYZ::Mesh>& mesh, const Ref<XYZ::MaterialAsset>& materialAsset)
+	MeshComponent::MeshComponent(const Ref<XYZ::StaticMesh>& mesh, const Ref<XYZ::MaterialAsset>& materialAsset)
 		:
 		Mesh(mesh), MaterialAsset(materialAsset)
 	{
