@@ -130,7 +130,7 @@ namespace XYZ {
 		MeshComponent(const MeshComponent& other);
 		MeshComponent(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& materialAsset);
 
-		Ref<Mesh>		      Mesh;
+		Ref<StaticMesh>		  Mesh;
 		Ref<MaterialAsset>    MaterialAsset;
 		Ref<MaterialInstance> OverrideMaterial;
 	};

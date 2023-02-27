@@ -22,8 +22,6 @@
 
 namespace XYZ {
 
-	static ThreadPool s_ThreadPool;
-
 	static GeometryRenderQueue::TransformData Mat4ToTransformData(const glm::mat4& transform)
 	{
 		GeometryRenderQueue::TransformData data;
@@ -222,7 +220,7 @@ namespace XYZ {
 
 	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const Ref<MaterialInstance>& overrideMaterial)
 	{
-		GeometryRenderQueue::BatchMeshKey key{ mesh->GetHandle(), material->GetHandle() };
+		GeometryRenderQueue::BatchMeshKey key{ mesh->GetRenderID(), material->GetHandle() };
 		
 		auto& dc = m_Queue.MeshDrawCommands[key];
 		dc.Mesh = mesh;
@@ -245,7 +243,7 @@ namespace XYZ {
 
 	void SceneRenderer::SubmitMesh(const Ref<Mesh>& mesh, const Ref<MaterialAsset>& material, const void* instanceData, uint32_t instanceCount, uint32_t instanceSize, const Ref<MaterialInstance>& overrideMaterial)
 	{
-		GeometryRenderQueue::BatchMeshKey key{ mesh->GetHandle(), material->GetHandle() };
+		GeometryRenderQueue::BatchMeshKey key{ mesh->GetRenderID(), material->GetHandle() };
 
 		auto& dc = m_Queue.InstanceMeshDrawCommands[key];
 		dc.Mesh = mesh;

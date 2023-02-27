@@ -6,6 +6,7 @@
 #include "XYZ/ImGui/ImGuiLayer.h"
 #include "XYZ/Debug/Timer.h"
 #include "XYZ/Core/Core.h"
+#include "XYZ/Core/Logger.h"
 
 namespace XYZ {
 
@@ -39,6 +40,7 @@ namespace XYZ {
 		const std::filesystem::path&	GetEngineBinaryDirectory()	const { return m_EngineBinaryDirectory; }
 		const std::filesystem::path&	GetEngineSourceDirectory()  const { return m_EngineSourceDirectory; }
 		const ApplicationSpecification& GetSpecification()			const  { return m_Specification;}
+		std::thread::id					GetApplicationThreadID()	const { return m_ApplicationThreadID; }
 		
 		static Application& Get();
 
@@ -71,6 +73,7 @@ namespace XYZ {
 		ThreadPool 				 m_ThreadPool;
 		ApplicationSpecification m_Specification;
 		PerformanceProfiler		 m_Profiler;
+		std::thread::id			 m_ApplicationThreadID;
 
 		std::filesystem::path	 m_ApplicationDirectory;
 		std::filesystem::path	 m_EngineBinaryDirectory;

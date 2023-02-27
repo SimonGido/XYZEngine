@@ -186,10 +186,11 @@ namespace XYZ {
 			const VkBuffer vertexBuffers[] = { vertexBuffer.As<VulkanVertexBuffer>()->GetVulkanBuffer() };
 			const VkDeviceSize offsets[] = { vertexOffsetSize };
 			if (indexCount == 0)
-				indexCount = indexBuffer->GetCount();
+				indexCount = indexBuffer->GetUseCount();
 			uint32_t offset = 0;
+			VkDeviceSize sizes[] = { vertexBuffer->GetUseSize() - vertexOffsetSize };
 
-			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+			vkCmdBindVertexBuffers2(commandBuffer, 0, 1, vertexBuffers, offsets, sizes, nullptr);
 			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), offset, vulkanIndexBuffer->GetVulkanIndexType());
 	
 			if (vsData.Size)
@@ -225,15 +226,15 @@ namespace XYZ {
 			///////////////////////////////		
 			const VkBuffer vertexBuffers[] = { vertexBuffer.As<VulkanVertexBuffer>()->GetVulkanBuffer() };
 			const VkDeviceSize offsets[] = { 0 };
-
-			vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+			const VkDeviceSize sizes[] = { vertexBuffer->GetUseSize() };
+			vkCmdBindVertexBuffers2(commandBuffer, 0, 1, vertexBuffers, offsets, sizes, nullptr);
 			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), 0, vulkanIndexBuffer->GetVulkanIndexType());
 			
 			glm::mat4 trans(1.0f);
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &trans);
 			if (fsUniformStorage.Size)
 				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, vsUniformStorage.Size, fsUniformStorage.Size, fsUniformStorage.Bytes);
-			vkCmdDrawIndexed(commandBuffer, indexBuffer->GetCount(), 1, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffer, indexBuffer->GetUseCount(), 1, 0, 0, 0);
 		});
 	}
 
@@ -261,8 +262,10 @@ namespace XYZ {
 			// Vertex Buffer
 			VkBuffer vbVertexBuffer = vulkanVertexBuffer->GetVulkanBuffer();
 			VkDeviceSize offsets[1] = { 0 };
-			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vbVertexBuffer, offsets);
+			VkDeviceSize sizes[1] = { vulkanVertexBuffer->GetUseSize() };
 
+
+			vkCmdBindVertexBuffers2(commandBuffer, 0, 1, &vbVertexBuffer, offsets, sizes, nullptr);
 			// Index buffer
 			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), 0, vulkanIndexBuffer->GetVulkanIndexType());
 
@@ -271,7 +274,7 @@ namespace XYZ {
 			if (fsUniformStorage.Size)
 				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, vsData.Size, fsUniformStorage.Size, fsUniformStorage.Bytes);
 
-			vkCmdDrawIndexed(commandBuffer, indexBuffer->GetCount(), 1, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffer, indexBuffer->GetUseCount(), 1, 0, 0, 0);
 		});
 	}
 
@@ -309,12 +312,14 @@ namespace XYZ {
 			// Vertex Buffer
 			VkBuffer vbVertexBuffer = vulkanVertexBuffer->GetVulkanBuffer();
 			VkDeviceSize offsets[1] = { 0 };
-			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vbVertexBuffer, offsets);
-
+			VkDeviceSize sizes[1] = { vulkanVertexBuffer->GetUseSize() };
+			vkCmdBindVertexBuffers2(commandBuffer, 0, 1, &vbVertexBuffer, offsets, sizes, nullptr);
+			
 			// Instance Buffer
 			VkBuffer vbInstanceBuffer = vulkanInstanceBuffer->GetVulkanBuffer();
 			VkDeviceSize instanceOffsets[1] = { instanceOffset };
-			vkCmdBindVertexBuffers(commandBuffer, 1, 1, &vbInstanceBuffer, instanceOffsets);
+			VkDeviceSize instanceBufferSizes[1] = { vulkanInstanceBuffer->GetUseSize() - instanceOffset };
+			vkCmdBindVertexBuffers2(commandBuffer, 1, 1, &vbInstanceBuffer, instanceOffsets, instanceBufferSizes, nullptr);
 
 			// Index buffer
 			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), 0, vulkanIndexBuffer->GetVulkanIndexType());
@@ -324,7 +329,7 @@ namespace XYZ {
 			if (fsUniformStorage.Size)
 				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, vsData.Size, fsUniformStorage.Size, fsUniformStorage.Bytes);
 
-			vkCmdDrawIndexed(commandBuffer, indexBuffer->GetCount(), instanceCount, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffer, indexBuffer->GetUseCount(), instanceCount, 0, 0, 0);
 		});
 	}
 
@@ -362,28 +367,31 @@ namespace XYZ {
 			// Vertex Buffer
 			VkBuffer vbVertexBuffer = vulkanVertexBuffer->GetVulkanBuffer();
 			VkDeviceSize offsets[1] = { 0 };
-			vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vbVertexBuffer, offsets);
+			VkDeviceSize sizes[1] = { vulkanVertexBuffer->GetUseSize() };
+			vkCmdBindVertexBuffers2(commandBuffer, 0, 1, &vbVertexBuffer, offsets, sizes, nullptr);
 
 			// Vertex Transform Buffer
 			VkBuffer vbTransformBuffer = vulkanTransformBuffer->GetVulkanBuffer();
 			VkDeviceSize transformInstanceOffsets[1] = { transformOffset };
-			vkCmdBindVertexBuffers(commandBuffer, 1, 1, &vbTransformBuffer, transformInstanceOffsets);
+			VkDeviceSize transformBufferSizes[1] = { vulkanTransformBuffer->GetUseSize() - transformOffset };
+			vkCmdBindVertexBuffers2(commandBuffer, 1, 1, &vbTransformBuffer, transformInstanceOffsets, transformBufferSizes, nullptr);
 
 			// Instance Buffer
 			VkBuffer vbInstanceBuffer = vulkanInstanceBuffer->GetVulkanBuffer();
 			VkDeviceSize instanceOffsets[1] = { instanceOffset };
-			vkCmdBindVertexBuffers(commandBuffer, 2, 1, &vbInstanceBuffer, instanceOffsets);
+			VkDeviceSize instanceBufferSizes[1] = { vulkanInstanceBuffer->GetUseSize() - instanceOffset };
+			vkCmdBindVertexBuffers2(commandBuffer, 2, 1, &vbInstanceBuffer, instanceOffsets, instanceBufferSizes, nullptr);
 
 			// Index buffer
 			vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), 0, vulkanIndexBuffer->GetVulkanIndexType());
-
+			
 			
 			glm::mat4 trans(1.0f);
 			vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &trans);
 			if (fsUniformStorage.Size != 0)
 				vkCmdPushConstants(commandBuffer, layout, VK_SHADER_STAGE_FRAGMENT_BIT, vsUniformStorage.Size, fsUniformStorage.Size, fsUniformStorage.Bytes);
 
-			vkCmdDrawIndexed(commandBuffer, indexBuffer->GetCount(), instanceCount, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffer, indexBuffer->GetUseCount(), instanceCount, 0, 0, 0);
 		});
 	}
 
@@ -422,7 +430,8 @@ namespace XYZ {
 				// Vertex Buffer
 				VkBuffer vbVertexBuffer = vulkanVertexBuffer->GetVulkanBuffer();
 				VkDeviceSize offsets[1] = { 0 };
-				vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vbVertexBuffer, offsets);
+				VkDeviceSize sizes[1] = { vulkanVertexBuffer->GetUseSize() };
+				vkCmdBindVertexBuffers2(commandBuffer, 0, 1, &vbVertexBuffer, offsets, sizes, nullptr);
 
 				// Index buffer
 				vkCmdBindIndexBuffer(commandBuffer, vulkanIndexBuffer->GetVulkanBuffer(), 0, vulkanIndexBuffer->GetVulkanIndexType());

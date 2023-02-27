@@ -57,7 +57,7 @@ namespace XYZ {
 		Script::MaterialAssetNative::Register();
 		
 		Script::MeshSourceNative::Register();
-		Script::MeshNative::Register();
+		Script::StaticMeshNative::Register();
 		Script::AnimatedMeshNative::Register();
 
 

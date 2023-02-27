@@ -135,7 +135,6 @@ namespace XYZ {
 		const std::vector<VkPhysicalDevice> devices = GetPhysicalDevices(vkInstance);
 		m_PhysicalDevice = FindSuitableGPU(surface, devices);
 		XYZ_ASSERT(m_PhysicalDevice != VK_NULL_HANDLE, "failed to find GPUs with Vulkan support!");
-
 		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Properties);
 		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_Features);
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);

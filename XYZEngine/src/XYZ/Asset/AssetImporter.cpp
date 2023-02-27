@@ -32,7 +32,7 @@ namespace XYZ {
 		s_Serializers[ToUnderlying(AssetType::Material)] = CreateScope<MaterialAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::Shader)] = CreateScope<ShaderAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::MeshSource)] = CreateScope<MeshSourceAssetSerializer>();
-		s_Serializers[ToUnderlying(AssetType::Mesh)] = CreateScope<MeshAssetSerializer>();
+		s_Serializers[ToUnderlying(AssetType::StaticMesh)] = CreateScope<StaticMeshAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::AnimatedMesh)] = CreateScope<AnimatedMeshAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::SubTexture)] = CreateScope<SubTextureSerializer>();
 		s_Serializers[ToUnderlying(AssetType::Prefab)] = CreateScope<PrefabAssetSerializer>();

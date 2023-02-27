@@ -29,17 +29,17 @@ namespace XYZ {
 		{
 			delete instance;
 		}
-		void MeshNative::Register()
+		void StaticMeshNative::Register()
 		{
-			mono_add_internal_call("XYZ.Mesh::Constructor_Native", Constructor);
-			mono_add_internal_call("XYZ.Mesh::Destructor_Native", Destructor);
+			mono_add_internal_call("XYZ.StaticMesh::Constructor_Native", Constructor);
+			mono_add_internal_call("XYZ.StaticMesh::Destructor_Native", Destructor);
 		}
-		Ref<Mesh>* MeshNative::Constructor(Ref<MeshSource>* meshSource)
+		Ref<StaticMesh>* StaticMeshNative::Constructor(Ref<MeshSource>* meshSource)
 		{
-			auto instance = Ref<Mesh>::Create(*meshSource);
-			return new Ref<Mesh>(instance);
+			auto instance = Ref<StaticMesh>::Create(*meshSource);
+			return new Ref<StaticMesh>(instance);
 		}
-		void MeshNative::Destructor(Ref<Mesh>* instance)
+		void StaticMeshNative::Destructor(Ref<StaticMesh>* instance)
 		{
 			delete instance;
 		}

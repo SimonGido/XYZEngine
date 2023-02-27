@@ -29,14 +29,14 @@ namespace XYZ {
 
 			return new Ref<MaterialAsset>(ent.GetComponent<MeshComponent>().MaterialAsset);
 		}
-		Ref<Mesh>* MeshComponentNative::GetMesh(uint32_t entity)
+		Ref<StaticMesh>* MeshComponentNative::GetMesh(uint32_t entity)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
-			return new Ref<Mesh>(ent.GetComponent<MeshComponent>().Mesh);
+			return new Ref<StaticMesh>(ent.GetComponent<MeshComponent>().Mesh);
 		}
 		void MeshComponentNative::SetMaterial(uint32_t entity, Ref<MaterialAsset>* material)
 		{
@@ -46,7 +46,7 @@ namespace XYZ {
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 			ent.GetComponent<MeshComponent>().MaterialAsset = *material;
 		}
-		void MeshComponentNative::SetMesh(uint32_t entity, Ref<Mesh>* mesh)
+		void MeshComponentNative::SetMesh(uint32_t entity, Ref<StaticMesh>* mesh)
 		{
 			Ref<Scene> scene = ScriptEngine::GetCurrentSceneContext();
 			XYZ_ASSERT(scene.Raw(), "No active scene!");

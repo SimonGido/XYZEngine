@@ -36,7 +36,8 @@ namespace XYZ {
 		
 		m_Minimized(false),
 		m_Specification(specification)
-	{	
+	{
+		m_ApplicationThreadID = std::this_thread::get_id();
 		m_ThreadPool.Start(std::thread::hardware_concurrency() - 1);
 		s_Application = this;
 		m_Running = true;
@@ -66,7 +67,7 @@ namespace XYZ {
 		m_ApplicationDirectory = std::string(tmp.begin(), tmp.end());	
 
 		m_EngineBinaryDirectory = std::filesystem::path(XYZ_OUTPUT_DIR);
-		m_EngineSourceDirectory = std::filesystem::path(XYZ_SOURCE_DIR);
+		m_EngineSourceDirectory = std::filesystem::path(XYZ_SOURCE_DIR);		
 	}
 
 	Application::~Application()
@@ -229,6 +230,7 @@ namespace XYZ {
 
 	void Application::onStop()
 	{
+		PluginManager::CloseAll();
 		// Make sure we actually finished all commands submitted last frame
 		Renderer::BlockRenderThread(); // Sync before new frame				
 		Renderer::Render();

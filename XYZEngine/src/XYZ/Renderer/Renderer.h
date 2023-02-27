@@ -1,9 +1,10 @@
 #pragma once
 #include <memory>
 
+#include "XYZ/Core/Application.h"
 #include "XYZ/Core/ThreadPool.h"
 #include "XYZ/Utils/DataStructures/ThreadPass.h"
-
+#include "XYZ/Debug/Profiler.h"
 
 #include "Shader.h"
 #include "Camera.h"
@@ -173,6 +174,9 @@ namespace XYZ {
 	template <typename FuncT>
 	void Renderer::Submit(FuncT&& func)
 	{
+		XYZ_PROFILE_FUNC("Renderer::Submit");
+		//XYZ_CHECK_THREAD(Application::Get().GetApplicationThreadID());
+
 		auto renderCmd = [](void* ptr) {
 
 			auto pFunc = static_cast<FuncT*>(ptr);
@@ -188,6 +192,7 @@ namespace XYZ {
 	template<typename FuncT>
 	inline void Renderer::SubmitResource(FuncT&& func)
 	{
+		XYZ_PROFILE_FUNC("Renderer::SubmitResource");
 		auto renderCmd = [](void* ptr) {
 
 			auto pFunc = static_cast<FuncT*>(ptr);

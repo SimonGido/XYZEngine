@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace XYZ
 {
-    public class Mesh : UnmanagedResource
+    public class StaticMesh : UnmanagedResource
     {
 
     }

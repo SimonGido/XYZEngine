@@ -18,7 +18,7 @@ namespace XYZ {
 		Font,
 		Audio,
 		Script,
-		Mesh,
+		StaticMesh,
 		AnimatedMesh,
 		MeshSource,
 		Animation,
@@ -52,7 +52,7 @@ namespace XYZ {
 			if (assetType == "Font")					  return AssetType::Font;
 			if (assetType == "Audio")					  return AssetType::Audio;
 			if (assetType == "Script")					  return AssetType::Script;
-			if (assetType == "Mesh")					  return AssetType::Mesh;
+			if (assetType == "Mesh")					  return AssetType::StaticMesh;
 			if (assetType == "AnimatedMesh")			  return AssetType::AnimatedMesh;
 			if (assetType == "MeshSource")				  return AssetType::MeshSource;
 			if (assetType == "Animation")				  return AssetType::Animation;
@@ -78,7 +78,7 @@ namespace XYZ {
 			case XYZ::AssetType::Font:							return "Font";
 			case XYZ::AssetType::Audio:							return "Audio";
 			case XYZ::AssetType::Script:						return "Script";
-			case XYZ::AssetType::Mesh:							return "Mesh";
+			case XYZ::AssetType::StaticMesh:					return "Mesh";
 			case XYZ::AssetType::AnimatedMesh:					return "AnimatedMesh";
 			case XYZ::AssetType::MeshSource:					return "MeshSource";
 			case XYZ::AssetType::Animation:						return "Animation";
@@ -108,7 +108,7 @@ namespace XYZ {
 			case XYZ::AssetType::Font:							return "font";
 			case XYZ::AssetType::Audio:							return "audio";
 			case XYZ::AssetType::Script:						return "cs";
-			case XYZ::AssetType::Mesh:							return "mesh";
+			case XYZ::AssetType::StaticMesh:					return "mesh";
 			case XYZ::AssetType::AnimatedMesh:					return "animmesh";
 			case XYZ::AssetType::MeshSource:					return "meshsrc";
 			case XYZ::AssetType::Animation:						return "anim";

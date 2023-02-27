@@ -56,6 +56,7 @@ namespace XYZPluginGenerator
             builder.AppendLine(GenerateIncludedFiles());
             builder.AppendLine(GenerateIncludedDirs(engineInfo.EngineSourceDirectory));
             builder.AppendLine(GenerateLinks(info, engineInfo.EngineLibDirectory));
+            builder.AppendLine(GenerateConfigurationFilters());
 
             return builder.ToString();
         }
@@ -162,6 +163,21 @@ namespace XYZPluginGenerator
             return builder.ToString();
         }
 
+        private static string GenerateConfigurationFilters()
+        {
+            StringBuilder builder = new StringBuilder();
+
+            builder.AppendLine(KeyValue("filter", "configurations:Debug"));
+            builder.AppendLine(KeyValue("\truntime", "Debug"));
+            builder.AppendLine(KeyValue("\tsymbols", "on"));
+
+            builder.AppendLine(KeyValue("filter", "configurations:Release"));
+            builder.AppendLine(KeyValue("\truntime", "Release"));
+            builder.AppendLine(KeyValue("\toptimize", "on"));
+
+
+            return builder.ToString();
+        }
         private static void AddList(StringBuilder builder, string name, params string[] strings)
         {
             builder.AppendLine(name);

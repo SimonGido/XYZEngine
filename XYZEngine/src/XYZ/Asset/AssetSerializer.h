@@ -69,7 +69,7 @@ namespace XYZ {
 		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
 
-	class XYZ_API MeshAssetSerializer : public AssetSerializer
+	class XYZ_API StaticMeshAssetSerializer : public AssetSerializer
 	{
 	public:
 		virtual void Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const override;

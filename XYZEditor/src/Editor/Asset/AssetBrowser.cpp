@@ -85,7 +85,7 @@ namespace XYZ {
 				[&](const std::filesystem::path& path) -> bool { return true; }, // Double left click
 				[&](const std::filesystem::path& path) -> bool { return assetRightClickMenuTextureSource(path); } // Right click
 				});
-			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::Mesh), {
+			m_FileManager.RegisterExtension(Asset::GetExtension(AssetType::StaticMesh), {
 				EditorLayer::GetData().IconsTexture,
 				EditorLayer::GetData().IconsSpriteSheet->GetTexCoords(ED::MeshIcon),
 				nullptr, // Hover
@@ -346,9 +346,9 @@ namespace XYZ {
 				std::string name = Utils::GetFilenameWithoutExtension(path.string());
 				Ref<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>(path);
 
-				if (assetRightClickMenu<Mesh>(
+				if (assetRightClickMenu<StaticMesh>(
 					path,
-					name + "." + Asset::GetExtension(AssetType::Mesh),
+					name + "." + Asset::GetExtension(AssetType::StaticMesh),
 					"Create Mesh",
 					meshSource).Raw())
 				{

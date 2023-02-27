@@ -100,7 +100,7 @@ namespace XYZ {
 	
 		uint32_t findJointIndex(const std::string& name) const;
 	private:
-		std::string						  m_SourceFilePath;
+		std::string m_SourceFilePath;
 		
 
 		std::vector<AnimatedVertex> m_AnimatedVertices;

@@ -2,6 +2,7 @@
 #include <memory>
 #include <functional>
 #include <map>
+#include <thread>
 
 #define RENDER_THREAD_ENABLED
 

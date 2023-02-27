@@ -20,7 +20,7 @@ namespace XYZ {
 	typedef void(*PluginDestroyPoint)(PluginInterface* plugin);
 
 #define CREATE_PLUGIN_FUNCTION "CreatePlugin"
-#define DESTROY_PLUGIN_FUNCTION "DestroyPlugin";
+#define DESTROY_PLUGIN_FUNCTION "DestroyPlugin"
 
 	struct PluginRuntime
 	{
@@ -44,6 +44,8 @@ namespace XYZ {
 		runtime.Plugin = createFunction();
 		if (runtime.Plugin == nullptr)
 			return false;
+
+		return true;
 	}
 
 
@@ -70,7 +72,7 @@ namespace XYZ {
 			PluginRuntime& runtime = it->second;
 			runtime.Plugin->OnDestroy();
 	
-			PluginDestroyPoint destroyFunction = (PluginDestroyPoint)PluginLoader::LoadFunction(runtime.Handle, CREATE_PLUGIN_FUNCTION);
+			PluginDestroyPoint destroyFunction = (PluginDestroyPoint)PluginLoader::LoadFunction(runtime.Handle, DESTROY_PLUGIN_FUNCTION);
 			if (destroyFunction == nullptr)
 			{
 				XYZ_CORE_WARN("Failed to destroy plugin {}", filepath);

@@ -22,13 +22,13 @@ namespace XYZ {
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<VertexBuffer> VertexBuffer::Create(const void* vertices, uint32_t size, BufferUsage usage)
+	Ref<VertexBuffer> VertexBuffer::Create(const void* vertices, uint32_t size)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::Type::OpenGL:  return Ref<OpenGLVertexBuffer>::Create(vertices, size, usage);
-		case RendererAPI::Type::Vulkan:  return Ref<VulkanVertexBuffer>::Create(vertices, size, usage);
+		case RendererAPI::Type::OpenGL:  return Ref<OpenGLVertexBuffer>::Create(vertices, size, BufferUsage::Dynamic);
+		case RendererAPI::Type::Vulkan:  return Ref<VulkanVertexBuffer>::Create(vertices, size);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");

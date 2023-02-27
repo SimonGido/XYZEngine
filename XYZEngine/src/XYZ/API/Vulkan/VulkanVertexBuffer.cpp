@@ -4,15 +4,14 @@
 #include "VulkanContext.h"
 
 namespace XYZ {
-	VulkanVertexBuffer::VulkanVertexBuffer(const void* vertices, uint32_t size, BufferUsage usage)
+	VulkanVertexBuffer::VulkanVertexBuffer(const void* vertices, uint32_t size)
 		:
 		m_Size(size),
-		m_Usage(usage),
+		m_UseSize(size),
 		m_VulkanBuffer(VK_NULL_HANDLE),
 		m_MemoryAllocation(VK_NULL_HANDLE)
 	{
-		ByteBuffer buffer;
-		buffer.Allocate(size);
+		ByteBuffer buffer = prepareBuffer(size);
 		if (vertices)
 			buffer.Write(vertices, size, 0);
 
@@ -21,6 +20,7 @@ namespace XYZ {
 
 			auto device = VulkanContext::GetCurrentDevice();
 			VulkanAllocator allocator("VertexBuffer");
+			
 			VkBufferCreateInfo bufferCreateInfo{};
 			bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 			bufferCreateInfo.size = instance->m_Size;
@@ -31,7 +31,7 @@ namespace XYZ {
 
 			// Copy data to staging buffer
 			uint8_t* destData = allocator.MapMemory<uint8_t>(stagingBufferAllocation);
-			memcpy(destData, buffer, buffer.Size);
+			memcpy(destData, buffer, instance->m_Size);
 			allocator.UnmapMemory(stagingBufferAllocation);
 
 			VkBufferCreateInfo vertexBufferCreateInfo = {};
@@ -39,11 +39,11 @@ namespace XYZ {
 			vertexBufferCreateInfo.size = instance->m_Size;
 			vertexBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 			instance->m_MemoryAllocation = allocator.AllocateBuffer(vertexBufferCreateInfo, VMA_MEMORY_USAGE_GPU_ONLY, instance->m_VulkanBuffer);
-
+			
 			const VkCommandBuffer copyCmd = device->GetCommandBuffer(true);
 
 			VkBufferCopy copyRegion = {};
-			copyRegion.size = buffer.Size;
+			copyRegion.size = instance->m_Size;
 			vkCmdCopyBuffer(copyCmd, stagingBuffer, instance->m_VulkanBuffer, 1, &copyRegion);
 
 			device->FlushCommandBuffer(copyCmd);
@@ -54,7 +54,7 @@ namespace XYZ {
 	VulkanVertexBuffer::VulkanVertexBuffer(uint32_t size)
 		:
 		m_Size(size),
-		m_Usage(BufferUsage::Dynamic),
+		m_UseSize(size),
 		m_VulkanBuffer(VK_NULL_HANDLE),
 		m_MemoryAllocation(VK_NULL_HANDLE)
 	{
@@ -96,19 +96,15 @@ namespace XYZ {
 		if (size == 0)
 			return;
 
-		ByteBuffer buffer;
-		if (m_Buffers.Empty())
-			buffer.Allocate(m_Size);
-		else
-			buffer = m_Buffers.PopBack();
+		ByteBuffer buffer = prepareBuffer(size);	
+		buffer.Write(vertices, size);
 
-		buffer.Write(vertices, size, offset);
 		Ref<VulkanVertexBuffer> instance = this;
 		Renderer::Submit([instance, size, offset, buffer]() mutable
 		{
 			VulkanAllocator allocator("VulkanVertexBuffer");
 			uint8_t* pData = allocator.MapMemory<uint8_t>(instance->m_MemoryAllocation);
-			memcpy(pData + offset, buffer.Data + offset, size);
+			memcpy(pData + offset, buffer.Data, size);
 			allocator.UnmapMemory(instance->m_MemoryAllocation);
 			instance->m_Buffers.PushFront(buffer);		
 		});
@@ -122,6 +118,15 @@ namespace XYZ {
 		memcpy(pData, (uint8_t*)vertices + offset, size);
 		allocator.UnmapMemory(m_MemoryAllocation);
 	}
+	void VulkanVertexBuffer::SetUseSize(uint32_t size)
+	{
+		XYZ_ASSERT(size <= m_Size, "Use size can not be bigger than entire size of vertex buffer");
+		Ref<VulkanVertexBuffer> instance = this;
+		Renderer::Submit([instance, size]() mutable
+		{
+			instance->m_UseSize = size;
+		});
+	}
 	void VulkanVertexBuffer::Resize(const void* vertices, uint32_t size)
 	{
 	}
@@ -132,5 +137,16 @@ namespace XYZ {
 	const BufferLayout& VulkanVertexBuffer::GetLayout() const
 	{
 		return m_Layout;
+	}
+	ByteBuffer VulkanVertexBuffer::prepareBuffer(uint32_t size)
+	{
+		ByteBuffer buffer;
+		if (!m_Buffers.Empty())
+			buffer = m_Buffers.PopBack();
+
+		if (buffer.Size < size)
+			buffer.Allocate(size);
+
+		return buffer;
 	}
 }

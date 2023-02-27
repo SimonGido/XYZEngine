@@ -16,10 +16,12 @@ namespace XYZ {
 		virtual void UnBind() const override;
 		virtual void Update(const void* vertices, uint32_t size, uint32_t offset = 0) override;
 		virtual void Resize(const void* vertices, uint32_t size) override;
-
+		virtual void SetUseSize(uint32_t size) override { m_Size = size; }
 		virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; };
 		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 		virtual const BufferLayout& GetLayout() const override { return m_Layout; };
+		virtual uint32_t GetSize() const override { return m_Size; }
+		virtual uint32_t GetUseSize() const override { return m_Size; }
 	private:
 		uint32_t m_RendererID = 0;
 		uint32_t m_Size;
@@ -36,8 +38,11 @@ namespace XYZ {
 		
 		virtual void Bind() const override;
 		virtual void UnBind() const override;
+		virtual void SetUseCount(uint32_t count) override { m_Count = count; }
+
 		virtual uint32_t GetRendererID() const override { return m_RendererID; }
 		virtual uint32_t GetCount() const override { return m_Count; }
+		virtual uint32_t GetUseCount() const override { return m_Count; }
 	private:
 		uint32_t m_RendererID = 0;
 		uint32_t m_Count;

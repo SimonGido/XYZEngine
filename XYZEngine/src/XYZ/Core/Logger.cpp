@@ -14,10 +14,29 @@
 #include <spdlog/sinks/basic_file_sink.h>
 
 namespace XYZ {
+
+	Logger::Logger(std::string name, Level level, std::string file)
+	{
+		std::vector<spdlog::sink_ptr> logSinks;
+		logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+		logSinks.back()->set_pattern("%^[%T] %n: %v%$");
+		if (!file.empty())
+		{
+			logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(file, true));
+			logSinks.back()->set_pattern("[%T] [%l] %n: %v");
+		}
+
+		m_SpdLogger = std::make_shared<spdlog::logger>(std::move(name), begin(logSinks), end(logSinks));
+		spdlog::register_logger(m_SpdLogger);
+		m_SpdLogger->set_level((spdlog::level::level_enum)level);
+		m_SpdLogger->flush_on(spdlog::level::trace);
+	}
+
+
 	static std::shared_ptr<spdlog::logger> s_CoreLogger;
 	static std::shared_ptr<spdlog::logger> s_ClientLogger;
 
-	void Logger::Init()
+	void CoreLogger::Init()
 	{
 		// turn off ozz logging
 		ozz::log::SetLevel(ozz::log::kSilent);
@@ -33,52 +52,54 @@ namespace XYZ {
 		spdlog::register_logger(s_CoreLogger);
 		s_CoreLogger->set_level(spdlog::level::trace);
 		s_CoreLogger->flush_on(spdlog::level::trace);
-
+		
 		s_ClientLogger = std::make_shared<spdlog::logger>("APP", begin(logSinks), end(logSinks));
 		spdlog::register_logger(s_ClientLogger);
 		s_ClientLogger->set_level(spdlog::level::trace);
 		s_ClientLogger->flush_on(spdlog::level::trace);
 	}
-	void Logger::trace(const std::string& msg)
+	void CoreLogger::trace(const char* msg)
 	{
 		s_CoreLogger->trace(msg);
 	}
-	void Logger::info(const std::string& msg)
+	void CoreLogger::info(const char* msg)
 	{
 		s_CoreLogger->info(msg);
 	}
-	void Logger::warn(const std::string& msg)
+	void CoreLogger::warn(const char* msg)
 	{
 		s_CoreLogger->warn(msg);
 	}
-	void Logger::error(const std::string& msg)
+	void CoreLogger::error(const char* msg)
 	{
 		s_CoreLogger->error(msg);
 	}
-	void Logger::critical(const std::string& msg)
+	void CoreLogger::critical(const char* msg)
 	{
 		s_CoreLogger->critical(msg);
 	}
-	void Logger::traceClient(const std::string& msg)
+	void CoreLogger::traceClient(const char* msg)
 	{
 		s_ClientLogger->trace(msg);
 	}
-	void Logger::infoClient(const std::string& msg)
+	void CoreLogger::infoClient(const char* msg)
 	{
 		s_ClientLogger->info(msg);
 	}
-	void Logger::warnClient(const std::string& msg)
+	void CoreLogger::warnClient(const char* msg)
 	{
 		s_ClientLogger->warn(msg);
 	}
-	void Logger::errorClient(const std::string& msg)
+	void CoreLogger::errorClient(const char* msg)
 	{
 		s_ClientLogger->error(msg);
 	}
-	void Logger::criticalClient(const std::string& msg)
+	void CoreLogger::criticalClient(const char* msg)
 	{
 		s_ClientLogger->critical(msg);
 	}
+
+
 }
 
 

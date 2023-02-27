@@ -388,7 +388,7 @@ namespace XYZ {
 		}
 		if (forceCompile)
 		{
-			XYZ_INFO("Compiling shader {}", m_Name);
+			XYZ_CORE_INFO("Compiling shader {}", m_Name);
 		}
 
 		m_ShaderData = compileOrGetVulkanBinaries(preprocessData.Sources, forceCompile);

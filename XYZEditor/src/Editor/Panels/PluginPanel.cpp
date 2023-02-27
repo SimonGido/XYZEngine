@@ -139,6 +139,16 @@ namespace XYZ {
 				}
 				if (!canCreate)
 					ImGui::EndDisabled();
+
+				if (ImGui::Button("Load Plugin"))
+				{
+					std::string appDir = Application::Get().GetApplicationDirectory().string();
+					std::string pluginDir = FileSystem::OpenFolder(Application::Get().GetWindow().GetNativeWindow(), appDir);
+					
+					Ref<Project> project = Project::GetActive();
+					project->Configuration.PluginPaths.push_back(pluginDir);
+					project->ReloadPlugins();
+				}
 			}
 			ImGui::End();
 		}

@@ -15,15 +15,15 @@ namespace XYZ {
 		const std::vector<uint32_t> indices { 0, 1, 2, 2, 3, 0 };
 		return Ref<MeshSource>::Create(vertices, indices);
 	}
-	Ref<Mesh> MeshFactory::CreateInstancedQuad(const glm::vec2& size, const BufferLayout& layout, const BufferLayout& instanceLayout, uint32_t count)
+	Ref<StaticMesh> MeshFactory::CreateInstancedQuad(const glm::vec2& size, const BufferLayout& layout, const BufferLayout& instanceLayout, uint32_t count)
 	{
-		Ref<Mesh> result;
+		Ref<StaticMesh> result;
 		return result;
 	}
 
 
 
-	Ref<Mesh> MeshFactory::CreateBox(const glm::vec3& size)
+	Ref<StaticMesh> MeshFactory::CreateBox(const glm::vec3& size)
 	{
 		std::vector<Vertex> vertices = {
 			Vertex{{ -size.x / 2.0f, -size.y / 2.0f,  size.z / 2.0f }, {}},  // Front Down Left
@@ -56,15 +56,15 @@ namespace XYZ {
 			3, 2, 6,
 			6, 7, 3
 		};
-		Ref<Mesh> result = Ref<Mesh>::Create(Ref<MeshSource>::Create(vertices, indices));
+		Ref<StaticMesh> result = Ref<StaticMesh>::Create(Ref<MeshSource>::Create(vertices, indices));
 		return result;
 	}
-	Ref<Mesh> MeshFactory::CreateInstancedBox(const glm::vec3& size, const BufferLayout& layout, const BufferLayout& instanceLayout, uint32_t count)
+	Ref<StaticMesh> MeshFactory::CreateInstancedBox(const glm::vec3& size, const BufferLayout& layout, const BufferLayout& instanceLayout, uint32_t count)
 	{
-		Ref<Mesh> result;
+		Ref<StaticMesh> result;
 		return result;
 	}
-	Ref<Mesh> MeshFactory::CreateCube(const glm::vec3& size, const BufferLayout& layout)
+	Ref<StaticMesh> MeshFactory::CreateCube(const glm::vec3& size, const BufferLayout& layout)
 	{
 		const Vertex vertices[24] = {
 			// Front face
@@ -114,12 +114,12 @@ namespace XYZ {
 		//	triangles[i + 1] = Triangle{ offset + 2, offset + 3, offset };
 		//	offset += 4;
 		//}
-		Ref<Mesh> result;
+		Ref<StaticMesh> result;
 		return result;
 	}
-	Ref<Mesh> MeshFactory::CreateInstancedCube(const glm::vec3& size, const BufferLayout& layout, const BufferLayout& instanceLayout, uint32_t count)
+	Ref<StaticMesh> MeshFactory::CreateInstancedCube(const glm::vec3& size, const BufferLayout& layout, const BufferLayout& instanceLayout, uint32_t count)
 	{
-		Ref<Mesh> result;
+		Ref<StaticMesh> result;
 		return result;
 	}
 }

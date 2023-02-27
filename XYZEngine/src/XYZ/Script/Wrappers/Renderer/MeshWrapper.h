@@ -12,11 +12,11 @@ namespace XYZ {
 			static void Destructor(Ref<MeshSource>* instance);
 		};
 
-		struct MeshNative
+		struct StaticMeshNative
 		{
 			static void Register();
-			static Ref<Mesh>* Constructor(Ref<MeshSource>* meshSource);
-			static void Destructor(Ref<Mesh>* instance);
+			static Ref<StaticMesh>* Constructor(Ref<MeshSource>* meshSource);
+			static void Destructor(Ref<StaticMesh>* instance);
 		};
 
 		struct AnimatedMeshNative

@@ -384,7 +384,7 @@ namespace XYZ {
 
 		return threadPool.SubmitJob([&data]() {
 			MeshComponent component;
-			component.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
+			component.Mesh = AssetManager::GetAsset<StaticMesh>(AssetHandle(data["Mesh"].as<std::string>()));
 			component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
 			return component;
 		});
@@ -393,7 +393,7 @@ namespace XYZ {
 	template <>
 	void SceneSerializer::deserialize<MeshComponent>(YAML::Node& data, MeshComponent& component, SceneEntity entity)
 	{
-		component.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
+		component.Mesh = AssetManager::GetAsset<StaticMesh>(AssetHandle(data["Mesh"].as<std::string>()));
 		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
 	}
 

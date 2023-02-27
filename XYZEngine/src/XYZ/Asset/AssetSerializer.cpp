@@ -489,9 +489,9 @@ namespace XYZ {
 		return true;
 	}
 
-	void MeshAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	void StaticMeshAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
 	{
-		WeakRef<Mesh> mesh = asset.As<Mesh>();
+		WeakRef<StaticMesh> mesh = asset.As<StaticMesh>();
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 
@@ -507,7 +507,7 @@ namespace XYZ {
 
 
 
-	bool MeshAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	bool StaticMeshAssetSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{
 		std::ifstream stream(metadata.FilePath);
 		std::stringstream strStream;
@@ -515,7 +515,7 @@ namespace XYZ {
 		YAML::Node data = YAML::Load(strStream.str());
 
 		AssetHandle meshSourceHandle(data["MeshSource"].as<std::string>());
-		asset = Ref<Mesh>::Create(AssetManager::GetAsset<MeshSource>(meshSourceHandle));
+		asset = Ref<StaticMesh>::Create(AssetManager::GetAsset<MeshSource>(meshSourceHandle));
 		return true;
 	}
 

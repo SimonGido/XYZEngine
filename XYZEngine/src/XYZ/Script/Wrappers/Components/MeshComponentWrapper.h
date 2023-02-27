@@ -13,10 +13,10 @@ namespace XYZ {
 			static void Register();
 		private:
 			static Ref<MaterialAsset>* GetMaterial(uint32_t entity);
-			static Ref<Mesh>* GetMesh(uint32_t entity);
+			static Ref<StaticMesh>* GetMesh(uint32_t entity);
 
 			static void SetMaterial(uint32_t entity, Ref<MaterialAsset>* material);
-			static void SetMesh(uint32_t entity, Ref<Mesh>* mesh);
+			static void SetMesh(uint32_t entity, Ref<StaticMesh>* mesh);
 		};
 
 
