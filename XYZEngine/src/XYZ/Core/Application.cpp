@@ -140,7 +140,7 @@ namespace XYZ {
 			return false;
 		}
 		m_Minimized = false;
-		Renderer::SetViewPort(0, 0, event.GetWidth(), event.GetHeight());
+
 		Renderer::GetAPIContext()->OnResize(event.GetWidth(), event.GetHeight());	
 		return false;
 	}

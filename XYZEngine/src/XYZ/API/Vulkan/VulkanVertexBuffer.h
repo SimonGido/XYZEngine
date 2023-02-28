@@ -19,12 +19,6 @@ namespace  XYZ
         virtual uint32_t GetSize() const override { return m_Size; }
         virtual uint32_t GetUseSize() const override { return m_UseSize; }
 
-        // TODO: Remove this
-        virtual void Resize(const void* vertices, uint32_t size) override;
-        virtual void SetLayout(const BufferLayout& layout) override;
-        virtual const BufferLayout& GetLayout() const override;
-        virtual uint32_t GetRendererID() const override { return 0;};
-
         // Vulkan specific
         VkBuffer  GetVulkanBuffer() const { return m_VulkanBuffer; }
 

@@ -2,7 +2,6 @@
 #include "RenderPass.h"
 
 #include "RendererAPI.h"
-#include "XYZ/API/OpenGL/OpenGLRenderPass.h"
 #include "XYZ/API/Vulkan/VulkanRenderPass.h"
 
 namespace XYZ {
@@ -11,7 +10,6 @@ namespace XYZ {
 		switch (RendererAPI::GetType())
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::Type::OpenGL:  return Ref<OpenGLRenderPass>::Create(spec);
 		case RendererAPI::Type::Vulkan:  return Ref<VulkanRenderPass>::Create(spec);
 		}
 

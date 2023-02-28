@@ -127,17 +127,7 @@ namespace XYZ {
 			instance->m_UseSize = size;
 		});
 	}
-	void VulkanVertexBuffer::Resize(const void* vertices, uint32_t size)
-	{
-	}
-	void VulkanVertexBuffer::SetLayout(const BufferLayout& layout)
-	{
-		m_Layout = layout;
-	}
-	const BufferLayout& VulkanVertexBuffer::GetLayout() const
-	{
-		return m_Layout;
-	}
+
 	ByteBuffer VulkanVertexBuffer::prepareBuffer(uint32_t size)
 	{
 		ByteBuffer buffer;

@@ -2,7 +2,7 @@
 #include "Shader.h"
 
 #include "Renderer.h"
-#include "XYZ/API/OpenGL/OpenGLShader.h"
+
 #include "XYZ/API/Vulkan/VulkanShader.h"
 
 namespace XYZ {
@@ -16,7 +16,6 @@ namespace XYZ {
 			XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 			return nullptr;
 		}
-		case RendererAPI::Type::OpenGL: return  Ref<OpenGLShader>::Create(path);
 		case RendererAPI::Type::Vulkan: return Ref<VulkanShader>::Create(path, sourceHash, forceCompile);
 		}
 
@@ -32,7 +31,6 @@ namespace XYZ {
 			XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 			return nullptr;
 		}
-		case RendererAPI::Type::OpenGL: return Ref<OpenGLShader>::Create(name, path);
 		case RendererAPI::Type::Vulkan: return Ref<VulkanShader>::Create(name, path, sourceHash, forceCompile);
 		}
 

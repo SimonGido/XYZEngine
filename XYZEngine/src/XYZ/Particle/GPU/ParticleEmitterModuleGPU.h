@@ -16,7 +16,7 @@ namespace XYZ {
 	class XYZ_API ParticleEmitterModuleGPU : public RefCount
 	{
 	public:
-		ParticleEmitterModuleGPU(ParticleEmitterModuleType type, uint32_t stride, uint32_t strideOffset);
+		ParticleEmitterModuleGPU(ParticleEmitterModuleType type, uint32_t stride, std::vector<uint32_t> strideOffsets);
 
 		virtual void Generate(std::byte* buffer, uint32_t count) const = 0;
 
@@ -25,15 +25,15 @@ namespace XYZ {
 		bool Enabled;
 	protected:
 		ParticleEmitterModuleType m_Type;
+		std::vector<uint32_t>	  m_StrideOffsets;
 		uint32_t				  m_Stride;		  // Size of particle structure
-		uint32_t				  m_StrideOffset; // Offset in particle structure
 	};
 
 
 	class SpawnParticleEmitterModuleGPU : public ParticleEmitterModuleGPU
 	{
 	public:
-		SpawnParticleEmitterModuleGPU(uint32_t stride, uint32_t strideOffset);
+		SpawnParticleEmitterModuleGPU(uint32_t stride, std::vector<uint32_t> strideOffsets);
 
 		virtual void Generate(std::byte* buffer, uint32_t count) const override;
 
@@ -45,7 +45,7 @@ namespace XYZ {
 	class TestParticleEmitterModuleGPU : public ParticleEmitterModuleGPU
 	{
 	public:
-		TestParticleEmitterModuleGPU(uint32_t stride, uint32_t strideOffset);
+		TestParticleEmitterModuleGPU(uint32_t stride, std::vector<uint32_t> strideOffsets);
 
 		virtual void Generate(std::byte* buffer, uint32_t count) const override;
 	};
@@ -53,7 +53,7 @@ namespace XYZ {
 	class BoxParticleEmitterModuleGPU : public ParticleEmitterModuleGPU
 	{
 	public:
-		BoxParticleEmitterModuleGPU(uint32_t stride, uint32_t strideOffset);
+		BoxParticleEmitterModuleGPU(uint32_t stride, std::vector<uint32_t> strideOffsets);
 
 		virtual void Generate(std::byte* buffer, uint32_t count) const override;
 

@@ -49,25 +49,17 @@ namespace XYZ {
 	public:
 		virtual ~Framebuffer() = default;
 
-		virtual void Resize(uint32_t width, uint32_t height, bool forceResize = false) {};
+		virtual void Resize(uint32_t width, uint32_t height, bool forceResize = false) = 0;
 
-		virtual void Bind() const {};
-		virtual void Unbind() const {};
-		virtual void Clear() const {};
+		virtual void SetSpecification(const FramebufferSpecification& specs, bool recreate = false) = 0;
 
-		virtual void BindTexture(uint32_t attachmentIndex, uint32_t slot) const {};
-		virtual void BindImage(uint32_t attachmentIndex, uint32_t slot, uint32_t miplevel, BindImageType type) const {};
-		virtual void SetSpecification(const FramebufferSpecification& specs, bool recreate = false) {};
-
-		virtual Ref<Image2D> GetImage(uint32_t attachmentIndex = 0) const { return Ref<Image2D>(); };
-		virtual Ref<Image2D> GetDepthImage() const { return Ref<Image2D>(); }
-		virtual const uint32_t GetNumColorAttachments() const { return 0; };
+		virtual const uint32_t GetNumColorAttachments() const = 0;
+		virtual Ref<Image2D> GetImage(uint32_t attachmentIndex = 0) const = 0;
+		virtual Ref<Image2D> GetDepthImage() const = 0;
 
 		virtual const FramebufferSpecification& GetSpecification() const = 0;
 		
-		virtual void ReadPixel(int32_t& pixel, uint32_t mx, uint32_t my, uint32_t attachmentIndex) const {};
-		virtual void ClearColorAttachment(uint32_t colorAttachmentIndex, void* clearValue) const {};
-
+		
 		static Ref<Framebuffer> Create(const FramebufferSpecification& specs);
 	};
 

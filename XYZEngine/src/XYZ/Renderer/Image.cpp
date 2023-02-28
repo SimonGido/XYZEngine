@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Image.h"
 
-#include "XYZ/API/OpenGL/OpenGLImage.h"
 #include "XYZ/API/Vulkan/VulkanImage.h"
 
 #include "Renderer.h"
@@ -17,7 +16,7 @@ namespace XYZ {
 			XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
 			return nullptr;
 		}
-		case RendererAPI::Type::OpenGL: return   Ref<OpenGLImage2D>::Create(specification);
+
 		case RendererAPI::Type::Vulkan: return   Ref<VulkanImage2D>::Create(specification);
 		}
 

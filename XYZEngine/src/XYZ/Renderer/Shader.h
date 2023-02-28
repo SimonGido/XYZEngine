@@ -133,46 +133,27 @@ namespace XYZ {
 	{
 	public:
 		virtual ~Shader() = default;
-
-		virtual void Bind() const {};
-		virtual void Unbind() const {};
-		virtual void Compute(uint32_t groupX, uint32_t groupY = 1, uint32_t groupZ = 1, ComputeBarrierType barrierType = ComputeBarrierType::ShaderStorageBarrier) const {};
-		virtual void SetVSUniforms(ByteBuffer buffer) const {};
-		virtual void SetFSUniforms(ByteBuffer buffer) const {};
-
+	
 		virtual void Reload(bool forceCompile = false) = 0;
 
-
-		virtual void SetInt(const std::string& name, int value) {};
-		virtual void SetFloat(const std::string& name, float value) {};
-		virtual void SetFloat2(const std::string& name,const glm::vec2& value) {};
-		virtual void SetFloat3(const std::string& name, const glm::vec3& value) {};
-		virtual void SetFloat4(const std::string& name, const glm::vec4& value) {};
-		virtual void SetMat4(const std::string& name, const glm::mat4& value) {};
-
-
 		
-		virtual const UniformList& GetVSUniformList() const { return UniformList(); };
-		virtual const UniformList& GetFSUniformList() const { return UniformList(); };
-		virtual const TextureUniformList& GetTextureList() const { return TextureUniformList(); };
-		virtual const std::vector<BufferLayout>& GetLayouts() const { return {}; }
 
+		virtual const std::vector<BufferLayout>& GetLayouts() const = 0;
 		virtual const std::string& GetPath() const = 0;
 		virtual const std::string& GetName() const = 0;
 		virtual const std::string& GetSource() const { return std::string(); }
 		
-		virtual size_t   GetVertexBufferSize() const { return 0;};
-		virtual uint32_t GetRendererID() const { return 0; }
+		virtual size_t   GetVertexBufferSize() const = 0;
 		virtual size_t	 GetHash()	     const = 0;
-		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const { return {}; }
+		virtual const std::unordered_map<std::string, ShaderBuffer>& GetBuffers() const = 0;
 
-		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const { return {}; }
-		virtual const std::unordered_map<std::string, SpecializationCache>& GetSpecializationCachce() const { return {}; }
+		virtual const std::unordered_map<std::string, ShaderResourceDeclaration>& GetResources() const = 0;
+		virtual const std::unordered_map<std::string, SpecializationCache>& GetSpecializationCachce() const = 0;
 
-		virtual const std::vector<uint32_t>& GetShaderData(ShaderType type) const { return {}; }
+		virtual const std::vector<uint32_t>& GetShaderData(ShaderType type) const = 0;
 
-		virtual bool IsCompute()  const { return false; }
-		virtual bool IsCompiled() const { return false; };
+		virtual bool IsCompute()  const = 0;
+		virtual bool IsCompiled() const = 0;
 
 		static Ref<Shader> Create(const std::string& path, size_t sourceHash = 0, bool forceCompile = true);
 		static Ref<Shader> Create(const std::string& name, const std::string& path, size_t sourceHash = 0, bool forceCompile = true);

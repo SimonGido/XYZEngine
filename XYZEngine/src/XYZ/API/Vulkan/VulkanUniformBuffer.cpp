@@ -9,8 +9,8 @@ namespace XYZ {
 		:
 		m_MemoryAlloc(VK_NULL_HANDLE),
 		m_Buffer(VK_NULL_HANDLE),
-		m_Binding(binding),
-		m_ShaderStage(VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM)
+		m_ShaderStage(VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM),
+		m_Binding(binding)
 	{
 		m_LocalStorage.Allocate(size);
 		Ref<VulkanUniformBuffer> instance = this;

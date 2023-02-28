@@ -10,11 +10,6 @@ namespace XYZ {
 		VulkanIndexBuffer(const void* indices, uint32_t count, IndexType type);
 		virtual ~VulkanIndexBuffer() override;
 
-		virtual void Bind() const override {};
-		virtual void UnBind() const override {};
-		virtual uint32_t GetRendererID() const override { return 0; };
-
-
 		virtual void Update(const void* indices, uint32_t count, uint32_t offset = 0) override;
 		virtual void RT_Update(const void* indices, uint32_t count, uint32_t offset = 0) override;
 		virtual void SetUseCount(uint32_t count) override;

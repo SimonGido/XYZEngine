@@ -15,10 +15,9 @@ namespace XYZ {
 
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) override;
 		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) override;
-		virtual uint32_t GetBinding() const { return m_Binding; }
+		virtual uint32_t GetBinding() const override { return m_Binding; }
 
 		void RT_SetBufferInfo(uint32_t size, uint32_t offset);
-
 		const VkDescriptorBufferInfo& GetDescriptorBufferInfo() const { return m_DescriptorInfo; }
 	private:
 		void RT_invalidate();
@@ -28,11 +27,10 @@ namespace XYZ {
 		VmaAllocation		   m_MemoryAlloc;
 		VkBuffer			   m_Buffer;
 		VkDescriptorBufferInfo m_DescriptorInfo{};
-
-		uint32_t			   m_Binding;
 		std::string			   m_Name;
 		VkShaderStageFlagBits  m_ShaderStage;
 		ByteBuffer			   m_LocalStorage;
+		uint32_t			   m_Binding;
 
 	};
 }

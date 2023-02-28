@@ -8,7 +8,7 @@
 
 #include "Shader.h"
 #include "Camera.h"
-#include "VertexArray.h"
+
 #include "RendererAPI.h"
 #include "RenderCommandQueue.h"
 #include "RenderPass.h"
@@ -62,24 +62,6 @@ namespace XYZ {
 
 		static void Shutdown();
 
-		// Old API
-		static void Clear();
-		static void SetClearColor(const glm::vec4& color);
-		static void SetViewPort(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-		static void SetLineThickness(float thickness);
-		static void SetPointSize(float size);
-		static void SetDepthTest(bool val);
-
-		static void DrawArrays(PrimitiveType type, uint32_t count);
-		static void DrawIndexed(PrimitiveType type, uint32_t indexCount = 0);
-		static void DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset = 0);
-		static void DrawElementsIndirect(void* indirect);
-		static void SubmitFullscreenQuad();
-		/////////////
-		
-
-
-		// New API //
 		static void BeginFrame();
 		static void EndFrame();
 

@@ -107,27 +107,14 @@ namespace XYZ {
 	};
 
 
-	enum class BufferUsage
-	{
-		None = 0, Static = 1, Dynamic = 2
-	};
 
 	class XYZ_API VertexBuffer : public RefCount
 	{
 	public:
 		virtual ~VertexBuffer() = default;
-		
-		// Old API
-		virtual void Bind() const {}
-		virtual void UnBind() const {};
-		virtual const BufferLayout& GetLayout() const = 0;
-		virtual void SetLayout(const BufferLayout& layout) = 0;
-		virtual uint32_t GetRendererID() const = 0;
-		virtual void Resize(const void* vertices, uint32_t size) = 0;
 
-		// New API
 		virtual void Update(const void* vertices, uint32_t size, uint32_t offset = 0) = 0;
-		virtual void RT_Update(const void* vertices, uint32_t size, uint32_t offset = 0) {};
+		virtual void RT_Update(const void* vertices, uint32_t size, uint32_t offset = 0) = 0;
 		virtual void SetUseSize(uint32_t size) = 0;
 		virtual uint32_t GetSize() const = 0;
 		virtual uint32_t GetUseSize() const = 0;
@@ -146,16 +133,13 @@ namespace XYZ {
 	{
 	public:
 		virtual ~IndexBuffer() = default;
-		virtual void Bind() const = 0;
-		virtual void UnBind() const = 0;
-		virtual uint32_t GetRendererID() const = 0;
 
-		virtual void Update(const void* indices, uint32_t count, uint32_t offset = 0) {};
-		virtual void RT_Update(const void* indices, uint32_t count, uint32_t offset = 0) {};
+		virtual void Update(const void* indices, uint32_t count, uint32_t offset = 0) = 0;
+		virtual void RT_Update(const void* indices, uint32_t count, uint32_t offset = 0) = 0;
 		virtual void SetUseCount(uint32_t count) = 0;
 		virtual uint32_t GetCount() const = 0;
 		virtual uint32_t GetUseCount() const = 0;
-		virtual IndexType GetIndexType() const { return IndexType::Uint32; }
+		virtual IndexType GetIndexType() const = 0;
 
 		static Ref<IndexBuffer> Create(const void* indices, uint32_t count, IndexType type = IndexType::Uint32);
 	};
@@ -166,14 +150,6 @@ namespace XYZ {
 	{
 	public:
 		virtual ~StorageBuffer() = default;
-		// Old API
-		virtual void BindBase(uint32_t binding) const {};
-		virtual void BindRange(uint32_t offset, uint32_t size) const {};
-		virtual void Bind() const {};
-		virtual void GetSubData(void** buffer, uint32_t size, uint32_t offset = 0) {};
-		virtual void SetLayout(const BufferLayout& layout) {};
-		virtual uint32_t GetRendererID() const { return 0; };
-		//
 
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) {};
 		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) {};
@@ -181,28 +157,12 @@ namespace XYZ {
 		virtual void Resize(uint32_t size) {};
 		virtual void SetBufferInfo(uint32_t size, uint32_t offset) {};
 
-		virtual uint32_t			GetBinding() const { return 0; }
-		virtual const BufferLayout& GetLayout() const { return BufferLayout(); };
-		virtual ByteBuffer			GetBuffer() { return ByteBuffer(); }
-		virtual bool				IsIndirect() const { return false; }
+		virtual uint32_t			GetBinding() const = 0;
+		virtual ByteBuffer			GetBuffer() = 0;
+		virtual bool				IsIndirect() const = 0;
 		
 		static Ref<StorageBuffer> Create(uint32_t size, uint32_t binding, bool indirect = false);
-		static Ref<StorageBuffer> Create(const void *data, uint32_t size, uint32_t binding, bool indirect = false, BufferUsage usage = BufferUsage::Dynamic);
-	};
-
-
-	class XYZ_API AtomicCounter : public RefCount
-	{
-	public:
-		virtual ~AtomicCounter() = default;
-
-		virtual void Reset() = 0;
-		virtual void BindBase(uint32_t index) const = 0;
-		virtual void Update(uint32_t* data, uint32_t count, uint32_t offset) = 0;
-		virtual uint32_t* GetCounters() = 0;
-		virtual uint32_t GetNumCounters() = 0;
-
-		static Ref<AtomicCounter> Create(uint32_t size, uint32_t binding);
+		static Ref<StorageBuffer> Create(const void *data, uint32_t size, uint32_t binding, bool indirect = false);
 	};
 
 
@@ -227,29 +187,15 @@ namespace XYZ {
 	};
 	
 
-	class XYZ_API IndirectBuffer : public RefCount
-	{
-	public:
-		virtual ~IndirectBuffer() = default;
-		
-		virtual void Bind() const {};
-		virtual void BindBase(uint32_t index) {};
-
-		virtual uint32_t GetBinding() const { return 0; }
-
-		static Ref<IndirectBuffer> Create(const void * data, uint32_t size, uint32_t binding);
-	};
-
-
 	class XYZ_API UniformBuffer : public RefCount
 	{
 	public:
 		virtual ~UniformBuffer() = default;
 
 		virtual void Update(const void* data, uint32_t size, uint32_t offset) = 0;
-		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset) {};
-
+		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset) = 0;
 		virtual uint32_t GetBinding() const = 0;
+
 		static Ref<UniformBuffer> Create(uint32_t size, uint32_t binding);
 	};
 }

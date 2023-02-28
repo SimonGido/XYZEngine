@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Renderer.h"
 
-#include "CustomRenderer2D.h"
+
 #include "Renderer2D.h"
 #include "SceneRenderer.h"
 #include "Fence.h"
@@ -12,7 +12,6 @@
 
 #include "XYZ/Asset/AssetManager.h"
 
-#include "XYZ/API/OpenGL/OpenGLRendererAPI.h"
 #include "XYZ/API/Vulkan/VulkanRendererAPI.h"
 
 namespace XYZ {
@@ -114,7 +113,6 @@ namespace XYZ {
 	{
 		switch (RendererAPI::GetType())
 		{
-		case RendererAPI::Type::OpenGL: return new OpenGLRendererAPI();
 		case RendererAPI::Type::Vulkan: return new VulkanRendererAPI();
 		}
 		XYZ_ASSERT(false, "Unknown RendererAPI");
@@ -146,12 +144,8 @@ namespace XYZ {
 		data[3].Position = glm::vec3(x, y + height, 0.0f);
 		data[3].TexCoord = glm::vec2(0, 0);
 
-		const BufferLayout layout = {
-			{0, ShaderDataType::Float3, "a_Position" },
-			{1, ShaderDataType::Float2, "a_TexCoord" }
-		};
+
 		s_Data.FullscreenQuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
-		s_Data.FullscreenQuadVertexBuffer->SetLayout(layout);
 	
 		const uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 		s_Data.FullscreenQuadIndexBuffer = IndexBuffer::Create(indices, 6);
@@ -192,85 +186,7 @@ namespace XYZ {
 		s_Data.APIContext->Shutdown(); // Free context to make sure it is destroyed sooner than Logger;
 	}
 
-	void Renderer::Clear()
-	{
-		Renderer::Submit([=]() {
-			s_RendererAPI->Clear();
-		});
-	}
-
-	void Renderer::SetClearColor(const glm::vec4& color)
-	{
-		Renderer::Submit([=]() {
-			s_RendererAPI->SetClearColor(color);
-		});
-	}
-
-	void Renderer::SetViewPort(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
-	{
-		Renderer::Submit([=]() {
-			s_RendererAPI->SetViewport(x, y, width, height);
-		});
-	}
-
-	void Renderer::SetLineThickness(float thickness)
-	{
-		Renderer::Submit([=]() {
-			s_RendererAPI->SetLineThickness(thickness);
-		});
-	}
-
-	void Renderer::SetPointSize(float size)
-	{
-		Renderer::Submit([=]() {
-			s_RendererAPI->SetPointSize(size);
-		});
-	}
-
-	void Renderer::SetDepthTest(bool val)
-	{
-		Renderer::Submit([=]() {
-			s_RendererAPI->SetDepth(val);
-		});
-	}
-
-	void Renderer::DrawArrays(PrimitiveType type, uint32_t count)
-	{
-		s_Data.Stats.DrawArraysCount++;
-		Renderer::Submit([=]() {
-			s_RendererAPI->DrawArrays(type, count);
-		});
-	}
-
-	void Renderer::DrawIndexed(PrimitiveType type, uint32_t indexCount)
-	{
-		s_Data.Stats.DrawIndexedCount++;
-		Renderer::Submit([=]() {
-			s_RendererAPI->DrawIndexed(type, indexCount);
-		});
-	}
-
-	void Renderer::DrawInstanced(PrimitiveType type, uint32_t indexCount, uint32_t instanceCount, uint32_t offset)
-	{
-		s_Data.Stats.DrawInstancedCount++;
-
-		Renderer::Submit([=]() {
-			s_RendererAPI->DrawInstanced(type, indexCount, instanceCount, offset);
-		});
-	}
-
-	void Renderer::DrawElementsIndirect(void* indirect)
-	{
-		s_Data.Stats.DrawIndirectCount++;
-		Renderer::Submit([=]() {
-			s_RendererAPI->DrawInstancedIndirect(indirect);
-		});
-	}
-
-	void Renderer::SubmitFullscreenQuad()
-	{
-		s_Data.Stats.DrawFullscreenCount++;
-	}
+	
 
 	void Renderer::BeginFrame()
 	{

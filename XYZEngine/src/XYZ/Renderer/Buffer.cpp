@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Buffer.h"
 #include "APIContext.h"
-#include "XYZ/API/OpenGL/OpenGLBuffer.h"
+
 #include "XYZ/API/Vulkan/VulkanVertexBuffer.h"
 #include "XYZ/API/Vulkan/VulkanIndexBuffer.h"
 #include "XYZ/API/Vulkan/VulkanUniformBuffer.h"
@@ -15,7 +15,6 @@ namespace XYZ {
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::Type::OpenGL:  return Ref<OpenGLVertexBuffer>::Create(size);
 		case RendererAPI::Type::Vulkan:  return Ref<VulkanVertexBuffer>::Create(size);
 		}
 
@@ -27,7 +26,6 @@ namespace XYZ {
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::Type::OpenGL:  return Ref<OpenGLVertexBuffer>::Create(vertices, size, BufferUsage::Dynamic);
 		case RendererAPI::Type::Vulkan:  return Ref<VulkanVertexBuffer>::Create(vertices, size);
 		}
 
@@ -40,7 +38,6 @@ namespace XYZ {
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::Type::OpenGL:  return Ref<OpenGLIndexBuffer>::Create(indices, count, type);
 		case RendererAPI::Type::Vulkan:  return Ref<VulkanIndexBuffer>::Create(indices, count, type);
 		}
 
@@ -53,7 +50,6 @@ namespace XYZ {
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::Type::OpenGL:  return Ref<OpenGLStorageBuffer>::Create((float*)NULL, size, binding, BufferUsage::Dynamic);
 		case RendererAPI::Type::Vulkan:  return Ref<VulkanStorageBuffer>::Create(size, binding, indirect);
 		}
 
@@ -61,40 +57,23 @@ namespace XYZ {
 		return nullptr;
 	}
 
-	Ref<StorageBuffer> StorageBuffer::Create(const void* data, uint32_t size, uint32_t binding, bool indirect, BufferUsage usage)
+	Ref<StorageBuffer> StorageBuffer::Create(const void* data, uint32_t size, uint32_t binding, bool indirect)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::Type::OpenGL:  return Ref<OpenGLStorageBuffer>::Create(data, size, binding, usage);
 		case RendererAPI::Type::Vulkan:  return Ref<VulkanStorageBuffer>::Create(data, size, binding, indirect);
 		}
 
 		XYZ_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
-	Ref<AtomicCounter> AtomicCounter::Create(uint32_t size, uint32_t binding)
-	{
-		switch (Renderer::GetAPI())
-		{
-		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::Type::OpenGL:  return Ref<OpenGLAtomicCounter>::Create(size, binding);
-		}
 
-		XYZ_ASSERT(false, "Unknown RendererAPI!");
-		return nullptr;
-	}
-	Ref<IndirectBuffer> IndirectBuffer::Create(const void* data, uint32_t size, uint32_t binding)
-	{
-		XYZ_ASSERT(false, "Unknown RendererAPI!");
-		return nullptr;
-	}
 	Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::Type::OpenGL:  return Ref<OpenGLUniformBuffer>::Create(size, binding);
 		case RendererAPI::Type::Vulkan:  return Ref<VulkanUniformBuffer>::Create(size, binding);
 		}
 

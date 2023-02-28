@@ -16,15 +16,9 @@ namespace XYZ {
 			EditorPanel(name),
 			m_BlueprintManager(&m_VariableManager)
 		{
-			m_NodeEditor = std::make_shared<XYZ::UI::ImGuiNodeContext>("Blueprint Editor");
-			m_NodeEditor->OnStart();
-			m_NodeEditor->OnBackgroundMenu = [this]() {
-				onBackgroundMenu();
-			};
 		}
 		ParticleEditorGPU::~ParticleEditorGPU()
 		{
-			m_NodeEditor->OnStop();
 		}
 		void ParticleEditorGPU::OnImGuiRender(bool& open)
 		{
@@ -43,7 +37,7 @@ namespace XYZ {
 						},
 						[&]() 
 						{
-							m_NodeEditor->OnUpdate(m_Timestep);
+							
 						});					
 				}
 				ImGui::End();
@@ -106,77 +100,19 @@ namespace XYZ {
 				type.Name = inputLayout.GetName();
 				for (auto& var : inputLayout.GetVariables())
 				{
-					type.Variables.push_back({ var.Name, var.Type});
+					type.Variables.push_back({ var.Name, var.Type });
 				}
-			}
-
-
-			const uint32_t valueFlags =
-				  XYZ::UI::ImGuiNodeValueFlags_AllowName
-				| XYZ::UI::ImGuiNodeValueFlags_AllowEdit;
-
-
-			XYZ::UI::ImGuiNode* outputBufferNode = m_NodeEditor->AddNode(XYZ::UI::ImGuiNodeFlags_AllowInput);
-			outputBufferNode->SetName("buffer_Particles");
-			outputBufferNode->SetType(m_VariableManager.GetVariable("buffer"));
-			outputBufferNode->AddValue("binding", m_VariableManager.GetVariable("uint"), valueFlags);
-			outputBufferNode->AddValue("set", m_VariableManager.GetVariable("uint"), valueFlags);
-			auto& outputVal = outputBufferNode->AddValue("output", m_VariableManager.GetVariable(outputLayout.GetName()), 0);
-			outputVal.SetArray(true);
-			for (auto& variable : outputLayout.GetVariables())
-			{
-				outputVal.AddValue(variable.Name, variable.Type,
-					XYZ::UI::ImGuiNodeValueFlags_AllowName
-				  | XYZ::UI::ImGuiNodeValueFlags_AllowInput);
-			}
-
-
-			XYZ::UI::ImGuiNode* inputBufferNode = m_NodeEditor->AddNode(0);
-			inputBufferNode->SetName("buffer_ParticleProperties");
-			inputBufferNode->SetType(m_VariableManager.GetVariable("buffer"));
-			inputBufferNode->AddValue("binding", m_VariableManager.GetVariable("uint"), valueFlags);
-			inputBufferNode->AddValue("set", m_VariableManager.GetVariable("uint"), valueFlags);
-			auto& inputVal = inputBufferNode->AddValue("input", m_VariableManager.GetVariable(inputLayout.GetName()), XYZ::UI::ImGuiNodeValueFlags_AllowName);
-			inputVal.SetArray(true);
-			for (auto& variable : inputLayout.GetVariables())
-			{
-				inputVal.AddValue(variable.Name, variable.Type, 
-					  XYZ::UI::ImGuiNodeValueFlags_AllowOutput
-					| XYZ::UI::ImGuiNodeValueFlags_AllowName);
 			}
 		}
 	
 		void ParticleEditorGPU::onBackgroundMenu()
 		{
-			const uint32_t nodeFlags =
-				XYZ::UI::ImGuiNodeFlags_AllowInput
-				| XYZ::UI::ImGuiNodeFlags_AllowOutput
-				| XYZ::UI::ImGuiNodeFlags_AllowName;
-
-			const uint32_t inputValueFlags =
-				XYZ::UI::ImGuiNodeValueFlags_AllowInput
-			  | XYZ::UI::ImGuiNodeValueFlags_AllowName;
-				
-			const uint32_t outputValueFlags =
-				XYZ::UI::ImGuiNodeValueFlags_AllowOutput;
-
+			
 			for (auto& func : m_BlueprintManager.GetFunctions())
 			{
 				if (ImGui::MenuItem(func.Name.c_str()))
 				{
-					auto funcNode = m_NodeEditor->AddNode(nodeFlags);
-					funcNode->SetName(func.Name);
-					funcNode->SetType(m_VariableManager.GetVariable("function"));
-					for (auto& arg : func.Arguments)
-					{
-						if (!arg.Output)
-							funcNode->AddValue(arg.Name, arg.Type, inputValueFlags);
-					}
-					for (auto& arg : func.Arguments)
-					{
-						if (arg.Output)
-							funcNode->AddValue(arg.Name, arg.Type, outputValueFlags);
-					}
+					
 				}
 			}
 		}
@@ -188,7 +124,7 @@ namespace XYZ {
 			}
 			else
 			{
-				m_NodeEditor->Clear();
+				
 			}
 		}
 		void ParticleEditorGPU::editBlueprintTypes()
@@ -241,93 +177,7 @@ namespace XYZ {
 		{
 			Ref<Blueprint> result = Ref<Blueprint>::Create();
 			
-			auto funcSequenceNodes = m_NodeEditor->FindNodeSequence("EntryPoint");
-			auto nodes = m_NodeEditor->GetNodes();
-
-			std::unordered_map<std::string, XYZ::UI::ImGuiNode*> uniqueStructs;
-			for (auto node : nodes)
-			{
-				if (node->GetType().Name != "function"
-				&&  node->GetType().Name != "buffer")
-					uniqueStructs[node->GetType().Name] = node;
-			}
-
-			// Add struct definitions
-			for (auto& [typeName, node] : uniqueStructs)
-			{
-				BlueprintStruct blueprintStruct;
-				blueprintStruct.Name = typeName;
-				for (auto& value : node->GetValues())
-				{
-					auto& blueprintVar = blueprintStruct.Variables.emplace_back();
-					blueprintVar.Name = value.GetName();
-					blueprintVar.Type = value.GetType();
-				}
-				result->AddStruct(blueprintStruct);
-			}
-
-			// Add buffers
-			for (auto node : nodes)
-			{
-				if (node->GetType() == m_VariableManager.GetVariable("buffer"))
-				{
-					BlueprintBuffer buffer;
-					buffer.Name = node->GetName();
-					buffer.LayoutType = BlueprintBufferLayout::STD430;
-					buffer.Type = BlueprintBufferType::Storage;
-
-					for (auto& val : node->GetValues())
-					{
-						if (val.GetName() == "binding")
-							buffer.Binding = val.GetValue<uint32_t>();
-						else if (val.GetName() == "set")
-							buffer.Set = val.GetValue<uint32_t>();
-						else
-						{
-							BlueprintVariable variable;
-							variable.Name = val.GetName();
-							variable.Type = val.GetType();
-							variable.IsArray = val.IsArray();
-							buffer.Variables.push_back(variable);
-						}
-					}
-					result->AddBuffer(buffer);
-				}
-			}
-		
-			// Add functions
-			for (auto& blueprintFunction : m_BlueprintManager.GetFunctions())
-			{
-				// Start from one, skip entry point
-				for (size_t i = 1; i < funcSequenceNodes.size(); ++i)
-				{
-					auto funcNode = funcSequenceNodes[i];
-					if (funcNode->GetName() == blueprintFunction.Name)
-					{
-						result->AddFunction(blueprintFunction);
-						break;
-					}
-				}
-			}
-
 			
-			BlueprintFunctionSequence sequence;
-			if (!funcSequenceNodes.empty())
-			{
-				sequence.EntryPoint = *m_BlueprintManager.FindFunction(funcSequenceNodes[0]->GetName());
-				for (size_t i = 1; i < funcSequenceNodes.size(); ++i)
-				{
-					auto funcNode = funcSequenceNodes[i];
-					auto& blueprintFunction = *m_BlueprintManager.FindFunction(funcNode->GetName());
-					
-					auto& funcCall = sequence.FunctionCalls.emplace_back();
-					funcCall.Name = blueprintFunction.Name;
-					funcCall.Arguments = blueprintFunction.Arguments;
-				}
-				result->SetFunctionSequence(sequence);
-			}
-			
-			result->Rebuild();
 			return result;
 		}
 	}

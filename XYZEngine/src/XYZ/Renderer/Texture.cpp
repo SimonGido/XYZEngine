@@ -2,7 +2,7 @@
 #include "Texture.h"
 
 #include "Renderer.h"
-#include "XYZ/API/OpenGL/OpenGLTexture.h"
+
 #include "XYZ/API/Vulkan/VulkanTexture.h"
 
 namespace XYZ {
@@ -22,7 +22,6 @@ namespace XYZ {
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::Type::None:   XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		case RendererAPI::Type::OpenGL: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::OpenGL");
 		case RendererAPI::Type::Vulkan: return Ref<VulkanTexture2D>::Create(format, width, height, data, properties);
 		}
 
@@ -35,7 +34,6 @@ namespace XYZ {
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::Type::None:   XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::None");
-		case RendererAPI::Type::OpenGL: XYZ_ASSERT(false, "Renderer::GetAPI() = RendererAPI::OpenGL");
 		case RendererAPI::Type::Vulkan: return Ref<VulkanTexture2D>::Create(path, properties);
 		}
 

@@ -922,9 +922,11 @@ namespace XYZ {
 		FileSystem::WriteFile("ParticleTest.glsl", generator.GetSource());
 
 		ParticleEmitterGPU emitter(inputLayout.GetStride());
-		emitter.EmitterModules.push_back(Ref<BoxParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), inputLayout.GetVariableOffset("StartPosition")));
-		emitter.EmitterModules.push_back(Ref<SpawnParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), inputLayout.GetVariableOffset("LifeTime")));
-		emitter.EmitterModules.push_back(Ref<TestParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), inputLayout.GetVariableOffset("StartColor")));
+
+
+		emitter.EmitterModules.push_back(Ref<BoxParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("StartPosition") }));
+		emitter.EmitterModules.push_back(Ref<SpawnParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("LifeTime") }));
+		emitter.EmitterModules.push_back(Ref<TestParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("StartColor") }));
 		m_ParticleSystemGPU->ParticleEmitters.push_back(emitter);
 
 

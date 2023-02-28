@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Renderer2D.h"
 
-#include "VertexArray.h"
+
 #include "Renderer.h"
 
 #include <glm/gtc/type_ptr.hpp>

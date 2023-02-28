@@ -20,11 +20,7 @@ namespace XYZ {
 	{
 	public:
 		virtual ~Texture() = default;
-	
-		virtual void Bind(uint32_t slot = 0) const {};
-		virtual void BindImage(uint32_t slot, uint32_t miplevel, BindImageType type) const {};
-		
-	
+
 		virtual ImageFormat GetFormat() const = 0;
 		virtual uint32_t	GetWidth() const = 0;
 		virtual uint32_t	GetHeight() const = 0;

@@ -2,7 +2,7 @@
 
 #include "XYZ/Renderer/Renderer.h"
 #include "XYZ/API/Vulkan/VulkanImGuiLayer.h"
-#include "XYZ/API/OpenGL/OpenGLImGuiLayer.h"
+
 
 
 #include "XYZ/ImGui/ImGui.h"
@@ -66,7 +66,6 @@ namespace XYZ {
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::Type::None:    XYZ_ASSERT(false, "RendererAPI::None is currently not supported!"); return nullptr;
-		case RendererAPI::Type::OpenGL:  return new OpenGLImGuiLayer();
 		case RendererAPI::Type::Vulkan:  return new VulkanImGuiLayer();
 		}
 
