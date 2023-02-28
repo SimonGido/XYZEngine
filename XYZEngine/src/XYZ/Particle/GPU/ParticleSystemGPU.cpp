@@ -33,6 +33,12 @@ namespace XYZ {
 		return emitted;
 	}
 
+	void ParticleSystemGPU::Reset()
+	{
+		m_EmittedParticles = 0;
+		m_EmissionCount = 0;
+	}
+
 	const EmissionResult ParticleSystemGPU::LastEmission() const
 	{
 		const uint32_t offsetParticles = m_EmittedParticles - m_EmissionCount;

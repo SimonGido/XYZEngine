@@ -719,7 +719,10 @@ namespace XYZ {
 		auto& particleStorage = m_Registry.storage<ParticleComponentGPU>();
 		for (auto particleComponent : particleStorage)
 		{
-			particleComponent.System->Update(ts);
+			if (particleComponent.System->GetEmittedParticles() == particleComponent.System->GetMaxParticles())
+				particleComponent.System->Reset();
+			
+			particleComponent.System->Update(ts);		
 		}
 	}
 
@@ -916,13 +919,13 @@ namespace XYZ {
 			{"Color",		  VariableType{"vec4", 16}}
 		});
 
-		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(inputLayout, outputLayout, 10);
+		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(inputLayout, outputLayout, 1000);
 
 		ParticleSystemGPUShaderGenerator generator(m_ParticleSystemGPU);
 		FileSystem::WriteFile("ParticleTest.glsl", generator.GetSource());
 
 		ParticleEmitterGPU emitter(inputLayout.GetStride());
-
+		emitter.EmissionRate = 10.0f;
 
 		emitter.EmitterModules.push_back(Ref<BoxParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("StartPosition") }));
 		emitter.EmitterModules.push_back(Ref<SpawnParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("LifeTime") }));

@@ -87,6 +87,7 @@ namespace XYZ {
 		static  AssetType GetStaticType() { return AssetType::ParticleSystemGPU; }
 
 		uint32_t Update(Timestep ts);
+		void	 Reset();
 
 		const ParticleSystemLayout& GetInputLayout()	const { return m_InputLayout; }
 		const ParticleSystemLayout& GetOutputLayout()	const { return m_OutputLayout; }
