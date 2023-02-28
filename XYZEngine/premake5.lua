@@ -107,7 +107,6 @@ project "XYZEngine"
 
 		links
 		{
-			"GLEW",
 			"GLFW",
 			"OpenAL-Soft",
 			"FreeType",
