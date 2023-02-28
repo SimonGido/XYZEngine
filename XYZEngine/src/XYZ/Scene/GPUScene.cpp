@@ -71,7 +71,7 @@ namespace XYZ {
 			
 			uint32_t offset = 0;
 			for (auto& drawCommand : command.DrawCommands)
-			{
+			{				
 				drawCommand.IndirectCommandSubAllocation = command.IndirectCommandAllocation->CreateSubAllocation(offset, sizeof(IndirectIndexedDrawCommand));
 			
 				auto& indirectCommand = command.IndirectDrawCommands.emplace_back();

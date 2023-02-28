@@ -7,7 +7,7 @@
 namespace XYZ {
 
 
-	class XYZ_API ParticleEmitterGPU : public RefCount
+	class XYZ_API ParticleEmitterGPU
 	{
 	public:
 		ParticleEmitterGPU(uint32_t stride);
