@@ -133,10 +133,10 @@ namespace XYZ {
 				for (auto& data : command.Data)
 				{
 					m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-						data.Allocation->GetSize(),
-						data.Allocation->GetOffset(),
-						data.Allocation->GetBinding(),
-						data.Allocation->GetSet()
+						data.Allocation.GetSize(),
+						data.Allocation.GetOffset(),
+						data.Allocation.GetBinding(),
+						data.Allocation.GetSet()
 					);
 				}
 				
@@ -198,17 +198,17 @@ namespace XYZ {
 			for (auto& dcOverride : dc.OverrideCommands)
 			{
 				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					dcOverride.IndirectCommandAllocation->GetSize(),
-					dcOverride.IndirectCommandAllocation->GetOffset(),
-					dcOverride.IndirectCommandAllocation->GetBinding(),
-					dcOverride.IndirectCommandAllocation->GetSet()
+					dcOverride.IndirectCommandAllocation.GetSize(),
+					dcOverride.IndirectCommandAllocation.GetOffset(),
+					dcOverride.IndirectCommandAllocation.GetBinding(),
+					dcOverride.IndirectCommandAllocation.GetSet()
 				);
 
 				m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
-					dcOverride.ReadStateAllocation->GetSize(),
-					dcOverride.ReadStateAllocation->GetOffset(),
-					dcOverride.ReadStateAllocation->GetBinding(),
-					dcOverride.ReadStateAllocation->GetSet()
+					dcOverride.ReadStateAllocation.GetSize(),
+					dcOverride.ReadStateAllocation.GetOffset(),
+					dcOverride.ReadStateAllocation.GetBinding(),
+					dcOverride.ReadStateAllocation.GetSet()
 				);
 
 				Renderer::UpdateDescriptors(
@@ -227,7 +227,7 @@ namespace XYZ {
 					dcOverride.Mesh->GetIndexBuffer(),
 					{ dcOverride.Transform },
 					m_SceneRenderer->m_StorageBufferSet,
-					dcOverride.IndirectCommandAllocation->GetOffset(),
+					dcOverride.IndirectCommandAllocation.GetOffset(),
 					1,
 					sizeof(IndirectIndexedDrawCommand)
 				);
@@ -525,10 +525,10 @@ namespace XYZ {
 
 					m_SceneRenderer->m_StorageBufferSet->Update(
 						data.ComputeData.data(),
-						data.Allocation->GetSize(),
-						data.Allocation->GetOffset(),
-						data.Allocation->GetBinding(),
-						data.Allocation->GetSet()
+						data.Allocation.GetSize(),
+						data.Allocation.GetOffset(),
+						data.Allocation.GetBinding(),
+						data.Allocation.GetSet()
 					);
 				}
 			}

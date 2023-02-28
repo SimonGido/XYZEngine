@@ -152,8 +152,8 @@ namespace XYZ {
 			Ref<MaterialInstance> OverrideMaterial;
 			glm::mat4			  Transform;
 	
-			Ref<StorageBufferAllocation> IndirectCommandAllocation;
-			Ref<StorageBufferAllocation> ReadStateAllocation;
+			StorageBufferAllocation IndirectCommandAllocation;
+			StorageBufferAllocation ReadStateAllocation;
 		};
 
 		struct IndirectMeshDrawCommand
@@ -170,7 +170,7 @@ namespace XYZ {
 
 			struct Data
 			{
-				Ref<StorageBufferAllocation> Allocation;
+				StorageBufferAllocation Allocation;
 				std::vector<std::byte> ComputeData;
 			};
 

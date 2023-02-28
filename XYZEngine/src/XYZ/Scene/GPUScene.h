@@ -17,7 +17,7 @@ namespace XYZ {
 		};
 		struct IndirectDrawCommand
 		{
-			Ref<StorageBufferAllocation> IndirectCommandSubAllocation;
+			StorageBufferAllocation		 IndirectCommandSubAllocation;
 			Ref<MaterialAsset>			 RenderMaterial;
 			Ref<Mesh>					 Mesh;
 			glm::mat4					 Transform;
@@ -41,10 +41,10 @@ namespace XYZ {
 		{
 			Ref<ParticleSystemGPU>					System;
 			
-			Ref<StorageBufferAllocation>			ParticlePropertiesAllocation;
-			Ref<StorageBufferAllocation>			ParticlesResultAllocation;
-			Ref<StorageBufferAllocation>			IndirectCommandAllocation;
-			Ref<StorageBufferAllocation>			CommandDataAllocation;
+			StorageBufferAllocation					ParticlePropertiesAllocation;
+			StorageBufferAllocation					ParticlesResultAllocation;
+			StorageBufferAllocation					IndirectCommandAllocation;
+			StorageBufferAllocation					CommandDataAllocation;
 			
 			CommandData								PerCommandData;
 			std::vector<IndirectIndexedDrawCommand> IndirectDrawCommands;
@@ -91,10 +91,10 @@ namespace XYZ {
 
 		struct ParticleAllocation
 		{
-			Ref<StorageBufferAllocation> ParticlePropertiesAllocation;
-			Ref<StorageBufferAllocation> ParticlesResultAllocation;
-			Ref<StorageBufferAllocation> IndirectCommandAllocation;
-			Ref<StorageBufferAllocation> CommandDataAllocation;
+			StorageBufferAllocation ParticlePropertiesAllocation;
+			StorageBufferAllocation ParticlesResultAllocation;
+			StorageBufferAllocation IndirectCommandAllocation;
+			StorageBufferAllocation CommandDataAllocation;
 		};
 
 		std::unordered_map<AssetHandle, ParticleAllocation> m_AllocationCache;

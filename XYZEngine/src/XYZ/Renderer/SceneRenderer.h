@@ -57,7 +57,7 @@ namespace XYZ {
 
 	struct ComputeData
 	{
-		Ref<StorageBufferAllocation> Allocation;
+		StorageBufferAllocation Allocation;
 		std::byte* Data = nullptr;
 		uint32_t   DataSize = 0;
 	};
@@ -85,11 +85,11 @@ namespace XYZ {
 		void SubmitMesh(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& material, const glm::mat4& transform, const std::vector<ozz::math::Float4x4>& boneTransforms, const Ref<MaterialInstance>& overrideMaterial = nullptr);
 		
 		// Compute stuff
-		bool CreateComputeAllocation(uint32_t size, uint32_t index, Ref<StorageBufferAllocation>& allocation);
+		bool CreateComputeAllocation(uint32_t size, uint32_t index, StorageBufferAllocation& allocation);
 
-		bool AllocateIndirectCommand(uint32_t count, Ref<StorageBufferAllocation>& allocation);
+		bool AllocateIndirectCommand(uint32_t count, StorageBufferAllocation& allocation);
 
-		void SubmitComputeData(const void* data, uint32_t size, uint32_t offset, const Ref<StorageBufferAllocation>& allocation, bool allFrames = false);
+		void SubmitComputeData(const void* data, uint32_t size, uint32_t offset, const StorageBufferAllocation& allocation, bool allFrames = false);
 
 
 		void SubmitCompute(
@@ -104,8 +104,8 @@ namespace XYZ {
 			const Ref<MaterialAsset>&	 material,
 			const Ref<MaterialInstance>& overrideMaterial,
 			const glm::mat4&			 transform,
-			const Ref<StorageBufferAllocation>&	computeReadAllocation,
-			const Ref<StorageBufferAllocation>& indirectCommandAllocation
+			const StorageBufferAllocation& computeReadAllocation,
+			const StorageBufferAllocation& indirectCommandAllocation
 		);
 
 		void OnImGuiRender();

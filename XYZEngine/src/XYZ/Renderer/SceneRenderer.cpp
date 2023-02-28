@@ -294,26 +294,26 @@ namespace XYZ {
 
 
 
-	bool SceneRenderer::CreateComputeAllocation(uint32_t size, uint32_t index, Ref<StorageBufferAllocation>& allocation)
+	bool SceneRenderer::CreateComputeAllocation(uint32_t size, uint32_t index, StorageBufferAllocation& allocation)
 	{
 		XYZ_ASSERT(index <= SSBOComputeData::Count, "");
 	
 		return m_ComputeDataAllocator.at(index)->Allocate(Math::RoundUp(size, 16), allocation);
 	}
 
-	bool SceneRenderer::AllocateIndirectCommand(uint32_t count, Ref<StorageBufferAllocation>& allocation)
+	bool SceneRenderer::AllocateIndirectCommand(uint32_t count, StorageBufferAllocation& allocation)
 	{
 		return m_IndirectCommandAllocator->Allocate(count * sizeof(IndirectIndexedDrawCommand), allocation);
 	}
 
 
-	void SceneRenderer::SubmitComputeData(const void* data, uint32_t size, uint32_t offset, const Ref<StorageBufferAllocation>& allocation, bool allFrames)
+	void SceneRenderer::SubmitComputeData(const void* data, uint32_t size, uint32_t offset, const StorageBufferAllocation& allocation, bool allFrames)
 	{
-		XYZ_ASSERT(offset + size <= allocation->GetSize(), "");
+		XYZ_ASSERT(offset + size <= allocation.GetSize(), "");
 		if (allFrames)
-			m_StorageBufferSet->UpdateEachFrame(data, size, allocation->GetOffset() + offset, allocation->GetBinding(), allocation->GetSet());
+			m_StorageBufferSet->UpdateEachFrame(data, size, allocation.GetOffset() + offset, allocation.GetBinding(), allocation.GetSet());
 		else
-			m_StorageBufferSet->Update(data, size, allocation->GetOffset() + offset, allocation->GetBinding(), allocation->GetSet());
+			m_StorageBufferSet->Update(data, size, allocation.GetOffset() + offset, allocation.GetBinding(), allocation.GetSet());
 	}
 	
 	void SceneRenderer::SubmitCompute(
@@ -344,8 +344,8 @@ namespace XYZ {
 		const Ref<MaterialAsset>& material,
 		const Ref<MaterialInstance>& overrideMaterial,
 		const glm::mat4& transform,
-		const Ref<StorageBufferAllocation>& computeReadAllocation,
-		const Ref<StorageBufferAllocation>& indirectCommandAllocation
+		const StorageBufferAllocation& computeReadAllocation,
+		const StorageBufferAllocation& indirectCommandAllocation
 	)
 	{
 		AssetHandle renderKey = material->GetHandle();

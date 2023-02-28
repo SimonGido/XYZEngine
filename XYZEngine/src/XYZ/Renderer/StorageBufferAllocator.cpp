@@ -11,9 +11,11 @@ namespace XYZ {
 		m_Allocator(nullptr),
 		m_Size(0),
 		m_Offset(0),
+		m_ID(std::numeric_limits<uint32_t>::max()),
 		m_StorageBufferBinding(0),
 		m_StorageBufferSet(0),
-		m_Valid(false)
+		m_Valid(false),
+		m_IsSuballocation(false)
 	{
 	}
 
@@ -22,7 +24,9 @@ namespace XYZ {
 		uint32_t size,
 		uint32_t offset,
 		uint32_t binding,
-		uint32_t set
+		uint32_t set,
+		int32_t id,
+		bool isSuballocation
 	)
 		:
 		m_Allocator(allocator),
@@ -30,8 +34,12 @@ namespace XYZ {
 		m_Offset(offset),
 		m_StorageBufferBinding(binding),
 		m_StorageBufferSet(set),
-		m_Valid(true)
+		m_ID(id),
+		m_Valid(true),
+		m_IsSuballocation(isSuballocation)
 	{
+		if (m_Valid && !m_IsSuballocation)
+			m_Allocator->m_AllocationRefCounter[m_ID]++;
 	}
 	
 	StorageBufferAllocation::~StorageBufferAllocation()
@@ -39,23 +47,87 @@ namespace XYZ {
 		returnAllocation();
 	}
 
-	Ref<StorageBufferAllocation> StorageBufferAllocation::CreateSubAllocation(uint32_t offset, uint32_t size)
+	StorageBufferAllocation::StorageBufferAllocation(const StorageBufferAllocation& other)
+		:
+		m_Allocator(other.m_Allocator),
+		m_Size(other.m_Size),
+		m_Offset(other.m_Offset),
+		m_StorageBufferBinding(other.m_StorageBufferBinding),
+		m_StorageBufferSet(other.m_StorageBufferSet),
+		m_ID(other.m_ID),
+		m_Valid(other.m_Valid),
+		m_IsSuballocation(other.m_IsSuballocation)
+	{
+		if (m_Valid && !m_IsSuballocation)
+			m_Allocator->m_AllocationRefCounter[m_ID]++;
+	}
+
+	StorageBufferAllocation::StorageBufferAllocation(StorageBufferAllocation&& other) noexcept
+		:
+		m_Allocator(other.m_Allocator),
+		m_Size(other.m_Size),
+		m_Offset(other.m_Offset),
+		m_StorageBufferBinding(other.m_StorageBufferBinding),
+		m_StorageBufferSet(other.m_StorageBufferSet),
+		m_ID(other.m_ID),
+		m_Valid(other.m_Valid),
+		m_IsSuballocation(other.m_IsSuballocation)
+	{
+		if (m_Valid && !m_IsSuballocation)
+			m_Allocator->m_AllocationRefCounter[m_ID]++;
+	}
+
+
+	StorageBufferAllocation& StorageBufferAllocation::operator=(const StorageBufferAllocation& other)
+	{
+		returnAllocation();
+		m_Allocator = other.m_Allocator;
+		m_Size = other.m_Size;
+		m_Offset = other.m_Offset;
+		m_StorageBufferBinding = other.m_StorageBufferBinding;
+		m_StorageBufferSet = other.m_StorageBufferSet;
+		m_ID = other.m_ID;
+		m_Valid = other.m_Valid;
+		m_IsSuballocation = other.m_IsSuballocation;
+		if (m_Valid && !m_IsSuballocation)
+			m_Allocator->m_AllocationRefCounter[m_ID]++;
+		return *this;
+	}
+
+	StorageBufferAllocation& StorageBufferAllocation::operator=(StorageBufferAllocation&& other) noexcept
+	{
+		returnAllocation();
+		m_Allocator = other.m_Allocator;
+		m_Size = other.m_Size;
+		m_Offset = other.m_Offset;
+		m_StorageBufferBinding = other.m_StorageBufferBinding;
+		m_StorageBufferSet = other.m_StorageBufferSet;
+		m_ID = other.m_ID;
+		m_Valid = other.m_Valid;
+		m_IsSuballocation = other.m_IsSuballocation;
+		
+		if (m_Valid && !m_IsSuballocation)
+			m_Allocator->m_AllocationRefCounter[m_ID]++;
+		return *this;
+	}
+
+
+	StorageBufferAllocation StorageBufferAllocation::CreateSubAllocation(uint32_t offset, uint32_t size)
 	{
 		XYZ_ASSERT(offset + size <= m_Size, "");
 
-		StorageBufferAllocation* subAllocation = new StorageBufferAllocation(
-			m_Allocator, size, m_Offset + offset, m_StorageBufferBinding, m_StorageBufferSet
+		StorageBufferAllocation subAllocation(
+			m_Allocator, size, m_Offset + offset, m_StorageBufferBinding, m_StorageBufferSet, m_ID, true
 		);
 
-		subAllocation->m_Owner = this;
-		return Ref<StorageBufferAllocation>(subAllocation);
+		return subAllocation;
 	}
 
 	void StorageBufferAllocation::returnAllocation()
 	{
-		if (m_Valid && !m_Owner.Raw())
+		if (m_Valid && !m_IsSuballocation)
 		{
-			m_Allocator->returnAllocation(m_Size, m_Offset);
+			m_Allocator->returnAllocation(m_Size, m_Offset, m_ID);
 			m_Valid = false;
 		}
 	}
@@ -76,11 +148,11 @@ namespace XYZ {
 	}
 
 	
-	bool StorageBufferAllocator::Allocate(uint32_t size, Ref<StorageBufferAllocation>& allocation)
+	bool StorageBufferAllocator::Allocate(uint32_t size, StorageBufferAllocation& allocation)
 	{
 		XYZ_PROFILE_FUNC("StorageBufferAllocator::Allocate");
 		// Allocation is not valid, create new
-		if (!allocation.Raw())
+		if (!allocation.m_Valid)
 		{
 			allocation = createNewAllocation(size);
 			m_AllocatedSize += size;
@@ -103,12 +175,22 @@ namespace XYZ {
 		return m_AllocatedSize;
 	}
 
-	void StorageBufferAllocator::returnAllocation(uint32_t size, uint32_t offset)
+	bool StorageBufferAllocator::returnAllocation(uint32_t size, uint32_t offset, uint32_t id)
 	{
-		m_FreeAllocations.push_back({ size, offset });
-		m_AllocatedSize -= size;
-		m_UnusedSpace = m_Next - m_AllocatedSize;
-		m_SortRequired = true;
+		XYZ_ASSERT(m_AllocationRefCounter.size() > static_cast<size_t>(id), "");
+		XYZ_ASSERT(m_AllocationRefCounter[id] != 0, "");
+
+		m_AllocationRefCounter[id]--;
+		if (m_AllocationRefCounter[id] == 0)
+		{
+			m_FreeAllocations.push_back({ size, offset });
+			m_FreeAllocationIDs.push(id);
+			m_AllocatedSize -= size;
+			m_UnusedSpace = m_Next - m_AllocatedSize;
+			m_SortRequired = true;
+			return true;
+		}
+		return false;
 	}
 
 	bool StorageBufferAllocator::allocateFromFree(uint32_t size, uint32_t& offset)
@@ -160,14 +242,14 @@ namespace XYZ {
 		return false;
 	}
 
-	bool StorageBufferAllocator::reallocationRequired(uint32_t size, Ref<StorageBufferAllocation>& allocation)
+	bool StorageBufferAllocator::reallocationRequired(uint32_t size, const StorageBufferAllocation& allocation) const
 	{
-		return allocation->m_Size < size			 // Size is not sufficient
-			|| allocation->GetBinding() != m_Binding // Allocation is not owned by this allocator
-			|| allocation->GetSet() != m_Set;		 // Allocation is not owned by this allocator
+		return allocation.m_Size < size			 // Size is not sufficient
+			|| allocation.GetBinding() != m_Binding // Allocation is not owned by this allocator
+			|| allocation.GetSet() != m_Set;		 // Allocation is not owned by this allocator
 	}
 
-	Ref<StorageBufferAllocation> StorageBufferAllocator::createNewAllocation(uint32_t size)
+	StorageBufferAllocation StorageBufferAllocator::createNewAllocation(uint32_t size)
 	{
 		uint32_t offset = m_Next;
 		if (!allocateFromFree(size, offset))
@@ -175,9 +257,9 @@ namespace XYZ {
 			XYZ_ASSERT(m_Next + size < m_Size, "");
 			m_Next += size;
 		}
-		return Ref<StorageBufferAllocation>(new StorageBufferAllocation(this, size, offset, m_Binding, m_Set));
+		return StorageBufferAllocation(this, size, offset, m_Binding, m_Set, nextAllocationID(), false);
 	}
-	void StorageBufferAllocator::updateAllocation(uint32_t size, Ref<StorageBufferAllocation>& allocation)
+	void StorageBufferAllocator::updateAllocation(uint32_t size, StorageBufferAllocation& allocation)
 	{
 		uint32_t offset = m_Next;
 		if (!allocateFromFree(size, offset))
@@ -185,14 +267,33 @@ namespace XYZ {
 			XYZ_ASSERT(m_Next + size < m_Size, "");
 			m_Next += size;
 		}
-		allocation->returnAllocation();
-		allocation->m_Allocator = this;
-		allocation->m_Size = size;
-		allocation->m_Offset = offset;
-		allocation->m_StorageBufferBinding = m_Binding;
-		allocation->m_StorageBufferSet = m_Set;
-		allocation->m_Valid = true;
+		allocation.returnAllocation();
+		allocation.m_Allocator = this;
+		allocation.m_Size = size;
+		allocation.m_Offset = offset;
+		allocation.m_StorageBufferBinding = m_Binding;
+		allocation.m_StorageBufferSet = m_Set;
+		allocation.m_Valid = true;
+		allocation.m_IsSuballocation = false;
+		allocation.m_ID = nextAllocationID();
+
 		m_Next += size;
+	}
+
+	uint32_t StorageBufferAllocator::nextAllocationID()
+	{
+		uint32_t result;
+		if (!m_FreeAllocationIDs.empty())
+		{
+			result = m_FreeAllocationIDs.back();
+			m_FreeAllocationIDs.pop();
+		}
+		else
+		{
+			result = static_cast<uint32_t>(m_AllocationRefCounter.size());
+			m_AllocationRefCounter.push_back(0);
+		}
+		return result;
 	}
 
 }
