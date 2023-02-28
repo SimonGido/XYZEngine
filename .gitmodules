@@ -25,9 +25,6 @@
 [submodule "XYZEngine/vendor/entt"]
 	path = XYZEngine/vendor/entt
 	url = https://github.com/SimonGido/entt.git
-[submodule "XYZEngine/vendor/imgui-node-editor"]
-	path = XYZEngine/vendor/imgui-node-editor
-	url = https://github.com/SimonGido/imgui-node-editor.git
 [submodule "XYZEngine/vendor/ImGuizmo"]
 	path = XYZEngine/vendor/ImGuizmo
 	url = https://github.com/SimonGido/ImGuizmo.git
