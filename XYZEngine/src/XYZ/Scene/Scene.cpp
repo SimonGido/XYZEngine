@@ -160,11 +160,7 @@ namespace XYZ {
 		m_Registry.on_construct<ScriptComponent>().connect<&Scene::onScriptComponentConstruct>(this);
 		m_Registry.on_destroy<ScriptComponent>().connect<&Scene::onScriptComponentDestruct>(this);
 	
-		m_Registry.storage<void>(uint32_t(0));
-		Replicable<ScriptComponent>  repl{ m_Registry.get<ScriptComponent>(m_SceneEntity) };
-		auto test = repl->ModuleName;
-
-		Utils::ReplicateAllAndWait<XYZ_COMPONENTS>(m_Registry);
+		
 	}
 
 
