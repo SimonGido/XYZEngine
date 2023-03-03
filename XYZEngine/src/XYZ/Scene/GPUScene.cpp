@@ -53,11 +53,14 @@ namespace XYZ {
 		for (auto entity : particleGPUView)
 		{
 			auto& [transformComponent, particleComponent] = particleGPUView.get(entity);
+
 			auto& command = m_Queue.ParticleCommands[particleComponent.System->GetHandle()];
 			command.System = particleComponent.System;
+			command.UpdateMaterial = particleComponent.UpdateMaterial;
+			
 			auto& transform = command.PerCommandData.Transform[command.PerCommandData.CommandCount++];
 			transform = Mat4ToTransformData(transformComponent->WorldTransform);
-			
+
 			storeParticleAllocationsCache(command);
 
 			auto& drawCommand = command.DrawCommands.emplace_back();
@@ -142,7 +145,7 @@ namespace XYZ {
 
 
 		sceneRenderer->SubmitCompute(
-			command.System->ParticleUpdateMaterial,
+			command.UpdateMaterial,
 			computeData.data(), computeData.size(),
 			PushConstBuffer{
 				m_FrameTimestep,

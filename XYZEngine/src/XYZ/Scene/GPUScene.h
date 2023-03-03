@@ -11,6 +11,7 @@ namespace XYZ {
 
 	struct XYZ_API GPUSceneQueue
 	{
+
 		struct TransformData
 		{
 			glm::vec4 TransformRow[3];
@@ -37,10 +38,12 @@ namespace XYZ {
 			}
 		};
 
+	
+
 		struct ParticleSystemCommand
 		{
 			Ref<ParticleSystemGPU>					System;
-			
+			Ref<MaterialAsset>						UpdateMaterial;
 			StorageBufferAllocation					ParticlePropertiesAllocation;
 			StorageBufferAllocation					ParticlesResultAllocation;
 			StorageBufferAllocation					IndirectCommandAllocation;
@@ -49,8 +52,8 @@ namespace XYZ {
 			CommandData								PerCommandData;
 			std::vector<IndirectIndexedDrawCommand> IndirectDrawCommands;
 			std::vector<IndirectDrawCommand>		DrawCommands;
+			
 		};
-
 
 		std::map<AssetHandle, ParticleSystemCommand> ParticleCommands;
 

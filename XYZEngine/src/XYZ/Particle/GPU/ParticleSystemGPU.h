@@ -102,8 +102,7 @@ namespace XYZ {
 		uint32_t GetMaxParticles()	   const { return m_ParticleBuffer.GetMaxParticles(); }
 
 		std::vector<ParticleEmitterGPU> ParticleEmitters;
-		
-		Ref<MaterialAsset>				ParticleUpdateMaterial;
+	
 
 		float    Speed = 1.0f;
 		bool	 Loop  = true;

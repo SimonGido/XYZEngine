@@ -210,7 +210,7 @@ namespace XYZ {
 		Ref<Mesh>			    Mesh;
 		Ref<MaterialAsset>	    RenderMaterial;
 		Ref<MaterialInstance>   OverrideMaterial;
-
+		Ref<MaterialAsset>		UpdateMaterial;
 		Ref<ParticleSystemGPU>  System;
 	};
 
@@ -391,6 +391,25 @@ namespace XYZ {
 	};
 
 
+	template <typename T>
+	class XYZ_API Replicable
+	{
+	public:
+		Replicable(T& data)
+			: m_Data(data)
+		{}
+		const T* operator->() const { return &m_Data; }
+
+		T& Replicate() { m_Dirty = true; return m_Data; }
+
+		const T& operator() const { return m_Data; }
+	private:
+		T& m_Data;
+		static entt::id_type s_ID;
+	};
+
+	template <typename T>
+	entt::id_type Replicable<T>::s_ID = entt::type_hash<T>::value();
 
 #define XYZ_COMPONENTS \
 	IDComponent, \

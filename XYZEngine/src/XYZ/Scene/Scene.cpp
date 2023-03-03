@@ -81,6 +81,33 @@ namespace XYZ {
 			(CopyComponentIfExists<Args>(src, dst, srcEntity, dstEntity), ...);
 		}
 
+		// TODO: do not use storages but something like ReplicationQueue<T> ?
+		template <typename T>
+		static std::future<bool> ReplicationCallback(entt::storage<T>& storage)
+		{
+			ThreadPool& pool = Application::Get().GetThreadPool();
+			return pool.SubmitJob([]() {
+
+				return true;
+				});
+		}
+
+		template <typename T>
+		static std::future<bool> Replicate(entt::registry& registry)
+		{
+			auto& storage = registry.storage<T>();
+			return ReplicationCallback(storage);
+		}
+
+		template <typename ...Args>
+		static void ReplicateAllAndWait(entt::registry& registry)
+		{
+			std::array<std::future<bool>, sizeof...(Args)> futures;
+			futures[index++] = { Replicate<Args>(registry)... };
+			for (auto& future : futures)
+				future.wait();
+		}
+
 
 		static void CloneRegistry(const entt::registry& src, entt::registry& dst, bool clearDestination = true)
 		{
@@ -106,6 +133,9 @@ namespace XYZ {
 	
 	static entt::registry s_CopyRegistry;
 
+
+	
+
 	Scene::Scene(const std::string& name, const GUID& guid)
 		:
 		m_PhysicsWorld({ 0.0f, -9.8f }),
@@ -129,7 +159,14 @@ namespace XYZ {
 
 		m_Registry.on_construct<ScriptComponent>().connect<&Scene::onScriptComponentConstruct>(this);
 		m_Registry.on_destroy<ScriptComponent>().connect<&Scene::onScriptComponentDestruct>(this);
+	
+		m_Registry.storage<void>(uint32_t(0));
+		Replicable<ScriptComponent>  repl{ m_Registry.get<ScriptComponent>(m_SceneEntity) };
+		auto test = repl->ModuleName;
+
+		Utils::ReplicateAllAndWait<XYZ_COMPONENTS>(m_Registry);
 	}
+
 
 	Scene::~Scene()
 	{
@@ -950,13 +987,12 @@ namespace XYZ {
 		m_UpdateCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
 		m_UpdateCommandMaterial->Specialize("SPAWN_LIGHTS", enabled);
 
-		m_ParticleSystemGPU->ParticleUpdateMaterial = m_UpdateCommandMaterial;
-	
+		
 		{
 			SceneEntity entity = CreateEntity("Particle GPU Test0");
 			auto& particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();
 
-
+			particleComponent.UpdateMaterial = m_UpdateCommandMaterial;
 			particleComponent.RenderMaterial = m_ParticleMaterialGPU;
 			particleComponent.Mesh = m_ParticleCubeMesh;
 			particleComponent.System = m_ParticleSystemGPU;
@@ -965,7 +1001,7 @@ namespace XYZ {
 			SceneEntity entity = CreateEntity("Particle GPU Test1");
 			auto& particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();
 
-
+			particleComponent.UpdateMaterial = m_UpdateCommandMaterial;
 			particleComponent.RenderMaterial = m_ParticleMaterialGPU;
 			particleComponent.Mesh = m_ParticleCubeMesh;
 			particleComponent.System = m_ParticleSystemGPU;

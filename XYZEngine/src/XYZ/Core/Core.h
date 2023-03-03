@@ -104,4 +104,5 @@ namespace XYZ {
 	private:
 		char m_Bytes[size];
 	};
+
 }
