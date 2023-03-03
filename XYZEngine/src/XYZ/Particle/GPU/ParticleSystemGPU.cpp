@@ -15,7 +15,7 @@ namespace XYZ {
 		m_EmittedParticles(0),
 		m_EmissionCount(0)
 	{
-		m_ParticleBuffer.SetMaxParticles(maxParticles, m_InputLayout.GetStride());
+		m_ParticleBuffer.setMaxParticles(maxParticles, m_InputLayout.GetStride());
 	}
 	uint32_t ParticleSystemGPU::Update(Timestep ts)
 	{
@@ -49,6 +49,19 @@ namespace XYZ {
 		m_EmissionCount = 0;
 		return result;
 	}
+
+	ParticleView ParticleSystemGPU::Emit(uint32_t particleCount)
+	{
+		particleCount = std::min(particleCount, m_ParticleBuffer.GetMaxParticles() - m_EmittedParticles);
+		
+		const uint32_t bufferSize = particleCount * GetInputStride();
+		std::byte* particleBuffer = m_ParticleBuffer.GetData(m_EmittedParticles);
+
+		// Make sure we do not emit more particles than available
+		m_EmittedParticles += particleCount;
+		m_EmissionCount += particleCount;
+		return ParticleView{ particleBuffer, bufferSize };
+	}
 	
 	ParticleBuffer::ParticleBuffer(uint32_t maxParticles, uint32_t stride)
 		:
@@ -58,12 +71,6 @@ namespace XYZ {
 		memset(m_Data.data(), 0, m_Data.size());
 	}
 
-	void ParticleBuffer::SetMaxParticles(uint32_t maxParticles, uint32_t stride)
-	{
-		m_Stride = stride;
-		m_Data.resize(maxParticles * stride);
-		memset(m_Data.data(), 0, m_Data.size());
-	}
 
 	std::byte* ParticleBuffer::GetData(uint32_t particleOffset)
 	{
@@ -76,6 +83,13 @@ namespace XYZ {
 		return &m_Data.data()[offset];
 	}
 
+
+	void ParticleBuffer::setMaxParticles(uint32_t maxParticles, uint32_t stride)
+	{
+		m_Stride = stride;
+		m_Data.resize(maxParticles * stride);
+		memset(m_Data.data(), 0, m_Data.size());
+	}
 
 	ParticleSystemGPUShaderGenerator::ParticleSystemGPUShaderGenerator(const Ref<ParticleSystemGPU>& particleSystem)
 	{
@@ -212,6 +226,12 @@ namespace XYZ {
 		EmittedData(data),
 		EmittedDataSize(size),
 		DataOffset(offset)
+	{
+	}
+	ParticleView::ParticleView(std::byte* data, uint32_t size)
+		:
+		m_Data(data),
+		m_Size(size)
 	{
 	}
 }

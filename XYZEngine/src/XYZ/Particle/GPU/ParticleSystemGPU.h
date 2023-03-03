@@ -45,14 +45,28 @@ namespace XYZ {
 		Padding<8> Padding;
 	};
 
+	class XYZ_API ParticleView
+	{
+	public:
+		ParticleView(std::byte* data, uint32_t size);
+
+		template <typename T>
+		T* DataAs(uint32_t offset)
+		{
+			XYZ_ASSERT(offset + sizeof(T) <= m_Size, "Accessing out of range data");
+			return reinterpret_cast<T*>(&m_Data[offset]);
+		}
+
+	private:
+		std::byte* m_Data;
+		uint32_t   m_Size;
+	};
 
 	class XYZ_API ParticleBuffer
 	{
 	public:
 		ParticleBuffer() = default;
 		ParticleBuffer(uint32_t maxParticles, uint32_t stride);
-
-		void SetMaxParticles(uint32_t maxParticles, uint32_t stride);
 
 		std::byte* GetData() { return m_Data.data(); }
 		std::byte* GetData(uint32_t particleOffset);
@@ -65,8 +79,13 @@ namespace XYZ {
 		uint32_t   GetBufferSize()   const { return static_cast<uint32_t>(m_Data.size()); }
 	
 	private:
+		void setMaxParticles(uint32_t maxParticles, uint32_t stride);
+
+	private:
 		std::vector<std::byte> m_Data;
 		uint32_t			   m_Stride = 0;
+
+		friend class ParticleSystemGPU;
 	};
 
 	struct XYZ_API EmissionResult
@@ -86,6 +105,7 @@ namespace XYZ {
 		virtual AssetType GetAssetType() const { return AssetType::ParticleSystemGPU; }
 		static  AssetType GetStaticType() { return AssetType::ParticleSystemGPU; }
 
+		// TODO: this should be handled externaly, so user can specify how he wants to emit particles
 		uint32_t Update(Timestep ts);
 		void	 Reset();
 
@@ -94,6 +114,8 @@ namespace XYZ {
 		const ParticleBuffer&		GetParticleBuffer() const { return m_ParticleBuffer; }
 		const EmissionResult		LastEmission()		const;
 		
+		ParticleView Emit(uint32_t particleCount);
+
 		uint32_t GetInputSize()  const { return m_ParticleBuffer.GetBufferSize(); }
 		uint32_t GetOutputSize() const { return GetMaxParticles() * m_OutputLayout.GetStride(); }
 
@@ -101,6 +123,8 @@ namespace XYZ {
 		uint32_t GetEmittedParticles() const { return m_EmittedParticles; }
 		uint32_t GetMaxParticles()	   const { return m_ParticleBuffer.GetMaxParticles(); }
 
+
+		// Emitter should not be stored here, user is going to call emit which will provide ParticleView
 		std::vector<ParticleEmitterGPU> ParticleEmitters;
 	
 
