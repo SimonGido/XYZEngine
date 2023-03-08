@@ -45,33 +45,58 @@ namespace XYZ {
 	void GPUScene::prepareCommands(Ref<Scene>& scene, Ref<SceneRenderer>& sceneRenderer)
 	{
 		XYZ_PROFILE_FUNC("GPUScene::prepareCommands");
-		cacheAllocations();
-		m_Queue.Clear();
+		cacheAllocations(); // Cache allocations from previous frame
+		m_Queue.Clear(); // Clear queue once we cached allocations
 
 		auto particleGPUView = scene->GetRegistry().view<TransformComponent, ParticleComponentGPU>();
 
 		for (auto entity : particleGPUView)
 		{
 			auto& [transformComponent, particleComponent] = particleGPUView.get(entity);
-
-			auto& command = m_Queue.ParticleCommands[particleComponent.System->GetHandle()];
-			command.System = particleComponent.System;
+			
+			// Create compute command per material
+			auto& command = m_Queue.ParticleCommands[particleComponent.UpdateMaterial->GetHandle()];
 			command.UpdateMaterial = particleComponent.UpdateMaterial;
 			
+			// Create particle data per system
+			auto& data = m_Queue.ParticleData[particleComponent.UpdateMaterial->GetHandle()];
+			data.System = particleComponent.System;
+
+			// Store handle, so compute command knows on which data operate
+			command.ParticleDataHandles.emplace(particleComponent.System->GetHandle());
+
+			// Store per draw command data
 			auto& transform = command.PerCommandData.Transform[command.PerCommandData.CommandCount++];
 			transform = Mat4ToTransformData(transformComponent->WorldTransform);
 
-			storeParticleAllocationsCache(command);
-
+			
 			auto& drawCommand = command.DrawCommands.emplace_back();
 			drawCommand.RenderMaterial = particleComponent.RenderMaterial;
 			drawCommand.Mesh = particleComponent.Mesh;
 			drawCommand.Transform = transformComponent->WorldTransform;
 		}
+
+		// Create allocations per particle system
+		for (auto& [handle, data] : m_Queue.ParticleData)
+		{
+			// Try to reuse allocation cache
+			storeParticleDataAllocationsCache(data);
+
+			// It might be required to resize cached allocations
+			createParticleDataAllocations(data, sceneRenderer);
+		}
+
+
+		// Create allocations per compute command
 		for (auto &[handle, command] : m_Queue.ParticleCommands)
 		{
+			// Try to reuse allocation cache
+			storeParticleCommandAllocationsCache(command);
+
+			// It might be required to resize cached allocations
 			createParticleCommandAllocations(command, sceneRenderer);
 			
+			// Create allocations per draw command
 			uint32_t offset = 0;
 			for (auto& drawCommand : command.DrawCommands)
 			{				
@@ -88,94 +113,119 @@ namespace XYZ {
 	void GPUScene::submitParticleCommands(Ref<Scene>& scene, Ref<SceneRenderer>& sceneRenderer)
 	{
 		XYZ_PROFILE_FUNC("GPUScene::submitParticleCommands");
+
+		if (m_FrameCounter == 0)
+		{
+			submitParticleEmission(sceneRenderer);
+		}
+
 		for (auto& [handle, cmd] : m_Queue.ParticleCommands)
 		{		
-			if (m_FrameCounter == 0)
-			{
-				submitParticleCommandEmission(cmd, sceneRenderer);
-			}
-
 			submitParticleCommandCompute(cmd, sceneRenderer);
 
-			for (auto& drawCommand : cmd.DrawCommands)
+			for (auto& dataHandle : cmd.ParticleDataHandles)
 			{
-				sceneRenderer->SubmitMeshIndirect(
-					// Rendering data
-					drawCommand.Mesh,
-					drawCommand.RenderMaterial,
-					nullptr,
-					drawCommand.Transform,
-					cmd.ParticlesResultAllocation,
-					drawCommand.IndirectCommandSubAllocation
+				auto& data = m_Queue.ParticleData[dataHandle];
+				for (auto& drawCommand : cmd.DrawCommands)
+				{
+					sceneRenderer->SubmitMeshIndirect(
+						// Rendering data
+						drawCommand.Mesh,
+						drawCommand.RenderMaterial,
+						nullptr,
+						drawCommand.Transform,
+						data.ParticlesResultAllocation,
+						drawCommand.IndirectCommandSubAllocation
+					);
+				}
+			}
+		}
+	}
+
+	void GPUScene::submitParticleEmission(Ref<SceneRenderer>& sceneRenderer)
+	{
+		for (auto& [key, data] : m_Queue.ParticleData)
+		{
+			EmissionResult emission = data.System->LastEmission();
+
+			if (emission.EmittedDataSize != 0)
+			{
+				// Submit emitted data
+				sceneRenderer->SubmitComputeData(
+					emission.EmittedData,
+					emission.EmittedDataSize,
+					emission.DataOffset,
+					data.ParticlePropertiesAllocation,
+					true
 				);
 			}
 		}
 	}
 
-	void GPUScene::submitParticleCommandEmission(GPUSceneQueue::ParticleSystemCommand& command, Ref<SceneRenderer>& sceneRenderer)
+	void GPUScene::submitParticleCommandCompute(GPUSceneQueue::ParticleSystemCommand& command, Ref<SceneRenderer>& sceneRenderer)
 	{
-		EmissionResult emission = command.System->LastEmission();
-
-		if (emission.EmittedDataSize != 0)
+		for (auto& dataHandle : command.ParticleDataHandles)
 		{
-			// Submit emitted data
-			sceneRenderer->SubmitComputeData(
-				emission.EmittedData,
-				emission.EmittedDataSize,
-				emission.DataOffset,
-				command.ParticlePropertiesAllocation,
-				true
+			auto& data = m_Queue.ParticleData[dataHandle];
+
+			std::array<ComputeData, NumTypes> computeData;
+			computeData[DataType::Properties].Allocation = data.ParticlePropertiesAllocation;
+			computeData[DataType::Result].Allocation = data.ParticlesResultAllocation;
+
+			computeData[DataType::CommandData].Allocation = command.CommandDataAllocation;
+			computeData[DataType::CommandData].Data = (std::byte*)&command.PerCommandData;
+			computeData[DataType::CommandData].DataSize = command.PerCommandData.ReadSize();
+
+			computeData[DataType::IndirectCommand].Allocation = command.IndirectCommandAllocation;
+			computeData[DataType::IndirectCommand].Data = (std::byte*)command.IndirectDrawCommands.data();
+			computeData[DataType::IndirectCommand].DataSize = command.IndirectDrawCommands.size() * sizeof(IndirectIndexedDrawCommand);
+
+
+			sceneRenderer->SubmitCompute(
+				command.UpdateMaterial,
+				computeData.data(), computeData.size(),
+				PushConstBuffer{
+					m_FrameTimestep,
+					data.System->Speed,
+					data.System->GetEmittedParticles(),
+					(uint32_t)data.System->Loop
+				}
 			);
 		}
 	}
 
-	void GPUScene::submitParticleCommandCompute(GPUSceneQueue::ParticleSystemCommand& command, Ref<SceneRenderer>& sceneRenderer)
+	void GPUScene::createParticleDataAllocations(GPUSceneQueue::ParticleSystemData& data, Ref<SceneRenderer>& sceneRenderer)
 	{
-		std::array<ComputeData, NumTypes> computeData;
-		computeData[DataType::Properties].Allocation = command.ParticlePropertiesAllocation;
-		computeData[DataType::Result].Allocation = command.ParticlesResultAllocation;
+		const uint32_t particleResultSize = data.System->GetOutputSize();
+		const uint32_t particleStateSize  = data.System->GetInputSize();
 
-		computeData[DataType::CommandData].Allocation = command.CommandDataAllocation;
-		computeData[DataType::CommandData].Data = (std::byte*)&command.PerCommandData;
-		computeData[DataType::CommandData].DataSize = command.PerCommandData.ReadSize();
-
-		computeData[DataType::IndirectCommand].Allocation = command.IndirectCommandAllocation;
-		computeData[DataType::IndirectCommand].Data = (std::byte*)command.IndirectDrawCommands.data();
-		computeData[DataType::IndirectCommand].DataSize = command.IndirectDrawCommands.size() * sizeof(IndirectIndexedDrawCommand);
-
-
-		sceneRenderer->SubmitCompute(
-			command.UpdateMaterial,
-			computeData.data(), computeData.size(),
-			PushConstBuffer{
-				m_FrameTimestep,
-				command.System->Speed,
-				command.System->GetEmittedParticles(),
-				(uint32_t)command.System->Loop
-			}
-		);
+		sceneRenderer->CreateComputeAllocation(particleResultSize, 0, data.ParticlesResultAllocation);
+		sceneRenderer->CreateComputeAllocation(particleStateSize, 1, data.ParticlePropertiesAllocation);
 	}
 
 	void GPUScene::createParticleCommandAllocations(GPUSceneQueue::ParticleSystemCommand& command, Ref<SceneRenderer>& sceneRenderer)
 	{
-		const uint32_t particleResultSize = command.System->GetOutputSize();
-		const uint32_t particleStateSize = command.System->GetInputSize();
-
-		sceneRenderer->CreateComputeAllocation(particleResultSize, 0, command.ParticlesResultAllocation);
-		sceneRenderer->CreateComputeAllocation(particleStateSize, 1, command.ParticlePropertiesAllocation);
 		sceneRenderer->CreateComputeAllocation(command.PerCommandData.ReadSize(), 2, command.CommandDataAllocation);
 		sceneRenderer->AllocateIndirectCommand(command.DrawCommands.size(), command.IndirectCommandAllocation);
-
 	}
 
-	void GPUScene::storeParticleAllocationsCache(GPUSceneQueue::ParticleSystemCommand& command)
+	void GPUScene::storeParticleDataAllocationsCache(GPUSceneQueue::ParticleSystemData& data)
 	{
-		auto allocationCacheIt = m_AllocationCache.find(command.System->GetHandle());
-		if (allocationCacheIt != m_AllocationCache.end())
+		auto allocationCacheIt = m_ParticleDataAllocationCache.find(data.System->GetHandle());
+		if (allocationCacheIt != m_ParticleDataAllocationCache.end())
 		{
 			auto& allocation = allocationCacheIt->second;
-			command.ParticlePropertiesAllocation = allocation.ParticlePropertiesAllocation;
-			command.ParticlesResultAllocation = allocation.ParticlesResultAllocation;
+			data.ParticlePropertiesAllocation = allocation.ParticlePropertiesAllocation;
+			data.ParticlesResultAllocation = allocation.ParticlesResultAllocation;
+		}
+	}
+
+	void GPUScene::storeParticleCommandAllocationsCache(GPUSceneQueue::ParticleSystemCommand& command)
+	{
+		auto allocationCacheIt = m_ParticleCommandAllocationCache.find(command.UpdateMaterial->GetHandle());
+		if (allocationCacheIt != m_ParticleCommandAllocationCache.end())
+		{
+			auto& allocation = allocationCacheIt->second;
 			command.IndirectCommandAllocation = allocation.IndirectCommandAllocation;
 			command.CommandDataAllocation = allocation.CommandDataAllocation;
 		}
@@ -184,14 +234,22 @@ namespace XYZ {
 
 	void GPUScene::cacheAllocations()
 	{
-		m_AllocationCache.clear();
+		m_ParticleDataAllocationCache.clear();
+		m_ParticleCommandAllocationCache.clear();
+
 		for (auto& [handle, cmd] : m_Queue.ParticleCommands)
 		{
-			auto& allocation = m_AllocationCache[handle];
-			allocation.ParticlePropertiesAllocation = cmd.ParticlePropertiesAllocation;
-			allocation.ParticlesResultAllocation = cmd.ParticlesResultAllocation;
+			auto& allocation = m_ParticleCommandAllocationCache[handle];
+			
 			allocation.IndirectCommandAllocation = cmd.IndirectCommandAllocation;
 			allocation.CommandDataAllocation = cmd.CommandDataAllocation;
+		}
+		for (auto& [handle, data] : m_Queue.ParticleData)
+		{
+			auto& allocation = m_ParticleDataAllocationCache[handle];
+
+			allocation.ParticlePropertiesAllocation = data.ParticlePropertiesAllocation;
+			allocation.ParticlesResultAllocation = data.ParticlesResultAllocation;
 		}
 	}
 	
@@ -199,5 +257,6 @@ namespace XYZ {
 	void GPUSceneQueue::Clear()
 	{
 		ParticleCommands.clear();
+		ParticleData.clear();
 	}
 }
