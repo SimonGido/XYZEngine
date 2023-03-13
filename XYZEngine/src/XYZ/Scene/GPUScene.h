@@ -91,7 +91,8 @@ namespace XYZ {
 		void createParticleDataAllocations(GPUSceneQueue::ParticleSystemData& data, Ref<SceneRenderer>& sceneRenderer);
 		void createParticleCommandAllocations(GPUSceneQueue::ParticleSystemCommand& command, Ref<SceneRenderer>& sceneRenderer);
 		void storeParticleDataAllocationsCache(GPUSceneQueue::ParticleSystemData& data);
-		
+		void storeParticleCommandAllocationsCache(GPUSceneQueue::ParticleSystemCommand& command);
+
 		void submitParticleEmission(Ref<SceneRenderer>& sceneRenderer);
 		void submitParticleCommandCompute(GPUSceneQueue::ParticleSystemCommand& command, Ref<SceneRenderer>& sceneRenderer);
 	private:

@@ -116,6 +116,7 @@ namespace XYZ {
 
 		if (m_FrameCounter == 0)
 		{
+			// Submit emission for each system
 			submitParticleEmission(sceneRenderer);
 		}
 
@@ -164,6 +165,7 @@ namespace XYZ {
 
 	void GPUScene::submitParticleCommandCompute(GPUSceneQueue::ParticleSystemCommand& command, Ref<SceneRenderer>& sceneRenderer)
 	{
+		// Perform compute per each system we have
 		for (auto& dataHandle : command.ParticleDataHandles)
 		{
 			auto& data = m_Queue.ParticleData[dataHandle];
