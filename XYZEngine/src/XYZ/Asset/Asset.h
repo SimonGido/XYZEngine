@@ -33,8 +33,8 @@ namespace XYZ {
 	enum class AssetFlag : uint16_t
 	{
 		None     = 0,
-		Missing  = BIT(0),
-		Invalid  = BIT(1),
+		Missing	 = BIT(0),
+		Invalid	 = BIT(1),
 		Reloaded = BIT(2),
 		ReadOnly = BIT(3)
 	};
@@ -158,5 +158,5 @@ namespace XYZ {
 		AssetHandle			  Handle;
 		AssetType			  Type = AssetType::None;
 		std::filesystem::path FilePath;
-	};
+	};	
 }

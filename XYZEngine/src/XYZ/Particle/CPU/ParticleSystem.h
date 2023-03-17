@@ -62,6 +62,7 @@ namespace XYZ {
 		
 		const RenderData& GetRenderData() const { return m_RenderData; }
 		
+
 		ParticleEmitter	Emitter;
 
 		// Texture animation

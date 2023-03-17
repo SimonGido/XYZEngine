@@ -56,11 +56,11 @@ namespace XYZ {
 			
 			// Create compute command per material
 			auto& command = m_Queue.ParticleCommands[particleComponent.UpdateMaterial->GetHandle()];
-			command.UpdateMaterial = particleComponent.UpdateMaterial;
+			command.UpdateMaterial = particleComponent.UpdateMaterial.Value();
 			
 			// Create particle data per system
 			auto& data = m_Queue.ParticleData[particleComponent.UpdateMaterial->GetHandle()];
-			data.System = particleComponent.System;
+			data.System = particleComponent.System.Value();
 
 			// Store handle, so compute command knows on which data operate
 			command.ParticleDataHandles.emplace(particleComponent.System->GetHandle());
@@ -71,8 +71,8 @@ namespace XYZ {
 
 			
 			auto& drawCommand = command.DrawCommands.emplace_back();
-			drawCommand.RenderMaterial = particleComponent.RenderMaterial;
-			drawCommand.Mesh = particleComponent.Mesh;
+			drawCommand.RenderMaterial = particleComponent.RenderMaterial.Value();
+			drawCommand.Mesh = particleComponent.Mesh.Value();
 			drawCommand.Transform = transformComponent->WorldTransform;
 		}
 

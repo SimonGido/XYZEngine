@@ -87,9 +87,9 @@ namespace XYZ {
 		AssetHandle materialHandle;
 		AssetHandle subTextureHandle;
 		
-		if (val.Material.Raw())
+		if (val.Material.Valid())
 			materialHandle = val.Material->GetHandle();
-		if (val.SubTexture.Raw())
+		if (val.SubTexture.Valid())
 			subTextureHandle = val.SubTexture->GetHandle();
 		
 		out << YAML::Key << "Material" << YAML::Value << materialHandle;
@@ -355,7 +355,7 @@ namespace XYZ {
 	{
 		out << YAML::Key << "AnimationComponent";
 		out << YAML::BeginMap;
-		if (val.Controller.Raw())
+		if (val.Controller.Valid())
 		{
 			out << YAML::Key << "Controller" << val.Controller->GetHandle();
 		}

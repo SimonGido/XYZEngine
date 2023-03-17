@@ -105,8 +105,7 @@ namespace XYZ
 			WeakRef<Asset> weakAsset;
 			bool found = s_Instance.m_LoadedAssets.Find(metadata->Handle, weakAsset);
 
-			auto it = s_Instance.m_LoadedAssets.find(metadata->Handle);
-			if (found)
+			if (found && weakAsset.IsValid())
 			{
 				weakAsset->SetFlag(AssetFlag::Reloaded);
 			}

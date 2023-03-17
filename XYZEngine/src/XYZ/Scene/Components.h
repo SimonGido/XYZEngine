@@ -11,6 +11,7 @@
 
 #include "XYZ/Asset/Renderer/MaterialAsset.h"
 #include "XYZ/Asset/Animation/AnimationController.h"
+#include "XYZ/Asset/AssetReference.h"
 
 #include "XYZ/Script/ScriptPublicField.h"
 #include "XYZ/Particle/CPU/ParticleSystem.h"
@@ -116,8 +117,8 @@ namespace XYZ {
 
 		SpriteRenderer& operator =(const SpriteRenderer& other);
 
-		Ref<MaterialAsset> Material;
-		Ref<SubTexture>	   SubTexture;
+		AssetReference<MaterialAsset>  Material;
+		AssetReference<SubTexture>	   SubTexture;
 		
 		glm::vec4 Color = glm::vec4(1.0f);
 		uint32_t  SortLayer = 0;
@@ -130,9 +131,10 @@ namespace XYZ {
 		MeshComponent(const MeshComponent& other);
 		MeshComponent(const Ref<StaticMesh>& mesh, const Ref<MaterialAsset>& materialAsset);
 
-		Ref<StaticMesh>		  Mesh;
-		Ref<MaterialAsset>    MaterialAsset;
-		Ref<MaterialInstance> OverrideMaterial;
+
+		AssetReference<StaticMesh>		 Mesh;
+		AssetReference<MaterialAsset>    MaterialAsset;
+		Ref<MaterialInstance>			 OverrideMaterial;
 	};
 
 	struct XYZ_API AnimatedMeshComponent
@@ -141,9 +143,9 @@ namespace XYZ {
 		AnimatedMeshComponent(const AnimatedMeshComponent& other);
 		AnimatedMeshComponent(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& materialAsset);
 
-		Ref<AnimatedMesh>	  Mesh;
-		Ref<MaterialAsset>    MaterialAsset;
-		Ref<MaterialInstance> OverrideMaterial;
+		AssetReference<AnimatedMesh>	  Mesh;
+		AssetReference<MaterialAsset>     MaterialAsset;
+		Ref<MaterialInstance>			  OverrideMaterial;
 		
 		std::vector<ozz::math::Float4x4> BoneTransforms;
 		std::vector<entt::entity>		 BoneEntities;
@@ -154,10 +156,10 @@ namespace XYZ {
 		AnimationComponent() = default;
 		AnimationComponent(const AnimationComponent& other);
 
-		Ref<AnimationController>  Controller;
-		SamplingContext			  Context; // It is not owned by controller so single controller can update on multiple threads
-		float					  AnimationTime = 0.0f;
-		bool					  Playing = false;
+		AssetReference<AnimationController>  Controller;
+		SamplingContext						 Context; // It is not owned by controller so single controller can update on multiple threads
+		float								 AnimationTime = 0.0f;
+		bool								 Playing = false;
 	};
 
 	class Prefab;
@@ -167,8 +169,8 @@ namespace XYZ {
 		PrefabComponent(const PrefabComponent& other);
 		PrefabComponent(const Ref<Prefab>& prefabAsset, const entt::entity owner);
 
-		Ref<Prefab>	 PrefabAsset;
-		entt::entity Owner = entt::null;
+		AssetReference<Prefab>	 PrefabAsset;
+		entt::entity			 Owner = entt::null;
 	};
 
 	struct XYZ_API ParticleRenderer
@@ -178,9 +180,9 @@ namespace XYZ {
 		ParticleRenderer(const Ref<Mesh>&mesh, const Ref<MaterialAsset>&materialAsset);
 
 
-		Ref<Mesh>		      Mesh;
-		Ref<MaterialAsset>    MaterialAsset;
-		Ref<MaterialInstance> OverrideMaterial;
+		AssetReference<Mesh>		      Mesh;
+		AssetReference<MaterialAsset>     MaterialAsset;
+		Ref<MaterialInstance>			  OverrideMaterial;
 	};
 
 	struct XYZ_API CameraComponent
@@ -207,11 +209,11 @@ namespace XYZ {
 
 	struct ParticleComponentGPU
 	{
-		Ref<Mesh>			    Mesh;
-		Ref<MaterialAsset>	    RenderMaterial;
-		Ref<MaterialInstance>   OverrideMaterial;
-		Ref<MaterialAsset>		UpdateMaterial;
-		Ref<ParticleSystemGPU>  System;
+		AssetReference<Mesh>			    Mesh;
+		AssetReference<MaterialAsset>	    RenderMaterial;
+		Ref<MaterialInstance>				OverrideMaterial;
+		AssetReference<MaterialAsset>		UpdateMaterial;
+		AssetReference<ParticleSystemGPU>	System;
 	};
 
 	struct XYZ_API PointLightComponent2D

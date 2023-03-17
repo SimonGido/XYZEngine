@@ -350,13 +350,13 @@ namespace XYZ {
 		for (auto entity : spriteView)
 		{
 			auto& [transform, spriteRenderer] = spriteView.get<TransformComponent, SpriteRenderer>(entity);
-			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform->WorldTransform);
+			sceneRenderer->SubmitSprite(spriteRenderer.Material.Value(), spriteRenderer.SubTexture.Value(), spriteRenderer.Color, transform->WorldTransform);
 		}
 		auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
 		for (auto entity : meshView)
 		{
 			auto& [transform, meshComponent] = meshView.get<TransformComponent, MeshComponent>(entity);
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform->WorldTransform, meshComponent.OverrideMaterial);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh.Value(), meshComponent.MaterialAsset.Value(), transform->WorldTransform, meshComponent.OverrideMaterial);
 		}
 
 		auto animMeshView = m_Registry.view<TransformComponent, AnimatedMeshComponent>();
@@ -370,7 +370,7 @@ namespace XYZ {
 				meshComponent.BoneTransforms[i] = Utils::Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity)->WorldTransform);
 			}
 			Ref<MeshSource> meshSource = meshComponent.Mesh->GetMeshSource();
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh.Value(), meshComponent.MaterialAsset.Value(), meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
 		}
 
 		auto particleView = m_Registry.view<TransformComponent, ParticleRenderer, ParticleComponent>();
@@ -381,7 +381,7 @@ namespace XYZ {
 			auto& renderData = particleComponent.GetSystem()->GetRenderData();
 		
 			sceneRenderer->SubmitMesh(
-				renderer.Mesh, renderer.MaterialAsset,
+				renderer.Mesh.Value(), renderer.MaterialAsset.Value(),
 				renderData.ParticleData.data(),
 				renderData.ParticleCount,
 				sizeof(ParticleRenderData),
@@ -413,17 +413,6 @@ namespace XYZ {
 		m_GPUScene.OnUpdate(ts);
 	}
 	
-	template <typename T>
-	static bool CheckAsset(Ref<T>& asset)
-	{
-		if (!asset.Raw())
-			return false;
-		if (asset->IsFlagSet(AssetFlag::Missing))
-			return false;
-		if (asset->IsFlagSet(AssetFlag::Reloaded))
-			asset = AssetManager::GetAsset<T>(asset->GetHandle());
-		return true;
-	}
 
 	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::mat4& projection)
 	{
@@ -438,18 +427,19 @@ namespace XYZ {
 		{
 			auto& [transform, spriteRenderer] = spriteView.get<TransformComponent, SpriteRenderer>(entity);
 			
-			if (!CheckAsset(spriteRenderer.Material) || !CheckAsset(spriteRenderer.SubTexture))
+			if (!spriteRenderer.Material.Valid() || !spriteRenderer.SubTexture.Valid())
 				continue;
-			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform->WorldTransform);
+			sceneRenderer->SubmitSprite(spriteRenderer.Material.Value(), spriteRenderer.SubTexture.Value(), spriteRenderer.Color, transform->WorldTransform);
 		}
 		
 		auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
 		for (auto entity : meshView)
 		{
 			auto& [transform, meshComponent] = meshView.get<TransformComponent, MeshComponent>(entity);
-			if (!CheckAsset(meshComponent.MaterialAsset) || !CheckAsset(meshComponent.Mesh))
+			if (!meshComponent.MaterialAsset.Valid() || !meshComponent.Mesh.Valid())
 				continue;
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform->WorldTransform, meshComponent.OverrideMaterial);
+		
+			sceneRenderer->SubmitMesh(meshComponent.Mesh.Value(), meshComponent.MaterialAsset.Value(), transform->WorldTransform, meshComponent.OverrideMaterial);
 		}
 		
 		
@@ -457,9 +447,8 @@ namespace XYZ {
 		for (auto entity : animMeshView)
 		{
 			auto& [transform, meshComponent] = animMeshView.get<TransformComponent,  AnimatedMeshComponent>(entity);
-			if (!CheckAsset(meshComponent.Mesh) || !CheckAsset(meshComponent.MaterialAsset))
+			if (!meshComponent.Mesh.Valid() || !meshComponent.MaterialAsset.Valid())
 				continue;
-
 			
 			meshComponent.BoneTransforms.resize(meshComponent.BoneEntities.size());
 			for (size_t i = 0; i < meshComponent.BoneEntities.size(); ++i)
@@ -468,7 +457,7 @@ namespace XYZ {
 				meshComponent.BoneTransforms[i] = Utils::Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity)->WorldTransform);
 			}
 			Ref<MeshSource> meshSource = meshComponent.Mesh->GetMeshSource();
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh.Value(), meshComponent.MaterialAsset.Value(), meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
 		}
 
 		{
@@ -477,12 +466,13 @@ namespace XYZ {
 			for (auto entity : particleView)
 			{
 				auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
-				if (!CheckAsset(renderer.Mesh) || !CheckAsset(renderer.MaterialAsset))
-					continue;
 				
+				if (!renderer.Mesh.Valid() || !renderer.MaterialAsset.Valid())
+					continue;
+
 				const auto& renderData = particleComponent.GetSystem()->GetRenderData();
 				sceneRenderer->SubmitMesh(
-					renderer.Mesh, renderer.MaterialAsset,
+					renderer.Mesh.Value(), renderer.MaterialAsset.Value(),
 					renderData.ParticleData.data(),
 					renderData.ParticleCount,
 					sizeof(ParticleRenderData),
@@ -685,7 +675,7 @@ namespace XYZ {
 		{
 			auto [anim, animMesh] = animView.get(entity);
 			anim.Playing = true; // TODO: temporary
-			if (anim.Playing && anim.Controller.Raw())
+			if (anim.Playing && anim.Controller.Valid())
 			{
 				anim.Controller->Update(anim.AnimationTime, anim.Context);
 				anim.AnimationTime += ts;
@@ -714,7 +704,7 @@ namespace XYZ {
 		{
 			auto [anim, animMesh] = animView.get(entity);
 			anim.Playing = true; // TODO: temporary
-			if (anim.Playing && anim.Controller.Raw())
+			if (anim.Playing && anim.Controller.Valid())
 			{
 				futures.emplace_back(threadPool.SubmitJob([instance, ts, &animation = anim, &animatedMesh = animMesh]() mutable {
 
