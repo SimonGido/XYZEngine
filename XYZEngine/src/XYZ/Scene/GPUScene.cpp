@@ -59,7 +59,7 @@ namespace XYZ {
 			command.UpdateMaterial = particleComponent.UpdateMaterial.Value();
 			
 			// Create particle data per system
-			auto& data = m_Queue.ParticleData[particleComponent.UpdateMaterial->GetHandle()];
+			auto& data = m_Queue.ParticleData[particleComponent.System->GetHandle()];
 			data.System = particleComponent.System.Value();
 
 			// Store handle, so compute command knows on which data operate
