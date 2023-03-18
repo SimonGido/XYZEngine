@@ -151,15 +151,19 @@ namespace XYZ {
 	public:
 		virtual ~StorageBuffer() = default;
 
-		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) {};
-		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) {};
-		virtual void Update(ByteBuffer data, uint32_t size, uint32_t offset = 0) {}
-		virtual void Resize(uint32_t size) {};
-		virtual void SetBufferInfo(uint32_t size, uint32_t offset) {};
+		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) = 0;
+		virtual void Update(void** data, uint32_t size, uint32_t offset = 0) = 0;
+
+		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) = 0;
+		
+		virtual void Update(ByteBuffer data, uint32_t size, uint32_t offset = 0) = 0;
+		virtual void Resize(uint32_t size) = 0;
+		virtual void SetBufferInfo(uint32_t size, uint32_t offset) = 0;
 
 		virtual uint32_t			GetBinding() const = 0;
 		virtual ByteBuffer			GetBuffer() = 0;
 		virtual bool				IsIndirect() const = 0;
+		virtual uint32_t			GetSize() const = 0;
 		
 		static Ref<StorageBuffer> Create(uint32_t size, uint32_t binding, bool indirect = false);
 		static Ref<StorageBuffer> Create(const void *data, uint32_t size, uint32_t binding, bool indirect = false);

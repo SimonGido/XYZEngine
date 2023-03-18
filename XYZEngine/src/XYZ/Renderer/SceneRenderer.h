@@ -57,9 +57,9 @@ namespace XYZ {
 
 	struct ComputeData
 	{
-		StorageBufferAllocation Allocation;
-		std::byte* Data = nullptr;
-		uint32_t   DataSize = 0;
+		StorageBufferAllocation Allocation; // Where is data stored 
+		std::byte* Data = nullptr;	// Data required for computation
+		uint32_t   DataSize = 0;	// Size of data required for computation
 	};
 
 	class XYZ_API SceneRenderer : public RefCount

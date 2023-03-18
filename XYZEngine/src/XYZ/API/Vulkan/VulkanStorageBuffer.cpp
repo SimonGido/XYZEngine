@@ -44,11 +44,26 @@ namespace XYZ {
 			return;
 		ByteBuffer buffer = GetBuffer();
 
-		buffer.Write(data, size, offset);
+		buffer.Write(data, size);
 		Ref<VulkanStorageBuffer> instance = this;
 		Renderer::Submit([instance, size, offset, buffer]() mutable {
 			instance->RT_Update(buffer.Data, size, offset);
 			instance->m_Buffers.PushBack(buffer);
+		});
+	}
+	void VulkanStorageBuffer::Update(void** data, uint32_t size, uint32_t offset)
+	{
+		XYZ_ASSERT(size + offset <= m_Size, "");
+		if (size == 0)
+			return;
+
+		void* dataPtr = *data;
+		data = nullptr;
+
+		Ref<VulkanStorageBuffer> instance = this;
+		Renderer::Submit([instance, size, offset, dataPtr]() mutable {
+			instance->RT_Update(dataPtr, size, offset);
+			delete[]dataPtr;
 		});
 	}
 	void VulkanStorageBuffer::RT_Update(const void* data, uint32_t size, uint32_t offset)
@@ -61,6 +76,7 @@ namespace XYZ {
 		memcpy(pData + offset, (uint8_t*)data, size);
 		allocator.UnmapMemory(m_MemoryAllocation);
 	}
+
 	void VulkanStorageBuffer::Update(ByteBuffer data, uint32_t size, uint32_t offset)
 	{
 		XYZ_ASSERT(data.Size + offset <= m_Size, "");
@@ -142,7 +158,10 @@ namespace XYZ {
 		if (m_Buffers.Empty())
 			buffer.Allocate(m_Size);
 		else
+		{
 			buffer = m_Buffers.PopBack();
+			buffer.TryReallocate(m_Size);
+		}
 		return buffer;
 	}
 

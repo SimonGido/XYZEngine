@@ -330,10 +330,18 @@ namespace XYZ {
 		for (uint32_t i = 0; i < count; ++i)
 		{
 			auto& data = computeData[i];
-			auto& commandData = command.Data.emplace_back();
-			commandData.Allocation = data.Allocation;
-			commandData.ComputeData.resize(data.DataSize);
-			memcpy(commandData.ComputeData.data(), data.Data, data.DataSize);
+			auto& allocationData = command.AllocationData.emplace_back();
+			const uint32_t dataOffset = command.ComputeData.size();
+			
+			// Allocation stores info about where is result of computation stored
+			allocationData.Allocation = data.Allocation;
+
+			// Store data required for computation
+			allocationData.ComputeDataOffset = dataOffset;
+			allocationData.ComputeDataSize = data.DataSize;
+
+			command.ComputeData.resize(dataOffset + data.DataSize);
+			memcpy(command.ComputeData.data() + dataOffset, data.Data, data.DataSize);
 		}
 		command.OverrideUniformData = uniformComputeData;
 	}

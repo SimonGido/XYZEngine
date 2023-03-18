@@ -157,17 +157,14 @@ namespace XYZ {
         friend class SceneEntity;
         friend class SceneSerializer;
         friend class ScriptEngine;
-        friend class LuaEntity;
         friend class Editor::SceneHierarchyPanel;
 
 
         
-
-        // Indirect draw test //
-        Ref<MaterialAsset>     m_UpdateCommandMaterial;
+        Ref<MaterialAsset>     m_UpdateCommandMaterial0;
+        Ref<MaterialAsset>     m_UpdateCommandMaterial1;
 
         Ref<MaterialAsset>	   m_ParticleMaterialGPU;
-        Ref<MaterialInstance>  m_ParticleMaterialInstanceGPU;
         Ref<Mesh>			   m_ParticleCubeMesh;
         Ref<ParticleSystemGPU> m_ParticleSystemGPU;
     };

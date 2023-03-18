@@ -23,12 +23,12 @@ namespace XYZ {
 			return EditorHelper::DrawComponent<AnimationComponent>("Animation Component", m_Context, [&](auto& component) {
 
 				std::string name = "";
-				if (component.Controller.Raw())
+				if (component.Controller.Valid())
 					name = AssetManager::GetMetadata(component.Controller->GetHandle()).FilePath.string();
 				ImGui::InputText("##ControllerName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
 
 
-				EditorHelper::AssetDragAcceptor(component.Controller);
+				EditorHelper::AssetDragAcceptor(component.Controller.Value());
 				
 				bool playing = component.Playing;
 				if (ImGui::Checkbox("Playing", &playing))

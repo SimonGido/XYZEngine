@@ -171,10 +171,12 @@ namespace XYZ {
 			struct Data
 			{
 				StorageBufferAllocation Allocation;
-				std::vector<std::byte> ComputeData;
+				uint32_t				ComputeDataOffset;
+				uint32_t				ComputeDataSize;
 			};
 
-			std::vector<Data> Data;
+			std::vector<Data> AllocationData;
+			std::vector<std::byte> ComputeData;
 		};
 
 		struct ComputeCommandBatch

@@ -130,7 +130,7 @@ namespace XYZ {
 			// Regular compute commands
 			for (auto& command : com.ComputeCommands)
 			{
-				for (auto& data : command.Data)
+				for (auto& data : command.AllocationData)
 				{
 					m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
 						data.Allocation.GetSize(),
@@ -518,14 +518,14 @@ namespace XYZ {
 			dc.Pipeline = m_PipelineCache.PrepareComputePipeline(dc.MaterialCompute);
 			for (auto& cmd : dc.ComputeCommands)
 			{
-				for (auto& data : cmd.Data)
+				for (auto& data : cmd.AllocationData)
 				{
-					if (data.ComputeData.empty())
+					if (data.ComputeDataSize == 0) // Size of data required for computation is zero, no update required
 						continue;
 
 					m_SceneRenderer->m_StorageBufferSet->Update(
-						data.ComputeData.data(),
-						data.Allocation.GetSize(),
+						cmd.ComputeData.data() + data.ComputeDataOffset, // Data required for computation
+						data.ComputeDataSize,	// Sizeof data required for computation
 						data.Allocation.GetOffset(),
 						data.Allocation.GetBinding(),
 						data.Allocation.GetSet()

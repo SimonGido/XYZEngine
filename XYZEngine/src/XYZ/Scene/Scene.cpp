@@ -959,26 +959,33 @@ namespace XYZ {
 		m_ParticleCubeMesh = MeshFactory::CreateBox(glm::vec3(1.0f));
 		
 
-		m_UpdateCommandMaterial = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleComputeShader.glsl")));
-		m_ParticleMaterialGPU = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleShaderGPU.glsl")));
-		m_ParticleMaterialInstanceGPU = m_ParticleMaterialGPU->GetMaterialInstance();
+		m_UpdateCommandMaterial0 = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleComputeShader.glsl")));
+		m_UpdateCommandMaterial1 = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleComputeShader.glsl")));
 
+		m_ParticleMaterialGPU = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleShaderGPU.glsl")));
+		
 		Ref<Texture2D> whiteTexture = Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>();
 		m_ParticleMaterialGPU->SetTexture("u_Texture", whiteTexture);
 
 		int enabled = 1;
-		m_UpdateCommandMaterial->Specialize("COLOR_OVER_LIFE", enabled);
-		m_UpdateCommandMaterial->Specialize("SCALE_OVER_LIFE", enabled);
-		m_UpdateCommandMaterial->Specialize("VELOCITY_OVER_LIFE", enabled);
-		m_UpdateCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
-		m_UpdateCommandMaterial->Specialize("SPAWN_LIGHTS", enabled);
+		m_UpdateCommandMaterial0->Specialize("COLOR_OVER_LIFE", enabled);
+		m_UpdateCommandMaterial0->Specialize("SCALE_OVER_LIFE", enabled);
+		m_UpdateCommandMaterial0->Specialize("VELOCITY_OVER_LIFE", enabled);
+		m_UpdateCommandMaterial0->Specialize("ROTATION_OVER_LIFE", enabled);
+		m_UpdateCommandMaterial0->Specialize("SPAWN_LIGHTS", enabled);
+
+		m_UpdateCommandMaterial1->Specialize("COLOR_OVER_LIFE", enabled);
+		m_UpdateCommandMaterial1->Specialize("SCALE_OVER_LIFE", enabled);
+		m_UpdateCommandMaterial1->Specialize("VELOCITY_OVER_LIFE", enabled);
+		m_UpdateCommandMaterial1->Specialize("ROTATION_OVER_LIFE", enabled);
+		m_UpdateCommandMaterial1->Specialize("SPAWN_LIGHTS", enabled);
 
 		
 		{
 			SceneEntity entity = CreateEntity("Particle GPU Test0");
 			auto& particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();
 
-			particleComponent.UpdateMaterial = m_UpdateCommandMaterial;
+			particleComponent.UpdateMaterial = m_UpdateCommandMaterial0;
 			particleComponent.RenderMaterial = m_ParticleMaterialGPU;
 			particleComponent.Mesh = m_ParticleCubeMesh;
 			particleComponent.System = m_ParticleSystemGPU;
@@ -987,7 +994,7 @@ namespace XYZ {
 			SceneEntity entity = CreateEntity("Particle GPU Test1");
 			auto& particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();
 
-			particleComponent.UpdateMaterial = m_UpdateCommandMaterial;
+			particleComponent.UpdateMaterial = m_UpdateCommandMaterial1;
 			particleComponent.RenderMaterial = m_ParticleMaterialGPU;
 			particleComponent.Mesh = m_ParticleCubeMesh;
 			particleComponent.System = m_ParticleSystemGPU;
