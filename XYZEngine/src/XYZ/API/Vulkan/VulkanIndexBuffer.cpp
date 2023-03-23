@@ -28,6 +28,8 @@ namespace XYZ {
 		case XYZ::IndexType::Uint32:
 			return VK_INDEX_TYPE_UINT32;
 		}
+		XYZ_ASSERT(false, "Invalid index type");
+		return VK_INDEX_TYPE_NONE_NV;
 	}
 
 	VulkanIndexBuffer::VulkanIndexBuffer(const void* indices, uint32_t count, IndexType type)

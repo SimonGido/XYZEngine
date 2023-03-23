@@ -66,7 +66,6 @@ project "XYZEngine"
 		{
 			"_CRT_SECURE_NO_WARNINGS",
 			"GLFW_INCLUDE_NONE",
-			"GLEW_STATIC",
 			"AL_LIBTYPE_STATIC",
 			"XR_USE_GRAPHICS_API_VULKAN",
 			'XYZ_OUTPUT_DIR="%{Definitions.TargetDirectory}"',
@@ -110,7 +109,6 @@ project "XYZEngine"
 			"GLFW",
 			"OpenAL-Soft",
 			"FreeType",
-			"opengl32",
 			"ImGui",
 			"ImGuizmo",
 			"box2d",

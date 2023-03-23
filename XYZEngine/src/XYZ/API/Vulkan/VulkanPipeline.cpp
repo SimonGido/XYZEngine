@@ -133,7 +133,7 @@ namespace XYZ {
 
 			
 		vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributes.data();
-		vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.size();
+		vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
 		vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
 		
 		return vertexInputInfo;

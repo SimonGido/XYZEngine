@@ -217,7 +217,7 @@ namespace XYZ {
 		SceneEntity newEntity = m_Scene->CreateEntity("", GUID());
 		m_Entities.push_back(newEntity);
 
-		CopyComponentsIfExist(*entity.GetRegistry(), m_Scene->GetRegistry(), entity.ID(), newEntity.ID());
+		CopyComponentsIfExist(*entity.GetRegistry(), m_Scene->m_Registry, entity.ID(), newEntity.ID());
 
 		std::stack<entt::entity> children;
 		
@@ -233,7 +233,7 @@ namespace XYZ {
 
 			auto& childRel = child.GetComponent<Relationship>();
 			SceneEntity newChild = createPrefabFromEntity(child);
-			Relationship::SetupRelation(newEntity.ID(), newChild.ID(), m_Scene->GetRegistry());
+			Relationship::SetupRelation(newEntity.ID(), newChild.ID(), m_Scene->m_Registry);
 			if (childRel.GetNextSibling() != entt::null)
 				children.push(childRel.GetNextSibling());
 		}

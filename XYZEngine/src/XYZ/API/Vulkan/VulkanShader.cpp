@@ -417,7 +417,7 @@ namespace XYZ {
 			return m_ShaderData.at(VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT);
 		}
 		XYZ_ASSERT(false, "Shader does not have shader type");
-		return {};
+		return m_ShaderData.at(VkShaderStageFlagBits::VK_SHADER_STAGE_ALL);
 	}
 
 	bool VulkanShader::IsCompute() const

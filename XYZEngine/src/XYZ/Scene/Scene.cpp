@@ -874,6 +874,10 @@ namespace XYZ {
 	{
 		auto pointLights3D = m_Registry.view<PointLightComponent3D, TransformComponent>();
 		m_LightEnvironment.PointLights3D.clear();
+		m_LightEnvironment.PointLights2D.clear();
+		m_LightEnvironment.SpotLights2D.clear();
+
+		// PointLights3D
 		for (auto entity : pointLights3D)
 		{
 			auto [transformComponent, lightComponent] = pointLights3D.get<TransformComponent, PointLightComponent3D>(entity);
@@ -912,6 +916,38 @@ namespace XYZ {
 					true
 				});
 			}
+		}
+		// PointLights2D
+		auto pointLight2DView = m_Registry.view<TransformComponent, PointLightComponent2D>();
+		for (auto entity : pointLight2DView)
+		{
+			auto& [transform, light] = pointLight2DView.get<TransformComponent, PointLightComponent2D>(entity);
+			auto [trans, rot, scale] = transform.GetWorldComponents();
+
+			m_LightEnvironment.PointLights2D.push_back({
+				glm::vec4(light.Color, 1.0f),
+				glm::vec2(trans),
+				light.Radius,
+				light.Intensity
+			});
+		}
+
+		// SpotLights2D
+		auto spotLight2DView = m_Registry.view<TransformComponent, SpotLightComponent2D>();
+		for (auto entity : spotLight2DView)
+		{
+			// Render previous frame data
+			auto& [transform, light] = spotLight2DView.get<TransformComponent, SpotLightComponent2D>(entity);
+			auto [trans, rot, scale] = transform.GetWorldComponents();
+
+			m_LightEnvironment.SpotLights2D.push_back({
+				glm::vec4(light.Color, 1.0f),
+				glm::vec2(trans),
+				light.Radius,
+				light.Intensity,
+				light.InnerAngle,
+				light.OuterAngle
+			});
 		}
 	}
 

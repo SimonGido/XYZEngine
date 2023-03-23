@@ -17,73 +17,31 @@ namespace XYZ {
 		m_LightStorageBufferSet = StorageBufferSet::Create(Renderer::GetConfiguration().FramesInFlight);
 		
 		constexpr uint32_t countOffset = 16;
-		m_LightStorageBufferSet->Create(countOffset + sc_MaxNumberOfLights * sizeof(PointLight), 0, 1);
-		m_LightStorageBufferSet->Create(countOffset + sc_MaxNumberOfLights * sizeof(SpotLight), 0, 2);
+		m_LightStorageBufferSet->Create(countOffset + sc_MaxNumberOfLights * sizeof(PointLight2D), 0, 1);
+		m_LightStorageBufferSet->Create(countOffset + sc_MaxNumberOfLights * sizeof(SpotLight2D), 0, 2);
 	}
 
 	DeferredLightPassStatistics DeferredLightPass::PreSubmit(Ref<Scene> scene)
 	{
 		XYZ_PROFILE_FUNC("DeferredLightPass::PreSubmit");
-		m_PointLights.clear();
-		m_SpotLights.clear();
-		// TODO: move this to scene
-		auto& registry = scene->GetRegistry();
-
-		// Spot lights
-		auto spotLight2DView = registry.view<TransformComponent, SpotLightComponent2D>();
-		for (auto entity : spotLight2DView)
-		{
-			// Render previous frame data
-			auto& [transform, light] = spotLight2DView.get<TransformComponent, SpotLightComponent2D>(entity);
-			auto [trans, rot, scale] = transform.GetWorldComponents();
-			
-			SpotLight spotLight{
-				glm::vec4(light.Color, 1.0f),
-				glm::vec2(trans),
-				light.Radius,
-				light.Intensity,
-				light.InnerAngle,
-				light.OuterAngle
-			};
-			m_SpotLights.push_back(spotLight);
-		}
-
-		// Point Lights
-		auto pointLight2DView = registry.view<TransformComponent, PointLightComponent2D>();
-		for (auto entity : pointLight2DView)
-		{
-			auto& [transform, light] = pointLight2DView.get<TransformComponent, PointLightComponent2D>(entity);
-			auto [trans, rot, scale] = transform.GetWorldComponents();
-			
-			PointLight pointLight{
-				glm::vec4(light.Color, 1.0f),
-				glm::vec2(trans),
-				light.Radius,
-				light.Intensity
-			};
-			m_PointLights.push_back(pointLight);
-		}
-
-	
-
-		if (m_SpotLights.size() > sc_MaxNumberOfLights)
-			m_SpotLights.resize(sc_MaxNumberOfLights);
-
-		if (m_PointLights.size() > sc_MaxNumberOfLights)
-			m_PointLights.resize(sc_MaxNumberOfLights);
-
+		
+		const auto& lightEnvironment = scene->GetLightEnvironment();
 
 		constexpr uint32_t countOffset = 16;
 
+		const uint32_t spotLightsCount = std::min(static_cast<uint32_t>(lightEnvironment.SpotLights2D.size()), sc_MaxNumberOfLights);
+		const uint32_t pointLightsCount = std::min(static_cast<uint32_t>(lightEnvironment.PointLights2D.size()), sc_MaxNumberOfLights);
+
+
 		ByteBuffer spotLightBuffer;
-		spotLightBuffer.Allocate(countOffset + (m_SpotLights.size() * sizeof(SpotLight)));
-		spotLightBuffer.Write(m_SpotLights.size(), 0);
-		spotLightBuffer.Write(m_SpotLights.data(), m_SpotLights.size() * sizeof(SpotLight), countOffset);
+		spotLightBuffer.Allocate(countOffset + (spotLightsCount * sizeof(SpotLight2D)));
+		spotLightBuffer.Write(spotLightsCount, 0);
+		spotLightBuffer.Write(lightEnvironment.SpotLights2D.data(), spotLightsCount * sizeof(SpotLight2D), countOffset);
 
 		ByteBuffer pointLightBuffer;
-		pointLightBuffer.Allocate(countOffset + (m_PointLights.size() * sizeof(PointLight)));
-		pointLightBuffer.Write(m_PointLights.size(), 0);
-		pointLightBuffer.Write(m_PointLights.data(), m_PointLights.size() * sizeof(PointLight), countOffset);
+		pointLightBuffer.Allocate(countOffset + (pointLightsCount * sizeof(PointLight2D)));
+		pointLightBuffer.Write(pointLightsCount, 0);
+		pointLightBuffer.Write(lightEnvironment.PointLights2D.data(), pointLightsCount * sizeof(PointLight2D), countOffset);
 
 		Ref<StorageBufferSet> instance = m_LightStorageBufferSet;
 		Renderer::Submit([
@@ -101,7 +59,7 @@ namespace XYZ {
 				spotLightBuffer.Destroy();
 			});
 
-		return { static_cast<uint32_t>(m_PointLights.size()), static_cast<uint32_t>(m_SpotLights.size()) };
+		return { spotLightsCount, pointLightsCount };
 	}
 
 	void DeferredLightPass::Submit(

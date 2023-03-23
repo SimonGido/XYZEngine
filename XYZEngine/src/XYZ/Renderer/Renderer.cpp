@@ -381,7 +381,7 @@ namespace XYZ {
 		return s_Data.QueueData.GetResourceQueue(s_Data.APIContext->GetCurrentFrame());
 	}
 
-	ScopedLock<RenderCommandQueue> Renderer::getRenderCommandQueue()
+	RenderCommandQueue& Renderer::getRenderCommandQueue()
 	{
 		return s_Data.QueueData.GetRenderCommandQueue();
 	}

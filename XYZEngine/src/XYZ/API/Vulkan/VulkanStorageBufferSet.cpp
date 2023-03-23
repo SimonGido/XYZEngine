@@ -140,7 +140,7 @@ namespace XYZ {
 		for (uint32_t frame = 0; frame < m_Frames; ++frame)
 		{
 			writeDescriptor[frame].resize(descriptorSets.size());
-			for (size_t set = 0; set < descriptorSets.size(); ++set)
+			for (uint32_t set = 0; set < static_cast<uint32_t>(descriptorSets.size()); ++set)
 			{
 				for (auto&& [binding, shaderUB] : descriptorSets[set].ShaderDescriptorSet.StorageBuffers)
 				{

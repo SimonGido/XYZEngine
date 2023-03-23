@@ -36,26 +36,6 @@ namespace XYZ {
 		void createPipeline();
 
 	private:
-		struct PointLight
-		{
-			glm::vec4 Color;
-			glm::vec2 Position;
-			float	  Radius;
-			float	  Intensity;
-		};
-		struct SpotLight
-		{
-			glm::vec4 Color;
-			glm::vec2 Position;
-			float	  Radius;
-			float	  Intensity;
-			float	  InnerAngle;
-			float	  OuterAngle;
-
-			float Alignment[2];
-		};
-
-
 		Ref<RenderPass>       m_RenderPass;
 		Ref<UniformBufferSet> m_CameraBufferSet;
 		Ref<StorageBufferSet> m_LightStorageBufferSet;
@@ -64,10 +44,6 @@ namespace XYZ {
 		Ref<Pipeline>		  m_Pipeline;
 		Ref<Material>		  m_Material;
 		Ref<MaterialInstance> m_MaterialInstance;
-
-
-		std::vector<PointLight>	m_PointLights;
-		std::vector<SpotLight>	m_SpotLights;
 
 
 		static constexpr uint32_t sc_MaxNumberOfLights = 2 * 1024;

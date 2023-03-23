@@ -55,9 +55,31 @@ namespace XYZ {
         char	  Padding[3]{ 0, 0, 0 };
     };
     
+    struct PointLight2D
+    {
+        glm::vec4 Color;
+        glm::vec2 Position;
+        float	  Radius;
+        float	  Intensity;
+    };
+
+    struct SpotLight2D
+    {
+        glm::vec4 Color;
+        glm::vec2 Position;
+        float	  Radius;
+        float	  Intensity;
+        float	  InnerAngle;
+        float	  OuterAngle;
+
+        float Alignment[2];
+    };
+
     struct LightEnvironment
     {
         std::vector<PointLight3D> PointLights3D;
+        std::vector<PointLight2D> PointLights2D;
+        std::vector<SpotLight2D>  SpotLights2D;
     };
 
     class XYZ_API Scene : public Asset
@@ -90,13 +112,12 @@ namespace XYZ {
         SceneEntity GetSceneEntity();
         SceneEntity GetSelectedEntity();
 
-        entt::registry&       GetRegistry()       { return m_Registry; }
         const entt::registry& GetRegistry() const { return m_Registry; }
 
-        inline SceneState  GetState() const { return m_State; }
-        inline const GUID& GetUUID() const { return m_UUID; }
-        inline const std::string& GetName() const { return m_Name; }
-
+        inline SceneState               GetState() const { return m_State; }
+        inline const GUID&              GetUUID() const { return m_UUID; }
+        inline const std::string&       GetName() const { return m_Name; }
+        inline const LightEnvironment&  GetLightEnvironment() const { return m_LightEnvironment; }
 
         virtual AssetType GetAssetType() const override { return AssetType::Scene; }
         static AssetType GetStaticType() { return AssetType::Scene; }
@@ -157,6 +178,7 @@ namespace XYZ {
         friend class SceneEntity;
         friend class SceneSerializer;
         friend class ScriptEngine;
+        friend class Prefab;
         friend class Editor::SceneHierarchyPanel;
 
 

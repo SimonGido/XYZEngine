@@ -88,7 +88,7 @@ namespace XYZ {
 		VkDescriptorSetAllocateInfo allocInfo;
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 
-		VkDescriptorSet resultDescr;
+		
 		allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfo.pNext = nullptr;
 		allocInfo.descriptorSetCount = 1;
@@ -145,7 +145,7 @@ namespace XYZ {
 		pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		pool_info.flags = 0;// VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 		pool_info.maxSets = sc_MaxSets;
-		pool_info.poolSizeCount = std::size(s_PoolSizes);
+		pool_info.poolSizeCount = static_cast<uint32_t>(std::size(s_PoolSizes));
 		pool_info.pPoolSizes = s_PoolSizes;
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
 

@@ -27,18 +27,18 @@ namespace XYZ {
 		constexpr Flags operator^(Enum value) const { Flags result = *this; result.m_Bits ^= 1 << static_cast<std::size_t>(value); return result; }
 		constexpr Flags operator~() const { Flags result = *this; result.bits.flip(); return result; }
 
-		constexpr Flags& operator|=(Enum value) { m_Bits |= 1 << static_cast<std::size_t>(value); return *this; }
-		constexpr Flags& operator&=(Enum value) { m_Bits &= 1 << static_cast<std::size_t>(value); return *this; }
-		constexpr Flags& operator^=(Enum value) { m_Bits ^= 1 << static_cast<std::size_t>(value); return *this; }
+		constexpr Flags& operator|=(Enum value) { m_Bits |= 1ull << static_cast<std::size_t>(value); return *this; }
+		constexpr Flags& operator&=(Enum value) { m_Bits &= 1ull << static_cast<std::size_t>(value); return *this; }
+		constexpr Flags& operator^=(Enum value) { m_Bits ^= 1ull << static_cast<std::size_t>(value); return *this; }
 
 		constexpr bool Any() const { return m_Bits.any(); }
 		constexpr bool All() const { return m_Bits.all(); }
 		constexpr bool None() const { return m_Bits.none(); }
 		constexpr operator bool() const { return m_Bits.any(); }
 
-		constexpr bool Test(Enum value) const { return m_Bits.test(1 << static_cast<std::size_t>(value)); }
-		constexpr void Set(Enum value) { m_Bits.set(1 << static_cast<std::size_t>(value)); }
-		constexpr void Unset(Enum value) { m_Bits.reset(1 << static_cast<std::size_t>(value)); }
+		constexpr bool Test(Enum value) const { return m_Bits.test(1ull << static_cast<std::size_t>(value)); }
+		constexpr void Set(Enum value) { m_Bits.set(1ull << static_cast<std::size_t>(value)); }
+		constexpr void Unset(Enum value) { m_Bits.reset(1ull << static_cast<std::size_t>(value)); }
 
 		unsigned long ToUlong()		  const { return m_Bits.to_ulong(); }
 		unsigned long long ToUllong() const { return m_Bits.to_ullong(); }

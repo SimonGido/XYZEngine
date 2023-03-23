@@ -22,7 +22,7 @@ namespace XYZ {
 		void BlockRenderThread();
 
 
-		ScopedLock<RenderCommandQueue> GetRenderCommandQueue();
+		RenderCommandQueue& GetRenderCommandQueue();
 		ScopedLock<RenderCommandQueue> GetResourceQueue(uint32_t index);
 
 		ThreadPool& GetThreadPool() { return m_Pool; }
@@ -30,7 +30,7 @@ namespace XYZ {
 	private:
 		uint32_t		   m_FramesInFlight = 0;
 		RenderCommandQueue m_RenderCommandQueue[2];
-		std::shared_mutex  m_RenderCommandQueueMutex;
+
 
 		struct ResourceCommandQueue
 		{

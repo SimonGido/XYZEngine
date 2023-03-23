@@ -69,7 +69,7 @@ namespace XYZ {
 		m_Width = width;
 		m_Height = height;
 
-		uint32_t size = Utils::GetMemorySize(format, width, height);
+		uint32_t size = static_cast<uint32_t>(Utils::GetMemorySize(format, width, height));
 	
 		ImageSpecification imageSpec;
 		imageSpec.Format = m_Format;
