@@ -36,7 +36,7 @@ namespace XYZ {
 		{
 			if (it->IsValid())
 			{
-				(*it)->allocateStorage(GetShader()->GetBuffers());
+				(*it)->initializeStorage(GetShader()->GetBuffers());
 				it++;
 			}
 			else

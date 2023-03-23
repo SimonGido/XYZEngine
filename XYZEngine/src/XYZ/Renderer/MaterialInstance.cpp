@@ -12,7 +12,7 @@ namespace XYZ {
 
 	bool MaterialInstance::HasUniform(const std::string_view name) const
 	{
-		auto [decl, buffer] = findUniformDeclaration(name);
+		auto decl = findUniformDeclaration(name);
 		if (!decl)
 			return false;
 		return true;
@@ -30,7 +30,7 @@ namespace XYZ {
 		if (m_UniformsBuffer.Size - vertexBufferSize != 0)
 		{
 			result.Size = m_UniformsBuffer.Size - vertexBufferSize;
-			memcpy(result.Bytes, &m_UniformsBuffer.Data[vertexBufferSize], result.Size);
+			memcpy(result.Bytes, &m_UniformsBuffer.Bytes[vertexBufferSize], result.Size);
 		}
 		return result;
 	}
@@ -39,7 +39,7 @@ namespace XYZ {
 	{
 		PushConstBuffer result;
 		const size_t vertexBufferSize = m_Material->GetShader()->GetVertexBufferSize();
-		memcpy(result.Bytes, m_UniformsBuffer.Data, vertexBufferSize);
+		memcpy(result.Bytes, m_UniformsBuffer.Bytes, vertexBufferSize);
 		result.Size = vertexBufferSize;
 		return result;
 	}
@@ -48,28 +48,22 @@ namespace XYZ {
 		:
 		m_Material(material)
 	{
-		allocateStorage(m_Material->GetShader()->GetBuffers());
+		const auto& buffers = m_Material->GetShader()->GetBuffers();
+		initializeStorage(buffers);
 	}
 
-	void MaterialInstance::allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers) const
+
+	void MaterialInstance::initializeStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers)
 	{
 		uint32_t size = 0;
 		for (auto [name, shaderBuffer] : buffers)
 			size += shaderBuffer.Size;
 
-		if (m_UniformsBuffer.Size != size)
-		{
-			if (m_UniformsBuffer)
-				m_UniformsBuffer.Destroy();
-			if (size)
-			{
-				m_UniformsBuffer.Allocate(size);
-				m_UniformsBuffer.ZeroInitialize();
-			}
-		}
+		m_UniformsBuffer = {};
+		m_UniformsBuffer.Size = size;
 	}
 
-	std::pair<const ShaderUniform*, ByteBuffer*> MaterialInstance::findUniformDeclaration(const std::string_view name)
+	const ShaderUniform* MaterialInstance::findUniformDeclaration(const std::string_view name)
 	{
 		std::string bufferName = std::string(Utils::FirstSubString(name, '.'));
 		const auto& shaderBuffers = m_Material->GetShader()->GetBuffers();
@@ -79,11 +73,11 @@ namespace XYZ {
 			const ShaderBuffer& buffer = itBuffer->second;
 			auto itUniform = buffer.Uniforms.find(std::string(name));
 			if (itUniform != buffer.Uniforms.end())
-				return { &itUniform->second, &m_UniformsBuffer };
+				return &itUniform->second;
 		}
-		return { nullptr, nullptr };
+		return nullptr;
 	}
-	std::pair<const ShaderUniform*, ByteBuffer*> MaterialInstance::findUniformDeclaration(const std::string_view name) const
+	const ShaderUniform* MaterialInstance::findUniformDeclaration(const std::string_view name) const
 	{
 		std::string bufferName = std::string(Utils::FirstSubString(name, '.'));
 		const auto& shaderBuffers = m_Material->GetShader()->GetBuffers();
@@ -93,8 +87,8 @@ namespace XYZ {
 			const ShaderBuffer& buffer = itBuffer->second;
 			auto itUniform = buffer.Uniforms.find(std::string(name));
 			if (itUniform != buffer.Uniforms.end())
-				return { &itUniform->second, &m_UniformsBuffer };
+				return &itUniform->second;
 		}
-		return { nullptr, nullptr };
+		return nullptr;
 	}
 }

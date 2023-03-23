@@ -172,7 +172,6 @@ namespace XYZ {
         bool  m_UpdateAnimationAsync = false;
         bool  m_UpdateHierarchyAsync = false;
 
-
         friend SceneRenderer;
         friend class SceneIntersection;
         friend class SceneEntity;
