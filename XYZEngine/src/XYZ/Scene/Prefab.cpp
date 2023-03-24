@@ -175,7 +175,8 @@ namespace XYZ {
 
 	void Prefab::copyEntity(SceneEntity dst, SceneEntity src, std::unordered_map<entt::entity, entt::entity>& clones) const
 	{
-		CopyComponentsIfExist(*src.GetRegistry(), *dst.GetRegistry(), src.ID(), dst.ID());
+		entt::registry& dstRegistry = dst.GetScene()->m_Registry;
+		CopyComponentsIfExist(*src.GetRegistry(), dstRegistry, src.ID(), dst.ID());
 
 		clones[src.ID()] = dst.ID();
 
