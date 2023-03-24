@@ -56,7 +56,6 @@ namespace XYZ
 
 	void AssetManager::Serialize(const AssetHandle& assetHandle)
 	{
-
 		WeakRef<Asset> asset;
 		bool found = s_Instance.m_LoadedAssets.Find(assetHandle, asset);
 		if (found && asset.IsValid())
@@ -201,6 +200,12 @@ namespace XYZ
 				loadAssetMetadata(it.path());
 			}
 		}
+	}
+
+	void AssetManager::tryKeepAliveAsset(Ref<Asset> asset)
+	{
+		if (s_Instance.m_AssetLifeManager)
+			s_Instance.m_AssetLifeManager->PushAsset(asset);
 	}
 
 

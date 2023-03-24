@@ -18,16 +18,13 @@ namespace XYZ {
 	
 	private:
 		static void serializeEntity(YAML::Emitter& out, SceneEntity entity);
-		static void deserializeEntity(YAML::Node& data, WeakRef<Scene> scene);
+		static void deserializeEntity(const YAML::Node& data, WeakRef<Scene> scene);
 
 		template <typename T>
 		static void serialize(YAML::Emitter& out, const T& val, SceneEntity entity);
 
 		template <typename T>
 		static void deserialize(YAML::Node& data, T& component, SceneEntity entity);
-
-		template <typename T>
-		static std::future<T> deserializeAsync(YAML::Node& data);
 
 
 		template <typename T>

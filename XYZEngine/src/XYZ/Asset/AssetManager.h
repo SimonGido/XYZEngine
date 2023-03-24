@@ -122,14 +122,13 @@ namespace XYZ {
 	private:
 		static void loadAssetMetadata(const std::filesystem::path& filepath);
 		static void writeAssetMetadata(const AssetMetadata& metadata);
-
 		static void processDirectory(const std::filesystem::path& path);
+		static void tryKeepAliveAsset(Ref<Asset> asset);
 		
 
 		static void onFileChange(FileWatcher::ChangeType type, const std::filesystem::path& path);
 
 	private:
-
 		MemoryPool										  m_Pool = MemoryPool(1024 * 1024 * 10);
 		AssetRegistry									  m_Registry;
 		ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>	  m_LoadedAssets;
@@ -184,6 +183,7 @@ namespace XYZ {
 		Get().m_LoadedAssets.Set(asset->m_Handle, asset.Raw());
 		writeAssetMetadata(metadata);
 		AssetImporter::Serialize(asset);
+		tryKeepAliveAsset(asset);
 		return asset;
 	}
 
@@ -201,6 +201,7 @@ namespace XYZ {
 				return nullptr;
 
 			Get().m_LoadedAssets.Set(assetHandle, result.Raw());
+			tryKeepAliveAsset(result);
 			return result;
 		}
 

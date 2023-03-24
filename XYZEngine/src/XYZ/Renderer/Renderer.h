@@ -149,14 +149,13 @@ namespace XYZ {
 
 	private:
 		static ScopedLock<RenderCommandQueue> getResourceQueue();
-		static RenderCommandQueue&			  getRenderCommandQueue();
+		static ScopedLock<RenderCommandQueue> getRenderCommandQueue();
 		static RendererStats&				  getStats();
 	};
 
 	template <typename FuncT>
 	void Renderer::Submit(FuncT&& func)
 	{
-		XYZ_CHECK_THREAD(Application::Get().GetApplicationThreadID());
 		XYZ_PROFILE_FUNC("Renderer::Submit");
 
 		auto renderCmd = [](void* ptr) {
@@ -166,8 +165,8 @@ namespace XYZ {
 			pFunc->~FuncT(); // Call destructor
 		};
 
-		RenderCommandQueue& queue = getRenderCommandQueue();
-		auto storageBuffer = queue.Allocate(renderCmd, sizeof(func));
+		ScopedLock<RenderCommandQueue> queue = getRenderCommandQueue();
+		auto storageBuffer = queue->Allocate(renderCmd, sizeof(func));
 		new (storageBuffer) FuncT(std::forward<FuncT>(func));
 		getStats().CommandsCount++;
 	}

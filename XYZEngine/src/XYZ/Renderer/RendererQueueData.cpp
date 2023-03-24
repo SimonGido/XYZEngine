@@ -44,7 +44,6 @@ namespace XYZ {
 			XYZ_SCOPE_PERF("RendererQueueData::ExecuteRenderQueue");
 
 			queue->Execute();
-			Fence::Create(UINT64_MAX);
 			return true;
 		});
 		#else
@@ -69,9 +68,9 @@ namespace XYZ {
 		#endif
 	}
 
-	RenderCommandQueue& RendererQueueData::GetRenderCommandQueue()
+	ScopedLock<RenderCommandQueue> RendererQueueData::GetRenderCommandQueue()
 	{
-		return m_RenderCommandQueue[m_RenderWriteIndex];
+		return ScopedLock<RenderCommandQueue>(&m_RenderCommandQueueMutex, m_RenderCommandQueue[m_RenderWriteIndex]);
 	}
 
 	ScopedLock<RenderCommandQueue> RendererQueueData::GetResourceQueue(uint32_t index)
