@@ -74,6 +74,26 @@ namespace XYZ
 		s_Instance.m_FileWatcher->ProcessChanges();
 	}
 
+	void AssetManager::StoreWaitingAssets()
+	{
+		while (!s_Instance.m_WaitingAssets.Empty())
+		{
+			s_Instance.m_WaitingAssets.PopBack();
+		}
+	}
+
+	Ref<Asset> AssetManager::LoadAssetDelayed(const AssetHandle& assetHandle)
+	{
+		Ref<Asset> result = nullptr;
+		auto metadata = Get().m_Registry.GetMetadata(assetHandle);
+		bool loaded = AssetImporter::TryLoadData(*metadata, result);
+		if (!loaded)
+			return nullptr;
+
+		s_Instance.m_WaitingAssets.PushBack(result);
+		return result;
+	}
+
 	std::vector<AssetMetadata> AssetManager::FindAllMetadata(AssetType type)
 	{
 		std::vector<AssetMetadata> result;

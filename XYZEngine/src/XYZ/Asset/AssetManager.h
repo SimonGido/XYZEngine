@@ -65,11 +65,12 @@ namespace XYZ {
 		static void Shutdown();
 		static void KeepAlive(float seconds);
 
-
 		static void SerializeAll();
 		static void Serialize(const AssetHandle& assetHandle);
 
 		static void Update(Timestep ts);
+
+		static void StoreWaitingAssets();
 
 		template<typename T, typename... Args>
 		static Ref<T> CreateMemoryAsset(const std::string& name, Args&&... args);
@@ -85,6 +86,8 @@ namespace XYZ {
 
 		template <typename T>
 		static Ref<T> GetAsset(const std::filesystem::path& filepath);
+
+		static Ref<Asset> LoadAssetDelayed(const AssetHandle& assetHandle);
 
 		template <typename T>
 		static std::future<Ref<T>> GetAssetAsync(const std::filesystem::path& filepath);
@@ -133,6 +136,12 @@ namespace XYZ {
 		AssetRegistry									  m_Registry;
 		ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>	  m_LoadedAssets;
 		ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>   m_MemoryAssets;
+		ThreadQueue<Ref<Asset>>							  m_WaitingAssets;
+
+		// TODO: metadata are not thread safe, use these mutexes instead of ThreadUnorderedMap
+		std::shared_mutex m_RegistryMutex;
+		std::shared_mutex m_AssetsMutex;
+		std::shared_mutex m_MemoryAssetsMutex;
 
 		std::shared_ptr<FileWatcher>					  m_FileWatcher;
 		std::shared_ptr<AssetLifeManager>				  m_AssetLifeManager;

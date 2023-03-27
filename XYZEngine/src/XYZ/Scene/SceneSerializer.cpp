@@ -822,74 +822,45 @@ namespace XYZ {
 	std::vector<Ref<Asset>> PreloadAssets(const YAML::Node& entities)
 	{
 		std::vector<std::future<Ref<Asset>>> assetFutures;
-
-		std::unordered_set<AssetHandle> staticMeshHandles;
-		std::unordered_set<AssetHandle> animatedMeshHandles;
-		std::unordered_set<AssetHandle> materialHandles;
-		std::unordered_set<AssetHandle> systemHandles;
-	
+		std::unordered_set<AssetHandle> assetHandles;	
 
 		for (auto entity : entities)
 		{
 			auto meshComponent = entity["MeshComponent"];
 			if (meshComponent)
 			{
-				staticMeshHandles.emplace(AssetHandle(meshComponent["Mesh"].as<std::string>()));
-				materialHandles.emplace(AssetHandle(meshComponent["Material"].as<std::string>()));
+				assetHandles.emplace(AssetHandle(meshComponent["Mesh"].as<std::string>()));
+				assetHandles.emplace(AssetHandle(meshComponent["Material"].as<std::string>()));
 			}
 
 			auto animatedMeshComponent = entity["AnimatedMeshComponent"];
 			if (animatedMeshComponent)
 			{
-				animatedMeshHandles.emplace(AssetHandle(animatedMeshComponent["Mesh"].as<std::string>()));
-				materialHandles.emplace(AssetHandle(animatedMeshComponent["Material"].as<std::string>()));
+				assetHandles.emplace(AssetHandle(animatedMeshComponent["Mesh"].as<std::string>()));
+				assetHandles.emplace(AssetHandle(animatedMeshComponent["Material"].as<std::string>()));
 			}
 
 			auto particleComponentGPU = entity["ParticleComponentGPU"];
 			if (particleComponentGPU)
 			{
-				materialHandles.emplace(AssetHandle(particleComponentGPU["UpdateMaterial"].as<std::string>()));
-				materialHandles.emplace(AssetHandle(particleComponentGPU["RenderMaterial"].as<std::string>()));
-				staticMeshHandles.emplace(AssetHandle(particleComponentGPU["Mesh"].as<std::string>()));
-				systemHandles.emplace(AssetHandle(particleComponentGPU["System"].as<std::string>()));
+				assetHandles.emplace(AssetHandle(particleComponentGPU["UpdateMaterial"].as<std::string>()));
+				assetHandles.emplace(AssetHandle(particleComponentGPU["RenderMaterial"].as<std::string>()));
+				assetHandles.emplace(AssetHandle(particleComponentGPU["Mesh"].as<std::string>()));
+				assetHandles.emplace(AssetHandle(particleComponentGPU["System"].as<std::string>()));
 			}
 		}
 
 
-		assetFutures.reserve(
-			staticMeshHandles.size() + 
-			animatedMeshHandles.size() + 
-			materialHandles.size()
-		);
+		assetFutures.reserve(assetHandles.size());
 
 		auto& threadPool = Application::Get().GetThreadPool();
-		for (const auto& handle : staticMeshHandles)
+		for (const auto& handle : assetHandles)
 		{
 			assetFutures.push_back(threadPool.SubmitJob([handle]() {
-				return AssetManager::GetAsset<StaticMesh>(handle).As<Asset>();
-				}));
-		}
-
-		for (const auto& handle : animatedMeshHandles)
-		{
-			assetFutures.push_back(threadPool.SubmitJob([handle]() {
-				return AssetManager::GetAsset<AnimatedMesh>(handle).As<Asset>();
-				}));
-		}
-
-		for (const auto& handle : materialHandles)
-		{
-			assetFutures.push_back(threadPool.SubmitJob([handle]() {
-				return AssetManager::GetAsset<MaterialAsset>(handle).As<Asset>();
-				}));
-		}
-
-		for (const auto& handle : systemHandles)
-		{
-			assetFutures.push_back(threadPool.SubmitJob([handle]() {
-				return AssetManager::GetAsset<ParticleSystemGPU>(handle).As<Asset>();
+				return AssetManager::LoadAssetDelayed(handle);
 			}));
 		}
+	
 
 		std::vector<Ref<Asset>> result;
 		result.reserve(assetFutures.size());
@@ -899,6 +870,7 @@ namespace XYZ {
 			future.wait();
 			result.push_back(future.get());
 		}
+		AssetManager::StoreWaitingAssets();
 		return result;
 	}
 
