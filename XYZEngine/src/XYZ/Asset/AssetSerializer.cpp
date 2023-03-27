@@ -167,6 +167,17 @@ namespace XYZ {
 		}
 		out << YAML::EndSeq;
 
+
+		out << YAML::Key << "Specialization" << YAML::BeginSeq;
+		for (const auto& spec : material->GetSpecialization().GetValues())
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Name" << spec.Name;
+			out << YAML::Key << "Data" << static_cast<uint32_t>(*spec.Data.data());
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+
 		out << YAML::Key << "MaterialData" << YAML::BeginSeq;
 		auto shader = material->GetShader();
 		for (auto& [name, buffer] : shader->GetBuffers())
@@ -248,6 +259,18 @@ namespace XYZ {
 				index++;
 			}
 		}
+
+		auto specialization = data["Specialization"];
+		if (specialization)
+		{
+			for (auto& spec : specialization)
+			{
+				const std::string name = spec["Name"].as<std::string>();
+				const uint32_t data = spec["Data"].as<uint32_t>();
+				materialAsset->Specialize(name, data);
+			}
+		}
+
 		auto materialData = data["MaterialData"];
 		if (materialData)
 		{
@@ -657,6 +680,115 @@ namespace XYZ {
 		}
 
 		asset = controller;
+		return true;
+	}
+	void ParticleSystemSerializerGPU::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+		WeakRef<ParticleSystemGPU> particleSystem = asset.As<ParticleSystemGPU>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "MaxParticles" << particleSystem->GetMaxParticles();
+		out << YAML::Key << "Speed" << particleSystem->Speed;
+		out << YAML::Key << "Loop" << particleSystem->Loop;
+		
+		out << YAML::Key << "InputLayout" << YAML::BeginMap;
+		out << YAML::Key << "Name" << particleSystem->GetInputLayout().GetName();
+		out << YAML::Key << "Stride" << particleSystem->GetInputLayout().GetStride();
+		out << YAML::Key << "Variables" << YAML::BeginSeq;
+		
+		for (const auto& var : particleSystem->GetInputLayout().GetVariables())
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Name" << var.Name;
+			out << YAML::Key << "TypeName" << var.Type.Name;
+			out << YAML::Key << "TypeSize" << var.Type.Size;
+			out << YAML::Key << "IsArray" << var.IsArray;
+			out << YAML::Key << "Offset" << var.Offset;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap; // InputLayout
+
+
+		out << YAML::Key << "OutputLayout" << YAML::BeginMap;
+		out << YAML::Key << "Name" << particleSystem->GetOutputLayout().GetName();
+		out << YAML::Key << "Stride" << particleSystem->GetOutputLayout().GetStride();
+		out << YAML::Key << "Variables" << YAML::BeginSeq;
+
+		for (const auto& var : particleSystem->GetOutputLayout().GetVariables())
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Name" << var.Name;
+			out << YAML::Key << "TypeName" << var.Type.Name;
+			out << YAML::Key << "TypeSize" << var.Type.Size;
+			out << YAML::Key << "IsArray" << var.IsArray;
+			out << YAML::Key << "Offset" << var.Offset;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap; // OutputLayout
+
+		
+		out << YAML::EndMap; // ParticleSystem
+		std::ofstream fout(metadata.FilePath);
+		fout << out.c_str();
+		fout.flush();
+	}
+	bool ParticleSystemSerializerGPU::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+		
+
+		const uint32_t maxParticles = data["MaxParticles"].as<uint32_t>();
+		const float speed			= data["Speed"].as<float>();
+		const bool loop				= data["Loop"].as<bool>();
+
+
+		std::vector<ParticleVariable> inputVariables;
+		
+		auto inputLayoutData		= data["InputLayout"];
+		const std::string inputName	= inputLayoutData["Name"].as<std::string>();
+		const uint32_t inputStride	= inputLayoutData["Stride"].as<uint32_t>();
+
+		for (auto& var : inputLayoutData["Variables"])
+		{
+			ParticleVariable& variable = inputVariables.emplace_back();
+			variable.Name		= var["Name"].as<std::string>();
+			variable.Type.Name	= var["TypeName"].as<std::string>();
+			variable.Type.Size	= var["TypeSize"].as<uint32_t>();
+			variable.IsArray	= var["IsArray"].as<bool>();
+			variable.Offset		= var["Offset"].as<uint32_t>();		
+		}
+
+		std::vector<ParticleVariable> outputVariables;
+
+		auto outputLayoutData			= data["OutputLayout"];
+		const std::string outputName	= outputLayoutData["Name"].as<std::string>();
+		const uint32_t outputStride		= outputLayoutData["Stride"].as<uint32_t>();
+
+		for (auto& var : outputLayoutData["Variables"])
+		{
+			ParticleVariable& variable = outputVariables.emplace_back();
+			variable.Name		= var["Name"].as<std::string>();
+			variable.Type.Name	= var["TypeName"].as<std::string>();
+			variable.Type.Size	= var["TypeSize"].as<uint32_t>();
+			variable.IsArray	= var["IsArray"].as<bool>();
+			variable.Offset		= var["Offset"].as<uint32_t>();
+		}
+
+
+		ParticleSystemLayout inputLayout(inputName, inputVariables, inputStride);
+		ParticleSystemLayout outputLayout(outputName, outputVariables, outputStride);
+
+		Ref<ParticleSystemGPU> particleSystem = Ref<ParticleSystemGPU>::Create(inputLayout, outputLayout, maxParticles);
+		particleSystem->Speed = speed;
+		particleSystem->Loop = loop;
+
+		asset = particleSystem;
 		return true;
 	}
 }

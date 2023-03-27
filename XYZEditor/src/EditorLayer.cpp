@@ -26,7 +26,7 @@ namespace XYZ {
 			Project::New();
 
 			s_Data.Init();		
-			//ScriptEngine::Init();
+			ScriptEngine::Init();
 
 			m_Scene = AssetManager::GetAsset<Scene>("Assets/Scenes/Scene.scene");
 
@@ -67,8 +67,6 @@ namespace XYZ {
 			auto consolePanel = m_EditorManager.RegisterPanel<Editor::EditorConsolePanel>("ConsolePanel");
 			EditorLogger::Init(consolePanel->GetStream());
 			ScriptEngine::SetLogger(EditorLogger::GetLogger());
-
-			m_Scene->CreateParticleTest();
 
 			m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
 			m_EditorManager.RegisterPanel<Editor::InspectorPanel>("InspectorPanel");

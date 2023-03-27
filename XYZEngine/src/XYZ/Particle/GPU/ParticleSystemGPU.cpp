@@ -17,21 +17,7 @@ namespace XYZ {
 	{
 		m_ParticleBuffer.setMaxParticles(maxParticles, m_InputLayout.GetStride());
 	}
-	uint32_t ParticleSystemGPU::Update(Timestep ts)
-	{
-		const uint32_t bufferOffset = m_EmittedParticles * GetInputStride();
-		const uint32_t bufferSize   = m_ParticleBuffer.GetBufferSize() - bufferOffset;
-		std::byte* particleBuffer   = m_ParticleBuffer.GetData(m_EmittedParticles);
 
-		uint32_t emitted = 0;
-		for (auto& emitter : ParticleEmitters)
-		{
-			emitted += emitter.Emit(ts, particleBuffer, bufferSize);
-		}
-		m_EmittedParticles += emitted;
-		m_EmissionCount += emitted;
-		return emitted;
-	}
 
 	void ParticleSystemGPU::Reset()
 	{

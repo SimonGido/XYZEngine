@@ -12,38 +12,6 @@
 
 namespace XYZ {
 	
-	
-
-	struct ParticleGPU
-	{
-		// Data that are rendered
-		glm::vec4  TransformRow0;
-		glm::vec4  TransformRow1;
-		glm::vec4  TransformRow2;
-		glm::vec4  Color;	
-	};
-
-	struct ParticlePropertyGPU
-	{
-		// Spawn state
-		glm::vec4 StartPosition;
-		glm::vec4 StartColor;
-		glm::quat StartRotation;
-		glm::vec4 StartScale;
-		glm::vec4 StartVelocity;
-	
-		// If module enabled, end state
-		glm::vec4 EndColor;
-		glm::quat EndRotation;
-		glm::vec4 EndScale;
-		glm::vec4 EndVelocity;
-
-		glm::vec4  Position;
-		float	   LifeTime;
-		float      LifeReamining;
-	private:
-		Padding<8> Padding;
-	};
 
 	class XYZ_API ParticleView
 	{
@@ -51,11 +19,15 @@ namespace XYZ {
 		ParticleView(std::byte* data, uint32_t size);
 
 		template <typename T>
-		T* DataAs(uint32_t offset)
+		T* DataAs(uint32_t offset) const
 		{
 			XYZ_ASSERT(offset + sizeof(T) <= m_Size, "Accessing out of range data");
 			return reinterpret_cast<T*>(&m_Data[offset]);
 		}
+
+		std::byte* GetData() const { return m_Data; }
+
+		uint32_t GetSize() const { return m_Size; }
 
 	private:
 		std::byte* m_Data;
@@ -105,8 +77,6 @@ namespace XYZ {
 		virtual AssetType GetAssetType() const { return AssetType::ParticleSystemGPU; }
 		static  AssetType GetStaticType() { return AssetType::ParticleSystemGPU; }
 
-		// TODO: this should be handled externaly, so user can specify how he wants to emit particles
-		uint32_t Update(Timestep ts);
 		void	 Reset();
 
 		const ParticleSystemLayout& GetInputLayout()	const { return m_InputLayout; }
@@ -123,10 +93,6 @@ namespace XYZ {
 		uint32_t GetEmittedParticles() const { return m_EmittedParticles; }
 		uint32_t GetMaxParticles()	   const { return m_ParticleBuffer.GetMaxParticles(); }
 
-
-		// Emitter should not be stored here, user is going to call emit which will provide ParticleView
-		std::vector<ParticleEmitterGPU> ParticleEmitters;
-	
 
 		float    Speed = 1.0f;
 		bool	 Loop  = true;

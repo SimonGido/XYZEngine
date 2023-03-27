@@ -41,4 +41,28 @@ namespace XYZ {
 		
 		return count;
 	}
+	uint32_t ParticleEmitterGPU::Emit(Timestep ts)
+	{
+		m_Emitted += EmissionRate * ts;
+		const uint32_t count = static_cast<uint32_t>(m_Emitted);
+		
+		if (count > 0)
+			m_Emitted = 0.0f;
+
+		return count;
+	}
+	void ParticleEmitterGPU::Generate(uint32_t count, std::byte* buffer, uint32_t bufferSize)
+	{
+		// Make sure that we are in bounds of bufferSize
+		count = std::min(count, bufferSize / m_Stride);
+
+		//TODO: This can be multithreaded
+		for (auto& mod : EmitterModules)
+		{
+			if (mod->Enabled)
+			{
+				mod->Generate(buffer, count);
+			}
+		}
+	}
 }

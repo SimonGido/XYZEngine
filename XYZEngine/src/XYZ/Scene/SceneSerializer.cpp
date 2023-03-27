@@ -320,6 +320,14 @@ namespace XYZ {
 	template <>
 	void SceneSerializer::serialize<ParticleComponentGPU>(YAML::Emitter& out, const ParticleComponentGPU& val, SceneEntity entity)
 	{
+		out << YAML::Key << "ParticleComponentGPU";
+		out << YAML::BeginMap;
+		out << YAML::Key << "Mesh" << val.Mesh->GetHandle();
+		out << YAML::Key << "UpdateMaterial" << val.UpdateMaterial->GetHandle();
+		out << YAML::Key << "RenderMaterial" << val.RenderMaterial->GetHandle();
+		out << YAML::Key << "System" << val.System->GetHandle();
+		
+		out << YAML::EndMap;
 	}
 
 	template <>
@@ -444,6 +452,10 @@ namespace XYZ {
 	template <>
 	void SceneSerializer::deserialize<ParticleComponentGPU>(YAML::Node& data, ParticleComponentGPU& component, SceneEntity entity)
 	{
+		component.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
+		component.UpdateMaterial = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["UpdateMaterial"].as<std::string>()));
+		component.RenderMaterial = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["RenderMaterial"].as<std::string>()));
+		component.System = AssetManager::GetAsset<ParticleSystemGPU>(AssetHandle(data["System"].as<std::string>()));
 	}
 
 	template <>
@@ -735,6 +747,12 @@ namespace XYZ {
 			deserialize<ParticleComponent>(particleComponent, entity.EmplaceComponent<ParticleComponent>(), entity);
 		}
 
+		auto particleComponentGPU = data["ParticleComponentGPU"];
+		if (particleComponentGPU)
+		{
+			deserialize<ParticleComponentGPU>(particleComponentGPU, entity.EmplaceComponent<ParticleComponentGPU>(), entity);
+		}
+
 		auto particleRenderer = data["ParticleRenderer"];
 		if (particleRenderer)
 		{
@@ -777,11 +795,11 @@ namespace XYZ {
 		scene->m_Registry.each([&](const entt::entity ent) {
 
 			SceneEntity entity(ent, scene.Raw());
-		if (entity != scene->GetSceneEntity())
-		{
-			serializeEntity(out, entity);
-		}
-			});
+			if (entity != scene->GetSceneEntity())
+			{
+				serializeEntity(out, entity);
+			}
+		});
 
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
@@ -808,7 +826,8 @@ namespace XYZ {
 		std::unordered_set<AssetHandle> staticMeshHandles;
 		std::unordered_set<AssetHandle> animatedMeshHandles;
 		std::unordered_set<AssetHandle> materialHandles;
-
+		std::unordered_set<AssetHandle> systemHandles;
+	
 
 		for (auto entity : entities)
 		{
@@ -824,6 +843,15 @@ namespace XYZ {
 			{
 				animatedMeshHandles.emplace(AssetHandle(animatedMeshComponent["Mesh"].as<std::string>()));
 				materialHandles.emplace(AssetHandle(animatedMeshComponent["Material"].as<std::string>()));
+			}
+
+			auto particleComponentGPU = entity["ParticleComponentGPU"];
+			if (particleComponentGPU)
+			{
+				materialHandles.emplace(AssetHandle(particleComponentGPU["UpdateMaterial"].as<std::string>()));
+				materialHandles.emplace(AssetHandle(particleComponentGPU["RenderMaterial"].as<std::string>()));
+				staticMeshHandles.emplace(AssetHandle(particleComponentGPU["Mesh"].as<std::string>()));
+				systemHandles.emplace(AssetHandle(particleComponentGPU["System"].as<std::string>()));
 			}
 		}
 
@@ -854,6 +882,13 @@ namespace XYZ {
 			assetFutures.push_back(threadPool.SubmitJob([handle]() {
 				return AssetManager::GetAsset<MaterialAsset>(handle).As<Asset>();
 				}));
+		}
+
+		for (const auto& handle : systemHandles)
+		{
+			assetFutures.push_back(threadPool.SubmitJob([handle]() {
+				return AssetManager::GetAsset<ParticleSystemGPU>(handle).As<Asset>();
+			}));
 		}
 
 		std::vector<Ref<Asset>> result;

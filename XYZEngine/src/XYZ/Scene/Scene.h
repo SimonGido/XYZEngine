@@ -180,13 +180,7 @@ namespace XYZ {
         friend class Prefab;
         friend class Editor::SceneHierarchyPanel;
 
-
-        
-        Ref<MaterialAsset>     m_UpdateCommandMaterial0;
-        Ref<MaterialAsset>     m_UpdateCommandMaterial1;
-
-        Ref<MaterialAsset>	   m_ParticleMaterialGPU;
-        Ref<Mesh>			   m_ParticleCubeMesh;
-        Ref<ParticleSystemGPU> m_ParticleSystemGPU;
+        // Temporary
+        std::vector<ParticleEmitterGPU> m_ParticleEmitters;
     };
 }

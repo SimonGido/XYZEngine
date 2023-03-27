@@ -5,6 +5,8 @@ Textures:
     Handle: e1992e8f-3339-49f4-8bc3-947fe102b6c4
 TextureArrays:
   []
+Specialization:
+  []
 MaterialData:
   - Name: u_Renderer.Transform
     Type: 14

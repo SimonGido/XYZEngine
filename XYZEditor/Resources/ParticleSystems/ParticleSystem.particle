@@ -1,0 +1,91 @@
+MaxParticles: 1000
+Speed: 1
+Loop: true
+InputLayout:
+  Name: Input
+  Stride: 176
+  Variables:
+    - Name: StartPosition
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 0
+    - Name: StartColor
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 16
+    - Name: StartRotation
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 32
+    - Name: StartScale
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 48
+    - Name: StartVelocity
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 64
+    - Name: EndColor
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 80
+    - Name: EndRotation
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 96
+    - Name: EndScale
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 112
+    - Name: EndVelocity
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 128
+    - Name: Position
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 144
+    - Name: LifeTime
+      TypeName: float
+      TypeSize: 4
+      IsArray: false
+      Offset: 160
+    - Name: LifeRemaining
+      TypeName: float
+      TypeSize: 4
+      IsArray: false
+      Offset: 164
+OutputLayout:
+  Name: Output
+  Stride: 64
+  Variables:
+    - Name: TransformRow0
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 0
+    - Name: TransformRow1
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 16
+    - Name: TransformRow2
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 32
+    - Name: Color
+      TypeName: vec4
+      TypeSize: 16
+      IsArray: false
+      Offset: 48

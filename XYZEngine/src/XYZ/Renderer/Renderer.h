@@ -124,6 +124,9 @@ namespace XYZ {
 		static const RenderAPICapabilities& GetCapabilities();
 		static const RendererConfiguration& GetConfiguration();
 
+		template <typename FuncT>
+		static void Submit(RenderCommandQueue& queue, FuncT&& func);
+
 		template<typename FuncT>
 		static void Submit(FuncT&& func);
 
@@ -152,6 +155,23 @@ namespace XYZ {
 		static ScopedLock<RenderCommandQueue> getRenderCommandQueue();
 		static RendererStats&				  getStats();
 	};
+
+	template<typename FuncT>
+	inline void Renderer::Submit(RenderCommandQueue& queue, FuncT&& func)
+	{
+		XYZ_PROFILE_FUNC("Renderer::Submit");
+
+		auto renderCmd = [](void* ptr) {
+
+			auto pFunc = static_cast<FuncT*>(ptr);
+			(*pFunc)();
+			pFunc->~FuncT(); // Call destructor
+		};
+
+		auto storageBuffer = queue.Allocate(renderCmd, sizeof(func));
+		new (storageBuffer) FuncT(std::forward<FuncT>(func));
+		getStats().CommandsCount++;
+	}
 
 	template <typename FuncT>
 	void Renderer::Submit(FuncT&& func)

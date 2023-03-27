@@ -5,6 +5,8 @@ Textures:
     Handle: 670eeb29-9103-4232-9a7b-ca0640f1c542
 TextureArrays:
   []
+Specialization:
+  []
 MaterialData:
   - Name: u_ScreenData.u_ScreenSize
     Type: 10
