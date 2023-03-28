@@ -857,7 +857,7 @@ namespace XYZ {
 		for (const auto& handle : assetHandles)
 		{
 			assetFutures.push_back(threadPool.SubmitJob([handle]() {
-				return AssetManager::LoadAssetDelayed(handle);
+				return AssetManager::GetAsset<Asset>(handle);
 			}));
 		}
 	
@@ -870,7 +870,7 @@ namespace XYZ {
 			future.wait();
 			result.push_back(future.get());
 		}
-		AssetManager::StoreWaitingAssets();
+
 		return result;
 	}
 
