@@ -52,7 +52,7 @@ struct ParticleProperty
 	vec4 EndRotation;
 	vec4 EndScale;
 	vec4 EndVelocity;
-    
+    vec2 VelocityCurve[4];
   
     vec4  Position;
 	float LifeTime;
@@ -192,6 +192,11 @@ void UpdateParticle(uint id)
         if (VELOCITY_OVER_LIFE)
         {
             state.Velocity = mix(ParticleProperties[id].StartVelocity, ParticleProperties[id].EndVelocity, lifeProgress).xyz;
+            vec3 force = vec3(2.0, 1.5, 1.3);
+            float value = ComputeBezierCurveCubic(ParticleProperties[id].VelocityCurve, lifeProgress).y;
+
+            ParticleProperties[id].EndVelocity.xyz += force * value;
+            state.Velocity = ParticleProperties[id].StartVelocity.xyz + ParticleProperties[id].EndVelocity.xyz;
         }
         if (ROTATION_OVER_LIFE)
         {

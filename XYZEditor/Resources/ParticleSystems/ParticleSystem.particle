@@ -3,7 +3,7 @@ Speed: 1
 Loop: true
 InputLayout:
   Name: Input
-  Stride: 176
+  Stride: 208
   Variables:
     - Name: StartPosition
       TypeName: vec4
@@ -50,21 +50,26 @@ InputLayout:
       TypeSize: 16
       IsArray: false
       Offset: 128
+    - Name: VelocityCurve
+      TypeName: vec2[4]
+      TypeSize: 32
+      IsArray: false
+      Offset: 144
     - Name: Position
       TypeName: vec4
       TypeSize: 16
       IsArray: false
-      Offset: 144
+      Offset: 176
     - Name: LifeTime
       TypeName: float
       TypeSize: 4
       IsArray: false
-      Offset: 160
+      Offset: 192
     - Name: LifeRemaining
       TypeName: float
       TypeSize: 4
       IsArray: false
-      Offset: 164
+      Offset: 196
 OutputLayout:
   Name: Output
   Stride: 64

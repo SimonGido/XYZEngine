@@ -174,6 +174,7 @@ namespace XYZ {
 			{"EndRotation",   VariableType{"vec4", 16}},
 			{"EndScale",	  VariableType{"vec4", 16}},
 			{"EndVelocity",   VariableType{"vec4", 16}},
+			{"VelocityCurve", VariableType{"vec2[4]", 32}},
 			{"Position",	  VariableType{"vec4", 16}},
 			{"LifeTime",	  VariableType{"float", 4}},
 			{"LifeRemaining", VariableType{"float", 4}}
