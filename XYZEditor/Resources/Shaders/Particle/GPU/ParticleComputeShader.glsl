@@ -52,7 +52,7 @@ struct ParticleProperty
 	vec4 EndRotation;
 	vec4 EndScale;
 	vec4 EndVelocity;
-
+    
   
     vec4  Position;
 	float LifeTime;
@@ -165,6 +165,7 @@ void CommandsUpdate(uint id, out uint instanceIndex, in ParticleState state)
         }
     }
 }
+
 
 void UpdateParticle(uint id)
 {

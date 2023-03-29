@@ -123,3 +123,28 @@ bool AABBCollisionSphere(vec3 min, vec3 max, vec3 center, float radius)
 
     return sqDist <= radius * radius;
 }
+
+int ComputeBinominal(int n, int k)
+{
+    if (n == k)
+        return 1;
+ 
+    int value = 1;
+    for (int i = 1; i <= k; i++)
+    {
+        value = value * ((n + 1 - i) / i);
+    }     
+    return value;
+}
+
+
+vec2 ComputeBezierCurveCubic(vec2 p[4], float t)
+{
+    vec2 result = 
+            pow((1.0 - t), 3.0) * p[0] 
+    + 3.0 * pow((1.0 - t), 2.0) * t * p[1] 
+    + 3.0 * pow((1.0 - t), 1.0) * pow(t, 2.0) * p[2] 
+    +       pow(t, 3.0) * p[3];
+
+    return result;
+}

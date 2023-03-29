@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Core/Core.h"
+#include "XYZ/Reflection/ReflectionUtils.h"
 
 #include <glm/glm.hpp>
 
@@ -46,6 +47,54 @@ namespace XYZ {
 	
 	
 		XYZ_API int32_t RoundUp(int32_t numToRound, int32_t multiple);
-		
+	
+
+		template <size_t N, size_t K>
+		inline constexpr float ComputeBinominal()
+		{
+			if constexpr (N == K)
+				return 1.0f;
+
+			float value = 1.0f;
+
+			For<K>([&value](auto j) {
+
+				auto i = j.value + 1;
+				value = value * ((N + 1 - i) / i);
+			});
+
+			return value;
+		}
+
+		template <size_t N>
+		inline std::array<float, N> ComputeBinominals()
+		{
+			std::array<float, N> binomials;
+
+			For<N>([&](auto i) {
+
+				binomials[i.value] = ComputeBinominal<N - 1, i.value>();
+			});
+			return binomials;
+		}
+
+
+		template <size_t NumPoints>
+		inline glm::vec2 ComputeBezierCurve2D(const std::array<glm::vec2, NumPoints>& points, float t)
+		{
+			std::array<float, NumPoints> binomials = ComputeBinominals<NumPoints>();
+			const size_t n = points.size() - 1;
+
+			float bCurveXt{ 0.0f };
+			float bCurveYt{ 0.0f };
+
+			for (size_t i = 0; i <= n; ++i)
+			{
+				bCurveXt += binomials[i] * std::pow((1 - t), (n - i)) * std::pow(t, i) * points.x[i];
+				bCurveYt += binomials[i] * std::pow((1 - t), (n - i)) * std::pow(t, i) * points.y[i];
+
+			}
+			return glm::vec2{ bCurveXt, bCurveYy };
+		}
 	}
 }
