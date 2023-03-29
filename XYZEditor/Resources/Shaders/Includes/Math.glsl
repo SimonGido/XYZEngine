@@ -84,3 +84,42 @@ mat4 TransformFromRows(in vec4 transformRow0, in vec4 transformRow1, in vec4 tra
 		vec4(transformRow0.w, transformRow1.w, transformRow2.w, 1.0)
 	);
 }
+
+bool AABBCollisionAABB(vec3 min0, vec3 max0, vec3 min1, vec3 max1)
+{
+    float d1x = min1.x - max0.x;
+    float d1y = min1.y - max0.y;
+    float d2x = min0.x - max1.x;
+    float d2y = min0.y - max1.y;
+    
+    if (d1x > 0.0 || d1y > 0.0)
+    	return false;
+    
+    if (d2x > 0.0 || d2y > 0.0)
+    	return false;
+    
+    return true;
+}
+
+float SQDistance(float v, float min, float max)
+{
+    float sqDist = 0.0;
+    if (v < min) 
+        sqDist += (min - v) * (min - v);
+
+    if (v > max) 
+        sqDist += (v - max) * (v - max);
+
+    return sqDist;
+}
+
+bool AABBCollisionSphere(vec3 min, vec3 max, vec3 center, float radius)
+{
+    float sqDist = 0.0;
+
+    sqDist += SQDistance(center.x, min.x, max.x);
+    sqDist += SQDistance(center.y, min.y, max.y);
+    sqDist += SQDistance(center.z, min.z, max.z);
+
+    return sqDist <= radius * radius;
+}
