@@ -126,14 +126,16 @@ namespace XYZ
 
 	const AssetMetadata AssetManager::GetMetadata(const AssetHandle& handle)
 	{
-		auto metadata = s_Instance.m_Registry.GetMetadata(handle);
+		auto registry = getRegistryRead();
+		auto metadata = registry->GetMetadata(handle);
 		XYZ_ASSERT(metadata, "Metadata does not exist");
 		return *metadata;
 	}
 
 	const AssetMetadata AssetManager::GetMetadata(const std::filesystem::path& filepath)
 	{
-		auto metadata = s_Instance.m_Registry.GetMetadata(filepath);
+		auto registry = getRegistryRead();
+		auto metadata = registry->GetMetadata(filepath);
 		XYZ_ASSERT(metadata, "Metadata does not exist");
 		return *metadata;
 	}
@@ -145,12 +147,14 @@ namespace XYZ
 	
 	bool AssetManager::Exist(const AssetHandle& handle)
 	{
-		return s_Instance.m_Registry.GetMetadata(handle) != nullptr;
+		auto registry = getRegistryRead();
+		return registry->GetMetadata(handle) != nullptr;
 	}
 
 	bool AssetManager::Exist(const std::filesystem::path& filepath)
 	{
-		return s_Instance.m_Registry.GetMetadata(filepath) != nullptr;
+		auto registry = getRegistryRead();
+		return registry->GetMetadata(filepath) != nullptr;
 	}
 
 	AssetManager& AssetManager::Get()
