@@ -451,6 +451,20 @@ namespace XYZ {
 		});
 	}
 
+
+	static void ResizeStorageBuffer_RT(uint32_t frameIndex, const Ref<VulkanStorageBufferSet>& storageBufferSet)
+	{
+		const auto& storageBuffers = storageBufferSet->GetStorageBuffers();
+		const auto& frameStorageBuffers = storageBuffers.at(frameIndex);
+		for (const auto& [set, setBuffers] : frameStorageBuffers)
+		{
+			for (const auto& [binding, buffer] : setBuffers)
+			{
+				buffer.As<VulkanStorageBuffer>()->RT_ApplySize();
+			}
+		}
+	}
+
 	void VulkanRendererAPI::BindPipeline(
 		Ref<RenderCommandBuffer> renderCommandBuffer, 
 		Ref<Pipeline> pipeline, 
@@ -474,6 +488,9 @@ namespace XYZ {
 
 			const VkCommandBuffer		   commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+			if (vulkanStorageBufferSet.Raw())
+				ResizeStorageBuffer_RT(frameIndex, vulkanStorageBufferSet);
 
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.As<VulkanPipeline>()->GetVulkanPipeline());
 
@@ -510,6 +527,9 @@ namespace XYZ {
 
 			const VkCommandBuffer		   commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
+
+			if (vulkanStorageBufferSet.Raw())
+				ResizeStorageBuffer_RT(frameIndex, vulkanStorageBufferSet);
 
 			vulkanPipeline->Begin(renderCommandBuffer);
 			vulkanMaterial->RT_UpdateForRendering(vulkanUniformBufferSet, vulkanStorageBufferSet);

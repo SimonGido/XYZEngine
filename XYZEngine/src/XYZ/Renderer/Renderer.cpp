@@ -357,6 +357,11 @@ namespace XYZ {
 		s_Data.QueueData.ExecuteResourceQueue(currentFrame);
 	}
 
+	void Renderer::ExecuteResources(uint32_t index)
+	{
+		s_Data.QueueData.ExecuteResourceQueue(index);
+	}
+
 	Ref<APIContext> Renderer::GetAPIContext()
 	{
 		return s_Data.APIContext;

@@ -20,12 +20,13 @@ namespace XYZ {
 		virtual void Set(Ref<StorageBuffer> storageBuffer, uint32_t set = 0, uint32_t frame = 0) override;
 		virtual void Resize(uint32_t size, uint32_t set, uint32_t binding) override;
 		virtual void SetBufferInfo(uint32_t size, uint32_t offset, uint32_t binding, uint32_t set = 0) override;
-		virtual Ref<StorageBuffer> Get(uint32_t binding, uint32_t set = 0, uint32_t frame = 0) override;
+		virtual Ref<StorageBuffer> Get(uint32_t binding, uint32_t set = 0, uint32_t frame = 0) const override;
 		
 
 		const vector2D<Ref<VulkanStorageBuffer>>& GetIndirect() const { return m_IndirectBuffers; }
 		const vector3D<VkWriteDescriptorSet>&     GetDescriptors(size_t hash) const;
 		const vector3D<VkWriteDescriptorSet>&     GetDescriptors(const Ref<Shader>& shader);
+		const map3D<uint32_t, uint32_t, uint32_t, Ref<VulkanStorageBuffer>>& GetStorageBuffers() const { return m_StorageBuffers; }
 	private:
 		void RT_createDescriptors(const Ref<VulkanShader>& shader);
 

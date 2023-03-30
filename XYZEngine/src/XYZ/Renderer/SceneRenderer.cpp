@@ -619,6 +619,7 @@ namespace XYZ {
 		FramebufferSpecification depthFramebufferSpec;
 		depthFramebufferSpec.Attachments = { ImageFormat::RED32F, ImageFormat::DEPTH32F};
 		depthFramebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+		
 
 		RenderPassSpecification depthRenderPassSpec;
 		depthRenderPassSpec.TargetFramebuffer = Framebuffer::Create(depthFramebufferSpec);

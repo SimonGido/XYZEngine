@@ -143,7 +143,7 @@ namespace XYZ {
 
 		static void Render();
 		static void ExecuteResources();
-
+		static void ExecuteResources(uint32_t index);
 
 		static ThreadPool&			GetPool();
 		static RendererAPI::Type	GetAPI() { return RendererAPI::GetType(); }

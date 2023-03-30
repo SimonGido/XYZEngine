@@ -105,7 +105,7 @@ namespace XYZ {
 			instance->Get(binding, set, frame).As<VulkanStorageBuffer>()->RT_SetBufferInfo(size, offset);
 		});
 	}
-	Ref<StorageBuffer> VulkanStorageBufferSet::Get(uint32_t binding, uint32_t set, uint32_t frame)
+	Ref<StorageBuffer> VulkanStorageBufferSet::Get(uint32_t binding, uint32_t set, uint32_t frame) const
 	{
 		XYZ_ASSERT(m_StorageBuffers.find(frame) != m_StorageBuffers.end(), "");
 		XYZ_ASSERT(m_StorageBuffers.at(frame).find(set) != m_StorageBuffers.at(frame).end(), "");

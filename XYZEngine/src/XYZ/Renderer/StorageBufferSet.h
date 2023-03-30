@@ -22,7 +22,7 @@ namespace XYZ {
 
 		virtual void CreateDescriptors(const Ref<Shader>& shader) = 0;
 
-		virtual Ref<StorageBuffer> Get(uint32_t binding, uint32_t set = 0, uint32_t frame = 0) = 0;
+		virtual Ref<StorageBuffer> Get(uint32_t binding, uint32_t set = 0, uint32_t frame = 0) const = 0;
 	
 		static Ref<StorageBufferSet> Create(uint32_t frames);
 	};
