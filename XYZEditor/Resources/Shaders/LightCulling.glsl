@@ -68,6 +68,7 @@ void main()
 	// Step 1: Calculate the minimum and maximum depth values (from the depth buffer) for this group's tile
 	vec2 tc = vec2(location) / u_ScreenData.u_ScreenSize;
 	float depth = texture(u_PreDepthMap, tc).r;
+
 	// Linearize depth value (keeping in mind Vulkan depth is 0->1 and we're using GLM_FORCE_DEPTH_ZERO_TO_ONE)
 	depth = u_Projection[3][2] / (depth + u_Projection[2][2]);
 

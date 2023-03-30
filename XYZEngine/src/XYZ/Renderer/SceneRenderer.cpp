@@ -685,7 +685,14 @@ namespace XYZ {
 				};
 				m_RendererDataUB.TilesCountX = m_LightCullingWorkGroups.x;
 
-				m_StorageBufferSet->Resize(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * 4096, SSBOLightCulling::Set, SSBOLightCulling::Binding);
+
+				const uint32_t lightCullingSize = 
+						m_LightCullingWorkGroups.x
+					*	m_LightCullingWorkGroups.y
+					*	SSBOPointLights3D::MaxLights * sizeof(uint32_t);
+
+
+				m_StorageBufferSet->Resize(lightCullingSize, SSBOLightCulling::Set, SSBOLightCulling::Binding);
 			}
 			m_ViewportSizeChanged = false;
 		}

@@ -26,7 +26,7 @@ namespace XYZ {
 			Project::New();
 
 			s_Data.Init();		
-			ScriptEngine::Init();
+			//ScriptEngine::Init();
 
 			m_Scene = AssetManager::GetAsset<Scene>("Assets/Scenes/Scene.scene");
 

@@ -26,6 +26,7 @@ struct VertexOutput
 	mat3 WorldNormals;
 	mat3 WorldTransform;
 	vec3 Binormal;
+	vec3 CameraPosition;
 };
 layout(location = 0) out VertexOutput v_Output;
 
@@ -74,6 +75,7 @@ void main()
 	v_Output.TexCoord	  = a_TexCoord;
 	v_Output.WorldNormals = mat3(transform) * mat3(a_Tangent, a_Binormal, a_Normal);
 	v_Output.Binormal	  = mat3(boneTransform) * a_Binormal;
+	v_Output.CameraPosition = inverse(u_View)[3].xyz;
 
 	gl_Position = u_ViewProjection * instancePosition;
 }
@@ -95,6 +97,7 @@ struct VertexOutput
 	mat3 WorldNormals;
 	mat3 WorldTransform;
 	vec3 Binormal;
+	vec3 CameraPosition;
 };
 
 layout(location = 0) in VertexOutput v_Input;
@@ -126,7 +129,7 @@ int GetLightBufferIndex(int i)
 	ivec2 tileID = ivec2(gl_FragCoord) / ivec2(16, 16);
 	uint index = tileID.y * TilesCountX + tileID.x;
 
-	uint offset = index * 1024;
+	uint offset = index * MAX_POINT_LIGHTS;
 	return visibleLightIndicesBuffer.Indices[offset + i];
 }
 
@@ -207,7 +210,8 @@ void main()
 
 	// Normals (currently from vertex)
 	m_Params.Normal = normalize(v_Input.Normal);
-
+	m_Params.Normal = normalize(texture(u_NormalTexture, v_Input.TexCoord).rgb * 2.0f - 1.0f);
+	m_Params.View = normalize(v_Input.CameraPosition - v_Input.Position);
 	m_Params.NdotV = max(dot(m_Params.Normal, m_Params.View), 0.0);
 
 	// Specular reflection vector
