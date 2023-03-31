@@ -81,6 +81,20 @@ namespace XYZ
 	}
 
 
+	std::vector<AssetHandle> AssetManager::FindAllLoadedAssets()
+	{
+		auto loadedAssets = getLoadedAssetsRead();
+		std::vector<AssetHandle> result;
+
+		for (const auto&[handle, asset] : loadedAssets.As())
+		{
+			if (asset.IsValid())
+				result.push_back(handle);
+		}
+
+		return result;
+	}
+
 	std::vector<AssetMetadata> AssetManager::FindAllMetadata(AssetType type)
 	{
 		std::vector<AssetMetadata> result;

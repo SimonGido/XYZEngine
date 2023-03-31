@@ -100,6 +100,8 @@ namespace XYZ {
 		template <typename T>
 		static std::vector<Ref<T>> FindAllLoadedAssets(AssetType type);
 
+		static std::vector<AssetHandle> FindAllLoadedAssets();
+
 		static std::vector<AssetMetadata> FindAllMetadata(AssetType type);
 
 		static void ReloadAsset(const std::filesystem::path& filepath);

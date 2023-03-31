@@ -802,7 +802,18 @@ namespace XYZ {
 		});
 
 		out << YAML::EndSeq;
-		out << YAML::EndMap;
+		out << YAML::EndMap; // Entities
+		
+		out << YAML::Key << "Assets";
+		out << YAML::Value << YAML::BeginSeq;
+
+		auto loadedAssets = AssetManager::FindAllLoadedAssets();
+		for (const auto& handle : loadedAssets)
+			out << YAML::Value << handle;
+
+		out << YAML::EndSeq;
+		out << YAML::EndMap; // Assets
+		
 		std::ofstream fout(filepath);
 		fout << out.c_str();
 		fout.flush();
@@ -819,38 +830,15 @@ namespace XYZ {
 		return entt::null;
 	}
 
-	std::vector<Ref<Asset>> PreloadAssets(const YAML::Node& entities)
+	std::vector<Ref<Asset>> PreloadAssets(const YAML::Node& assets)
 	{
 		std::vector<std::future<Ref<Asset>>> assetFutures;
-		std::unordered_set<AssetHandle> assetHandles;	
+		std::vector<AssetHandle> assetHandles;	
 
-		for (auto entity : entities)
+		for (auto asset : assets)
 		{
-			auto meshComponent = entity["MeshComponent"];
-			if (meshComponent)
-			{
-				assetHandles.emplace(AssetHandle(meshComponent["Mesh"].as<std::string>()));
-				assetHandles.emplace(AssetHandle(meshComponent["Material"].as<std::string>()));
-			}
-
-			auto animatedMeshComponent = entity["AnimatedMeshComponent"];
-			if (animatedMeshComponent)
-			{
-				assetHandles.emplace(AssetHandle(animatedMeshComponent["Mesh"].as<std::string>()));
-				assetHandles.emplace(AssetHandle(animatedMeshComponent["Material"].as<std::string>()));
-			}
-
-			auto particleComponentGPU = entity["ParticleComponentGPU"];
-			if (particleComponentGPU)
-			{
-				assetHandles.emplace(AssetHandle(particleComponentGPU["UpdateMaterial"].as<std::string>()));
-				assetHandles.emplace(AssetHandle(particleComponentGPU["RenderMaterial"].as<std::string>()));
-				assetHandles.emplace(AssetHandle(particleComponentGPU["Mesh"].as<std::string>()));
-				assetHandles.emplace(AssetHandle(particleComponentGPU["System"].as<std::string>()));
-			}
+			assetHandles.push_back(AssetHandle(asset.as<std::string>()));
 		}
-
-
 		assetFutures.reserve(assetHandles.size());
 
 		auto& threadPool = Application::Get().GetThreadPool();
@@ -891,10 +879,14 @@ namespace XYZ {
 		SceneEntity sceneEntity = scene->GetSceneEntity();
 
 		auto entities = data["Entities"];
+		auto assets = data["Assets"];
 
+		if (assets)
+		{
+			std::vector<Ref<Asset>> preloadedAssets = PreloadAssets(assets);
+		}
 		if (entities)
 		{
-			std::vector<Ref<Asset>> preloadedAssets = PreloadAssets(entities);
 			for (auto entity : entities)
 			{
 				SceneSerializer::deserializeEntity(entity, scene);

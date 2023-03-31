@@ -14,10 +14,17 @@ namespace XYZ {
 			static_assert(std::is_base_of<Asset, T>::value, "Asset reference can reference only assets");
 		}
 
+		AssetReference(const AssetHandle& handle)
+			:
+			m_Handle(handle)
+		{
+		}
 		AssetReference(const Ref<T>& asset)
 			: m_Asset(asset)
 		{
 			static_assert(std::is_base_of<Asset, T>::value, "Asset reference can reference only assets");
+			if (m_Asset.Raw())
+				m_Handle = asset->GetHandle();
 		}
 
 		AssetReference& operator=(const Ref<T>& asset)
@@ -26,19 +33,21 @@ namespace XYZ {
 			return *this;
 		}
 
+		const AssetHandle& GetHandle() const { return m_Handle; }
 
 		Ref<T>& operator->()				{ return ensure(); }
 		const Ref<T>& operator->() const	{ return ensure(); }
 
 		Ref<T>&		  Value()				{ return ensure(); }
 		const Ref<T>& Value() const			{ return ensure(); }
-		bool		  Valid() const			{ return m_Asset.Raw() != nullptr && m_Asset->IsValid(); }
+		bool		  Valid() const			{ return AssetManager::Exist(m_Handle); }
 
 	private:
 		Ref<T>& ensure();
 		const Ref<T>& ensure() const;
 
 	private:
+		AssetHandle	   m_Handle;
 		mutable Ref<T> m_Asset;
 	};
 
@@ -47,14 +56,13 @@ namespace XYZ {
 	inline Ref<T>& AssetReference<T>::ensure()
 	{
 		static_assert(std::is_base_of<Asset, T>::value, "Asset reference can reference only assets");
-
-		static Ref<T> invalidInstance; // Hack to return reference properly
-		if (!Valid())
-			return invalidInstance;
-
-		if (m_Asset->IsFlagSet(AssetFlag::Reloaded))
-			m_Asset = AssetManager::GetAsset<T>(m_Asset->GetHandle());
-
+		// Asset reference is not stored or it has been reloaded
+		if (!m_Asset.Raw() || m_Asset->IsFlagSet(AssetFlag::Reloaded))
+		{
+			// We have valid asset handle
+			if (AssetManager::Exist(m_Handle))
+				m_Asset = AssetManager::GetAsset<T>(m_Handle);
+		}
 		return m_Asset;
 	}
 
@@ -62,14 +70,13 @@ namespace XYZ {
 	inline const Ref<T>& AssetReference<T>::ensure() const
 	{
 		static_assert(std::is_base_of<Asset, T>::value, "Asset reference can reference only assets");
-		
-		static Ref<T> invalidInstance; // Hack to return reference properly
-		if (!Valid())
-			return invalidInstance;
-
-		if (m_Asset->IsFlagSet(AssetFlag::Reloaded))
-			m_Asset = AssetManager::GetAsset<T>(m_Asset->GetHandle());
-
+		// Asset reference is not stored or it has been reloaded
+		if (!m_Asset.Raw() || m_Asset->IsFlagSet(AssetFlag::Reloaded))
+		{
+			// We have valid asset handle
+			if (AssetManager::Exist(m_Handle))
+				m_Asset = AssetManager::GetAsset<T>(m_Handle);
+		}
 		return m_Asset;
 	}
 }
