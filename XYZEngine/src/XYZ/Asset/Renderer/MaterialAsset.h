@@ -5,6 +5,7 @@
 #include "XYZ/Renderer/PipelineCompute.h"
 
 #include "XYZ/Asset/Asset.h"
+#include "XYZ/Asset/AssetReference.h"
 #include "XYZ/Core/Core.h"
 
 #include "ShaderAsset.h"
@@ -25,6 +26,7 @@ namespace XYZ {
 		};
 	public:
 		MaterialAsset(Ref<ShaderAsset> shaderAsset);
+		
 		virtual ~MaterialAsset() override;
 
 		void SetShaderAsset(Ref<ShaderAsset> shaderAsset);

@@ -10,11 +10,6 @@
 #include "XYZ/Physics/PhysicsWorld2D.h"
 
 #include "XYZ/Utils/DataStructures/ThreadPass.h"
-#include "XYZ/Asset/Asset.h"
-#include "XYZ/Asset/Animation/AnimationController.h"
-#include "XYZ/Asset/Renderer/MeshSource.h"
-#include "XYZ/Renderer/Mesh.h"
-#include "XYZ/Particle/GPU/ParticleSystemGPU.h"
 
 #include "SceneCamera.h"
 #include "GPUScene.h"
@@ -180,7 +175,5 @@ namespace XYZ {
         friend class Prefab;
         friend class Editor::SceneHierarchyPanel;
 
-        // Temporary
-        std::vector<ParticleEmitterGPU> m_ParticleEmitters;
     };
 }

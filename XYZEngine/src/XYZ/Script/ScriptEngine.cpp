@@ -336,13 +336,12 @@ namespace XYZ {
 			mono_domain_unload(s_MonoDomain);
 			s_CoreAssembly = nullptr;
 			s_CoreAssemblyImage = nullptr;
-			s_MonoDomain = nullptr;
-
-			s_ScriptEntityInstances.Clear();
-			s_EntityClassMap.clear();
-			s_SceneContext.Reset();
-			s_Logger.reset();
+			s_MonoDomain = nullptr;		
 		}
+		s_ScriptEntityInstances.Clear();
+		s_EntityClassMap.clear();
+		s_SceneContext.Reset();
+		s_Logger.reset();
 	}
 
 	void ScriptEngine::LoadRuntimeAssembly(const std::string& path)

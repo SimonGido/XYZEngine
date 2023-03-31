@@ -2,6 +2,7 @@
 #include "SceneSerializer.h"
 
 #include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Scene/Prefab.h"
 #include "XYZ/Asset/AssetManager.h"
 #include "XYZ/Script/ScriptEngine.h"
 
@@ -783,7 +784,8 @@ namespace XYZ {
 		const Relationship& relationship = sceneEntity.GetComponent<Relationship>();
 		const auto& registry = scene->GetRegistry();
 
-		out << YAML::BeginMap;
+		out << YAML::BeginMap; // Scene
+
 		out << YAML::Key << "Scene" << scene->m_Name;
 		out << YAML::Key << "SceneEntity" << idComponent.ID;
 		if (registry.valid(relationship.FirstChild))
@@ -802,7 +804,6 @@ namespace XYZ {
 		});
 
 		out << YAML::EndSeq;
-		out << YAML::EndMap; // Entities
 		
 		out << YAML::Key << "Assets";
 		out << YAML::Value << YAML::BeginSeq;
@@ -812,7 +813,8 @@ namespace XYZ {
 			out << YAML::Value << handle;
 
 		out << YAML::EndSeq;
-		out << YAML::EndMap; // Assets
+
+		out << YAML::EndMap; // Scene
 		
 		std::ofstream fout(filepath);
 		fout << out.c_str();
@@ -881,9 +883,11 @@ namespace XYZ {
 		auto entities = data["Entities"];
 		auto assets = data["Assets"];
 
+		std::vector<Ref<Asset>> preloadedAssets;
 		if (assets)
 		{
-			std::vector<Ref<Asset>> preloadedAssets = PreloadAssets(assets);
+			// Do not preload assets for now, it is broken
+			//preloadedAssets = PreloadAssets(assets); 
 		}
 		if (entities)
 		{

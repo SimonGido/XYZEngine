@@ -13,6 +13,7 @@
 #include "XYZ/Script/ScriptEngine.h"
 #include "XYZ/Asset/AssetManager.h"
 #include "XYZ/Scene/Components.h"
+#include "XYZ/Scene/Prefab.h"
 
 #include "Editor/Event/EditorEvents.h"
 

@@ -5,6 +5,7 @@
 #include "XYZ/Renderer/Buffer.h"
 
 #include "XYZ/Asset/Renderer/MeshSource.h"
+#include "XYZ/Asset/AssetReference.h"
 
 #include <glm/glm.hpp>
 
@@ -15,6 +16,7 @@ namespace XYZ {
 	class XYZ_API Mesh : public Asset
 	{
 	public:
+		virtual ~Mesh() = default;
 		virtual Ref<VertexBuffer>   GetVertexBuffer() const = 0;
 		virtual Ref<IndexBuffer>    GetIndexBuffer()  const = 0;		
 		virtual const RenderID&		GetRenderID() const = 0;
@@ -25,10 +27,11 @@ namespace XYZ {
 	{
 	public:
 		StaticMesh(const Ref<MeshSource>& meshSource);
-		
+		StaticMesh(const AssetHandle& meshSourceHandle);
+
 		virtual AssetType GetAssetType() const override { return AssetType::StaticMesh; }
 
-		Ref<MeshSource>		GetMeshSource() const { return m_MeshSource; }
+		Ref<MeshSource>		GetMeshSource() const { return m_MeshSource.As(); }
 
 		virtual Ref<VertexBuffer>   GetVertexBuffer() const override { return m_MeshSource->GetVertexBuffer(); }
 		virtual Ref<IndexBuffer>    GetIndexBuffer()  const override { return m_MeshSource->GetIndexBuffer(); }
@@ -38,7 +41,7 @@ namespace XYZ {
 		static AssetType	GetStaticType() { return AssetType::StaticMesh; }
 
 	private:
-		Ref<MeshSource>   m_MeshSource;
+		AssetReference<MeshSource>   m_MeshSource;
 		// TODO: materials
 	};
 
@@ -49,10 +52,11 @@ namespace XYZ {
 	{
 	public:
 		AnimatedMesh(const Ref<MeshSource>& meshSource);
-		
+		AnimatedMesh(const AssetHandle& meshSourceHandle);
+
 		virtual AssetType GetAssetType() const override { return AssetType::AnimatedMesh; }
 
-		Ref<MeshSource>				GetMeshSource() const { return m_MeshSource; }
+		Ref<MeshSource>				GetMeshSource() const { return m_MeshSource.As(); }
 		
 		virtual Ref<VertexBuffer>   GetVertexBuffer() const override { return m_MeshSource->GetVertexBuffer(); }
 		virtual Ref<IndexBuffer>    GetIndexBuffer()  const override { return m_MeshSource->GetIndexBuffer(); }
@@ -61,7 +65,7 @@ namespace XYZ {
 		static AssetType	GetStaticType() { return AssetType::AnimatedMesh; }
 
 	private:
-		Ref<MeshSource>   m_MeshSource;
+		AssetReference<MeshSource>   m_MeshSource;
 		// TODO: materials
 	};
 

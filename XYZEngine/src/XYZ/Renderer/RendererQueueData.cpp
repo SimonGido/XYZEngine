@@ -30,6 +30,15 @@ namespace XYZ {
 		for (uint32_t i = 0; i < m_FramesInFlight; ++i)
 			ExecuteResourceQueue(i);
 
+#ifdef XYZ_DEBUG
+		XYZ_ASSERT(m_RenderCommandQueue[0].GetCommandCount() == 0, "");
+		XYZ_ASSERT(m_RenderCommandQueue[1].GetCommandCount() == 0, "");
+
+		for (uint32_t i = 0; i < m_FramesInFlight; ++i)
+		{
+			XYZ_ASSERT(m_ResourceQueues[i].Queue.GetCommandCount() == 0, "");
+		}
+#endif
 		delete[] m_ResourceQueues;
 	}
 

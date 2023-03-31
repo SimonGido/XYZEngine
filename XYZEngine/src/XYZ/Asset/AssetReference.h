@@ -24,16 +24,21 @@ namespace XYZ {
 		{
 			static_assert(std::is_base_of<Asset, T>::value, "Asset reference can reference only assets");
 			if (m_Asset.Raw())
-				m_Handle = asset->GetHandle();
+				m_Handle = m_Asset->GetHandle();
 		}
 
 		AssetReference& operator=(const Ref<T>& asset)
 		{
 			m_Asset = asset;
+			if (m_Asset.Raw())
+				m_Handle = m_Asset->GetHandle();
 			return *this;
 		}
 
 		const AssetHandle& GetHandle() const { return m_Handle; }
+		
+		Ref<T>& As()			 { return ensure(); }
+		const Ref<T>& As() const { return ensure(); }
 
 		Ref<T>& operator->()				{ return ensure(); }
 		const Ref<T>& operator->() const	{ return ensure(); }

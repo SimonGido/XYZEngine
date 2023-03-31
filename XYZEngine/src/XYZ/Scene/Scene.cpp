@@ -134,7 +134,7 @@ namespace XYZ {
 	static entt::registry s_CopyRegistry;
 
 
-	
+	static std::vector<ParticleEmitterGPU> s_ParticleEmitters;
 
 	Scene::Scene(const std::string& name, const GUID& guid)
 		:
@@ -186,7 +186,7 @@ namespace XYZ {
 		emitter.EmitterModules.push_back(Ref<BoxParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("StartPosition") }));
 		emitter.EmitterModules.push_back(Ref<SpawnParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("LifeTime") }));
 		emitter.EmitterModules.push_back(Ref<TestParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("StartColor") }));
-		m_ParticleEmitters.push_back(emitter);
+		s_ParticleEmitters.push_back(emitter);
 	}
 
 
@@ -772,11 +772,11 @@ namespace XYZ {
 				particleComponent.System->Reset();
 
 			uint32_t emitted = 0;
-			for (auto& emitter : m_ParticleEmitters)
+			for (auto& emitter : s_ParticleEmitters)
 			{
 				emitted = emitter.Emit(ts);
 			}
-			for (auto& emitter : m_ParticleEmitters)
+			for (auto& emitter : s_ParticleEmitters)
 			{
 				ParticleView view = particleComponent.System->Emit(emitted);
 				emitter.Generate(emitted, view.GetData(), view.GetSize());

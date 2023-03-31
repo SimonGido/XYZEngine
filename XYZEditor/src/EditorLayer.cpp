@@ -103,9 +103,7 @@ namespace XYZ {
 			PluginManager::Update(ts);
 			m_EditorManager.OnUpdate(ts);
 			
-		
-
-
+	
 			if (m_Scene->GetState() == SceneState::Edit)
 				renderOverlay();
 
