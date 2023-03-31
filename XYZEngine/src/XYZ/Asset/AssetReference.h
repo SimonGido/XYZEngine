@@ -35,6 +35,13 @@ namespace XYZ {
 			return *this;
 		}
 
+		AssetReference& operator=(const AssetHandle& handle)
+		{
+			m_Handle = handle;
+			m_Asset = nullptr;
+			return *this;
+		}
+
 		const AssetHandle& GetHandle() const { return m_Handle; }
 		
 		Ref<T>& As()			 { return ensure(); }

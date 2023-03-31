@@ -17,6 +17,11 @@ namespace XYZ {
 
 		GUID& operator=(const std::string& str);
 
+		bool operator != (const GUID& other) const
+		{
+			return !(*this == other);
+		}
+
 		bool operator==(const GUID& other) const
 		{
 			for (size_t i = 0; i < 2; ++i)

@@ -390,8 +390,8 @@ namespace XYZ {
 	template <>
 	void SceneSerializer::deserialize<MeshComponent>(YAML::Node& data, MeshComponent& component, SceneEntity entity)
 	{
-		component.Mesh = AssetManager::GetAsset<StaticMesh>(AssetHandle(data["Mesh"].as<std::string>()));
-		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
+		component.Mesh = AssetHandle(data["Mesh"].as<std::string>());
+		component.MaterialAsset = AssetHandle(data["Material"].as<std::string>());
 	}
 
 
@@ -399,8 +399,8 @@ namespace XYZ {
 	template <>
 	void SceneSerializer::deserialize<AnimatedMeshComponent>(YAML::Node& data, AnimatedMeshComponent& component, SceneEntity entity)
 	{
-		component.Mesh = AssetManager::GetAsset<AnimatedMesh>(AssetHandle(data["Mesh"].as<std::string>()));
-		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
+		component.Mesh = AssetHandle(data["Mesh"].as<std::string>());
+		component.MaterialAsset = AssetHandle(data["Material"].as<std::string>());
 	}
 
 	template <>
@@ -453,17 +453,17 @@ namespace XYZ {
 	template <>
 	void SceneSerializer::deserialize<ParticleComponentGPU>(YAML::Node& data, ParticleComponentGPU& component, SceneEntity entity)
 	{
-		component.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
-		component.UpdateMaterial = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["UpdateMaterial"].as<std::string>()));
-		component.RenderMaterial = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["RenderMaterial"].as<std::string>()));
-		component.System = AssetManager::GetAsset<ParticleSystemGPU>(AssetHandle(data["System"].as<std::string>()));
+		component.Mesh = AssetHandle(data["Mesh"].as<std::string>());
+		component.UpdateMaterial = AssetHandle(data["UpdateMaterial"].as<std::string>());
+		component.RenderMaterial = AssetHandle(data["RenderMaterial"].as<std::string>());
+		component.System = AssetHandle(data["System"].as<std::string>());
 	}
 
 	template <>
 	void SceneSerializer::deserialize<ParticleRenderer>(YAML::Node& data, ParticleRenderer& component, SceneEntity entity)
 	{
-		component.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
-		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
+		component.Mesh = AssetHandle(data["Mesh"].as<std::string>());
+		component.MaterialAsset = AssetHandle(data["Material"].as<std::string>());
 	}
 	template <>
 	void SceneSerializer::deserialize<ScriptComponent>(YAML::Node& data, ScriptComponent& component, SceneEntity entity)
@@ -511,25 +511,22 @@ namespace XYZ {
 	template <>
 	void SceneSerializer::deserialize<SpriteRenderer>(YAML::Node& data, SpriteRenderer& component, SceneEntity entity)
 	{
-		const GUID materialHandle(data["Material"].as<std::string>());
-		const GUID subTextureHandle(data["SubTexture"].as<std::string>());
+		const AssetHandle materialHandle(data["Material"].as<std::string>());
+		const AssetHandle subTextureHandle(data["SubTexture"].as<std::string>());
 		const glm::vec4 color = data["Color"].as<glm::vec4>();
 		const uint16_t sortLayer = data["SortLayer"].as<uint16_t>();
 		const bool visible = data["Visible"].as<bool>();
 
-		Ref<MaterialAsset> material;
-		Ref<SubTexture> subTexture;
 		if (AssetManager::Exist(materialHandle))
 		{
-			material = AssetManager::GetAsset<MaterialAsset>(materialHandle);
+			component.Material = materialHandle;
 		}
 		if (AssetManager::Exist(subTextureHandle))
 		{
-			subTexture = AssetManager::GetAsset<SubTexture>(subTextureHandle);
+			component.SubTexture = subTextureHandle;
 		}
 
-		component.Material = material;
-		component.SubTexture = subTexture;
+		
 		component.Color = color;
 		component.SortLayer = sortLayer;
 		component.Visible = visible;
@@ -659,7 +656,7 @@ namespace XYZ {
 		if (!controllerData.empty())
 		{
 			AssetHandle handle(controllerData);
-			component.Controller = AssetManager::TryGetAsset<AnimationController>(handle);
+			component.Controller = handle;
 		}
 	}
 
@@ -810,8 +807,10 @@ namespace XYZ {
 
 		auto loadedAssets = AssetManager::FindAllLoadedAssets();
 		for (const auto& handle : loadedAssets)
-			out << YAML::Value << handle;
-
+		{
+			if (handle != scene->GetHandle())
+				out << YAML::Value << handle;
+		}
 		out << YAML::EndSeq;
 
 		out << YAML::EndMap; // Scene
@@ -832,36 +831,26 @@ namespace XYZ {
 		return entt::null;
 	}
 
-	std::vector<Ref<Asset>> PreloadAssets(const YAML::Node& assets)
+	std::future<std::vector<Ref<Asset>>> PreloadAssets(const YAML::Node& assets)
 	{
-		std::vector<std::future<Ref<Asset>>> assetFutures;
 		std::vector<AssetHandle> assetHandles;	
 
 		for (auto asset : assets)
 		{
 			assetHandles.push_back(AssetHandle(asset.as<std::string>()));
 		}
-		assetFutures.reserve(assetHandles.size());
-
-		auto& threadPool = Application::Get().GetThreadPool();
-		for (const auto& handle : assetHandles)
-		{
-			assetFutures.push_back(threadPool.SubmitJob([handle]() {
-				return AssetManager::GetAsset<Asset>(handle);
-			}));
-		}
 	
-
-		std::vector<Ref<Asset>> result;
-		result.reserve(assetFutures.size());
-
-		for (auto& future : assetFutures)
-		{
-			future.wait();
-			result.push_back(future.get());
-		}
-
-		return result;
+		auto& threadPool = Application::Get().GetThreadPool();
+		auto future = threadPool.SubmitJob([handles = std::move(assetHandles)] {
+			std::vector<Ref<Asset>> assets;
+			for (const auto& handle : handles)
+			{
+				assets.push_back(AssetManager::GetAsset<Asset>(handle));
+			}
+			return assets;
+		});
+	
+		return future;
 	}
 
 
@@ -883,11 +872,11 @@ namespace XYZ {
 		auto entities = data["Entities"];
 		auto assets = data["Assets"];
 
-		std::vector<Ref<Asset>> preloadedAssets;
+		std::future<std::vector<Ref<Asset>>> preloadedAssets;
 		if (assets)
 		{
 			// Do not preload assets for now, it is broken
-			//preloadedAssets = PreloadAssets(assets); 
+			preloadedAssets = PreloadAssets(assets); 
 		}
 		if (entities)
 		{
@@ -913,6 +902,8 @@ namespace XYZ {
 					setupAnimatedMeshComponent(animatedMeshComponent, setupEntity);
 			}
 		}
+		if (preloadedAssets.valid())
+			preloadedAssets.wait();
 		return scene;
 	}
 
