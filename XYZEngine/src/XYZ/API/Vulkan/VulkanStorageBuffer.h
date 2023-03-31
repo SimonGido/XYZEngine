@@ -28,7 +28,6 @@ namespace XYZ {
 		virtual uint32_t	GetSize() const override { return m_Size; }
 
 		void RT_SetBufferInfo(uint32_t size, uint32_t offset);
-		void RT_ApplySize();
 
 		VkBuffer GetVulkanBuffer() const { return m_Buffer; }
 		const VkDescriptorBufferInfo& GetDescriptorBufferInfo() const { return m_DescriptorInfo; }
@@ -42,8 +41,8 @@ namespace XYZ {
 		VkDescriptorBufferInfo m_DescriptorInfo{};
 
 		uint32_t		  m_Size;
-		uint32_t		  m_RTSize;
 		uint32_t		  m_Binding;
+
 		ThreadQueue<ByteBuffer> m_Buffers;
 
 		bool m_IsIndirect;

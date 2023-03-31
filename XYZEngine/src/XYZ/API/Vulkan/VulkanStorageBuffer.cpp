@@ -7,7 +7,6 @@ namespace XYZ {
 	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size, uint32_t binding, bool indirect)
 		: 
 		m_Size(size), 
-		m_RTSize(size),
 		m_Binding(binding),
 		m_IsIndirect(indirect)
 	{
@@ -20,7 +19,6 @@ namespace XYZ {
 	VulkanStorageBuffer::VulkanStorageBuffer(const void* data, uint32_t size, uint32_t binding, bool indirect)
 		:
 		m_Size(size), 
-		m_RTSize(size),
 		m_Binding(binding),
 		m_IsIndirect(indirect)
 	{
@@ -49,6 +47,7 @@ namespace XYZ {
 		buffer.Write(data, size);
 		Ref<VulkanStorageBuffer> instance = this;
 		Renderer::Submit([instance, size, offset, buffer]() mutable {
+
 			instance->RT_Update(buffer.Data, size, offset);
 			instance->m_Buffers.PushBack(buffer);
 		});
@@ -70,9 +69,11 @@ namespace XYZ {
 	}
 	void VulkanStorageBuffer::RT_Update(const void* data, uint32_t size, uint32_t offset)
 	{
+		//RT_ApplySize();
 		XYZ_ASSERT(size + offset <= m_Size, "");
 		if (size == 0)
 			return;
+
 		VulkanAllocator allocator("VulkanStorageBuffer");
 		uint8_t* pData = allocator.MapMemory<uint8_t>(m_MemoryAllocation);
 		memcpy(pData + offset, (uint8_t*)data, size);
@@ -92,11 +93,11 @@ namespace XYZ {
 	}
 	void VulkanStorageBuffer::Resize(uint32_t size)
 	{
-		m_Size = size;
-		//Ref<VulkanStorageBuffer> instance = this;
-		//Renderer::Submit([instance]() mutable{
-		//		instance->RT_invalidate();
-		//});
+		Ref<VulkanStorageBuffer> instance = this;
+		Renderer::Submit([instance, size]() mutable {
+			instance->m_Size = size;
+			instance->RT_invalidate();
+		});
 	}
 
 	void VulkanStorageBuffer::SetBufferInfo(uint32_t size, uint32_t offset)
@@ -113,14 +114,7 @@ namespace XYZ {
 		m_DescriptorInfo.offset = offset;
 		m_DescriptorInfo.range = size;
 	}
-	void VulkanStorageBuffer::RT_ApplySize()
-	{
-		if (m_RTSize != m_Size)
-		{
-			m_RTSize = m_Size;
-			RT_invalidate();
-		}
-	}
+
 	void VulkanStorageBuffer::release()
 	{
 		if (!m_MemoryAllocation)
