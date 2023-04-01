@@ -163,7 +163,7 @@ namespace XYZ {
 		Ref<Image2D> colorImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(0);
 		Ref<Image2D> positionImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
 		Ref<Image2D> lightImage = m_LightRenderPass->GetSpecification().TargetFramebuffer->GetImage();
-
+		//depthImage = m_DepthRenderPass->GetSpecification().TargetFramebuffer->GetImage(0);
 		
 
 		const bool clearGeometryPass = !m_Options.ShowGrid;
@@ -543,7 +543,8 @@ namespace XYZ {
 			}
 			if (UI::BeginTreeNode("Pre Depth Map"))
 			{
-				auto image = m_DepthRenderPass->GetSpecification().TargetFramebuffer->GetDepthImage();
+				// Debug image
+				auto image = m_DepthRenderPass->GetSpecification().TargetFramebuffer->GetImage(0);
 				const float size = ImGui::GetContentRegionAvail().x;
 				UI::Image(image, { size, size });
 

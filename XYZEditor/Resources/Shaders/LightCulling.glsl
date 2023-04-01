@@ -54,7 +54,7 @@ void main()
 	ivec2 tileID = ivec2(gl_WorkGroupID.xy);
 	ivec2 tileNumber = ivec2(gl_NumWorkGroups.xy);
 	uint index = tileID.y * tileNumber.x + tileID.x;
-
+	
 	// Initialize shared global values for depth and light count
 	if (gl_LocalInvocationIndex == 0)
 	{
@@ -86,7 +86,7 @@ void main()
 		float minDepth = uintBitsToFloat(minDepthInt);
 		float maxDepth = uintBitsToFloat(maxDepthInt);
 
-		// Steps based on tile sale
+		// Steps based on tile scale
 		vec2 negativeStep = (2.0 * vec2(tileID)) / vec2(tileNumber);
 		vec2 positiveStep = (2.0 * vec2(tileID + ivec2(1, 1))) / vec2(tileNumber);
 
