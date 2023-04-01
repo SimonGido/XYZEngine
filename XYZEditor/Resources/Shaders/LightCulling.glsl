@@ -42,6 +42,7 @@ shared uint minDepthInt;
 shared uint maxDepthInt;
 shared uint visibleLightCount;
 shared vec4 frustumPlanes[6];
+shared mat4 inverseViewProjection;
 
 // Shared local storage for visible indices, will be written out to the global buffer at the end
 shared int visibleLightIndices[MAX_POINT_LIGHTS];
@@ -61,6 +62,7 @@ void main()
 		minDepthInt = 0xFFFFFFFF;
 		maxDepthInt = 0;
 		visibleLightCount = 0;
+		inverseViewProjection = inverse(u_ViewProjection);
 	}
 
 	barrier();
@@ -101,7 +103,7 @@ void main()
 		// Transform the first four planes
 		for (uint i = 0; i < 4; i++)
 		{
-			frustumPlanes[i] *= u_ViewProjection;
+			frustumPlanes[i] *= inverseViewProjection;
 			frustumPlanes[i] /= length(frustumPlanes[i].xyz);
 		}
 
