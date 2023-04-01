@@ -1,5 +1,5 @@
-MaxParticles: 1000
-Speed: 1
+MaxParticles: 200
+Speed: 2.70000005
 Loop: true
 InputLayout:
   Name: Input

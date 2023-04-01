@@ -148,6 +148,7 @@ void SpawnLight(uint id, uint lightIndex, uint commandIndex, in ParticleState st
 
 
         PointLights[lightIndex] = PointLights[0];
+        PointLights[lightIndex].Radiance = state.Color.xyz;
         PointLights[lightIndex].Position = transform[3].xyz;
         atomicAdd(NumberPointLights, 1);
     }

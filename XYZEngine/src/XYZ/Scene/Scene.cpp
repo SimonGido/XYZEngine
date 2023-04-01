@@ -768,8 +768,8 @@ namespace XYZ {
 		auto& particleStorage = m_Registry.storage<ParticleComponentGPU>();
 		for (auto particleComponent : particleStorage)
 		{
-			if (particleComponent.System->GetEmittedParticles() == particleComponent.System->GetMaxParticles())
-				particleComponent.System->Reset();
+			//if (particleComponent.System->GetEmittedParticles() == particleComponent.System->GetMaxParticles())
+			//	particleComponent.System->Reset();
 
 			uint32_t emitted = 0;
 			for (auto& emitter : s_ParticleEmitters)
