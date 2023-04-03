@@ -16,5 +16,18 @@ namespace XYZ {
 		private:
 			SceneEntity m_Context;
 		};
+
+
+		class DirectionalLightComponentInspector : public Inspectable
+		{
+		public:
+			DirectionalLightComponentInspector();
+
+			virtual bool OnEditorRender() override;
+			virtual void SetSceneEntity(const SceneEntity& entity) override { m_Context = entity; };
+			virtual Type GetType() const override { return Inspectable::Type::Entity; }
+		private:
+			SceneEntity m_Context;
+		};
 	}
 }

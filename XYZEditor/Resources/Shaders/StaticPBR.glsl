@@ -38,6 +38,7 @@ layout(std140, binding = 0) uniform Camera
 	mat4 u_ViewProjection;
 	mat4 u_Projection;
 	mat4 u_View;
+	vec3 u_CameraPosition;
 };
 
 
@@ -58,7 +59,7 @@ void main()
 	v_Output.TexCoord	  = a_TexCoord;
 	v_Output.WorldNormals = mat3(transform) * mat3(a_Tangent, a_Binormal, a_Normal);
 	v_Output.Binormal	  = a_Binormal;
-	v_Output.CameraPosition = inverse(u_View)[3].xyz;
+	v_Output.CameraPosition = u_CameraPosition;
 
 	gl_Position = u_ViewProjection * instancePosition;
 }

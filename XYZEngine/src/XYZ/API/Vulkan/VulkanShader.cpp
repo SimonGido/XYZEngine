@@ -642,6 +642,17 @@ namespace XYZ {
 			offset += spec.Size;
 		}
 	}
+	const VkPipelineShaderStageCreateInfo* VulkanShader::GetPipelineVertexShaderStageCreateInfo() const
+	{
+		for (const auto& stage : m_PipelineShaderStageCreateInfos)
+		{
+			if (stage.stage == VK_SHADER_STAGE_VERTEX_BIT)
+			{
+				return &stage;
+			}
+		}
+		return nullptr;
+	}
 	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
 	{
 		XYZ_ASSERT(set < m_DescriptorSets.size(), "");

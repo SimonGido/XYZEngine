@@ -253,6 +253,13 @@ namespace XYZ {
 		float	  Falloff = 1.f;
 	};
 
+	struct DirectionalLightComponent
+	{
+		glm::vec3 Radiance = { 1.0f, 1.0f, 1.0f };
+		glm::vec3 Direction = { 0.0f, 0.0f, 0.0f };
+		float     Intensity = 1.0f;
+	};
+
 	struct XYZ_API Relationship
 	{
 		Relationship();
@@ -411,6 +418,7 @@ namespace XYZ {
 	PointLightComponent2D, \
 	SpotLightComponent2D, \
 	PointLightComponent3D, \
+	DirectionalLightComponent,\
 	Relationship, \
 	ScriptComponent, \
 	RigidBody2DComponent, \

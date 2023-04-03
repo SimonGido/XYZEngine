@@ -10,6 +10,9 @@ namespace XYZ {
 		glm::mat4 ViewProjectionMatrix;
 		glm::mat4 ProjectionMatrix;
 		glm::mat4 ViewMatrix;
+		glm::vec3 CameraPosition;
+
+		uint32_t Padding;
 
 		static constexpr uint32_t Binding = 0;
 		static constexpr uint32_t Set = 0;
@@ -24,6 +27,8 @@ namespace XYZ {
 		static constexpr uint32_t Binding = 1;
 		static constexpr uint32_t Set = 0;
 	};
+
+
 
 	struct SSBOPointLights3D
 	{
@@ -73,5 +78,17 @@ namespace XYZ {
 		static constexpr uint32_t Set = 0;
 	};
 
+	struct UBSceneData
+	{
+		static constexpr uint32_t MaxDirectionalLights = 4;
 
+		float EnvironmentMapIntensity = 1.0f;
+		uint32_t NumberDirectionalLights;
+		glm::vec2 Padding{0.0f};
+
+		DirectionalLight DirectionalLights[MaxDirectionalLights];
+
+		static constexpr uint32_t Binding = 9;
+		static constexpr uint32_t Set = 0;
+	};
 }

@@ -81,6 +81,7 @@ namespace XYZ {
 		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
 		m_UniformBufferSet->Create(sizeof(UBCameraData), UBCameraData::Set, UBCameraData::Binding);
 		m_UniformBufferSet->Create(sizeof(UBRendererData), UBRendererData::Set, UBRendererData::Binding);
+		m_UniformBufferSet->Create(sizeof(UBSceneData), UBSceneData::Set, UBSceneData::Binding);
 
 		m_StorageBufferSet = StorageBufferSet::Create(framesInFlight);
 		m_StorageBufferSet->Create(sizeof(SSBOPointLights3D), SSBOPointLights3D::Set, SSBOPointLights3D::Binding);
@@ -133,8 +134,13 @@ namespace XYZ {
 		m_CameraDataUB.ViewProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix() * m_SceneCamera.ViewMatrix;
 		m_CameraDataUB.ProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix();
 		m_CameraDataUB.ViewMatrix = m_SceneCamera.ViewMatrix;
-		
+		m_CameraDataUB.CameraPosition = m_SceneCamera.ViewPosition;
+
 		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
+		m_SceneDataUB.NumberDirectionalLights = static_cast<uint32_t>(lightEnvironment.DirectionalLights.size());
+		memcpy(m_SceneDataUB.DirectionalLights, lightEnvironment.DirectionalLights.data(), lightEnvironment.DirectionalLights.size() * sizeof(DirectionalLight));
+
+		
 		m_PointsLights3DSSBO.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
 		memcpy(m_PointsLights3DSSBO.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
 		updateViewportSize();
@@ -145,8 +151,12 @@ namespace XYZ {
 		m_CameraDataUB.ViewProjectionMatrix = viewProjectionMatrix;
 		m_CameraDataUB.ProjectionMatrix = projection;
 		m_CameraDataUB.ViewMatrix = viewMatrix;
+		m_CameraDataUB.CameraPosition = glm::inverse(viewMatrix)[3];
 
 		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
+		m_SceneDataUB.NumberDirectionalLights = static_cast<uint32_t>(lightEnvironment.DirectionalLights.size());
+		memcpy(m_SceneDataUB.DirectionalLights, lightEnvironment.DirectionalLights.data(), lightEnvironment.DirectionalLights.size() * sizeof(DirectionalLight));
+
 		m_PointsLights3DSSBO.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
 		memcpy(m_PointsLights3DSSBO.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
 		updateViewportSize();
@@ -738,6 +748,7 @@ namespace XYZ {
 			const uint32_t currentFrame = Renderer::GetCurrentFrame();
 			instance->m_UniformBufferSet->Get(UBCameraData::Binding, UBCameraData::Set, currentFrame)->RT_Update(&instance->m_CameraDataUB, sizeof(UBCameraData), 0);
 			instance->m_UniformBufferSet->Get(UBRendererData::Binding, UBRendererData::Set, currentFrame)->RT_Update(&instance->m_RendererDataUB, sizeof(UBRendererData), 0);
+			instance->m_UniformBufferSet->Get(UBSceneData::Binding, UBSceneData::Set, currentFrame)->RT_Update(&instance->m_SceneDataUB, sizeof(UBSceneData), 0);
 			instance->m_StorageBufferSet->Get(SSBOPointLights3D::Binding, SSBOPointLights3D::Set, currentFrame)->RT_Update(&instance->m_PointsLights3DSSBO, sizeof(SSBOPointLights3D), 0);
 		});
 	}

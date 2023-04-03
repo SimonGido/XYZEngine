@@ -911,6 +911,7 @@ namespace XYZ {
 		m_LightEnvironment.PointLights3D.clear();
 		m_LightEnvironment.PointLights2D.clear();
 		m_LightEnvironment.SpotLights2D.clear();
+		m_LightEnvironment.DirectionalLights.clear();
 
 		// PointLights3D
 		for (auto entity : pointLights3D)
@@ -984,6 +985,21 @@ namespace XYZ {
 				light.OuterAngle
 			});
 		}
+
+
+		// DirectionalLights
+		auto& dirLightStorage = m_Registry.storage<DirectionalLightComponent>();
+		for (auto& light : dirLightStorage)
+		{
+			if (m_LightEnvironment.DirectionalLights.size() == UBSceneData::MaxDirectionalLights)
+				break;
+
+			auto& dirLight = m_LightEnvironment.DirectionalLights.emplace_back();
+			dirLight.Direction = light.Direction;
+			dirLight.Multiplier = light.Intensity;
+			dirLight.Radiance = light.Radiance;
+		}
+		
 	}
 
 	

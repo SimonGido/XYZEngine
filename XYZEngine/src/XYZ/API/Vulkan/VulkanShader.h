@@ -105,6 +105,7 @@ namespace XYZ {
 		const std::vector<DescriptorSet>&				    GetDescriptorSets()		 const { return m_DescriptorSets; }
 		const std::vector<PushConstantRange>&			    GetPushConstantRanges()	 const { return m_PushConstantRanges; }
 		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
+		const VkPipelineShaderStageCreateInfo*				GetPipelineVertexShaderStageCreateInfo() const;
 		const VkWriteDescriptorSet*						    GetDescriptorSet(const std::string& name, uint32_t set) const;
 		std::pair<const VkWriteDescriptorSet*, uint32_t>    GetDescriptorSet(const std::string& name) const;
 

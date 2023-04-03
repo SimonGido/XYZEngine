@@ -69,6 +69,7 @@ namespace XYZ {
 				ComponentInspector<PointLightComponent2D,		PointLight2DInspector>,
 				ComponentInspector<SpotLightComponent2D,		SpotLight2DInspector>,
 				ComponentInspector<PointLightComponent3D,		PointLightComponent3DInspector>,
+				ComponentInspector<DirectionalLightComponent,   DirectionalLightComponentInspector>,
 				ComponentInspector<ParticleComponent,			ParticleComponentInspector>,
 				ComponentInspector<ParticleRenderer,			ParticleRendererInspector>,
 				ComponentInspector<SceneTagComponent,			SceneTagInspector>,

@@ -135,7 +135,8 @@ namespace XYZ {
 
 		UBCameraData	 m_CameraDataUB;
 		UBRendererData   m_RendererDataUB;
-		
+		UBSceneData		 m_SceneDataUB;
+
 		SSBOPointLights3D		   m_PointsLights3DSSBO;
 		SSBOBoneTransformData	   m_BoneTransformSSBO;
 		std::vector<TransformData> m_TransformData;

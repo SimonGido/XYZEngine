@@ -67,5 +67,44 @@ namespace XYZ {
 				}
 				});
 		}
+		DirectionalLightComponentInspector::DirectionalLightComponentInspector()
+			:
+			Inspectable("DirectionalLightComponentInspector")
+		{
+		}
+		bool DirectionalLightComponentInspector::OnEditorRender()
+		{
+			return EditorHelper::DrawComponent<DirectionalLightComponent>("Directional Light", m_Context, [&](auto& component) {
+
+				UI::ScopedStyleStack style(true, ImGuiStyleVar_ItemSpacing, ImVec2{ 0.0f, 5.0f });
+				UI::ScopedColorStack color(true,
+					ImGuiCol_Button, ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f },
+					ImGuiCol_ButtonHovered, ImVec4{ 0.6f, 0.6f, 0.6f, 1.0f },
+					ImGuiCol_ButtonActive, ImVec4{ 0.65f, 0.65f, 0.65f, 1.0f }
+				);
+				const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+
+				if (ImGui::BeginTable("##DirectionalLightTable", 2, ImGuiTableFlags_SizingStretchProp))
+				{
+					UI::TableRow("Radiance",
+						[]() {ImGui::Text("Radiance"); },
+						[&]() { ImGui::ColorEdit3("##Radiance", glm::value_ptr(component.Radiance)); }
+					);
+
+					UI::TableRow("Direction",
+						[]() { ImGui::Text("Direction"); },
+						[&]() { UI::ScopedTableColumnAutoWidth scoped(3, lineHeight);
+						UI::Vec3Control({ "X", "Y", "Z" }, component.Direction); }
+					);
+
+					UI::TableRow("Intensity",
+						[]() { ImGui::Text("Intensity"); },
+						[&]() { UI::FloatControl("##Intensity", "##IntensityDrag", component.Intensity, 1.0f, 0.05f); }
+					);
+
+					ImGui::EndTable();
+				}
+				});
+		}
 	}
 }

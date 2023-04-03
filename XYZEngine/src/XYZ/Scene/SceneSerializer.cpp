@@ -141,6 +141,20 @@ namespace XYZ {
 
 		out << YAML::EndMap;
 	}
+
+	template<>
+	void SceneSerializer::serialize<DirectionalLightComponent>(YAML::Emitter& out, const DirectionalLightComponent& val, SceneEntity entity)
+	{
+		out << YAML::Key << "PointLightComponent3D";
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Radiance" << YAML::Value << val.Radiance;
+		out << YAML::Key << "Direction" << YAML::Value << val.Direction;
+		out << YAML::Key << "Intensity" << YAML::Value << val.Intensity;
+
+		out << YAML::EndMap;
+	}
+
 	template <>
 	void SceneSerializer::serialize<RigidBody2DComponent>(YAML::Emitter& out, const RigidBody2DComponent& val, SceneEntity entity)
 	{
@@ -607,6 +621,14 @@ namespace XYZ {
 	}
 
 	template <>
+	void SceneSerializer::deserialize<DirectionalLightComponent>(YAML::Node& data, DirectionalLightComponent& component, SceneEntity entity)
+	{
+		component.Radiance = data["Radiance"].as<glm::vec3>();
+		component.Direction = data["Direction"].as<glm::vec3>();
+		component.Intensity = data["Intensity"].as<float>();
+	}
+
+	template <>
 	void SceneSerializer::deserialize<RigidBody2DComponent>(YAML::Node& data, RigidBody2DComponent& component, SceneEntity entity)
 	{
 		const uint32_t type = data["Type"].as<uint32_t>();
@@ -768,6 +790,12 @@ namespace XYZ {
 		if (pointLightComponent3D)
 		{
 			deserialize<PointLightComponent3D>(pointLightComponent3D, entity.EmplaceComponent<PointLightComponent3D>(), entity);
+		}
+
+		auto dirLightComponent = data["DirectionalLightComponent"];
+		if (dirLightComponent)
+		{
+			deserialize<DirectionalLightComponent>(dirLightComponent, entity.EmplaceComponent<DirectionalLightComponent>(), entity);
 		}
 	}
 

@@ -50,6 +50,15 @@ namespace XYZ {
         char	  Padding[3]{ 0, 0, 0 };
     };
     
+    struct DirectionalLight
+    {
+        glm::vec3 Direction;
+        float Padding{ 0.0f };
+        glm::vec3 Radiance;
+        float     Multiplier;
+    };
+
+
     struct PointLight2D
     {
         glm::vec4 Color;
@@ -72,9 +81,10 @@ namespace XYZ {
 
     struct LightEnvironment
     {
-        std::vector<PointLight3D> PointLights3D;
-        std::vector<PointLight2D> PointLights2D;
-        std::vector<SpotLight2D>  SpotLights2D;
+        std::vector<DirectionalLight> DirectionalLights;
+        std::vector<PointLight3D>     PointLights3D;
+        std::vector<PointLight2D>     PointLights2D;
+        std::vector<SpotLight2D>      SpotLights2D;
     };
 
     class XYZ_API Scene : public Asset

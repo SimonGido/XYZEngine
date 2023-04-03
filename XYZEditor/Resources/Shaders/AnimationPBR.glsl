@@ -49,6 +49,7 @@ layout(std140, binding = 0) uniform Camera
 	mat4 u_ViewProjection;
 	mat4 u_Projection;
 	mat4 u_View;
+	vec3 u_CameraPosition;
 };
 
 
@@ -75,7 +76,7 @@ void main()
 	v_Output.TexCoord	  = a_TexCoord;
 	v_Output.WorldNormals = mat3(transform) * mat3(a_Tangent, a_Binormal, a_Normal);
 	v_Output.Binormal	  = mat3(boneTransform) * a_Binormal;
-	v_Output.CameraPosition = inverse(u_View)[3].xyz;
+	v_Output.CameraPosition = u_CameraPosition;
 
 	gl_Position = u_ViewProjection * instancePosition;
 }
@@ -114,6 +115,14 @@ layout(std140, binding = 2) buffer buffer_PointLightsData
 {
 	uint NumberPointLights;
 	PointLight PointLights[MAX_POINT_LIGHTS];
+};
+
+
+layout(std140, binding = 9) uniform SceneData
+{
+	float EnvironmentMapIntensity;
+	uint NumberDirectionalLights;
+	DirectionalLight DirectionalLights[4];
 };
 
 layout(std430, binding = 4) readonly buffer buffer_VisibleLightIndices
@@ -170,7 +179,7 @@ vec3 GetGradient(float value)
 	return color;
 }
 
-vec3 CalculatePointLights(in vec3 F0)
+vec3 CalculatePointLights(vec3 F0)
 {
 	vec3 result = vec3(0.0);
 	for (int i = 0; i < NumberPointLights; i++)
@@ -185,8 +194,15 @@ vec3 CalculatePointLights(in vec3 F0)
 	return result;
 }
 
-
-
+vec3 CalculateDirLights(vec3 F0)
+{
+	vec3 result = vec3(0.0);
+	for (int i = 0; i < NumberDirectionalLights; i++)
+	{
+		result += CalculateDirLight(F0, DirectionalLights[i], m_Params);
+	}
+	return result;
+}
 
 
 // PBR texture inputs
@@ -220,8 +236,8 @@ void main()
 	// Fresnel reflectance, metals use albedo
 	vec3 F0 = mix(Fdielectric, m_Params.Albedo, m_Params.Metalness);
 
-	vec3 lightContribution = CalculatePointLights(F0) + m_Params.Albedo;
-	vec3 iblContribution = IBL(F0, Lr, m_Params);
+	vec3 lightContribution = CalculateDirLights(F0) + CalculatePointLights(F0) + m_Params.Albedo;
+	vec3 iblContribution = IBL(F0, Lr, m_Params) * EnvironmentMapIntensity;
 
 	o_Color = vec4(iblContribution * lightContribution, alpha);
 	o_Position = vec4(v_Input.Position, 1.0);
@@ -230,6 +246,6 @@ void main()
 	{
 		int pointLightCount = GetPointLightCount();
 		float value = float(pointLightCount);
-		o_Color.rgb = (o_Color.rgb * 0.2) + GetGradient(value);
+		o_Color.rgb += (o_Color.rgb * 0.2) + GetGradient(value);
 	}
 }	

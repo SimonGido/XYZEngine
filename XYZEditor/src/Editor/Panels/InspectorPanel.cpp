@@ -230,6 +230,15 @@ namespace XYZ {
 						ImGui::CloseCurrentPopup();
 					}
 				}
+				if (!m_SelectedEntity.HasComponent<DirectionalLightComponent>())
+				{
+					if (ImGui::MenuItem("Directional Light"))
+					{
+						m_SelectedEntity.EmplaceComponent<DirectionalLightComponent>();
+						activateInspector<DirectionalLightComponent>();
+						ImGui::CloseCurrentPopup();
+					}
+				}
 				if (!m_SelectedEntity.HasComponent<AnimationComponent>())
 				{
 					if (ImGui::MenuItem("Animation Component"))
