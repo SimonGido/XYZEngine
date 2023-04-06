@@ -23,11 +23,20 @@ namespace XYZ
 		
 		s_Instance.m_FileWatcher->AddOnFileChanged<&onFileChange>();
 		s_Instance.m_FileWatcher->Start();
+
+		s_Instance.m_LoadingAssetsAsync = true;
+		s_Instance.m_PendingAssetsLoadThread = std::make_unique<std::thread>(&AssetManager::assetLoadingWorker);
 	}
 	void AssetManager::Shutdown()
 	{
+		s_Instance.m_LoadingAssetsAsync = false;
+		s_Instance.m_PendingAssetsLoadThread->join();
+		s_Instance.m_PendingAssetsLoadThread.reset();
+
 		s_Instance.m_LoadedAssets.clear();
 		s_Instance.m_MemoryAssets.clear();
+		s_Instance.m_Registry.Clear();
+
 		s_Instance.m_FileWatcher->Stop();
 		if (s_Instance.m_AssetLifeManager)
 			s_Instance.m_AssetLifeManager->Stop();
@@ -45,14 +54,11 @@ namespace XYZ
 
 	void AssetManager::SerializeAll()
 	{
-		auto loadedAssets = getLoadedAssetsRead();
-		auto registry = getRegistryRead();
-
-		for (auto it : loadedAssets.As())
+		for (auto it : s_Instance.m_LoadedAssets)
 		{
 			if (it.second.IsValid())
 			{
-				const auto metadata = registry->GetMetadata(it.first);
+				const auto metadata = s_Instance.m_Registry.GetMetadata(it.first);
 				AssetImporter::Serialize(*metadata, it.second);
 			}
 		}
@@ -61,12 +67,10 @@ namespace XYZ
 	void AssetManager::Serialize(const AssetHandle& assetHandle)
 	{
 		WeakRef<Asset> asset;
-		auto loadedAssets = getLoadedAssetsRead();
-		auto it = loadedAssets->find(assetHandle);
-		if (it != loadedAssets->end() && it->second.IsValid())
+		auto it = s_Instance.m_LoadedAssets.find(assetHandle);
+		if (it != s_Instance.m_LoadedAssets.end() && it->second.IsValid())
 		{
-			auto registry = getRegistryRead();
-			const auto metadata = registry->GetMetadata(assetHandle);
+			const auto metadata = s_Instance.m_Registry.GetMetadata(assetHandle);
 			AssetImporter::Serialize(*metadata, asset);
 		}
 		else
@@ -80,13 +84,28 @@ namespace XYZ
 		s_Instance.m_FileWatcher->ProcessChanges();
 	}
 
+	void AssetManager::LoadAssetAsync(const AssetHandle& assetHandle, const AssetLoadContext::AssetLoadedFn& onLoaded)
+	{
+		Ref<AssetPtr> assetPtr = s_Instance.m_Registry.GetAsset(assetHandle);
+		if (assetPtr->Pending)
+			return;
+		
+		if (assetPtr->Asset.IsValid())
+		{
+			Ref<Asset> asset = assetPtr->Asset.Raw();
+			onLoaded(asset);
+			return;
+		}
+
+		assetPtr->Pending = true;
+		s_Instance.m_PendingAssets.PushBack({ assetPtr, onLoaded });
+	}
 
 	std::vector<AssetHandle> AssetManager::FindAllLoadedAssets()
 	{
-		auto loadedAssets = getLoadedAssetsRead();
 		std::vector<AssetHandle> result;
 
-		for (const auto&[handle, asset] : loadedAssets.As())
+		for (const auto&[handle, asset] : s_Instance.m_LoadedAssets)
 		{
 			if (asset.IsValid())
 				result.push_back(handle);
@@ -98,12 +117,10 @@ namespace XYZ
 	std::vector<AssetMetadata> AssetManager::FindAllMetadata(AssetType type)
 	{
 		std::vector<AssetMetadata> result;
-		auto registry = getRegistryRead();
-		auto loadedAssets = getLoadedAssetsRead();
 
-		for (auto it : loadedAssets.As())
+		for (auto it : s_Instance.m_LoadedAssets)
 		{
-			auto metadata = registry->GetMetadata(it.first);
+			auto metadata = s_Instance.m_Registry.GetMetadata(it.first);
 			if (metadata->Type == type)
 			{
 				result.push_back(*metadata);
@@ -114,9 +131,7 @@ namespace XYZ
 	}
 	void AssetManager::ReloadAsset(const std::filesystem::path& filepath)
 	{
-		auto registry = getRegistryRead();
-
-		const auto metadata = registry->GetMetadata(filepath);
+		const auto metadata = s_Instance.m_Registry.GetMetadata(filepath);
 		if (metadata)
 		{
 			Ref<Asset> asset = nullptr;
@@ -133,23 +148,20 @@ namespace XYZ
 				weakAsset->SetFlag(AssetFlag::Reloaded);
 			}
 
-			auto loadedAssets = getLoadedAssetsWrite();
-			loadedAssets.As()[asset->GetHandle()] = asset;
+			s_Instance.m_LoadedAssets[asset->GetHandle()] = asset;
 		}
 	}
 
 	const AssetMetadata AssetManager::GetMetadata(const AssetHandle& handle)
 	{
-		auto registry = getRegistryRead();
-		auto metadata = registry->GetMetadata(handle);
+		auto metadata = s_Instance.m_Registry.GetMetadata(handle);
 		XYZ_ASSERT(metadata, "Metadata does not exist");
 		return *metadata;
 	}
 
 	const AssetMetadata AssetManager::GetMetadata(const std::filesystem::path& filepath)
 	{
-		auto registry = getRegistryRead();
-		auto metadata = registry->GetMetadata(filepath);
+		auto metadata = s_Instance.m_Registry.GetMetadata(filepath);
 		XYZ_ASSERT(metadata, "Metadata does not exist");
 		return *metadata;
 	}
@@ -161,14 +173,18 @@ namespace XYZ
 	
 	bool AssetManager::Exist(const AssetHandle& handle)
 	{
-		auto registry = getRegistryRead();
-		return registry->GetMetadata(handle) != nullptr;
+		return s_Instance.m_Registry.GetMetadata(handle) != nullptr;
 	}
 
 	bool AssetManager::Exist(const std::filesystem::path& filepath)
 	{
-		auto registry = getRegistryRead();
-		return registry->GetMetadata(filepath) != nullptr;
+		return s_Instance.m_Registry.GetMetadata(filepath) != nullptr;
+	}
+
+	bool AssetManager::IsAssetLoaded(const AssetHandle& handle)
+	{
+		WeakRef<Asset> getAsset = findAsset(handle);
+		return getAsset.IsValid();
 	}
 
 	AssetManager& AssetManager::Get()
@@ -232,7 +248,7 @@ namespace XYZ
 		}
 	}
 
-	void AssetManager::tryKeepAliveAsset(Ref<Asset> asset)
+	void AssetManager::keepAliveAsset(Ref<Asset> asset)
 	{
 		if (s_Instance.m_AssetLifeManager)
 			s_Instance.m_AssetLifeManager->PushAsset(asset);
@@ -242,9 +258,8 @@ namespace XYZ
 	{
 		WeakRef<Asset> getAsset = nullptr;
 
-		auto loadedAssets = getLoadedAssetsRead();
-		auto it = loadedAssets->find(assetHandle);
-		if (it != loadedAssets->end())
+		auto it = s_Instance.m_LoadedAssets.find(assetHandle);
+		if (it != s_Instance.m_LoadedAssets.end())
 		{
 			getAsset = it->second;
 		}
@@ -269,13 +284,11 @@ namespace XYZ
 		}
 		else if (type == FileWatcher::ChangeType::Removed)
 		{
-			auto registry = getRegistryWrite();
-			const auto metadata = registry->GetMetadata(path);
+			const auto metadata = s_Instance.m_Registry.GetMetadata(path);
 			if (metadata)
 			{
-				registry->RemoveMetadata((*metadata).Handle);
-				auto loadedAssets = getLoadedAssetsWrite();
-				loadedAssets->erase((*metadata).Handle);
+				s_Instance.m_Registry.RemoveMetadata((*metadata).Handle);
+				s_Instance.m_LoadedAssets.erase((*metadata).Handle);
 			}
 		}
 		else if (type == FileWatcher::ChangeType::RenamedOld)
@@ -284,43 +297,42 @@ namespace XYZ
 		}
 		else if (type == FileWatcher::ChangeType::RenamedNew)
 		{
-			auto registry = getRegistryWrite();
-			const auto ptrMetadata = registry->GetMetadata(s_RenamedFileOldPath);
+			const auto ptrMetadata = s_Instance.m_Registry.GetMetadata(s_RenamedFileOldPath);
 			if (ptrMetadata)
 			{
 				auto metadata = *ptrMetadata;
-				registry->RemoveMetadata(metadata.Handle);
+				s_Instance.m_Registry.RemoveMetadata(metadata.Handle);
 
 				FileSystem::Rename(s_RenamedFileOldPath.string() + ".meta", Utils::GetFilename(path.string()));
 
 				metadata.FilePath = path;
-				registry->StoreMetadata(metadata);
+				s_Instance.m_Registry.StoreMetadata(metadata);
 				s_Instance.writeAssetMetadata(metadata);
 			}
 		}
 	}
-	ScopedLock<AssetManager::AssetStorage> AssetManager::getMemoryAssetsWrite()
+
+	void AssetManager::assetLoadingWorker()
 	{
-		return ScopedLock<AssetStorage>(&s_Instance.m_MemoryAssetsMutex, s_Instance.m_MemoryAssets);
+		while (s_Instance.m_LoadingAssetsAsync)
+		{
+			while (!s_Instance.m_PendingAssets.Empty())
+			{
+				AssetLoadContext loadContext = s_Instance.m_PendingAssets.PopFront();
+				
+				if (loadContext.AssetPtr->Pending)
+				{
+					Ref<Asset> result;
+					if (AssetImporter::TryLoadData(loadContext.AssetPtr->Metadata, result))
+					{
+						loadContext.AssetPtr->Asset = result;
+						loadContext.OnLoaded(result);
+						keepAliveAsset(result);
+					}
+					loadContext.AssetPtr->Pending = false;
+				}
+			}
+		}
 	}
-	ScopedLockRead<AssetManager::AssetStorage> AssetManager::getMemoryAssetsRead()
-	{
-		return ScopedLockRead<AssetStorage>(&s_Instance.m_MemoryAssetsMutex, s_Instance.m_MemoryAssets);
-	}
-	ScopedLock<AssetManager::AssetStorage> AssetManager::getLoadedAssetsWrite()
-	{
-		return ScopedLock<AssetStorage>(&s_Instance.m_AssetsMutex, s_Instance.m_LoadedAssets);
-	}
-	ScopedLockRead<AssetManager::AssetStorage> AssetManager::getLoadedAssetsRead()
-	{
-		return ScopedLockRead<AssetStorage>(&s_Instance.m_AssetsMutex, s_Instance.m_LoadedAssets);
-	}
-	ScopedLock<AssetRegistry> AssetManager::getRegistryWrite()
-	{
-		return ScopedLock<AssetRegistry>(&s_Instance.m_RegistryMutex, s_Instance.m_Registry);
-	}
-	ScopedLockRead<AssetRegistry> AssetManager::getRegistryRead()
-	{
-		return ScopedLockRead<AssetRegistry>(&s_Instance.m_RegistryMutex, s_Instance.m_Registry);
-	}
+
 }

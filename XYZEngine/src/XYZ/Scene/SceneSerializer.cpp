@@ -903,7 +903,6 @@ namespace XYZ {
 		std::future<std::vector<Ref<Asset>>> preloadedAssets;
 		if (assets)
 		{
-			// Do not preload assets for now, it is broken
 			preloadedAssets = PreloadAssets(assets); 
 		}
 		if (entities)
