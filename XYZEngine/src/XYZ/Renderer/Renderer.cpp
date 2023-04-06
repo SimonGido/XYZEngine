@@ -410,27 +410,29 @@ namespace XYZ {
 	}
 	void RendererResources::Init()
 	{
-		auto whiteTexture					= AssetManager::GetAsset<Texture2D>("Resources/Textures/WhiteTexture.tex");
+		Includer.AddIncludes("Resources/Shaders/Includes");
+
+		auto whiteTexture = AssetManager::GetAsset<Texture2D>("Resources/Textures/WhiteTexture.tex");
+		whiteTexture->SetFlag(AssetFlag::ReadOnly);
+		RendererAssets["WhiteTexture"] = whiteTexture;
+		
 		auto defaultQuadMaterial				= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultLit.mat");
 		auto defaultLineMaterial				= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultLine.mat");
-		auto defaultCircleMaterial			= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultCircle.mat");
+		auto defaultCircleMaterial				= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultCircle.mat");
 		auto overlayQuadMaterial				= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayQuad.mat");
 		auto overlayLineMaterial				= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayLine.mat");
-		auto overlayCircleMaterial			= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayCircle.mat");
+		auto overlayCircleMaterial				= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/OverlayCircle.mat");
 		auto defaultParticleMaterial			= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
-		auto defaultDepth3DMaterial			= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth.mat");
-		auto defaultDepth3DAnimMaterial		= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepthAnim.mat");
-		auto defaultDepth2DMaterial			= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth2D.mat");
-		auto defaultDepthInstancedMaterial	= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepthInstanced.mat");
+		auto defaultDepth3DMaterial				= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth.mat");
+		auto defaultDepth3DAnimMaterial			= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepthAnim.mat");
+		auto defaultDepth2DMaterial				= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepth2D.mat");
+		auto defaultDepthInstancedMaterial		= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/PreDepthInstanced.mat");
 		auto lightCullingMaterial				= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/LightCulling.mat");
 		auto gridMaterial						= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/Grid.mat");
 		auto animationPBRMaterial				= AssetManager::GetAsset<MaterialAsset>("Resources/Materials/AnimationPBR.mat");
 		
 		
-		Includer.AddIncludes("Resources/Shaders/Includes");
-
-		whiteTexture->SetFlag(AssetFlag::ReadOnly);
-		RendererAssets["WhiteTexture"] = whiteTexture;
+		
 
 		defaultQuadMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["QuadMaterial"] = defaultQuadMaterial;

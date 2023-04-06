@@ -6121,7 +6121,7 @@ Entities:
       Position: [-6.44999981, -0.5, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
-    PointLightComponent3D:
+    DirectionalLightComponent:
       Radiance: [1, 1, 1]
       Direction: [3.70000005, 5.05000019, -4.1500001]
       Intensity: 1.5

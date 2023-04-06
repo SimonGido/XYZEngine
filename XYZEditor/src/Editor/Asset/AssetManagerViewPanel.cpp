@@ -79,11 +79,11 @@ namespace XYZ {
 
 		void AssetManagerViewPanel::displayAllMetadata()
 		{
-			for (const auto& [handle, metadata] : AssetManager::Get().m_Registry)
+			for (const auto& [handle, assetData] : AssetManager::Get().m_Registry)
 			{
-				std::string handle = metadata.Handle.ToString();
-				std::string filePath = metadata.FilePath.string();
-				std::string assetType = Utils::AssetTypeToString(metadata.Type);
+				std::string handle = assetData->Metadata.Handle.ToString();
+				std::string filePath = assetData->Metadata.FilePath.string();
+				std::string assetType = Utils::AssetTypeToString(assetData->Metadata.Type);
 
 				UI::TableRow("Metadata",
 					[]() { ImGui::Text("Handle"); },
@@ -114,11 +114,11 @@ namespace XYZ {
 
 		void AssetManagerViewPanel::displaySearchedMetadata(const std::string& searchString)
 		{
-			for (const auto &[handle, metadata] : AssetManager::Get().m_Registry)
+			for (const auto &[handle, assetData] : AssetManager::Get().m_Registry)
 			{
-				std::string handle = metadata.Handle.ToString();
-				std::string filePath = metadata.FilePath.string();
-				std::string assetType = Utils::AssetTypeToString(metadata.Type);
+				std::string handle = assetData->Metadata.Handle.ToString();
+				std::string filePath = assetData->Metadata.FilePath.string();
+				std::string assetType = Utils::AssetTypeToString(assetData->Metadata.Type);
 				if (Utils::ToLowerCopy(handle).find(searchString) != std::string::npos
 					|| Utils::ToLowerCopy(filePath).find(searchString) != std::string::npos
 					|| Utils::ToLowerCopy(assetType).find(searchString) != std::string::npos)

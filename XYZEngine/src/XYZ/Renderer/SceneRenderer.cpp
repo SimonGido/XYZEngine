@@ -97,8 +97,8 @@ namespace XYZ {
 		}
 		m_IndirectCommandAllocator = Ref<StorageBufferAllocator>::Create(SSBOIndirectData::MaxSize, SSBOIndirectData::Binding, SSBOIndirectData::Set);
 
-		m_CompositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
-		m_LightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
+		m_CompositeShaderAsset = AssetManager::GetAssetWait<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
+		m_LightShaderAsset	 = AssetManager::GetAssetWait<ShaderAsset>("Resources/Shaders/LightShader.shader");
 		m_BloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
 		
 		m_GeometryPass.Init(this);

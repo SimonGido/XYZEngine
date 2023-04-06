@@ -32,8 +32,9 @@ namespace XYZ
 		s_Instance.m_LoadingAssetsAsync = false;
 		s_Instance.m_PendingAssetsLoadThread->join();
 		s_Instance.m_PendingAssetsLoadThread.reset();
+		s_Instance.m_LoadedAssetsQueue.Clear();
+		s_Instance.m_PendingAssetsQueue.Clear();
 
-		s_Instance.m_LoadedAssets.clear();
 		s_Instance.m_MemoryAssets.clear();
 		s_Instance.m_Registry.Clear();
 
@@ -54,12 +55,12 @@ namespace XYZ
 
 	void AssetManager::SerializeAll()
 	{
-		for (auto it : s_Instance.m_LoadedAssets)
+		for (auto it : s_Instance.m_Registry)
 		{
-			if (it.second.IsValid())
+			if (it.second->Asset.IsValid())
 			{
-				const auto metadata = s_Instance.m_Registry.GetMetadata(it.first);
-				AssetImporter::Serialize(*metadata, it.second);
+				const auto& metadata = it.second->Metadata;
+				AssetImporter::Serialize(metadata, it.second->Asset);
 			}
 		}
 	}
@@ -67,8 +68,8 @@ namespace XYZ
 	void AssetManager::Serialize(const AssetHandle& assetHandle)
 	{
 		WeakRef<Asset> asset;
-		auto it = s_Instance.m_LoadedAssets.find(assetHandle);
-		if (it != s_Instance.m_LoadedAssets.end() && it->second.IsValid())
+		auto it = s_Instance.m_Registry.find(assetHandle);
+		if (it != s_Instance.m_Registry.end() && it->second->Asset.IsValid())
 		{
 			const auto metadata = s_Instance.m_Registry.GetMetadata(assetHandle);
 			AssetImporter::Serialize(*metadata, asset);
@@ -82,32 +83,36 @@ namespace XYZ
 	void AssetManager::Update(Timestep ts)
 	{
 		s_Instance.m_FileWatcher->ProcessChanges();
+		while (!s_Instance.m_LoadedAssetsQueue.Empty())
+		{
+			AssetLoaded loaded = s_Instance.m_LoadedAssetsQueue.PopBack();
+			loaded.OnLoaded(loaded.Asset);
+		}
 	}
 
-	void AssetManager::LoadAssetAsync(const AssetHandle& assetHandle, const AssetLoadContext::AssetLoadedFn& onLoaded)
+	void AssetManager::LoadAssetAsync(const AssetHandle& assetHandle, const AssetLoadedFn& onLoaded)
 	{
-		Ref<AssetPtr> assetPtr = s_Instance.m_Registry.GetAsset(assetHandle);
-		if (assetPtr->Pending)
+		Ref<AssetData> assetData = s_Instance.m_Registry.GetAsset(assetHandle);
+		if (assetData->Locked)
 			return;
 		
-		if (assetPtr->Asset.IsValid())
+		if (assetData->Asset.IsValid())
 		{
-			Ref<Asset> asset = assetPtr->Asset.Raw();
+			Ref<Asset> asset = assetData->Asset.Raw();
 			onLoaded(asset);
 			return;
 		}
 
-		assetPtr->Pending = true;
-		s_Instance.m_PendingAssets.PushBack({ assetPtr, onLoaded });
+		s_Instance.m_PendingAssetsQueue.PushBack({ assetData, onLoaded });
 	}
 
 	std::vector<AssetHandle> AssetManager::FindAllLoadedAssets()
 	{
 		std::vector<AssetHandle> result;
 
-		for (const auto&[handle, asset] : s_Instance.m_LoadedAssets)
+		for (const auto&[handle, assetData] : s_Instance.m_Registry)
 		{
-			if (asset.IsValid())
+			if (assetData->Asset.IsValid())
 				result.push_back(handle);
 		}
 
@@ -118,12 +123,12 @@ namespace XYZ
 	{
 		std::vector<AssetMetadata> result;
 
-		for (auto it : s_Instance.m_LoadedAssets)
+		for (auto it : s_Instance.m_Registry)
 		{
-			auto metadata = s_Instance.m_Registry.GetMetadata(it.first);
-			if (metadata->Type == type)
+			const auto& metadata = it.second->Metadata;
+			if (metadata.Type == type)
 			{
-				result.push_back(*metadata);
+				result.push_back(metadata);
 			}
 		}
 
@@ -142,13 +147,14 @@ namespace XYZ
 				return;
 			}
 
-			WeakRef<Asset> weakAsset = findAsset(metadata->Handle);
-			if (weakAsset.IsValid())
-			{
-				weakAsset->SetFlag(AssetFlag::Reloaded);
-			}
+			Ref<AssetData> assetData = s_Instance.m_Registry.GetAsset(metadata->Handle);
+			assetData->WaitUnlock();
 
-			s_Instance.m_LoadedAssets[asset->GetHandle()] = asset;
+			if (assetData->Asset.IsValid())
+			{
+				assetData->Asset->SetFlag(AssetFlag::Reloaded);
+			}
+			assetData->Asset = asset;
 		}
 	}
 
@@ -181,11 +187,6 @@ namespace XYZ
 		return s_Instance.m_Registry.GetMetadata(filepath) != nullptr;
 	}
 
-	bool AssetManager::IsAssetLoaded(const AssetHandle& handle)
-	{
-		WeakRef<Asset> getAsset = findAsset(handle);
-		return getAsset.IsValid();
-	}
 
 	AssetManager& AssetManager::Get()
 	{
@@ -254,18 +255,6 @@ namespace XYZ
 			s_Instance.m_AssetLifeManager->PushAsset(asset);
 	}
 
-	WeakRef<Asset> AssetManager::findAsset(const AssetHandle& assetHandle)
-	{
-		WeakRef<Asset> getAsset = nullptr;
-
-		auto it = s_Instance.m_LoadedAssets.find(assetHandle);
-		if (it != s_Instance.m_LoadedAssets.end())
-		{
-			getAsset = it->second;
-		}
-		return getAsset;
-	}
-
 
 	static std::filesystem::path s_RenamedFileOldPath;
 
@@ -288,7 +277,6 @@ namespace XYZ
 			if (metadata)
 			{
 				s_Instance.m_Registry.RemoveMetadata((*metadata).Handle);
-				s_Instance.m_LoadedAssets.erase((*metadata).Handle);
 			}
 		}
 		else if (type == FileWatcher::ChangeType::RenamedOld)
@@ -316,21 +304,24 @@ namespace XYZ
 	{
 		while (s_Instance.m_LoadingAssetsAsync)
 		{
-			while (!s_Instance.m_PendingAssets.Empty())
+			while (!s_Instance.m_PendingAssetsQueue.Empty())
 			{
-				AssetLoadContext loadContext = s_Instance.m_PendingAssets.PopFront();
-				
-				if (loadContext.AssetPtr->Pending)
+				AssetPending pending = s_Instance.m_PendingAssetsQueue.PopBack();
+				// Somebody already loaded asset from main thread
+				if (pending.AssetData->Asset.IsValid())
+					continue;
+
+				pending.AssetData->Locked = true;
+				Ref<Asset> result;
+				if (AssetImporter::TryLoadData(pending.AssetData->Metadata, result))
 				{
-					Ref<Asset> result;
-					if (AssetImporter::TryLoadData(loadContext.AssetPtr->Metadata, result))
-					{
-						loadContext.AssetPtr->Asset = result;
-						loadContext.OnLoaded(result);
-						keepAliveAsset(result);
-					}
-					loadContext.AssetPtr->Pending = false;
+					pending.AssetData->Asset = result;
+					s_Instance.m_LoadedAssetsQueue.PushBack({ result, std::move(pending.OnLoaded) });
+					keepAliveAsset(result);
 				}
+
+				pending.AssetData->Locked = false;
+				
 			}
 		}
 	}

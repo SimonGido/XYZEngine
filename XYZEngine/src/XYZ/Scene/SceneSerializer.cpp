@@ -145,7 +145,7 @@ namespace XYZ {
 	template<>
 	void SceneSerializer::serialize<DirectionalLightComponent>(YAML::Emitter& out, const DirectionalLightComponent& val, SceneEntity entity)
 	{
-		out << YAML::Key << "PointLightComponent3D";
+		out << YAML::Key << "DirectionalLightComponent";
 		out << YAML::BeginMap;
 
 		out << YAML::Key << "Radiance" << YAML::Value << val.Radiance;
@@ -859,26 +859,17 @@ namespace XYZ {
 		return entt::null;
 	}
 
-	std::future<std::vector<Ref<Asset>>> PreloadAssets(const YAML::Node& assets)
+	void PreloadAssets(const YAML::Node& assets, std::vector<Ref<Asset>>& loadedAssets)
 	{
 		std::vector<AssetHandle> assetHandles;	
 
 		for (auto asset : assets)
 		{
 			assetHandles.push_back(AssetHandle(asset.as<std::string>()));
+			AssetManager::LoadAssetAsync(AssetHandle(asset.as<std::string>()), [&loadedAssets](Ref<Asset>& asset) {
+				loadedAssets.push_back(asset);
+			});
 		}
-	
-		auto& threadPool = Application::Get().GetThreadPool();
-		auto future = threadPool.SubmitJob([handles = std::move(assetHandles)] {
-			std::vector<Ref<Asset>> assets;
-			for (const auto& handle : handles)
-			{
-				assets.push_back(AssetManager::GetAsset<Asset>(handle));
-			}
-			return assets;
-		});
-	
-		return future;
 	}
 
 
@@ -900,10 +891,10 @@ namespace XYZ {
 		auto entities = data["Entities"];
 		auto assets = data["Assets"];
 
-		std::future<std::vector<Ref<Asset>>> preloadedAssets;
+		std::vector<Ref<Asset>> preloadedAssets;
 		if (assets)
 		{
-			preloadedAssets = PreloadAssets(assets); 
+			PreloadAssets(assets, preloadedAssets);
 		}
 		if (entities)
 		{
@@ -929,8 +920,7 @@ namespace XYZ {
 					setupAnimatedMeshComponent(animatedMeshComponent, setupEntity);
 			}
 		}
-		if (preloadedAssets.valid())
-			preloadedAssets.wait();
+
 		return scene;
 	}
 

@@ -4,9 +4,9 @@
 #include "XYZ/Asset/AssetManager.h"
 
 namespace XYZ {
-	void AssetRegistry::StoreMetadata(const AssetMetadata& metadata, WeakRef<Asset> asset = nullptr)
+	void AssetRegistry::StoreMetadata(const AssetMetadata& metadata, WeakRef<Asset> asset)
 	{
-		Ref<AssetPtr> assetPtr = Ref<AssetPtr>::Create();
+		Ref<AssetData> assetPtr = Ref<AssetData>::Create();
 		assetPtr->Metadata = metadata;
 		assetPtr->Asset = asset;
 
@@ -44,11 +44,11 @@ namespace XYZ {
 		}
 		return nullptr;
 	}
-	Ref<AssetPtr> AssetRegistry::GetAsset(const AssetHandle& handle) const
+	Ref<AssetData> AssetRegistry::GetAsset(const AssetHandle& handle) const
 	{
 		return m_Assets.at(handle);
 	}
-	Ref<AssetPtr> AssetRegistry::GetAsset(const std::filesystem::path& filepath) const
+	Ref<AssetData> AssetRegistry::GetAsset(const std::filesystem::path& filepath) const
 	{
 		auto metadata = GetMetadata(filepath);
 		return m_Assets.at(metadata->Handle);
