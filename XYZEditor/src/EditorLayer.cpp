@@ -25,6 +25,9 @@ namespace XYZ {
 		{
 			Project::New();
 
+			const float keepAliveAssetSeconds = 60;
+			AssetManager::KeepAlive(keepAliveAssetSeconds);
+
 			s_Data.Init();		
 			//ScriptEngine::Init();
 
@@ -86,8 +89,7 @@ namespace XYZ {
 
 			Renderer::WaitAndRenderAll();
 
-			const float keepAliveAssetSeconds = 60;
-			AssetManager::KeepAlive(keepAliveAssetSeconds);
+		
 		}
 
 		void EditorLayer::OnDetach()

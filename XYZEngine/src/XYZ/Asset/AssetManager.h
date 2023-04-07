@@ -219,19 +219,19 @@ namespace XYZ {
 	template<typename T>
 	inline Ref<T> AssetManager::GetAsset(const AssetHandle& assetHandle)
 	{
+		Ref<Asset> result;
 		Ref<AssetData> assetData = Get().m_Registry.GetAsset(assetHandle);
-		if (!assetData->TryLock()) // If asset is locked it means it is not loaded yet
-			return nullptr;
-
-		Ref<Asset> result = assetData->Asset.Raw();
-		if (result.Raw())
-			return result.As<T>();
-		
-		// If we did not request async load of asset, load it synchronously
-		result = loadAsset<T>(assetData->Metadata);
-		assetData->Asset = result.Raw();
-		assetData->Unlock();
-
+		if (assetData->TryLock()) // If asset is locked it means it is not loaded yet
+		{
+			result = assetData->Asset.Raw();
+			if (!result.Raw())
+			{		
+				// If we did not request async load of asset, load it synchronously
+				result = loadAsset<T>(assetData->Metadata);
+				assetData->Asset = result.Raw();
+			}
+			assetData->Unlock();
+		}
 		return result.As<T>();
 	}
 
@@ -239,15 +239,16 @@ namespace XYZ {
 	inline Ref<T> AssetManager::GetAssetWait(const AssetHandle& assetHandle)
 	{
 		Ref<AssetData> assetData = Get().m_Registry.GetAsset(assetHandle);
-		assetData->WaitUnlock();// If asset is pending it means it is not loaded yet
+		assetData->SpinLock();
 
 		Ref<Asset> result = assetData->Asset.Raw();
-		if (result.Raw())
-			return result.As<T>();
-
-		// If we did not request async load of asset, load it synchronously
-		result = loadAsset<T>(assetData->Metadata);
-		assetData->Asset = result.Raw();
+		if (!result.Raw())
+		{
+			// If we did not request async load of asset, load it synchronously
+			result = loadAsset<T>(assetData->Metadata);
+			assetData->Asset = result.Raw();
+		}
+		assetData->Unlock();
 		return result.As<T>();
 	}
 

@@ -216,7 +216,7 @@ namespace XYZ {
 		YAML::Node data = YAML::Load(strStream.str());
 
 		AssetHandle shaderHandle = AssetHandle(data["Shader"].as<std::string>());
-		Ref<ShaderAsset> shaderAsset = AssetManager::GetAsset<ShaderAsset>(shaderHandle);
+		Ref<ShaderAsset> shaderAsset = AssetManager::GetAssetWait<ShaderAsset>(shaderHandle);
 		Ref<MaterialAsset> materialAsset = Ref<MaterialAsset>::Create(shaderAsset);
 
 		auto opaque = data["Opaque"];
@@ -231,7 +231,7 @@ namespace XYZ {
 			auto name = texture["Name"].as<std::string>();
 			if (AssetManager::Exist(handle))
 			{
-				materialAsset->SetTexture(name, AssetManager::GetAsset<Texture2D>(handle));
+				materialAsset->SetTexture(name, AssetManager::GetAssetWait<Texture2D>(handle));
 			}
 			else
 			{
@@ -249,7 +249,7 @@ namespace XYZ {
 				GUID handle(texture.as<std::string>());
 				if (AssetManager::Exist(handle))
 				{
-					materialAsset->SetTexture(name, AssetManager::GetAsset<Texture2D>(handle), index);
+					materialAsset->SetTexture(name, AssetManager::GetAssetWait<Texture2D>(handle), index);
 				}
 				else
 				{
@@ -506,7 +506,7 @@ namespace XYZ {
 		auto animationName = data["AnimationName"].as<std::string>();
 		AssetHandle skeletonHandle(data["Skeleton"].as<std::string>());
 		
-		Ref<SkeletonAsset> skeleton = AssetManager::GetAsset<SkeletonAsset>(skeletonHandle);
+		Ref<SkeletonAsset> skeleton = AssetManager::GetAssetWait<SkeletonAsset>(skeletonHandle);
 		asset = Ref<AnimationAsset>::Create(sourceFilePath, animationName, skeleton);
 
 		return true;
@@ -538,7 +538,7 @@ namespace XYZ {
 		YAML::Node data = YAML::Load(strStream.str());
 
 		AssetHandle meshSourceHandle(data["MeshSource"].as<std::string>());
-		asset = Ref<StaticMesh>::Create(AssetManager::GetAsset<MeshSource>(meshSourceHandle));
+		asset = Ref<StaticMesh>::Create(AssetManager::GetAssetWait<MeshSource>(meshSourceHandle));
 		return true;
 	}
 
@@ -566,7 +566,7 @@ namespace XYZ {
 		YAML::Node data = YAML::Load(strStream.str());
 
 		AssetHandle meshSourceHandle(data["MeshSource"].as<std::string>());
-		asset = Ref<AnimatedMesh>::Create(AssetManager::GetAsset<MeshSource>(meshSourceHandle));
+		asset = Ref<AnimatedMesh>::Create(AssetManager::GetAssetWait<MeshSource>(meshSourceHandle));
 		return true;
 	}
 	void PrefabAssetSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
@@ -619,7 +619,7 @@ namespace XYZ {
 
 
 		AssetHandle textureHandle(data["Texture"].as<std::string>());
-		Ref<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
+		Ref<Texture2D> texture = AssetManager::GetAssetWait<Texture2D>(textureHandle);
 		glm::vec4 texCoords = data["TexCoords"].as<glm::vec4>();
 		asset = Ref<SubTexture>::Create(texture, texCoords);
 
@@ -667,7 +667,7 @@ namespace XYZ {
 		if (!skeletonData.empty())
 		{
 			AssetHandle skeletonHandle(skeletonData);
-			controller->SetSkeletonAsset(AssetManager::GetAsset<SkeletonAsset>(skeletonHandle));
+			controller->SetSkeletonAsset(AssetManager::GetAssetWait<SkeletonAsset>(skeletonHandle));
 		}
 		
 		auto animationsData = data["Animations"];
@@ -675,7 +675,7 @@ namespace XYZ {
 		{
 			std::string stateName = animData["Name"].as<std::string>();
 			AssetHandle animHandle(animData["Handle"].as<std::string>());
-			Ref<AnimationAsset> animation = AssetManager::GetAsset<AnimationAsset>(animHandle);
+			Ref<AnimationAsset> animation = AssetManager::GetAssetWait<AnimationAsset>(animHandle);
 			controller->AddState(stateName, animation);
 		}
 

@@ -73,7 +73,7 @@ namespace XYZ {
 		{
 			// We have valid asset handle
 			if (AssetManager::Exist(m_Handle))
-				m_Asset = AssetManager::GetAsset<T>(m_Handle);
+				m_Asset = AssetManager::GetAssetWait<T>(m_Handle);
 		}
 		return m_Asset;
 	}
@@ -87,7 +87,7 @@ namespace XYZ {
 		{
 			// We have valid asset handle
 			if (AssetManager::Exist(m_Handle))
-				m_Asset = AssetManager::GetAsset<T>(m_Handle);
+				m_Asset = AssetManager::GetAssetWait<T>(m_Handle);
 		}
 		return m_Asset;
 	}

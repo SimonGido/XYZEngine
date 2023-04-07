@@ -19,25 +19,17 @@ namespace XYZ {
 		AssetMetadata	 Metadata;
 		
 
-		inline void WaitUnlock() const
-		{
-			while (Locked) {}
-		}
+		void WaitUnlock() const;
+		
+		bool TryLock() const;
 
-		inline bool TryLock() const
-		{
-			if (Locked)
-				return false;
-			
-			Locked = true;
-			return true;
-		}
-		inline void Unlock()
-		{
-			Locked = false;
-		}
+		void SpinLock() const;
+		
+		void Unlock() const;
+		
+		bool IsLocked() const;
 	private:
-		mutable std::atomic_bool Locked = false;
+		mutable std::atomic_bool m_Locked = false;
 	};
 
 	class XYZ_API AssetRegistry

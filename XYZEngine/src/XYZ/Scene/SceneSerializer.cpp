@@ -859,15 +859,15 @@ namespace XYZ {
 		return entt::null;
 	}
 
-	void PreloadAssets(const YAML::Node& assets, std::vector<Ref<Asset>>& loadedAssets)
+	void PreloadAssets(const YAML::Node& assets)
 	{
 		std::vector<AssetHandle> assetHandles;	
 
 		for (auto asset : assets)
 		{
 			assetHandles.push_back(AssetHandle(asset.as<std::string>()));
-			AssetManager::LoadAssetAsync(AssetHandle(asset.as<std::string>()), [&loadedAssets](Ref<Asset>& asset) {
-				loadedAssets.push_back(asset);
+			AssetManager::LoadAssetAsync(AssetHandle(asset.as<std::string>()), [](Ref<Asset>& asset) {
+				
 			});
 		}
 	}
@@ -894,7 +894,7 @@ namespace XYZ {
 		std::vector<Ref<Asset>> preloadedAssets;
 		if (assets)
 		{
-			PreloadAssets(assets, preloadedAssets);
+			PreloadAssets(assets);
 		}
 		if (entities)
 		{

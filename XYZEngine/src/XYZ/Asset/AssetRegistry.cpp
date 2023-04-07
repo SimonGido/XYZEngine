@@ -4,6 +4,35 @@
 #include "XYZ/Asset/AssetManager.h"
 
 namespace XYZ {
+
+	void AssetData::WaitUnlock() const
+	{
+		while (m_Locked) {}
+	}
+
+	bool AssetData::TryLock() const
+	{
+		if (m_Locked)
+			return false;
+
+		m_Locked = true;
+		return true;
+	}
+
+	void AssetData::SpinLock() const
+	{
+		WaitUnlock();
+		m_Locked = true;
+	}
+
+	void AssetData::Unlock() const
+	{
+		m_Locked = false;
+	}
+	bool AssetData::IsLocked() const
+	{
+		return m_Locked;
+	}
 	void AssetRegistry::StoreMetadata(const AssetMetadata& metadata, WeakRef<Asset> asset)
 	{
 		Ref<AssetData> assetPtr = Ref<AssetData>::Create();

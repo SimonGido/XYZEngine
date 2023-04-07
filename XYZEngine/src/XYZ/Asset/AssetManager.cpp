@@ -93,17 +93,18 @@ namespace XYZ
 	void AssetManager::LoadAssetAsync(const AssetHandle& assetHandle, const AssetLoadedFn& onLoaded)
 	{
 		Ref<AssetData> assetData = s_Instance.m_Registry.GetAsset(assetHandle);
-		if (assetData->Locked)
-			return;
-		
-		if (assetData->Asset.IsValid())
+		assetData->SpinLock(); // Wait to finish loading if it already started
+
+		if (assetData->Asset.IsValid()) // Asset is already loaded just call callback immediately
 		{
 			Ref<Asset> asset = assetData->Asset.Raw();
 			onLoaded(asset);
-			return;
 		}
-
-		s_Instance.m_PendingAssetsQueue.PushBack({ assetData, onLoaded });
+		else
+		{
+			s_Instance.m_PendingAssetsQueue.PushBack({ assetData, onLoaded });
+		}
+		assetData->Unlock();
 	}
 
 	std::vector<AssetHandle> AssetManager::FindAllLoadedAssets()
@@ -307,21 +308,22 @@ namespace XYZ
 			while (!s_Instance.m_PendingAssetsQueue.Empty())
 			{
 				AssetPending pending = s_Instance.m_PendingAssetsQueue.PopBack();
-				// Somebody already loaded asset from main thread
-				if (pending.AssetData->Asset.IsValid())
-					continue;
-
-				pending.AssetData->Locked = true;
+				pending.AssetData->SpinLock(); // Wait to be able to lock asset data again
+				
 				Ref<Asset> result;
-				if (AssetImporter::TryLoadData(pending.AssetData->Metadata, result))
+				if (pending.AssetData->Asset.IsValid()) // Probably loaded asset on main thread already
+				{
+					result = pending.AssetData->Asset.Raw();
+					s_Instance.m_LoadedAssetsQueue.PushBack({ result, std::move(pending.OnLoaded) });
+				}
+				else if (AssetImporter::TryLoadData(pending.AssetData->Metadata, result))
 				{
 					pending.AssetData->Asset = result;
 					s_Instance.m_LoadedAssetsQueue.PushBack({ result, std::move(pending.OnLoaded) });
 					keepAliveAsset(result);
 				}
-
-				pending.AssetData->Locked = false;
-				
+				pending.AssetData->Unlock();
+			
 			}
 		}
 	}
