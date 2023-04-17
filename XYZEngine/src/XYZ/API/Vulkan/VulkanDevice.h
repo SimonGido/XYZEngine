@@ -32,10 +32,11 @@ namespace XYZ {
 		
 	
 		const QueueFamilyIndices&		  GetQueueFamilyIndices()	  const { return m_QueueFamilyIndices; }
-		const VkPhysicalDeviceProperties& GetProperties()			  const { return m_Properties; }
+		const VkPhysicalDeviceProperties& GetProperties()			  const { return m_Properties.properties; }
 		const VkPhysicalDeviceFeatures&   GetFeatures()				  const { return m_Features; }
-		const VkPhysicalDeviceLimits&     GetLimits()				  const { return m_Properties.limits; }
+		const VkPhysicalDeviceLimits&     GetLimits()				  const { return m_Properties.properties.limits; }
 		const VkPhysicalDeviceMemoryProperties& GetMemoryProperties() const { return m_MemoryProperties; }
+		const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& GetRaytracingProperties() const { return m_RaytracingProperties; }
 	private:
 		void setupQueueFamilyIndices(int flags);
 		void findPresentationQueue(VkSurfaceKHR surface);
@@ -44,11 +45,12 @@ namespace XYZ {
 
 	private:
 		VkPhysicalDevice					 m_PhysicalDevice;
-		VkPhysicalDeviceProperties			 m_Properties;
+		VkPhysicalDeviceProperties2			 m_Properties;
 		VkPhysicalDeviceFeatures			 m_Features;
 		VkPhysicalDeviceMemoryProperties	 m_MemoryProperties;
 		VkFormat							 m_DepthFormat;
 		QueueFamilyIndices					 m_QueueFamilyIndices;
+		VkPhysicalDeviceRayTracingPipelinePropertiesKHR m_RaytracingProperties;
 
 		std::unordered_set<std::string>		 m_SupportedExtensions;
 		std::vector<VkQueueFamilyProperties> m_QueueFamilyProperties;
