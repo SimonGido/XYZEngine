@@ -1,6 +1,7 @@
 #pragma once
 #include "VulkanVertexBuffer.h"
 #include "VulkanIndexBuffer.h"
+#include "VulkanBuffer.h"
 
 namespace XYZ {
 	
@@ -17,19 +18,25 @@ namespace XYZ {
 		Ref<VertexBuffer> VertexBuffer;
 		uint32_t		  VertexStride;
 		VertexFormat	  Format;
+		glm::mat4		  Transform;
 	};
 
 
-	class VulkanRaytracingBLAS
+	class VulkanRaytracingBLAS : public RefCount
 	{
 	public:
-
+		VulkanRaytracingBLAS(const std::vector<RaytracingGeometrySpecification>& specifications);
 
 	private:
+		void createTransformBuffer();
+
 		void RT_convertRaytracingGeometryToVK();
-		void RT_buildBlas();
+
 
 	private:
+		Ref<VulkanBuffer> m_AccelerationBuffer;
+		Ref<VulkanBuffer> m_TransformBuffer;
+
 		std::vector<RaytracingGeometrySpecification> m_Geometry;
 		std::vector<VkAccelerationStructureGeometryKHR> m_VKGeometry;
 		std::vector<VkAccelerationStructureBuildRangeInfoKHR> m_VKOffsets;

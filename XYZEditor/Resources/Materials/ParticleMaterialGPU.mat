@@ -1,7 +1,7 @@
 Shader: 2b32c755-7163-4d55-97b0-d804afbde923
 Opaque: true
 Textures:
-  - Name: u_AlbedoTexture
+  - Name: u_Texture
     Handle: 670eeb29-9103-4232-9a7b-ca0640f1c542
 TextureArrays:
   []

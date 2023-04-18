@@ -72,6 +72,9 @@ namespace XYZ {
 
 		void createDepthResources();
 		
+
+		void raytracingTest(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer);
+
 	private:	
 		WeakRef<SceneRenderer> m_SceneRenderer;
 		Ref<Renderer2D>		   m_Renderer2D;

@@ -56,13 +56,13 @@ namespace XYZ {
 		std::vector<const char*> instanceExtensions;
 		VulkanValidation::AddExtension(VK_KHR_SURFACE_EXTENSION_NAME, instanceExtensions);
 		VulkanValidation::AddExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, instanceExtensions);
+	
 		if (s_Validation)
 		{
 			VulkanValidation::AddExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, instanceExtensions);
 			VulkanValidation::AddExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, instanceExtensions);
 			VulkanValidation::AddExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, instanceExtensions);
 		}
-
 
 		const VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT };
 		VkValidationFeaturesEXT features = {};
@@ -156,14 +156,17 @@ namespace XYZ {
 	}
 	void VulkanContext::setupDevice()
 	{
-		VkPhysicalDeviceFeatures enabledFeatures;
-		memset(&enabledFeatures, 0, sizeof(VkPhysicalDeviceFeatures));
-		enabledFeatures.samplerAnisotropy = true;
-		enabledFeatures.wideLines = true;
-		enabledFeatures.fillModeNonSolid = true;
-		enabledFeatures.pipelineStatisticsQuery = true;
-		enabledFeatures.inheritedQueries = true;
-		enabledFeatures.shaderStorageImageMultisample = true; // Required for VR
+		VkPhysicalDeviceFeatures2 enabledFeatures;
+		memset(&enabledFeatures, 0, sizeof(VkPhysicalDeviceFeatures2));
+		enabledFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+		enabledFeatures.features.samplerAnisotropy = true;
+		enabledFeatures.features.wideLines = true;
+		enabledFeatures.features.fillModeNonSolid = true;
+		enabledFeatures.features.pipelineStatisticsQuery = true;
+		enabledFeatures.features.inheritedQueries = true;
+		enabledFeatures.features.shaderStorageImageMultisample = true; // Required for VR
+		
+
 
 		m_Device = Ref<VulkanDevice>::Create(enabledFeatures);
 	}

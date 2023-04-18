@@ -11,6 +11,9 @@
 
 #include "XYZ/Debug/Profiler.h"
 
+
+#include "XYZ/API/Vulkan/VulkanRaytracingBLAS.h"
+
 namespace XYZ {
 	GeometryPass::GeometryPass()
 	{
@@ -69,6 +72,8 @@ namespace XYZ {
 	)
 	{
 		XYZ_PROFILE_FUNC("GeometryPass::Submit");
+
+		raytracingTest(queue, commandBuffer);
 
 		// Geometry
 		uint32_t geometryPassQuery = commandBuffer->BeginTimestampQuery();
@@ -695,5 +700,22 @@ namespace XYZ {
 			spec.DepthWrite = true;
 			m_DepthPipelineInstanced.Pipeline = Pipeline::Create(spec);
 		}
+	}
+	void GeometryPass::raytracingTest(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer)
+	{
+		std::vector<RaytracingGeometrySpecification> specifications;
+
+		for (auto& [key, command] : queue.MeshDrawCommands)
+		{
+			auto& spec = specifications.emplace_back();
+
+			spec.VertexBuffer = command.Mesh->GetVertexBuffer();
+			spec.IndexBuffer = command.Mesh->GetIndexBuffer();
+			spec.Transform = glm::mat4(1.0f);
+
+			spec.Format = VertexFormat::Float32;
+			spec.VertexStride = command.Pipeline->GetSpecification().Shader->GetLayouts()[0].GetStride();
+		}
+		Ref<VulkanRaytracingBLAS> blas = Ref<VulkanRaytracingBLAS>::Create(specifications);
 	}
 }

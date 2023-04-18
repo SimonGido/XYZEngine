@@ -222,13 +222,16 @@ namespace XYZ {
 		Ref<Asset> result;
 		Ref<AssetData> assetData = Get().m_Registry.GetAsset(assetHandle);
 		if (assetData->TryLock()) // If asset is locked it means it is not loaded yet
-		{
-			result = assetData->Asset.Raw();
-			if (!result.Raw())
+		{	
+			if (!assetData->Asset.IsValid())
 			{		
 				// If we did not request async load of asset, load it synchronously
 				result = loadAsset<T>(assetData->Metadata);
 				assetData->Asset = result.Raw();
+			}
+			else
+			{
+				result = assetData->Asset.Raw();
 			}
 			assetData->Unlock();
 		}
@@ -241,12 +244,16 @@ namespace XYZ {
 		Ref<AssetData> assetData = Get().m_Registry.GetAsset(assetHandle);
 		assetData->SpinLock();
 
-		Ref<Asset> result = assetData->Asset.Raw();
-		if (!result.Raw())
+		Ref<Asset> result;
+		if (!assetData->Asset.IsValid())
 		{
 			// If we did not request async load of asset, load it synchronously
 			result = loadAsset<T>(assetData->Metadata);
 			assetData->Asset = result.Raw();
+		}
+		else
+		{
+			result = assetData->Asset.Raw();
 		}
 		assetData->Unlock();
 		return result.As<T>();

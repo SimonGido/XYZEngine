@@ -147,6 +147,7 @@ namespace XYZ {
 		allocatorInfo.physicalDevice = device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
 		allocatorInfo.device = device->GetVulkanDevice();
 		allocatorInfo.instance = VulkanContext::GetInstance();
+		allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
 		vmaCreateAllocator(&allocatorInfo, &s_Data->Allocator);
 	}

@@ -142,11 +142,11 @@ namespace XYZ {
 		m_PhysicalDevice = FindSuitableGPU(surface, devices);
 		XYZ_ASSERT(m_PhysicalDevice != VK_NULL_HANDLE, "failed to find GPUs with Vulkan support!");
 
+
 		m_Properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
 		m_Properties.pNext = &m_RaytracingProperties;
 
 		vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &m_Properties);
-
 
 		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_Features);
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);
@@ -326,7 +326,7 @@ namespace XYZ {
 
 	}
 
-	VulkanDevice::VulkanDevice(VkPhysicalDeviceFeatures enabledFeatures)
+	VulkanDevice::VulkanDevice(VkPhysicalDeviceFeatures2 enabledFeatures)
 		:
 		m_LogicalDevice(VK_NULL_HANDLE),
 		m_EnabledFeatures(enabledFeatures),
@@ -359,19 +359,29 @@ namespace XYZ {
 		deviceExtensions.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
 		deviceExtensions.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
 		deviceExtensions.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
-		
+		deviceExtensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
 
 		if (m_PhysicalDevice->IsExtensionSupported(VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME))
 			deviceExtensions.push_back(VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME);
 		if (m_PhysicalDevice->IsExtensionSupported(VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME))
 			deviceExtensions.push_back(VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME);
+		
+	
+		VkPhysicalDeviceVulkan12Features features12;
+		memset(&features12, 0, sizeof(VkPhysicalDeviceVulkan12Features));
+		features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+		features12.bufferDeviceAddress = true;
+		features12.pNext = nullptr;
 
 		VkDeviceCreateInfo deviceCreateInfo = {};
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		m_EnabledFeatures.pNext = &features12;
+
 
 		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(m_PhysicalDevice->m_QueueCreateInfos.size());;
 		deviceCreateInfo.pQueueCreateInfos = m_PhysicalDevice->m_QueueCreateInfos.data();
-		deviceCreateInfo.pEnabledFeatures = &m_EnabledFeatures;
+		//deviceCreateInfo.pEnabledFeatures = &m_EnabledFeatures;
+		deviceCreateInfo.pNext = &m_EnabledFeatures;
 
 		// Enable the debug marker extension if it is present (likely meaning a debugging tool is present)
 		if (m_PhysicalDevice->IsExtensionSupported(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))

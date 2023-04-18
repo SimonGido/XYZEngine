@@ -66,7 +66,7 @@ namespace XYZ {
 	class VulkanDevice : public RefCount
 	{
 	public:
-		VulkanDevice(VkPhysicalDeviceFeatures enabledFeatures);
+		VulkanDevice(VkPhysicalDeviceFeatures2 enabledFeatures);
 		virtual ~VulkanDevice() override;
 
 		void Init(VkSurfaceKHR surface);
@@ -92,7 +92,7 @@ namespace XYZ {
 
 	private:
 		VkDevice				  m_LogicalDevice;
-		VkPhysicalDeviceFeatures  m_EnabledFeatures;
+		VkPhysicalDeviceFeatures2 m_EnabledFeatures;
 		Ref<VulkanPhysicalDevice> m_PhysicalDevice;
 
 		VkQueue					  m_GraphicsQueue;
