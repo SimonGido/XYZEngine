@@ -19,6 +19,14 @@ namespace XYZ {
 		{\
 			return std::get<Index>(sc_RegisteredClasses);\
 		}\
+	template <size_t Index>\
+		static auto GetName()\
+		{\
+			std::array<char, sc_ClassNames[Index].size() + 1> result;					\
+			memcpy(result.data(), sc_ClassNames[Index].data(), sc_ClassNames[Index].size());	\
+			result[sc_ClassNames[Index].size()] = 0;						\
+			return result;									\
+		}\
 	private:\
 		static constexpr std::tuple<Reflection<Args>...> sc_RegisteredClasses = {}; \
 	};\
