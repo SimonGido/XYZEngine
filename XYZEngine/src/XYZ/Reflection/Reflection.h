@@ -109,6 +109,14 @@ namespace XYZ {
 			}, tmp);\
 			return *result;\
 		}\
+		template <size_t Index>\
+		static auto GetName()\
+		{\
+			std::array<char, sc_VariableNames[Index].size() + 1> result;					\
+			memcpy(result.data(), sc_VariableNames[Index].data(), sc_VariableNames[Index].size());	\
+			result[sc_VariableNames[Index].size()] = 0;						\
+			return result;									\
+		}\
 	private:\
 		static bool stringsEqual(const char* a, const char* b, size_t length)\
 		{\
