@@ -366,12 +366,24 @@ namespace XYZ {
 		if (m_PhysicalDevice->IsExtensionSupported(VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME))
 			deviceExtensions.push_back(VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME);
 		
-	
+
+		VkPhysicalDeviceAccelerationStructureFeaturesKHR accelFeature;
+		memset(&accelFeature, 0, sizeof(accelFeature));
+		accelFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+		accelFeature.accelerationStructure = true;
+		accelFeature.pNext = nullptr;
+
+		VkPhysicalDeviceRayTracingPipelineFeaturesKHR rtPipelineFeature;
+		memset(&rtPipelineFeature, 0, sizeof(rtPipelineFeature));
+		rtPipelineFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+		rtPipelineFeature.rayTracingPipeline = true;
+		rtPipelineFeature.pNext = &accelFeature;
+
 		VkPhysicalDeviceVulkan12Features features12;
 		memset(&features12, 0, sizeof(VkPhysicalDeviceVulkan12Features));
 		features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
 		features12.bufferDeviceAddress = true;
-		features12.pNext = nullptr;
+		features12.pNext = &rtPipelineFeature;
 
 		VkDeviceCreateInfo deviceCreateInfo = {};
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -380,7 +392,6 @@ namespace XYZ {
 
 		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(m_PhysicalDevice->m_QueueCreateInfos.size());;
 		deviceCreateInfo.pQueueCreateInfos = m_PhysicalDevice->m_QueueCreateInfos.data();
-		//deviceCreateInfo.pEnabledFeatures = &m_EnabledFeatures;
 		deviceCreateInfo.pNext = &m_EnabledFeatures;
 
 		// Enable the debug marker extension if it is present (likely meaning a debugging tool is present)

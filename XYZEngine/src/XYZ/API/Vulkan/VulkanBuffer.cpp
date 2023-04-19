@@ -4,56 +4,55 @@
 #include "VulkanContext.h"
 
 namespace XYZ {
-
-
-	VulkanBuffer::VulkanBuffer(uint32_t size, VkBufferUsageFlags usage)
+	VulkanBuffer::VulkanBuffer()
 		:
-		m_Size(size),
+		m_Size(0),
 		m_VulkanBuffer(VK_NULL_HANDLE),
 		m_MemoryAllocation(VK_NULL_HANDLE),
-		m_Usage(usage)
+		m_Usage(0)
 	{
-		Ref<VulkanBuffer> instance = this;
-		Renderer::Submit([instance]() mutable {
-			instance->RT_update(ByteBuffer());
-		});
 	}
-	VulkanBuffer::VulkanBuffer(const void* data, uint32_t size, VkBufferUsageFlags usage)
-		:
-		m_Size(size),
-		m_VulkanBuffer(VK_NULL_HANDLE),
-		m_MemoryAllocation(VK_NULL_HANDLE),
-		m_Usage(usage)
-	{
-		ByteBuffer buffer = ByteBuffer::Copy(data, size);
-		Ref<VulkanBuffer> instance = this;
-		Renderer::Submit([instance, buffer]() mutable {
-			instance->RT_update(buffer);
-		});
-	}
-	VulkanBuffer::VulkanBuffer(void** data, uint32_t size, VkBufferUsageFlags usage)
-		:
-		m_Size(size),
-		m_VulkanBuffer(VK_NULL_HANDLE),
-		m_MemoryAllocation(VK_NULL_HANDLE),
-		m_Usage(usage)
-	{
-		ByteBuffer buffer = ByteBuffer(static_cast<uint8_t*>(*data), size);
-		*data = nullptr;
-		Ref<VulkanBuffer> instance = this;
-		Renderer::Submit([instance, buffer]() mutable {
-			instance->RT_update(buffer);
-			});
-	}
+	
 	VulkanBuffer::~VulkanBuffer()
 	{
+		destroy();
+	}
+	void VulkanBuffer::RT_Create(uint32_t size, VkBufferUsageFlags usage)
+	{
+		destroy();
+		m_Size = size;
+		m_Usage = usage;
+		RT_update(ByteBuffer());
+	}
+	void VulkanBuffer::RT_Create(const void* data, uint32_t size, VkBufferUsageFlags usage)
+	{
+		destroy();
+		m_Size = size;
+		m_Usage = usage;
+		ByteBuffer buffer = ByteBuffer::Copy(data, size);
+		RT_update(buffer);
+	}
+	void VulkanBuffer::RT_Create(void** data, uint32_t size, VkBufferUsageFlags usage)
+	{
+		destroy();
+		m_Size = size;
+		m_Usage = usage;
+		ByteBuffer buffer = ByteBuffer(static_cast<uint8_t*>(*data), size);
+		*data = nullptr;
+		RT_update(buffer);
+	}
+	void VulkanBuffer::destroy()
+	{
 		VkBuffer buffer = m_VulkanBuffer;
-		VmaAllocation allocation = m_MemoryAllocation;
-		Renderer::SubmitResource([buffer, allocation]()
+		if (buffer != VK_NULL_HANDLE)
 		{
-			VulkanAllocator allocator("VulkanBuffer");
-			allocator.DestroyBuffer(buffer, allocation);
-		});
+			VmaAllocation allocation = m_MemoryAllocation;
+			Renderer::SubmitResource([buffer, allocation]()
+			{
+				VulkanAllocator allocator("VulkanBuffer");
+				allocator.DestroyBuffer(buffer, allocation);
+			});
+		}
 	}
 	void VulkanBuffer::RT_update(ByteBuffer data)
 	{

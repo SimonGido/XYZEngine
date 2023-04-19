@@ -26,17 +26,22 @@ namespace XYZ {
 	{
 	public:
 		VulkanRaytracingBLAS(const std::vector<RaytracingGeometrySpecification>& specifications);
+		~VulkanRaytracingBLAS();
 
 	private:
 		void createTransformBuffer();
 
 		void RT_convertRaytracingGeometryToVK();
-
+		void RT_createBLAS();
+		void RT_createTLAS();
 
 	private:
-		Ref<VulkanBuffer> m_AccelerationBuffer;
-		Ref<VulkanBuffer> m_TransformBuffer;
+		VulkanBuffer m_BLASBuffer;
+		VulkanBuffer m_TransformBuffer;
 
+		VkAccelerationStructureKHR m_BLAS;
+
+		std::vector<uint32_t> m_TriangleCounts;
 		std::vector<RaytracingGeometrySpecification> m_Geometry;
 		std::vector<VkAccelerationStructureGeometryKHR> m_VKGeometry;
 		std::vector<VkAccelerationStructureBuildRangeInfoKHR> m_VKOffsets;

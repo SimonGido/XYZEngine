@@ -6,17 +6,21 @@
 
 namespace XYZ {
 
-	class VulkanBuffer : public RefCount
+	class VulkanBuffer
 	{
 	public:
-		VulkanBuffer(uint32_t size, VkBufferUsageFlags usage);
-		VulkanBuffer(const void* data, uint32_t size, VkBufferUsageFlags usage);
-		VulkanBuffer(void** data, uint32_t size, VkBufferUsageFlags usage);
+		VulkanBuffer();	
 		~VulkanBuffer();
+
+		void RT_Create(uint32_t size, VkBufferUsageFlags usage);
+		void RT_Create(const void* data, uint32_t size, VkBufferUsageFlags usage);
+		void RT_Create(void** data, uint32_t size, VkBufferUsageFlags usage);
+
 
 		uint32_t GetSize() const { return m_Size; }
 		VkBuffer GetVulkanBuffer() const { return m_VulkanBuffer; }
 	private:
+		void destroy();
 		void RT_update(ByteBuffer data);
 
 	private:
