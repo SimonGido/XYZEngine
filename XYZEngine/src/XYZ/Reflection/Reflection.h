@@ -19,6 +19,13 @@ namespace XYZ {
 		static constexpr const char*								   sc_ClassName = #Type;\
 		static constexpr std::array<std::string_view, sc_NumVariables> sc_VariableNames = Utils::SplitString<sc_NumVariables>(#__VA_ARGS__, ',', ' ');\
 	public:\
+		template <typename TFunc>\
+		static void ForEach(const TFunc& func)\
+		{\
+			Utils::For<sc_NumVariables>([&](auto i) {\
+				func(i);\
+			});\
+		}\
 		static auto ToTuple(Type&& s) \
 		{\
 			auto [__VA_ARGS__] = std::forward<Type>(s); \
