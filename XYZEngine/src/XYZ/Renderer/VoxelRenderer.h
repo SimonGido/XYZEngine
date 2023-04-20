@@ -8,7 +8,9 @@ namespace XYZ {
 
 	struct VoxelsSpecification
 	{
-		glm::mat4 Transform;
+		glm::vec4 Translation;
+		glm::vec4 Rotation;
+
 		uint32_t  MaxTraverse;
 		uint32_t  Width;
 		uint32_t  Height;
@@ -49,6 +51,7 @@ namespace XYZ {
 		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::mat4& projection, const glm::vec3& cameraPosition);
 		void EndScene();
 		void SetViewportSize(uint32_t width, uint32_t height);
+
 
 		void SubmitVoxels(const VoxelsSpecification& spec, uint32_t* voxels);
 

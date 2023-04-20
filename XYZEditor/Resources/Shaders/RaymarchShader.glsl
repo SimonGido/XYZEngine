@@ -1,9 +1,12 @@
 //#type compute
 #version 460
 
+#include "Resources/Shaders/Includes/Math.glsl"
+
 layout(push_constant) uniform Uniform
 { 
-    mat4  Transform;
+    vec4 Translation;
+	vec4 Rotation;
 	uint  MaxTraverse;
 	uint  Width;
 	uint  Height;
@@ -41,14 +44,17 @@ struct Ray
 
 Ray CreateRay(vec2 coords)
 {
-	coords /= u_ViewportSize.xy;
+	coords.x /= u_ViewportSize.x;
+	coords.y /= u_ViewportSize.y;
 	coords = coords * 2.0 - 1.0; // -1 -> 1
-	vec4 target = u_InverseProjection * vec4(coords.x, coords.y, 1, 1);
+	vec4 target = u_InverseProjection * vec4(coords.x, -coords.y, 1, 1);
 	
 	Ray ray;
 	ray.Origin = u_CameraPosition.xyz;
+	
 	ray.Direction = vec3(u_InverseView * vec4(normalize(vec3(target) / target.w), 0)); // World space
 	ray.Direction = normalize(ray.Direction);
+
 	return ray;
 }
 
@@ -87,10 +93,11 @@ vec4 VoxelToColor(uint voxel)
 vec4 RayMarch(vec3 rayOrig, vec3 rayDir)
 {
 	vec4 defaultColor = vec4(0.3, 0.2, 0.7, 1.0);
-	vec3 origin = (u_Uniforms.Transform * vec4(rayOrig, 1.0)).xyz;
+	vec3 origin = rayOrig - u_Uniforms.Translation.xyz;
 	vec3 direction = rayDir;
-	ivec3 current_voxel = ivec3(floor(origin / u_Uniforms.VoxelSize));
 
+	ivec3 current_voxel = ivec3(floor(origin / u_Uniforms.VoxelSize));
+	
 	ivec3 step = ivec3(
 		(direction.x > 0.0) ? 1 : -1,
 		(direction.y > 0.0) ? 1 : -1,

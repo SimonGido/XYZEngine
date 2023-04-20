@@ -5,6 +5,10 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/quaternion.hpp>
+
 namespace XYZ {
 	VoxelRenderer::VoxelRenderer()
 	{
@@ -75,6 +79,16 @@ namespace XYZ {
 		}
 		ImGui::End();
 	}
+
+	static glm::mat4 CalcViewMatrix(glm::vec3 pos, float pitch, float yaw)
+	{
+		const glm::quat orientation = glm::quat(glm::vec3(-pitch, -yaw, 0.0f));
+		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), pos) * glm::toMat4(orientation);
+	
+		viewMatrix = glm::inverse(viewMatrix);
+		return viewMatrix;
+	}
+
 	void VoxelRenderer::render()
 	{
 		m_CommandBuffer->Begin();

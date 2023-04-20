@@ -20,8 +20,9 @@
 #include <imgui_internal.h>
 #include <ImGuizmo.h>
 
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 namespace XYZ {
 	namespace Editor {
@@ -81,6 +82,15 @@ namespace XYZ {
 			m_ViewportSize(0.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f)
 		{
+			m_VoxelsSpecification.Translation = glm::vec4(0.0f);
+			m_VoxelsSpecification.Rotation = glm::vec4(0.0f);
+
+			m_VoxelsSpecification.Width = VOXEL_GRID_SIZE;
+			m_VoxelsSpecification.Height = VOXEL_GRID_SIZE;
+			m_VoxelsSpecification.Depth = VOXEL_GRID_SIZE;
+			m_VoxelsSpecification.MaxTraverse = 512;
+			m_VoxelsSpecification.VoxelSize = 1.0f;
+
 			for (int i = 0; i < VOXEL_GRID_SIZE; ++i)
 			{
 				for (int j = 0; j < VOXEL_GRID_SIZE; ++j)
@@ -129,6 +139,7 @@ namespace XYZ {
 				}
 				ImGui::End();
 			}
+			drawVoxelsSpecification();
 		}
 
 		void VoxelPanel::OnUpdate(Timestep ts)
@@ -143,14 +154,8 @@ namespace XYZ {
 					m_EditorCamera.GetProjectionMatrix(), 
 					m_EditorCamera.GetPosition()
 				);
-				VoxelsSpecification spec;
-				spec.Transform = glm::mat4(1.0f);
-				spec.Width = VOXEL_GRID_SIZE;
-				spec.Height = VOXEL_GRID_SIZE;
-				spec.Depth = VOXEL_GRID_SIZE;
-				spec.MaxTraverse = 128;
-				spec.VoxelSize = 1.0f;
-				m_VoxelRenderer->SubmitVoxels(spec, m_Voxels);
+				
+				m_VoxelRenderer->SubmitVoxels(m_VoxelsSpecification, m_Voxels);
 				m_VoxelRenderer->EndScene();
 			}
 		}
@@ -213,5 +218,17 @@ namespace XYZ {
 			}
 		}
 
+		void VoxelPanel::drawVoxelsSpecification()
+		{
+			if (ImGui::Begin("Voxels Specification"))
+			{
+				ImGui::DragFloat3("Translation", glm::value_ptr(m_VoxelsSpecification.Translation), 0.1f);
+				ImGui::DragFloat3("Rotation", glm::value_ptr(m_VoxelsSpecification.Rotation), 0.1f);
+
+				
+				ImGui::DragInt("Max Traverse", (int*)&m_VoxelsSpecification.MaxTraverse, 1.0f, 0, 512);
+			}
+			ImGui::End();
+		}
 	}
 }

@@ -39,6 +39,8 @@ namespace XYZ {
 			std::pair<float, float>		    getMouseViewportSpace()		const;
 
 			void handlePanelResize(const glm::vec2& newSize);
+			void drawVoxelsSpecification();
+
 		private:
 			Ref<VoxelRenderer>			m_VoxelRenderer;
 			glm::vec2				    m_ViewportSize;
@@ -49,9 +51,11 @@ namespace XYZ {
 
 			EditorCamera m_EditorCamera;
 
-			static constexpr uint32_t VOXEL_GRID_SIZE = 256;
+			static constexpr uint32_t VOXEL_GRID_SIZE = 32;
 
 			uint32_t m_Voxels[VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE];
+
+			VoxelsSpecification m_VoxelsSpecification;
 		};
 	}
 }
