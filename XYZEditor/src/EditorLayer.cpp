@@ -71,7 +71,8 @@ namespace XYZ {
 			EditorLogger::Init(consolePanel->GetStream());
 			ScriptEngine::SetLogger(EditorLogger::GetLogger());
 
-			m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
+			//m_EditorManager.RegisterPanel<Editor::ScenePanel>("ScenePanel");
+			m_EditorManager.RegisterPanel<Editor::VoxelPanel>("VoxelPanel");
 			m_EditorManager.RegisterPanel<Editor::InspectorPanel>("InspectorPanel");
 			m_EditorManager.RegisterPanel<Editor::SceneHierarchyPanel>("SceneHierarchyPanel");
 			m_EditorManager.RegisterPanel<Editor::ImGuiStylePanel>("ImGuiStylePanel");
@@ -80,12 +81,17 @@ namespace XYZ {
 			m_EditorManager.RegisterPanel<Editor::ScriptPanel>("ScriptPanel");
 			m_EditorManager.RegisterPanel<Editor::PluginPanel>("PluginPanel");
 
+
+			auto voxelPanel = m_EditorManager.GetPanel<Editor::VoxelPanel>("VoxelPanel");
+
+			voxelPanel->SetVoxelRenderer(Ref<VoxelRenderer>::Create());
+
 			//m_EditorManager.RegisterPanel<Editor::ParticleEditorGPU>("ParticleEditorGPU");
 
-			std::shared_ptr<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
+			//std::shared_ptr<Editor::ScenePanel> scenePanel = m_EditorManager.GetPanel<Editor::ScenePanel>("ScenePanel");
 		
-			scenePanel->SetSceneRenderer(m_SceneRenderer);
-			m_EditorCamera = &scenePanel->GetEditorCamera();
+			//scenePanel->SetSceneRenderer(m_SceneRenderer);
+			m_EditorCamera = &voxelPanel->GetEditorCamera();
 
 			Renderer::WaitAndRenderAll();
 

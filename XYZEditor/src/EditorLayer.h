@@ -12,7 +12,7 @@
 #include "Editor/Panels/ImGuiStylePanel.h"
 #include "Editor/Panels/SceneHierarchyPanel.h"
 #include "Editor/Panels/PluginPanel.h"
-
+#include "Editor/Panels/VoxelPanel.h"
 
 #include "Editor/ParticleEditorGPU/ParticleEditorGPU.h"
 #include "Editor/Asset/AssetManagerViewPanel.h"

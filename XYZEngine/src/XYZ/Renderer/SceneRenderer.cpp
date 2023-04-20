@@ -55,16 +55,7 @@ namespace XYZ {
 		m_ActiveScene(scene)
 	{
 		m_ViewportSize = { 1280, 720 };
-		Init();
-	}
-
-	SceneRenderer::~SceneRenderer()
-	{		
-	}
-
-	void SceneRenderer::Init()
-	{
-		XYZ_PROFILE_FUNC("SceneRenderer::Init");
+		XYZ_PROFILE_FUNC("SceneRenderer::SceneRenderer");
 
 		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "SceneRenderer");
 
@@ -87,9 +78,9 @@ namespace XYZ {
 		m_StorageBufferSet->Create(sizeof(SSBOPointLights3D), SSBOPointLights3D::Set, SSBOPointLights3D::Binding);
 		m_StorageBufferSet->Create(1, SSBOLightCulling::Set, SSBOLightCulling::Binding);
 		m_StorageBufferSet->Create(sizeof(SSBOBoneTransformData), SSBOBoneTransformData::Set, SSBOBoneTransformData::Binding);
-		
+
 		m_StorageBufferSet->Create(SSBOIndirectData::MaxSize, SSBOIndirectData::Set, SSBOIndirectData::Binding, true);
-	
+
 		for (uint32_t i = 0; i < SSBOComputeData::Count; ++i)
 		{
 			m_StorageBufferSet->Create(SSBOComputeData::MaxSize, SSBOComputeData::Set, SSBOComputeData::Binding[i]);
@@ -98,21 +89,26 @@ namespace XYZ {
 		m_IndirectCommandAllocator = Ref<StorageBufferAllocator>::Create(SSBOIndirectData::MaxSize, SSBOIndirectData::Binding, SSBOIndirectData::Set);
 
 		m_CompositeShaderAsset = AssetManager::GetAssetWait<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
-		m_LightShaderAsset	 = AssetManager::GetAssetWait<ShaderAsset>("Resources/Shaders/LightShader.shader");
+		m_LightShaderAsset = AssetManager::GetAssetWait<ShaderAsset>("Resources/Shaders/LightShader.shader");
 		m_BloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
-		
+
 		m_GeometryPass.Init(this);
 		m_DeferredLightPass.Init({ m_LightRenderPass, m_LightShaderAsset->GetShader() }, m_CommandBuffer);
 		m_BloomPass.Init({ m_BloomShaderAsset->GetShader(), m_BloomTexture }, m_CommandBuffer);
 		m_CompositePass.Init({ m_CompositeRenderPass, m_CompositeShaderAsset->GetShader() }, m_CommandBuffer);
 		m_LightCullingPass.Init({ m_UniformBufferSet, m_StorageBufferSet });
-	
-		m_LightCullingWorkGroups = { 
-			(m_ViewportSize.x + m_ViewportSize.x % 16) / 16, 
-			(m_ViewportSize.y + m_ViewportSize.y % 16) / 16, 
-			1 
+
+		m_LightCullingWorkGroups = {
+			(m_ViewportSize.x + m_ViewportSize.x % 16) / 16,
+			(m_ViewportSize.y + m_ViewportSize.y % 16) / 16,
+			1
 		};
 	}
+
+	SceneRenderer::~SceneRenderer()
+	{		
+	}
+
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
 	{

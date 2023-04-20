@@ -57,7 +57,7 @@ namespace XYZ {
 
 			auto device = VulkanContext::GetCurrentDevice();
 			VkDevice vkDevice = device->GetVulkanDevice();
-			vkDestroyAccelerationStructureKHR(vkDevice, blas, nullptr);
+			//vkDestroyAccelerationStructureKHR(vkDevice, blas, nullptr);
 		});
 	}
 
@@ -194,13 +194,16 @@ namespace XYZ {
 		const VkAccelerationStructureBuildRangeInfoKHR* const buildRanges = m_VKOffsets.data();
 
 		VkCommandBuffer commandBuffer = device->GetCommandBuffer(true);
-		vkCmdBuildAccelerationStructuresKHR(
-			commandBuffer,
-			1,
-			&accelerationBuildGeometryInfo,
-			&buildRanges
-		);
+		//vkCmdBuildAccelerationStructuresKHR(
+		//	commandBuffer,
+		//	1,
+		//	&accelerationBuildGeometryInfo,
+		//	&buildRanges
+		//);
 		
 		device->FlushCommandBuffer(commandBuffer);
+	}
+	void VulkanRaytracingBLAS::RT_createTLAS()
+	{
 	}
 }

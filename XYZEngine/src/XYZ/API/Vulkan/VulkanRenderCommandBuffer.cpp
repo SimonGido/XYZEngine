@@ -310,16 +310,18 @@ namespace XYZ {
 		auto device = VulkanContext::GetCurrentDevice();
 		const uint32_t frameIndex = Renderer::GetCurrentFrame();
 
-
-		vkGetQueryPoolResults(device->GetVulkanDevice(), m_TimestampQueryPools[frameIndex], 0, m_TimestampQueryCount,
-			m_TimestampQueryCount * sizeof(uint64_t), m_TimestampQueryResults[frameIndex].data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
-
-		for (uint32_t i = 0; i < m_TimestampQueryCount; i += 2)
+		if (!m_TimestampQueryPools.empty())
 		{
-			uint64_t startTime = m_TimestampQueryResults[frameIndex][i];
-			uint64_t endTime = m_TimestampQueryResults[frameIndex][i + 1];
-			float nsTime = endTime > startTime ? (endTime - startTime) * device->GetPhysicalDevice()->GetLimits().timestampPeriod : 0.0f;
-			m_ExecutionGPUTimes[frameIndex][i / 2] = nsTime * 0.000001f; // Time in ms
+			vkGetQueryPoolResults(device->GetVulkanDevice(), m_TimestampQueryPools[frameIndex], 0, m_TimestampQueryCount,
+				m_TimestampQueryCount * sizeof(uint64_t), m_TimestampQueryResults[frameIndex].data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+
+			for (uint32_t i = 0; i < m_TimestampQueryCount; i += 2)
+			{
+				uint64_t startTime = m_TimestampQueryResults[frameIndex][i];
+				uint64_t endTime = m_TimestampQueryResults[frameIndex][i + 1];
+				float nsTime = endTime > startTime ? (endTime - startTime) * device->GetPhysicalDevice()->GetLimits().timestampPeriod : 0.0f;
+				m_ExecutionGPUTimes[frameIndex][i / 2] = nsTime * 0.000001f; // Time in ms
+			}
 		}
 	}
 	void VulkanPrimaryRenderCommandBuffer::getPipelineQueryResults()

@@ -68,7 +68,7 @@ namespace XYZ {
 		SceneRenderer(Ref<Scene> scene, SceneRendererSpecification specification = {});
 		~SceneRenderer();
 
-		void Init();
+
 		void SetScene(Ref<Scene> scene);
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void SetGridProperties(const GridProperties& props);
