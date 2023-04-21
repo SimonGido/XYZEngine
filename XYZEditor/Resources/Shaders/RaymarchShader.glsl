@@ -56,7 +56,6 @@ Ray CreateRay(vec2 coords)
 	ray.Origin = (u_Uniforms.Transform * rayOrigin).xyz;
 
 	ray.Direction = vec3(u_InverseView * u_Uniforms.Transform * vec4(normalize(vec3(target) / target.w), 0)); // World space
-	//ray.Direction = ( inverseModelRot * vec4(ray.Direction, 1.0)).xyz;
 	ray.Direction = normalize(ray.Direction);
 
 	return ray;
