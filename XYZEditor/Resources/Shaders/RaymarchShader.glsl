@@ -5,8 +5,7 @@
 
 layout(push_constant) uniform Uniform
 { 
-    vec4 Translation;
-	vec4 Rotation;
+	mat4  Transform;
 	uint  MaxTraverse;
 	uint  Width;
 	uint  Height;
@@ -22,6 +21,9 @@ layout (std140, binding = 16) uniform Scene
 	mat4 u_InverseView;	
 	vec4 u_CameraPosition;
 	vec4 u_ViewportSize;
+
+
+	//vec4 u_RayOrigin;
 
 	// Light info
 	vec4 u_LightDirection;
@@ -48,11 +50,13 @@ Ray CreateRay(vec2 coords)
 	coords.y /= u_ViewportSize.y;
 	coords = coords * 2.0 - 1.0; // -1 -> 1
 	vec4 target = u_InverseProjection * vec4(coords.x, -coords.y, 1, 1);
+	vec4 rayOrigin = u_CameraPosition;
 	
 	Ray ray;
-	ray.Origin = u_CameraPosition.xyz;
-	
-	ray.Direction = vec3(u_InverseView * vec4(normalize(vec3(target) / target.w), 0)); // World space
+	ray.Origin = (u_Uniforms.Transform * rayOrigin).xyz;
+
+	ray.Direction = vec3(u_InverseView * u_Uniforms.Transform * vec4(normalize(vec3(target) / target.w), 0)); // World space
+	//ray.Direction = ( inverseModelRot * vec4(ray.Direction, 1.0)).xyz;
 	ray.Direction = normalize(ray.Direction);
 
 	return ray;
@@ -93,7 +97,7 @@ vec4 VoxelToColor(uint voxel)
 vec4 RayMarch(vec3 rayOrig, vec3 rayDir)
 {
 	vec4 defaultColor = vec4(0.3, 0.2, 0.7, 1.0);
-	vec3 origin = rayOrig - u_Uniforms.Translation.xyz;
+	vec3 origin = rayOrig;
 	vec3 direction = rayDir;
 
 	ivec3 current_voxel = ivec3(floor(origin / u_Uniforms.VoxelSize));

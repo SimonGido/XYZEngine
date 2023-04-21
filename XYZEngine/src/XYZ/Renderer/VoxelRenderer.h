@@ -69,7 +69,12 @@ namespace XYZ {
 	private:
 		struct VoxelDrawCommand
 		{
-			VoxelsSpecification Specification;
+			glm::mat4			Transform;
+			uint32_t			MaxTraverse;
+			uint32_t			Width;
+			uint32_t			Height;
+			uint32_t			Depth;
+			float				VoxelSize;
 			uint32_t			VoxelOffset;
 			uint32_t			VoxelCount;
 		};

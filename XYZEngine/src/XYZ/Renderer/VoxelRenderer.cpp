@@ -10,6 +10,31 @@
 #include <glm/gtx/quaternion.hpp>
 
 namespace XYZ {
+
+	static glm::mat4 CalculateVoxelModelTransform(const VoxelsSpecification& spec)
+	{
+		glm::vec3 translation = spec.Translation;
+		glm::vec3 centerTranslation = -glm::vec3(
+			spec.Width / 2 * spec.VoxelSize,
+			spec.Height / 2 * spec.VoxelSize,
+			spec.Depth / 2 * spec.VoxelSize
+		);
+
+		glm::mat4 rot = glm::toMat4(glm::quat(glm::vec3(
+			spec.Rotation.x,
+			spec.Rotation.y,
+			spec.Rotation.z
+		)));
+
+		// Rotation around center
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
+			* rot
+			* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+
+		// Transform to the center
+		return transform * glm::translate(glm::mat4(1.0f), centerTranslation);
+	}
+
 	VoxelRenderer::VoxelRenderer()
 	{
 		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "VoxelRenderer");
@@ -34,7 +59,7 @@ namespace XYZ {
 		m_CurrentVoxelsCount = 0;
 		m_UBVoxelScene.InverseProjection = glm::inverse(projection);
 		m_UBVoxelScene.InverseView = glm::inverse(viewMatrix);
-		m_UBVoxelScene.CameraPosition = glm::vec4(cameraPosition, 0.0f);
+		m_UBVoxelScene.CameraPosition = glm::vec4(cameraPosition, 1.0f);
 		m_UBVoxelScene.LightDirection = { -0.2f, -1.4f, -1.5f, 1.0f };
 		m_UBVoxelScene.LightColor = glm::vec4(1.0f);
 
@@ -62,9 +87,19 @@ namespace XYZ {
 	{
 		const uint32_t voxelCount = spec.Width * spec.Height * spec.Depth;
 		auto& drawCommand = m_DrawCommands.emplace_back();
-		drawCommand.Specification = spec;
+		
+		// PushConstants
+		drawCommand.Transform = CalculateVoxelModelTransform(spec);
+		drawCommand.MaxTraverse = spec.MaxTraverse;
+		drawCommand.Width = spec.Width;
+		drawCommand.Height = spec.Height;
+		drawCommand.Depth = spec.Depth;
+		drawCommand.VoxelSize = spec.VoxelSize;
+		//////////////////
+		/// 
 		drawCommand.VoxelOffset = m_CurrentVoxelsCount;
 		drawCommand.VoxelCount = voxelCount;
+
 
 		memcpy(&m_SSBOVoxels.Voxels[m_CurrentVoxelsCount], voxels, voxelCount * sizeof(uint32_t));
 
@@ -108,11 +143,20 @@ namespace XYZ {
 				SSBOVoxels::Binding,
 				SSBOVoxels::Set
 			);
+
 			Renderer::DispatchCompute(
 				m_RaymarchPipeline,
 				nullptr,
 				32, 32, 1,
-				PushConstBuffer{ drawCommand.Specification }
+				PushConstBuffer
+				{
+					glm::inverse(drawCommand.Transform),
+					drawCommand.MaxTraverse,
+					drawCommand.Width,
+					drawCommand.Height,
+					drawCommand.Depth,
+					drawCommand.VoxelSize
+				}
 			);
 		}
 		Renderer::EndPipelineCompute(m_RaymarchPipeline);
