@@ -62,6 +62,8 @@ namespace XYZ {
 		uint32_t	LastVoxel;
 		float		VoxelSize;
 		// TODO: model must specify width height and depth otherwise raytracing wont work
+		// Even though voxel model is in memory, it is probably in the first layers of our 3d grid
+		// Probably it will not be possible to draw them in single compute dispatch
 		uint32_t Padding[1];
 	};
 
