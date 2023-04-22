@@ -10,30 +10,24 @@
 #include <glm/gtx/quaternion.hpp>
 
 namespace XYZ {
+	static std::random_device s_RandomDev; // obtain a random number from hardware
+	static std::mt19937 s_RandomGen(s_RandomDev());
 
-	static glm::mat4 CalculateVoxelModelTransform(const VoxelsSpecification& spec)
+	static uint32_t RandomColor()
 	{
-		glm::vec3 translation = spec.Translation;
-		glm::vec3 centerTranslation = -glm::vec3(
-			spec.Width / 2 * spec.VoxelSize,
-			spec.Height / 2 * spec.VoxelSize,
-			spec.Depth / 2 * spec.VoxelSize
-		);
+		// seed the generator
+		std::uniform_int_distribution<> distr(0, 255); // define the range
 
-		glm::mat4 rot = glm::toMat4(glm::quat(glm::vec3(
-			spec.Rotation.x,
-			spec.Rotation.y,
-			spec.Rotation.z
-		)));
+		uint32_t result = 0;
+		result |= static_cast<uint8_t>(distr(s_RandomGen));		  // R
+		result |= static_cast<uint8_t>(distr(s_RandomGen)) << 8;  // G
+		result |= static_cast<uint8_t>(distr(s_RandomGen)) << 16; // B
+		result |= static_cast<uint8_t>(distr(s_RandomGen)) << 24; // A
 
-		// Rotation around center
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), translation)
-			* rot
-			* glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
-
-		// Transform to the center
-		return transform * glm::translate(glm::mat4(1.0f), centerTranslation);
+		return result;
 	}
+
+
 
 	VoxelRenderer::VoxelRenderer()
 	{
@@ -42,21 +36,27 @@ namespace XYZ {
 		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
 		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
 		m_UniformBufferSet->Create(sizeof(UBVoxelScene), UBVoxelScene::Set, UBVoxelScene::Binding);
-
+		uint32_t size = sizeof(UBVoxelScene);
 		m_StorageBufferSet = StorageBufferSet::Create(framesInFlight);
 		m_StorageBufferSet->Create(sizeof(SSBOVoxels), SSBOVoxels::Set, SSBOVoxels::Binding);
-	
-	
+		m_StorageBufferSet->Create(sizeof(SSBOVoxelModels), SSBOVoxelModels::Set, SSBOVoxelModels::Binding);
+		
 		TextureProperties props;
 		props.Storage = true;
 		props.SamplerWrap = TextureWrap::Clamp;
 		m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
-	
+		m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, 1280, 720, nullptr, props);
 		createRaymarchPipeline();
+
+		for (uint32_t i = 0; i < 256; i++)
+		{
+			m_SSBOVoxels.Colors[i] = RandomColor();
+		}
 	}
 	void VoxelRenderer::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::mat4& projection, const glm::vec3& cameraPosition)
 	{
 		m_CurrentVoxelsCount = 0;
+
 		m_UBVoxelScene.InverseProjection = glm::inverse(projection);
 		m_UBVoxelScene.InverseView = glm::inverse(viewMatrix);
 		m_UBVoxelScene.CameraPosition = glm::vec4(cameraPosition, 1.0f);
@@ -69,6 +69,7 @@ namespace XYZ {
 
 		updateViewportSize();
 		updateUniformBufferSet();
+
 	}
 	void VoxelRenderer::EndScene()
 	{
@@ -83,28 +84,38 @@ namespace XYZ {
 			m_ViewportSizeChanged = true;
 		}
 	}
-	void VoxelRenderer::SubmitVoxels(const VoxelsSpecification& spec, uint32_t* voxels)
+	void VoxelRenderer::SetColors(const std::array<uint32_t, 256>& colors)
 	{
-		const uint32_t voxelCount = spec.Width * spec.Height * spec.Depth;
-		auto& drawCommand = m_DrawCommands.emplace_back();
-		
-		// PushConstants
-		drawCommand.Transform = CalculateVoxelModelTransform(spec);
-		drawCommand.MaxTraverse = spec.MaxTraverse;
-		drawCommand.Width = spec.Width;
-		drawCommand.Height = spec.Height;
-		drawCommand.Depth = spec.Depth;
-		drawCommand.VoxelSize = spec.VoxelSize;
-		//////////////////
-		/// 
-		drawCommand.VoxelOffset = m_CurrentVoxelsCount;
-		drawCommand.VoxelCount = voxelCount;
+		memcpy(m_SSBOVoxels.Colors, colors.data(), sizeof(SSBOVoxels::Colors));
+	}
+	void VoxelRenderer::SetColors(const std::array<VoxelColor, 256>& colors)
+	{
+		memcpy(m_SSBOVoxels.Colors, colors.data(), sizeof(SSBOVoxels::Colors));
+	}
+	void VoxelRenderer::SubmitMesh(const Ref<VoxelMeshSource>& meshSource, const glm::mat4& transform, float voxelSize)
+	{
+		auto& drawCommand = m_DrawCommands[meshSource->GetHandle()];
+		auto& model = drawCommand.Models.emplace_back();
+
+		const VoxelSubmesh& submesh = meshSource->GetSubmeshes()[0];
+
+		glm::vec3 centerTranslation = -glm::vec3(
+			submesh.Width / 2 * voxelSize,
+			submesh.Height / 2 * voxelSize,
+			submesh.Depth / 2 * voxelSize
+		);
+		const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
+
+		model.Transform = glm::inverse(transform * glm::translate(glm::mat4(1.0f), centerTranslation));
+		model.FirstVoxel = m_CurrentVoxelsCount;
+		model.LastVoxel = model.FirstVoxel + voxelCount;
+		model.VoxelSize = voxelSize;
 
 
-		memcpy(&m_SSBOVoxels.Voxels[m_CurrentVoxelsCount], voxels, voxelCount * sizeof(uint32_t));
-
+		memcpy(&m_SSBOVoxels.Voxels[m_CurrentVoxelsCount], submesh.ColorIndices.data(), voxelCount * sizeof(uint8_t));
 		m_CurrentVoxelsCount += voxelCount;
 	}
+	
 	void VoxelRenderer::OnImGuiRender()
 	{
 		if (ImGui::Begin("Voxel Renderer"))
@@ -135,28 +146,12 @@ namespace XYZ {
 			m_RaymarchMaterial
 		);
 
-		for (const auto& drawCommand : m_DrawCommands)
+		for (const auto& [key, drawCommand] : m_DrawCommands)
 		{
-			m_StorageBufferSet->SetBufferInfo(
-				drawCommand.VoxelCount * sizeof(uint32_t),
-				drawCommand.VoxelOffset * sizeof(uint32_t),
-				SSBOVoxels::Binding,
-				SSBOVoxels::Set
-			);
-
 			Renderer::DispatchCompute(
 				m_RaymarchPipeline,
 				nullptr,
-				32, 32, 1,
-				PushConstBuffer
-				{
-					glm::inverse(drawCommand.Transform),
-					drawCommand.MaxTraverse,
-					drawCommand.Width,
-					drawCommand.Height,
-					drawCommand.Depth,
-					drawCommand.VoxelSize
-				}
+				32, 32, 1
 			);
 		}
 		Renderer::EndPipelineCompute(m_RaymarchPipeline);
@@ -173,7 +168,9 @@ namespace XYZ {
 			props.Storage = true;
 			props.SamplerWrap = TextureWrap::Clamp;
 			m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
+			m_DepthTexture == Texture2D::Create(ImageFormat::RED32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
+			m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
 		}
 	}
 	void VoxelRenderer::updateUniformBufferSet()
@@ -189,11 +186,20 @@ namespace XYZ {
 	void VoxelRenderer::updateStorageBufferSet()
 	{
 		Ref<VoxelRenderer> instance = this;
-		uint32_t voxelCount = m_CurrentVoxelsCount;
-		Renderer::Submit([instance, voxelCount]() mutable {
-			const uint32_t currentFrame = Renderer::GetCurrentFrame();
-			instance->m_StorageBufferSet->Get(SSBOVoxels::Binding, SSBOVoxels::Set, currentFrame)->RT_Update(&instance->m_SSBOVoxels, voxelCount * sizeof(uint32_t), 0);
-		});
+		uint32_t modelCount = 0;
+		for (auto& [key, drawCommand] : m_DrawCommands)
+		{
+			for (auto& model : drawCommand.Models)
+				m_SSBOVoxelModels.Models[modelCount++] = model;
+		}
+		m_SSBOVoxelModels.NumModels = modelCount;
+
+		const uint32_t voxelsUpdateSize = sizeof(SSBOVoxels::Colors) + m_CurrentVoxelsCount * sizeof(uint8_t);
+		const uint32_t voxelModelsUpdateSize = sizeof(SSBOVoxelModels::NumModels) + sizeof(SSBOVoxelModels::Padding) + modelCount * sizeof(VoxelModel);
+		
+		m_StorageBufferSet->Update((void*)&m_SSBOVoxelModels, voxelModelsUpdateSize, 0, SSBOVoxelModels::Binding, SSBOVoxelModels::Set);
+		m_StorageBufferSet->Update((void*)&m_SSBOVoxels, voxelsUpdateSize, 0, SSBOVoxels::Binding, SSBOVoxels::Set);
+
 	}
 	void VoxelRenderer::createRaymarchPipeline()
 	{
@@ -201,9 +207,12 @@ namespace XYZ {
 		m_RaymarchMaterial = Material::Create(shader);
 
 		m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
+		m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+
 		PipelineComputeSpecification spec;
 		spec.Shader = shader;
 	
 		m_RaymarchPipeline = PipelineCompute::Create(spec);
 	}
+
 }

@@ -3,6 +3,7 @@
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Scene/SceneEntity.h"
 #include "XYZ/Scene/SceneIntersection.h"
+#include "XYZ/Scene/Components.h"
 
 #include "XYZ/Event/ApplicationEvent.h"
 #include "XYZ/Event/InputEvent.h"
@@ -11,6 +12,7 @@
 #include "XYZ/Renderer/VoxelRenderer.h"
 #include "XYZ/Utils/Math/Ray.h"
 
+#include "XYZ/Asset/Renderer/VoxelMeshSource.h"
 
 #include "Editor/EditorPanel.h"
 #include "Editor/EditorCamera.h"
@@ -53,9 +55,13 @@ namespace XYZ {
 
 			static constexpr uint32_t VOXEL_GRID_SIZE = 32;
 
-			uint32_t m_Voxels[VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE];
+			
+			uint8_t m_Voxels[VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE];
 
-			VoxelsSpecification m_VoxelsSpecification;
+			
+			TransformComponent m_Transform;
+
+			Ref<VoxelMeshSource> m_VoxelMeshSource;
 		};
 	}
 }

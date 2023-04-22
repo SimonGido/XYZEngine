@@ -105,4 +105,12 @@ namespace XYZ {
 		virtual void Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const override;
 		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
 	};
+
+
+	class XYZ_API VoxelMeshSourceSerializer : public AssetSerializer
+	{
+	public:
+		virtual void Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const override;
+		virtual bool TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const override;
+	};
 }

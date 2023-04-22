@@ -101,7 +101,8 @@ project "XYZEngine"
 			"%{IncludeDir.box2d}",
 			"%{IncludeDir.optick}",
 			"%{IncludeDir.OpenXR}",
-			"%{IncludeDir.VulkanSDK}"
+			"%{IncludeDir.VulkanSDK}",
+			"%{IncludeDir.vox}"
 		}
 
 		links

@@ -752,7 +752,7 @@ namespace XYZ {
 				// Do we need to init a compiler for each stage?
 				shaderc::Compiler compiler;
 				shaderc::CompileOptions options;
-
+				
 				options.SetIncluder(ShaderCIncluder::Create(Renderer::GetDefaultResources().Includer));
 
 				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
@@ -797,7 +797,7 @@ namespace XYZ {
 		{
 			XYZ_ASSERT(data.size(), "");
 			VkShaderModuleCreateInfo moduleCreateInfo{};
-
+			
 			moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 			moduleCreateInfo.codeSize = data.size() * sizeof(uint32_t);
 			moduleCreateInfo.pCode = data.data();

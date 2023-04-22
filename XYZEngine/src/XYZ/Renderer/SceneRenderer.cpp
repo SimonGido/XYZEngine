@@ -90,7 +90,7 @@ namespace XYZ {
 
 		m_CompositeShaderAsset = AssetManager::GetAssetWait<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
 		m_LightShaderAsset = AssetManager::GetAssetWait<ShaderAsset>("Resources/Shaders/LightShader.shader");
-		m_BloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
+		m_BloomShaderAsset = AssetManager::GetAssetWait<ShaderAsset>("Resources/Shaders/Bloom.shader");
 
 		m_GeometryPass.Init(this);
 		m_DeferredLightPass.Init({ m_LightRenderPass, m_LightShaderAsset->GetShader() }, m_CommandBuffer);

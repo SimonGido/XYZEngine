@@ -27,6 +27,7 @@ namespace XYZ {
 		Prefab,
 		Blueprint,
 		ParticleSystemGPU,
+		VoxelMeshSource,
 		NumTypes
 	};
 
@@ -61,6 +62,7 @@ namespace XYZ {
 			if (assetType == "Prefab")					  return AssetType::Prefab;
 			if (assetType == "Blueprint")				  return AssetType::Blueprint;
 			if (assetType == "ParticleSystemGPU")		  return AssetType::ParticleSystemGPU;
+			if (assetType == "VoxelMeshSource")			  return AssetType::VoxelMeshSource;
 
 			XYZ_ASSERT(false, "Unknown Asset Type");
 			return AssetType::None;
@@ -87,6 +89,7 @@ namespace XYZ {
 			case XYZ::AssetType::Prefab:						return "Prefab";
 			case XYZ::AssetType::Blueprint:						return "Blueprint";
 			case XYZ::AssetType::ParticleSystemGPU:				return "ParticleSystemGPU";
+			case XYZ::AssetType::VoxelMeshSource:				return "VoxelMeshSource";
 			default:
 				break;
 			}
@@ -117,6 +120,7 @@ namespace XYZ {
 			case XYZ::AssetType::Prefab:						return "prefab";
 			case XYZ::AssetType::Blueprint:						return "blueprint";
 			case XYZ::AssetType::ParticleSystemGPU:				return "particle";
+			case XYZ::AssetType::VoxelMeshSource:				return "voxmeshsrc";
 			default:
 				break;
 			}

@@ -355,11 +355,18 @@ namespace XYZ {
 		deviceExtensions.push_back("VK_KHR_external_semaphore_win32");
 		deviceExtensions.push_back("VK_KHR_get_memory_requirements2");
 
+		
 		// Raytracing
-		deviceExtensions.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
-		deviceExtensions.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
-		deviceExtensions.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
-		deviceExtensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+		//deviceExtensions.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+		//deviceExtensions.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+		//deviceExtensions.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
+		//deviceExtensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+		
+		// Storage
+		if (m_PhysicalDevice->IsExtensionSupported(VK_KHR_8BIT_STORAGE_EXTENSION_NAME))
+			deviceExtensions.push_back(VK_KHR_8BIT_STORAGE_EXTENSION_NAME);
+		if (m_PhysicalDevice->IsExtensionSupported(VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME))
+			deviceExtensions.push_back(VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME);
 
 		if (m_PhysicalDevice->IsExtensionSupported(VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME))
 			deviceExtensions.push_back(VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME);
@@ -367,12 +374,14 @@ namespace XYZ {
 			deviceExtensions.push_back(VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME);
 		
 
+
 		VkPhysicalDeviceAccelerationStructureFeaturesKHR accelFeature;
 		memset(&accelFeature, 0, sizeof(accelFeature));
 		accelFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
 		accelFeature.accelerationStructure = true;
-		accelFeature.pNext = nullptr;
+		accelFeature.pNext = NULL;
 
+		
 		VkPhysicalDeviceRayTracingPipelineFeaturesKHR rtPipelineFeature;
 		memset(&rtPipelineFeature, 0, sizeof(rtPipelineFeature));
 		rtPipelineFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
@@ -384,6 +393,8 @@ namespace XYZ {
 		features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
 		features12.bufferDeviceAddress = true;
 		features12.pNext = &rtPipelineFeature;
+		features12.uniformAndStorageBuffer8BitAccess = true;
+		features12.storageBuffer8BitAccess = true;
 
 		VkDeviceCreateInfo deviceCreateInfo = {};
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

@@ -4,6 +4,9 @@
 #include "UniformBufferSet.h"
 #include "Material.h"
 
+#include "XYZ/Utils/DataStructures/ThreadQueue.h"
+#include "XYZ/Asset/Renderer/VoxelMeshSource.h"
+
 namespace XYZ {
 
 	struct VoxelsSpecification
@@ -29,17 +32,47 @@ namespace XYZ {
 		glm::vec4 LightDirection;
 		glm::vec4 LightColor;
 
+		uint32_t MaxTraverses = 512;
+
 		static constexpr uint32_t Binding = 16;
 		static constexpr uint32_t Set = 0;
 	};
 
+
+
 	struct SSBOVoxels
 	{
-		static constexpr uint32_t MaxVoxels = 1024 * 1024 * 32;
-		
-		uint32_t Voxels[MaxVoxels];
+		static constexpr uint32_t Width = 512;
+		static constexpr uint32_t Height = 512;
+		static constexpr uint32_t Depth = 512;
+
+		static constexpr uint32_t MaxVoxels = Width * Height * Depth;
+				
+		uint32_t Colors[256];
+		uint8_t Voxels[MaxVoxels];
 
 		static constexpr uint32_t Binding = 17;
+		static constexpr uint32_t Set = 0;
+	};
+
+	struct VoxelModel
+	{
+		glm::mat4	Transform;
+		uint32_t	FirstVoxel;
+		uint32_t	LastVoxel;
+		float		VoxelSize;
+		// TODO: model must specify width height and depth otherwise raytracing wont work
+		uint32_t Padding[1];
+	};
+
+	struct SSBOVoxelModels
+	{
+		static constexpr uint32_t MaxModels = 1024;
+		uint32_t NumModels;
+		uint32_t Padding[3];
+		VoxelModel Models[MaxModels];
+
+		static constexpr uint32_t Binding = 18;
 		static constexpr uint32_t Set = 0;
 	};
 
@@ -50,10 +83,12 @@ namespace XYZ {
 
 		void BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::mat4& projection, const glm::vec3& cameraPosition);
 		void EndScene();
+		
 		void SetViewportSize(uint32_t width, uint32_t height);
+		void SetColors(const std::array<uint32_t, 256>& colors);
+		void SetColors(const std::array<VoxelColor, 256>& colors);
 
-
-		void SubmitVoxels(const VoxelsSpecification& spec, uint32_t* voxels);
+		void SubmitMesh(const Ref<VoxelMeshSource>& meshSource, const glm::mat4& transform, float voxelSize);
 
 		void OnImGuiRender();
 
@@ -69,14 +104,7 @@ namespace XYZ {
 	private:
 		struct VoxelDrawCommand
 		{
-			glm::mat4			Transform;
-			uint32_t			MaxTraverse;
-			uint32_t			Width;
-			uint32_t			Height;
-			uint32_t			Depth;
-			float				VoxelSize;
-			uint32_t			VoxelOffset;
-			uint32_t			VoxelCount;
+			std::vector<VoxelModel> Models;
 		};
 
 
@@ -88,16 +116,17 @@ namespace XYZ {
 		Ref<StorageBufferSet>	m_StorageBufferSet;
 		Ref<UniformBufferSet>	m_UniformBufferSet;
 		Ref<Texture2D>			m_OutputTexture;
+		Ref<Texture2D>			m_DepthTexture;
 
 		UBVoxelScene			m_UBVoxelScene;
 		SSBOVoxels				m_SSBOVoxels;
+		SSBOVoxelModels			m_SSBOVoxelModels;
 
 		glm::ivec2				m_ViewportSize;
 		bool				    m_ViewportSizeChanged = false;
 		uint32_t				m_CurrentVoxelsCount;
 
-		std::vector<VoxelDrawCommand> m_DrawCommands;
-
+		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;
 	};
 
 }

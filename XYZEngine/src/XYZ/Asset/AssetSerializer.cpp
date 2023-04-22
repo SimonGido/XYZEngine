@@ -791,4 +791,16 @@ namespace XYZ {
 		asset = particleSystem;
 		return true;
 	}
+	void VoxelMeshSourceSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
+	{
+	}
+	bool VoxelMeshSourceSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
+	{
+		std::ifstream stream(metadata.FilePath);
+		std::stringstream strStream;
+		strStream << stream.rdbuf();
+		YAML::Node data = YAML::Load(strStream.str());
+
+		return true;
+	}
 }

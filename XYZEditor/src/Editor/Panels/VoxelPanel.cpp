@@ -31,30 +31,12 @@ namespace XYZ {
 			static std::random_device s_RandomDev; // obtain a random number from hardware
 			static std::mt19937 s_RandomGen(s_RandomDev());
 
-			static uint32_t RandomColor()
+			static uint8_t RandomColorIndex()
 			{
-				 // seed the generator
 				std::uniform_int_distribution<> distr(0, 255); // define the range
-
-				uint32_t result = 0;
-				result |= static_cast<uint8_t>(distr(s_RandomGen));		  // R
-				result |= static_cast<uint8_t>(distr(s_RandomGen)) << 8;  // G
-				result |= static_cast<uint8_t>(distr(s_RandomGen)) << 16; // B
-				result |= static_cast<uint8_t>(distr(s_RandomGen)) << 24; // A
-
-				return result;
+				return static_cast<uint8_t>(distr(s_RandomGen));
 			}
 
-			static uint32_t ColorToUINT(const glm::vec4& color)
-			{
-				uint32_t result = 0;
-				result |= static_cast<uint32_t>(color.x * 255.0f);	   // R
-				result |= static_cast<uint32_t>(color.y * 255.0f) << 8;  // G
-				result |= static_cast<uint32_t>(color.z * 255.0f) << 16; // B
-				result |= static_cast<uint32_t>(color.w * 255.0f) << 24; // A
-
-				return result;
-			}
 
 			static uint32_t Index3D(int x, int y, int z, int width, int height)
 			{
@@ -82,27 +64,18 @@ namespace XYZ {
 			m_ViewportSize(0.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f)
 		{
-			m_VoxelsSpecification.Translation = glm::vec4(0.0f);
-			m_VoxelsSpecification.Rotation = glm::vec4(0.0f);
-
-			m_VoxelsSpecification.Width = VOXEL_GRID_SIZE;
-			m_VoxelsSpecification.Height = VOXEL_GRID_SIZE;
-			m_VoxelsSpecification.Depth = VOXEL_GRID_SIZE;
-			m_VoxelsSpecification.MaxTraverse = 512;
-			m_VoxelsSpecification.VoxelSize = 1.0f;
-
 			for (int i = 0; i < VOXEL_GRID_SIZE; ++i)
 			{
 				for (int j = 0; j < VOXEL_GRID_SIZE; ++j)
 				{
 					for (int k = 0; k < VOXEL_GRID_SIZE; ++k)
 					{
-						//m_Voxels[Utils::Index3D(i, j, k, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = 0;
-						//if (j == 0)
-							m_Voxels[Utils::Index3D(i, j, k, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = Utils::RandomColor();
+						m_Voxels[Utils::Index3D(i, j, k, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = Utils::RandomColorIndex();
 					}
 				}
 			}
+
+			m_VoxelMeshSource = Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox");
 		}
 
 		VoxelPanel::~VoxelPanel()
@@ -155,7 +128,9 @@ namespace XYZ {
 					m_EditorCamera.GetPosition()
 				);
 				
-				m_VoxelRenderer->SubmitVoxels(m_VoxelsSpecification, m_Voxels);
+				m_VoxelRenderer->SetColors(m_VoxelMeshSource->GetColorPallete());
+	
+				m_VoxelRenderer->SubmitMesh(m_VoxelMeshSource, m_Transform.GetLocalTransform(), 1.0f);
 				m_VoxelRenderer->EndScene();
 			}
 		}
@@ -222,11 +197,8 @@ namespace XYZ {
 		{
 			if (ImGui::Begin("Voxels Specification"))
 			{
-				ImGui::DragFloat3("Translation", glm::value_ptr(m_VoxelsSpecification.Translation), 0.1f);
-				ImGui::DragFloat3("Rotation", glm::value_ptr(m_VoxelsSpecification.Rotation), 0.1f);
-
-				
-				ImGui::DragInt("Max Traverse", (int*)&m_VoxelsSpecification.MaxTraverse, 1.0f, 0, 512);
+				ImGui::DragFloat3("Translation", glm::value_ptr(m_Transform.GetTransform().Translation), 0.1f);
+				ImGui::DragFloat3("Rotation", glm::value_ptr(m_Transform.GetTransform().Rotation), 0.1f);
 			}
 			ImGui::End();
 		}

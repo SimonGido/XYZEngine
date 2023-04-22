@@ -56,12 +56,12 @@ namespace XYZ {
 		std::vector<const char*> instanceExtensions;
 		VulkanValidation::AddExtension(VK_KHR_SURFACE_EXTENSION_NAME, instanceExtensions);
 		VulkanValidation::AddExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, instanceExtensions);
+		VulkanValidation::AddExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, instanceExtensions);
 	
 		if (s_Validation)
 		{
 			VulkanValidation::AddExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, instanceExtensions);
 			VulkanValidation::AddExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, instanceExtensions);
-			VulkanValidation::AddExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, instanceExtensions);
 		}
 
 		const VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT };
