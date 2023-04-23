@@ -9,6 +9,37 @@ namespace XYZ {
 
 	namespace Math {
 
+		struct Plane
+		{
+			glm::vec3 Normal = { 0.f, 1.f, 0.f }; // unit vector
+			float     Distance = 0.f;        // Distance with origin
+
+			Plane() = default;
+
+			Plane(const glm::vec3& p1, const glm::vec3& norm)
+				:
+				Normal(glm::normalize(norm)),
+				Distance(glm::dot(Normal, p1))
+			{}
+
+			float GetSignedDistanceToPlane(const glm::vec3& point) const
+			{
+				return glm::dot(Normal, point) - Distance;
+			}
+		};
+
+		struct Frustum
+		{
+			Plane TopFace;
+			Plane BottomFace;
+
+			Plane RightFace;
+			Plane LeftFace;
+
+			Plane FarFace;
+			Plane NearFace;
+		};
+
 		XYZ_API std::pair<glm::vec2, glm::vec2> CalculateVelocitiesAfterContact(
 			const glm::vec2& firstVelocity, const glm::vec2& secondVelocity, float firstMass, float secondMass
 		);

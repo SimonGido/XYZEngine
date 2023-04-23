@@ -60,8 +60,10 @@ namespace XYZ {
 
 			
 			std::vector<TransformComponent> m_Transforms;
+			std::vector<TransformComponent> m_Transforms0;
 
 			Ref<VoxelMeshSource> m_VoxelMeshSource;
+			Ref<VoxelMeshSource> m_VoxelMeshSource0;
 		};
 	}
 }

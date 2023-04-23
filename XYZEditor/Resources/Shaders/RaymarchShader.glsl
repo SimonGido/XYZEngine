@@ -89,14 +89,14 @@ Ray CreateCameraRay(vec2 coords)
 }
 
 
-uint Index3D(int x, int y, int z, uint width, uint depth)
+uint Index3D(int x, int y, int z, uint width, uint height)
 {
-	return x + width * (y + depth * z);
+	return x + width * (y + height * z);
 }
 
-uint Index3D(ivec3 index, uint width, uint depth)
+uint Index3D(ivec3 index, uint width, uint height)
 {
-	return Index3D(index.x, index.y, index.z, width, depth);
+	return Index3D(index.x, index.y, index.z, width, height);
 }
 
 
@@ -129,7 +129,7 @@ struct BoxIntersectionResult
 	bool Hit;
 };
 
-BoxIntersectionResult RayBoxIntersection(vec3 origin, vec3 direction, vec3 boxMin, vec3 boxMax)
+BoxIntersectionResult RayBoxIntersection(vec3 origin, vec3 direction, vec3 lb, vec3 rt)
 {
 	BoxIntersectionResult result;
 	result.Hit = false;
@@ -140,8 +140,6 @@ BoxIntersectionResult RayBoxIntersection(vec3 origin, vec3 direction, vec3 boxMi
     dirfrac.z = 1.0 / direction.z;
     // lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
     // r.org is origin of ray
-	vec3 lb = boxMin;
-	vec3 rt = boxMax;
     float t1 = (lb.x - origin.x) * dirfrac.x;
     float t2 = (rt.x - origin.x) * dirfrac.x;
     float t3 = (lb.y - origin.y) * dirfrac.y;
@@ -247,7 +245,7 @@ RaymarchHitResult RayMarch(vec3 origin, vec3 t_max, vec3 t_delta, ivec3 current_
 			if (newDepth > currentDepth)
 				break;
 
-			uint voxelIndex = Index3D(current_voxel, width, depth) + voxelOffset;
+			uint voxelIndex = Index3D(current_voxel, width, height) + voxelOffset;
 			uint colorIndex = uint(Voxels[voxelIndex]);
 			uint voxel = Colors[colorIndex];
 

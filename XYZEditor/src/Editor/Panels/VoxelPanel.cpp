@@ -9,6 +9,7 @@
 #include "XYZ/Renderer/Renderer2D.h"
 
 
+#include "XYZ/Utils/Math/AABB.h"
 #include "XYZ/Utils/Math/Math.h"
 #include "XYZ/ImGui/ImGui.h"
 
@@ -43,7 +44,15 @@ namespace XYZ {
 				return x + width * (y + height * z);
 			}
 
+			static AABB VoxelModelToAABB(const glm::mat4& transform, uint32_t width, uint32_t height, uint32_t depth, float voxelSize)
+			{
+				AABB result;
+				glm::vec3 min = glm::vec3(0.0f);
+				glm::vec3 max = glm::vec3(width, height, depth) * voxelSize;
 
+				result = result.TransformAABB(transform);
+				return result;
+			}
 
 			static std::array<glm::vec2, 2> ImGuiViewportBounds()
 			{
@@ -76,11 +85,23 @@ namespace XYZ {
 			}
 
 			m_VoxelMeshSource = Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox");
+			m_VoxelMeshSource0 = Ref<VoxelMeshSource>::Create("Assets/Voxel/chr_knight.vox");
 			m_Transforms.resize(10);
+			m_Transforms0.resize(10);
+
 			float xOffset = 0.0f;
 			for (auto& transform : m_Transforms)
 			{
 				transform.GetTransform().Translation.x = xOffset;
+				transform.GetTransform().Rotation.x = glm::radians(-90.0f);
+				xOffset += 30.0f;
+			}
+
+			xOffset = 0.0f;
+			for (auto& transform : m_Transforms0)
+			{
+				transform.GetTransform().Translation.x = xOffset;
+				transform.GetTransform().Translation.y = 30.0f;
 				transform.GetTransform().Rotation.x = glm::radians(-90.0f);
 				xOffset += 30.0f;
 			}
@@ -128,6 +149,11 @@ namespace XYZ {
 					drawTransform(transform, id++);
 					ImGui::NewLine();
 				}
+				for (auto& transform : m_Transforms0)
+				{
+					drawTransform(transform, id++);
+					ImGui::NewLine();
+				}
 			}
 			ImGui::End();
 		}
@@ -138,16 +164,53 @@ namespace XYZ {
 			{
 				m_EditorCamera.OnUpdate(ts);
 
+				const glm::mat4 mvp = m_EditorCamera.GetViewProjection();
+	
+
 				m_VoxelRenderer->BeginScene(
-					m_EditorCamera.GetViewProjection(), 
+					mvp,
 					m_EditorCamera.GetViewMatrix(), 
 					m_EditorCamera.GetProjectionMatrix(), 
 					m_EditorCamera.GetPosition()
 				);
 				
-				m_VoxelRenderer->SetColors(m_VoxelMeshSource->GetColorPallete());
+				m_VoxelRenderer->SetColors(m_VoxelMeshSource0->GetColorPallete());
+
+				const auto& submesh = m_VoxelMeshSource->GetSubmeshes()[0];
+				const auto& submesh0 = m_VoxelMeshSource0->GetSubmeshes()[0];
+				const float voxelSize = 1.0f;
+
+				auto frustum = m_EditorCamera.CreateFrustum();
+
+
+				uint32_t culledOut = 0;
 				for (auto& transform : m_Transforms)
-					m_VoxelRenderer->SubmitMesh(m_VoxelMeshSource, transform.GetLocalTransform(), 1.0f);
+				{
+					const glm::mat4 trans = transform.GetLocalTransform();
+					AABB aabb = Utils::VoxelModelToAABB(trans, submesh.Width, submesh.Height, submesh.Depth, voxelSize);
+					if (aabb.InsideFrustum(frustum))
+					{
+						m_VoxelRenderer->SubmitMesh(m_VoxelMeshSource, transform.GetLocalTransform(), voxelSize);
+					}
+					else
+					{
+						culledOut++;
+					}
+				}
+				for (auto& transform : m_Transforms0)
+				{
+					const glm::mat4 trans = transform.GetLocalTransform();
+					AABB aabb = Utils::VoxelModelToAABB(trans, submesh0.Width, submesh0.Height, submesh0.Depth, voxelSize);
+					if (aabb.InsideFrustum(frustum))
+					{
+						m_VoxelRenderer->SubmitMesh(m_VoxelMeshSource0, transform.GetLocalTransform(), voxelSize);
+					}
+					else
+					{
+						culledOut++;
+					}
+				}
+				std::cout << culledOut << std::endl;
 				m_VoxelRenderer->EndScene();
 			}
 		}

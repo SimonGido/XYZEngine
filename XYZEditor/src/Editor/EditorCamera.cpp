@@ -24,6 +24,26 @@ namespace XYZ {
 			updateProjection();
 		}
 
+		Math::Frustum EditorCamera::CreateFrustum() const
+		{
+			Math::Frustum     frustum;
+			const float halfVSide = m_FarClip * tanf(glm::radians(m_FOV));
+			const float halfHSide = halfVSide * m_AspectRatio;
+
+			const glm::vec3 frontDir = GetForwardDirection();
+			const glm::vec3 rightDir = GetRightDirection();
+			const glm::vec3 upDir = GetUpDirection();
+			const glm::vec3 frontMultFar = m_FarClip * frontDir;
+
+			frustum.NearFace	= { m_Position + m_NearClip * frontDir, frontDir };
+			frustum.FarFace		= { m_Position + frontMultFar, -frontDir };
+			frustum.RightFace	= { m_Position, glm::cross(frontMultFar - rightDir * halfHSide, upDir) };
+			frustum.LeftFace	= { m_Position, glm::cross(upDir, frontMultFar + rightDir * halfHSide) };
+			frustum.TopFace		= { m_Position, glm::cross(rightDir, frontMultFar - upDir * halfVSide) };
+			frustum.BottomFace	= { m_Position, glm::cross(frontMultFar + upDir * halfVSide, rightDir) };
+			return frustum;
+		}
+
 		void EditorCamera::updateProjection()
 		{
 			m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
