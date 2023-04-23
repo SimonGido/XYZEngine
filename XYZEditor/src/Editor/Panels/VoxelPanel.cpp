@@ -96,14 +96,14 @@ namespace XYZ {
 			{
 				transform.GetTransform().Translation.x = xOffset;
 				transform.GetTransform().Rotation.x = glm::radians(-90.0f);
-				xOffset += 30.0f;
+				xOffset += 30.0f * 10;
 			}
 
 			xOffset = 0.0f;
 			for (auto& transform : m_Transforms0)
 			{
 				transform.GetTransform().Translation.x = xOffset;
-				transform.GetTransform().Translation.y = 30.0f;
+				transform.GetTransform().Translation.y = 30.0f * 10;
 				transform.GetTransform().Rotation.x = glm::radians(-90.0f);
 				xOffset += 30.0f;
 			}
@@ -189,10 +189,10 @@ namespace XYZ {
 				for (auto& transform : m_Transforms)
 				{
 					const glm::mat4 trans = transform.GetLocalTransform();
-					AABB aabb = Utils::VoxelModelToAABB(trans, submesh.Width, submesh.Height, submesh.Depth, voxelSize);
+					AABB aabb = Utils::VoxelModelToAABB(trans, submesh.Width, submesh.Height, submesh.Depth, 10.0f);
 					if (aabb.InsideFrustum(frustum) || true)
 					{
-						m_VoxelRenderer->SubmitMesh(m_VoxelMeshSource, transform.GetLocalTransform(), voxelSize);
+						m_VoxelRenderer->SubmitMesh(m_VoxelMeshSource, transform.GetLocalTransform(), 10.0f);
 					}
 					else
 					{

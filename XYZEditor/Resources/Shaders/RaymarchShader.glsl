@@ -293,7 +293,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 	float voxelSize = Models[modelIndex].VoxelSize;
 
 	vec3 boxMin = vec3(0,0,0);
-	vec3 boxMax = vec3(width, height, depth) / voxelSize;
+	vec3 boxMax = vec3(width, height, depth) * voxelSize;
 
 	if (!IsPointInsideBox(origin, boxMin, boxMax)) // Check if origin is inside grid
 	{
