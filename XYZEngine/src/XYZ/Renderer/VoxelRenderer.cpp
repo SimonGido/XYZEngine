@@ -130,6 +130,8 @@ namespace XYZ {
 			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.LightDirection), 0.1f);
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.LightColor), 0.1f);
 
+			ImGui::DragInt("Max Traverses", (int*)&m_UBVoxelScene.MaxTraverses, 1, 0, 1024);
+
 			const uint32_t frameIndex = Renderer::GetCurrentFrame();
 			float gpuTime = m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.GPUTime);
 			ImGui::Text("GPU Time: %.3fms", gpuTime);

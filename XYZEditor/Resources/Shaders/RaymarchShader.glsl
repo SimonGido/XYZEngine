@@ -107,6 +107,56 @@ uint VoxelAlpha(uint voxel)
 	return bitfieldExtract(voxel, 24, 8) / 255;
 }
 
+struct BoxIntersectionResult
+{
+	float T;
+	bool Hit;
+};
+
+BoxIntersectionResult RayBoxIntersection(vec3 origin, vec3 direction, vec3 boxMin, vec3 boxMax)
+{
+	BoxIntersectionResult result;
+	result.Hit = false;
+	vec3 dirfrac;
+    // r.dir is unit direction vector of ray
+    dirfrac.x = 1.0 / direction.x;
+    dirfrac.y = 1.0 / direction.y;
+    dirfrac.z = 1.0 / direction.z;
+    // lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
+    // r.org is origin of ray
+	vec3 lb = boxMin;
+	vec3 rt = boxMax;
+    float t1 = (lb.x - origin.x) * dirfrac.x;
+    float t2 = (rt.x - origin.x) * dirfrac.x;
+    float t3 = (lb.y - origin.y) * dirfrac.y;
+    float t4 = (rt.y - origin.y) * dirfrac.y;
+    float t5 = (lb.z - origin.z) * dirfrac.z;
+    float t6 = (rt.z - origin.z) * dirfrac.z;
+
+    float tmin = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
+    float tmax = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
+
+    // if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
+    if (tmax < 0.0)
+    {
+        result.T = tmax;
+        result.Hit = false;
+		return result;
+    }
+
+    // if tmin > tmax, ray doesn't intersect AABB
+    if (tmin > tmax)
+    {
+        result.T = tmax;
+        result.Hit = false;
+		return result;
+    }
+    result.T = tmin;
+	result.Hit = true;
+	return result;
+}
+
+
 struct RaymarchHitResult
 {
 	vec4  Color;
@@ -124,6 +174,7 @@ struct RaymarchResult
 	float Distance;
 	bool  OpaqueHit;
 	bool  Hit;
+	uint  TraverseCount;
 };
 
 RaymarchHitResult RayMarch(vec3 origin, vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, int modelIndex, float currentDepth)
@@ -135,7 +186,7 @@ RaymarchHitResult RayMarch(vec3 origin, vec3 t_max, vec3 t_delta, ivec3 current_
 	uint height = Models[modelIndex].Height;
 	uint depth = Models[modelIndex].Depth;
 	uint voxelOffset = Models[modelIndex].VoxelOffset;
-
+	
 	uint i = 0;
 	for (i = 0; i < maxTraverses; i++)
 	{
@@ -195,7 +246,22 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 	result.OpaqueHit = false;
 	result.Hit = false;
 	result.Distance = FLT_MAX;
-	ivec3 current_voxel = ivec3(floor(origin / Models[modelIndex].VoxelSize));
+	result.TraverseCount = 0;
+	
+	float width  = float(Models[modelIndex].Width);
+	float height = float(Models[modelIndex].Height);
+	float depth  = float(Models[modelIndex].Depth);
+	float voxelSize = Models[modelIndex].VoxelSize;
+
+	vec3 boxMin = vec3(0,0,0);
+	vec3 boxMax = vec3(width, height, depth) / voxelSize;
+
+	// Check if we are intersecting with grid
+	BoxIntersectionResult boxIntersection = RayBoxIntersection(origin, direction, boxMin, boxMax);
+	if (!boxIntersection.Hit)
+		return result;
+	
+	ivec3 current_voxel = ivec3(floor(origin / voxelSize));
 	
 	ivec3 step = ivec3(
 		(direction.x > 0.0) ? 1 : -1,
@@ -203,19 +269,22 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 		(direction.z > 0.0) ? 1 : -1
 	);
 	vec3 next_boundary = vec3(
-		float((step.x > 0) ? current_voxel.x + 1 : current_voxel.x) * Models[modelIndex].VoxelSize,
-		float((step.y > 0) ? current_voxel.y + 1 : current_voxel.y) * Models[modelIndex].VoxelSize,
-		float((step.z > 0) ? current_voxel.z + 1 : current_voxel.z) * Models[modelIndex].VoxelSize
+		float((step.x > 0) ? current_voxel.x + 1 : current_voxel.x) * voxelSize,
+		float((step.y > 0) ? current_voxel.y + 1 : current_voxel.y) * voxelSize,
+		float((step.z > 0) ? current_voxel.z + 1 : current_voxel.z) * voxelSize
 	);
+	
 
 	vec3 t_max = (next_boundary - origin) / direction; // we will move along the axis with the smallest value
-	vec3 t_delta = Models[modelIndex].VoxelSize / direction * vec3(step);	
+	vec3 t_delta = voxelSize / direction * vec3(step);	
 
 
 	uint remainingTraverses = MaxTraverse;
 	
 	// Raymarch until we find first hit to determine default color
 	RaymarchHitResult hitResult = RayMarch(origin, t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex, currentDepth);
+	result.TraverseCount += hitResult.TraverseCount;
+
 	float newDepth = distance(origin, hitResult.Max);
 	if (newDepth > currentDepth) // Depth test
 		return result;
@@ -237,6 +306,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 			break;
 
 		hitResult = RayMarch(origin, hitResult.Max, t_delta, hitResult.CurrentVoxel, step, remainingTraverses, modelIndex, currentDepth);	
+		result.TraverseCount += hitResult.TraverseCount;
 		newDepth = distance(origin, hitResult.Max); // Store raymarch distance
 		if (newDepth > currentDepth) // if new depth is bigger than currentDepth it means there is something in front of us
 			break;
@@ -265,7 +335,6 @@ void main()
 		float currentDepth = imageLoad(o_DepthImage, ivec2(gl_GlobalInvocationID)).r;
 		Ray ray = CreateRay(gl_GlobalInvocationID.xy, i);
 		RaymarchResult result = RayMarch(ray.Origin, ray.Direction, i, currentDepth);
-				
 
 		if (result.Hit)
 		{
