@@ -5,6 +5,7 @@
 #include "Resources/Shaders/Includes/Math.glsl"
 
 const float FLT_MAX = 3.402823466e+38;
+const float EPSILON = 0.01;
 
 struct VoxelModel
 {
@@ -129,6 +130,16 @@ struct BoxIntersectionResult
 	bool Hit;
 };
 
+bool IsPointInsideBox(vec3 point, vec3 boxMin, vec3 boxMax)
+{
+	return 
+		point.x >= boxMin.x 
+	 && point.x <= boxMax.x 
+	 && point.y >= boxMin.y
+	 && point.y <= boxMax.y
+	 && point.z >= boxMin.z
+	 && point.z <= boxMax.z;
+}
 BoxIntersectionResult RayBoxIntersection(vec3 origin, vec3 direction, vec3 lb, vec3 rt)
 {
 	BoxIntersectionResult result;
@@ -203,7 +214,7 @@ struct RaymarchResult
 	uint  TraverseCount;
 };
 
-RaymarchHitResult RayMarch(vec3 origin, vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, int modelIndex, float currentDepth)
+RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, int modelIndex, float currentDepth)
 {
 	Ray cameraRay = CreateCameraRay(gl_GlobalInvocationID.xy);
 
@@ -284,11 +295,14 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 	vec3 boxMin = vec3(0,0,0);
 	vec3 boxMax = vec3(width, height, depth) / voxelSize;
 
-	// Check if we are intersecting with grid
-	BoxIntersectionResult boxIntersection = RayBoxIntersection(origin, direction, boxMin, boxMax);
-	if (!boxIntersection.Hit)
-		return result;
-	
+	if (!IsPointInsideBox(origin, boxMin, boxMax)) // Check if origin is inside grid
+	{
+		// Check if we are intersecting with grid
+		BoxIntersectionResult boxIntersection = RayBoxIntersection(origin, direction, boxMin, boxMax);
+		if (!boxIntersection.Hit)
+			return result;
+		origin = origin + direction * (boxIntersection.T - EPSILON); // Move origin to first intersection with grid
+	}
 	ivec3 current_voxel = ivec3(floor(origin / voxelSize));
 	
 	ivec3 step = ivec3(
@@ -310,7 +324,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 	uint remainingTraverses = MaxTraverse;
 	
 	// Raymarch until we find first hit to determine default color
-	RaymarchHitResult hitResult = RayMarch(origin, t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex, currentDepth);
+	RaymarchHitResult hitResult = RayMarch(t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex, currentDepth);
 	result.TraverseCount += hitResult.TraverseCount;
 
 	float newDepth = hitResult.Depth;
@@ -333,7 +347,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 		if (result.OpaqueHit) // Opaque hit => stop raymarching
 			break;
 
-		hitResult = RayMarch(origin, hitResult.Max, t_delta, hitResult.CurrentVoxel, step, remainingTraverses, modelIndex, currentDepth);	
+		hitResult = RayMarch(hitResult.Max, t_delta, hitResult.CurrentVoxel, step, remainingTraverses, modelIndex, currentDepth);	
 		result.TraverseCount += hitResult.TraverseCount;
 		newDepth = hitResult.Depth; // Store raymarch distance
 		if (newDepth > currentDepth) // if new depth is bigger than currentDepth it means there is something in front of us
@@ -371,7 +385,7 @@ void main()
 				vec4 originalColor = imageLoad(o_Image, ivec2(gl_GlobalInvocationID));
 				result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
 			}
-			else
+			else // Store depth only for opaque hits
 			{
 				imageStore(o_DepthImage, ivec2(gl_GlobalInvocationID), vec4(result.Distance, 0,0,0)); // Store new depth
 			}

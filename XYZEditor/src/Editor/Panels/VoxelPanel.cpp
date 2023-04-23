@@ -86,8 +86,10 @@ namespace XYZ {
 
 			m_VoxelMeshSource = Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox");
 			m_VoxelMeshSource0 = Ref<VoxelMeshSource>::Create("Assets/Voxel/chr_knight.vox");
-			m_Transforms.resize(10);
-			m_Transforms0.resize(10);
+			
+			uint32_t count = 50;
+			m_Transforms.resize(count);
+			m_Transforms0.resize(count);
 
 			float xOffset = 0.0f;
 			for (auto& transform : m_Transforms)
@@ -188,7 +190,7 @@ namespace XYZ {
 				{
 					const glm::mat4 trans = transform.GetLocalTransform();
 					AABB aabb = Utils::VoxelModelToAABB(trans, submesh.Width, submesh.Height, submesh.Depth, voxelSize);
-					if (aabb.InsideFrustum(frustum))
+					if (aabb.InsideFrustum(frustum) || true)
 					{
 						m_VoxelRenderer->SubmitMesh(m_VoxelMeshSource, transform.GetLocalTransform(), voxelSize);
 					}
