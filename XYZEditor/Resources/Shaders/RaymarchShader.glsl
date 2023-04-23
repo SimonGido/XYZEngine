@@ -120,7 +120,7 @@ vec4 VoxelToColor(uint voxel)
 }
 uint VoxelAlpha(uint voxel)
 {
-	return bitfieldExtract(voxel, 24, 8) / 255;
+	return bitfieldExtract(voxel, 24, 8);
 }
 
 struct BoxIntersectionResult
@@ -322,7 +322,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 	{
 		result.Color = hitResult.Color;
 		result.Hit = true;
-		result.OpaqueHit = hitResult.Alpha == 1;
+		result.OpaqueHit = hitResult.Alpha == 255;
 		result.Distance = newDepth;
 	}
 	
@@ -371,8 +371,10 @@ void main()
 				vec4 originalColor = imageLoad(o_Image, ivec2(gl_GlobalInvocationID));
 				result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
 			}
-			
-			imageStore(o_DepthImage, ivec2(gl_GlobalInvocationID), vec4(result.Distance, 0,0,0)); // Store new depth
+			else
+			{
+				imageStore(o_DepthImage, ivec2(gl_GlobalInvocationID), vec4(result.Distance, 0,0,0)); // Store new depth
+			}
 			imageStore(o_Image, ivec2(gl_GlobalInvocationID), result.Color); // Store color				
 		}
 	}
