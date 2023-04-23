@@ -9,6 +9,7 @@ const float FLT_MAX = 3.402823466e+38;
 struct VoxelModel
 {
 	mat4  InverseTransform;
+	mat4  Transform;
 	uint  VoxelOffset;
 	uint  Width;
 	uint  Height;
@@ -67,6 +68,21 @@ Ray CreateRay(vec2 coords, int modelIndex)
 	ray.Origin = (Models[modelIndex].InverseTransform * rayOrigin).xyz;
 
 	ray.Direction = vec3(Models[modelIndex].InverseTransform * u_InverseView * vec4(normalize(vec3(target) / target.w), 0)); // World space
+	ray.Direction = normalize(ray.Direction);
+
+	return ray;
+}
+
+Ray CreateCameraRay(vec2 coords)
+{
+	coords.x /= u_ViewportSize.x;
+	coords.y /= u_ViewportSize.y;
+	coords = coords * 2.0 - 1.0; // -1 -> 1
+	vec4 target = u_InverseProjection * vec4(coords.x, -coords.y, 1, 1);
+	Ray ray;
+	ray.Origin = u_CameraPosition.xyz;
+
+	ray.Direction = vec3(u_InverseView * vec4(normalize(vec3(target) / target.w), 0)); // World space
 	ray.Direction = normalize(ray.Direction);
 
 	return ray;
@@ -156,6 +172,18 @@ BoxIntersectionResult RayBoxIntersection(vec3 origin, vec3 direction, vec3 boxMi
 	return result;
 }
 
+float VoxelDistanceFromRay(vec3 origin, vec3 direction, ivec3 voxel, int modelIndex)
+{
+	float voxelSize = Models[modelIndex].VoxelSize;
+
+	vec3 boxMin = vec3(voxel.x * voxelSize, voxel.y * voxelSize, voxel.z * voxelSize);
+	vec3 boxMax = boxMin + voxelSize;
+
+	boxMin = (Models[modelIndex].Transform * vec4(boxMin, 1.0)).xyz;
+	boxMax = (Models[modelIndex].Transform * vec4(boxMax, 1.0)).xyz;
+
+	return RayBoxIntersection(origin, direction, boxMin, boxMax).T;
+}
 
 struct RaymarchHitResult
 {
@@ -179,6 +207,8 @@ struct RaymarchResult
 
 RaymarchHitResult RayMarch(vec3 origin, vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, int modelIndex, float currentDepth)
 {
+	Ray cameraRay = CreateCameraRay(gl_GlobalInvocationID.xy);
+
 	RaymarchHitResult result;
 	result.Hit = false;
 
@@ -210,13 +240,13 @@ RaymarchHitResult RayMarch(vec3 origin, vec3 t_max, vec3 t_delta, ivec3 current_
 			current_voxel.z += step.z;		
 		}
 
-		float newDepth = distance(origin, t_max);
-		result.Depth = newDepth;
-		if (newDepth > currentDepth)
-			break;
-
 		if (IsValidVoxel(current_voxel, width, height, depth))
 		{
+			float newDepth = VoxelDistanceFromRay(cameraRay.Origin, cameraRay.Direction, current_voxel, modelIndex);
+			result.Depth = newDepth;
+			if (newDepth > currentDepth)
+				break;
+
 			uint voxelIndex = Index3D(current_voxel, width, depth) + voxelOffset;
 			uint colorIndex = uint(Voxels[voxelIndex]);
 			uint voxel = Colors[colorIndex];
@@ -285,7 +315,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 	RaymarchHitResult hitResult = RayMarch(origin, t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex, currentDepth);
 	result.TraverseCount += hitResult.TraverseCount;
 
-	float newDepth = distance(origin, hitResult.Max);
+	float newDepth = hitResult.Depth;
 	if (newDepth > currentDepth) // Depth test
 		return result;
 
@@ -307,7 +337,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 
 		hitResult = RayMarch(origin, hitResult.Max, t_delta, hitResult.CurrentVoxel, step, remainingTraverses, modelIndex, currentDepth);	
 		result.TraverseCount += hitResult.TraverseCount;
-		newDepth = distance(origin, hitResult.Max); // Store raymarch distance
+		newDepth = hitResult.Depth; // Store raymarch distance
 		if (newDepth > currentDepth) // if new depth is bigger than currentDepth it means there is something in front of us
 			break;
 		
@@ -343,10 +373,8 @@ void main()
 				vec4 originalColor = imageLoad(o_Image, ivec2(gl_GlobalInvocationID));
 				result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
 			}
-			else // We store depth only if we hit something opaque
-			{
-				imageStore(o_DepthImage, ivec2(gl_GlobalInvocationID), vec4(result.Distance, 0,0,0)); // Store new depth
-			}
+			
+			imageStore(o_DepthImage, ivec2(gl_GlobalInvocationID), vec4(result.Distance, 0,0,0)); // Store new depth
 			imageStore(o_Image, ivec2(gl_GlobalInvocationID), result.Color); // Store color				
 		}
 	}

@@ -41,7 +41,7 @@ namespace XYZ {
 			std::pair<float, float>		    getMouseViewportSpace()		const;
 
 			void handlePanelResize(const glm::vec2& newSize);
-			void drawTransform(TransformComponent& transform) const;
+			void drawTransform(TransformComponent& transform, int id) const;
 
 		private:
 			Ref<VoxelRenderer>			m_VoxelRenderer;

@@ -111,7 +111,8 @@ namespace XYZ {
 		);
 		const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
 
-		model.Transform = glm::inverse(transform * glm::translate(glm::mat4(1.0f), centerTranslation));
+		model.Transform = transform * glm::translate(glm::mat4(1.0f), centerTranslation);
+		model.InverseTransform = glm::inverse(model.Transform);
 		model.VoxelOffset = m_CurrentVoxelsCount;
 		model.Width = submesh.Width;
 		model.Height = submesh.Height;

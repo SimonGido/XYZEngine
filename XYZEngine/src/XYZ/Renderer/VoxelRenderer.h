@@ -53,6 +53,7 @@ namespace XYZ {
 
 	struct VoxelModel
 	{
+		glm::mat4	InverseTransform;
 		glm::mat4	Transform;
 		uint32_t	VoxelOffset;
 		uint32_t	Width;

@@ -122,9 +122,10 @@ namespace XYZ {
 			}
 			if (ImGui::Begin("Voxels Transform"))
 			{
+				int id = 0;
 				for (auto& transform : m_Transforms)
 				{
-					drawTransform(transform);
+					drawTransform(transform, id++);
 					ImGui::NewLine();
 				}
 			}
@@ -209,14 +210,16 @@ namespace XYZ {
 			}
 		}
 
-		void VoxelPanel::drawTransform(TransformComponent& transform) const
+		void VoxelPanel::drawTransform(TransformComponent& transform, int id) const
 		{
+			ImGui::PushID(id);
 			glm::vec3 rotation = glm::degrees(transform->Rotation);
 			ImGui::DragFloat3("Translation", glm::value_ptr(transform.GetTransform().Translation), 0.1f);
 			if (ImGui::DragFloat3("Rotation", glm::value_ptr(rotation), 0.1f))
 			{
 				transform.GetTransform().Rotation = glm::radians(rotation);
 			}
+			ImGui::PopID();
 		}
 	}
 }
