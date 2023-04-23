@@ -3,6 +3,8 @@
 
 #include "Renderer.h"
 
+#include "XYZ/API/Vulkan/VulkanPipelineCompute.h"
+
 #include <glm/gtc/type_ptr.hpp>
 
 
@@ -32,6 +34,7 @@ namespace XYZ {
 	VoxelRenderer::VoxelRenderer()
 	{
 		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "VoxelRenderer");
+		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
 
 		const uint32_t framesInFlight = Renderer::GetConfiguration().FramesInFlight;
 		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
@@ -48,6 +51,10 @@ namespace XYZ {
 		m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, 1280, 720, nullptr, props);
 		createRaymarchPipeline();
 
+		m_UBVoxelScene.LightDirection = { -0.2f, -1.4f, -1.5f, 1.0f };
+		m_UBVoxelScene.LightColor = glm::vec4(1.0f);
+
+
 		for (uint32_t i = 0; i < 256; i++)
 		{
 			m_SSBOVoxels.Colors[i] = RandomColor();
@@ -60,9 +67,7 @@ namespace XYZ {
 		m_UBVoxelScene.InverseProjection = glm::inverse(projection);
 		m_UBVoxelScene.InverseView = glm::inverse(viewMatrix);
 		m_UBVoxelScene.CameraPosition = glm::vec4(cameraPosition, 1.0f);
-		m_UBVoxelScene.LightDirection = { -0.2f, -1.4f, -1.5f, 1.0f };
-		m_UBVoxelScene.LightColor = glm::vec4(1.0f);
-
+		
 		m_UBVoxelScene.ViewportSize.x = m_ViewportSize.x;
 		m_UBVoxelScene.ViewportSize.y = m_ViewportSize.y;
 		m_DrawCommands.clear();
@@ -107,8 +112,10 @@ namespace XYZ {
 		const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
 
 		model.Transform = glm::inverse(transform * glm::translate(glm::mat4(1.0f), centerTranslation));
-		model.FirstVoxel = m_CurrentVoxelsCount;
-		model.LastVoxel = model.FirstVoxel + voxelCount;
+		model.VoxelOffset = m_CurrentVoxelsCount;
+		model.Width = submesh.Width;
+		model.Height = submesh.Height;
+		model.Depth = submesh.Depth;
 		model.VoxelSize = voxelSize;
 
 
@@ -122,6 +129,10 @@ namespace XYZ {
 		{
 			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.LightDirection), 0.1f);
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.LightColor), 0.1f);
+
+			const uint32_t frameIndex = Renderer::GetCurrentFrame();
+			float gpuTime = m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.GPUTime);
+			ImGui::Text("GPU Time: %.3fms", gpuTime);
 		}
 		ImGui::End();
 	}
@@ -135,9 +146,58 @@ namespace XYZ {
 		return viewMatrix;
 	}
 
+	void VoxelRenderer::clear()
+	{
+		auto imageBarrier = [](Ref<VulkanPipelineCompute> pipeline, Ref<VulkanImage2D> image) {
+
+			Renderer::Submit([pipeline, image]() {
+				VkImageMemoryBarrier imageMemoryBarrier = {};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+				imageMemoryBarrier.image = image->GetImageInfo().Image;
+				imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				vkCmdPipelineBarrier(
+					pipeline->GetActiveCommandBuffer(),
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+					0,
+					0, nullptr,
+					0, nullptr,
+					1, &imageMemoryBarrier);
+					});
+		};
+
+		
+		Renderer::BeginPipelineCompute(
+			m_CommandBuffer,
+			m_ClearPipeline,
+			m_UniformBufferSet,
+			m_StorageBufferSet,
+			m_ClearMaterial
+		);
+		Renderer::DispatchCompute(
+			m_ClearPipeline,
+			nullptr,
+			32, 32, 1,
+			PushConstBuffer
+			{
+				glm::vec4(0.3, 0.2, 0.7, 1.0),
+				std::numeric_limits<float>::max()
+			}
+		);
+		imageBarrier(m_ClearPipeline, m_OutputTexture->GetImage());
+		imageBarrier(m_ClearPipeline, m_DepthTexture->GetImage());
+		Renderer::EndPipelineCompute(m_ClearPipeline);
+	}
+
 	void VoxelRenderer::render()
 	{
-		m_CommandBuffer->Begin();
+		m_CommandBuffer->Begin();		
+		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
+		clear();
 		Renderer::BeginPipelineCompute(
 			m_CommandBuffer,
 			m_RaymarchPipeline,
@@ -155,6 +215,7 @@ namespace XYZ {
 			);
 		}
 		Renderer::EndPipelineCompute(m_RaymarchPipeline);
+		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
 
 		m_CommandBuffer->End();
 		m_CommandBuffer->Submit();
@@ -171,6 +232,9 @@ namespace XYZ {
 			m_DepthTexture == Texture2D::Create(ImageFormat::RED32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+
+			m_ClearMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
+			m_ClearMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
 		}
 	}
 	void VoxelRenderer::updateUniformBufferSet()
@@ -213,6 +277,15 @@ namespace XYZ {
 		spec.Shader = shader;
 	
 		m_RaymarchPipeline = PipelineCompute::Create(spec);
+
+
+		Ref<Shader> clearShader = Shader::Create("Resources/Shaders/ImageClearShader.glsl");
+		m_ClearMaterial = Material::Create(clearShader);
+		m_ClearMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
+		m_ClearMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+
+		spec.Shader = clearShader;
+		m_ClearPipeline = PipelineCompute::Create(spec);
 	}
 
 }

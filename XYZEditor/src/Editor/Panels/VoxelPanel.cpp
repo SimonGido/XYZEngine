@@ -76,6 +76,14 @@ namespace XYZ {
 			}
 
 			m_VoxelMeshSource = Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox");
+			m_Transforms.resize(10);
+			float xOffset = 0.0f;
+			for (auto& transform : m_Transforms)
+			{
+				transform.GetTransform().Translation.x = xOffset;
+				transform.GetTransform().Rotation.x = glm::radians(-90.0f);
+				xOffset += 30.0f;
+			}
 		}
 
 		VoxelPanel::~VoxelPanel()
@@ -112,7 +120,15 @@ namespace XYZ {
 				}
 				ImGui::End();
 			}
-			drawVoxelsSpecification();
+			if (ImGui::Begin("Voxels Transform"))
+			{
+				for (auto& transform : m_Transforms)
+				{
+					drawTransform(transform);
+					ImGui::NewLine();
+				}
+			}
+			ImGui::End();
 		}
 
 		void VoxelPanel::OnUpdate(Timestep ts)
@@ -129,8 +145,8 @@ namespace XYZ {
 				);
 				
 				m_VoxelRenderer->SetColors(m_VoxelMeshSource->GetColorPallete());
-	
-				m_VoxelRenderer->SubmitMesh(m_VoxelMeshSource, m_Transform.GetLocalTransform(), 1.0f);
+				for (auto& transform : m_Transforms)
+					m_VoxelRenderer->SubmitMesh(m_VoxelMeshSource, transform.GetLocalTransform(), 1.0f);
 				m_VoxelRenderer->EndScene();
 			}
 		}
@@ -193,14 +209,14 @@ namespace XYZ {
 			}
 		}
 
-		void VoxelPanel::drawVoxelsSpecification()
+		void VoxelPanel::drawTransform(TransformComponent& transform) const
 		{
-			if (ImGui::Begin("Voxels Specification"))
+			glm::vec3 rotation = glm::degrees(transform->Rotation);
+			ImGui::DragFloat3("Translation", glm::value_ptr(transform.GetTransform().Translation), 0.1f);
+			if (ImGui::DragFloat3("Rotation", glm::value_ptr(rotation), 0.1f))
 			{
-				ImGui::DragFloat3("Translation", glm::value_ptr(m_Transform.GetTransform().Translation), 0.1f);
-				ImGui::DragFloat3("Rotation", glm::value_ptr(m_Transform.GetTransform().Rotation), 0.1f);
+				transform.GetTransform().Rotation = glm::radians(rotation);
 			}
-			ImGui::End();
 		}
 	}
 }

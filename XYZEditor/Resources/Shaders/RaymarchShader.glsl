@@ -4,19 +4,18 @@
 
 #include "Resources/Shaders/Includes/Math.glsl"
 
-
-const uint SCENE_WIDTH  = 512;
-const uint SCENE_HEIGHT = 512;
-const uint SCENE_DEPTH  = 512;
+const float FLT_MAX = 3.402823466e+38;
 
 struct VoxelModel
 {
 	mat4  InverseTransform;
-	uint  FirstVoxel;
-	uint  LastVoxel;
+	uint  VoxelOffset;
+	uint  Width;
+	uint  Height;
+	uint  Depth;
 	float VoxelSize;
 
-	uint Padding[1];
+	uint Padding[3];
 };
 
 layout (std140, binding = 16) uniform Scene
@@ -40,7 +39,7 @@ layout(std430, binding = 17) buffer buffer_Voxels
 	uint8_t Voxels[];
 };
 
-layout(std140, binding = 18) buffer buffer_Models
+layout(std430, binding = 18) buffer buffer_Models
 {	
 	uint NumModels;
 	VoxelModel Models[];
@@ -74,22 +73,22 @@ Ray CreateRay(vec2 coords, int modelIndex)
 }
 
 
-uint Index3D(int x, int y, int z)
+uint Index3D(int x, int y, int z, uint width, uint depth)
 {
-	return x + SCENE_WIDTH * (y + SCENE_DEPTH * z);
+	return x + width * (y + depth * z);
 }
 
-uint Index3D(ivec3 index)
+uint Index3D(ivec3 index, uint width, uint depth)
 {
-	return Index3D(index.x, index.y, index.z);
+	return Index3D(index.x, index.y, index.z, width, depth);
 }
 
 
-bool IsValidVoxel(ivec3 voxel)
+bool IsValidVoxel(ivec3 voxel, uint width, uint height, uint depth)
 {
-	return ((voxel.x < SCENE_WIDTH  && voxel.x > 0)
-		 && (voxel.y < SCENE_HEIGHT && voxel.y > 0)
-		 && (voxel.z < SCENE_DEPTH  && voxel.z > 0));
+	return ((voxel.x < width && voxel.x > 0)
+		 && (voxel.y < height && voxel.y > 0)
+		 && (voxel.z < depth && voxel.z > 0));
 }
 
 
@@ -115,18 +114,28 @@ struct RaymarchHitResult
 	ivec3 CurrentVoxel;
 	uint  Alpha;
 	uint  TraverseCount;
+	bool  Hit;
+	float Depth;
 };
 
 struct RaymarchResult
 {
-	vec4 Color;
+	vec4  Color;
 	float Distance;
+	bool  OpaqueHit;
+	bool  Hit;
 };
 
-RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, int modelIndex)
+RaymarchHitResult RayMarch(vec3 origin, vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, int modelIndex, float currentDepth)
 {
 	RaymarchHitResult result;
-	result.Color = vec4(0.3, 0.2, 0.7, 1.0);
+	result.Hit = false;
+
+	uint width = Models[modelIndex].Width;
+	uint height = Models[modelIndex].Height;
+	uint depth = Models[modelIndex].Depth;
+	uint voxelOffset = Models[modelIndex].VoxelOffset;
+
 	uint i = 0;
 	for (i = 0; i < maxTraverses; i++)
 	{
@@ -149,22 +158,27 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 			t_max.z += t_delta.z;
 			current_voxel.z += step.z;		
 		}
-		if (IsValidVoxel(current_voxel))
+
+		float newDepth = distance(origin, t_max);
+		result.Depth = newDepth;
+		if (newDepth > currentDepth)
+			break;
+
+		if (IsValidVoxel(current_voxel, width, height, depth))
 		{
-			uint index = uint(Voxels[Index3D(current_voxel)]);
-			// Is in model voxel range
-			//if (index >= Models[modelIndex].FirstVoxel && index < Models[modelIndex].LastVoxel)
+			uint voxelIndex = Index3D(current_voxel, width, depth) + voxelOffset;
+			uint colorIndex = uint(Voxels[voxelIndex]);
+			uint voxel = Colors[colorIndex];
+
+			if (voxel != 0)
 			{
-				uint voxel = Colors[index];
-				if (voxel != 0)
-				{
-					float light = dot(-u_LightDirection.xyz, normal);
-					vec4 voxelColor = VoxelToColor(voxel);
-					vec3 color = voxelColor.rgb * u_LightColor.rgb * light;
-					result.Alpha = VoxelAlpha(voxel);
-					result.Color = vec4(color.rgb, voxelColor.a);
-					break;
-				}
+				float light = dot(-u_LightDirection.xyz, normal);
+				vec4 voxelColor = VoxelToColor(voxel);
+				vec3 color = voxelColor.rgb * u_LightColor.rgb * light;
+				result.Alpha = VoxelAlpha(voxel);
+				result.Color = vec4(color.rgb, voxelColor.a);
+				result.Hit = true;				
+				break;
 			}
 		}
 	}
@@ -175,10 +189,12 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 	return result;
 }
 
-RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex)
+RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float currentDepth)
 {
 	RaymarchResult result;
-	vec4 defaultColor = vec4(0.3, 0.2, 0.7, 1.0);
+	result.OpaqueHit = false;
+	result.Hit = false;
+	result.Distance = FLT_MAX;
 	ivec3 current_voxel = ivec3(floor(origin / Models[modelIndex].VoxelSize));
 	
 	ivec3 step = ivec3(
@@ -197,29 +213,45 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex)
 
 
 	uint remainingTraverses = MaxTraverse;
-	RaymarchHitResult hit = RayMarch(t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex);
-	result.Color = hit.Color;
-	remainingTraverses -= hit.TraverseCount;
+	
+	// Raymarch until we find first hit to determine default color
+	RaymarchHitResult hitResult = RayMarch(origin, t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex, currentDepth);
+	float newDepth = distance(origin, hitResult.Max);
+	if (newDepth > currentDepth) // Depth test
+		return result;
 
-	bool opaqueHit = false;
+	// If we hit something it is our default color
+	if (hitResult.Hit)
+	{
+		result.Color = hitResult.Color;
+		result.Hit = true;
+		result.OpaqueHit = hitResult.Alpha == 1;
+		result.Distance = newDepth;
+	}
+	
+	// Continue raymarching until we hit opaque object or we are out of traverses
+	remainingTraverses -= hitResult.TraverseCount;
 	while (remainingTraverses != 0)
-	{
-		if (hit.Alpha == 1)
-		{
-			opaqueHit = true;
+	{		
+		if (result.OpaqueHit) // Opaque hit => stop raymarching
 			break;
+
+		hitResult = RayMarch(origin, hitResult.Max, t_delta, hitResult.CurrentVoxel, step, remainingTraverses, modelIndex, currentDepth);	
+		newDepth = distance(origin, hitResult.Max); // Store raymarch distance
+		if (newDepth > currentDepth) // if new depth is bigger than currentDepth it means there is something in front of us
+			break;
+		
+		// We passed depth test
+		if (hitResult.Hit) // We hit something so mix colors together
+		{
+			result.Color.rgb = mix(result.Color.rgb, hitResult.Color.rgb, 1.0 - result.Color.a);
+			result.Hit = true;
+			result.OpaqueHit = hitResult.Alpha == 1;
 		}
-		hit = RayMarch(hit.Max, t_delta, hit.CurrentVoxel, step, remainingTraverses, modelIndex);
-		result.Color.rgb = mix(result.Color.rgb, hit.Color.rgb, 1.0 - result.Color.a);
-		remainingTraverses -= hit.TraverseCount;
+		
+		remainingTraverses -= hitResult.TraverseCount;
 	}
-
-	if (!opaqueHit) // We did not hit opaque voxel => blend with background color
-	{
-		result.Color.rgb = mix(result.Color.rgb, defaultColor.rgb, 1.0 - result.Color.a);
-	}
-
-	result.Distance = distance(origin, hit.Max);
+	result.Distance = newDepth;
 	return result;
 }
 
@@ -230,11 +262,23 @@ void main()
 {
 	for (int i = 0; i < NumModels; i++)
 	{
+		float currentDepth = imageLoad(o_DepthImage, ivec2(gl_GlobalInvocationID)).r;
 		Ray ray = CreateRay(gl_GlobalInvocationID.xy, i);
-		RaymarchResult result = RayMarch(ray.Origin, ray.Direction, i);
-		
-		//float currentDistance = imageLoad(o_DepthImage, ivec2(gl_GlobalInvocationID)).r;
-		//if (result.Distance < currentDistance)
-			imageStore(o_Image, ivec2(gl_GlobalInvocationID), result.Color);
+		RaymarchResult result = RayMarch(ray.Origin, ray.Direction, i, currentDepth);
+				
+
+		if (result.Hit)
+		{
+			if (!result.OpaqueHit)
+			{
+				vec4 originalColor = imageLoad(o_Image, ivec2(gl_GlobalInvocationID));
+				result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
+			}
+			else // We store depth only if we hit something opaque
+			{
+				imageStore(o_DepthImage, ivec2(gl_GlobalInvocationID), vec4(result.Distance, 0,0,0)); // Store new depth
+			}
+			imageStore(o_Image, ivec2(gl_GlobalInvocationID), result.Color); // Store color				
+		}
 	}
 }

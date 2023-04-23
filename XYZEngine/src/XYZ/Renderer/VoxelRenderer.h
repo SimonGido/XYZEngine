@@ -42,11 +42,7 @@ namespace XYZ {
 
 	struct SSBOVoxels
 	{
-		static constexpr uint32_t Width = 512;
-		static constexpr uint32_t Height = 512;
-		static constexpr uint32_t Depth = 512;
-
-		static constexpr uint32_t MaxVoxels = Width * Height * Depth;
+		static constexpr uint32_t MaxVoxels = 512 * 512 * 512;
 				
 		uint32_t Colors[256];
 		uint8_t Voxels[MaxVoxels];
@@ -58,13 +54,15 @@ namespace XYZ {
 	struct VoxelModel
 	{
 		glm::mat4	Transform;
-		uint32_t	FirstVoxel;
-		uint32_t	LastVoxel;
+		uint32_t	VoxelOffset;
+		uint32_t	Width;
+		uint32_t	Height;
+		uint32_t	Depth;
 		float		VoxelSize;
 		// TODO: model must specify width height and depth otherwise raytracing wont work
 		// Even though voxel model is in memory, it is probably in the first layers of our 3d grid
 		// Probably it will not be possible to draw them in single compute dispatch
-		uint32_t Padding[1];
+		uint32_t Padding[3];
 	};
 
 	struct SSBOVoxelModels
@@ -96,6 +94,7 @@ namespace XYZ {
 
 		Ref<Image2D> GetFinalPassImage() const { return m_OutputTexture->GetImage(); }
 	private:
+		void clear();
 		void render();
 
 		void updateViewportSize();
@@ -115,6 +114,9 @@ namespace XYZ {
 		Ref<PipelineCompute>	m_RaymarchPipeline;
 		Ref<Material>			m_RaymarchMaterial;
 
+		Ref<PipelineCompute>	m_ClearPipeline;
+		Ref<Material>			m_ClearMaterial;
+
 		Ref<StorageBufferSet>	m_StorageBufferSet;
 		Ref<UniformBufferSet>	m_UniformBufferSet;
 		Ref<Texture2D>			m_OutputTexture;
@@ -129,6 +131,14 @@ namespace XYZ {
 		uint32_t				m_CurrentVoxelsCount;
 
 		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;
+
+		struct GPUTimeQueries
+		{
+			uint32_t GPUTime = 0;
+
+			static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
+		};
+		GPUTimeQueries m_GPUTimeQueries;
 	};
 
 }
