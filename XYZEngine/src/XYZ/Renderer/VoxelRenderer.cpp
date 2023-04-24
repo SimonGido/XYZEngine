@@ -84,6 +84,7 @@ namespace XYZ {
 		m_UBVoxelScene.ViewportSize.y = m_ViewportSize.y;
 		m_DrawCommands.clear();
 		m_Frustum = camera.Frustum;
+		m_Statistics = {};
 
 		updateViewportSize();
 		updateUniformBufferSet();
@@ -157,6 +158,10 @@ namespace XYZ {
 
 			ImGui::Text("Mesh Allocations: %d", static_cast<uint32_t>(m_LastFrameMeshAllocations.size()));
 			ImGui::Text("Update Allocations: %d", static_cast<uint32_t>(m_UpdatedAllocations.size()));
+			
+			ImGui::Text("Compute Commands: %d", m_Statistics.ComputeCommandCount);
+			ImGui::Text("Model Count: %d", m_Statistics.ModelCount);
+			ImGui::Text("Culled Models: %d", m_Statistics.CulledModels);
 
 
 			const uint32_t frameIndex = Renderer::GetCurrentFrame();
@@ -170,7 +175,11 @@ namespace XYZ {
 	{
 		const AABB aabb = VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, voxelSize);
 		if (!aabb.InsideFrustum(m_Frustum))
+		{
+			m_Statistics.CulledModels++;
 			return false;
+		}
+		m_Statistics.ModelCount++;
 
 		const glm::vec3 aabbMax = glm::vec3(submesh.Width, submesh.Height, submesh.Depth) * voxelSize;
 
@@ -265,6 +274,7 @@ namespace XYZ {
 			if (drawCommand.Models.empty())
 				continue;
 
+			m_Statistics.ComputeCommandCount++;
 			Renderer::DispatchCompute(
 				m_RaymarchPipeline,
 				nullptr,

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "ImGui.h"
 
+#include "XYZ/Core/Input.h"
+
 #include "XYZ/API/Vulkan/VulkanImage.h"
 #include "XYZ/API/Vulkan/VulkanRendererAPI.h"
 #include "XYZ/API/Vulkan/VulkanImGuiLayer.h"
@@ -99,6 +101,22 @@ namespace XYZ {
 			{
 				return ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(button);
 			}
+			XYZ_API std::pair<float, float> GetMouseViewportSpace()
+			{
+				auto [mx, my] = Input::GetMousePosition();
+				auto [winPosX, winPosY] = Input::GetWindowPosition();
+				mx -= ImGui::GetWindowPos().x;
+				my -= ImGui::GetWindowPos().y;
+				mx += winPosX;
+				my += winPosY;
+
+				const auto viewportWidth = ImGui::GetWindowSize().x;
+				const auto viewportHeight = ImGui::GetWindowSize().y;
+
+				return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
+
+			}
+
 			static ImGuiID GetImageID(const Ref<Image2D>& image)
 			{
 				if (RendererAPI::GetType() == RendererAPI::Type::Vulkan)

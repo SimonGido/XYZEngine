@@ -134,6 +134,13 @@ namespace XYZ {
 			AssetHandle	Handle;
 		};
 	
+		struct Statistics
+		{
+			uint32_t ComputeCommandCount = 0;
+			uint32_t ModelCount = 0;
+			uint32_t CulledModels = 0;
+		};
+
 	private:
 		bool submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, float voxelSize, uint32_t submeshIndex);
 
@@ -173,6 +180,9 @@ namespace XYZ {
 		glm::ivec2				m_ViewportSize;
 		glm::ivec2				m_WorkGroups;
 		bool				    m_ViewportSizeChanged = false;
+
+		Statistics				m_Statistics;
+	
 
 		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;
 

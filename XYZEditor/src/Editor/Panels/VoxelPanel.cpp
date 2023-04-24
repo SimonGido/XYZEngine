@@ -225,36 +225,6 @@ namespace XYZ {
 			m_VoxelRenderer = voxelRenderer;
 		}
 
-	
-		std::pair<glm::vec3, glm::vec3> VoxelPanel::castRay(float mx, float my) const
-		{
-			const glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
-
-			const auto inverseProj = glm::inverse(m_EditorCamera.GetProjectionMatrix());
-			const auto inverseView = glm::inverse(glm::mat3(m_EditorCamera.GetViewMatrix()));
-
-			const glm::vec4 ray = inverseProj * mouseClipPos;
-			glm::vec3 rayPos = m_EditorCamera.GetPosition();
-			glm::vec3 rayDir = inverseView * glm::vec3(ray);
-
-			return { rayPos, rayDir };
-		}
-
-		std::pair<float, float> VoxelPanel::getMouseViewportSpace() const
-		{
-			auto [mx, my] = Input::GetMousePosition();
-			auto [winPosX, winPosY] = Input::GetWindowPosition();
-			mx -= ImGui::GetWindowPos().x;
-			my -= ImGui::GetWindowPos().y;
-			mx += winPosX;
-			my += winPosY;
-
-			const auto viewportWidth = ImGui::GetWindowSize().x;
-			const auto viewportHeight = ImGui::GetWindowSize().y;
-
-			return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
-
-		}
 
 		void VoxelPanel::handlePanelResize(const glm::vec2& newSize)
 		{

@@ -361,12 +361,17 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 	return result;
 }
 
-
+bool ValidPixel(ivec2 index)
+{
+	return index.x <= int(u_ViewportSize.x) && index.y <= int(u_ViewportSize.y);
+}
 
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
+	if (!ValidPixel(textureIndex))
+		return;
 
 	for (int i = 0; i < NumModels; i++)
 	{

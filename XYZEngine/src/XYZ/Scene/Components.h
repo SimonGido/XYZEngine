@@ -7,7 +7,7 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Mesh.h"
-#include "XYZ/Renderer/StorageBufferAllocator.h"
+#include "XYZ/Renderer/VoxelMesh.h"
 
 #include "XYZ/Asset/Renderer/MaterialAsset.h"
 #include "XYZ/Asset/Animation/AnimationController.h"
@@ -124,6 +124,16 @@ namespace XYZ {
 		uint32_t  SortLayer = 0;
 		bool	  Visible = true;
 	};
+
+
+	struct XYZ_API VoxelMeshComponent
+	{
+		VoxelMeshComponent() = default;
+		VoxelMeshComponent(const Ref<VoxelSourceMesh>& mesh);
+
+		AssetReference<VoxelSourceMesh> Mesh;
+	};
+
 
 	struct XYZ_API MeshComponent
 	{
@@ -398,8 +408,6 @@ namespace XYZ {
 		bool  InvertNormals = false;
 		void* RuntimeFixture = nullptr;
 	};
-
-
 
 
 #define XYZ_COMPONENTS \

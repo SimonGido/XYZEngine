@@ -57,14 +57,14 @@ namespace XYZ {
 	public:
 		VoxelProceduralMesh();
 
-		virtual AssetType GetAssetType() const override { return AssetType::VoxelSourceMesh; }
+		virtual AssetType GetAssetType() const override { return AssetType::None; }
 
 		virtual const std::vector<VoxelSubmesh>& GetSubmeshes() const override;
 		virtual const std::vector<VoxelInstance>& GetInstances() const override;
 		virtual const AssetHandle& GetRenderID() const override;
 		virtual uint32_t GetNumVoxels() const override { return m_NumVoxels; }
 		
-		static AssetType GetStaticType() { return AssetType::VoxelSourceMesh; }
+		static AssetType GetStaticType() { return AssetType::None; }
 
 	private:
 		virtual bool NeedUpdate() const override;

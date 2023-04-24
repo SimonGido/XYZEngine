@@ -37,9 +37,6 @@ namespace XYZ {
 			EditorCamera& GetEditorCamera() { return m_EditorCamera; }
 
 		private:
-			std::pair<glm::vec3, glm::vec3> castRay(float mx, float my) const;
-			std::pair<float, float>		    getMouseViewportSpace()		const;
-
 			void handlePanelResize(const glm::vec2& newSize);
 			void drawTransform(TransformComponent& transform, int id) const;
 
