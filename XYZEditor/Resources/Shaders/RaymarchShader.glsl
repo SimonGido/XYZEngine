@@ -62,6 +62,8 @@ struct Ray
 	vec3 Direction;
 };
 
+Ray g_CameraRay;
+
 Ray CreateRay(vec2 coords, int modelIndex)
 {
 	coords.x /= u_ViewportSize.x;
@@ -209,8 +211,6 @@ struct RaymarchResult
 
 RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, int modelIndex, float currentDepth)
 {
-	Ray cameraRay = CreateCameraRay(ivec2(gl_GlobalInvocationID.xy));
-
 	RaymarchHitResult result;
 	result.Hit = false;
 
@@ -244,7 +244,7 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 
 		if (IsValidVoxel(current_voxel, width, height, depth))
 		{
-			float newDepth = VoxelDistanceFromRay(cameraRay.Origin, cameraRay.Direction, current_voxel, modelIndex);
+			float newDepth = VoxelDistanceFromRay(g_CameraRay.Origin, g_CameraRay.Direction, current_voxel, modelIndex);
 			result.Depth = newDepth;
 			if (newDepth > currentDepth)
 				break;
@@ -373,6 +373,7 @@ void main()
 	if (!ValidPixel(textureIndex))
 		return;
 
+	g_CameraRay = CreateCameraRay(ivec2(gl_GlobalInvocationID.xy));
 	for (int i = 0; i < NumModels; i++)
 	{
 		float currentDepth = imageLoad(o_DepthImage, textureIndex).r;
