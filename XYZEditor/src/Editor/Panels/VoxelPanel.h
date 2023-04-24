@@ -59,11 +59,18 @@ namespace XYZ {
 			uint8_t m_Voxels[VOXEL_GRID_SIZE * VOXEL_GRID_SIZE * VOXEL_GRID_SIZE];
 
 			
-			std::vector<TransformComponent> m_Transforms;
-			std::vector<TransformComponent> m_Transforms0;
+			std::vector<TransformComponent> m_CastleTransforms;
+			std::vector<TransformComponent> m_KnightTransforms;
+			std::vector<TransformComponent> m_DeerTransforms;
 
-			Ref<VoxelMeshSource> m_VoxelMeshSource;
-			Ref<VoxelMeshSource> m_VoxelMeshSource0;
+
+			Ref<VoxelSourceMesh> m_CastleMesh;
+			Ref<VoxelSourceMesh> m_KnightMesh;
+			Ref<VoxelSourceMesh> m_DeerMesh;
+
+			uint32_t m_DeerKeyFrame = 0;
+			float m_KeyLength = 0.3f;
+			float m_CurrentTime = 0.0f;
 		};
 	}
 }

@@ -36,7 +36,7 @@ namespace XYZ {
 		}
 	}
 
-	static void LoadVoxelAnimation(VoxelAnimation& anim, const ogt_vox_instance& voxInstance)
+	static void LoadVoxelAnimation(VoxelTransformAnimation& anim, const ogt_vox_instance& voxInstance)
 	{
 		anim.Loop = voxInstance.transform_anim.loop;
 		anim.Transforms.resize(voxInstance.transform_anim.num_keyframes);
@@ -47,34 +47,42 @@ namespace XYZ {
 		}
 	}
 
+	static void LoadVoxelModelAnimation(VoxelModelAnimation& anim, const ogt_vox_instance& voxInstance)
+	{
+		anim.Loop = voxInstance.model_anim.loop;
+		anim.SubmeshIndices.resize(voxInstance.model_anim.num_keyframes);
+		for (uint32_t i = 0; i < voxInstance.model_anim.num_keyframes; ++i)
+		{
+			const uint32_t frameIndex = voxInstance.model_anim.keyframes[i].frame_index;
+			anim.SubmeshIndices[frameIndex] = voxInstance.model_anim.keyframes[i].model_index;
+		}
+	}
+
 
 	VoxelMeshSource::VoxelMeshSource(const std::string& filepath)
 		:
-		m_Filepath(filepath)
+		m_Filepath(filepath),
+		m_NumVoxels(0)
 	{
 		std::ifstream output(m_Filepath, std::ios::binary);
 		std::vector<uint8_t> data(std::istreambuf_iterator<char>(output), {});
-		auto scene = ogt_vox_read_scene(data.data(), data.size());
+		auto scene = ogt_vox_read_scene_with_flags(data.data(), data.size(), k_read_scene_flags_keyframes);
 
 		memcpy(m_ColorPallete.data(), scene->palette.color, m_ColorPallete.size() * sizeof(VoxelColor));
 		for (uint32_t i = 0; i < scene->num_models; ++i)
 		{
 			VoxelSubmesh& submesh = m_Submeshes.emplace_back();
 			LoadSubmeshModel(submesh, scene->models[i]);
+			m_NumVoxels += static_cast<uint32_t>(submesh.ColorIndices.size());
 		}
 		for (uint32_t i = 0; i < scene->num_instances; ++i)
 		{
 			VoxelInstance& instance = m_Instances.emplace_back();
 			instance.Transform = VoxMat4ToGLM(scene->instances[i].transform);
-			instance.GroupIndex = scene->instances[i].group_index;
 			instance.SubmeshIndex = scene->instances[i].model_index;
-			LoadVoxelAnimation(instance.Animation, scene->instances[i]);
+			LoadVoxelAnimation(instance.TransformAnimation, scene->instances[i]);
+			LoadVoxelModelAnimation(instance.ModelAnimation, scene->instances[i]);
 		}
-		for (uint32_t i = 0; i < scene->num_groups; ++i)
-		{
-			VoxelGroup& group = m_Groups.emplace_back();
-			group.Transform = VoxMat4ToGLM(scene->groups[i].transform);
-			group.ParentIndex = scene->groups[i].parent_group_index;
-		}
+		ogt_vox_destroy_scene(scene);
 	}
 }

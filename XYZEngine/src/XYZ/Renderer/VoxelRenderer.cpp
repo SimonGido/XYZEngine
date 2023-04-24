@@ -4,6 +4,8 @@
 #include "Renderer.h"
 
 #include "XYZ/API/Vulkan/VulkanPipelineCompute.h"
+#include "XYZ/Utils/Math/Math.h"
+#include "XYZ/Utils/Math/AABB.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -28,7 +30,15 @@ namespace XYZ {
 
 		return result;
 	}
+	static AABB VoxelModelToAABB(const glm::mat4& transform, uint32_t width, uint32_t height, uint32_t depth, float voxelSize)
+	{
+		AABB result;
+		glm::vec3 min = glm::vec3(0.0f);
+		glm::vec3 max = glm::vec3(width, height, depth) * voxelSize;
 
+		result = result.TransformAABB(transform);
+		return result;
+	}
 
 
 	VoxelRenderer::VoxelRenderer()
@@ -44,6 +54,8 @@ namespace XYZ {
 		m_StorageBufferSet->Create(sizeof(SSBOVoxels), SSBOVoxels::Set, SSBOVoxels::Binding);
 		m_StorageBufferSet->Create(sizeof(SSBOVoxelModels), SSBOVoxelModels::Set, SSBOVoxelModels::Binding);
 		
+		m_StorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxels), SSBOVoxels::Binding, SSBOVoxels::Set);
+
 		TextureProperties props;
 		props.Storage = true;
 		props.SamplerWrap = TextureWrap::Clamp;
@@ -57,20 +69,19 @@ namespace XYZ {
 
 		for (uint32_t i = 0; i < 256; i++)
 		{
-			m_SSBOVoxels.Colors[i] = RandomColor();
+			m_SSBOVoxelModels.Colors[i] = RandomColor();
 		}
 	}
-	void VoxelRenderer::BeginScene(const glm::mat4& viewProjectionMatrix, const glm::mat4& viewMatrix, const glm::mat4& projection, const glm::vec3& cameraPosition)
+	void VoxelRenderer::BeginScene(const VoxelRendererCamera& camera)
 	{
-		m_CurrentVoxelsCount = 0;
-
-		m_UBVoxelScene.InverseProjection = glm::inverse(projection);
-		m_UBVoxelScene.InverseView = glm::inverse(viewMatrix);
-		m_UBVoxelScene.CameraPosition = glm::vec4(cameraPosition, 1.0f);
+		m_UBVoxelScene.InverseProjection = glm::inverse(camera.Projection);
+		m_UBVoxelScene.InverseView = glm::inverse(camera.ViewMatrix);
+		m_UBVoxelScene.CameraPosition = glm::vec4(camera.CameraPosition, 1.0f);
 		
 		m_UBVoxelScene.ViewportSize.x = m_ViewportSize.x;
 		m_UBVoxelScene.ViewportSize.y = m_ViewportSize.y;
 		m_DrawCommands.clear();
+		m_Frustum = camera.Frustum;
 
 		updateViewportSize();
 		updateUniformBufferSet();
@@ -80,6 +91,8 @@ namespace XYZ {
 	{
 		updateStorageBufferSet();
 		render();
+
+		m_LastFrameMeshAllocations = std::move(m_MeshAllocations);
 	}
 	void VoxelRenderer::SetViewportSize(uint32_t width, uint32_t height)
 	{
@@ -91,38 +104,45 @@ namespace XYZ {
 	}
 	void VoxelRenderer::SetColors(const std::array<uint32_t, 256>& colors)
 	{
-		memcpy(m_SSBOVoxels.Colors, colors.data(), sizeof(SSBOVoxels::Colors));
+		memcpy(m_SSBOVoxelModels.Colors, colors.data(), sizeof(SSBOVoxelModels::Colors));
 	}
 	void VoxelRenderer::SetColors(const std::array<VoxelColor, 256>& colors)
 	{
-		memcpy(m_SSBOVoxels.Colors, colors.data(), sizeof(SSBOVoxels::Colors));
+		memcpy(m_SSBOVoxelModels.Colors, colors.data(), sizeof(SSBOVoxelModels::Colors));
 	}
-	void VoxelRenderer::SubmitMesh(const Ref<VoxelMeshSource>& meshSource, const glm::mat4& transform, float voxelSize)
+
+	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, float voxelSize)
 	{
-		auto& drawCommand = m_DrawCommands[meshSource->GetHandle()];
-		auto& model = drawCommand.Models.emplace_back();
+		auto& drawCommand = m_DrawCommands[mesh->GetHandle()];
+		const auto& submeshes = mesh->GetSubmeshes();
+		drawCommand.Mesh = mesh;
+		for (const auto& instance : mesh->GetInstances())
+		{
+			const glm::mat4 instanceTransform = transform * instance.Transform;
 
-		const VoxelSubmesh& submesh = meshSource->GetSubmeshes()[0];
-
-		glm::vec3 centerTranslation = -glm::vec3(
-			submesh.Width / 2 * voxelSize,
-			submesh.Height / 2 * voxelSize,
-			submesh.Depth / 2 * voxelSize
-		);
-		const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
-
-		model.Transform = transform * glm::translate(glm::mat4(1.0f), centerTranslation);
-		model.InverseTransform = glm::inverse(model.Transform);
-		model.VoxelOffset = m_CurrentVoxelsCount;
-		model.Width = submesh.Width;
-		model.Height = submesh.Height;
-		model.Depth = submesh.Depth;
-		model.VoxelSize = voxelSize;
-
-
-		memcpy(&m_SSBOVoxels.Voxels[m_CurrentVoxelsCount], submesh.ColorIndices.data(), voxelCount * sizeof(uint8_t));
-		m_CurrentVoxelsCount += voxelCount;
+			const VoxelSubmesh& submesh = submeshes[instance.SubmeshIndex];
+			submitSubmesh(submesh, drawCommand, transform * instance.Transform, voxelSize, instance.SubmeshIndex);
+		}	
 	}
+
+	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, const uint32_t* keyFrames, float voxelSize)
+	{
+		auto& drawCommand = m_DrawCommands[mesh->GetHandle()];
+		const auto& submeshes = mesh->GetSubmeshes();
+		drawCommand.Mesh = mesh;
+		uint32_t index = 0;
+		for (const auto& instance : mesh->GetInstances())
+		{
+			const uint32_t submeshIndex = instance.ModelAnimation.SubmeshIndices[keyFrames[index]];
+
+			const VoxelSubmesh& submesh = submeshes[submeshIndex];
+			submitSubmesh(submesh, drawCommand, transform * instance.Transform, voxelSize, submeshIndex);
+
+			index++;
+		}	
+	}
+
+
 	
 	void VoxelRenderer::OnImGuiRender()
 	{
@@ -133,6 +153,10 @@ namespace XYZ {
 
 			ImGui::DragInt("Max Traverses", (int*)&m_UBVoxelScene.MaxTraverses, 1, 0, 1024);
 
+			ImGui::Text("Mesh Allocations: %d", static_cast<uint32_t>(m_LastFrameMeshAllocations.size()));
+			ImGui::Text("Update Allocations: %d", static_cast<uint32_t>(m_UpdatedAllocations.size()));
+
+
 			const uint32_t frameIndex = Renderer::GetCurrentFrame();
 			float gpuTime = m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.GPUTime);
 			ImGui::Text("GPU Time: %.3fms", gpuTime);
@@ -140,13 +164,38 @@ namespace XYZ {
 		ImGui::End();
 	}
 
-	static glm::mat4 CalcViewMatrix(glm::vec3 pos, float pitch, float yaw)
+	bool VoxelRenderer::submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, float voxelSize, uint32_t submeshIndex)
 	{
-		const glm::quat orientation = glm::quat(glm::vec3(-pitch, -yaw, 0.0f));
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), pos) * glm::toMat4(orientation);
-	
-		viewMatrix = glm::inverse(viewMatrix);
-		return viewMatrix;
+		const AABB aabb = VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, voxelSize);
+		if (!aabb.InsideFrustum(m_Frustum))
+			return false;
+
+		const glm::vec3 aabbMax = glm::vec3(submesh.Width, submesh.Height, submesh.Depth) * voxelSize;
+
+		glm::vec3 centerTranslation = -glm::vec3(
+			submesh.Width / 2 * voxelSize,
+			submesh.Height / 2 * voxelSize,
+			submesh.Depth / 2 * voxelSize
+		);
+		const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
+
+		VoxelCommandModel& cmdModel = drawCommand.Models.emplace_back();
+		cmdModel.SubmeshIndex = submeshIndex;
+
+		VoxelModel& model = cmdModel.Model;
+
+		model.Transform = transform * glm::translate(glm::mat4(1.0f), centerTranslation);
+		const glm::mat4 inverseTransform = glm::inverse(model.Transform);
+		model.InverseModelView = inverseTransform * m_UBVoxelScene.InverseView;
+		model.RayOrigin = inverseTransform * m_UBVoxelScene.CameraPosition;
+
+		model.Width = submesh.Width;
+		model.Height = submesh.Height;
+		model.Depth = submesh.Depth;
+		model.VoxelSize = voxelSize;
+
+		model.OriginInside = Math::PointInBox(model.RayOrigin, glm::vec3(0.0f), aabbMax);
+		return true;
 	}
 
 	void VoxelRenderer::clear()
@@ -211,6 +260,9 @@ namespace XYZ {
 
 		for (const auto& [key, drawCommand] : m_DrawCommands)
 		{
+			if (drawCommand.Models.empty())
+				continue;
+
 			Renderer::DispatchCompute(
 				m_RaymarchPipeline,
 				nullptr,
@@ -256,17 +308,33 @@ namespace XYZ {
 		uint32_t modelCount = 0;
 		for (auto& [key, drawCommand] : m_DrawCommands)
 		{
-			for (auto& model : drawCommand.Models)
-				m_SSBOVoxelModels.Models[modelCount++] = model;
+			if (drawCommand.Models.empty())
+				continue;
+
+			MeshAllocation& meshAlloc = createMeshAllocation(drawCommand.Mesh);
+			for (auto& cmdModel : drawCommand.Models)
+			{
+				cmdModel.Model.VoxelOffset = meshAlloc.SubmeshOffsets[cmdModel.SubmeshIndex];
+				m_SSBOVoxelModels.Models[modelCount++] = cmdModel.Model;
+			}
 		}
+
 		m_SSBOVoxelModels.NumModels = modelCount;
 
-		const uint32_t voxelsUpdateSize = sizeof(SSBOVoxels::Colors) + m_CurrentVoxelsCount * sizeof(uint8_t);
-		const uint32_t voxelModelsUpdateSize = sizeof(SSBOVoxelModels::NumModels) + sizeof(SSBOVoxelModels::Padding) + modelCount * sizeof(VoxelModel);
+		const uint32_t voxelModelsUpdateSize = 
+			  sizeof(SSBOVoxelModels::Colors) 
+			+ sizeof(SSBOVoxelModels::NumModels) 
+			+ sizeof(SSBOVoxelModels::Padding) 
+			+ modelCount * sizeof(VoxelModel);
 		
+		for (const auto& updated : m_UpdatedAllocations)
+		{
+			const auto& alloc = updated.Allocation;
+			void* updateData = &m_SSBOVoxels.Voxels[alloc.GetOffset()];
+			m_StorageBufferSet->UpdateEachFrame(updateData, alloc.GetSize(), alloc.GetOffset(), SSBOVoxels::Binding, SSBOVoxels::Set);		
+		}
+		m_UpdatedAllocations.clear();
 		m_StorageBufferSet->Update((void*)&m_SSBOVoxelModels, voxelModelsUpdateSize, 0, SSBOVoxelModels::Binding, SSBOVoxelModels::Set);
-		m_StorageBufferSet->Update((void*)&m_SSBOVoxels, voxelsUpdateSize, 0, SSBOVoxels::Binding, SSBOVoxels::Set);
-
 	}
 	void VoxelRenderer::createRaymarchPipeline()
 	{
@@ -291,4 +359,37 @@ namespace XYZ {
 		m_ClearPipeline = PipelineCompute::Create(spec);
 	}
 
+	VoxelRenderer::MeshAllocation& VoxelRenderer::createMeshAllocation(const Ref<VoxelMesh>& mesh)
+	{
+		const AssetHandle& meshHandle = mesh->GetHandle();
+		const auto& submeshes = mesh->GetSubmeshes();
+		const uint32_t meshSize = mesh->GetNumVoxels() * sizeof(uint8_t);
+
+		// Check if we have cached allocation from previous frame
+		auto lastFrame = m_LastFrameMeshAllocations.find(meshHandle);
+		if (lastFrame != m_LastFrameMeshAllocations.end())
+		{
+			// Reuse allocation from previous frame
+			m_MeshAllocations[meshHandle] = std::move(lastFrame->second);
+			m_LastFrameMeshAllocations.erase(lastFrame);
+		}
+
+		MeshAllocation& meshAlloc = m_MeshAllocations[meshHandle];
+		if (m_StorageAllocator->Allocate(meshSize, meshAlloc.Allocation) || mesh->NeedUpdate())
+		{		
+			m_UpdatedAllocations.push_back({ meshAlloc.Allocation, meshHandle });
+			meshAlloc.SubmeshOffsets.resize(submeshes.size());
+			uint32_t submeshIndex = 0;
+			uint32_t offset = meshAlloc.Allocation.GetOffset();
+			for (auto& submesh : submeshes)
+			{
+				meshAlloc.SubmeshOffsets[submeshIndex] = offset;
+				const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
+				memcpy(&m_SSBOVoxels.Voxels[offset], submesh.ColorIndices.data(), voxelCount * sizeof(uint8_t));
+				offset += voxelCount;
+				submeshIndex++;
+			}
+		}
+		return meshAlloc;
+	}
 }

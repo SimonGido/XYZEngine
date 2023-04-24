@@ -17,25 +17,26 @@ namespace XYZ {
 		std::vector<uint8_t> ColorIndices;
 	};
 
-	struct VoxelAnimation
+	struct VoxelTransformAnimation
 	{
 		std::vector<glm::mat4> Transforms;
 		std::vector<uint32_t> Keyframes;
 		bool Loop;
 	};
 
+	struct VoxelModelAnimation
+	{
+		std::vector<uint32_t> SubmeshIndices;
+		bool Loop;
+	};
+
 	struct VoxelInstance
 	{
 		glm::mat4 Transform;
-		uint32_t  GroupIndex;
 		uint32_t  SubmeshIndex;
-		VoxelAnimation Animation;
-	};
 
-	struct VoxelGroup
-	{
-		glm::mat4 Transform;
-		uint32_t  ParentIndex;
+		VoxelTransformAnimation TransformAnimation;
+		VoxelModelAnimation     ModelAnimation;
 	};
 
 	struct VoxelColor
@@ -43,7 +44,7 @@ namespace XYZ {
 		uint8_t R, G, B, A;
 	};
 
-	class VoxelMeshSource : public Asset
+	class XYZ_API VoxelMeshSource : public Asset
 	{
 	public:
 		VoxelMeshSource(const std::string& filepath);
@@ -54,13 +55,12 @@ namespace XYZ {
 		const std::array<VoxelColor, 256>&	GetColorPallete() const { return m_ColorPallete; }
 		const std::vector<VoxelSubmesh>&	GetSubmeshes()	  const { return m_Submeshes; }
 		const std::vector<VoxelInstance>&	GetInstances()	  const { return m_Instances; }
-		const std::vector<VoxelGroup>&		GetGroups()		  const { return m_Groups; }
-
+		uint32_t GetNumVoxels() const { return m_NumVoxels; }
 	private:
 		std::string m_Filepath;
 		std::array<VoxelColor, 256> m_ColorPallete;
 		std::vector<VoxelSubmesh>  m_Submeshes;
 		std::vector<VoxelInstance> m_Instances;
-		std::vector<VoxelGroup>    m_Groups;
+		uint32_t				   m_NumVoxels;
 	};
 }

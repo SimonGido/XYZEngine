@@ -6,18 +6,21 @@
 
 const float FLT_MAX = 3.402823466e+38;
 const float EPSILON = 0.01;
+const uint OPAQUE = 255;
 
 struct VoxelModel
 {
-	mat4  InverseTransform;
+	mat4  InverseModelView;
 	mat4  Transform;
+	vec4  RayOrigin;
 	uint  VoxelOffset;
 	uint  Width;
 	uint  Height;
 	uint  Depth;
 	float VoxelSize;
+	bool  OriginInside;
 
-	uint Padding[3];
+	uint Padding[2];
 };
 
 layout (std140, binding = 16) uniform Scene
@@ -36,13 +39,13 @@ layout (std140, binding = 16) uniform Scene
 
 
 layout(std430, binding = 17) buffer buffer_Voxels
-{	
-	uint Colors[256];
+{		
 	uint8_t Voxels[];
 };
 
 layout(std430, binding = 18) buffer buffer_Models
 {	
+	uint Colors[256];
 	uint NumModels;
 	VoxelModel Models[];
 };
@@ -63,12 +66,11 @@ Ray CreateRay(vec2 coords, int modelIndex)
 	coords.y /= u_ViewportSize.y;
 	coords = coords * 2.0 - 1.0; // -1 -> 1
 	vec4 target = u_InverseProjection * vec4(coords.x, -coords.y, 1, 1);
-	vec4 rayOrigin = u_CameraPosition;
-	
-	Ray ray;
-	ray.Origin = (Models[modelIndex].InverseTransform * rayOrigin).xyz;
 
-	ray.Direction = vec3(Models[modelIndex].InverseTransform * u_InverseView * vec4(normalize(vec3(target) / target.w), 0)); // World space
+	Ray ray;
+	ray.Origin = Models[modelIndex].RayOrigin.xyz;
+
+	ray.Direction = vec3(Models[modelIndex].InverseModelView * vec4(normalize(vec3(target) / target.w), 0)); // World space
 	ray.Direction = normalize(ray.Direction);
 
 	return ray;
@@ -130,16 +132,6 @@ struct BoxIntersectionResult
 	bool Hit;
 };
 
-bool IsPointInsideBox(vec3 point, vec3 boxMin, vec3 boxMax)
-{
-	return 
-		point.x >= boxMin.x 
-	 && point.x <= boxMax.x 
-	 && point.y >= boxMin.y
-	 && point.y <= boxMax.y
-	 && point.z >= boxMin.z
-	 && point.z <= boxMax.z;
-}
 BoxIntersectionResult RayBoxIntersection(vec3 origin, vec3 direction, vec3 lb, vec3 rt)
 {
 	BoxIntersectionResult result;
@@ -295,7 +287,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 	vec3 boxMin = vec3(0,0,0);
 	vec3 boxMax = vec3(width, height, depth) * voxelSize;
 
-	if (!IsPointInsideBox(origin, boxMin, boxMax)) // Check if origin is inside grid
+	if (!Models[modelIndex].OriginInside)
 	{
 		// Check if we are intersecting with grid
 		BoxIntersectionResult boxIntersection = RayBoxIntersection(origin, direction, boxMin, boxMax);
@@ -303,6 +295,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 			return result;
 		origin = origin + direction * (boxIntersection.T - EPSILON); // Move origin to first intersection with grid
 	}
+
 	ivec3 current_voxel = ivec3(floor(origin / voxelSize));
 	
 	ivec3 step = ivec3(
@@ -336,7 +329,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 	{
 		result.Color = hitResult.Color;
 		result.Hit = true;
-		result.OpaqueHit = hitResult.Alpha == 255;
+		result.OpaqueHit = hitResult.Alpha == OPAQUE;
 		result.Distance = newDepth;
 	}
 	

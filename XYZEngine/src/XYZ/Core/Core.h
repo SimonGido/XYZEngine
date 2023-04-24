@@ -97,6 +97,9 @@ namespace XYZ {
 	template <typename Key0, typename Key1, typename Key2, typename Value>
 	using map3D = map2D<Key0, Key1, std::map<Key2, Value>>;
 
+
+
+
 	template <size_t size>
 	struct  Padding
 	{
@@ -105,4 +108,21 @@ namespace XYZ {
 		char m_Bytes[size];
 	};
 
+
+	struct Bool32
+	{
+		Bool32() = default;
+		Bool32(bool val)
+			: m_Value(val)
+		{}
+		Bool32& operator=(bool other)
+		{
+			m_Value = other;
+			return *this;
+		}
+		operator bool() const { return m_Value; }
+	private:
+		bool m_Value;
+		Padding<3> m_Padding;
+	};
 }

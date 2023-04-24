@@ -27,6 +27,7 @@ namespace XYZ {
 		inline uint32_t   GetOffset()		const { return m_Offset; }
 		inline uint32_t   GetBinding()		const { return m_StorageBufferBinding; }
 		inline uint32_t   GetSet()			const { return m_StorageBufferSet; }
+		inline bool		  Valid()			const { return m_Valid; }
 	private:
 		StorageBufferAllocation(
 			const Ref<StorageBufferAllocator>& allocator, 

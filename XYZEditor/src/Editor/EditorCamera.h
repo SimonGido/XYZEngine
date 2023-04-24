@@ -41,7 +41,7 @@ namespace XYZ {
 			float GetPitch() const { return m_Pitch; }
 			float GetYaw() const { return m_Yaw; }
 
-			Math::Frustum CreateFrustum() const;
+			 Math::Frustum CreateFrustum() const;
 
 		private:
 			void updateProjection();

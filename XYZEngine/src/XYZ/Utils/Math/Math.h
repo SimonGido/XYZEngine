@@ -72,6 +72,9 @@ namespace XYZ {
 			return !(has_neg && has_pos);
 		}
 
+		XYZ_API bool PointInBox(const glm::vec3& point, const glm::vec3& boxMin, const glm::vec3& boxMax);
+		
+
 		XYZ_API std::tuple<glm::vec3, glm::vec3, glm::vec3> DecomposeTransform(const glm::mat4& transform);
 
 		XYZ_API std::tuple<glm::vec3, glm::quat, glm::vec3> DecomposeTransformQuat(const glm::mat4& transform);

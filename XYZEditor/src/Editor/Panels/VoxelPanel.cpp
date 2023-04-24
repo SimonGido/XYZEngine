@@ -84,27 +84,29 @@ namespace XYZ {
 				}
 			}
 
-			m_VoxelMeshSource = Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox");
-			m_VoxelMeshSource0 = Ref<VoxelMeshSource>::Create("Assets/Voxel/chr_knight.vox");
-			
+			m_DeerMesh   = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));
+			m_CastleMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox"));
+			m_KnightMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/chr_knight.vox"));
+
 			uint32_t count = 50;
-			m_Transforms.resize(count);
-			m_Transforms0.resize(count);
+			m_CastleTransforms.resize(count);
+			m_KnightTransforms.resize(count);
+			m_DeerTransforms.resize(count);
 
 			float xOffset = 0.0f;
-			for (auto& transform : m_Transforms)
+			for (uint32_t i = 0; i < count; ++i)
 			{
-				transform.GetTransform().Translation.x = xOffset;
-				transform.GetTransform().Rotation.x = glm::radians(-90.0f);
-				xOffset += 30.0f * 10;
-			}
+				m_CastleTransforms[i].GetTransform().Translation.x = xOffset;
+				m_CastleTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
 
-			xOffset = 0.0f;
-			for (auto& transform : m_Transforms0)
-			{
-				transform.GetTransform().Translation.x = xOffset;
-				transform.GetTransform().Translation.y = 30.0f * 10;
-				transform.GetTransform().Rotation.x = glm::radians(-90.0f);
+				m_KnightTransforms[i].GetTransform().Translation.x = xOffset;
+				m_KnightTransforms[i].GetTransform().Translation.y = 30.0f;
+				m_KnightTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
+
+				m_DeerTransforms[i].GetTransform().Translation.x = xOffset;
+				m_DeerTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
+				m_DeerTransforms[i].GetTransform().Translation.y = 50.0f;
+
 				xOffset += 30.0f;
 			}
 		}
@@ -146,12 +148,17 @@ namespace XYZ {
 			if (ImGui::Begin("Voxels Transform"))
 			{
 				int id = 0;
-				for (auto& transform : m_Transforms)
+				for (auto& transform : m_CastleTransforms)
 				{
 					drawTransform(transform, id++);
 					ImGui::NewLine();
 				}
-				for (auto& transform : m_Transforms0)
+				for (auto& transform : m_KnightTransforms)
+				{
+					drawTransform(transform, id++);
+					ImGui::NewLine();
+				}
+				for (auto& transform : m_DeerTransforms)
 				{
 					drawTransform(transform, id++);
 					ImGui::NewLine();
@@ -167,52 +174,36 @@ namespace XYZ {
 				m_EditorCamera.OnUpdate(ts);
 
 				const glm::mat4 mvp = m_EditorCamera.GetViewProjection();
-	
-
-				m_VoxelRenderer->BeginScene(
-					mvp,
-					m_EditorCamera.GetViewMatrix(), 
-					m_EditorCamera.GetProjectionMatrix(), 
-					m_EditorCamera.GetPosition()
-				);
 				
-				m_VoxelRenderer->SetColors(m_VoxelMeshSource0->GetColorPallete());
 
-				const auto& submesh = m_VoxelMeshSource->GetSubmeshes()[0];
-				const auto& submesh0 = m_VoxelMeshSource0->GetSubmeshes()[0];
-				const float voxelSize = 1.0f;
-
-				auto frustum = m_EditorCamera.CreateFrustum();
-
-
-				uint32_t culledOut = 0;
-				for (auto& transform : m_Transforms)
+				m_VoxelRenderer->BeginScene({
+					m_EditorCamera.GetViewProjection(),
+					m_EditorCamera.GetViewMatrix(),
+					m_EditorCamera.GetProjectionMatrix(),
+					m_EditorCamera.GetPosition(),
+					m_EditorCamera.CreateFrustum()
+				});
+				
+				m_VoxelRenderer->SetColors(m_CastleMesh->GetMeshSource()->GetColorPallete());
+	
+				for (size_t i = 0; i < m_CastleTransforms.size(); ++i)
 				{
-					const glm::mat4 trans = transform.GetLocalTransform();
-					AABB aabb = Utils::VoxelModelToAABB(trans, submesh.Width, submesh.Height, submesh.Depth, 10.0f);
-					if (aabb.InsideFrustum(frustum) || true)
-					{
-						m_VoxelRenderer->SubmitMesh(m_VoxelMeshSource, transform.GetLocalTransform(), 10.0f);
-					}
-					else
-					{
-						culledOut++;
-					}
+					const glm::mat4 castleTransform = m_CastleTransforms[i].GetLocalTransform();
+					const glm::mat4 knightTransform = m_KnightTransforms[i].GetLocalTransform();
+					const glm::mat4 deerTransform = m_DeerTransforms[i].GetLocalTransform();
+
+					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform, 1.0f);
+					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform, 1.0f);
+					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame, 1.0f);
 				}
-				for (auto& transform : m_Transforms0)
+
+				if (m_CurrentTime > m_KeyLength)
 				{
-					const glm::mat4 trans = transform.GetLocalTransform();
-					AABB aabb = Utils::VoxelModelToAABB(trans, submesh0.Width, submesh0.Height, submesh0.Depth, voxelSize);
-					if (aabb.InsideFrustum(frustum))
-					{
-						m_VoxelRenderer->SubmitMesh(m_VoxelMeshSource0, transform.GetLocalTransform(), voxelSize);
-					}
-					else
-					{
-						culledOut++;
-					}
+					const uint32_t numKeyframes = m_DeerMesh->GetMeshSource()->GetInstances()[0].ModelAnimation.SubmeshIndices.size();
+					m_DeerKeyFrame = (m_DeerKeyFrame + 1) % numKeyframes;
+					m_CurrentTime = 0.0f;
 				}
-				std::cout << culledOut << std::endl;
+				m_CurrentTime += ts;
 				m_VoxelRenderer->EndScene();
 			}
 		}
