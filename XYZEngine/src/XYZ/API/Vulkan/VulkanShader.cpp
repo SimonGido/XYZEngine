@@ -752,18 +752,16 @@ namespace XYZ {
 				// Do we need to init a compiler for each stage?
 				shaderc::Compiler compiler;
 				shaderc::CompileOptions options;
-				
+
 				options.SetIncluder(ShaderCIncluder::Create(Renderer::GetDefaultResources().Includer));
 
 				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
 				options.SetWarningsAsErrors();
 				options.SetGenerateDebugInfo();
 
-
-				const bool optimize = false;
-				if (optimize)
+#ifdef XYZ_RELEASE
 					options.SetOptimizationLevel(shaderc_optimization_level_performance);
-
+#endif
 				// Compile shader
 				{
 					auto& shaderSource = shaderSources.at(stage);
