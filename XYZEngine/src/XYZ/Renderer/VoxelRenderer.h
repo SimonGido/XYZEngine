@@ -171,6 +171,7 @@ namespace XYZ {
 		Math::Frustum			m_Frustum;
 
 		glm::ivec2				m_ViewportSize;
+		glm::ivec2				m_WorkGroups;
 		bool				    m_ViewportSizeChanged = false;
 
 		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;

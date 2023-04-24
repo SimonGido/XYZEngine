@@ -4,9 +4,11 @@
 
 #include "Resources/Shaders/Includes/Math.glsl"
 
+#define TILE_SIZE 16
 const float FLT_MAX = 3.402823466e+38;
 const float EPSILON = 0.01;
 const uint OPAQUE = 255;
+
 
 struct VoxelModel
 {
@@ -38,12 +40,12 @@ layout (std140, binding = 16) uniform Scene
 };
 
 
-layout(std430, binding = 17) buffer buffer_Voxels
+layout(std430, binding = 17) readonly buffer buffer_Voxels
 {		
 	uint8_t Voxels[];
 };
 
-layout(std430, binding = 18) buffer buffer_Models
+layout(std430, binding = 18) readonly buffer buffer_Models
 {	
 	uint Colors[256];
 	uint NumModels;
@@ -66,7 +68,6 @@ Ray CreateRay(vec2 coords, int modelIndex)
 	coords.y /= u_ViewportSize.y;
 	coords = coords * 2.0 - 1.0; // -1 -> 1
 	vec4 target = u_InverseProjection * vec4(coords.x, -coords.y, 1, 1);
-
 	Ray ray;
 	ray.Origin = Models[modelIndex].RayOrigin.xyz;
 
@@ -208,7 +209,7 @@ struct RaymarchResult
 
 RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, int modelIndex, float currentDepth)
 {
-	Ray cameraRay = CreateCameraRay(gl_GlobalInvocationID.xy);
+	Ray cameraRay = CreateCameraRay(ivec2(gl_GlobalInvocationID.xy));
 
 	RaymarchHitResult result;
 	result.Hit = false;
@@ -362,27 +363,29 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float curre
 
 
 
-layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
+	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
+
 	for (int i = 0; i < NumModels; i++)
 	{
-		float currentDepth = imageLoad(o_DepthImage, ivec2(gl_GlobalInvocationID)).r;
-		Ray ray = CreateRay(gl_GlobalInvocationID.xy, i);
+		float currentDepth = imageLoad(o_DepthImage, textureIndex).r;
+		Ray ray = CreateRay(textureIndex, i);
 		RaymarchResult result = RayMarch(ray.Origin, ray.Direction, i, currentDepth);
 
 		if (result.Hit)
 		{
 			if (!result.OpaqueHit)
 			{
-				vec4 originalColor = imageLoad(o_Image, ivec2(gl_GlobalInvocationID));
+				vec4 originalColor = imageLoad(o_Image, textureIndex);
 				result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
 			}
 			else // Store depth only for opaque hits
 			{
-				imageStore(o_DepthImage, ivec2(gl_GlobalInvocationID), vec4(result.Distance, 0,0,0)); // Store new depth
+				imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
 			}
-			imageStore(o_Image, ivec2(gl_GlobalInvocationID), result.Color); // Store color				
+			imageStore(o_Image, textureIndex, result.Color); // Store color				
 		}
 	}
 }

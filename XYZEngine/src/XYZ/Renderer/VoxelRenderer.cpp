@@ -17,6 +17,8 @@ namespace XYZ {
 	static std::random_device s_RandomDev; // obtain a random number from hardware
 	static std::mt19937 s_RandomGen(s_RandomDev());
 
+#define TILE_SIZE 16
+
 	static uint32_t RandomColor()
 	{
 		// seed the generator
@@ -65,7 +67,7 @@ namespace XYZ {
 
 		m_UBVoxelScene.LightDirection = { -0.2f, -1.4f, -1.5f, 1.0f };
 		m_UBVoxelScene.LightColor = glm::vec4(1.0f);
-
+		m_WorkGroups = { 32, 32 };
 
 		for (uint32_t i = 0; i < 256; i++)
 		{
@@ -233,7 +235,7 @@ namespace XYZ {
 		Renderer::DispatchCompute(
 			m_ClearPipeline,
 			nullptr,
-			32, 32, 1,
+			m_WorkGroups.x, m_WorkGroups.y, 1,
 			PushConstBuffer
 			{
 				glm::vec4(0.3, 0.2, 0.7, 1.0),
@@ -266,7 +268,7 @@ namespace XYZ {
 			Renderer::DispatchCompute(
 				m_RaymarchPipeline,
 				nullptr,
-				32, 32, 1
+				m_WorkGroups.x, m_WorkGroups.y, 1
 			);
 		}
 		Renderer::EndPipelineCompute(m_RaymarchPipeline);
@@ -284,12 +286,20 @@ namespace XYZ {
 			props.Storage = true;
 			props.SamplerWrap = TextureWrap::Clamp;
 			m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
-			m_DepthTexture == Texture2D::Create(ImageFormat::RED32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
+			m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
 
+			m_UBVoxelScene.ViewportSize.x = m_ViewportSize.x;
+			m_UBVoxelScene.ViewportSize.y = m_ViewportSize.y;
+
 			m_ClearMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_ClearMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+		
+			m_WorkGroups = {
+				(m_ViewportSize.x + m_ViewportSize.x % TILE_SIZE) / TILE_SIZE,
+				(m_ViewportSize.y + m_ViewportSize.y % TILE_SIZE) / TILE_SIZE
+			};
 		}
 	}
 	void VoxelRenderer::updateUniformBufferSet()
