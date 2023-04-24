@@ -73,20 +73,35 @@ namespace XYZ {
 			m_ViewportSize(0.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f)
 		{
-			for (int i = 0; i < VOXEL_GRID_SIZE; ++i)
+			m_ProceduralMesh = Ref<VoxelProceduralMesh>::Create();
+			VoxelSubmesh submesh;
+			submesh.Width = 400;
+			submesh.Height = 100;
+			submesh.Depth = 400;
+			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
+
+			VoxelInstance instance;
+			instance.SubmeshIndex = 0;
+			instance.Transform = glm::mat4(1.0f);
+
+			for (int i = 0; i < submesh.Width; ++i)
 			{
-				for (int j = 0; j < VOXEL_GRID_SIZE; ++j)
+				for (int j = 0; j < submesh.Height; ++j)
 				{
-					for (int k = 0; k < VOXEL_GRID_SIZE; ++k)
+					for (int k = 0; k < submesh.Depth; ++k)
 					{
-						m_Voxels[Utils::Index3D(i, j, k, VOXEL_GRID_SIZE, VOXEL_GRID_SIZE)] = Utils::RandomColorIndex();
+						submesh.ColorIndices[Utils::Index3D(i, j, k, submesh.Width, submesh.Height)] = Utils::RandomColorIndex();
 					}
 				}
 			}
 
+			m_ProceduralMesh->SetSubmeshes({ submesh });
+			m_ProceduralMesh->SetInstances({ instance });
+			
 			m_DeerMesh   = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));
 			m_CastleMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox"));
 			m_KnightMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/chr_knight.vox"));
+				
 
 			uint32_t count = 50;
 			m_CastleTransforms.resize(count);
@@ -196,6 +211,8 @@ namespace XYZ {
 					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform, 1.0f);
 					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame, 1.0f);
 				}
+
+				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), 3.0f);
 
 				if (m_CurrentTime > m_KeyLength)
 				{

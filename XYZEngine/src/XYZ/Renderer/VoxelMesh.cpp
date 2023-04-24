@@ -37,6 +37,22 @@ namespace XYZ {
 	{
 	}
 
+	void VoxelProceduralMesh::SetSubmeshes(const std::vector<VoxelSubmesh>& submeshes)
+	{
+		m_Submeshes = submeshes;
+		m_NumVoxels = 0;
+		for (auto& submesh : m_Submeshes)
+			m_NumVoxels += static_cast<uint32_t>(submesh.ColorIndices.size());
+
+		m_Dirty = true;
+	}
+
+	void VoxelProceduralMesh::SetInstances(const std::vector<VoxelInstance>& instances)
+	{
+		m_Instances = instances;
+		m_Dirty = true;
+	}
+
 	const std::vector<VoxelSubmesh>& VoxelProceduralMesh::GetSubmeshes() const
 	{
 		return m_Submeshes;

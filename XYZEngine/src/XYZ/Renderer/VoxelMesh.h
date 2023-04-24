@@ -59,6 +59,10 @@ namespace XYZ {
 
 		virtual AssetType GetAssetType() const override { return AssetType::None; }
 
+		void SetSubmeshes(const std::vector<VoxelSubmesh>& submeshes);
+		void SetInstances(const std::vector<VoxelInstance>& instances);
+
+
 		virtual const std::vector<VoxelSubmesh>& GetSubmeshes() const override;
 		virtual const std::vector<VoxelInstance>& GetInstances() const override;
 		virtual const AssetHandle& GetRenderID() const override;
