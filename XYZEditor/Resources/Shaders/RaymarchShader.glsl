@@ -5,9 +5,19 @@
 #include "Resources/Shaders/Includes/Math.glsl"
 
 #define TILE_SIZE 16
+#define MAX_COLORS 1024
+
 const float FLT_MAX = 3.402823466e+38;
 const float EPSILON = 0.01;
 const uint OPAQUE = 255;
+
+layout(push_constant) uniform Uniform
+{
+	uint ModelStart;
+	uint ModelEnd;
+	uint ColorIndex;
+
+} u_Uniforms;
 
 
 struct VoxelModel
@@ -46,15 +56,17 @@ layout(std430, binding = 17) readonly buffer buffer_Voxels
 };
 
 layout(std430, binding = 18) readonly buffer buffer_Models
-{	
-	uint Colors[256];
-	uint NumModels;
+{		
 	VoxelModel Models[];
 };
 
+layout(std430, binding = 19) readonly buffer buffer_Colors
+{		
+	uint Colors[MAX_COLORS][256];
+};
 
-layout(binding = 19, rgba32f) uniform image2D o_Image;
-layout(binding = 20, r32f) uniform image2D o_DepthImage;
+layout(binding = 20, rgba32f) uniform image2D o_Image;
+layout(binding = 21, r32f) uniform image2D o_DepthImage;
 
 struct Ray
 {
@@ -62,9 +74,9 @@ struct Ray
 	vec3 Direction;
 };
 
-Ray g_CameraRay;
+Ray g_ModelRay;
 
-Ray CreateRay(vec2 coords, int modelIndex)
+Ray CreateRay(vec2 coords, uint modelIndex)
 {
 	coords.x /= u_ViewportSize.x;
 	coords.y /= u_ViewportSize.y;
@@ -176,15 +188,12 @@ BoxIntersectionResult RayBoxIntersection(vec3 origin, vec3 direction, vec3 lb, v
 	return result;
 }
 
-float VoxelDistanceFromRay(vec3 origin, vec3 direction, ivec3 voxel, int modelIndex)
+float VoxelDistanceFromRay(vec3 origin, vec3 direction, ivec3 voxel, uint modelIndex)
 {
 	float voxelSize = Models[modelIndex].VoxelSize;
 
 	vec3 boxMin = vec3(voxel.x * voxelSize, voxel.y * voxelSize, voxel.z * voxelSize);
 	vec3 boxMax = boxMin + voxelSize;
-
-	boxMin = (Models[modelIndex].Transform * vec4(boxMin, 1.0)).xyz;
-	boxMax = (Models[modelIndex].Transform * vec4(boxMax, 1.0)).xyz;
 
 	return RayBoxIntersection(origin, direction, boxMin, boxMax).T;
 }
@@ -209,7 +218,7 @@ struct RaymarchResult
 	uint  TraverseCount;
 };
 
-RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, int modelIndex, float currentDepth)
+RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, uint modelIndex, float currentDepth)
 {
 	RaymarchHitResult result;
 	result.Hit = false;
@@ -244,14 +253,14 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 
 		if (IsValidVoxel(current_voxel, width, height, depth))
 		{
-			float newDepth = VoxelDistanceFromRay(g_CameraRay.Origin, g_CameraRay.Direction, current_voxel, modelIndex);
+			float newDepth = VoxelDistanceFromRay(g_ModelRay.Origin, g_ModelRay.Direction, current_voxel, modelIndex);
 			result.Depth = newDepth;
 			if (newDepth > currentDepth)
 				break;
 
 			uint voxelIndex = Index3D(current_voxel, width, height) + voxelOffset;
 			uint colorIndex = uint(Voxels[voxelIndex]);
-			uint voxel = Colors[colorIndex];
+			uint voxel = Colors[u_Uniforms.ColorIndex][colorIndex];
 
 			if (voxel != 0)
 			{
@@ -272,7 +281,7 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 	return result;
 }
 
-RaymarchResult RayMarch(vec3 origin, vec3 direction, int modelIndex, float currentDepth)
+RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float currentDepth)
 {
 	RaymarchResult result;
 	result.OpaqueHit = false;
@@ -373,12 +382,11 @@ void main()
 	if (!ValidPixel(textureIndex))
 		return;
 
-	g_CameraRay = CreateCameraRay(ivec2(gl_GlobalInvocationID.xy));
-	for (int i = 0; i < NumModels; i++)
+	for (uint i = u_Uniforms.ModelStart; i < u_Uniforms.ModelEnd; i++)
 	{
+		g_ModelRay = CreateRay(textureIndex, i);
 		float currentDepth = imageLoad(o_DepthImage, textureIndex).r;
-		Ray ray = CreateRay(textureIndex, i);
-		RaymarchResult result = RayMarch(ray.Origin, ray.Direction, i, currentDepth);
+		RaymarchResult result = RayMarch(g_ModelRay.Origin, g_ModelRay.Direction, i, currentDepth);
 
 		if (result.Hit)
 		{

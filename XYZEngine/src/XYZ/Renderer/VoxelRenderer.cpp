@@ -55,8 +55,10 @@ namespace XYZ {
 		m_StorageBufferSet = StorageBufferSet::Create(framesInFlight);
 		m_StorageBufferSet->Create(sizeof(SSBOVoxels), SSBOVoxels::Set, SSBOVoxels::Binding);
 		m_StorageBufferSet->Create(sizeof(SSBOVoxelModels), SSBOVoxelModels::Set, SSBOVoxelModels::Binding);
-		
-		m_StorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxels), SSBOVoxels::Binding, SSBOVoxels::Set);
+		m_StorageBufferSet->Create(sizeof(SSBOColors), SSBOColors::Set, SSBOColors::Binding);
+
+		m_VoxelStorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxels), SSBOVoxels::Binding, SSBOVoxels::Set);
+		m_ColorStorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOColors), SSBOColors::Binding, SSBOColors::Set);
 
 		TextureProperties props;
 		props.Storage = true;
@@ -68,11 +70,6 @@ namespace XYZ {
 		m_UBVoxelScene.LightDirection = { -0.2f, -1.4f, -1.5f, 1.0f };
 		m_UBVoxelScene.LightColor = glm::vec4(1.0f);
 		m_WorkGroups = { 32, 32 };
-
-		for (uint32_t i = 0; i < 256; i++)
-		{
-			m_SSBOVoxelModels.Colors[i] = RandomColor();
-		}
 	}
 	void VoxelRenderer::BeginScene(const VoxelRendererCamera& camera)
 	{
@@ -92,7 +89,7 @@ namespace XYZ {
 	}
 	void VoxelRenderer::EndScene()
 	{
-		updateStorageBufferSet();
+		prepareDrawCommands();
 		render();
 
 		m_LastFrameMeshAllocations = std::move(m_MeshAllocations);
@@ -104,14 +101,6 @@ namespace XYZ {
 			m_ViewportSize = glm::ivec2(width, height);
 			m_ViewportSizeChanged = true;
 		}
-	}
-	void VoxelRenderer::SetColors(const std::array<uint32_t, 256>& colors)
-	{
-		memcpy(m_SSBOVoxelModels.Colors, colors.data(), sizeof(SSBOVoxelModels::Colors));
-	}
-	void VoxelRenderer::SetColors(const std::array<VoxelColor, 256>& colors)
-	{
-		memcpy(m_SSBOVoxelModels.Colors, colors.data(), sizeof(SSBOVoxelModels::Colors));
 	}
 
 	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, float voxelSize)
@@ -278,7 +267,13 @@ namespace XYZ {
 			Renderer::DispatchCompute(
 				m_RaymarchPipeline,
 				nullptr,
-				m_WorkGroups.x, m_WorkGroups.y, 1
+				m_WorkGroups.x, m_WorkGroups.y, 1,
+				PushConstBuffer
+				{
+					drawCommand.ModelStart,
+					drawCommand.ModelEnd,
+					drawCommand.ColorIndex
+				}
 			);
 		}
 		Renderer::EndPipelineCompute(m_RaymarchPipeline);
@@ -322,8 +317,9 @@ namespace XYZ {
 
 		});
 	}
-	void VoxelRenderer::updateStorageBufferSet()
+	void VoxelRenderer::prepareDrawCommands()
 	{
+		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::Colors[0]));
 		Ref<VoxelRenderer> instance = this;
 		uint32_t modelCount = 0;
 		for (auto& [key, drawCommand] : m_DrawCommands)
@@ -332,26 +328,26 @@ namespace XYZ {
 				continue;
 
 			MeshAllocation& meshAlloc = createMeshAllocation(drawCommand.Mesh);
+
+			drawCommand.ModelStart = modelCount;
+			drawCommand.ColorIndex = meshAlloc.ColorAllocation.GetOffset() / colorSize;
 			for (auto& cmdModel : drawCommand.Models)
 			{
 				cmdModel.Model.VoxelOffset = meshAlloc.SubmeshOffsets[cmdModel.SubmeshIndex];
 				m_SSBOVoxelModels.Models[modelCount++] = cmdModel.Model;
 			}
+			drawCommand.ModelEnd = modelCount;
 		}
 
-		m_SSBOVoxelModels.NumModels = modelCount;
+		const uint32_t voxelModelsUpdateSize = modelCount * sizeof(VoxelModel);
 
-		const uint32_t voxelModelsUpdateSize = 
-			  sizeof(SSBOVoxelModels::Colors) 
-			+ sizeof(SSBOVoxelModels::NumModels) 
-			+ sizeof(SSBOVoxelModels::Padding) 
-			+ modelCount * sizeof(VoxelModel);
-		
 		for (const auto& updated : m_UpdatedAllocations)
 		{
-			const auto& alloc = updated.Allocation;
-			void* updateData = &m_SSBOVoxels.Voxels[alloc.GetOffset()];
-			m_StorageBufferSet->UpdateEachFrame(updateData, alloc.GetSize(), alloc.GetOffset(), SSBOVoxels::Binding, SSBOVoxels::Set);		
+			void* voxelData = &m_SSBOVoxels.Voxels[updated.VoxelAllocation.GetOffset()];
+			void* colorData = &m_SSBOColors.Colors[updated.ColorAllocation.GetOffset() / colorSize];
+
+			m_StorageBufferSet->UpdateEachFrame(voxelData, updated.VoxelAllocation.GetSize(), updated.VoxelAllocation.GetOffset(), SSBOVoxels::Binding, SSBOVoxels::Set);
+			m_StorageBufferSet->UpdateEachFrame(colorData, updated.ColorAllocation.GetSize(), updated.ColorAllocation.GetOffset(), SSBOColors::Binding, SSBOColors::Set);
 		}
 		m_UpdatedAllocations.clear();
 		m_StorageBufferSet->Update((void*)&m_SSBOVoxelModels, voxelModelsUpdateSize, 0, SSBOVoxelModels::Binding, SSBOVoxelModels::Set);
@@ -395,21 +391,42 @@ namespace XYZ {
 		}
 
 		MeshAllocation& meshAlloc = m_MeshAllocations[meshHandle];
-		if (m_StorageAllocator->Allocate(meshSize, meshAlloc.Allocation) || mesh->NeedUpdate())
-		{		
-			m_UpdatedAllocations.push_back({ meshAlloc.Allocation, meshHandle });
-			meshAlloc.SubmeshOffsets.resize(submeshes.size());
+		reallocateVoxels(mesh, meshAlloc);
+		return meshAlloc;
+	}
+	void VoxelRenderer::reallocateVoxels(const Ref<VoxelMesh>& mesh, MeshAllocation& allocation)
+	{
+		const auto& submeshes = mesh->GetSubmeshes();
+		const uint32_t meshSize = mesh->GetNumVoxels() * sizeof(uint8_t);
+		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::Colors[0]));
+
+		const bool reallocated = 
+				m_VoxelStorageAllocator->Allocate(meshSize, allocation.VoxelAllocation)
+			||  m_ColorStorageAllocator->Allocate(colorSize, allocation.ColorAllocation);
+
+
+		if (reallocated || mesh->NeedUpdate())
+		{	
+			allocation.SubmeshOffsets.resize(submeshes.size());
+
+			// Copy voxels
 			uint32_t submeshIndex = 0;
-			uint32_t offset = meshAlloc.Allocation.GetOffset();
+			uint32_t offset = allocation.VoxelAllocation.GetOffset();
 			for (auto& submesh : submeshes)
 			{
-				meshAlloc.SubmeshOffsets[submeshIndex] = offset;
+				allocation.SubmeshOffsets[submeshIndex] = offset;
 				const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
 				memcpy(&m_SSBOVoxels.Voxels[offset], submesh.ColorIndices.data(), voxelCount * sizeof(uint8_t));
 				offset += voxelCount;
 				submeshIndex++;
 			}
+
+			// Copy color pallete
+			const uint32_t colorPalleteIndex = allocation.ColorAllocation.GetOffset() / colorSize;
+			memcpy(m_SSBOColors.Colors[colorPalleteIndex], mesh->GetColorPallete().data(), colorSize);
+
+			m_UpdatedAllocations.push_back({ allocation.VoxelAllocation, allocation.ColorAllocation });
 		}
-		return meshAlloc;
 	}
+
 }

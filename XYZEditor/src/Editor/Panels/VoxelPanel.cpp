@@ -199,8 +199,7 @@ namespace XYZ {
 					m_EditorCamera.CreateFrustum()
 				});
 				
-				m_VoxelRenderer->SetColors(m_CastleMesh->GetMeshSource()->GetColorPallete());
-	
+
 				for (size_t i = 0; i < m_CastleTransforms.size(); ++i)
 				{
 					const glm::mat4 castleTransform = m_CastleTransforms[i].GetLocalTransform();
@@ -212,7 +211,7 @@ namespace XYZ {
 					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame, 1.0f);
 				}
 
-				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), 3.0f);
+				//m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), 3.0f);
 
 				if (m_CurrentTime > m_KeyLength)
 				{

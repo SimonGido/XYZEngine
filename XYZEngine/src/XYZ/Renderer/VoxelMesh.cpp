@@ -53,6 +53,16 @@ namespace XYZ {
 		m_Dirty = true;
 	}
 
+	void VoxelProceduralMesh::SetColorPallete(const std::array<VoxelColor, 256>& pallete)
+	{
+		m_ColorPallete = pallete;
+	}
+
+	const std::array<VoxelColor, 256>& VoxelProceduralMesh::GetColorPallete() const
+	{
+		return m_ColorPallete;
+	}
+
 	const std::vector<VoxelSubmesh>& VoxelProceduralMesh::GetSubmeshes() const
 	{
 		return m_Submeshes;

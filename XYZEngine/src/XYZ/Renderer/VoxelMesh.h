@@ -16,6 +16,7 @@ namespace XYZ {
 	{
 	public:
 		virtual ~VoxelMesh() = default;
+		virtual const std::array<VoxelColor, 256>& GetColorPallete() const = 0;
 		virtual const std::vector<VoxelSubmesh>& GetSubmeshes() const = 0;
 		virtual const std::vector<VoxelInstance>& GetInstances() const = 0;
 		virtual const AssetHandle& GetRenderID() const = 0;
@@ -37,7 +38,8 @@ namespace XYZ {
 
 
 		AssetReference<VoxelMeshSource> GetMeshSource() const { return m_MeshSource; }
-
+		
+		virtual const std::array<VoxelColor, 256>& GetColorPallete() const override { return m_MeshSource->GetColorPallete(); }
 		virtual const std::vector<VoxelSubmesh>& GetSubmeshes() const override;
 		virtual const std::vector<VoxelInstance>& GetInstances() const override;
 		virtual const AssetHandle& GetRenderID() const override;
@@ -61,8 +63,9 @@ namespace XYZ {
 
 		void SetSubmeshes(const std::vector<VoxelSubmesh>& submeshes);
 		void SetInstances(const std::vector<VoxelInstance>& instances);
+		void SetColorPallete(const std::array<VoxelColor, 256>& pallete);
 
-
+		virtual const std::array<VoxelColor, 256>& GetColorPallete() const override;
 		virtual const std::vector<VoxelSubmesh>& GetSubmeshes() const override;
 		virtual const std::vector<VoxelInstance>& GetInstances() const override;
 		virtual const AssetHandle& GetRenderID() const override;
@@ -76,6 +79,7 @@ namespace XYZ {
 	private:
 		std::vector<VoxelSubmesh> m_Submeshes;
 		std::vector<VoxelInstance> m_Instances;
+		std::array<VoxelColor, 256> m_ColorPallete;
 
 		uint32_t m_NumVoxels;
 		mutable bool m_Dirty;

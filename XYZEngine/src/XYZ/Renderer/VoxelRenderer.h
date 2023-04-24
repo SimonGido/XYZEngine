@@ -25,6 +25,8 @@ namespace XYZ {
 
 	struct UBVoxelScene
 	{
+		
+
 		glm::mat4 InverseProjection;
 		glm::mat4 InverseView;
 		glm::vec4 CameraPosition;
@@ -36,10 +38,10 @@ namespace XYZ {
 
 		uint32_t MaxTraverses = 512;
 
+
 		static constexpr uint32_t Binding = 16;
 		static constexpr uint32_t Set = 0;
 	};
-
 
 
 	struct SSBOVoxels
@@ -51,6 +53,8 @@ namespace XYZ {
 		static constexpr uint32_t Binding = 17;
 		static constexpr uint32_t Set = 0;
 	};
+
+
 
 	struct VoxelModel
 	{
@@ -72,14 +76,23 @@ namespace XYZ {
 	struct SSBOVoxelModels
 	{
 		static constexpr uint32_t MaxModels = 1024;
-		uint32_t Colors[256];
-		uint32_t NumModels;
-		uint32_t Padding[3];
+
 		VoxelModel Models[MaxModels];
 
 		static constexpr uint32_t Binding = 18;
 		static constexpr uint32_t Set = 0;
 	};
+
+	struct SSBOColors
+	{
+		static constexpr uint32_t MaxColors = 1024;
+
+		uint32_t Colors[MaxColors][256];
+
+		static constexpr uint32_t Binding = 19;
+		static constexpr uint32_t Set = 0;
+	};
+
 
 	struct VoxelRendererCamera
 	{
@@ -99,8 +112,6 @@ namespace XYZ {
 		void EndScene();
 		
 		void SetViewportSize(uint32_t width, uint32_t height);
-		void SetColors(const std::array<uint32_t, 256>& colors);
-		void SetColors(const std::array<VoxelColor, 256>& colors);
 
 		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, float voxelSize);
 		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, const uint32_t* keyFrames, float voxelSize);
@@ -119,21 +130,26 @@ namespace XYZ {
 		struct VoxelDrawCommand
 		{
 			Ref<VoxelMesh> Mesh;
+			uint32_t ModelStart = 0;
+			uint32_t ModelEnd = 0;
+			uint32_t ColorIndex = 0;
 			std::vector<VoxelCommandModel> Models;
 		};
 
 		struct MeshAllocation
 		{
-			StorageBufferAllocation Allocation;
+			StorageBufferAllocation VoxelAllocation;
+			StorageBufferAllocation	ColorAllocation;
+
 			std::vector<uint32_t> SubmeshOffsets;
 		};
 	
 		struct UpdatedAllocation
 		{
-			StorageBufferAllocation Allocation;
-			AssetHandle	Handle;
+			StorageBufferAllocation VoxelAllocation;
+			StorageBufferAllocation	ColorAllocation;
 		};
-	
+
 		struct Statistics
 		{
 			uint32_t ComputeCommandCount = 0;
@@ -149,12 +165,13 @@ namespace XYZ {
 
 		void updateViewportSize();
 		void updateUniformBufferSet();
-		void updateStorageBufferSet();
+		void prepareDrawCommands();
 
 		void createRaymarchPipeline();
 
 		MeshAllocation& createMeshAllocation(const Ref<VoxelMesh>& mesh);	
 
+		void reallocateVoxels(const Ref<VoxelMesh>& mesh, MeshAllocation& allocation);
 	private:
 		Ref<PrimaryRenderCommandBuffer> m_CommandBuffer;
 		Ref<PipelineCompute>	m_RaymarchPipeline;
@@ -166,7 +183,8 @@ namespace XYZ {
 		Ref<StorageBufferSet>	m_StorageBufferSet;
 		Ref<UniformBufferSet>	m_UniformBufferSet;
 
-		Ref<StorageBufferAllocator> m_StorageAllocator;
+		Ref<StorageBufferAllocator> m_VoxelStorageAllocator;
+		Ref<StorageBufferAllocator> m_ColorStorageAllocator;
 
 		Ref<Texture2D>			m_OutputTexture;
 		Ref<Texture2D>			m_DepthTexture;
@@ -174,6 +192,7 @@ namespace XYZ {
 		UBVoxelScene			m_UBVoxelScene;
 		SSBOVoxels				m_SSBOVoxels;
 		SSBOVoxelModels			m_SSBOVoxelModels;
+		SSBOColors				m_SSBOColors;
 
 		Math::Frustum			m_Frustum;
 
@@ -188,7 +207,9 @@ namespace XYZ {
 
 		std::unordered_map<AssetHandle, MeshAllocation> m_MeshAllocations;
 		std::unordered_map<AssetHandle, MeshAllocation> m_LastFrameMeshAllocations;
-		std::vector<UpdatedAllocation>					m_UpdatedAllocations;
+
+
+		std::vector<UpdatedAllocation> m_UpdatedAllocations;
 
 		struct GPUTimeQueries
 		{
