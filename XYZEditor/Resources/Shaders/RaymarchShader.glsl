@@ -211,7 +211,6 @@ struct RaymarchResult
 	float Distance;
 	bool  OpaqueHit;
 	bool  Hit;
-	uint  TraverseCount;
 };
 
 RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, uint modelIndex, float currentDepth)
@@ -284,7 +283,6 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 	result.OpaqueHit = false;
 	result.Hit = false;
 	result.Distance = FLT_MAX;
-	result.TraverseCount = 0;
 	
 	float width  = float(Models[modelIndex].Width);
 	float height = float(Models[modelIndex].Height);
@@ -324,8 +322,9 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 	uint remainingTraverses = MaxTraverse;
 	
 	// Raymarch until we find first hit to determine default color
-	RaymarchHitResult hitResult = RayMarch(t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex, currentDepth);
-	result.TraverseCount += hitResult.TraverseCount;
+	RaymarchHitResult hitResult = RayMarch(t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex, currentDepth);	
+	remainingTraverses -= hitResult.TraverseCount;
+
 
 	float newDepth = hitResult.Depth;
 	if (newDepth > currentDepth) // Depth test
@@ -341,14 +340,12 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 	}
 	
 	// Continue raymarching until we hit opaque object or we are out of traverses
-	remainingTraverses -= hitResult.TraverseCount;
 	while (remainingTraverses != 0)
 	{		
 		if (result.OpaqueHit) // Opaque hit => stop raymarching
 			break;
 
 		hitResult = RayMarch(hitResult.Max, t_delta, hitResult.CurrentVoxel, step, remainingTraverses, modelIndex, currentDepth);	
-		result.TraverseCount += hitResult.TraverseCount;
 		newDepth = hitResult.Depth; // Store raymarch distance
 		if (newDepth > currentDepth) // if new depth is bigger than currentDepth it means there is something in front of us
 			break;
@@ -358,7 +355,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 		{
 			result.Color.rgb = mix(result.Color.rgb, hitResult.Color.rgb, 1.0 - result.Color.a);
 			result.Hit = true;
-			result.OpaqueHit = hitResult.Alpha == 1;
+			result.OpaqueHit = hitResult.Alpha == OPAQUE;
 		}
 		
 		remainingTraverses -= hitResult.TraverseCount;

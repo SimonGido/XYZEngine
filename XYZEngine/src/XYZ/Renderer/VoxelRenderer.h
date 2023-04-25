@@ -115,6 +115,7 @@ namespace XYZ {
 
 		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, float voxelSize);
 		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, const uint32_t* keyFrames, float voxelSize);
+		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, float voxelSize, bool cull);
 
 		void OnImGuiRender();
 
@@ -168,6 +169,7 @@ namespace XYZ {
 		MeshAllocation& createMeshAllocation(const Ref<VoxelMesh>& mesh);	
 
 		void reallocateVoxels(const Ref<VoxelMesh>& mesh, MeshAllocation& allocation);
+		bool cullSubmesh(const VoxelSubmesh& submesh, const glm::mat4& transform, float voxelSize) const;
 	private:
 		Ref<PrimaryRenderCommandBuffer> m_CommandBuffer;
 		Ref<PipelineCompute>	m_RaymarchPipeline;

@@ -40,6 +40,13 @@ namespace XYZ {
 			void handlePanelResize(const glm::vec2& newSize);
 			void drawTransform(TransformComponent& transform, int id) const;
 
+			void pushGenerateVoxelMeshJob();
+
+			static std::vector<uint8_t> generateVoxelMesh(
+				uint32_t seed, uint32_t frequency, uint32_t octaves,
+				uint32_t width, uint32_t height, uint32_t depth
+			);
+
 		private:
 			Ref<VoxelRenderer>			m_VoxelRenderer;
 			glm::vec2				    m_ViewportSize;
@@ -61,8 +68,16 @@ namespace XYZ {
 			Ref<VoxelProceduralMesh> m_ProceduralMesh;
 
 			uint32_t m_DeerKeyFrame = 0;
-			float m_KeyLength = 0.3f;
-			float m_CurrentTime = 0.0f;
+			float	 m_KeyLength = 0.3f;
+			float	 m_CurrentTime = 0.0f;
+
+			uint32_t m_Frequency = 2;
+			uint32_t m_Octaves = 3;
+			uint32_t m_Seed = 60;
+
+
+			std::future<std::vector<uint8_t>> m_GenerateVoxelsFuture;
+			bool m_Generating = false;
 		};
 	}
 }

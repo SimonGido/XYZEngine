@@ -7,8 +7,10 @@
 #include "XYZ/Utils/Math/Math.h"
 #include "XYZ/Utils/Math/AABB.h"
 
-#include <glm/gtc/type_ptr.hpp>
+#include "XYZ/ImGui/ImGui.h"
 
+
+#include <glm/gtc/type_ptr.hpp>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
@@ -111,9 +113,15 @@ namespace XYZ {
 		for (const auto& instance : mesh->GetInstances())
 		{
 			const glm::mat4 instanceTransform = transform * instance.Transform;
-
 			const VoxelSubmesh& submesh = submeshes[instance.SubmeshIndex];
-			submitSubmesh(submesh, drawCommand, transform * instance.Transform, voxelSize, instance.SubmeshIndex);
+
+			if (cullSubmesh(submesh, instanceTransform, voxelSize))
+			{
+				m_Statistics.CulledModels++;
+				continue;
+			}
+
+			submitSubmesh(submesh, drawCommand, instanceTransform, voxelSize, instance.SubmeshIndex);
 		}	
 	}
 
@@ -126,12 +134,38 @@ namespace XYZ {
 		for (const auto& instance : mesh->GetInstances())
 		{
 			const uint32_t submeshIndex = instance.ModelAnimation.SubmeshIndices[keyFrames[index]];
-
 			const VoxelSubmesh& submesh = submeshes[submeshIndex];
-			submitSubmesh(submesh, drawCommand, transform * instance.Transform, voxelSize, submeshIndex);
+			const glm::mat4 instanceTransform = transform * instance.Transform;
+
+			if (cullSubmesh(submesh, instanceTransform, voxelSize))
+			{
+				m_Statistics.CulledModels++;
+				continue;
+			}
+
+			submitSubmesh(submesh, drawCommand, instanceTransform, voxelSize, submeshIndex);
 
 			index++;
 		}	
+	}
+
+	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, float voxelSize, bool cull)
+	{
+		auto& drawCommand = m_DrawCommands[mesh->GetHandle()];
+		const auto& submeshes = mesh->GetSubmeshes();
+		drawCommand.Mesh = mesh;
+		for (const auto& instance : mesh->GetInstances())
+		{
+			const glm::mat4 instanceTransform = transform * instance.Transform;
+			const VoxelSubmesh& submesh = submeshes[instance.SubmeshIndex];
+	
+			if (cull && cullSubmesh(submesh, instanceTransform, voxelSize))
+			{
+				m_Statistics.CulledModels++;
+				continue;
+			}
+			submitSubmesh(submesh, drawCommand, instanceTransform, voxelSize, instance.SubmeshIndex);
+		}
 	}
 
 
@@ -142,19 +176,27 @@ namespace XYZ {
 		{
 			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.LightDirection), 0.1f);
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.LightColor), 0.1f);
-
 			ImGui::DragInt("Max Traverses", (int*)&m_UBVoxelScene.MaxTraverses, 1, 0, 1024);
 
-			ImGui::Text("Mesh Allocations: %d", static_cast<uint32_t>(m_LastFrameMeshAllocations.size()));
-			ImGui::Text("Update Allocations: %d", static_cast<uint32_t>(m_UpdatedAllocations.size()));
-			
-			ImGui::Text("Model Count: %d", m_Statistics.ModelCount);
-			ImGui::Text("Culled Models: %d", m_Statistics.CulledModels);
+			if (ImGui::BeginTable("##Statistics", 2, ImGuiTableFlags_SizingFixedFit))
+			{
+				const uint32_t voxelBufferUsage = 100 * m_VoxelStorageAllocator->GetAllocatedSize() / m_VoxelStorageAllocator->GetSize();
+				const uint32_t colorBufferUsage = 100 * m_ColorStorageAllocator->GetAllocatedSize() / m_ColorStorageAllocator->GetSize();
 
+				UI::TextTableRow("%s", "Mesh Allocations:", "%u", static_cast<uint32_t>(m_LastFrameMeshAllocations.size()));
+				UI::TextTableRow("%s", "Update Allocations:", "%u", static_cast<uint32_t>(m_UpdatedAllocations.size()));
+				UI::TextTableRow("%s", "Model Count:", "%u", m_Statistics.ModelCount);
+				UI::TextTableRow("%s", "Culled Models:", "%u", m_Statistics.CulledModels);
+				UI::TextTableRow("%s", "Voxel Buffer Usage:", "%u%%", voxelBufferUsage);
+				UI::TextTableRow("%s", "Color Buffer Usage:", "%u%%", colorBufferUsage);
 
-			const uint32_t frameIndex = Renderer::GetCurrentFrame();
-			float gpuTime = m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.GPUTime);
-			ImGui::Text("GPU Time: %.3fms", gpuTime);
+				const uint32_t frameIndex = Renderer::GetCurrentFrame();
+				float gpuTime = m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.GPUTime);
+
+				UI::TextTableRow("%s", "GPU Time:", "%.3fms", gpuTime);
+				
+				ImGui::EndTable();
+			}
 		}
 		ImGui::End();
 	}
@@ -162,11 +204,7 @@ namespace XYZ {
 	bool VoxelRenderer::submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, float voxelSize, uint32_t submeshIndex)
 	{
 		const AABB aabb = VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, voxelSize);
-		if (!aabb.InsideFrustum(m_Frustum))
-		{
-			m_Statistics.CulledModels++;
-			return false;
-		}
+
 		m_Statistics.ModelCount++;
 
 		const glm::vec3 aabbMax = glm::vec3(submesh.Width, submesh.Height, submesh.Depth) * voxelSize;
@@ -303,6 +341,13 @@ namespace XYZ {
 			instance->m_UniformBufferSet->Get(UBVoxelScene::Binding, UBVoxelScene::Set, currentFrame)->RT_Update(&instance->m_UBVoxelScene, sizeof(UBVoxelScene), 0);
 
 		});
+	}
+	
+	bool VoxelRenderer::cullSubmesh(const VoxelSubmesh& submesh, const glm::mat4& transform, float voxelSize) const
+	{
+		const AABB aabb = VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, voxelSize);
+		return !aabb.InsideFrustum(m_Frustum);
+
 	}
 	void VoxelRenderer::prepareDrawCommands()
 	{

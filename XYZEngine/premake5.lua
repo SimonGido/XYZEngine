@@ -102,7 +102,8 @@ project "XYZEngine"
 			"%{IncludeDir.optick}",
 			"%{IncludeDir.OpenXR}",
 			"%{IncludeDir.VulkanSDK}",
-			"%{IncludeDir.vox}"
+			"%{IncludeDir.vox}",
+			"%{IncludeDir.PerlinNoise}"
 		}
 
 		links

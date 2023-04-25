@@ -11,6 +11,8 @@
 
 #include "XYZ/Utils/Math/AABB.h"
 #include "XYZ/Utils/Math/Math.h"
+#include "XYZ/Utils/Math/Perlin.h"
+
 #include "XYZ/ImGui/ImGui.h"
 
 #include "Editor/Event/EditorEvents.h"
@@ -32,9 +34,9 @@ namespace XYZ {
 			static std::random_device s_RandomDev; // obtain a random number from hardware
 			static std::mt19937 s_RandomGen(s_RandomDev());
 
-			static uint8_t RandomColorIndex()
+			static uint8_t RandomColorIndex(uint32_t x = 0, uint32_t y = 255)
 			{
-				std::uniform_int_distribution<> distr(0, 255); // define the range
+				std::uniform_int_distribution<> distr(x, y); // define the range
 				return static_cast<uint8_t>(distr(s_RandomGen));
 			}
 
@@ -79,22 +81,13 @@ namespace XYZ {
 			submesh.Height = 100;
 			submesh.Depth = 400;
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
+			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
 
 			VoxelInstance instance;
 			instance.SubmeshIndex = 0;
 			instance.Transform = glm::mat4(1.0f);
 
-			for (int i = 0; i < submesh.Width; ++i)
-			{
-				for (int j = 0; j < submesh.Height; ++j)
-				{
-					for (int k = 0; k < submesh.Depth; ++k)
-					{
-						submesh.ColorIndices[Utils::Index3D(i, j, k, submesh.Width, submesh.Height)] = Utils::RandomColorIndex();
-					}
-				}
-			}
-
+			
 			m_ProceduralMesh->SetSubmeshes({ submesh });
 			m_ProceduralMesh->SetInstances({ instance });
 			
@@ -102,6 +95,13 @@ namespace XYZ {
 			m_CastleMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox"));
 			m_KnightMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/chr_knight.vox"));
 				
+			auto colorPallete = m_KnightMesh->GetColorPallete();
+			colorPallete[1].R = 0;
+			colorPallete[1].G = 150;
+			colorPallete[1].B = 250;
+			colorPallete[1].A = 150;
+
+			m_ProceduralMesh->SetColorPallete(colorPallete);
 
 			uint32_t count = 50;
 			m_CastleTransforms.resize(count);
@@ -124,6 +124,7 @@ namespace XYZ {
 
 				xOffset += 30.0f;
 			}
+			pushGenerateVoxelMeshJob();
 		}
 
 		VoxelPanel::~VoxelPanel()
@@ -160,23 +161,15 @@ namespace XYZ {
 				}
 				ImGui::End();
 			}
-			if (ImGui::Begin("Voxels Transform"))
+			if (ImGui::Begin("Voxels"))
 			{
-				int id = 0;
-				for (auto& transform : m_CastleTransforms)
+				ImGui::DragInt("Frequency", (int*)&m_Frequency, 1.0f, 0, INT_MAX);
+				ImGui::DragInt("Octaves", (int*)&m_Octaves, 1.0f, 0, INT_MAX);
+				ImGui::DragInt("Seed", (int*)&m_Seed, 1.0f, 0, INT_MAX);
+				
+				if (ImGui::Button("Apply") && !m_Generating)
 				{
-					drawTransform(transform, id++);
-					ImGui::NewLine();
-				}
-				for (auto& transform : m_KnightTransforms)
-				{
-					drawTransform(transform, id++);
-					ImGui::NewLine();
-				}
-				for (auto& transform : m_DeerTransforms)
-				{
-					drawTransform(transform, id++);
-					ImGui::NewLine();
+					pushGenerateVoxelMeshJob();
 				}
 			}
 			ImGui::End();
@@ -190,6 +183,12 @@ namespace XYZ {
 
 				const glm::mat4 mvp = m_EditorCamera.GetViewProjection();
 				
+				if (!m_Generating && m_GenerateVoxelsFuture.valid())
+				{
+					VoxelSubmesh submesh = m_ProceduralMesh->GetSubmeshes()[0];
+					submesh.ColorIndices = m_GenerateVoxelsFuture.get();
+					m_ProceduralMesh->SetSubmeshes({ submesh });
+				}
 
 				m_VoxelRenderer->BeginScene({
 					m_EditorCamera.GetViewProjection(),
@@ -211,7 +210,7 @@ namespace XYZ {
 					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame, 1.0f);
 				}
 
-				//m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), 3.0f);
+				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), 3.0f, false);
 
 				if (m_CurrentTime > m_KeyLength)
 				{
@@ -262,6 +261,57 @@ namespace XYZ {
 				transform.GetTransform().Rotation = glm::radians(rotation);
 			}
 			ImGui::PopID();
+		}
+
+		void VoxelPanel::pushGenerateVoxelMeshJob()
+		{
+			m_Generating = true;
+
+			uint32_t seed = m_Seed;
+			uint32_t frequency = m_Frequency;
+			uint32_t octaves = m_Octaves;
+			uint32_t width = m_ProceduralMesh->GetSubmeshes()[0].Width;
+			uint32_t heigth = m_ProceduralMesh->GetSubmeshes()[0].Height;
+			uint32_t depth = m_ProceduralMesh->GetSubmeshes()[0].Depth;
+
+			auto& pool = Application::Get().GetThreadPool();
+			m_GenerateVoxelsFuture = pool.SubmitJob([this, seed, frequency, octaves, width, heigth, depth]() {
+
+				auto result = generateVoxelMesh(
+					seed, frequency, octaves,
+					width, heigth, depth
+				);
+			m_Generating = false;
+			return result;
+				});
+		}
+
+		std::vector<uint8_t> VoxelPanel::generateVoxelMesh(
+			uint32_t seed, uint32_t frequency, uint32_t octaves,
+			uint32_t width, uint32_t height, uint32_t depth
+		)
+		{
+			const double fx = ((double)frequency / (double)width);
+			const double fy = ((double)frequency / (double)height);
+
+			std::vector<uint8_t> result(width * height * depth);
+			for (uint32_t x = 0; x < width; ++x)
+			{
+				for (uint32_t z = 0; z < depth; ++z)
+				{
+					double xDouble = x;
+					double zDouble = z;
+					double val = Perlin::Octave2D(xDouble * fx, zDouble * fy, octaves);
+					uint32_t genHeight = val * height;
+
+					for (uint32_t y = 0; y < genHeight; ++y)
+					{
+						result[Utils::Index3D(x, y, z, width, height)] = Utils::RandomColorIndex(2, 255);						
+					}
+					result[Utils::Index3D(x, 40, z, width, height)] = 1; // Water
+				}
+			}
+			return result;
 		}
 	}
 }
