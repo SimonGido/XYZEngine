@@ -148,7 +148,6 @@ namespace XYZ {
 			ImGui::Text("Mesh Allocations: %d", static_cast<uint32_t>(m_LastFrameMeshAllocations.size()));
 			ImGui::Text("Update Allocations: %d", static_cast<uint32_t>(m_UpdatedAllocations.size()));
 			
-			ImGui::Text("Compute Commands: %d", m_Statistics.ComputeCommandCount);
 			ImGui::Text("Model Count: %d", m_Statistics.ModelCount);
 			ImGui::Text("Culled Models: %d", m_Statistics.CulledModels);
 
@@ -258,24 +257,12 @@ namespace XYZ {
 			m_RaymarchMaterial
 		);
 
-		for (const auto& [key, drawCommand] : m_DrawCommands)
-		{
-			if (drawCommand.Models.empty())
-				continue;
+		Renderer::DispatchCompute(
+			m_RaymarchPipeline,
+			nullptr,
+			m_WorkGroups.x, m_WorkGroups.y, 1
+		);
 
-			m_Statistics.ComputeCommandCount++;
-			Renderer::DispatchCompute(
-				m_RaymarchPipeline,
-				nullptr,
-				m_WorkGroups.x, m_WorkGroups.y, 1,
-				PushConstBuffer
-				{
-					drawCommand.ModelStart,
-					drawCommand.ModelEnd,
-					drawCommand.ColorIndex
-				}
-			);
-		}
 		Renderer::EndPipelineCompute(m_RaymarchPipeline);
 		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
 
@@ -319,7 +306,7 @@ namespace XYZ {
 	}
 	void VoxelRenderer::prepareDrawCommands()
 	{
-		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::Colors[0]));
+		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::ColorPallete[0]));
 		Ref<VoxelRenderer> instance = this;
 		uint32_t modelCount = 0;
 		for (auto& [key, drawCommand] : m_DrawCommands)
@@ -328,23 +315,24 @@ namespace XYZ {
 				continue;
 
 			MeshAllocation& meshAlloc = createMeshAllocation(drawCommand.Mesh);
-
-			drawCommand.ModelStart = modelCount;
-			drawCommand.ColorIndex = meshAlloc.ColorAllocation.GetOffset() / colorSize;
 			for (auto& cmdModel : drawCommand.Models)
 			{
+				cmdModel.Model.ColorIndex = meshAlloc.ColorAllocation.GetOffset() / colorSize;
 				cmdModel.Model.VoxelOffset = meshAlloc.SubmeshOffsets[cmdModel.SubmeshIndex];
 				m_SSBOVoxelModels.Models[modelCount++] = cmdModel.Model;
 			}
-			drawCommand.ModelEnd = modelCount;
 		}
+		m_SSBOVoxelModels.NumModels = modelCount;
 
-		const uint32_t voxelModelsUpdateSize = modelCount * sizeof(VoxelModel);
+		const uint32_t voxelModelsUpdateSize = 
+			sizeof(SSBOVoxelModels::NumModels)
+		  + sizeof(SSBOVoxelModels::Padding)
+		  + modelCount * sizeof(VoxelModel);
 
 		for (const auto& updated : m_UpdatedAllocations)
 		{
 			void* voxelData = &m_SSBOVoxels.Voxels[updated.VoxelAllocation.GetOffset()];
-			void* colorData = &m_SSBOColors.Colors[updated.ColorAllocation.GetOffset() / colorSize];
+			void* colorData = &m_SSBOColors.ColorPallete[updated.ColorAllocation.GetOffset() / colorSize];
 
 			m_StorageBufferSet->UpdateEachFrame(voxelData, updated.VoxelAllocation.GetSize(), updated.VoxelAllocation.GetOffset(), SSBOVoxels::Binding, SSBOVoxels::Set);
 			m_StorageBufferSet->UpdateEachFrame(colorData, updated.ColorAllocation.GetSize(), updated.ColorAllocation.GetOffset(), SSBOColors::Binding, SSBOColors::Set);
@@ -398,7 +386,7 @@ namespace XYZ {
 	{
 		const auto& submeshes = mesh->GetSubmeshes();
 		const uint32_t meshSize = mesh->GetNumVoxels() * sizeof(uint8_t);
-		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::Colors[0]));
+		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::ColorPallete[0]));
 
 		const bool reallocated = 
 				m_VoxelStorageAllocator->Allocate(meshSize, allocation.VoxelAllocation)
@@ -423,7 +411,7 @@ namespace XYZ {
 
 			// Copy color pallete
 			const uint32_t colorPalleteIndex = allocation.ColorAllocation.GetOffset() / colorSize;
-			memcpy(m_SSBOColors.Colors[colorPalleteIndex], mesh->GetColorPallete().data(), colorSize);
+			memcpy(m_SSBOColors.ColorPallete[colorPalleteIndex], mesh->GetColorPallete().data(), colorSize);
 
 			m_UpdatedAllocations.push_back({ allocation.VoxelAllocation, allocation.ColorAllocation });
 		}

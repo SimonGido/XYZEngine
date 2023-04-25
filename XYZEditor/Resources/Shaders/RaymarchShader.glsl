@@ -11,28 +11,23 @@ const float FLT_MAX = 3.402823466e+38;
 const float EPSILON = 0.01;
 const uint OPAQUE = 255;
 
-layout(push_constant) uniform Uniform
-{
-	uint ModelStart;
-	uint ModelEnd;
-	uint ColorIndex;
-
-} u_Uniforms;
-
 
 struct VoxelModel
 {
 	mat4  InverseModelView;
 	mat4  Transform;
 	vec4  RayOrigin;
+
 	uint  VoxelOffset;
 	uint  Width;
 	uint  Height;
 	uint  Depth;
+	uint  ColorIndex;
+
 	float VoxelSize;
 	bool  OriginInside;
 
-	uint Padding[2];
+	uint Padding[1];
 };
 
 layout (std140, binding = 16) uniform Scene
@@ -57,12 +52,13 @@ layout(std430, binding = 17) readonly buffer buffer_Voxels
 
 layout(std430, binding = 18) readonly buffer buffer_Models
 {		
+	uint NumModels;
 	VoxelModel Models[];
 };
 
 layout(std430, binding = 19) readonly buffer buffer_Colors
 {		
-	uint Colors[MAX_COLORS][256];
+	uint ColorPallete[MAX_COLORS][256];
 };
 
 layout(binding = 20, rgba32f) uniform image2D o_Image;
@@ -227,7 +223,8 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 	uint height = Models[modelIndex].Height;
 	uint depth = Models[modelIndex].Depth;
 	uint voxelOffset = Models[modelIndex].VoxelOffset;
-	
+	uint colorPalleteIndex = Models[modelIndex].ColorIndex;
+
 	uint i = 0;
 	for (i = 0; i < maxTraverses; i++)
 	{
@@ -260,7 +257,7 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 
 			uint voxelIndex = Index3D(current_voxel, width, height) + voxelOffset;
 			uint colorIndex = uint(Voxels[voxelIndex]);
-			uint voxel = Colors[u_Uniforms.ColorIndex][colorIndex];
+			uint voxel = ColorPallete[colorPalleteIndex][colorIndex];
 
 			if (voxel != 0)
 			{
@@ -382,7 +379,7 @@ void main()
 	if (!ValidPixel(textureIndex))
 		return;
 
-	for (uint i = u_Uniforms.ModelStart; i < u_Uniforms.ModelEnd; i++)
+	for (uint i = 0; i < NumModels; i++)
 	{
 		g_ModelRay = CreateRay(textureIndex, i);
 		float currentDepth = imageLoad(o_DepthImage, textureIndex).r;

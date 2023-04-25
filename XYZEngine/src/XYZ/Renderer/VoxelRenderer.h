@@ -25,8 +25,6 @@ namespace XYZ {
 
 	struct UBVoxelScene
 	{
-		
-
 		glm::mat4 InverseProjection;
 		glm::mat4 InverseView;
 		glm::vec4 CameraPosition;
@@ -66,17 +64,19 @@ namespace XYZ {
 		uint32_t	Width;
 		uint32_t	Height;
 		uint32_t	Depth;
+		uint32_t    ColorIndex;
 
 		float		VoxelSize;
 		Bool32		OriginInside; // Check if we start raycasting from inside grid
 
-		Padding<8> Padding;
+		Padding<4> Padding;
 	};
 
 	struct SSBOVoxelModels
 	{
 		static constexpr uint32_t MaxModels = 1024;
-
+		uint32_t NumModels;
+		Padding<12> Padding;
 		VoxelModel Models[MaxModels];
 
 		static constexpr uint32_t Binding = 18;
@@ -87,7 +87,7 @@ namespace XYZ {
 	{
 		static constexpr uint32_t MaxColors = 1024;
 
-		uint32_t Colors[MaxColors][256];
+		uint32_t ColorPallete[MaxColors][256];
 
 		static constexpr uint32_t Binding = 19;
 		static constexpr uint32_t Set = 0;
@@ -130,9 +130,6 @@ namespace XYZ {
 		struct VoxelDrawCommand
 		{
 			Ref<VoxelMesh> Mesh;
-			uint32_t ModelStart = 0;
-			uint32_t ModelEnd = 0;
-			uint32_t ColorIndex = 0;
 			std::vector<VoxelCommandModel> Models;
 		};
 
@@ -152,7 +149,6 @@ namespace XYZ {
 
 		struct Statistics
 		{
-			uint32_t ComputeCommandCount = 0;
 			uint32_t ModelCount = 0;
 			uint32_t CulledModels = 0;
 		};
