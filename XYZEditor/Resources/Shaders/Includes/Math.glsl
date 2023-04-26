@@ -148,3 +148,20 @@ vec2 ComputeBezierCurveCubic(vec2 p[4], float t)
 
     return result;
 }
+
+
+const float PHI = 1.61803398874989484820459;  // Golden Ratio   
+
+float GoldNoise(in vec2 xy, in float seed)
+{
+    return fract(tan(distance(xy*PHI, xy)*seed)*xy.x);
+}
+
+vec3 RandomValue(in vec2 xy, in float seed)
+{
+    vec3 result;
+    result.x = GoldNoise(xy, seed);
+    result.y = GoldNoise(xy, result.x + seed);
+    result.z = GoldNoise(xy, result.y + seed);
+    return result;
+}

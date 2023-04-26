@@ -161,7 +161,7 @@ namespace XYZ {
 				}
 				ImGui::End();
 			}
-			if (ImGui::Begin("Voxels"))
+			if (ImGui::Begin("Voxels Generator"))
 			{
 				ImGui::DragInt("Frequency", (int*)&m_Frequency, 1.0f, 0, INT_MAX);
 				ImGui::DragInt("Octaves", (int*)&m_Octaves, 1.0f, 0, INT_MAX);
@@ -171,6 +171,14 @@ namespace XYZ {
 				{
 					pushGenerateVoxelMeshJob();
 				}
+			}
+			ImGui::End();
+
+			if (ImGui::Begin("Transforms"))
+			{
+				int id = 0;
+				for (auto& transform : m_CastleTransforms)
+					drawTransform(transform, id++);
 			}
 			ImGui::End();
 		}

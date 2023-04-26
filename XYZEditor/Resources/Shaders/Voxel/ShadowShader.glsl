@@ -15,7 +15,7 @@ const uint OPAQUE = 255;
 struct VoxelModel
 {
 	mat4  InverseModelView;
-	mat4  Transform;
+	mat4  InverseTransform;
 	vec4  RayOrigin;
 
 	uint  VoxelOffset;
@@ -39,6 +39,7 @@ layout (std140, binding = 16) uniform Scene
 	vec4 u_ViewportSize;
 
 	// Light info
+	vec4 u_LightPosition;
 	vec4 u_LightDirection;
 	vec4 u_LightColor;
 	uint MaxTraverse;
@@ -61,8 +62,8 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 	uint ColorPallete[MAX_COLORS][256];
 };
 
-layout(binding = 20, rgba32f) uniform image2D o_Image;
-layout(binding = 21, r32f) uniform image2D o_DepthImage;
+layout(binding = 22, r32f) uniform image2D o_ShadowImage;
+layout(binding = 23, rgba32f) uniform image2D o_ShadowDebugImage;
 
 struct Ray
 {
@@ -79,24 +80,9 @@ Ray CreateRay(vec2 coords, uint modelIndex)
 	coords = coords * 2.0 - 1.0; // -1 -> 1
 	vec4 target = u_InverseProjection * vec4(coords.x, -coords.y, 1, 1);
 	Ray ray;
-	ray.Origin = Models[modelIndex].RayOrigin.xyz;
+	ray.Origin = (Models[modelIndex].InverseTransform * u_LightPosition).xyz;
 
-	ray.Direction = vec3(Models[modelIndex].InverseModelView * vec4(normalize(vec3(target) / target.w), 0)); // World space
-	ray.Direction = normalize(ray.Direction);
-
-	return ray;
-}
-
-Ray CreateCameraRay(vec2 coords)
-{
-	coords.x /= u_ViewportSize.x;
-	coords.y /= u_ViewportSize.y;
-	coords = coords * 2.0 - 1.0; // -1 -> 1
-	vec4 target = u_InverseProjection * vec4(coords.x, -coords.y, 1, 1);
-	Ray ray;
-	ray.Origin = u_CameraPosition.xyz;
-
-	ray.Direction = vec3(u_InverseView * vec4(normalize(vec3(target) / target.w), 0)); // World space
+	ray.Direction = vec3(Models[modelIndex].InverseTransform * u_LightDirection * vec4(normalize(vec3(target) / target.w), 0)); // World space
 	ray.Direction = normalize(ray.Direction);
 
 	return ray;
@@ -121,7 +107,6 @@ bool IsValidVoxel(ivec3 voxel, uint width, uint height, uint depth)
 		 && (voxel.z < depth && voxel.z > 0));
 }
 
-
 vec4 VoxelToColor(uint voxel)
 {
 	vec4 color;
@@ -132,6 +117,7 @@ vec4 VoxelToColor(uint voxel)
 
 	return color;
 }
+
 uint VoxelAlpha(uint voxel)
 {
 	return bitfieldExtract(voxel, 24, 8);
@@ -184,20 +170,24 @@ BoxIntersectionResult RayBoxIntersection(vec3 origin, vec3 direction, vec3 lb, v
 	return result;
 }
 
-float VoxelDistanceFromRay(vec3 origin, vec3 direction, ivec3 voxel, uint modelIndex)
+float VoxelDistanceFromRay(vec3 origin, vec3 direction, ivec3 voxel, float voxelSize)
 {
-	float voxelSize = Models[modelIndex].VoxelSize;
-
 	vec3 boxMin = vec3(voxel.x * voxelSize, voxel.y * voxelSize, voxel.z * voxelSize);
 	vec3 boxMax = boxMin + voxelSize;
 
 	return RayBoxIntersection(origin, direction, boxMin, boxMax).T;
 }
 
+bool DepthTest(ivec3 voxel, float voxelSize, float currentDepth, out float newDepth)
+{
+	newDepth = VoxelDistanceFromRay(g_ModelRay.Origin, g_ModelRay.Direction, voxel, voxelSize);		
+	return newDepth < currentDepth;
+}
+
 struct RaymarchHitResult
 {
 	vec4  Color;
-	vec3  Max;
+	vec3  T_Max;
 	ivec3 CurrentVoxel;
 	uint  Alpha;
 	uint  TraverseCount;
@@ -223,35 +213,30 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 	uint depth = Models[modelIndex].Depth;
 	uint voxelOffset = Models[modelIndex].VoxelOffset;
 	uint colorPalleteIndex = Models[modelIndex].ColorIndex;
-
+	float voxelSize = Models[modelIndex].VoxelSize;
+	
 	uint i = 0;
 	for (i = 0; i < maxTraverses; i++)
 	{
-		vec3 normal;
 		if (t_max.x < t_max.y && t_max.x < t_max.z) 
 		{
-			normal = vec3(float(-step.x), 0.0, 0.0);
 			t_max.x += t_delta.x;
 			current_voxel.x += step.x;
 		}
 		else if (t_max.y < t_max.z) 
 		{
-			normal = vec3(0.0, float(-step.y), 0.0);
 			t_max.y += t_delta.y;
 			current_voxel.y += step.y;			
 		}
 		else 
 		{
-			normal = vec3(0.0, 0.0, float(-step.z));
 			t_max.z += t_delta.z;
 			current_voxel.z += step.z;		
 		}
 
 		if (IsValidVoxel(current_voxel, width, height, depth))
 		{
-			float newDepth = VoxelDistanceFromRay(g_ModelRay.Origin, g_ModelRay.Direction, current_voxel, modelIndex);
-			result.Depth = newDepth;
-			if (newDepth > currentDepth)
+			if (!DepthTest(current_voxel, voxelSize, currentDepth, result.Depth))
 				break;
 
 			uint voxelIndex = Index3D(current_voxel, width, height) + voxelOffset;
@@ -260,44 +245,43 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 
 			if (voxel != 0)
 			{
-				float light = dot(-u_LightDirection.xyz, normal);
-				vec4 voxelColor = VoxelToColor(voxel);
-				vec3 color = voxelColor.rgb * u_LightColor.rgb * light;
+				result.Color = VoxelToColor(voxel);
 				result.Alpha = VoxelAlpha(voxel);
-				result.Color = vec4(color.rgb, voxelColor.a);
 				result.Hit = true;				
 				break;
 			}
 		}
 	}
 	result.TraverseCount = i;
-	result.Max = t_max;
+	result.T_Max = t_max;
 	result.CurrentVoxel = current_voxel;
 
 	return result;
 }
 
-RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float currentDepth)
+RaymarchResult RayMarch(uint modelIndex, float currentDepth)
 {
 	RaymarchResult result;
 	result.OpaqueHit = false;
 	result.Hit = false;
 	result.Distance = FLT_MAX;
 	
+	vec3 origin = g_ModelRay.Origin;
+	vec3 direction = g_ModelRay.Direction;
+
 	float width  = float(Models[modelIndex].Width);
 	float height = float(Models[modelIndex].Height);
 	float depth  = float(Models[modelIndex].Depth);
 	float voxelSize = Models[modelIndex].VoxelSize;
-
-	vec3 boxMin = vec3(0,0,0);
-	vec3 boxMax = vec3(width, height, depth) * voxelSize;
-
+	
 	if (!Models[modelIndex].OriginInside)
 	{
+		vec3 boxMin = vec3(0,0,0);
+		vec3 boxMax = vec3(width, height, depth) * voxelSize;
 		// Check if we are intersecting with grid
 		BoxIntersectionResult boxIntersection = RayBoxIntersection(origin, direction, boxMin, boxMax);
 		if (!boxIntersection.Hit)
-			return result;
+			return result; // No intersection
 		origin = origin + direction * (boxIntersection.T - EPSILON); // Move origin to first intersection with grid
 	}
 
@@ -345,7 +329,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 		if (result.OpaqueHit) // Opaque hit => stop raymarching
 			break;
 
-		hitResult = RayMarch(hitResult.Max, t_delta, hitResult.CurrentVoxel, step, remainingTraverses, modelIndex, currentDepth);	
+		hitResult = RayMarch(hitResult.T_Max, t_delta, hitResult.CurrentVoxel, step, remainingTraverses, modelIndex, currentDepth);	
 		newDepth = hitResult.Depth; // Store raymarch distance
 		if (newDepth > currentDepth) // if new depth is bigger than currentDepth it means there is something in front of us
 			break;
@@ -364,10 +348,12 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 	return result;
 }
 
+
 bool ValidPixel(ivec2 index)
 {
 	return index.x <= int(u_ViewportSize.x) && index.y <= int(u_ViewportSize.y);
 }
+
 
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
@@ -376,24 +362,22 @@ void main()
 	if (!ValidPixel(textureIndex))
 		return;
 
+	imageStore(o_ShadowImage, textureIndex, vec4(0,0,0,0));
+	imageStore(o_ShadowDebugImage, textureIndex, vec4(0,0,0,0));
+
 	for (uint i = 0; i < NumModels; i++)
 	{
 		g_ModelRay = CreateRay(textureIndex, i);
-		float currentDepth = imageLoad(o_DepthImage, textureIndex).r;
-		RaymarchResult result = RayMarch(g_ModelRay.Origin, g_ModelRay.Direction, i, currentDepth);
+		float currentDepth = FLT_MAX;
+		RaymarchResult result = RayMarch(i, currentDepth);
 
 		if (result.Hit)
-		{
-			if (!result.OpaqueHit)
-			{
-				vec4 originalColor = imageLoad(o_Image, textureIndex);
-				result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
-			}
-			else // Store depth only for opaque hits
-			{
-				imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
-			}
-			imageStore(o_Image, textureIndex, result.Color); // Store color				
+		{			
+			if (result.OpaqueHit)
+			{			
+				imageStore(o_ShadowImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
+			}		
+			imageStore(o_ShadowDebugImage, textureIndex, result.Color); // Store new depth
 		}
 	}
 }

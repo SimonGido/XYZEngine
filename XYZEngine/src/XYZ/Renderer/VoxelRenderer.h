@@ -57,7 +57,7 @@ namespace XYZ {
 	struct VoxelModel
 	{
 		glm::mat4	InverseModelView;
-		glm::mat4	Transform;
+		glm::mat4	InverseTransform;
 		glm::vec4	RayOrigin; // Origin of raycasting for this model
 
 		uint32_t	VoxelOffset;
@@ -119,7 +119,7 @@ namespace XYZ {
 
 		void OnImGuiRender();
 
-		Ref<Image2D> GetFinalPassImage() const { return m_OutputTexture->GetImage(); }
+		Ref<Image2D> GetFinalPassImage() const;
 	private:
 
 		struct VoxelCommandModel
@@ -157,8 +157,9 @@ namespace XYZ {
 	private:
 		bool submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, float voxelSize, uint32_t submeshIndex);
 
-		void clear();
-		void render();
+		void clearPass();
+		void shadowPass();
+		void renderPass();
 
 		void updateViewportSize();
 		void updateUniformBufferSet();
@@ -172,6 +173,10 @@ namespace XYZ {
 		bool cullSubmesh(const VoxelSubmesh& submesh, const glm::mat4& transform, float voxelSize) const;
 	private:
 		Ref<PrimaryRenderCommandBuffer> m_CommandBuffer;
+		
+		Ref<PipelineCompute>	m_ShadowPipeline;
+		Ref<Material>			m_ShadowMaterial;
+		
 		Ref<PipelineCompute>	m_RaymarchPipeline;
 		Ref<Material>			m_RaymarchMaterial;
 
@@ -186,6 +191,8 @@ namespace XYZ {
 
 		Ref<Texture2D>			m_OutputTexture;
 		Ref<Texture2D>			m_DepthTexture;
+		Ref<Texture2D>			m_ShadowTexture;
+		Ref<Texture2D>			m_ShadowDebugTexture;
 
 		UBVoxelScene			m_UBVoxelScene;
 		SSBOVoxels				m_SSBOVoxels;
