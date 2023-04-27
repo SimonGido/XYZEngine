@@ -420,12 +420,6 @@ layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
-	if (!ValidPixel(textureIndex))
-		return;
-
-
-	
-
 	for (uint i = 0; i < NumModels; i++)
 	{
 		g_Ray = CreateRay(textureIndex, i);
