@@ -3,6 +3,7 @@
 #extension GL_EXT_shader_8bit_storage : enable
 
 #include "Resources/Shaders/Includes/Math.glsl"
+#include "Resources/Shaders/Includes/PBR.glsl"
 
 #define TILE_SIZE 16
 #define MAX_COLORS 1024
@@ -15,7 +16,7 @@ const uint OPAQUE = 255;
 struct VoxelModel
 {
 	mat4  InverseModelView;
-	mat4  InverseTransform;
+	mat4  Transform;
 	vec4  RayOrigin;
 
 	uint  VoxelOffset;
@@ -35,12 +36,10 @@ layout (std140, binding = 16) uniform Scene
 	// Camera info
 	mat4 u_InverseProjection;
 	mat4 u_InverseView;	
-	mat4 u_InverseLightView;
 	vec4 u_CameraPosition;
 	vec4 u_ViewportSize;
 
 	// Light info
-	vec4 u_LightPosition;
 	vec4 u_LightDirection;
 	vec4 u_LightColor;
 	uint MaxTraverse;
@@ -105,7 +104,15 @@ Ray CreateCameraRay(vec2 coords)
 	return ray;
 }
 
+vec3 VoxelWorldPosition(ivec3 voxel, uint modelIndex)
+{
+	float voxelSize = Models[modelIndex].VoxelSize;
+	vec3 localPosition = vec3(voxel) * voxelSize + voxelSize / 2.0;
 
+	mat4 transform = inverse(Models[modelIndex].Transform);
+
+	return (transform * vec4(localPosition, 1.0)).xyz;
+}
 
 uint Index3D(int x, int y, int z, uint width, uint height)
 {
@@ -196,10 +203,10 @@ float VoxelDistanceFromRay(vec3 origin, vec3 direction, ivec3 voxel, float voxel
 	return RayBoxIntersection(origin, direction, boxMin, boxMax).T;
 }
 
-bool DepthTest(ivec3 voxel, float voxelSize, float currentDepth, out float newDepth)
+bool DistanceTest(ivec3 voxel, float voxelSize, float currentDistance, out float newDistance)
 {
-	newDepth = VoxelDistanceFromRay(g_Ray.Origin, g_Ray.Direction, voxel, voxelSize);		
-	return newDepth < currentDepth;
+	newDistance = VoxelDistanceFromRay(g_Ray.Origin, g_Ray.Direction, voxel, voxelSize);		
+	return newDistance < currentDistance;
 }
 
 struct RaymarchHitResult
@@ -224,7 +231,7 @@ struct RaymarchResult
 	bool  Hit;
 };
 
-RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, uint modelIndex, float currentDepth)
+RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, uint modelIndex, float currentDistance)
 {
 	RaymarchHitResult result;
 	result.Hit = false;
@@ -260,7 +267,7 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 
 		if (IsValidVoxel(current_voxel, width, height, depth))
 		{
-			if (!DepthTest(current_voxel, voxelSize, currentDepth, result.Distance))
+			if (!DistanceTest(current_voxel, voxelSize, currentDistance, result.Distance))
 				break;
 
 			uint voxelIndex = Index3D(current_voxel, width, height) + voxelOffset;
@@ -283,7 +290,7 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 	return result;
 }
 
-RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float currentDepth)
+RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float currentDistance)
 {
 	RaymarchResult result;
 	result.OpaqueHit = false;
@@ -313,12 +320,12 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 	uint remainingTraverses = MaxTraverse;
 	
 	// Raymarch until we find first hit to determine default color
-	RaymarchHitResult hitResult = RayMarch(t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex, currentDepth);	
+	RaymarchHitResult hitResult = RayMarch(t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex, currentDistance);	
 	remainingTraverses -= hitResult.TraverseCount;
 
 
-	float newDepth = hitResult.Depth;
-	if (newDepth > currentDepth) // Depth test
+	float newDistance = hitResult.Distance;
+	if (newDistance > currentDistance) // Depth test
 		return result;
 
 	// If we hit something it is our default color
@@ -327,7 +334,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 		result.Color = hitResult.Color;
 		result.Hit = true;
 		result.OpaqueHit = hitResult.Alpha == OPAQUE;
-		result.Distance = newDepth;
+		result.Distance = newDistance;
 		result.Normal = hitResult.Normal;
 		result.CurrentVoxel = hitResult.CurrentVoxel;
 	}
@@ -338,9 +345,9 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 		if (result.OpaqueHit) // Opaque hit => stop raymarching
 			break;
 
-		hitResult = RayMarch(hitResult.T_Max, t_delta, hitResult.CurrentVoxel, step, remainingTraverses, modelIndex, currentDepth);	
-		newDepth = hitResult.Depth; // Store raymarch distance
-		if (newDepth > currentDepth) // if new depth is bigger than currentDepth it means there is something in front of us
+		hitResult = RayMarch(hitResult.T_Max, t_delta, hitResult.CurrentVoxel, step, remainingTraverses, modelIndex, currentDistance);	
+		newDistance = hitResult.Distance; // Store raymarch distance
+		if (newDistance > currentDistance) // if new depth is bigger than currentDepth it means there is something in front of us
 			break;
 		
 		// We passed depth test
@@ -355,7 +362,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 		
 		remainingTraverses -= hitResult.TraverseCount;
 	}
-	result.Distance = newDepth;
+	result.Distance = newDistance;
 	return result;
 }
 
@@ -384,12 +391,40 @@ bool ValidPixel(ivec2 index)
 	return index.x <= int(u_ViewportSize.x) && index.y <= int(u_ViewportSize.y);
 }
 
+// Constant normal incidence Fresnel factor for all dielectrics.
+const vec3 Fdielectric = vec3(0.04);
+
+
+vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
+{
+	PBRParameters pbr;
+	pbr.Roughness = 0.8;
+	pbr.Metalness = 0.2;
+	
+	DirectionalLight dirLight;
+	dirLight.Direction = -u_LightDirection.xyz;
+	dirLight.Radiance = u_LightColor.xyz;
+	dirLight.Multiplier = 1.0;
+
+	pbr.Normal = normal;
+	pbr.View = normalize(u_CameraPosition.xyz - voxelPosition);
+	pbr.NdotV = max(dot(pbr.Normal, pbr.View), 0.0);
+	pbr.Albedo = albedo;
+
+	vec3 F0 = mix(Fdielectric, pbr.Albedo, pbr.Metalness);
+	return CalculateDirLight(F0, dirLight, pbr);
+}
+
+
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
 	if (!ValidPixel(textureIndex))
 		return;
+
+
+	
 
 	for (uint i = 0; i < NumModels; i++)
 	{
@@ -402,8 +437,8 @@ void main()
 		if (!intersect.Hit)
 			continue;
 
-		float currentDepth = imageLoad(o_DepthImage, textureIndex).r;
-		RaymarchResult result = RayMarch(origin, direction, i, currentDepth);
+		float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
+		RaymarchResult result = RayMarch(origin, direction, i, currentDistance);
 
 		if (result.Hit)
 		{			
@@ -417,8 +452,9 @@ void main()
 				imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
 			}
 
-			float light = dot(-u_LightDirection.xyz, result.Normal.xyz);
-			result.Color.rgb *= u_LightColor.rgb * light;
+			vec3 voxelPosition = VoxelWorldPosition(result.CurrentVoxel, i);
+			result.Color.rgb = CalculateDirLights(voxelPosition, result.Color.rgb, result.Normal);
+
 			imageStore(o_Image, textureIndex, result.Color); // Store color						
 		}
 	}

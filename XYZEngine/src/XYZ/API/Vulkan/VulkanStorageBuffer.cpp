@@ -4,6 +4,9 @@
 #include "VulkanContext.h"
 
 namespace XYZ {
+
+	static constexpr uint32_t sc_SizeLimit = 224395264u;
+
 	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size, uint32_t binding, bool indirect)
 		: 
 		m_Size(size), 
@@ -74,10 +77,38 @@ namespace XYZ {
 		if (size == 0)
 			return;
 
-		VulkanAllocator allocator("VulkanStorageBuffer");
-		uint8_t* pData = allocator.MapMemory<uint8_t>(m_MemoryAllocation);
-		memcpy(pData + offset, (uint8_t*)data, size);
-		allocator.UnmapMemory(m_MemoryAllocation);
+		VulkanAllocator allocator("VulkanBuffer");
+		if (m_Size >= sc_SizeLimit)
+		{
+			auto device = VulkanContext::GetCurrentDevice();
+			VkBuffer stagingBuffer;
+			VkBufferCreateInfo stagingBufferCreateInfo{};
+			stagingBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			stagingBufferCreateInfo.size = size;
+			stagingBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+			stagingBufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			const VmaAllocation stagingBufferAllocation = allocator.AllocateBuffer(stagingBufferCreateInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
+
+			uint8_t* destData = allocator.MapMemory<uint8_t>(stagingBufferAllocation);
+			memcpy(destData, data, size);
+			allocator.UnmapMemory(stagingBufferAllocation);
+
+			const VkCommandBuffer copyCmd = device->GetCommandBuffer(true);
+
+			VkBufferCopy copyRegion = {};
+			copyRegion.dstOffset = offset;
+			copyRegion.size = size;
+			vkCmdCopyBuffer(copyCmd, stagingBuffer, m_Buffer, 1, &copyRegion);
+
+			device->FlushCommandBuffer(copyCmd);
+			allocator.DestroyBuffer(stagingBuffer, stagingBufferAllocation);
+		}
+		else
+		{
+			uint8_t* pData = allocator.MapMemory<uint8_t>(m_MemoryAllocation);
+			memcpy(pData + offset, (uint8_t*)data, size);
+			allocator.UnmapMemory(m_MemoryAllocation);
+		}
 	}
 
 	void VulkanStorageBuffer::Update(ByteBuffer data, uint32_t size, uint32_t offset)
@@ -139,7 +170,7 @@ namespace XYZ {
 		release();
 
 		VkBufferUsageFlags flags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-		if (m_IsIndirect)
+		if (m_IsIndirect || m_Size >= sc_SizeLimit)
 		{
 			flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
 		}
@@ -150,7 +181,8 @@ namespace XYZ {
 		bufferInfo.size = m_Size;
 
 		VulkanAllocator allocator("StorageBuffer");
-		m_MemoryAllocation = allocator.AllocateBuffer(bufferInfo, VMA_MEMORY_USAGE_CPU_TO_GPU, m_Buffer);
+		VmaMemoryUsage memoryUsage = m_Size >= sc_SizeLimit ? VMA_MEMORY_USAGE_GPU_ONLY : VMA_MEMORY_USAGE_CPU_TO_GPU;
+		m_MemoryAllocation = allocator.AllocateBuffer(bufferInfo, memoryUsage, m_Buffer);
 
 		m_DescriptorInfo.buffer = m_Buffer;
 		m_DescriptorInfo.offset = 0;

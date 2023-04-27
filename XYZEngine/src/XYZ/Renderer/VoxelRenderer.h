@@ -27,12 +27,10 @@ namespace XYZ {
 	{
 		glm::mat4 InverseProjection;
 		glm::mat4 InverseView;
-		glm::mat4 InverseLightView;
 		glm::vec4 CameraPosition;
 		glm::vec4 ViewportSize;
 
 		// Light info
-		glm::vec4 LightPosition;
 		glm::vec4 LightDirection;
 		glm::vec4 LightColor;
 
@@ -46,7 +44,7 @@ namespace XYZ {
 
 	struct SSBOVoxels
 	{
-		static constexpr uint32_t MaxVoxels = 512 * 512 * 512;
+		static constexpr uint32_t MaxVoxels = 512 * 1024 * 1024; // Half gig
 					
 		uint8_t Voxels[MaxVoxels];
 
@@ -59,7 +57,7 @@ namespace XYZ {
 	struct VoxelModel
 	{
 		glm::mat4	InverseModelView;
-		glm::mat4	InverseTransform;
+		glm::mat4	Transform;
 		glm::vec4	RayOrigin; // Origin of raycasting for this model
 
 		uint32_t	VoxelOffset;
@@ -104,6 +102,7 @@ namespace XYZ {
 		glm::vec3 CameraPosition;
 		Math::Frustum Frustum;
 	};
+
 
 	class XYZ_API VoxelRenderer : public RefCount
 	{

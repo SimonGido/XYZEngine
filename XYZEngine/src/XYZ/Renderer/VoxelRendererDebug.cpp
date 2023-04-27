@@ -1,22 +1,50 @@
 #include "stdafx.h"
 #include "VoxelRendererDebug.h"
 
+#include "Renderer.h"
 
 namespace XYZ {
-	VoxelRendererDebug::VoxelRendererDebug()
+	VoxelRendererDebug::VoxelRendererDebug(
+		Ref<PrimaryRenderCommandBuffer> commandBuffer,
+		Ref<UniformBufferSet> uniformBufferSet
+	)
+		:
+		m_CommandBuffer(commandBuffer),
+		m_UniformBufferSet(uniformBufferSet)
 	{
-		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "VoxelDebugRenderer");
 		createRenderPass();
 	}
 	void VoxelRendererDebug::BeginScene(const VoxelRendererCamera& camera)
 	{
 		m_VoxelCamera = camera;
 	}
-	void VoxelRendererDebug::EndScene()
+	void VoxelRendererDebug::EndScene(Ref<Image2D> image)
 	{
 	}
 	void VoxelRendererDebug::SetViewportSize(uint32_t width, uint32_t height)
 	{
+	}
+	void VoxelRendererDebug::render()
+	{
+		Renderer::BeginRenderPass(
+			m_CommandBuffer,
+			m_GeometryRenderPass,
+			false,
+			true
+		);
+
+		Renderer::BindPipeline(
+			m_CommandBuffer,
+			m_LinePipeline,
+			m_UniformBufferSet,
+			nullptr,
+			m_Material
+		);
+
+		m_Renderer->FlushLines(m_LinePipeline, m_MaterialInstance, true);
+		m_Renderer->EndScene();
+
+		Renderer::EndRenderPass(m_CommandBuffer);
 	}
 	void VoxelRendererDebug::createRenderPass()
 	{
@@ -35,5 +63,8 @@ namespace XYZ {
 		RenderPassSpecification renderPassSpec;
 		renderPassSpec.TargetFramebuffer = framebuffer;
 		m_GeometryRenderPass = RenderPass::Create(renderPassSpec);
+	}
+	void VoxelRendererDebug::createPipeline()
+	{
 	}
 }

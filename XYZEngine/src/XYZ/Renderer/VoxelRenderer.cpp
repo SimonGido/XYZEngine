@@ -71,7 +71,7 @@ namespace XYZ {
 		m_ShadowDebugTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		createRaymarchPipeline();
 
-		m_UBVoxelScene.LightPosition = { 0, 200, 0, 1 };
+
 		m_UBVoxelScene.LightDirection = { -0.2f, -1.4f, -1.5f, 1.0f };
 		m_UBVoxelScene.LightColor = glm::vec4(1.0f);
 		m_WorkGroups = { 32, 32 };
@@ -80,7 +80,6 @@ namespace XYZ {
 	{
 		m_UBVoxelScene.InverseProjection = glm::inverse(camera.Projection);
 		m_UBVoxelScene.InverseView = glm::inverse(camera.ViewMatrix);
-		m_UBVoxelScene.InverseLightView = glm::inverse(glm::lookAt(glm::vec3(m_UBVoxelScene.LightDirection), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)));
 		m_UBVoxelScene.CameraPosition = glm::vec4(camera.CameraPosition, 1.0f);
 		m_UBVoxelScene.ViewportSize.x = m_ViewportSize.x;
 		m_UBVoxelScene.ViewportSize.y = m_ViewportSize.y;
@@ -190,7 +189,6 @@ namespace XYZ {
 	{
 		if (ImGui::Begin("Voxel Renderer"))
 		{
-			ImGui::DragFloat3("Light Position", glm::value_ptr(m_UBVoxelScene.LightPosition), 0.5f);
 			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.LightDirection), 0.1f);
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.LightColor), 0.1f);
 			ImGui::DragInt("Max Traverses", (int*)&m_UBVoxelScene.MaxTraverses, 1, 0, 1024);
@@ -241,11 +239,11 @@ namespace XYZ {
 
 		VoxelModel& model = cmdModel.Model;
 
-		const glm::mat4 modelTransform = transform * glm::translate(glm::mat4(1.0f), centerTranslation);
-		model.InverseTransform = glm::inverse(modelTransform);
-		model.InverseModelView = model.InverseTransform * m_UBVoxelScene.InverseView;
-		model.RayOrigin = model.InverseTransform * m_UBVoxelScene.CameraPosition;
-
+		model.Transform = transform * glm::translate(glm::mat4(1.0f), centerTranslation);
+		const glm::mat4 inverseTransform = glm::inverse(model.Transform);
+		model.InverseModelView = inverseTransform * m_UBVoxelScene.InverseView;
+		model.RayOrigin = inverseTransform * m_UBVoxelScene.CameraPosition;
+		
 		model.Width = submesh.Width;
 		model.Height = submesh.Height;
 		model.Depth = submesh.Depth;
