@@ -71,6 +71,7 @@ namespace XYZ {
 		m_ShadowDebugTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		createRaymarchPipeline();
 
+		m_UBVoxelScene.LightPosition = { 0, 200, 0, 1 };
 		m_UBVoxelScene.LightDirection = { -0.2f, -1.4f, -1.5f, 1.0f };
 		m_UBVoxelScene.LightColor = glm::vec4(1.0f);
 		m_WorkGroups = { 32, 32 };
@@ -79,8 +80,8 @@ namespace XYZ {
 	{
 		m_UBVoxelScene.InverseProjection = glm::inverse(camera.Projection);
 		m_UBVoxelScene.InverseView = glm::inverse(camera.ViewMatrix);
+		m_UBVoxelScene.InverseLightView = glm::inverse(glm::lookAt(glm::vec3(m_UBVoxelScene.LightDirection), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0)));
 		m_UBVoxelScene.CameraPosition = glm::vec4(camera.CameraPosition, 1.0f);
-		
 		m_UBVoxelScene.ViewportSize.x = m_ViewportSize.x;
 		m_UBVoxelScene.ViewportSize.y = m_ViewportSize.y;
 		m_DrawCommands.clear();
@@ -189,9 +190,11 @@ namespace XYZ {
 	{
 		if (ImGui::Begin("Voxel Renderer"))
 		{
+			ImGui::DragFloat3("Light Position", glm::value_ptr(m_UBVoxelScene.LightPosition), 0.5f);
 			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.LightDirection), 0.1f);
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.LightColor), 0.1f);
 			ImGui::DragInt("Max Traverses", (int*)&m_UBVoxelScene.MaxTraverses, 1, 0, 1024);
+
 
 
 			if (ImGui::BeginTable("##Statistics", 2, ImGuiTableFlags_SizingFixedFit))
@@ -374,6 +377,7 @@ namespace XYZ {
 			
 			m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+			m_RaymarchMaterial->SetImage("o_ShadowImage", m_ShadowTexture->GetImage());
 
 			m_ClearMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_ClearMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
@@ -450,7 +454,7 @@ namespace XYZ {
 
 		m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 		m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
-
+		m_RaymarchMaterial->SetImage("o_ShadowImage", m_ShadowTexture->GetImage());
 		PipelineComputeSpecification spec;
 		spec.Shader = shader;
 	

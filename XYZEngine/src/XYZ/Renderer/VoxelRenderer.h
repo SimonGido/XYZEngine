@@ -27,10 +27,12 @@ namespace XYZ {
 	{
 		glm::mat4 InverseProjection;
 		glm::mat4 InverseView;
+		glm::mat4 InverseLightView;
 		glm::vec4 CameraPosition;
 		glm::vec4 ViewportSize;
 
 		// Light info
+		glm::vec4 LightPosition;
 		glm::vec4 LightDirection;
 		glm::vec4 LightColor;
 

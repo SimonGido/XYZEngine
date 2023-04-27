@@ -177,8 +177,10 @@ namespace XYZ {
 			if (ImGui::Begin("Transforms"))
 			{
 				int id = 0;
+				ImGui::Text("%d", id);
 				for (auto& transform : m_CastleTransforms)
 					drawTransform(transform, id++);
+				ImGui::NewLine();
 			}
 			ImGui::End();
 		}

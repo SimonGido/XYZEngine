@@ -35,10 +35,12 @@ layout (std140, binding = 16) uniform Scene
 	// Camera info
 	mat4 u_InverseProjection;
 	mat4 u_InverseView;	
+	mat4 u_InverseLightView;
 	vec4 u_CameraPosition;
 	vec4 u_ViewportSize;
 
 	// Light info
+	vec4 u_LightPosition;
 	vec4 u_LightDirection;
 	vec4 u_LightColor;
 	uint MaxTraverse;
@@ -63,6 +65,7 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 
 layout(binding = 20, rgba32f) uniform image2D o_Image;
 layout(binding = 21, r32f) uniform image2D o_DepthImage;
+layout(binding = 22, r32f) uniform image2D o_ShadowImage;
 
 struct Ray
 {
@@ -70,7 +73,7 @@ struct Ray
 	vec3 Direction;
 };
 
-Ray g_ModelRay;
+Ray g_Ray;
 
 Ray CreateRay(vec2 coords, uint modelIndex)
 {
@@ -81,7 +84,7 @@ Ray CreateRay(vec2 coords, uint modelIndex)
 	Ray ray;
 	ray.Origin = Models[modelIndex].RayOrigin.xyz;
 
-	ray.Direction = vec3(Models[modelIndex].InverseModelView * vec4(normalize(vec3(target) / target.w), 0)); // World space
+	ray.Direction = vec3(Models[modelIndex].InverseModelView * vec4(normalize(target.xyz / target.w), 0)); // World space
 	ray.Direction = normalize(ray.Direction);
 
 	return ray;
@@ -195,7 +198,7 @@ float VoxelDistanceFromRay(vec3 origin, vec3 direction, ivec3 voxel, float voxel
 
 bool DepthTest(ivec3 voxel, float voxelSize, float currentDepth, out float newDepth)
 {
-	newDepth = VoxelDistanceFromRay(g_ModelRay.Origin, g_ModelRay.Direction, voxel, voxelSize);		
+	newDepth = VoxelDistanceFromRay(g_Ray.Origin, g_Ray.Direction, voxel, voxelSize);		
 	return newDepth < currentDepth;
 }
 
@@ -215,6 +218,7 @@ struct RaymarchResult
 {
 	vec4  Color;
 	vec3  Normal;
+	ivec3 CurrentVoxel;
 	float Distance;
 	bool  OpaqueHit;
 	bool  Hit;
@@ -265,7 +269,6 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 
 			if (voxel != 0)
 			{
-				float light = dot(-u_LightDirection.xyz, result.Normal);
 				result.Color = VoxelToColor(voxel);
 				result.Alpha = VoxelAlpha(voxel);
 				result.Hit = true;				
@@ -280,32 +283,15 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 	return result;
 }
 
-RaymarchResult RayMarch(uint modelIndex, float currentDepth)
+RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float currentDepth)
 {
 	RaymarchResult result;
 	result.OpaqueHit = false;
 	result.Hit = false;
 	result.Distance = FLT_MAX;
-	
-	vec3 origin = g_ModelRay.Origin;
-	vec3 direction = g_ModelRay.Direction;
-
-	float width  = float(Models[modelIndex].Width);
-	float height = float(Models[modelIndex].Height);
-	float depth  = float(Models[modelIndex].Depth);
+		
 	float voxelSize = Models[modelIndex].VoxelSize;
 	
-	if (!Models[modelIndex].OriginInside)
-	{
-		vec3 boxMin = vec3(0,0,0);
-		vec3 boxMax = vec3(width, height, depth) * voxelSize;
-		// Check if we are intersecting with grid
-		BoxIntersectionResult boxIntersection = RayBoxIntersection(origin, direction, boxMin, boxMax);
-		if (!boxIntersection.Hit)
-			return result; // No intersection
-		origin = origin + direction * (boxIntersection.T - EPSILON); // Move origin to first intersection with grid
-	}
-
 	ivec3 current_voxel = ivec3(floor(origin / voxelSize));
 	
 	ivec3 step = ivec3(
@@ -343,6 +329,7 @@ RaymarchResult RayMarch(uint modelIndex, float currentDepth)
 		result.OpaqueHit = hitResult.Alpha == OPAQUE;
 		result.Distance = newDepth;
 		result.Normal = hitResult.Normal;
+		result.CurrentVoxel = hitResult.CurrentVoxel;
 	}
 	
 	// Continue raymarching until we hit opaque object or we are out of traverses
@@ -363,6 +350,7 @@ RaymarchResult RayMarch(uint modelIndex, float currentDepth)
 			result.Hit = true;
 			result.OpaqueHit = hitResult.Alpha == OPAQUE;
 			result.Normal = hitResult.Normal;
+			result.CurrentVoxel = hitResult.CurrentVoxel;
 		}
 		
 		remainingTraverses -= hitResult.TraverseCount;
@@ -371,11 +359,32 @@ RaymarchResult RayMarch(uint modelIndex, float currentDepth)
 	return result;
 }
 
+BoxIntersectionResult RayModelIntersection(inout vec3 origin, vec3 direction, uint modelIndex)
+{
+	BoxIntersectionResult boxIntersection;
+	boxIntersection.Hit = Models[modelIndex].OriginInside; // Default is true in case origin is inside
+	if (!boxIntersection.Hit)
+	{
+		float width  = float(Models[modelIndex].Width);
+		float height = float(Models[modelIndex].Height);
+		float depth  = float(Models[modelIndex].Depth);
+		float voxelSize = Models[modelIndex].VoxelSize;
+	
+		vec3 boxMin = vec3(0,0,0);
+		vec3 boxMax = vec3(width, height, depth) * voxelSize;
+		// Check if we are intersecting with grid
+		boxIntersection = RayBoxIntersection(origin, direction, boxMin, boxMax);
+		origin = origin + direction * (boxIntersection.T - EPSILON); // Move origin to first intersection
+	}
+	return boxIntersection;
+}
 
 bool ValidPixel(ivec2 index)
 {
 	return index.x <= int(u_ViewportSize.x) && index.y <= int(u_ViewportSize.y);
 }
+
+
 
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
@@ -386,9 +395,17 @@ void main()
 
 	for (uint i = 0; i < NumModels; i++)
 	{
-		g_ModelRay = CreateRay(textureIndex, i);
+		g_Ray = CreateRay(textureIndex, i);
+		vec3 origin = g_Ray.Origin;
+		vec3 direction = g_Ray.Direction;
+
+		// Check if ray intersects with model and move origin of ray
+		BoxIntersectionResult intersect = RayModelIntersection(origin, direction, i);
+		if (!intersect.Hit)
+			continue;
+
 		float currentDepth = imageLoad(o_DepthImage, textureIndex).r;
-		RaymarchResult result = RayMarch(i, currentDepth);
+		RaymarchResult result = RayMarch(origin, direction, i, currentDepth);
 
 		if (result.Hit)
 		{			
@@ -404,7 +421,7 @@ void main()
 
 			float light = dot(-u_LightDirection.xyz, result.Normal);
 			result.Color.rgb *= u_LightColor.rgb * light;
-			imageStore(o_Image, textureIndex, result.Color); // Store color				
+			imageStore(o_Image, textureIndex, result.Color); // Store color						
 		}
 	}
 }

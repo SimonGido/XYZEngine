@@ -11,7 +11,6 @@ const float FLT_MAX = 3.402823466e+38;
 const float EPSILON = 0.01;
 const uint OPAQUE = 255;
 
-
 struct VoxelModel
 {
 	mat4  InverseModelView;
@@ -35,6 +34,7 @@ layout (std140, binding = 16) uniform Scene
 	// Camera info
 	mat4 u_InverseProjection;
 	mat4 u_InverseView;	
+	mat4 u_InverseLightView;
 	vec4 u_CameraPosition;
 	vec4 u_ViewportSize;
 
@@ -80,9 +80,9 @@ Ray CreateRay(vec2 coords, uint modelIndex)
 	coords = coords * 2.0 - 1.0; // -1 -> 1
 	vec4 target = u_InverseProjection * vec4(coords.x, -coords.y, 1, 1);
 	Ray ray;
-	ray.Origin = (Models[modelIndex].InverseTransform * u_LightPosition).xyz;
+	ray.Origin = (u_LightPosition).xyz;
 
-	ray.Direction = vec3(Models[modelIndex].InverseTransform * u_LightDirection * vec4(normalize(vec3(target) / target.w), 0)); // World space
+	ray.Direction = vec3(Models[modelIndex].InverseTransform * u_InverseLightView * vec4(normalize(vec3(target) / target.w), 0)); // World space
 	ray.Direction = normalize(ray.Direction);
 
 	return ray;
@@ -274,16 +274,14 @@ RaymarchResult RayMarch(uint modelIndex, float currentDepth)
 	float depth  = float(Models[modelIndex].Depth);
 	float voxelSize = Models[modelIndex].VoxelSize;
 	
-	if (!Models[modelIndex].OriginInside)
-	{
-		vec3 boxMin = vec3(0,0,0);
-		vec3 boxMax = vec3(width, height, depth) * voxelSize;
-		// Check if we are intersecting with grid
-		BoxIntersectionResult boxIntersection = RayBoxIntersection(origin, direction, boxMin, boxMax);
-		if (!boxIntersection.Hit)
-			return result; // No intersection
-		origin = origin + direction * (boxIntersection.T - EPSILON); // Move origin to first intersection with grid
-	}
+
+	vec3 boxMin = vec3(0,0,0);
+	vec3 boxMax = vec3(width, height, depth) * voxelSize;
+	// Check if we are intersecting with grid
+	BoxIntersectionResult boxIntersection = RayBoxIntersection(origin, direction, boxMin, boxMax);
+	if (!boxIntersection.Hit)
+		return result; // No intersection
+
 
 	ivec3 current_voxel = ivec3(floor(origin / voxelSize));
 	
@@ -362,7 +360,7 @@ void main()
 	if (!ValidPixel(textureIndex))
 		return;
 
-	imageStore(o_ShadowImage, textureIndex, vec4(0,0,0,0));
+	imageStore(o_ShadowImage, textureIndex, vec4(FLT_MAX,0,0,0));
 	imageStore(o_ShadowDebugImage, textureIndex, vec4(0,0,0,0));
 
 	for (uint i = 0; i < NumModels; i++)
