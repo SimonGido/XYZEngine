@@ -211,7 +211,7 @@ struct RaymarchHitResult
 	uint  Alpha;
 	uint  TraverseCount;
 	bool  Hit;
-	float Depth;
+	float Distance;
 };
 
 struct RaymarchResult
@@ -260,7 +260,7 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 
 		if (IsValidVoxel(current_voxel, width, height, depth))
 		{
-			if (!DepthTest(current_voxel, voxelSize, currentDepth, result.Depth))
+			if (!DepthTest(current_voxel, voxelSize, currentDepth, result.Distance))
 				break;
 
 			uint voxelIndex = Index3D(current_voxel, width, height) + voxelOffset;
@@ -384,8 +384,6 @@ bool ValidPixel(ivec2 index)
 	return index.x <= int(u_ViewportSize.x) && index.y <= int(u_ViewportSize.y);
 }
 
-
-
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
@@ -419,7 +417,7 @@ void main()
 				imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
 			}
 
-			float light = dot(-u_LightDirection.xyz, result.Normal);
+			float light = dot(-u_LightDirection.xyz, result.Normal.xyz);
 			result.Color.rgb *= u_LightColor.rgb * light;
 			imageStore(o_Image, textureIndex, result.Color); // Store color						
 		}

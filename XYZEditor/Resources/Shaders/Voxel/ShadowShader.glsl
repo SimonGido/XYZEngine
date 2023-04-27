@@ -80,9 +80,9 @@ Ray CreateRay(vec2 coords, uint modelIndex)
 	coords = coords * 2.0 - 1.0; // -1 -> 1
 	vec4 target = u_InverseProjection * vec4(coords.x, -coords.y, 1, 1);
 	Ray ray;
-	ray.Origin = (u_LightPosition).xyz;
+	ray.Origin = (Models[modelIndex].InverseTransform * u_LightPosition).xyz;
 
-	ray.Direction = vec3(Models[modelIndex].InverseTransform * u_InverseLightView * vec4(normalize(vec3(target) / target.w), 0)); // World space
+	ray.Direction = vec3(Models[modelIndex].InverseTransform * -u_LightDirection * vec4(normalize(vec3(target) / target.w), 0)); // World space
 	ray.Direction = normalize(ray.Direction);
 
 	return ray;
