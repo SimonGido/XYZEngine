@@ -447,9 +447,8 @@ void main()
 				imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
 			}
 
-			vec3 voxelPosition = VoxelWorldPosition(result.CurrentVoxel, i);
 			vec4 worldHitPosition = Models[i].Transform * vec4(result.T_Max, 1.0);
-			result.Color.rgb = CalculateDirLights(worldHitPosition.xyz, result.Color.rgb, result.Normal);
+			//result.Color.rgb = CalculateDirLights(worldHitPosition.xyz, result.Color.rgb, result.Normal);
 
 			imageStore(o_Image, textureIndex, result.Color); // Store color		
 			imageStore(o_NormalImage, textureIndex, vec4(result.Normal, 0.0));

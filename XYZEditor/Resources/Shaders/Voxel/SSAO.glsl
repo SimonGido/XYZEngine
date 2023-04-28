@@ -69,6 +69,25 @@ float DoAmbientOcclusion(vec2 tuv, vec2 uv, vec3 p, in vec3 cnorm)
     return max(0.0,dot(cnorm,v) - u_Uniforms.Bias) * (1.0/ (1.0 + d)) * u_Uniforms.Intensity;
 }
 
+// Constant normal incidence Fresnel factor for all dielectrics.
+const vec3 Fdielectric = vec3(0.04);
+
+
+vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
+{
+	PBRParameters pbr;
+	pbr.Roughness = 0.8;
+	pbr.Metalness = 0.2;
+	
+	pbr.Normal = normal;
+	pbr.View = normalize(u_CameraPosition.xyz - voxelPosition);
+	pbr.NdotV = max(dot(pbr.Normal, pbr.View), 0.0);
+	pbr.Albedo = albedo;
+
+	vec3 F0 = mix(Fdielectric, pbr.Albedo, pbr.Metalness);
+	return CalculateDirLight(F0, u_DirectionalLight, pbr);
+}
+
 
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
@@ -105,8 +124,9 @@ void main()
         ao += DoAmbientOcclusion(uv, coord2, p, n); 
     }
 
-    ao /= float(u_Uniforms.NumIterations) * 4.0; 
     vec4 origColor = imageLoad(o_Image, ivec2(gl_GlobalInvocationID).xy);
-    origColor.rgb *= ao;
+    vec3 dirLight = CalculateDirLights(p, origColor.rgb, n);
+    ao = 1.0 - (ao / float(u_Uniforms.NumIterations)); 
+    origColor.rgb = dirLight * ao;
     imageStore(o_Image, ivec2(gl_GlobalInvocationID.xy), origColor);
 }
