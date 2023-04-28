@@ -80,7 +80,7 @@ uint Index3D(ivec3 index, uint width, uint height)
 ivec3 GridScale(uint width0, uint height0, uint depth0, uint width1, uint height1, uint depth1)
 {
 	ivec3 scale = ivec3(
-		width0 / width0,
+		width0 / width1,
 		height0 / height1,
 		depth0 / depth1
 	);
