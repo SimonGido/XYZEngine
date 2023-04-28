@@ -69,7 +69,7 @@ namespace XYZ {
 		m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, 1280, 720, nullptr, props);
 		m_NormalTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		m_PositionTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
-		createRaymarchPipeline();
+		createDefaultPipelines();
 
 
 		m_UBVoxelScene.DirectionalLight.Direction = { -0.2f, -1.4f, -1.5f };
@@ -87,6 +87,8 @@ namespace XYZ {
 		m_SSBOVoxelModels.NumModels = 0;
 		
 		m_DrawCommands.clear();
+		m_EffectCommands.clear();
+
 		m_Frustum = camera.Frustum;
 		m_Statistics = {};
 
@@ -103,6 +105,7 @@ namespace XYZ {
 		if (m_Snow)
 			snowPass();
 
+		effectPass();
 		clearPass();
 		renderPass();
 		if (m_UseSSAO)
@@ -192,6 +195,15 @@ namespace XYZ {
 		return m_OutputTexture->GetImage();
 	}
 	
+	void VoxelRenderer::SubmitEffect(const Ref<MaterialAsset>& material, glm::ivec2 workGroups, const PushConstBuffer& constants)
+	{
+		auto& effectCommand = m_EffectCommands[material->GetHandle()];
+		effectCommand.Material = material;
+		auto& invocation = effectCommand.Invocations.emplace_back();
+		invocation.WorkGroups = workGroups;
+		invocation.Constants = constants;
+	}
+
 	void VoxelRenderer::OnImGuiRender()
 	{
 		if (ImGui::Begin("Voxel Renderer"))
@@ -211,7 +223,7 @@ namespace XYZ {
 			ImGui::Checkbox("SSAO", &m_UseSSAO);
 			ImGui::NewLine();
 
-			ImGui::DragInt("Snow Frames", (int*)&m_SnowFrames);
+			ImGui::DragInt("Snow Frames Delay", (int*)&m_SnowFramesDelay);
 			ImGui::Checkbox("Snow", &m_Snow);
 			ImGui::NewLine();
 
@@ -322,6 +334,33 @@ namespace XYZ {
 		Renderer::EndPipelineCompute(m_ClearPipeline);
 	}
 
+	void VoxelRenderer::effectPass()
+	{
+		for (auto& [key, effect] : m_EffectCommands)
+		{
+			Ref<PipelineCompute> pipeline = getEffectPipeline(effect.Material);
+			Renderer::BeginPipelineCompute(
+				m_CommandBuffer,
+				pipeline,
+				m_UniformBufferSet,
+				m_StorageBufferSet,
+				effect.Material->GetMaterial()
+			);
+
+			for (auto& invoc : effect.Invocations)
+			{
+				Renderer::DispatchCompute(
+					pipeline,
+					nullptr,
+					invoc.WorkGroups.x, invoc.WorkGroups.y, 1,
+					invoc.Constants
+				);
+			}
+
+			Renderer::EndPipelineCompute(pipeline);
+		}
+	}
+
 
 
 	void VoxelRenderer::renderPass()
@@ -364,15 +403,19 @@ namespace XYZ {
 		
 		Renderer::EndPipelineCompute(m_SSAOPipeline);
 	}
+
+
 	static uint32_t reqDispatchCounter = 0;
+	static int randSeed = 0;
 
 	void VoxelRenderer::snowPass()
 	{
-		bool shouldSnow = m_SnowFramesCounter >= m_SnowFrames;
+		bool shouldSnow = m_SnowFramesCounter >= m_SnowFramesDelay;
 		if (shouldSnow && reqDispatchCounter == 0)
 		{
 			reqDispatchCounter = 3;
 			m_SnowFramesCounter = 0;
+			randSeed = rand();
 		}
 
 		if (reqDispatchCounter > 0)
@@ -391,7 +434,7 @@ namespace XYZ {
 				800 / TILE_SIZE, 800 / TILE_SIZE, 1,
 				PushConstBuffer
 				{
-					0u, 1u
+					0u, 1u, randSeed
 				}
 			);
 
@@ -487,7 +530,7 @@ namespace XYZ {
 		m_UpdatedAllocations.clear();
 		m_StorageBufferSet->Update((void*)&m_SSBOVoxelModels, voxelModelsUpdateSize, 0, SSBOVoxelModels::Binding, SSBOVoxelModels::Set);
 	}
-	void VoxelRenderer::createRaymarchPipeline()
+	void VoxelRenderer::createDefaultPipelines()
 	{
 		Ref<Shader> shader = Shader::Create("Resources/Shaders/Voxel/RaymarchShader.glsl");
 		m_RaymarchMaterial = Material::Create(shader);
@@ -525,6 +568,23 @@ namespace XYZ {
 		m_SnowMaterial = Material::Create(snowShader);
 		spec.Shader = snowShader;
 		m_SnowPipeline = PipelineCompute::Create(spec);
+	}
+
+	Ref<PipelineCompute> VoxelRenderer::getEffectPipeline(const Ref<MaterialAsset>& material)
+	{
+		AssetHandle handle = material->GetHandle();
+		auto it = m_EffectPipelines.find(handle);
+		if (it != m_EffectPipelines.end())
+			return it->second;
+
+		PipelineComputeSpecification spec;
+		spec.Shader = material->GetShader();
+		spec.Specialization = material->GetSpecialization();
+
+		Ref<PipelineCompute> result = PipelineCompute::Create(spec);
+		m_EffectPipelines[handle] = result;
+
+		return result;
 	}
 
 	VoxelRenderer::MeshAllocation& VoxelRenderer::createMeshAllocation(const Ref<VoxelMesh>& mesh)

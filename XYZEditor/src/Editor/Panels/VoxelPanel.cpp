@@ -69,13 +69,13 @@ namespace XYZ {
 			}
 		}
 
-		VoxelSubmesh GenerateSnow(uint32_t width, uint32_t height, uint32_t depth)
+		VoxelSubmesh GenerateSnow(uint32_t width, uint32_t height, uint32_t depth, float voxelSize)
 		{
 			VoxelSubmesh submesh;
 			submesh.Width = width;
 			submesh.Height = height;
 			submesh.Depth = depth;
-			submesh.VoxelSize = 1.5f;
+			submesh.VoxelSize = voxelSize;
 
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
 			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
@@ -118,7 +118,7 @@ namespace XYZ {
 			m_ProceduralMesh->SetSubmeshes({ submesh });
 			m_ProceduralMesh->SetInstances({ instance });
 			
-			m_SnowMesh->SetSubmeshes({ GenerateSnow(800, 200, 800) });
+			m_SnowMesh->SetSubmeshes({ GenerateSnow(800, 200, 800, 1.5f) });
 			m_SnowMesh->SetInstances({ instance });
 
 
@@ -132,6 +132,8 @@ namespace XYZ {
 			colorPallete[1].G = 150;
 			colorPallete[1].B = 250;
 			colorPallete[1].A = 150;
+
+			colorPallete[5] = { 1, 60, 32, 255 };
 
 			m_ProceduralMesh->SetColorPallete(colorPallete);
 
@@ -352,7 +354,7 @@ namespace XYZ {
 
 					for (uint32_t y = 0; y < genHeight; ++y)
 					{
-						result[Utils::Index3D(x, y, z, width, height)] = Utils::RandomColorIndex(2, 255);						
+						result[Utils::Index3D(x, y, z, width, height)] = 5;						
 					}
 					result[Utils::Index3D(x, 40, z, width, height)] = 1; // Water
 				}

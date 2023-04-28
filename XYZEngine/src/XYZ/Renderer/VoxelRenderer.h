@@ -118,8 +118,12 @@ namespace XYZ {
 		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, const uint32_t* keyFrames);
 		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, bool cull);
 
+		void SubmitEffect(const Ref<MaterialAsset>& material, glm::ivec2 workGroups, const PushConstBuffer& constants);
+
 		void OnImGuiRender();
 
+
+		uint32_t	 GetModelCount() const { return m_SSBOVoxelModels.NumModels; }
 		Ref<Image2D> GetFinalPassImage() const;
 	private:
 
@@ -134,6 +138,19 @@ namespace XYZ {
 			Ref<VoxelMesh> Mesh;
 	
 			std::vector<VoxelCommandModel> Models;
+		};
+
+		struct VoxelEffectInvocation
+		{
+			glm::ivec2 WorkGroups;
+			PushConstBuffer Constants;
+		};
+
+		struct VoxelEffectCommand
+		{
+			Ref<MaterialAsset> Material;
+			
+			std::vector<VoxelEffectInvocation> Invocations;
 		};
 
 		struct MeshAllocation
@@ -169,6 +186,7 @@ namespace XYZ {
 		void submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, uint32_t submeshIndex);
 
 		void clearPass();
+		void effectPass();
 		void renderPass();
 		void ssaoPass();
 		void snowPass();
@@ -177,7 +195,8 @@ namespace XYZ {
 		void updateUniformBufferSet();
 		void prepareDrawCommands();
 
-		void createRaymarchPipeline();
+		void createDefaultPipelines();
+		Ref<PipelineCompute> getEffectPipeline(const Ref<MaterialAsset>& material);
 
 		MeshAllocation& createMeshAllocation(const Ref<VoxelMesh>& mesh);	
 
@@ -229,14 +248,16 @@ namespace XYZ {
 		bool					m_UseSSAO = false;
 
 		bool					m_Snow = false;
-		uint32_t				m_SnowFrames = 60;
+		uint32_t				m_SnowFramesDelay = 0;
 		uint32_t				m_SnowFramesCounter = 0;
 
 		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;
+		std::map<AssetHandle, VoxelEffectCommand> m_EffectCommands;
 
 		std::unordered_map<AssetHandle, MeshAllocation> m_MeshAllocations;
 		std::unordered_map<AssetHandle, MeshAllocation> m_LastFrameMeshAllocations;
 
+		std::unordered_map<AssetHandle, Ref<PipelineCompute>> m_EffectPipelines;
 
 		std::vector<UpdatedAllocation> m_UpdatedAllocations;
 

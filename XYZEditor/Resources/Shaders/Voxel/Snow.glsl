@@ -4,6 +4,7 @@
 #extension GL_EXT_shader_explicit_arithmetic_types_int8 : enable
 
 #include "Resources/Shaders/Includes/PBR.glsl"
+#include "Resources/Shaders/Includes/Random.glsl"
 
 #define TILE_SIZE 16
 #define MAX_COLORS 1024
@@ -59,11 +60,11 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 	uint ColorPallete[MAX_COLORS][256];
 };
 
-layout(push_constant) uniform clearColors
+layout(push_constant) uniform Uniforms
 {
 	uint ModelIndex;
 	uint CollisionModelIndex;
-
+	uint RandSeed;
 } u_Uniforms;
 
 
@@ -146,17 +147,22 @@ void main()
 					uint temp = uint(Voxels[voxelIndex]);
 					Voxels[voxelIndex] = uint8_t(Voxels[downVoxelIndex]);
 					Voxels[downVoxelIndex] = uint8_t(temp);
-					
 				}
-				else // Reset snow to the top of the grid
+				else
 				{
-					ivec3 upperIndex = ivec3(index.x, model.Height - 1, index.z);
-					uint voxelIndex = Index3D(index, model.Width, model.Height) + modelVoxelOffset;
-					uint upperVoxelIndex = Index3D(upperIndex, model.Width, model.Height) + modelVoxelOffset;
-					
-					//uint8_t temp = Voxels[voxelIndex];
-					//Voxels[voxelIndex] = uint8_t(Voxels[upperVoxelIndex]);
-					//Voxels[upperVoxelIndex] = uint8_t(temp);
+					// Reset snow to the top of the grid			
+					float seed = float(u_Uniforms.RandSeed) * gl_GlobalInvocationID.x * gl_GlobalInvocationID.y;
+					bool shouldReset = Random(0.0, 10.0, seed) > 9.8;
+					if (shouldReset)
+					{
+						ivec3 upperIndex = ivec3(index.x, model.Height - 1, index.z);
+						uint voxelIndex = Index3D(index, model.Width, model.Height) + modelVoxelOffset;
+						uint upperVoxelIndex = Index3D(upperIndex, model.Width, model.Height) + modelVoxelOffset;
+						
+						uint8_t temp = Voxels[voxelIndex];
+						Voxels[voxelIndex] = uint8_t(Voxels[upperVoxelIndex]);
+						Voxels[upperVoxelIndex] = uint8_t(temp);
+					}		
 				}
 			}
 		}
