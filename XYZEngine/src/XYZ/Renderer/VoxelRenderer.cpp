@@ -202,8 +202,7 @@ namespace XYZ {
 			ImGui::DragFloat("SSAO Scale", &m_SSAOValues.Scale);
 			ImGui::DragFloat("SSAO Bias", &m_SSAOValues.Bias);
 			ImGui::DragInt("SSAO Iterations", &m_SSAOValues.NumIterations);
-			ImGui::DragInt("SSAO Passes", (int*)&m_NumSSAOPasses, 1, 0, 64);
-
+		
 			ImGui::Checkbox("SSAO", &m_UseSSAO);
 			ImGui::NewLine();
 
@@ -343,18 +342,17 @@ namespace XYZ {
 			nullptr,
 			m_SSAOMaterial
 		);
-		for (uint32_t i = 0; i < m_NumSSAOPasses; ++i)
-		{
-			Renderer::DispatchCompute(
-				m_SSAOPipeline,
-				nullptr,
-				m_WorkGroups.x, m_WorkGroups.y, 1,
-				PushConstBuffer
-				{
-					m_SSAOValues
-				}
-			);
-		}
+		
+		Renderer::DispatchCompute(
+			m_SSAOPipeline,
+			nullptr,
+			m_WorkGroups.x, m_WorkGroups.y, 1,
+			PushConstBuffer
+			{
+				m_SSAOValues
+			}
+		);
+		
 		Renderer::EndPipelineCompute(m_SSAOPipeline);
 	}
 	void VoxelRenderer::updateViewportSize()

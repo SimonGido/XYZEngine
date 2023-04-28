@@ -210,7 +210,6 @@ namespace XYZ {
 		SSBOColors				m_SSBOColors;
 
 		SSAOValues				m_SSAOValues;
-		uint32_t				m_NumSSAOPasses = 1;
 		Math::Frustum			m_Frustum;
 
 		glm::ivec2				m_ViewportSize;
