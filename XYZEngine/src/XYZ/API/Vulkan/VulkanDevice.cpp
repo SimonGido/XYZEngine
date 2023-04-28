@@ -395,6 +395,7 @@ namespace XYZ {
 		features12.pNext = &rtPipelineFeature;
 		features12.uniformAndStorageBuffer8BitAccess = true;
 		features12.storageBuffer8BitAccess = true;
+		features12.shaderInt8 = true;
 
 		VkDeviceCreateInfo deviceCreateInfo = {};
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

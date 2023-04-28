@@ -125,13 +125,14 @@ namespace XYZ {
 
 		struct VoxelCommandModel
 		{
-			VoxelModel Model;
+			uint32_t ModelIndex;
 			uint32_t SubmeshIndex;
 		};
 
 		struct VoxelDrawCommand
 		{
 			Ref<VoxelMesh> Mesh;
+	
 			std::vector<VoxelCommandModel> Models;
 		};
 
@@ -170,6 +171,7 @@ namespace XYZ {
 		void clearPass();
 		void renderPass();
 		void ssaoPass();
+		void snowPass();
 
 		void updateViewportSize();
 		void updateUniformBufferSet();
@@ -196,6 +198,12 @@ namespace XYZ {
 		Ref<StorageBufferSet>	m_StorageBufferSet;
 		Ref<UniformBufferSet>	m_UniformBufferSet;
 
+		// Test SNOW //	
+		Ref<PipelineCompute>	m_SnowPipeline;
+		Ref<Material>			m_SnowMaterial;
+		///////////////
+
+
 		Ref<StorageBufferAllocator> m_VoxelStorageAllocator;
 		Ref<StorageBufferAllocator> m_ColorStorageAllocator;
 
@@ -219,6 +227,10 @@ namespace XYZ {
 		Statistics				m_Statistics;
 	
 		bool					m_UseSSAO = false;
+
+		bool					m_Snow = false;
+		uint32_t				m_SnowFrames = 60;
+		uint32_t				m_SnowFramesCounter = 0;
 
 		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;
 

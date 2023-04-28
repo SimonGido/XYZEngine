@@ -69,6 +69,28 @@ namespace XYZ {
 			}
 		}
 
+		VoxelSubmesh GenerateSnow(uint32_t width, uint32_t height, uint32_t depth)
+		{
+			VoxelSubmesh submesh;
+			submesh.Width = width;
+			submesh.Height = height;
+			submesh.Depth = depth;
+
+			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
+			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
+
+			for (uint32_t x = 0; x < width; x++)
+			{
+				for (uint32_t z = 0; z < depth; z++)
+				{
+					if (Utils::RandomColorIndex(0, 10) == 0) // % chance to generate snow voxel
+						submesh.ColorIndices[Utils::Index3D(x, height - 1, z, width, height)] = Utils::RandomColorIndex(0, 1);
+				}
+			}
+			return submesh;
+		}
+
+
 		VoxelPanel::VoxelPanel(std::string name)
 			:
 			EditorPanel(std::forward<std::string>(name)),
@@ -76,6 +98,8 @@ namespace XYZ {
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f)
 		{
 			m_ProceduralMesh = Ref<VoxelProceduralMesh>::Create();
+			m_SnowMesh = Ref<VoxelProceduralMesh>::Create();
+
 			VoxelSubmesh submesh;
 			submesh.Width = 400;
 			submesh.Height = 100;
@@ -91,6 +115,11 @@ namespace XYZ {
 			m_ProceduralMesh->SetSubmeshes({ submesh });
 			m_ProceduralMesh->SetInstances({ instance });
 			
+			m_SnowMesh->SetSubmeshes({ GenerateSnow(800, 200, 800) });
+			m_SnowMesh->SetInstances({ instance });
+
+
+
 			m_DeerMesh   = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));
 			m_CastleMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox"));
 			m_KnightMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/chr_knight.vox"));
@@ -102,6 +131,9 @@ namespace XYZ {
 			colorPallete[1].A = 150;
 
 			m_ProceduralMesh->SetColorPallete(colorPallete);
+
+			colorPallete[1] = { 255, 255, 255, 255 };//Snow;
+			m_SnowMesh->SetColorPallete(colorPallete);
 
 			uint32_t count = 50;
 			m_CastleTransforms.resize(count);
@@ -208,6 +240,8 @@ namespace XYZ {
 					m_EditorCamera.CreateFrustum()
 				});
 				
+				m_VoxelRenderer->SubmitMesh(m_SnowMesh, glm::mat4(1.0f), 1.5f, false);
+				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), 3.0f, false);
 
 				for (size_t i = 0; i < m_CastleTransforms.size(); ++i)
 				{
@@ -219,9 +253,8 @@ namespace XYZ {
 					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform, 1.0f);
 					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame, 1.0f);
 				}
-
-				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), 3.0f, false);
-
+				
+				
 				if (m_CurrentTime > m_KeyLength)
 				{
 					const uint32_t numKeyframes = m_DeerMesh->GetMeshSource()->GetInstances()[0].ModelAnimation.SubmeshIndices.size();

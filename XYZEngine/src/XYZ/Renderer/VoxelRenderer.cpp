@@ -84,6 +84,8 @@ namespace XYZ {
 		m_UBVoxelScene.CameraPosition = glm::vec4(camera.CameraPosition, 1.0f);
 		m_UBVoxelScene.ViewportSize.x = m_ViewportSize.x;
 		m_UBVoxelScene.ViewportSize.y = m_ViewportSize.y;
+		m_SSBOVoxelModels.NumModels = 0;
+		
 		m_DrawCommands.clear();
 		m_Frustum = camera.Frustum;
 		m_Statistics = {};
@@ -98,6 +100,9 @@ namespace XYZ {
 
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
+		if (m_Snow)
+			snowPass();
+
 		clearPass();
 		renderPass();
 		if (m_UseSSAO)
@@ -206,7 +211,9 @@ namespace XYZ {
 			ImGui::Checkbox("SSAO", &m_UseSSAO);
 			ImGui::NewLine();
 
-
+			ImGui::DragInt("Snow Frames", (int*)&m_SnowFrames);
+			ImGui::Checkbox("Snow", &m_Snow);
+			ImGui::NewLine();
 
 			if (ImGui::BeginTable("##Statistics", 2, ImGuiTableFlags_SizingFixedFit))
 			{
@@ -249,8 +256,9 @@ namespace XYZ {
 
 		VoxelCommandModel& cmdModel = drawCommand.Models.emplace_back();
 		cmdModel.SubmeshIndex = submeshIndex;
+		cmdModel.ModelIndex = m_SSBOVoxelModels.NumModels;
 
-		VoxelModel& model = cmdModel.Model;
+		VoxelModel& model = m_SSBOVoxelModels.Models[m_SSBOVoxelModels.NumModels];
 
 		model.Transform = transform * glm::translate(glm::mat4(1.0f), centerTranslation);
 		const glm::mat4 inverseTransform = glm::inverse(model.Transform);
@@ -263,6 +271,8 @@ namespace XYZ {
 		model.VoxelSize = voxelSize;
 
 		model.OriginInside = Math::PointInBox(model.RayOrigin, glm::vec3(0.0f), aabbMax);
+		
+		m_SSBOVoxelModels.NumModels++;
 		return true;
 	}
 
@@ -355,6 +365,42 @@ namespace XYZ {
 		
 		Renderer::EndPipelineCompute(m_SSAOPipeline);
 	}
+	static uint32_t reqDispatchCounter = 0;
+
+	void VoxelRenderer::snowPass()
+	{
+		bool shouldSnow = m_SnowFramesCounter >= m_SnowFrames;
+		if (shouldSnow && reqDispatchCounter == 0)
+		{
+			reqDispatchCounter = 3;
+			m_SnowFramesCounter = 0;
+		}
+
+		if (reqDispatchCounter > 0)
+		{
+			Renderer::BeginPipelineCompute(
+				m_CommandBuffer,
+				m_SnowPipeline,
+				m_UniformBufferSet,
+				m_StorageBufferSet,
+				m_SnowMaterial
+			);
+
+			Renderer::DispatchCompute(
+				m_SnowPipeline,
+				nullptr,
+				800 / TILE_SIZE, 800 / TILE_SIZE, 1,
+				PushConstBuffer
+				{
+					0u, 1u
+				}
+			);
+
+			Renderer::EndPipelineCompute(m_SnowPipeline);
+			reqDispatchCounter--;
+		}
+		m_SnowFramesCounter++;
+	}
 	void VoxelRenderer::updateViewportSize()
 	{
 		if (m_ViewportSizeChanged)
@@ -410,26 +456,26 @@ namespace XYZ {
 	{
 		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::ColorPallete[0]));
 		Ref<VoxelRenderer> instance = this;
-		uint32_t modelCount = 0;
+
 		for (auto& [key, drawCommand] : m_DrawCommands)
 		{
 			if (drawCommand.Models.empty())
 				continue;
 
 			MeshAllocation& meshAlloc = createMeshAllocation(drawCommand.Mesh);
-			for (auto& cmdModel : drawCommand.Models)
+	
+			for (const auto& cmdModel : drawCommand.Models)
 			{
-				cmdModel.Model.ColorIndex = meshAlloc.ColorAllocation.GetOffset() / colorSize;
-				cmdModel.Model.VoxelOffset = meshAlloc.SubmeshOffsets[cmdModel.SubmeshIndex];
-				m_SSBOVoxelModels.Models[modelCount++] = cmdModel.Model;
+				VoxelModel& model = m_SSBOVoxelModels.Models[cmdModel.ModelIndex];
+				model.ColorIndex = meshAlloc.ColorAllocation.GetOffset() / colorSize;
+				model.VoxelOffset = meshAlloc.SubmeshOffsets[cmdModel.SubmeshIndex];
 			}
 		}
-		m_SSBOVoxelModels.NumModels = modelCount;
 
 		const uint32_t voxelModelsUpdateSize = 
 			sizeof(SSBOVoxelModels::NumModels)
 		  + sizeof(SSBOVoxelModels::Padding)
-		  + modelCount * sizeof(VoxelModel);
+		  + m_SSBOVoxelModels.NumModels * sizeof(VoxelModel);
 
 		for (const auto& updated : m_UpdatedAllocations)
 		{
@@ -474,6 +520,12 @@ namespace XYZ {
 
 		spec.Shader = ssaoShader;
 		m_SSAOPipeline = PipelineCompute::Create(spec);
+
+
+		Ref<Shader> snowShader = Shader::Create("Resources/Shaders/Voxel/Snow.glsl");
+		m_SnowMaterial = Material::Create(snowShader);
+		spec.Shader = snowShader;
+		m_SnowPipeline = PipelineCompute::Create(spec);
 	}
 
 	VoxelRenderer::MeshAllocation& VoxelRenderer::createMeshAllocation(const Ref<VoxelMesh>& mesh)

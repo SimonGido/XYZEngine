@@ -66,6 +66,7 @@ namespace XYZ {
 			Ref<VoxelSourceMesh> m_KnightMesh;
 			Ref<VoxelSourceMesh> m_DeerMesh;
 			Ref<VoxelProceduralMesh> m_ProceduralMesh;
+			Ref<VoxelProceduralMesh> m_SnowMesh;
 
 			uint32_t m_DeerKeyFrame = 0;
 			float	 m_KeyLength = 0.3f;

@@ -127,9 +127,9 @@ uint Index3D(ivec3 index, uint width, uint height)
 
 bool IsValidVoxel(ivec3 voxel, uint width, uint height, uint depth)
 {
-	return ((voxel.x < width && voxel.x > 0)
-		 && (voxel.y < height && voxel.y > 0)
-		 && (voxel.z < depth && voxel.z > 0));
+	return ((voxel.x < width && voxel.x >= 0)
+		 && (voxel.y < height && voxel.y >= 0)
+		 && (voxel.z < depth && voxel.z >= 0));
 }
 
 
