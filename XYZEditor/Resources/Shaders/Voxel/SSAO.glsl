@@ -10,8 +10,6 @@
 const float FLT_MAX = 3.402823466e+38;
 const float EPSILON = 0.01;
 const uint OPAQUE = 255;
-const int NUM_SAMPLES = 64;
-
 
 layout (std140, binding = 16) uniform Scene
 {
@@ -28,15 +26,10 @@ layout (std140, binding = 16) uniform Scene
 
 
 
-layout(push_constant) uniform Uniforms
-{
-	mat4 Samples[NUM_SAMPLES];
-
-} u_Uniforms;
 
 layout(binding = 0, rgba32f) uniform image2D o_Image;
-layout(binding = 1, r32f) uniform image2D u_PositionImage;
-layout(binding = 2, rgba32f) uniform image2D u_NormalImage;
+layout(binding = 1, rgb32f) uniform image2D u_NormalImage;
+layout(binding = 2, rgb32f) uniform image2D u_PositionImage;
 
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 

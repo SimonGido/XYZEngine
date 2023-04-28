@@ -63,6 +63,8 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 
 layout(binding = 20, rgba32f) uniform image2D o_Image;
 layout(binding = 21, r32f) uniform image2D o_DepthImage;
+layout(binding = 22, rgb32f) uniform image2D o_NormalImage;
+layout(binding = 23, rgb32f) uniform image2D o_PositionImage;
 
 struct Ray
 {
@@ -222,6 +224,7 @@ struct RaymarchHitResult
 struct RaymarchResult
 {
 	vec4  Color;
+	vec3  T_Max;
 	vec3  Normal;
 	ivec3 CurrentVoxel;
 	float Distance;
@@ -335,6 +338,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 		result.Distance = newDistance;
 		result.Normal = hitResult.Normal;
 		result.CurrentVoxel = hitResult.CurrentVoxel;
+		result.T_Max = hitResult.T_Max;
 	}
 	
 	// Continue raymarching until we hit opaque object or we are out of traverses
@@ -356,6 +360,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 			result.OpaqueHit = hitResult.Alpha == OPAQUE;
 			result.Normal = hitResult.Normal;
 			result.CurrentVoxel = hitResult.CurrentVoxel;
+			result.T_Max = hitResult.T_Max;
 		}
 		
 		remainingTraverses -= hitResult.TraverseCount;
@@ -413,6 +418,9 @@ layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
+	imageStore(o_NormalImage, vec4(0,0,0,0)); // Clear normal image
+	imageStore(o_PositionImage, vec4(0,0,0,0)); // Clear position image
+
 	for (uint i = 0; i < NumModels; i++)
 	{
 		g_Ray = CreateRay(textureIndex, i);
@@ -442,7 +450,9 @@ void main()
 			vec3 voxelPosition = VoxelWorldPosition(result.CurrentVoxel, i);
 			result.Color.rgb = CalculateDirLights(voxelPosition, result.Color.rgb, result.Normal);
 
-			imageStore(o_Image, textureIndex, result.Color); // Store color						
+			imageStore(o_Image, textureIndex, result.Color); // Store color		
+			imageStore(o_NormalImage, textureIndex, vec4(result.Normal, 0.0));
+			imageStore(o_PositionImage, textureIndex, vec4(result.T_Max, 0.0));
 		}
 	}
 }
