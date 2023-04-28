@@ -67,13 +67,13 @@ namespace XYZ {
 		props.SamplerWrap = TextureWrap::Clamp;
 		m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, 1280, 720, nullptr, props);
-		m_ShadowTexture = Texture2D::Create(ImageFormat::RED32F, 1280, 720, nullptr, props);
-		m_ShadowDebugTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
+
 		createRaymarchPipeline();
 
 
-		m_UBVoxelScene.LightDirection = { -0.2f, -1.4f, -1.5f, 1.0f };
-		m_UBVoxelScene.LightColor = glm::vec4(1.0f);
+		m_UBVoxelScene.DirectionalLight.Direction = { -0.2f, -1.4f, -1.5f };
+		m_UBVoxelScene.DirectionalLight.Radiance = glm::vec3(1.0f);
+		m_UBVoxelScene.DirectionalLight.Multiplier = 1.0f;
 		m_WorkGroups = { 32, 32 };
 	}
 	void VoxelRenderer::BeginScene(const VoxelRendererCamera& camera)
@@ -98,7 +98,6 @@ namespace XYZ {
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 		clearPass();
-		shadowPass();
 		renderPass();
 
 		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
@@ -189,8 +188,9 @@ namespace XYZ {
 	{
 		if (ImGui::Begin("Voxel Renderer"))
 		{
-			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.LightDirection), 0.1f);
-			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.LightColor), 0.1f);
+			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Direction), 0.1f);
+			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Radiance), 0.1f);
+			ImGui::DragFloat("Light Multiplier", &m_UBVoxelScene.DirectionalLight.Multiplier, 0.1f);
 			ImGui::DragInt("Max Traverses", (int*)&m_UBVoxelScene.MaxTraverses, 1, 0, 1024);
 
 
@@ -300,46 +300,6 @@ namespace XYZ {
 		Renderer::EndPipelineCompute(m_ClearPipeline);
 	}
 
-	void VoxelRenderer::shadowPass()
-	{
-		auto imageBarrier = [](Ref<VulkanPipelineCompute> pipeline, Ref<VulkanImage2D> image) {
-
-			Renderer::Submit([pipeline, image]() {
-				VkImageMemoryBarrier imageMemoryBarrier = {};
-				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
-				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-				imageMemoryBarrier.image = image->GetImageInfo().Image;
-				imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
-				imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-				imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-				vkCmdPipelineBarrier(
-					pipeline->GetActiveCommandBuffer(),
-					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-					0,
-					0, nullptr,
-					0, nullptr,
-					1, &imageMemoryBarrier);
-				});
-		};
-
-		Renderer::BeginPipelineCompute(
-			m_CommandBuffer,
-			m_ShadowPipeline,
-			m_UniformBufferSet,
-			m_StorageBufferSet,
-			m_ShadowMaterial
-		);
-		Renderer::DispatchCompute(
-			m_ShadowPipeline,
-			nullptr,
-			m_WorkGroups.x, m_WorkGroups.y, 1
-		);
-		imageBarrier(m_ShadowPipeline, m_ShadowTexture->GetImage());
-		imageBarrier(m_ShadowPipeline, m_ShadowDebugTexture->GetImage());
-		Renderer::EndPipelineCompute(m_ShadowPipeline);
-	}
 
 
 	void VoxelRenderer::renderPass()
@@ -370,18 +330,13 @@ namespace XYZ {
 			props.SamplerWrap = TextureWrap::Clamp;
 			m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
-			m_ShadowTexture = Texture2D::Create(ImageFormat::RED32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
-			m_ShadowDebugTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
-			
+		
 			m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
-			m_RaymarchMaterial->SetImage("o_ShadowImage", m_ShadowTexture->GetImage());
 
 			m_ClearMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_ClearMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
 		
-			m_ShadowMaterial->SetImage("o_ShadowImage", m_ShadowTexture->GetImage());
-			m_ShadowMaterial->SetImage("o_ShadowDebugImage", m_ShadowDebugTexture->GetImage());
 
 			m_UBVoxelScene.ViewportSize.x = m_ViewportSize.x;
 			m_UBVoxelScene.ViewportSize.y = m_ViewportSize.y;
@@ -452,7 +407,6 @@ namespace XYZ {
 
 		m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 		m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
-		m_RaymarchMaterial->SetImage("o_ShadowImage", m_ShadowTexture->GetImage());
 		PipelineComputeSpecification spec;
 		spec.Shader = shader;
 	
@@ -466,14 +420,6 @@ namespace XYZ {
 
 		spec.Shader = clearShader;
 		m_ClearPipeline = PipelineCompute::Create(spec);
-
-		Ref<Shader> shadowShader = Shader::Create("Resources/Shaders/Voxel/ShadowShader.glsl");
-		m_ShadowMaterial = Material::Create(shadowShader);
-		m_ShadowMaterial->SetImage("o_ShadowImage", m_ShadowTexture->GetImage());
-		m_ShadowMaterial->SetImage("o_ShadowDebugImage", m_ShadowDebugTexture->GetImage());
-
-		spec.Shader = shadowShader;
-		m_ShadowPipeline = PipelineCompute::Create(spec);
 	}
 
 	VoxelRenderer::MeshAllocation& VoxelRenderer::createMeshAllocation(const Ref<VoxelMesh>& mesh)

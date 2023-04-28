@@ -10,7 +10,7 @@
 const float FLT_MAX = 3.402823466e+38;
 const float EPSILON = 0.01;
 const uint OPAQUE = 255;
-
+const int NUM_SAMPLES = 64;
 
 
 layout (std140, binding = 16) uniform Scene
@@ -18,18 +18,15 @@ layout (std140, binding = 16) uniform Scene
 	// Camera info
 	mat4 u_InverseProjection;
 	mat4 u_InverseView;	
-	mat4 u_InverseLightView;
 	vec4 u_CameraPosition;
 	vec4 u_ViewportSize;
 
 	// Light info
-	vec4 u_LightPosition;
-	vec4 u_LightDirection;
-	vec4 u_LightColor;
+	DirectionalLight u_DirectionalLight;
 	uint MaxTraverse;
 };
 
-const int NUM_SAMPLES = 16;
+
 
 layout(push_constant) uniform Uniforms
 {
@@ -37,9 +34,9 @@ layout(push_constant) uniform Uniforms
 
 } u_Uniforms;
 
-layout(binding = 20, rgba32f) uniform image2D o_Image;
-layout(binding = 22, r32f) uniform image2D u_PositionImage;
-layout(binding = 23, rgba32f) uniform image2D u_NormalImage;
+layout(binding = 0, rgba32f) uniform image2D o_Image;
+layout(binding = 1, r32f) uniform image2D u_PositionImage;
+layout(binding = 2, rgba32f) uniform image2D u_NormalImage;
 
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 

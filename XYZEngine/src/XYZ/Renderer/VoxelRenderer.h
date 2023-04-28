@@ -6,6 +6,7 @@
 #include "VoxelMesh.h"
 #include "Material.h"
 
+#include "XYZ/Scene/Scene.h"
 #include "XYZ/Utils/DataStructures/ThreadQueue.h"
 #include "XYZ/Asset/Renderer/VoxelMeshSource.h"
 
@@ -29,10 +30,9 @@ namespace XYZ {
 		glm::mat4 InverseView;
 		glm::vec4 CameraPosition;
 		glm::vec4 ViewportSize;
-
+		
 		// Light info
-		glm::vec4 LightDirection;
-		glm::vec4 LightColor;
+		DirectionalLight DirectionalLight;
 
 		uint32_t MaxTraverses = 512;
 
@@ -159,7 +159,6 @@ namespace XYZ {
 		bool submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, float voxelSize, uint32_t submeshIndex);
 
 		void clearPass();
-		void shadowPass();
 		void renderPass();
 
 		void updateViewportSize();
@@ -174,10 +173,7 @@ namespace XYZ {
 		bool cullSubmesh(const VoxelSubmesh& submesh, const glm::mat4& transform, float voxelSize) const;
 	private:
 		Ref<PrimaryRenderCommandBuffer> m_CommandBuffer;
-		
-		Ref<PipelineCompute>	m_ShadowPipeline;
-		Ref<Material>			m_ShadowMaterial;
-		
+
 		Ref<PipelineCompute>	m_RaymarchPipeline;
 		Ref<Material>			m_RaymarchMaterial;
 
@@ -192,8 +188,7 @@ namespace XYZ {
 
 		Ref<Texture2D>			m_OutputTexture;
 		Ref<Texture2D>			m_DepthTexture;
-		Ref<Texture2D>			m_ShadowTexture;
-		Ref<Texture2D>			m_ShadowDebugTexture;
+
 
 		UBVoxelScene			m_UBVoxelScene;
 		SSBOVoxels				m_SSBOVoxels;

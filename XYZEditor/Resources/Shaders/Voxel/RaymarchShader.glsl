@@ -40,8 +40,7 @@ layout (std140, binding = 16) uniform Scene
 	vec4 u_ViewportSize;
 
 	// Light info
-	vec4 u_LightDirection;
-	vec4 u_LightColor;
+	DirectionalLight u_DirectionalLight;
 	uint MaxTraverse;
 };
 
@@ -64,7 +63,6 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 
 layout(binding = 20, rgba32f) uniform image2D o_Image;
 layout(binding = 21, r32f) uniform image2D o_DepthImage;
-layout(binding = 22, r32f) uniform image2D o_ShadowImage;
 
 struct Ray
 {
@@ -401,18 +399,13 @@ vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
 	pbr.Roughness = 0.8;
 	pbr.Metalness = 0.2;
 	
-	DirectionalLight dirLight;
-	dirLight.Direction = -u_LightDirection.xyz;
-	dirLight.Radiance = u_LightColor.xyz;
-	dirLight.Multiplier = 1.0;
-
 	pbr.Normal = normal;
 	pbr.View = normalize(u_CameraPosition.xyz - voxelPosition);
 	pbr.NdotV = max(dot(pbr.Normal, pbr.View), 0.0);
 	pbr.Albedo = albedo;
 
 	vec3 F0 = mix(Fdielectric, pbr.Albedo, pbr.Metalness);
-	return CalculateDirLight(F0, dirLight, pbr);
+	return CalculateDirLight(F0, u_DirectionalLight, pbr);
 }
 
 
