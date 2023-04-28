@@ -97,6 +97,7 @@ namespace XYZ {
 			case ImageFormat::RGBA:            return VK_FORMAT_R8G8B8A8_SRGB;//VK_FORMAT_R8G8B8A8_UNORM;
 			case ImageFormat::RGBA16F:         return VK_FORMAT_R16G16B16A16_SFLOAT;
 			case ImageFormat::RGBA32F:         return VK_FORMAT_R32G32B32A32_SFLOAT;
+			case ImageFormat::RGB:			   return VK_FORMAT_R8G8B8_SRGB;
 			case ImageFormat::DEPTH32F:        return VK_FORMAT_D32_SFLOAT;
 			case ImageFormat::DEPTH24STENCIL8: return VulkanContext::GetCurrentDevice()->GetPhysicalDevice()->GetDepthFormat();
 			}

@@ -67,7 +67,8 @@ namespace XYZ {
 		props.SamplerWrap = TextureWrap::Clamp;
 		m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, 1280, 720, nullptr, props);
-
+		m_NormalTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
+		m_PositionTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		createRaymarchPipeline();
 
 
@@ -99,6 +100,8 @@ namespace XYZ {
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 		clearPass();
 		renderPass();
+		if (m_UseSSAO)
+			ssaoPass();
 
 		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
 
@@ -192,6 +195,16 @@ namespace XYZ {
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Radiance), 0.1f);
 			ImGui::DragFloat("Light Multiplier", &m_UBVoxelScene.DirectionalLight.Multiplier, 0.1f);
 			ImGui::DragInt("Max Traverses", (int*)&m_UBVoxelScene.MaxTraverses, 1, 0, 1024);
+
+			ImGui::NewLine();
+			ImGui::DragFloat("SSAO SampleRadius", &m_SSAOValues.SampleRadius);
+			ImGui::DragFloat("SSAO Intensity", &m_SSAOValues.Intensity);
+			ImGui::DragFloat("SSAO Scale", &m_SSAOValues.Scale);
+			ImGui::DragFloat("SSAO Bias", &m_SSAOValues.Bias);
+			ImGui::DragInt("SSAO Iterations", &m_SSAOValues.NumIterations);
+
+			ImGui::Checkbox("SSAO", &m_UseSSAO);
+			ImGui::NewLine();
 
 
 
@@ -320,6 +333,28 @@ namespace XYZ {
 
 		Renderer::EndPipelineCompute(m_RaymarchPipeline);
 	}
+	void VoxelRenderer::ssaoPass()
+	{
+		Renderer::BeginPipelineCompute(
+			m_CommandBuffer,
+			m_SSAOPipeline,
+			m_UniformBufferSet,
+			nullptr,
+			m_SSAOMaterial
+		);
+
+		Renderer::DispatchCompute(
+			m_SSAOPipeline,
+			nullptr,
+			m_WorkGroups.x, m_WorkGroups.y, 1,
+			PushConstBuffer
+			{
+				m_SSAOValues
+			}
+		);
+
+		Renderer::EndPipelineCompute(m_SSAOPipeline);
+	}
 	void VoxelRenderer::updateViewportSize()
 	{
 		if (m_ViewportSizeChanged)
@@ -330,13 +365,20 @@ namespace XYZ {
 			props.SamplerWrap = TextureWrap::Clamp;
 			m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
-		
+			m_NormalTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
+			m_PositionTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
+
 			m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+			m_RaymarchMaterial->SetImage("o_NormalImage", m_NormalTexture->GetImage());
+			m_RaymarchMaterial->SetImage("o_PositionImage", m_PositionTexture->GetImage());
 
 			m_ClearMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_ClearMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
 		
+			m_SSAOMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
+			m_SSAOMaterial->SetImage("u_NormalImage", m_NormalTexture->GetImage());
+			m_SSAOMaterial->SetImage("u_PositionImage", m_PositionTexture->GetImage());
 
 			m_UBVoxelScene.ViewportSize.x = m_ViewportSize.x;
 			m_UBVoxelScene.ViewportSize.y = m_ViewportSize.y;
@@ -407,6 +449,8 @@ namespace XYZ {
 
 		m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 		m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+		m_RaymarchMaterial->SetImage("o_NormalImage", m_NormalTexture->GetImage());
+		m_RaymarchMaterial->SetImage("o_PositionImage", m_PositionTexture->GetImage());
 		PipelineComputeSpecification spec;
 		spec.Shader = shader;
 	
@@ -420,6 +464,16 @@ namespace XYZ {
 
 		spec.Shader = clearShader;
 		m_ClearPipeline = PipelineCompute::Create(spec);
+
+
+		Ref<Shader> ssaoShader = Shader::Create("Resources/Shaders/Voxel/SSAO.glsl");
+		m_SSAOMaterial = Material::Create(ssaoShader);
+		m_SSAOMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
+		m_SSAOMaterial->SetImage("u_NormalImage", m_NormalTexture->GetImage());
+		m_SSAOMaterial->SetImage("u_PositionImage", m_PositionTexture->GetImage());
+
+		spec.Shader = ssaoShader;
+		m_SSAOPipeline = PipelineCompute::Create(spec);
 	}
 
 	VoxelRenderer::MeshAllocation& VoxelRenderer::createMeshAllocation(const Ref<VoxelMesh>& mesh)

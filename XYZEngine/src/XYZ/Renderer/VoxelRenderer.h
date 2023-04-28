@@ -155,11 +155,21 @@ namespace XYZ {
 			uint32_t CulledModels = 0;
 		};
 
+		struct SSAOValues
+		{
+			float SampleRadius = 1.0f;
+			float Intensity = 1.0f;
+			float Scale = 1.0f;
+			float Bias = 1.0f;
+			int32_t NumIterations = 4;
+		};
+
 	private:
 		bool submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, float voxelSize, uint32_t submeshIndex);
 
 		void clearPass();
 		void renderPass();
+		void ssaoPass();
 
 		void updateViewportSize();
 		void updateUniformBufferSet();
@@ -180,6 +190,9 @@ namespace XYZ {
 		Ref<PipelineCompute>	m_ClearPipeline;
 		Ref<Material>			m_ClearMaterial;
 
+		Ref<PipelineCompute>	m_SSAOPipeline;
+		Ref<Material>			m_SSAOMaterial;
+
 		Ref<StorageBufferSet>	m_StorageBufferSet;
 		Ref<UniformBufferSet>	m_UniformBufferSet;
 
@@ -188,12 +201,15 @@ namespace XYZ {
 
 		Ref<Texture2D>			m_OutputTexture;
 		Ref<Texture2D>			m_DepthTexture;
-
+		Ref<Texture2D>			m_NormalTexture;
+		Ref<Texture2D>			m_PositionTexture;
 
 		UBVoxelScene			m_UBVoxelScene;
 		SSBOVoxels				m_SSBOVoxels;
 		SSBOVoxelModels			m_SSBOVoxelModels;
 		SSBOColors				m_SSBOColors;
+
+		SSAOValues				m_SSAOValues;
 
 		Math::Frustum			m_Frustum;
 
@@ -203,6 +219,7 @@ namespace XYZ {
 
 		Statistics				m_Statistics;
 	
+		bool					m_UseSSAO = false;
 
 		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;
 

@@ -63,8 +63,8 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 
 layout(binding = 20, rgba32f) uniform image2D o_Image;
 layout(binding = 21, r32f) uniform image2D o_DepthImage;
-layout(binding = 22, rgb32f) uniform image2D o_NormalImage;
-layout(binding = 23, rgb32f) uniform image2D o_PositionImage;
+layout(binding = 22, rgba32f) uniform image2D o_NormalImage;
+layout(binding = 23, rgba32f) uniform image2D o_PositionImage;
 
 struct Ray
 {
@@ -418,8 +418,8 @@ layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
-	imageStore(o_NormalImage, vec4(0,0,0,0)); // Clear normal image
-	imageStore(o_PositionImage, vec4(0,0,0,0)); // Clear position image
+	imageStore(o_NormalImage, textureIndex, vec4(0,0,0,0)); // Clear normal image
+	imageStore(o_PositionImage, textureIndex, vec4(0,0,0,0)); // Clear position image
 
 	for (uint i = 0; i < NumModels; i++)
 	{
@@ -448,11 +448,12 @@ void main()
 			}
 
 			vec3 voxelPosition = VoxelWorldPosition(result.CurrentVoxel, i);
-			result.Color.rgb = CalculateDirLights(voxelPosition, result.Color.rgb, result.Normal);
+			vec4 worldHitPosition = Models[i].Transform * vec4(result.T_Max, 1.0);
+			result.Color.rgb = CalculateDirLights(worldHitPosition.xyz, result.Color.rgb, result.Normal);
 
 			imageStore(o_Image, textureIndex, result.Color); // Store color		
 			imageStore(o_NormalImage, textureIndex, vec4(result.Normal, 0.0));
-			imageStore(o_PositionImage, textureIndex, vec4(result.T_Max, 0.0));
+			imageStore(o_PositionImage, textureIndex, vec4(worldHitPosition.xyz, 0.0));
 		}
 	}
 }
