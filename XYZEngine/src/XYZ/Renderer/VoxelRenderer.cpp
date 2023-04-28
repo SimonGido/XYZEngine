@@ -124,7 +124,7 @@ namespace XYZ {
 		}
 	}
 
-	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, float voxelSize)
+	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform)
 	{
 		auto& drawCommand = m_DrawCommands[mesh->GetHandle()];
 		const auto& submeshes = mesh->GetSubmeshes();
@@ -134,17 +134,17 @@ namespace XYZ {
 			const glm::mat4 instanceTransform = transform * instance.Transform;
 			const VoxelSubmesh& submesh = submeshes[instance.SubmeshIndex];
 
-			if (cullSubmesh(submesh, instanceTransform, voxelSize))
+			if (cullSubmesh(submesh, instanceTransform))
 			{
 				m_Statistics.CulledModels++;
 				continue;
 			}
 
-			submitSubmesh(submesh, drawCommand, instanceTransform, voxelSize, instance.SubmeshIndex);
+			submitSubmesh(submesh, drawCommand, instanceTransform, instance.SubmeshIndex);
 		}	
 	}
 
-	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, const uint32_t* keyFrames, float voxelSize)
+	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, const uint32_t* keyFrames)
 	{
 		auto& drawCommand = m_DrawCommands[mesh->GetHandle()];
 		const auto& submeshes = mesh->GetSubmeshes();
@@ -156,19 +156,19 @@ namespace XYZ {
 			const VoxelSubmesh& submesh = submeshes[submeshIndex];
 			const glm::mat4 instanceTransform = transform * instance.Transform;
 
-			if (cullSubmesh(submesh, instanceTransform, voxelSize))
+			if (cullSubmesh(submesh, instanceTransform))
 			{
 				m_Statistics.CulledModels++;
 				continue;
 			}
 
-			submitSubmesh(submesh, drawCommand, instanceTransform, voxelSize, submeshIndex);
+			submitSubmesh(submesh, drawCommand, instanceTransform, submeshIndex);
 
 			index++;
 		}	
 	}
 
-	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, float voxelSize, bool cull)
+	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform,bool cull)
 	{
 		auto& drawCommand = m_DrawCommands[mesh->GetHandle()];
 		const auto& submeshes = mesh->GetSubmeshes();
@@ -178,12 +178,12 @@ namespace XYZ {
 			const glm::mat4 instanceTransform = transform * instance.Transform;
 			const VoxelSubmesh& submesh = submeshes[instance.SubmeshIndex];
 	
-			if (cull && cullSubmesh(submesh, instanceTransform, voxelSize))
+			if (cull && cullSubmesh(submesh, instanceTransform))
 			{
 				m_Statistics.CulledModels++;
 				continue;
 			}
-			submitSubmesh(submesh, drawCommand, instanceTransform, voxelSize, instance.SubmeshIndex);
+			submitSubmesh(submesh, drawCommand, instanceTransform, instance.SubmeshIndex);
 		}
 	}
 
@@ -239,18 +239,18 @@ namespace XYZ {
 	}
 
 	
-	bool VoxelRenderer::submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, float voxelSize, uint32_t submeshIndex)
+	void VoxelRenderer::submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, uint32_t submeshIndex)
 	{
-		const AABB aabb = VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, voxelSize);
+		const AABB aabb = VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, submesh.VoxelSize);
 
 		m_Statistics.ModelCount++;
 
-		const glm::vec3 aabbMax = glm::vec3(submesh.Width, submesh.Height, submesh.Depth) * voxelSize;
+		const glm::vec3 aabbMax = glm::vec3(submesh.Width, submesh.Height, submesh.Depth) * submesh.VoxelSize;
 
 		glm::vec3 centerTranslation = -glm::vec3(
-			submesh.Width / 2 * voxelSize,
-			submesh.Height / 2 * voxelSize,
-			submesh.Depth / 2 * voxelSize
+			submesh.Width / 2  * submesh.VoxelSize,
+			submesh.Height / 2 * submesh.VoxelSize,
+			submesh.Depth / 2  * submesh.VoxelSize
 		);
 		const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
 
@@ -268,12 +268,11 @@ namespace XYZ {
 		model.Width = submesh.Width;
 		model.Height = submesh.Height;
 		model.Depth = submesh.Depth;
-		model.VoxelSize = voxelSize;
+		model.VoxelSize = submesh.VoxelSize;
 
 		model.OriginInside = Math::PointInBox(model.RayOrigin, glm::vec3(0.0f), aabbMax);
 		
 		m_SSBOVoxelModels.NumModels++;
-		return true;
 	}
 
 	void VoxelRenderer::clearPass()
@@ -446,9 +445,9 @@ namespace XYZ {
 		});
 	}
 	
-	bool VoxelRenderer::cullSubmesh(const VoxelSubmesh& submesh, const glm::mat4& transform, float voxelSize) const
+	bool VoxelRenderer::cullSubmesh(const VoxelSubmesh& submesh, const glm::mat4& transform) const
 	{
-		const AABB aabb = VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, voxelSize);
+		const AABB aabb = VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, submesh.VoxelSize);
 		return !aabb.InsideFrustum(m_Frustum);
 
 	}

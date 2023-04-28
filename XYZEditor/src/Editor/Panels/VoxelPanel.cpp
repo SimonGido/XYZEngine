@@ -75,6 +75,7 @@ namespace XYZ {
 			submesh.Width = width;
 			submesh.Height = height;
 			submesh.Depth = depth;
+			submesh.VoxelSize = 1.5f;
 
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
 			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
@@ -104,6 +105,8 @@ namespace XYZ {
 			submesh.Width = 400;
 			submesh.Height = 100;
 			submesh.Depth = 400;
+			submesh.VoxelSize = 3.0f;
+
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
 			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
 
@@ -132,7 +135,7 @@ namespace XYZ {
 
 			m_ProceduralMesh->SetColorPallete(colorPallete);
 
-			colorPallete[1] = { 255, 255, 255, 255 };//Snow;
+			colorPallete[1] = { 255, 255, 255, 255 }; // Snow
 			m_SnowMesh->SetColorPallete(colorPallete);
 
 			uint32_t count = 50;
@@ -240,8 +243,8 @@ namespace XYZ {
 					m_EditorCamera.CreateFrustum()
 				});
 				
-				m_VoxelRenderer->SubmitMesh(m_SnowMesh, glm::mat4(1.0f), 1.5f, false);
-				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), 3.0f, false);
+				m_VoxelRenderer->SubmitMesh(m_SnowMesh, glm::mat4(1.0f), false);
+				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), false);
 
 				for (size_t i = 0; i < m_CastleTransforms.size(); ++i)
 				{
@@ -249,9 +252,9 @@ namespace XYZ {
 					const glm::mat4 knightTransform = m_KnightTransforms[i].GetLocalTransform();
 					const glm::mat4 deerTransform = m_DeerTransforms[i].GetLocalTransform();
 
-					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform, 1.0f);
-					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform, 1.0f);
-					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame, 1.0f);
+					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
+					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
+					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
 				}
 				
 				

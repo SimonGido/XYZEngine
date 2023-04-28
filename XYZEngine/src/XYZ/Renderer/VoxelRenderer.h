@@ -114,9 +114,9 @@ namespace XYZ {
 		
 		void SetViewportSize(uint32_t width, uint32_t height);
 
-		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, float voxelSize);
-		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, const uint32_t* keyFrames, float voxelSize);
-		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, float voxelSize, bool cull);
+		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform);
+		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, const uint32_t* keyFrames);
+		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, bool cull);
 
 		void OnImGuiRender();
 
@@ -166,7 +166,7 @@ namespace XYZ {
 		};
 
 	private:
-		bool submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, float voxelSize, uint32_t submeshIndex);
+		void submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, uint32_t submeshIndex);
 
 		void clearPass();
 		void renderPass();
@@ -182,7 +182,7 @@ namespace XYZ {
 		MeshAllocation& createMeshAllocation(const Ref<VoxelMesh>& mesh);	
 
 		void reallocateVoxels(const Ref<VoxelMesh>& mesh, MeshAllocation& allocation);
-		bool cullSubmesh(const VoxelSubmesh& submesh, const glm::mat4& transform, float voxelSize) const;
+		bool cullSubmesh(const VoxelSubmesh& submesh, const glm::mat4& transform) const;
 	private:
 		Ref<PrimaryRenderCommandBuffer> m_CommandBuffer;
 

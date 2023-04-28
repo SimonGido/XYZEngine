@@ -14,6 +14,7 @@ namespace XYZ {
 	struct VoxelSubmesh
 	{		
 		uint32_t Width, Height, Depth;
+		float VoxelSize = 1.0f;
 		std::vector<uint8_t> ColorIndices;
 	};
 
