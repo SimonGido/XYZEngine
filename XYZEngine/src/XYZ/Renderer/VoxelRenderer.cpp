@@ -102,8 +102,8 @@ namespace XYZ {
 
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
-		if (m_Snow)
-			snowPass();
+
+		snowPass();
 
 		effectPass();
 		clearPass();
@@ -411,7 +411,7 @@ namespace XYZ {
 	void VoxelRenderer::snowPass()
 	{
 		bool shouldSnow = m_SnowFramesCounter >= m_SnowFramesDelay;
-		if (shouldSnow && reqDispatchCounter == 0)
+		if (shouldSnow && reqDispatchCounter == 0 && m_Snow)
 		{
 			reqDispatchCounter = 3;
 			m_SnowFramesCounter = 0;
