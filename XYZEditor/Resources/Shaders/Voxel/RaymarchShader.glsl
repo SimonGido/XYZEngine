@@ -397,7 +397,6 @@ bool ValidPixel(ivec2 index)
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04);
 
-
 vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
 {
 	PBRParameters pbr;
@@ -412,7 +411,6 @@ vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
 	vec3 F0 = mix(Fdielectric, pbr.Albedo, pbr.Metalness);
 	return CalculateDirLight(F0, u_DirectionalLight, pbr);
 }
-
 
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
@@ -448,10 +446,12 @@ void main()
 			}
 
 			vec4 worldHitPosition = Models[i].Transform * vec4(result.T_Max, 1.0);
-			//result.Color.rgb = CalculateDirLights(worldHitPosition.xyz, result.Color.rgb, result.Normal);
+			vec3 normal = mat3(Models[i].Transform) * -result.Normal;
+
+			result.Color.rgb = CalculateDirLights(worldHitPosition.xyz, result.Color.rgb, normal);
 
 			imageStore(o_Image, textureIndex, result.Color); // Store color		
-			imageStore(o_NormalImage, textureIndex, vec4(result.Normal, 0.0));
+			imageStore(o_NormalImage, textureIndex, vec4(normal, 0.0));
 			imageStore(o_PositionImage, textureIndex, vec4(worldHitPosition.xyz, 0.0));
 		}
 	}

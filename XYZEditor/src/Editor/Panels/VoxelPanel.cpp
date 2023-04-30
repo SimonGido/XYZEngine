@@ -245,8 +245,8 @@ namespace XYZ {
 					m_EditorCamera.CreateFrustum()
 				});
 				
-				m_VoxelRenderer->SubmitMesh(m_SnowMesh, glm::mat4(1.0f), false);
 				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), false);
+				m_VoxelRenderer->SubmitMesh(m_SnowMesh, glm::mat4(1.0f), false);
 
 				for (size_t i = 0; i < m_CastleTransforms.size(); ++i)
 				{

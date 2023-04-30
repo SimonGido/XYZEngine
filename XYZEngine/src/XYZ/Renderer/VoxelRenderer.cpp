@@ -273,6 +273,7 @@ namespace XYZ {
 		VoxelModel& model = m_SSBOVoxelModels.Models[m_SSBOVoxelModels.NumModels];
 
 		model.Transform = transform * glm::translate(glm::mat4(1.0f), centerTranslation);
+
 		const glm::mat4 inverseTransform = glm::inverse(model.Transform);
 		model.InverseModelView = inverseTransform * m_UBVoxelScene.InverseView;
 		model.RayOrigin = inverseTransform * m_UBVoxelScene.CameraPosition;
@@ -365,6 +366,29 @@ namespace XYZ {
 
 	void VoxelRenderer::renderPass()
 	{
+		auto imageBarrier = [](Ref<VulkanPipelineCompute> pipeline, Ref<VulkanImage2D> image) {
+
+			Renderer::Submit([pipeline, image]() {
+				VkImageMemoryBarrier imageMemoryBarrier = {};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+				imageMemoryBarrier.image = image->GetImageInfo().Image;
+				imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+				vkCmdPipelineBarrier(
+					pipeline->GetActiveCommandBuffer(),
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+					0,
+					0, nullptr,
+					0, nullptr,
+					1, &imageMemoryBarrier);
+				});
+		};
+
+
 		Renderer::BeginPipelineCompute(
 			m_CommandBuffer,
 			m_RaymarchPipeline,
@@ -379,7 +403,13 @@ namespace XYZ {
 			m_WorkGroups.x, m_WorkGroups.y, 1
 		);
 
-		Renderer::EndPipelineCompute(m_RaymarchPipeline);
+
+		imageBarrier(m_RaymarchPipeline, m_OutputTexture->GetImage());
+		imageBarrier(m_RaymarchPipeline, m_NormalTexture->GetImage());
+		imageBarrier(m_RaymarchPipeline, m_DepthTexture->GetImage());
+		imageBarrier(m_RaymarchPipeline, m_PositionTexture->GetImage());
+
+		Renderer::EndPipelineCompute(m_RaymarchPipeline);		
 	}
 	void VoxelRenderer::ssaoPass()
 	{
@@ -434,7 +464,7 @@ namespace XYZ {
 				800 / TILE_SIZE, 800 / TILE_SIZE, 1,
 				PushConstBuffer
 				{
-					0u, 1u, randSeed
+					1u, 0u, randSeed
 				}
 			);
 
