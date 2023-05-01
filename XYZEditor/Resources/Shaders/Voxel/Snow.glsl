@@ -23,11 +23,10 @@ struct VoxelModel
 	uint  Height;
 	uint  Depth;
 	uint  ColorIndex;
+	uint  MaxTraverses;
 
 	float VoxelSize;
 	bool  OriginInside;
-
-	uint Padding[1];
 };
 
 layout (std140, binding = 16) uniform Scene
@@ -40,7 +39,6 @@ layout (std140, binding = 16) uniform Scene
 
 	// Light info
 	DirectionalLight u_DirectionalLight;
-	uint MaxTraverse;
 };
 
 
@@ -78,14 +76,15 @@ uint Index3D(ivec3 index, uint width, uint height)
 	return Index3D(index.x, index.y, index.z, width, height);
 }
 
-ivec3 GridScale(uint width0, uint height0, uint depth0, uint width1, uint height1, uint depth1)
+ivec3 GridScale(ivec3 size0, ivec3 size1)
 {
-	ivec3 scale = ivec3(
-		width0 / width1,
-		height0 / height1,
-		depth0 / depth1
-	);
-	return scale;
+	return size0 / size1;
+}
+ivec3 GridOffset(ivec3 size0, float voxelSize0, ivec3 size1, float voxelSize1)
+{
+	vec3 scaled = (size0 * voxelSize0) / voxelSize1;
+	ivec3 val = ivec3(size1 / 2) - ivec3(scaled / 2);
+	return val;
 }
 
 uint VoxelAlpha(uint voxel)
@@ -125,9 +124,12 @@ void main()
 	uint modelVoxelOffset = Models[u_Uniforms.ModelIndex].VoxelOffset;
 	uint collisionVoxelOffset = Models[u_Uniforms.CollisionModelIndex].VoxelOffset;
 
-	ivec3 gridScale = GridScale(
-		model.Width, model.Height, model.Depth,
-		collisionModel.Width, collisionModel.Height, collisionModel.Depth
+	float gridScale = collisionModel.VoxelSize / model.VoxelSize;
+	ivec3 gridOffset = GridOffset(
+		ivec3(model.Width, model.Height, model.Depth),
+		model.VoxelSize,
+		ivec3(collisionModel.Width, collisionModel.Height, collisionModel.Depth),
+		collisionModel.VoxelSize
 	);
 
 	for (int y = 1; y < model.Height; y++)
@@ -138,7 +140,7 @@ void main()
 			ivec3 downIndex = ivec3(index.x, index.y - 1, index.z);
 			if (!IsFilledVoxel(downIndex, u_Uniforms.ModelIndex))
 			{
-				ivec3 collisionIndex = downIndex / gridScale;
+				ivec3 collisionIndex = ivec3(downIndex / gridScale) + gridOffset;
 				if (!IsFilledVoxel(collisionIndex, u_Uniforms.CollisionModelIndex))
 				{
 					uint voxelIndex = Index3D(index, model.Width, model.Height) + modelVoxelOffset;
@@ -152,19 +154,20 @@ void main()
 				{
 					// Reset snow to the top of the grid			
 					float seed = float(u_Uniforms.RandSeed) * gl_GlobalInvocationID.x * gl_GlobalInvocationID.y;
-					bool shouldReset = Random(0.0, 10.0, seed) > 9.8;
-					if (shouldReset)
-					{
-						ivec3 upperIndex = ivec3(index.x, model.Height - 1, index.z);
-						uint voxelIndex = Index3D(index, model.Width, model.Height) + modelVoxelOffset;
-						uint upperVoxelIndex = Index3D(upperIndex, model.Width, model.Height) + modelVoxelOffset;
-						
-						uint8_t temp = Voxels[voxelIndex];
-						Voxels[voxelIndex] = uint8_t(Voxels[upperVoxelIndex]);
-						Voxels[upperVoxelIndex] = uint8_t(temp);
-					}		
+					//bool shouldReset = Random(0.0, 10.0, seed) > 9.8;
+					//if (shouldReset)
+					//{
+					//	ivec3 upperIndex = ivec3(index.x, model.Height - 1, index.z);
+					//	uint voxelIndex = Index3D(index, model.Width, model.Height) + modelVoxelOffset;
+					//	uint upperVoxelIndex = Index3D(upperIndex, model.Width, model.Height) + modelVoxelOffset;
+					//	
+					//	uint8_t temp = Voxels[voxelIndex];
+					//	Voxels[voxelIndex] = uint8_t(Voxels[upperVoxelIndex]);
+					//	Voxels[upperVoxelIndex] = uint8_t(temp);
+					//}		
 				}
 			}
+			break;
 		}
 	}
 }

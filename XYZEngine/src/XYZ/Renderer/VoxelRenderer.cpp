@@ -211,8 +211,7 @@ namespace XYZ {
 			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Direction), 0.1f);
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Radiance), 0.1f);
 			ImGui::DragFloat("Light Multiplier", &m_UBVoxelScene.DirectionalLight.Multiplier, 0.1f);
-			ImGui::DragInt("Max Traverses", (int*)&m_UBVoxelScene.MaxTraverses, 1, 0, 1024);
-
+			
 			ImGui::NewLine();
 			ImGui::DragFloat("SSAO SampleRadius", &m_SSAOValues.SampleRadius);
 			ImGui::DragFloat("SSAO Intensity", &m_SSAOValues.Intensity);
@@ -271,12 +270,12 @@ namespace XYZ {
 		cmdModel.ModelIndex = m_SSBOVoxelModels.NumModels;
 
 		VoxelModel& model = m_SSBOVoxelModels.Models[m_SSBOVoxelModels.NumModels];
-
 		model.Transform = transform * glm::translate(glm::mat4(1.0f), centerTranslation);
 
 		const glm::mat4 inverseTransform = glm::inverse(model.Transform);
 		model.InverseModelView = inverseTransform * m_UBVoxelScene.InverseView;
 		model.RayOrigin = inverseTransform * m_UBVoxelScene.CameraPosition;
+		model.MaxTraverses = submesh.MaxTraverses;
 		
 		model.Width = submesh.Width;
 		model.Height = submesh.Height;
@@ -461,7 +460,7 @@ namespace XYZ {
 			Renderer::DispatchCompute(
 				m_SnowPipeline,
 				nullptr,
-				800 / TILE_SIZE, 800 / TILE_SIZE, 1,
+				224 / TILE_SIZE, 224 / TILE_SIZE, 1,
 				PushConstBuffer
 				{
 					1u, 0u, randSeed

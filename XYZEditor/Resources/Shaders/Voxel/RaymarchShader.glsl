@@ -24,11 +24,10 @@ struct VoxelModel
 	uint  Height;
 	uint  Depth;
 	uint  ColorIndex;
+	uint  MaxTraverses;
 
 	float VoxelSize;
 	bool  OriginInside;
-
-	uint Padding[1];
 };
 
 layout (std140, binding = 16) uniform Scene
@@ -41,7 +40,6 @@ layout (std140, binding = 16) uniform Scene
 
 	// Light info
 	DirectionalLight u_DirectionalLight;
-	uint MaxTraverse;
 };
 
 
@@ -318,7 +316,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 	vec3 t_delta = voxelSize / direction * vec3(step);	
 
 
-	uint remainingTraverses = MaxTraverse;
+	uint remainingTraverses = Models[modelIndex].MaxTraverses;
 	
 	// Raymarch until we find first hit to determine default color
 	RaymarchHitResult hitResult = RayMarch(t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex, currentDistance);	

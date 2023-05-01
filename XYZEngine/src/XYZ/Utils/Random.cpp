@@ -3,8 +3,9 @@
 
 
 namespace XYZ {
-    static std::random_device s_Device;
-    static std::mt19937       s_RandEng(s_Device());
+
+    static thread_local std::random_device s_Device;
+    static thread_local std::mt19937       s_RandEng(s_Device());
  
 
     uint32_t RandomNumber(uint32_t min, uint32_t max)

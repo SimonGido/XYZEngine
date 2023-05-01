@@ -12,6 +12,8 @@
 #include "XYZ/Utils/Math/AABB.h"
 #include "XYZ/Utils/Math/Math.h"
 #include "XYZ/Utils/Math/Perlin.h"
+#include "XYZ/Utils/Math/SpaceColonization.h"
+#include "XYZ/Utils/Random.h"
 
 #include "XYZ/ImGui/ImGui.h"
 
@@ -31,13 +33,10 @@ namespace XYZ {
 	namespace Editor {
 
 		namespace Utils {
-			static std::random_device s_RandomDev; // obtain a random number from hardware
-			static std::mt19937 s_RandomGen(s_RandomDev());
-
+			
 			static uint8_t RandomColorIndex(uint32_t x = 0, uint32_t y = 255)
 			{
-				std::uniform_int_distribution<> distr(x, y); // define the range
-				return static_cast<uint8_t>(distr(s_RandomGen));
+				return static_cast<uint8_t>(RandomNumber(x, y));
 			}
 
 
@@ -76,6 +75,7 @@ namespace XYZ {
 			submesh.Height = height;
 			submesh.Depth = depth;
 			submesh.VoxelSize = voxelSize;
+			submesh.MaxTraverses = 300;
 
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
 			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
@@ -103,9 +103,10 @@ namespace XYZ {
 
 			VoxelSubmesh submesh;
 			submesh.Width = 400;
-			submesh.Height = 100;
+			submesh.Height = 200;
 			submesh.Depth = 400;
 			submesh.VoxelSize = 3.0f;
+			submesh.MaxTraverses = 512;
 
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
 			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
@@ -118,7 +119,7 @@ namespace XYZ {
 			m_ProceduralMesh->SetSubmeshes({ submesh });
 			m_ProceduralMesh->SetInstances({ instance });
 			
-			m_SnowMesh->SetSubmeshes({ GenerateSnow(800, 200, 800, 1.5f) });
+			m_SnowMesh->SetSubmeshes({ GenerateSnow(224, 600, 224, 1.0f) });
 			m_SnowMesh->SetInstances({ instance });
 
 
@@ -162,6 +163,12 @@ namespace XYZ {
 				xOffset += 30.0f;
 			}
 			pushGenerateVoxelMeshJob();
+
+			SpaceColonization colon;
+			colon.GenerateAttractors(10, 10, glm::vec3(0, 30, 0));
+
+			colon.Update();
+
 		}
 
 		VoxelPanel::~VoxelPanel()
@@ -329,9 +336,9 @@ namespace XYZ {
 					seed, frequency, octaves,
 					width, heigth, depth
 				);
-			m_Generating = false;
-			return result;
-				});
+				m_Generating = false;
+				return result;
+			});
 		}
 
 		std::vector<uint8_t> VoxelPanel::generateVoxelMesh(
@@ -360,6 +367,12 @@ namespace XYZ {
 				}
 			}
 			return result;
+		}
+		std::vector<uint8_t> VoxelPanel::generateVoxelTree(uint32_t seed, uint32_t width, uint32_t height, uint32_t depth)
+		{
+			const uint32_t chanceToExpandRoot = 60; // %
+
+			return std::vector<uint8_t>();
 		}
 	}
 }

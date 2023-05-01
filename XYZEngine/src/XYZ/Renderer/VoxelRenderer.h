@@ -34,8 +34,6 @@ namespace XYZ {
 		// Light info
 		DirectionalLight DirectionalLight;
 
-		uint32_t MaxTraverses = 512;
-
 
 		static constexpr uint32_t Binding = 16;
 		static constexpr uint32_t Set = 0;
@@ -65,11 +63,10 @@ namespace XYZ {
 		uint32_t	Height;
 		uint32_t	Depth;
 		uint32_t    ColorIndex;
+		uint32_t    MaxTraverses;
 
 		float		VoxelSize;
 		Bool32		OriginInside; // Check if we start raycasting from inside grid
-
-		Padding<4> Padding;
 	};
 
 	struct SSBOVoxelModels

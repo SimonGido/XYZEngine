@@ -22,6 +22,7 @@ namespace XYZ {
 		submesh.Width = voxModel->size_x;
 		submesh.Height = voxModel->size_y;
 		submesh.Depth = voxModel->size_z;
+		submesh.MaxTraverses = submesh.Width + submesh.Height + submesh.Depth;
 
 		for (uint32_t x = 0; x < voxModel->size_x; ++x)
 		{

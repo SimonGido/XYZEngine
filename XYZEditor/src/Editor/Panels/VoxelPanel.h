@@ -47,6 +47,11 @@ namespace XYZ {
 				uint32_t width, uint32_t height, uint32_t depth
 			);
 
+
+			static std::vector<uint8_t> generateVoxelTree(
+				uint32_t seed, uint32_t width, uint32_t height, uint32_t depth
+			);
+
 		private:
 			Ref<VoxelRenderer>			m_VoxelRenderer;
 			glm::vec2				    m_ViewportSize;
