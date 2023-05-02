@@ -67,8 +67,7 @@ namespace XYZ {
 		props.SamplerWrap = TextureWrap::Clamp;
 		m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, 1280, 720, nullptr, props);
-		m_NormalTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
-		m_PositionTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
+		m_SSGITexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		createDefaultPipelines();
 
 
@@ -108,8 +107,8 @@ namespace XYZ {
 		effectPass();
 		clearPass();
 		renderPass();
-		if (m_UseSSAO)
-			ssaoPass();
+		if (m_UseSSGI)
+			ssgiPass();
 
 		m_CommandBuffer->EndTimestampQuery(m_GPUTimeQueries.GPUTime);
 
@@ -192,6 +191,8 @@ namespace XYZ {
 
 	Ref<Image2D> VoxelRenderer::GetFinalPassImage() const
 	{
+		if (m_UseSSGI)
+			return m_SSGITexture->GetImage();
 		return m_OutputTexture->GetImage();
 	}
 	
@@ -213,13 +214,11 @@ namespace XYZ {
 			ImGui::DragFloat("Light Multiplier", &m_UBVoxelScene.DirectionalLight.Multiplier, 0.1f);
 			
 			ImGui::NewLine();
-			ImGui::DragFloat("SSAO SampleRadius", &m_SSAOValues.SampleRadius);
-			ImGui::DragFloat("SSAO Intensity", &m_SSAOValues.Intensity);
-			ImGui::DragFloat("SSAO Scale", &m_SSAOValues.Scale);
-			ImGui::DragFloat("SSAO Bias", &m_SSAOValues.Bias);
-			ImGui::DragInt("SSAO Iterations", &m_SSAOValues.NumIterations);
-		
-			ImGui::Checkbox("SSAO", &m_UseSSAO);
+			ImGui::DragInt("SSGI SampleCount", (int*) &m_SSGIValues.SampleCount, 1, 0, 20);
+			ImGui::DragFloat("SSGI IndirectAmount", &m_SSGIValues.IndirectAmount);
+			ImGui::DragFloat("SSGI NoiseAmount", &m_SSGIValues.NoiseAmount);
+			ImGui::Checkbox("SSGI Noise", (bool*)&m_SSGIValues.Noise);
+			ImGui::Checkbox("SSGI", &m_UseSSGI);
 			ImGui::NewLine();
 
 			ImGui::DragInt("Snow Frames Delay", (int*)&m_SnowFramesDelay);
@@ -404,33 +403,31 @@ namespace XYZ {
 
 
 		imageBarrier(m_RaymarchPipeline, m_OutputTexture->GetImage());
-		imageBarrier(m_RaymarchPipeline, m_NormalTexture->GetImage());
 		imageBarrier(m_RaymarchPipeline, m_DepthTexture->GetImage());
-		imageBarrier(m_RaymarchPipeline, m_PositionTexture->GetImage());
 
 		Renderer::EndPipelineCompute(m_RaymarchPipeline);		
 	}
-	void VoxelRenderer::ssaoPass()
+	void VoxelRenderer::ssgiPass()
 	{
 		Renderer::BeginPipelineCompute(
 			m_CommandBuffer,
-			m_SSAOPipeline,
+			m_SSGIPipeline,
 			m_UniformBufferSet,
 			nullptr,
-			m_SSAOMaterial
+			m_SSGIMaterial
 		);
 		
 		Renderer::DispatchCompute(
-			m_SSAOPipeline,
+			m_SSGIPipeline,
 			nullptr,
 			m_WorkGroups.x, m_WorkGroups.y, 1,
 			PushConstBuffer
 			{
-				m_SSAOValues
+				m_SSGIValues
 			}
 		);
 		
-		Renderer::EndPipelineCompute(m_SSAOPipeline);
+		Renderer::EndPipelineCompute(m_SSGIPipeline);
 	}
 
 
@@ -482,20 +479,17 @@ namespace XYZ {
 			props.SamplerWrap = TextureWrap::Clamp;
 			m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
-			m_NormalTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
-			m_PositionTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
-
+			m_SSGITexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
+			
 			m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
-			m_RaymarchMaterial->SetImage("o_NormalImage", m_NormalTexture->GetImage());
-			m_RaymarchMaterial->SetImage("o_PositionImage", m_PositionTexture->GetImage());
 
 			m_ClearMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_ClearMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
 		
-			m_SSAOMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
-			m_SSAOMaterial->SetImage("u_NormalImage", m_NormalTexture->GetImage());
-			m_SSAOMaterial->SetImage("u_PositionImage", m_PositionTexture->GetImage());
+			m_SSGIMaterial->SetImage("u_Image", m_OutputTexture->GetImage());
+			m_SSGIMaterial->SetImage("u_DepthImage", m_DepthTexture->GetImage());
+			m_SSGIMaterial->SetImage("o_SSGIImage", m_SSGITexture->GetImage());
 
 			m_UBVoxelScene.ViewportSize.x = m_ViewportSize.x;
 			m_UBVoxelScene.ViewportSize.y = m_ViewportSize.y;
@@ -566,8 +560,6 @@ namespace XYZ {
 
 		m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 		m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
-		m_RaymarchMaterial->SetImage("o_NormalImage", m_NormalTexture->GetImage());
-		m_RaymarchMaterial->SetImage("o_PositionImage", m_PositionTexture->GetImage());
 		PipelineComputeSpecification spec;
 		spec.Shader = shader;
 	
@@ -583,14 +575,14 @@ namespace XYZ {
 		m_ClearPipeline = PipelineCompute::Create(spec);
 
 
-		Ref<Shader> ssaoShader = Shader::Create("Resources/Shaders/Voxel/SSAO.glsl");
-		m_SSAOMaterial = Material::Create(ssaoShader);
-		m_SSAOMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
-		m_SSAOMaterial->SetImage("u_NormalImage", m_NormalTexture->GetImage());
-		m_SSAOMaterial->SetImage("u_PositionImage", m_PositionTexture->GetImage());
+		Ref<Shader> ssgiShader = Shader::Create("Resources/Shaders/Voxel/SSGI.glsl");
+		m_SSGIMaterial = Material::Create(ssgiShader);
+		m_SSGIMaterial->SetImage("u_Image", m_OutputTexture->GetImage());
+		m_SSGIMaterial->SetImage("u_DepthImage", m_DepthTexture->GetImage());
+		m_SSGIMaterial->SetImage("o_SSGIImage", m_SSGITexture->GetImage());
 
-		spec.Shader = ssaoShader;
-		m_SSAOPipeline = PipelineCompute::Create(spec);
+		spec.Shader = ssgiShader;
+		m_SSGIPipeline = PipelineCompute::Create(spec);
 
 
 		Ref<Shader> snowShader = Shader::Create("Resources/Shaders/Voxel/Snow.glsl");

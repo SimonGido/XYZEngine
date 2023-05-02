@@ -170,13 +170,12 @@ namespace XYZ {
 			uint32_t CulledModels = 0;
 		};
 
-		struct SSAOValues
+		struct SSGIValues
 		{
-			float SampleRadius = 1.0f;
-			float Intensity = 1.0f;
-			float Scale = 1.0f;
-			float Bias = 1.0f;
-			int32_t NumIterations = 4;
+			uint32_t SampleCount = 10;
+			float	 IndirectAmount = 1.0f;
+			float	 NoiseAmount = 2.0f;
+			Bool32   Noise = true;
 		};
 
 	private:
@@ -185,7 +184,7 @@ namespace XYZ {
 		void clearPass();
 		void effectPass();
 		void renderPass();
-		void ssaoPass();
+		void ssgiPass();
 		void snowPass();
 
 		void updateViewportSize();
@@ -208,8 +207,8 @@ namespace XYZ {
 		Ref<PipelineCompute>	m_ClearPipeline;
 		Ref<Material>			m_ClearMaterial;
 
-		Ref<PipelineCompute>	m_SSAOPipeline;
-		Ref<Material>			m_SSAOMaterial;
+		Ref<PipelineCompute>	m_SSGIPipeline;
+		Ref<Material>			m_SSGIMaterial;
 
 		Ref<StorageBufferSet>	m_StorageBufferSet;
 		Ref<UniformBufferSet>	m_UniformBufferSet;
@@ -225,15 +224,14 @@ namespace XYZ {
 
 		Ref<Texture2D>			m_OutputTexture;
 		Ref<Texture2D>			m_DepthTexture;
-		Ref<Texture2D>			m_NormalTexture;
-		Ref<Texture2D>			m_PositionTexture;
+		Ref<Texture2D>			m_SSGITexture;
 
 		UBVoxelScene			m_UBVoxelScene;
 		SSBOVoxels				m_SSBOVoxels;
 		SSBOVoxelModels			m_SSBOVoxelModels;
 		SSBOColors				m_SSBOColors;
 
-		SSAOValues				m_SSAOValues;
+		SSGIValues				m_SSGIValues;
 		Math::Frustum			m_Frustum;
 
 		glm::ivec2				m_ViewportSize;
@@ -242,7 +240,7 @@ namespace XYZ {
 
 		Statistics				m_Statistics;
 	
-		bool					m_UseSSAO = false;
+		bool					m_UseSSGI = false;
 
 		bool					m_Snow = false;
 		uint32_t				m_SnowFramesDelay = 0;

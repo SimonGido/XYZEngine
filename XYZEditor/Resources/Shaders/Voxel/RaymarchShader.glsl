@@ -61,8 +61,6 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 
 layout(binding = 20, rgba32f) uniform image2D o_Image;
 layout(binding = 21, r32f) uniform image2D o_DepthImage;
-layout(binding = 22, rgba32f) uniform image2D o_NormalImage;
-layout(binding = 23, rgba32f) uniform image2D o_PositionImage;
 
 struct Ray
 {
@@ -82,7 +80,7 @@ Ray CreateRay(vec2 coords, uint modelIndex)
 	ray.Origin = Models[modelIndex].RayOrigin.xyz;
 
 	ray.Direction = vec3(Models[modelIndex].InverseModelView * vec4(normalize(target.xyz / target.w), 0)); // World space
-	ray.Direction = normalize(ray.Direction);
+	ray.Direction = normalize(ray.Direction) + EPSILON;
 
 	return ray;
 }
@@ -97,7 +95,7 @@ Ray CreateCameraRay(vec2 coords)
 	ray.Origin = u_CameraPosition.xyz;
 
 	ray.Direction = vec3(u_InverseView * vec4(normalize(vec3(target) / target.w), 0)); // World space
-	ray.Direction = normalize(ray.Direction);
+	ray.Direction = normalize(ray.Direction) + EPSILON;
 
 	return ray;
 }
@@ -146,59 +144,15 @@ uint VoxelAlpha(uint voxel)
 	return bitfieldExtract(voxel, 24, 8);
 }
 
-struct BoxIntersectionResult
-{
-	float T;
-	bool Hit;
-};
-
-BoxIntersectionResult RayBoxIntersection(vec3 origin, vec3 direction, vec3 lb, vec3 rt)
-{
-	BoxIntersectionResult result;
-	result.Hit = false;
-	vec3 dirfrac;
-    // r.dir is unit direction vector of ray
-    dirfrac.x = 1.0 / direction.x;
-    dirfrac.y = 1.0 / direction.y;
-    dirfrac.z = 1.0 / direction.z;
-    // lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
-    // r.org is origin of ray
-    float t1 = (lb.x - origin.x) * dirfrac.x;
-    float t2 = (rt.x - origin.x) * dirfrac.x;
-    float t3 = (lb.y - origin.y) * dirfrac.y;
-    float t4 = (rt.y - origin.y) * dirfrac.y;
-    float t5 = (lb.z - origin.z) * dirfrac.z;
-    float t6 = (rt.z - origin.z) * dirfrac.z;
-
-    float tmin = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
-    float tmax = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
-
-    // if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
-    if (tmax < 0.0)
-    {
-        result.T = tmax;
-        result.Hit = false;
-		return result;
-    }
-
-    // if tmin > tmax, ray doesn't intersect AABB
-    if (tmin > tmax)
-    {
-        result.T = tmax;
-        result.Hit = false;
-		return result;
-    }
-    result.T = tmin;
-	result.Hit = true;
-	return result;
-}
-
 float VoxelDistanceFromRay(vec3 origin, vec3 direction, ivec3 voxel, float voxelSize)
 {
 	vec3 boxMin = vec3(voxel.x * voxelSize, voxel.y * voxelSize, voxel.z * voxelSize);
 	vec3 boxMax = boxMin + voxelSize;
-
-	return RayBoxIntersection(origin, direction, boxMin, boxMax).T;
+	float dist;
+	if (RayBoxIntersection(origin, direction, boxMin, boxMax, dist))
+		return dist;
+	else
+		return FLT_MAX;
 }
 
 bool DistanceTest(ivec3 voxel, float voxelSize, float currentDistance, out float newDistance)
@@ -367,11 +321,10 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 	return result;
 }
 
-BoxIntersectionResult RayModelIntersection(inout vec3 origin, vec3 direction, uint modelIndex)
+bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, uint modelIndex)
 {
-	BoxIntersectionResult boxIntersection;
-	boxIntersection.Hit = Models[modelIndex].OriginInside; // Default is true in case origin is inside
-	if (!boxIntersection.Hit)
+	bool result = Models[modelIndex].OriginInside; // Default is true in case origin is inside
+	if (!result)
 	{
 		float width  = float(Models[modelIndex].Width);
 		float height = float(Models[modelIndex].Height);
@@ -381,10 +334,11 @@ BoxIntersectionResult RayModelIntersection(inout vec3 origin, vec3 direction, ui
 		vec3 boxMin = vec3(0,0,0);
 		vec3 boxMax = vec3(width, height, depth) * voxelSize;
 		// Check if we are intersecting with grid
-		boxIntersection = RayBoxIntersection(origin, direction, boxMin, boxMax);
-		origin = origin + direction * (boxIntersection.T - EPSILON); // Move origin to first intersection
+		float dist;
+		result = RayBoxIntersection(origin, direction, boxMin, boxMax, dist);
+		origin = origin + direction * (dist - EPSILON); // Move origin to first intersection
 	}
-	return boxIntersection;
+	return result;
 }
 
 bool ValidPixel(ivec2 index)
@@ -414,9 +368,6 @@ layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
-	imageStore(o_NormalImage, textureIndex, vec4(0,0,0,0)); // Clear normal image
-	imageStore(o_PositionImage, textureIndex, vec4(0,0,0,0)); // Clear position image
-
 	for (uint i = 0; i < NumModels; i++)
 	{
 		g_Ray = CreateRay(textureIndex, i);
@@ -424,8 +375,7 @@ void main()
 		vec3 direction = g_Ray.Direction;
 
 		// Check if ray intersects with model and move origin of ray
-		BoxIntersectionResult intersect = RayModelIntersection(origin, direction, i);
-		if (!intersect.Hit)
+		if (!ResolveRayModelIntersection(origin, direction, i))
 			continue;
 
 		float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
@@ -444,13 +394,11 @@ void main()
 			}
 
 			vec4 worldHitPosition = Models[i].Transform * vec4(result.T_Max, 1.0);
-			vec3 normal = mat3(Models[i].Transform) * -result.Normal;
+			vec3 worldNormal = mat3(Models[i].Transform) * -result.Normal;
 
-			result.Color.rgb = CalculateDirLights(worldHitPosition.xyz, result.Color.rgb, normal);
+			result.Color.rgb = CalculateDirLights(worldHitPosition.xyz, result.Color.rgb, worldNormal);
 
 			imageStore(o_Image, textureIndex, result.Color); // Store color		
-			imageStore(o_NormalImage, textureIndex, vec4(normal, 0.0));
-			imageStore(o_PositionImage, textureIndex, vec4(worldHitPosition.xyz, 0.0));
 		}
 	}
 }

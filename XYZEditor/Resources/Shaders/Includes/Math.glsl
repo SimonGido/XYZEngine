@@ -165,3 +165,39 @@ vec3 RandomValue(in vec2 xy, in float seed)
     result.z = GoldNoise(xy, result.y + seed);
     return result;
 }
+
+bool RayBoxIntersection(vec3 origin, vec3 direction, vec3 lb, vec3 rt, out float t)
+{
+	vec3 dirfrac;
+    // r.dir is unit direction vector of ray
+    dirfrac.x = 1.0 / direction.x;
+    dirfrac.y = 1.0 / direction.y;
+    dirfrac.z = 1.0 / direction.z;
+    // lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
+    // r.org is origin of ray
+    float t1 = (lb.x - origin.x) * dirfrac.x;
+    float t2 = (rt.x - origin.x) * dirfrac.x;
+    float t3 = (lb.y - origin.y) * dirfrac.y;
+    float t4 = (rt.y - origin.y) * dirfrac.y;
+    float t5 = (lb.z - origin.z) * dirfrac.z;
+    float t6 = (rt.z - origin.z) * dirfrac.z;
+
+    float tmin = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
+    float tmax = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
+
+    // if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
+    if (tmax < 0.0)
+    {
+        t = tmax;
+        return false;
+    }
+
+    // if tmin > tmax, ray doesn't intersect AABB
+    if (tmin > tmax)
+    {
+        t = tmax;
+        return false;
+    }
+    t = tmin;
+	return true;
+}
