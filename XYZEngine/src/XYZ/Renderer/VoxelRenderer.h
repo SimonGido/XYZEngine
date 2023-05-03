@@ -34,7 +34,6 @@ namespace XYZ {
 		// Light info
 		DirectionalLight DirectionalLight;
 
-
 		static constexpr uint32_t Binding = 16;
 		static constexpr uint32_t Set = 0;
 	};
@@ -119,7 +118,6 @@ namespace XYZ {
 
 		void OnImGuiRender();
 
-
 		uint32_t	 GetModelCount() const { return m_SSBOVoxelModels.NumModels; }
 		Ref<Image2D> GetFinalPassImage() const;
 	private:
@@ -162,6 +160,12 @@ namespace XYZ {
 		{
 			StorageBufferAllocation VoxelAllocation;
 			StorageBufferAllocation	ColorAllocation;
+		};
+
+		struct UpdatedSuballocation
+		{
+			uint32_t Offset;
+			uint32_t Size;
 		};
 
 		struct Statistics
@@ -255,6 +259,7 @@ namespace XYZ {
 		std::unordered_map<AssetHandle, Ref<PipelineCompute>> m_EffectPipelines;
 
 		std::vector<UpdatedAllocation> m_UpdatedAllocations;
+		std::vector<UpdatedSuballocation> m_UpdatedSuballocations;
 
 		struct GPUTimeQueries
 		{

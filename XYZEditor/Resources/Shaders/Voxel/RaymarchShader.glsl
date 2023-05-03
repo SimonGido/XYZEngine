@@ -13,6 +13,7 @@ const float EPSILON = 0.01;
 const uint OPAQUE = 255;
 
 
+
 struct VoxelModel
 {
 	mat4  InverseModelView;
@@ -68,7 +69,6 @@ struct Ray
 	vec3 Direction;
 };
 
-Ray g_Ray;
 
 Ray CreateRay(vec2 coords, uint modelIndex)
 {
@@ -155,9 +155,9 @@ float VoxelDistanceFromRay(vec3 origin, vec3 direction, ivec3 voxel, float voxel
 		return FLT_MAX;
 }
 
-bool DistanceTest(ivec3 voxel, float voxelSize, float currentDistance, out float newDistance)
+bool DistanceTest(Ray ray, ivec3 voxel, float voxelSize, float currentDistance, out float newDistance)
 {
-	newDistance = VoxelDistanceFromRay(g_Ray.Origin, g_Ray.Direction, voxel, voxelSize);		
+	newDistance = VoxelDistanceFromRay(ray.Origin,ray.Direction, voxel, voxelSize);		
 	return newDistance < currentDistance;
 }
 
@@ -184,7 +184,7 @@ struct RaymarchResult
 	bool  Hit;
 };
 
-RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, uint modelIndex, float currentDistance)
+RaymarchHitResult RayMarch(Ray ray, vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 step, uint maxTraverses, uint modelIndex, float currentDistance)
 {
 	RaymarchHitResult result;
 	result.Hit = false;
@@ -220,7 +220,7 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 
 		if (IsValidVoxel(current_voxel, width, height, depth))
 		{
-			if (!DistanceTest(current_voxel, voxelSize, currentDistance, result.Distance))
+			if (!DistanceTest(ray, current_voxel, voxelSize, currentDistance, result.Distance))
 				break;
 
 			uint voxelIndex = Index3D(current_voxel, width, height) + voxelOffset;
@@ -243,7 +243,7 @@ RaymarchHitResult RayMarch(vec3 t_max, vec3 t_delta, ivec3 current_voxel, ivec3 
 	return result;
 }
 
-RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float currentDistance)
+RaymarchResult RayMarch(Ray ray, vec3 origin, vec3 direction, uint modelIndex, float currentDistance)
 {
 	RaymarchResult result;
 	result.OpaqueHit = false;
@@ -273,7 +273,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 	uint remainingTraverses = Models[modelIndex].MaxTraverses;
 	
 	// Raymarch until we find first hit to determine default color
-	RaymarchHitResult hitResult = RayMarch(t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex, currentDistance);	
+	RaymarchHitResult hitResult = RayMarch(ray, t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex, currentDistance);	
 	remainingTraverses -= hitResult.TraverseCount;
 
 
@@ -299,7 +299,7 @@ RaymarchResult RayMarch(vec3 origin, vec3 direction, uint modelIndex, float curr
 		if (result.OpaqueHit) // Opaque hit => stop raymarching
 			break;
 
-		hitResult = RayMarch(hitResult.T_Max, t_delta, hitResult.CurrentVoxel, step, remainingTraverses, modelIndex, currentDistance);	
+		hitResult = RayMarch(ray, hitResult.T_Max, t_delta, hitResult.CurrentVoxel, step, remainingTraverses, modelIndex, currentDistance);	
 		newDistance = hitResult.Distance; // Store raymarch distance
 		if (newDistance > currentDistance) // if new depth is bigger than currentDepth it means there is something in front of us
 			break;
@@ -364,22 +364,23 @@ vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
 	return CalculateDirLight(F0, u_DirectionalLight, pbr);
 }
 
+
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
 	for (uint i = 0; i < NumModels; i++)
 	{
-		g_Ray = CreateRay(textureIndex, i);
-		vec3 origin = g_Ray.Origin;
-		vec3 direction = g_Ray.Direction;
+		Ray ray = CreateRay(textureIndex, i);
+		vec3 origin = ray.Origin;
+		vec3 direction = ray.Direction;
 
 		// Check if ray intersects with model and move origin of ray
 		if (!ResolveRayModelIntersection(origin, direction, i))
 			continue;
 
 		float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
-		RaymarchResult result = RayMarch(origin, direction, i, currentDistance);
+		RaymarchResult result = RayMarch(ray, origin, direction, i, currentDistance);
 
 		if (result.Hit)
 		{			

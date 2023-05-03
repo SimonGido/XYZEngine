@@ -457,10 +457,10 @@ namespace XYZ {
 			Renderer::DispatchCompute(
 				m_SnowPipeline,
 				nullptr,
-				224 / TILE_SIZE, 224 / TILE_SIZE, 1,
+				800 / TILE_SIZE, 800 / TILE_SIZE, 1,
 				PushConstBuffer
 				{
-					1u, 0u, randSeed
+					0u, 2u, randSeed
 				}
 			);
 
@@ -550,7 +550,14 @@ namespace XYZ {
 			m_StorageBufferSet->UpdateEachFrame(voxelData, updated.VoxelAllocation.GetSize(), updated.VoxelAllocation.GetOffset(), SSBOVoxels::Binding, SSBOVoxels::Set);
 			m_StorageBufferSet->UpdateEachFrame(colorData, updated.ColorAllocation.GetSize(), updated.ColorAllocation.GetOffset(), SSBOColors::Binding, SSBOColors::Set);
 		}
+		for (const auto& updated : m_UpdatedSuballocations)
+		{
+			void* voxelData = &m_SSBOVoxels.Voxels[updated.Offset];
+			m_StorageBufferSet->UpdateEachFrame(voxelData, updated.Size, updated.Offset, SSBOVoxels::Binding, SSBOVoxels::Set);
+		}
 		m_UpdatedAllocations.clear();
+		m_UpdatedSuballocations.clear();
+
 		m_StorageBufferSet->Update((void*)&m_SSBOVoxelModels, voxelModelsUpdateSize, 0, SSBOVoxelModels::Binding, SSBOVoxelModels::Set);
 	}
 	void VoxelRenderer::createDefaultPipelines()
@@ -659,6 +666,20 @@ namespace XYZ {
 			memcpy(m_SSBOColors.ColorPallete[colorPalleteIndex], mesh->GetColorPallete().data(), colorSize);
 
 			m_UpdatedAllocations.push_back({ allocation.VoxelAllocation, allocation.ColorAllocation });
+		}
+		else
+		{
+			auto ranges = mesh->DirtySubmeshes();
+			for (auto& [submeshIndex, range] : ranges)
+			{
+				const uint32_t offset = allocation.SubmeshOffsets[submeshIndex] + range.Start;
+				const uint32_t voxelCount = range.End - range.Start;
+				const VoxelSubmesh& submesh = mesh->GetSubmeshes()[submeshIndex];
+				const uint8_t* updateVoxelData = &submesh.ColorIndices.data()[range.Start];
+
+				memcpy(&m_SSBOVoxels.Voxels[offset], updateVoxelData, voxelCount * sizeof(uint8_t));
+				m_UpdatedSuballocations.push_back({ offset, voxelCount });
+			}
 		}
 	}
 

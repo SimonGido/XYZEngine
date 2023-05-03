@@ -99,12 +99,11 @@ namespace XYZ {
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f)
 		{
 			m_ProceduralMesh = Ref<VoxelProceduralMesh>::Create();
-			m_SnowMesh = Ref<VoxelProceduralMesh>::Create();
 
 			VoxelSubmesh submesh;
-			submesh.Width = 400;
-			submesh.Height = 200;
-			submesh.Depth = 400;
+			submesh.Width = 512;
+			submesh.Height = 400;
+			submesh.Depth = 512;
 			submesh.VoxelSize = 3.0f;
 			submesh.MaxTraverses = 512;
 
@@ -118,10 +117,6 @@ namespace XYZ {
 			
 			m_ProceduralMesh->SetSubmeshes({ submesh });
 			m_ProceduralMesh->SetInstances({ instance });
-			
-			m_SnowMesh->SetSubmeshes({ GenerateSnow(224, 600, 224, 1.0f) });
-			m_SnowMesh->SetInstances({ instance });
-
 
 
 			m_DeerMesh   = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));
@@ -129,18 +124,14 @@ namespace XYZ {
 			m_KnightMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/chr_knight.vox"));
 				
 			auto colorPallete = m_KnightMesh->GetColorPallete();
-			colorPallete[1].R = 0;
-			colorPallete[1].G = 150;
-			colorPallete[1].B = 250;
-			colorPallete[1].A = 150;
-
-			colorPallete[5] = { 1, 60, 32, 255 };
+			
+			colorPallete[Water] = { 0, 150, 250, 150 };
+			colorPallete[Snow] = { 255, 255, 255, 255 }; // Snow
+			colorPallete[Grass] = { 1, 60, 32, 255 }; // Grass
 
 			m_ProceduralMesh->SetColorPallete(colorPallete);
 
-			colorPallete[1] = { 255, 255, 255, 255 }; // Snow
-			m_SnowMesh->SetColorPallete(colorPallete);
-
+	
 			uint32_t count = 50;
 			m_CastleTransforms.resize(count);
 			m_KnightTransforms.resize(count);
@@ -252,8 +243,16 @@ namespace XYZ {
 					m_EditorCamera.CreateFrustum()
 				});
 				
+				if (Input::IsKeyPressed(KeyCode::KEY_SPACE))
+				{
+					auto& submesh = m_ProceduralMesh->GetSubmeshes()[0];
+					for (uint32_t y = 0; y < 400; ++y)
+					{
+						m_ProceduralMesh->SetVoxelColor(0, 400, y, 400, RandomNumber(5u, 255u));
+					}
+				}
+
 				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), false);
-				m_VoxelRenderer->SubmitMesh(m_SnowMesh, glm::mat4(1.0f), false);
 
 				for (size_t i = 0; i < m_CastleTransforms.size(); ++i)
 				{
@@ -361,9 +360,14 @@ namespace XYZ {
 
 					for (uint32_t y = 0; y < genHeight; ++y)
 					{
-						result[Utils::Index3D(x, y, z, width, height)] = 5;						
+						result[Utils::Index3D(x, y, z, width, height)] = Grass;						
 					}
-					result[Utils::Index3D(x, 40, z, width, height)] = 1; // Water
+
+					if (Utils::RandomColorIndex(0, 20) == 0) // % chance to generate snow voxel
+					{
+						result[Utils::Index3D(x, height - 1, z, width, height)] = Snow; // Snow
+					}
+					result[Utils::Index3D(x, 150, z, width, height)] = Water; // Water
 				}
 			}
 			return result;

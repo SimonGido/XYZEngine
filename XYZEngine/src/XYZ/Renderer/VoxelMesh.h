@@ -23,7 +23,15 @@ namespace XYZ {
 		virtual uint32_t GetNumVoxels() const = 0;
 
 	protected:
+		struct DirtyRange
+		{
+			uint32_t Start = std::numeric_limits<uint32_t>::max();
+			uint32_t End = 0;
+		};
+
+
 		virtual bool NeedUpdate() const = 0;
+		virtual std::unordered_map<uint32_t, DirtyRange> DirtySubmeshes() const { return {}; }
 
 		friend class VoxelRenderer;
 	};
@@ -65,21 +73,29 @@ namespace XYZ {
 		void SetInstances(const std::vector<VoxelInstance>& instances);
 		void SetColorPallete(const std::array<VoxelColor, 256>& pallete);
 
+
+		void SetVoxelColor(uint32_t submeshIndex, uint32_t x, uint32_t y, uint32_t z, uint8_t value);
+
 		virtual const std::array<VoxelColor, 256>& GetColorPallete() const override;
 		virtual const std::vector<VoxelSubmesh>& GetSubmeshes() const override;
 		virtual const std::vector<VoxelInstance>& GetInstances() const override;
 		virtual const AssetHandle& GetRenderID() const override;
 		virtual uint32_t GetNumVoxels() const override { return m_NumVoxels; }
+
 		
 		static AssetType GetStaticType() { return AssetType::None; }
 
 	private:
 		virtual bool NeedUpdate() const override;
-
+		virtual std::unordered_map<uint32_t, DirtyRange> DirtySubmeshes() const override;
+		
 	private:
 		std::vector<VoxelSubmesh> m_Submeshes;
 		std::vector<VoxelInstance> m_Instances;
 		std::array<VoxelColor, 256> m_ColorPallete;
+		mutable std::unordered_map<uint32_t, DirtyRange> m_DirtySubmeshes;
+
+		
 
 		uint32_t m_NumVoxels;
 		mutable bool m_Dirty;
