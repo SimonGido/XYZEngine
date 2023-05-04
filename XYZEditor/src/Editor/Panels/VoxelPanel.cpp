@@ -98,6 +98,10 @@ namespace XYZ {
 			m_ViewportSize(0.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f)
 		{
+			m_DeerMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));
+			m_CastleMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox"));
+			m_KnightMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/chr_knight.vox"));
+
 			m_ProceduralMesh = Ref<VoxelProceduralMesh>::Create();
 
 			VoxelSubmesh submesh;
@@ -105,7 +109,7 @@ namespace XYZ {
 			submesh.Height = 400;
 			submesh.Depth = 512;
 			submesh.VoxelSize = 3.0f;
-			submesh.MaxTraverses = 512;
+			submesh.MaxTraverses = 1024;
 
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
 			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
@@ -114,15 +118,7 @@ namespace XYZ {
 			instance.SubmeshIndex = 0;
 			instance.Transform = glm::mat4(1.0f);
 
-			
-			m_ProceduralMesh->SetSubmeshes({ submesh });
-			m_ProceduralMesh->SetInstances({ instance });
-
-
-			m_DeerMesh   = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));
-			m_CastleMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox"));
-			m_KnightMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/chr_knight.vox"));
-				
+					
 			auto colorPallete = m_KnightMesh->GetColorPallete();
 			
 			colorPallete[Water] = { 0, 150, 250, 150 };
@@ -130,6 +126,8 @@ namespace XYZ {
 			colorPallete[Grass] = { 1, 60, 32, 255 }; // Grass
 
 			m_ProceduralMesh->SetColorPallete(colorPallete);
+			m_ProceduralMesh->SetSubmeshes({ submesh });
+			m_ProceduralMesh->SetInstances({ instance });
 
 	
 			uint32_t count = 50;
@@ -259,7 +257,7 @@ namespace XYZ {
 					const glm::mat4 castleTransform = m_CastleTransforms[i].GetLocalTransform();
 					const glm::mat4 knightTransform = m_KnightTransforms[i].GetLocalTransform();
 					const glm::mat4 deerTransform = m_DeerTransforms[i].GetLocalTransform();
-
+				
 					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
 					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
 					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
@@ -365,7 +363,7 @@ namespace XYZ {
 
 					if (Utils::RandomColorIndex(0, 20) == 0) // % chance to generate snow voxel
 					{
-						result[Utils::Index3D(x, height - 1, z, width, height)] = Snow; // Snow
+						//result[Utils::Index3D(x, height - 1, z, width, height)] = Snow; // Snow
 					}
 					result[Utils::Index3D(x, 150, z, width, height)] = Water; // Water
 				}

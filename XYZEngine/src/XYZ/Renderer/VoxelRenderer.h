@@ -12,18 +12,6 @@
 
 namespace XYZ {
 
-	struct VoxelsSpecification
-	{
-		glm::vec4 Translation;
-		glm::vec4 Rotation;
-
-		uint32_t  MaxTraverse;
-		uint32_t  Width;
-		uint32_t  Height;
-		uint32_t  Depth;
-		float	  VoxelSize;
-	};
-
 	struct UBVoxelScene
 	{
 		glm::mat4 InverseProjection;
@@ -42,7 +30,7 @@ namespace XYZ {
 	struct SSBOVoxels
 	{
 		static constexpr uint32_t MaxVoxels = 512 * 1024 * 1024; // Half gig
-					
+				
 		uint8_t Voxels[MaxVoxels];
 
 		static constexpr uint32_t Binding = 17;
@@ -66,19 +54,43 @@ namespace XYZ {
 
 		float		VoxelSize;
 		Bool32		OriginInside; // Check if we start raycasting from inside grid
+		
+		int32_t		TopGridIndex;
+
+		Padding<12> Padding;
+	};
+
+	struct VoxelTopGrid
+	{
+		uint32_t  MaxTraverses;
+		uint32_t  CellsOffset;
+
+		uint32_t  Width;
+		uint32_t  Height;
+		uint32_t  Depth;
+		
+		float	  Size;
+
+		Padding<8> Padding;
 	};
 
 	struct SSBOVoxelModels
 	{
 		static constexpr uint32_t MaxModels = 1024;
+		static constexpr uint32_t MaxTopGrids = 512;
+
 		uint32_t NumModels;
 		Padding<12> Padding;
-		VoxelModel Models[MaxModels];
+		
+		VoxelModel	 Models[MaxModels];
+
+		VoxelTopGrid TopGrids[MaxTopGrids];
 
 		static constexpr uint32_t Binding = 18;
 		static constexpr uint32_t Set = 0;
 	};
 
+	
 	struct SSBOColors
 	{
 		static constexpr uint32_t MaxColors = 1024;
@@ -86,6 +98,16 @@ namespace XYZ {
 		uint32_t ColorPallete[MaxColors][256];
 
 		static constexpr uint32_t Binding = 19;
+		static constexpr uint32_t Set = 0;
+	};
+
+	struct SSBOVoxelTopGrids
+	{
+		static constexpr uint32_t MaxTopGridCells = 1024 * 1024;
+
+		uint8_t		 TopGridCells[MaxTopGridCells];
+
+		static constexpr uint32_t Binding = 20;
 		static constexpr uint32_t Set = 0;
 	};
 
@@ -151,6 +173,7 @@ namespace XYZ {
 		struct MeshAllocation
 		{
 			StorageBufferAllocation VoxelAllocation;
+			StorageBufferAllocation	TopGridAllocation;
 			StorageBufferAllocation	ColorAllocation;
 
 			std::vector<uint32_t> SubmeshOffsets;
@@ -159,6 +182,7 @@ namespace XYZ {
 		struct UpdatedAllocation
 		{
 			StorageBufferAllocation VoxelAllocation;
+			StorageBufferAllocation	TopGridAllocation;
 			StorageBufferAllocation	ColorAllocation;
 		};
 
@@ -224,6 +248,7 @@ namespace XYZ {
 
 
 		Ref<StorageBufferAllocator> m_VoxelStorageAllocator;
+		Ref<StorageBufferAllocator> m_TopGridsAllocator;
 		Ref<StorageBufferAllocator> m_ColorStorageAllocator;
 
 		Ref<Texture2D>			m_OutputTexture;
@@ -233,6 +258,7 @@ namespace XYZ {
 		UBVoxelScene			m_UBVoxelScene;
 		SSBOVoxels				m_SSBOVoxels;
 		SSBOVoxelModels			m_SSBOVoxelModels;
+		SSBOVoxelTopGrids		m_SSBOTopGrids;
 		SSBOColors				m_SSBOColors;
 
 		SSGIValues				m_SSGIValues;
@@ -245,8 +271,9 @@ namespace XYZ {
 		Statistics				m_Statistics;
 	
 		bool					m_UseSSGI = false;
-
+		bool					m_UseTopGrid = false;
 		bool					m_Snow = false;
+
 		uint32_t				m_SnowFramesDelay = 0;
 		uint32_t				m_SnowFramesCounter = 0;
 

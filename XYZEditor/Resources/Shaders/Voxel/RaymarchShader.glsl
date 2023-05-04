@@ -7,12 +7,29 @@
 
 #define TILE_SIZE 16
 #define MAX_COLORS 1024
+#define MAX_MODELS 1024
 
 const float FLT_MAX = 3.402823466e+38;
 const float EPSILON = 0.01;
 const uint OPAQUE = 255;
 
+layout(push_constant) uniform Uniforms
+{
+	bool UseTopGrid;
+} u_Uniforms;
 
+struct VoxelTopGrid
+{
+	uint  MaxTraverses;
+	uint  CellsOffset;
+
+	uint  Width;
+	uint  Height;
+	uint  Depth;
+	float Size;
+
+	uint Padding[2];
+};
 
 struct VoxelModel
 {
@@ -29,6 +46,9 @@ struct VoxelModel
 
 	float VoxelSize;
 	bool  OriginInside;
+	int   TopGridIndex;
+
+	uint Padding[3];
 };
 
 layout (std140, binding = 16) uniform Scene
@@ -51,8 +71,9 @@ layout(std430, binding = 17) readonly buffer buffer_Voxels
 
 layout(std430, binding = 18) readonly buffer buffer_Models
 {		
-	uint NumModels;
-	VoxelModel Models[];
+	uint		 NumModels;
+	VoxelModel	 Models[MAX_MODELS];
+	VoxelTopGrid TopGrids[];
 };
 
 layout(std430, binding = 19) readonly buffer buffer_Colors
@@ -60,8 +81,13 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 	uint ColorPallete[MAX_COLORS][256];
 };
 
-layout(binding = 20, rgba32f) uniform image2D o_Image;
-layout(binding = 21, r32f) uniform image2D o_DepthImage;
+layout(std430, binding = 20) readonly buffer buffer_TopGrids
+{		
+	uint8_t TopGridCells[];
+};
+
+layout(binding = 21, rgba32f) uniform image2D o_Image;
+layout(binding = 22, r32f) uniform image2D o_DepthImage;
 
 struct Ray
 {
@@ -69,6 +95,20 @@ struct Ray
 	vec3 Direction;
 };
 
+struct AABB
+{
+	vec3 Min;
+	vec3 Max;
+};
+
+
+AABB VoxelAABB(ivec3 voxel, float voxelSize)
+{
+	AABB result;
+	result.Min = vec3(voxel.x * voxelSize, voxel.y * voxelSize, voxel.z * voxelSize);
+	result.Max = result.Min + voxelSize;
+	return result;
+}
 
 Ray CreateRay(vec2 coords, uint modelIndex)
 {
@@ -146,13 +186,15 @@ uint VoxelAlpha(uint voxel)
 
 float VoxelDistanceFromRay(vec3 origin, vec3 direction, ivec3 voxel, float voxelSize)
 {
-	vec3 boxMin = vec3(voxel.x * voxelSize, voxel.y * voxelSize, voxel.z * voxelSize);
-	vec3 boxMax = boxMin + voxelSize;
+	AABB aabb = VoxelAABB(voxel, voxelSize);
+	if (PointInBox(origin, aabb.Min, aabb.Max))
+		return 0.0;
+
 	float dist;
-	if (RayBoxIntersection(origin, direction, boxMin, boxMax, dist))
+	if (RayBoxIntersection(origin, direction, aabb.Min, aabb.Max, dist))
 		return dist;
-	else
-		return FLT_MAX;
+		
+	return FLT_MAX;
 }
 
 bool DistanceTest(Ray ray, ivec3 voxel, float voxelSize, float currentDistance, out float newDistance)
@@ -231,7 +273,8 @@ RaymarchHitResult RayMarch(Ray ray, vec3 t_max, vec3 t_delta, ivec3 current_voxe
 			{
 				result.Color = VoxelToColor(voxel);
 				result.Alpha = VoxelAlpha(voxel);
-				result.Hit = true;				
+				result.Hit = true;	
+				i++;
 				break;
 			}
 		}
@@ -243,7 +286,7 @@ RaymarchHitResult RayMarch(Ray ray, vec3 t_max, vec3 t_delta, ivec3 current_voxe
 	return result;
 }
 
-RaymarchResult RayMarch(Ray ray, vec3 origin, vec3 direction, uint modelIndex, float currentDistance)
+RaymarchResult RayMarch(Ray ray, vec3 origin, vec3 direction, uint modelIndex, float currentDistance, uint maxTraverses)
 {
 	RaymarchResult result;
 	result.OpaqueHit = false;
@@ -270,7 +313,7 @@ RaymarchResult RayMarch(Ray ray, vec3 origin, vec3 direction, uint modelIndex, f
 	vec3 t_delta = voxelSize / direction * vec3(step);	
 
 
-	uint remainingTraverses = Models[modelIndex].MaxTraverses;
+	uint remainingTraverses = maxTraverses;
 	
 	// Raymarch until we find first hit to determine default color
 	RaymarchHitResult hitResult = RayMarch(ray, t_max, t_delta, current_voxel, step, remainingTraverses, modelIndex, currentDistance);	
@@ -291,6 +334,8 @@ RaymarchResult RayMarch(Ray ray, vec3 origin, vec3 direction, uint modelIndex, f
 		result.Normal = hitResult.Normal;
 		result.CurrentVoxel = hitResult.CurrentVoxel;
 		result.T_Max = hitResult.T_Max;
+		if (!result.OpaqueHit)
+			remainingTraverses = Models[modelIndex].MaxTraverses; // Hit was not opaque reset traverses for better visual results
 	}
 	
 	// Continue raymarching until we hit opaque object or we are out of traverses
@@ -321,6 +366,110 @@ RaymarchResult RayMarch(Ray ray, vec3 origin, vec3 direction, uint modelIndex, f
 	return result;
 }
 
+// Constant normal incidence Fresnel factor for all dielectrics.
+const vec3 Fdielectric = vec3(0.04);
+
+vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
+{
+	PBRParameters pbr;
+	pbr.Roughness = 0.8;
+	pbr.Metalness = 0.2;
+	
+	pbr.Normal = normal;
+	pbr.View = normalize(u_CameraPosition.xyz - voxelPosition);
+	pbr.NdotV = max(dot(pbr.Normal, pbr.View), 0.0);
+	pbr.Albedo = albedo;
+
+	vec3 F0 = mix(Fdielectric, pbr.Albedo, pbr.Metalness);
+	return CalculateDirLight(F0, u_DirectionalLight, pbr);
+}
+
+
+
+void StoreHitResult(Ray ray, RaymarchResult result, uint modelIndex)
+{
+	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);	
+	if (!result.OpaqueHit)
+	{
+		vec4 originalColor = imageLoad(o_Image, textureIndex);
+		result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
+	}
+	else // Store depth only for opaque hits
+	{
+		imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
+	}
+
+	//vec3 worldHitPosition = VoxelWorldPosition(result.CurrentVoxel, i);
+	vec4 worldHitPosition = Models[modelIndex].Transform * vec4(ray.Origin + result.T_Max, 1.0);
+	vec3 worldNormal = mat3(Models[modelIndex].Transform) * -result.Normal;
+
+	result.Color.rgb = CalculateDirLights(worldHitPosition.xyz, result.Color.rgb, worldNormal);
+
+	imageStore(o_Image, textureIndex, result.Color); // Store color		
+}
+
+
+RaymarchResult RaymarchTopGrid(Ray ray, vec3 origin, vec3 direction, uint modelIndex, float currentDistance, VoxelTopGrid grid)
+{
+	RaymarchResult result;
+	result.Hit = false;
+
+	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
+	float voxelSize = grid.Size;
+	
+	ivec3 current_voxel = ivec3(floor(origin / voxelSize));
+	
+	ivec3 step = ivec3(
+		(direction.x > 0.0) ? 1 : -1,
+		(direction.y > 0.0) ? 1 : -1,
+		(direction.z > 0.0) ? 1 : -1
+	);
+	vec3 next_boundary = vec3(
+		float((step.x > 0) ? current_voxel.x + 1 : current_voxel.x) * voxelSize,
+		float((step.y > 0) ? current_voxel.y + 1 : current_voxel.y) * voxelSize,
+		float((step.z > 0) ? current_voxel.z + 1 : current_voxel.z) * voxelSize
+	);
+	
+
+	vec3 t_max = (next_boundary - origin) / direction; // we will move along the axis with the smallest value
+	vec3 t_delta = voxelSize / direction * vec3(step);	
+
+	for (uint i = 0; i < grid.MaxTraverses; i++)
+	{
+		if (IsValidVoxel(current_voxel, grid.Width, grid.Height, grid.Depth))
+		{
+			uint voxelIndex = Index3D(current_voxel, grid.Width, grid.Height) + grid.CellsOffset;
+			if (uint(TopGridCells[voxelIndex]) != 0)
+			{			
+				float dist = VoxelDistanceFromRay(origin, direction, current_voxel, voxelSize);
+				origin += direction * (dist - EPSILON); // Move origin to hit of top grid cell
+							
+				// Raymarch from new origin
+				result = RayMarch(ray, origin, direction, modelIndex, currentDistance, grid.MaxTraverses);
+				if (result.Hit)
+					return result;
+			}
+		}
+
+		if (t_max.x < t_max.y && t_max.x < t_max.z) 
+		{
+			t_max.x += t_delta.x;
+			current_voxel.x += step.x;
+		}
+		else if (t_max.y < t_max.z) 
+		{
+			t_max.y += t_delta.y;
+			current_voxel.y += step.y;			
+		}
+		else 
+		{
+			t_max.z += t_delta.z;
+			current_voxel.z += step.z;		
+		}
+	}
+	return result;
+}
+
 bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, uint modelIndex)
 {
 	bool result = Models[modelIndex].OriginInside; // Default is true in case origin is inside
@@ -346,60 +495,36 @@ bool ValidPixel(ivec2 index)
 	return index.x <= int(u_ViewportSize.x) && index.y <= int(u_ViewportSize.y);
 }
 
-// Constant normal incidence Fresnel factor for all dielectrics.
-const vec3 Fdielectric = vec3(0.04);
-
-vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
-{
-	PBRParameters pbr;
-	pbr.Roughness = 0.8;
-	pbr.Metalness = 0.2;
-	
-	pbr.Normal = normal;
-	pbr.View = normalize(u_CameraPosition.xyz - voxelPosition);
-	pbr.NdotV = max(dot(pbr.Normal, pbr.View), 0.0);
-	pbr.Albedo = albedo;
-
-	vec3 F0 = mix(Fdielectric, pbr.Albedo, pbr.Metalness);
-	return CalculateDirLight(F0, u_DirectionalLight, pbr);
-}
 
 
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
+	
 	for (uint i = 0; i < NumModels; i++)
 	{
 		Ray ray = CreateRay(textureIndex, i);
 		vec3 origin = ray.Origin;
 		vec3 direction = ray.Direction;
 
+						
 		// Check if ray intersects with model and move origin of ray
 		if (!ResolveRayModelIntersection(origin, direction, i))
 			continue;
 
 		float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
-		RaymarchResult result = RayMarch(ray, origin, direction, i, currentDistance);
+		RaymarchResult result;
 
-		if (result.Hit)
-		{			
-			if (!result.OpaqueHit)
-			{
-				vec4 originalColor = imageLoad(o_Image, textureIndex);
-				result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
-			}
-			else // Store depth only for opaque hits
-			{
-				imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
-			}
-
-			vec4 worldHitPosition = Models[i].Transform * vec4(result.T_Max, 1.0);
-			vec3 worldNormal = mat3(Models[i].Transform) * -result.Normal;
-
-			result.Color.rgb = CalculateDirLights(worldHitPosition.xyz, result.Color.rgb, worldNormal);
-
-			imageStore(o_Image, textureIndex, result.Color); // Store color		
+		if (Models[i].TopGridIndex != -1 && u_Uniforms.UseTopGrid)
+		{
+			result = RaymarchTopGrid(ray, origin, direction, i, currentDistance, TopGrids[Models[i].TopGridIndex]);
 		}
+		else
+		{
+			result = RayMarch(ray, origin, direction, i, currentDistance, Models[i].MaxTraverses);		
+		}
+		if (result.Hit)		
+			StoreHitResult(ray, result, i);
 	}
 }

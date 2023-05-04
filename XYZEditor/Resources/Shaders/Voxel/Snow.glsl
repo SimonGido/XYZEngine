@@ -27,6 +27,9 @@ struct VoxelModel
 
 	float VoxelSize;
 	bool  OriginInside;
+	int   TopGridIndex;
+
+	uint Padding[3];
 };
 
 layout (std140, binding = 16) uniform Scene

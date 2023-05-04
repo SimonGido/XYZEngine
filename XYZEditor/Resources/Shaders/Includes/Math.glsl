@@ -201,3 +201,14 @@ bool RayBoxIntersection(vec3 origin, vec3 direction, vec3 lb, vec3 rt, out float
     t = tmin;
 	return true;
 }
+
+bool PointInBox(vec3 point, vec3 boxMin, vec3 boxMax)
+{
+	return
+		point.x >= boxMin.x
+		&& point.x <= boxMax.x
+		&& point.y >= boxMin.y
+		&& point.y <= boxMax.y
+		&& point.z >= boxMin.z
+		&& point.z <= boxMax.z;
+}

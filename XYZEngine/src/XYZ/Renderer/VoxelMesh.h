@@ -11,6 +11,15 @@
 
 namespace XYZ {
 
+	struct VoxelMeshTopGrid
+	{
+		uint32_t  MaxTraverses;
+		uint32_t  Width;
+		uint32_t  Height;
+		uint32_t  Depth;
+		float	  Size;
+		std::vector<uint32_t> VoxelCount;
+	};
 
 	class XYZ_API VoxelMesh : public Asset
 	{
@@ -32,6 +41,9 @@ namespace XYZ {
 
 		virtual bool NeedUpdate() const = 0;
 		virtual std::unordered_map<uint32_t, DirtyRange> DirtySubmeshes() const { return {}; }
+		
+		virtual const VoxelMeshTopGrid& GetTopGrid() const { return {}; }
+		virtual bool HasTopGrid() const { return false; }
 
 		friend class VoxelRenderer;
 	};
@@ -87,14 +99,17 @@ namespace XYZ {
 
 	private:
 		virtual bool NeedUpdate() const override;
+		virtual bool HasTopGrid() const override { return true; }
+		virtual const VoxelMeshTopGrid& GetTopGrid() const override { return m_TopGrid; }
 		virtual std::unordered_map<uint32_t, DirtyRange> DirtySubmeshes() const override;
-		
 	private:
-		std::vector<VoxelSubmesh> m_Submeshes;
-		std::vector<VoxelInstance> m_Instances;
+		std::vector<VoxelSubmesh>	m_Submeshes;
+		std::vector<VoxelInstance>	m_Instances;
 		std::array<VoxelColor, 256> m_ColorPallete;
-		mutable std::unordered_map<uint32_t, DirtyRange> m_DirtySubmeshes;
 
+		VoxelMeshTopGrid			m_TopGrid;
+
+		mutable std::unordered_map<uint32_t, DirtyRange> m_DirtySubmeshes;
 		
 
 		uint32_t m_NumVoxels;
