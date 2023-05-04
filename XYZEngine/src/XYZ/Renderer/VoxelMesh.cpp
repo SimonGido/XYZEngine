@@ -17,8 +17,7 @@ namespace XYZ {
 		const uint32_t height = std::ceil((float)submesh.Height / scale);
 		const uint32_t depth = std::ceil((float)submesh.Depth / scale);
 
-		topGrid.MaxTraverses = std::sqrtl(std::powl(width, 2) + std::powl(height, 2));
-		topGrid.MaxTraverses = 60;
+		topGrid.MaxTraverses = std::sqrtl(std::powl(width, 2) + std::powl(height, 2) + std::powl(depth, 2)) * 2;
 		topGrid.Width = width;
 		topGrid.Height = height;
 		topGrid.Depth = depth;
