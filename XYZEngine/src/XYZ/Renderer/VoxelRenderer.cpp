@@ -272,11 +272,8 @@ namespace XYZ {
 		cmdModel.ModelIndex = m_SSBOVoxelModels.NumModels;
 
 		VoxelModel& model = m_SSBOVoxelModels.Models[m_SSBOVoxelModels.NumModels];
-		model.Transform = transform * glm::translate(glm::mat4(1.0f), centerTranslation);
+		model.InverseTransform = glm::inverse(transform * glm::translate(glm::mat4(1.0f), centerTranslation));
 
-		const glm::mat4 inverseTransform = glm::inverse(model.Transform);
-		model.InverseModelView = inverseTransform * m_UBVoxelScene.InverseView;
-		model.RayOrigin = inverseTransform * m_UBVoxelScene.CameraPosition;
 		model.MaxTraverses = submesh.MaxTraverses;
 		
 		model.Width = submesh.Width;
@@ -284,8 +281,6 @@ namespace XYZ {
 		model.Depth = submesh.Depth;
 		model.VoxelSize = submesh.VoxelSize;
 
-		model.OriginInside = Math::PointInBox(model.RayOrigin, glm::vec3(0.0f), aabbMax);
-		
 		m_SSBOVoxelModels.NumModels++;
 	}
 

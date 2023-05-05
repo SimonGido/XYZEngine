@@ -41,9 +41,7 @@ namespace XYZ {
 
 	struct VoxelModel
 	{
-		glm::mat4	InverseModelView;
-		glm::mat4	Transform;
-		glm::vec4	RayOrigin; // Origin of raycasting for this model
+		glm::mat4	InverseTransform;
 
 		uint32_t	VoxelOffset;
 		uint32_t	Width;
@@ -52,12 +50,8 @@ namespace XYZ {
 		uint32_t    ColorIndex;
 		uint32_t    MaxTraverses;
 
-		float		VoxelSize;
-		Bool32		OriginInside; // Check if we start raycasting from inside grid
-		
+		float		VoxelSize;	
 		int32_t		TopGridIndex;
-
-		Padding<12> Padding;
 	};
 
 	struct VoxelTopGrid
