@@ -229,7 +229,15 @@ struct RaymarchState
 	uint  Traverses;
 	bool  Hit;
 	float Distance;
+
+	uint  Offset;
+	uint  Width;
+	uint  Height;
+	uint  Depth;
+	float Size;
 };
+
+
 
 void RayMarch(in Ray ray, inout RaymarchState state, vec3 delta, ivec3 step, uint modelIndex, float currentDistance)
 {
@@ -353,9 +361,10 @@ RaymarchResult RayMarch(in Ray ray, vec3 origin, vec3 direction, uint modelIndex
 		// We passed depth test
 		if (state.Hit) // We hit something so mix colors together
 		{
-			result.Color.rgb = mix(result.Color.rgb, state.Color.rgb, result.Color.a);
+			result.Color.rgb = mix(result.Color.rgb, state.Color.rgb, 1.0 - result.Color.a);
+			result.Color.a += state.Color.a; // Increase alpha of our current result
 			result.Hit = true;
-			result.OpaqueHit = state.Alpha == OPAQUE;
+			result.OpaqueHit = result.Color.a >= 1.0;
 			result.Normal = state.Normal;
 		}
 	}
@@ -397,7 +406,7 @@ void StoreHitResult(in Ray ray, in RaymarchResult result, uint modelIndex)
 	}
 
 	vec3 worldHitPosition = ray.Origin + (ray.Direction * result.Distance);
-	vec3 worldNormal = mat3(Models[modelIndex].InverseTransform) * result.Normal;
+	vec3 worldNormal = mat3(Models[modelIndex].InverseTransform) * -result.Normal;
 
 	result.Color.rgb = CalculateDirLights(worldHitPosition, result.Color.rgb, worldNormal);
 
@@ -405,7 +414,7 @@ void StoreHitResult(in Ray ray, in RaymarchResult result, uint modelIndex)
 }
 
 
-RaymarchResult RaymarchTopGrid(Ray ray, vec3 origin, vec3 direction, uint modelIndex, float currentDistance, in VoxelTopGrid grid)
+RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, uint modelIndex, float currentDistance, in VoxelTopGrid grid)
 {
 	RaymarchResult result;
 	result.Hit = false;
