@@ -377,28 +377,6 @@ vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
 
 
 
-void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
-{
-	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);	
-	if (!result.OpaqueHit)
-	{
-		vec4 originalColor = imageLoad(o_Image, textureIndex);
-		result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
-	}
-	else // Store depth only for opaque hits
-	{
-		imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
-	}
-
-	vec3 worldHitPosition = ray.Origin + (ray.Direction * result.Distance);
-	vec3 worldNormal = mat3(model.InverseTransform) * -result.Normal;
-
-	result.Color.rgb = CalculateDirLights(worldHitPosition, result.Color.rgb, worldNormal);
-
-	imageStore(o_Image, textureIndex, result.Color); // Store color		
-}
-
-
 RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, in VoxelTopGrid grid)
 {
 	RaymarchResult result;
@@ -474,6 +452,27 @@ bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelMode
 	return result;
 }
 
+void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
+{
+	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);	
+	if (!result.OpaqueHit)
+	{
+		vec4 originalColor = imageLoad(o_Image, textureIndex);
+		result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
+	}
+	else // Store depth only for opaque hits
+	{
+		imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
+	}
+
+	vec3 worldHitPosition = ray.Origin + (ray.Direction * result.Distance);
+	vec3 worldNormal = mat3(model.InverseTransform) * -result.Normal;
+	result.Color.rgb = CalculateDirLights(worldHitPosition, result.Color.rgb, worldNormal);
+
+	imageStore(o_Image, textureIndex, result.Color); // Store color		
+}
+
+
 bool ValidPixel(ivec2 index)
 {
 	return index.x <= int(u_ViewportSize.x) && index.y <= int(u_ViewportSize.y);
@@ -507,7 +506,8 @@ void main()
 		{
 			result = RayMarch(ray, origin, direction, model, currentDistance, Models[i].MaxTraverses);		
 		}
+
 		if (result.Hit)		
-			StoreHitResult(ray, result, model);
+			StoreHitResult(ray, result, model);	
 	}
 }
