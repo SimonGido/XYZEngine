@@ -20,15 +20,6 @@
 namespace XYZ {
 	namespace Editor {
 
-		class ChunkSystem
-		{
-		public:
-
-
-
-		private:
-
-		};
 
 		class VoxelPanel : public EditorPanel
 		{
@@ -58,8 +49,13 @@ namespace XYZ {
 			);
 
 
-			static std::vector<uint8_t> generateVoxelTree(
-				uint32_t seed, uint32_t width, uint32_t height, uint32_t depth
+			static void generateVoxelTree(
+				std::vector<uint8_t>& voxels,
+				uint32_t maxHeight, 
+				uint32_t minBranches,
+				uint32_t maxBranches,
+				uint32_t x, uint32_t y, uint32_t z,
+				uint32_t width, uint32_t height, uint32_t depth
 			);
 
 		private:
@@ -82,10 +78,12 @@ namespace XYZ {
 			Ref<VoxelSourceMesh> m_DeerMesh;
 			Ref<VoxelProceduralMesh> m_ProceduralMesh;
 			
-			static constexpr uint32_t Empty = 0;
-			static constexpr uint32_t Water = 1;
-			static constexpr uint32_t Snow = 2;
-			static constexpr uint32_t Grass = 3;
+			static constexpr uint8_t Empty = 0;
+			static constexpr uint8_t Water = 1;
+			static constexpr uint8_t Snow = 2;
+			static constexpr uint8_t Grass = 3;
+			static constexpr uint8_t Wood = 4;
+			static constexpr uint8_t Leaves = 5;
 
 			uint32_t m_DeerKeyFrame = 0;
 			float	 m_KeyLength = 0.3f;

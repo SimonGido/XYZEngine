@@ -81,7 +81,7 @@ layout(std430, binding = 20) readonly buffer buffer_TopGrids
 	uint8_t TopGridCells[];
 };
 
-layout(binding = 21, rgba32f) uniform image2D o_Image;
+layout(binding = 21, rgba16f) uniform image2D o_Image;
 layout(binding = 22, r32f) uniform image2D o_DepthImage;
 
 struct Ray
@@ -325,8 +325,8 @@ RaymarchResult RayMarch(in Ray ray, vec3 origin, vec3 direction, in VoxelModel m
 		result.Distance = state.Distance;
 		result.Normal = state.Normal;
 
-		if (!result.OpaqueHit)
-			state.Traverses = model.MaxTraverses; // Hit was not opaque reset traverses for better visual results
+		//if (!result.OpaqueHit)
+		//	state.Traverses = model.MaxTraverses; // Hit was not opaque reset traverses for better visual results
 	}
 
 	if (state.Distance > currentDistance) // Depth test

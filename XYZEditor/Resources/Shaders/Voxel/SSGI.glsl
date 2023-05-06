@@ -37,9 +37,9 @@ layout(push_constant) uniform SSAO
 } u_Uniforms;
 
 
-layout(binding = 0, rgba32f) uniform image2D u_Image;
+layout(binding = 0, rgba16f) uniform image2D u_Image;
 layout(binding = 1, r32f) uniform image2D u_DepthImage;
-layout(binding = 2, rgba32f) uniform image2D o_SSGIImage;
+layout(binding = 2, rgba16f) uniform image2D o_SSGIImage;
 
 float fmod(float x, float y)
 {

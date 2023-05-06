@@ -14,6 +14,12 @@ namespace XYZ {
         return dist(s_RandEng);
     }
 
+    XYZ_API int32_t RandomNumber(int32_t min, int32_t max)
+    {
+        std::uniform_int_distribution<int32_t> dist(min, max);
+        return dist(s_RandEng);
+    }
+
     float RandomNumber(float min, float max)
     {
         std::uniform_real_distribution<float> dist(min, max);

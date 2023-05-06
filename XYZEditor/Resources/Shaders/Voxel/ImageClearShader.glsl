@@ -10,7 +10,7 @@ layout(push_constant) uniform clearColors
 
 #define TILE_SIZE 16
 
-layout(binding = 0, rgba32f) uniform image2D o_Image;
+layout(binding = 0, rgba16f) uniform image2D o_Image;
 layout(binding = 1, r32f) uniform image2D o_DepthImage;
 
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;

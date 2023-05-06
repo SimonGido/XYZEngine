@@ -229,6 +229,9 @@ namespace XYZ {
 		Ref<PipelineCompute>	m_ClearPipeline;
 		Ref<Material>			m_ClearMaterial;
 
+		Ref<PipelineCompute>	m_ShadowPipeline;
+		Ref<Material>			m_ShadowMaterial;
+
 		Ref<PipelineCompute>	m_SSGIPipeline;
 		Ref<Material>			m_SSGIMaterial;
 

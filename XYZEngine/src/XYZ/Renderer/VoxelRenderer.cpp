@@ -68,9 +68,9 @@ namespace XYZ {
 		TextureProperties props;
 		props.Storage = true;
 		props.SamplerWrap = TextureWrap::Clamp;
-		m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
+		m_OutputTexture = Texture2D::Create(ImageFormat::RGBA16F, 1280, 720, nullptr, props);
 		m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, 1280, 720, nullptr, props);
-		m_SSGITexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
+		m_SSGITexture = Texture2D::Create(ImageFormat::RGBA16F, 1280, 720, nullptr, props);
 		createDefaultPipelines();
 
 
@@ -477,9 +477,9 @@ namespace XYZ {
 			TextureProperties props;
 			props.Storage = true;
 			props.SamplerWrap = TextureWrap::Clamp;
-			m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
+			m_OutputTexture = Texture2D::Create(ImageFormat::RGBA16F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
-			m_SSGITexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
+			m_SSGITexture = Texture2D::Create(ImageFormat::RGBA16F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			
 			m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
@@ -530,24 +530,31 @@ namespace XYZ {
 
 			MeshAllocation& meshAlloc = createMeshAllocation(drawCommand.Mesh);
 			
-			// Store mesh top grid
-			auto& topGrid = drawCommand.Mesh->GetTopGrid();
-			m_SSBOVoxelModels.TopGrids[topGridCount].MaxTraverses = topGrid.MaxTraverses;
-			m_SSBOVoxelModels.TopGrids[topGridCount].CellsOffset = meshAlloc.TopGridAllocation.GetOffset();
-			m_SSBOVoxelModels.TopGrids[topGridCount].Width = topGrid.Width;
-			m_SSBOVoxelModels.TopGrids[topGridCount].Height = topGrid.Height;
-			m_SSBOVoxelModels.TopGrids[topGridCount].Depth = topGrid.Depth;
-			m_SSBOVoxelModels.TopGrids[topGridCount].Size = topGrid.Size;
-
-
 			for (const auto& cmdModel : drawCommand.Models)
 			{
 				VoxelModel& model = m_SSBOVoxelModels.Models[cmdModel.ModelIndex];
 				model.ColorIndex = meshAlloc.ColorAllocation.GetOffset() / colorSize;
 				model.VoxelOffset = meshAlloc.SubmeshOffsets[cmdModel.SubmeshIndex];
-				model.TopGridIndex = drawCommand.Mesh->HasTopGrid() ? topGridCount : -1;
+				model.TopGridIndex = -1;
 			}
-			topGridCount++;
+
+			// Store mesh top grid
+			if (drawCommand.Mesh->HasTopGrid())
+			{
+				auto& topGrid = drawCommand.Mesh->GetTopGrid();
+				m_SSBOVoxelModels.TopGrids[topGridCount].MaxTraverses = topGrid.MaxTraverses;
+				m_SSBOVoxelModels.TopGrids[topGridCount].CellsOffset = meshAlloc.TopGridAllocation.GetOffset();
+				m_SSBOVoxelModels.TopGrids[topGridCount].Width = topGrid.Width;
+				m_SSBOVoxelModels.TopGrids[topGridCount].Height = topGrid.Height;
+				m_SSBOVoxelModels.TopGrids[topGridCount].Depth = topGrid.Depth;
+				m_SSBOVoxelModels.TopGrids[topGridCount].Size = topGrid.Size;
+				for (const auto& cmdModel : drawCommand.Models)
+				{
+					VoxelModel& model = m_SSBOVoxelModels.Models[cmdModel.ModelIndex];
+					model.TopGridIndex = topGridCount;
+				}
+				topGridCount++;
+			}				
 		}
 
 		for (const auto& updated : m_UpdatedAllocations)

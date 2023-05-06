@@ -85,8 +85,11 @@ namespace XYZ {
 		void SetInstances(const std::vector<VoxelInstance>& instances);
 		void SetColorPallete(const std::array<VoxelColor, 256>& pallete);
 
+		void GenerateTopGridAsync(float size);
 
 		void SetVoxelColor(uint32_t submeshIndex, uint32_t x, uint32_t y, uint32_t z, uint8_t value);
+
+		bool IsGeneratingTopGrid() const { return m_GeneratingTopGrid; }
 
 		virtual const std::array<VoxelColor, 256>& GetColorPallete() const override;
 		virtual const std::vector<VoxelSubmesh>& GetSubmeshes() const override;
@@ -99,20 +102,28 @@ namespace XYZ {
 
 	private:
 		virtual bool NeedUpdate() const override;
-		virtual bool HasTopGrid() const override { return true; }
+		virtual bool HasTopGrid() const override;
 		virtual const VoxelMeshTopGrid& GetTopGrid() const override { return m_TopGrid; }
 		virtual std::unordered_map<uint32_t, DirtyRange> DirtySubmeshes() const override;
+	
+	
+		static VoxelMeshTopGrid generateTopGrid(
+			const std::vector<VoxelSubmesh>& submeshes,
+			const std::array<VoxelColor, 256>& colorPallete,
+			float size
+		);
 	private:
 		std::vector<VoxelSubmesh>	m_Submeshes;
 		std::vector<VoxelInstance>	m_Instances;
 		std::array<VoxelColor, 256> m_ColorPallete;
 
-		VoxelMeshTopGrid			m_TopGrid;
+		VoxelMeshTopGrid m_TopGrid;
+		bool			 m_HasTopGrid;
+		bool			 m_GeneratingTopGrid;
 
-		mutable std::unordered_map<uint32_t, DirtyRange> m_DirtySubmeshes;
-		
+		mutable std::unordered_map<uint32_t, DirtyRange> m_DirtySubmeshes;		
+		mutable std::atomic_bool m_Dirty;
 
 		uint32_t m_NumVoxels;
-		mutable bool m_Dirty;
 	};
 }

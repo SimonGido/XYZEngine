@@ -12,7 +12,6 @@
 #include "XYZ/Utils/Math/AABB.h"
 #include "XYZ/Utils/Math/Math.h"
 #include "XYZ/Utils/Math/Perlin.h"
-#include "XYZ/Utils/Math/SpaceColonization.h"
 #include "XYZ/Utils/Random.h"
 
 #include "XYZ/ImGui/ImGui.h"
@@ -31,6 +30,96 @@
 
 namespace XYZ {
 	namespace Editor {
+
+		struct Point {
+			glm::vec3 position;
+			std::vector<Point*> neighbors;
+
+			Point(const glm::vec3& pos) : position(pos) {}
+		};
+
+		class SpaceColonization {
+		private:
+			std::vector<Point> points;
+			float maxDistance;
+			float minDistance;
+			float attractionRadius;
+			float killRadius;
+
+		public:
+			SpaceColonization(float maxDist, float minDist, float attrRadius, float killRadius)
+				: maxDistance(maxDist), minDistance(minDist), attractionRadius(attrRadius), killRadius(killRadius) {}
+
+			void generatePoints(const glm::vec3& startPosition, int numPoints) {
+				points.clear();
+				points.reserve(numPoints);
+				points.push_back(Point(startPosition));
+
+				std::random_device rd;
+				std::mt19937 gen(rd());
+				std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
+
+				for (int i = 1; i < numPoints; ++i) {
+					float x = dis(gen);
+					float y = dis(gen);
+					float z = dis(gen);
+					glm::vec3 randDirection = glm::normalize(glm::vec3(x, y, z));
+					glm::vec3 newPos = points[0].position + randDirection * maxDistance;
+					points.push_back(Point(newPos));
+				}
+			}
+
+			void simulateGrowth(int numIterations) {
+
+				std::random_device rd;
+				std::mt19937 gen(rd());
+				std::uniform_real_distribution<float> dis(-1.0f, 1.0f);
+
+				for (int i = 0; i < numIterations; ++i) 
+				{
+					// Generate a new point
+					float x = dis(gen);
+					float y = dis(gen);
+					float z = dis(gen);
+					glm::vec3 randDirection = glm::normalize(glm::vec3(x, y, z));
+					glm::vec3 newPos = points[0].position + randDirection * maxDistance;
+					newPos.y = std::abs(newPos.y);
+					points.push_back(Point(newPos));
+
+					// Find nearest neighbor for the new point
+					Point& newPoint = points.back();
+					for (Point& p : points) 
+					{
+						if (&p == &newPoint) 
+						{
+							continue;
+						}
+
+						float distance = (newPoint.position - p.position).length();
+						if (distance < attractionRadius) 
+						{
+							newPoint.neighbors.push_back(&p);
+						}
+						else if (distance < killRadius) 
+						{
+							// Remove neighbors that are too close
+							for (auto it = newPoint.neighbors.begin(); it != newPoint.neighbors.end(); ++it)
+							{
+								if (*it == &p) 
+								{
+									newPoint.neighbors.erase(it);
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		};
+
+
+
+
 
 		namespace Utils {
 			
@@ -98,6 +187,25 @@ namespace XYZ {
 			m_ViewportSize(0.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f)
 		{
+			float maxDistance = 1.0f;
+			float minDistance = 0.1f;
+			float attractionRadius = 5.0f;
+			float killRadius = 0.01f;
+
+			// Create an instance of the Space Colonization class
+			SpaceColonization sc(maxDistance, minDistance, attractionRadius, killRadius);
+
+			// Generate the initial points for the tree
+			glm::vec3 startPosition(0.0f, 0.0f, 0.0f);
+			int numPoints = 100;
+			sc.generatePoints(startPosition, numPoints);
+
+			// Simulate tree growth for a certain number of iterations
+			int numIterations = 50;
+			sc.simulateGrowth(numIterations);
+
+
+
 			m_DeerMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));
 			m_CastleMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox"));
 			m_KnightMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/chr_knight.vox"));
@@ -124,6 +232,8 @@ namespace XYZ {
 			colorPallete[Water] = { 0, 150, 250, 150 };
 			colorPallete[Snow] = { 255, 255, 255, 255 }; // Snow
 			colorPallete[Grass] = { 1, 60, 32, 255 }; // Grass
+			colorPallete[Wood] = { 150, 75, 0, 255 };
+			colorPallete[Leaves] = { 1, 100, 40, 255 };
 
 			m_ProceduralMesh->SetColorPallete(colorPallete);
 			m_ProceduralMesh->SetSubmeshes({ submesh });
@@ -152,12 +262,6 @@ namespace XYZ {
 				xOffset += 30.0f;
 			}
 			pushGenerateVoxelMeshJob();
-
-			SpaceColonization colon;
-			colon.GenerateAttractors(10, 10, glm::vec3(0, 30, 0));
-
-			colon.Update();
-
 		}
 
 		VoxelPanel::~VoxelPanel()
@@ -230,6 +334,7 @@ namespace XYZ {
 				{
 					VoxelSubmesh submesh = m_ProceduralMesh->GetSubmeshes()[0];
 					submesh.ColorIndices = m_GenerateVoxelsFuture.get();
+					while (m_ProceduralMesh->IsGeneratingTopGrid()) {} // Wait to finish generating top grid
 					m_ProceduralMesh->SetSubmeshes({ submesh });
 				}
 
@@ -246,7 +351,7 @@ namespace XYZ {
 					auto& submesh = m_ProceduralMesh->GetSubmeshes()[0];
 					for (uint32_t y = 0; y < 400; ++y)
 					{
-						m_ProceduralMesh->SetVoxelColor(0, 400, y, 400, RandomNumber(5u, 255u));
+						m_ProceduralMesh->SetVoxelColor(0, 256, y, 256, RandomNumber(5u, 255u));
 					}
 				}
 
@@ -366,15 +471,93 @@ namespace XYZ {
 						//result[Utils::Index3D(x, height - 1, z, width, height)] = Snow; // Snow
 					}
 					result[Utils::Index3D(x, 150, z, width, height)] = Water; // Water
+					
+					if (RandomNumber(0u, 200u) < 1)
+					{
+						if (genHeight > 150)
+						{
+							//generateVoxelTree(result, 20, 5, 10, x, genHeight, z, width, height, depth);
+						}
+					}
 				}
 			}
 			return result;
 		}
-		std::vector<uint8_t> VoxelPanel::generateVoxelTree(uint32_t seed, uint32_t width, uint32_t height, uint32_t depth)
-		{
-			const uint32_t chanceToExpandRoot = 60; // %
 
-			return std::vector<uint8_t>();
+		void VoxelPanel::generateVoxelTree(
+			std::vector<uint8_t>& voxels,
+			uint32_t maxHeight,
+			uint32_t minBranches,
+			uint32_t maxBranches,
+			uint32_t x, uint32_t y, uint32_t z,
+			uint32_t width, uint32_t height, uint32_t depth)
+		{
+			// Generate the trunk of the oak tree.
+			uint32_t trunkHeight = RandomNumber(1u, maxHeight);
+			for (uint32_t i = 0; i < trunkHeight; i++)
+			{
+				const uint32_t currentY = y + i;
+				const uint32_t blockType = (i == trunkHeight - 1) ? Leaves : Wood;
+				const uint32_t index = Utils::Index3D(x, currentY, z, width, height);
+				voxels[index] = blockType;
+			}
+
+			// Generate the canopy of the oak tree.
+			uint32_t numBranches = RandomNumber(minBranches, maxBranches);
+			for (uint32_t i = 0; i < numBranches; i++)
+			{
+				uint32_t branchLength = RandomNumber(4u, 10u);
+				int32_t dx = 0, dz = 0;
+				uint32_t direction = RandomNumber(0u, 3u);
+				switch (direction)
+				{
+				case 0: dx = -1; break;
+				case 1: dx = 1; break;
+				case 2: dz = -1; break;
+				case 3: dz = 1; break;
+				}
+				int32_t endX = x + dx * branchLength;
+				int32_t endZ = z + dz * branchLength;
+				for (uint32_t j = 0; j < branchLength; j++)
+				{
+					uint32_t currentX = x + dx * j;
+					uint32_t currentZ = z + dz * j;
+					uint32_t currentY = y + trunkHeight - 1 + j;
+					const uint32_t index = Utils::Index3D(currentX, currentY, currentZ, width, height);
+					if (index < voxels.size())
+					{
+						voxels[index] = Leaves;
+					}
+				}
+				uint32_t numSideBranches = RandomNumber(5u, 20u);
+				for (uint32_t j = 0; j < numSideBranches; j++)
+				{
+					uint32_t sideBranchLength = RandomNumber(2u, 10u);
+					int32_t sdx = 0, sdz = 0;
+					if (dx == 0)
+					{
+						sdx = (RandomNumber(0u, 1u) == 0) ? -1 : 1;
+					}
+					else
+					{
+						sdz = (RandomNumber(0u, 1u) == 0) ? -1 : 1;
+					}
+					int sendX = endX + sdx * sideBranchLength;
+					int sendZ = endZ + sdz * sideBranchLength;
+					for (int k = 0; k < sideBranchLength; k++)
+					{
+						int currentX = endX + sdx * k;
+						int currentZ = endZ + sdz * k;
+						int currentY = y + trunkHeight - 1 + branchLength + k;
+						const uint32_t index = Utils::Index3D(currentX, currentY, currentZ, width, height);
+						if (index < voxels.size())
+						{
+							voxels[index] = Leaves;
+						}
+					}
+				}
+			}
 		}
+
 	}
 }
