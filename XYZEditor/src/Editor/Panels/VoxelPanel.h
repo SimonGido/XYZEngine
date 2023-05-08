@@ -20,6 +20,11 @@
 namespace XYZ {
 	namespace Editor {
 
+		struct VoxelTerrain
+		{
+			std::vector<uint8_t> Terrain;
+			std::vector<uint16_t> TerrainHeightmap;
+		};
 
 		class VoxelPanel : public EditorPanel
 		{
@@ -43,20 +48,12 @@ namespace XYZ {
 
 			void pushGenerateVoxelMeshJob();
 
-			static std::vector<uint8_t> generateVoxelMesh(
+			
+			static VoxelTerrain generateVoxelTerrainMesh(
 				uint32_t seed, uint32_t frequency, uint32_t octaves,
 				uint32_t width, uint32_t height, uint32_t depth
 			);
 
-
-			static void generateVoxelTree(
-				std::vector<uint8_t>& voxels,
-				uint32_t maxHeight, 
-				uint32_t minBranches,
-				uint32_t maxBranches,
-				uint32_t x, uint32_t y, uint32_t z,
-				uint32_t width, uint32_t height, uint32_t depth
-			);
 
 		private:
 			Ref<VoxelRenderer>			m_VoxelRenderer;
@@ -93,8 +90,9 @@ namespace XYZ {
 			uint32_t m_Octaves = 3;
 			uint32_t m_Seed = 60;
 
-
-			std::future<std::vector<uint8_t>> m_GenerateVoxelsFuture;
+			VoxelTerrain m_Terrain;
+			std::future<VoxelTerrain> m_GenerateVoxelsFuture;
+	
 			bool m_Generating = false;
 		};
 	}

@@ -77,9 +77,12 @@ layout(std430, binding = 20) readonly buffer buffer_TopGrids
 
 layout(push_constant) uniform Uniforms
 {
+	uint Random;
 	uint ModelIndex;
-	uint SnowColorIndex;
-	uint RandSeed;
+	uint WaterColorIndex;
+	int Stage;
+	int HeightStage;
+
 } u_Uniforms;
 
 
@@ -105,7 +108,7 @@ bool IsValidVoxel(ivec3 voxel, uint width, uint height, uint depth)
 		 && (voxel.z < depth && voxel.z >= 0));
 }
 
-bool IsSnow(ivec3 index)
+bool IsWater(ivec3 index)
 {
 	uint width = Models[u_Uniforms.ModelIndex].Width;
 	uint height = Models[u_Uniforms.ModelIndex].Height;
@@ -116,7 +119,7 @@ bool IsSnow(ivec3 index)
 
 	uint voxel = Index3D(index, width, height) + Models[u_Uniforms.ModelIndex].VoxelOffset;
 	uint colorIndex = uint(Voxels[voxel]);
-	return colorIndex == u_Uniforms.SnowColorIndex;
+	return colorIndex == u_Uniforms.WaterColorIndex;
 }
 
 
@@ -127,7 +130,7 @@ bool IsFilledVoxel(ivec3 index)
 	uint depth = Models[u_Uniforms.ModelIndex].Depth;
 
 	if (!IsValidVoxel(index, width, height, depth))
-		return false;
+		return true;
 
 	uint voxel = Index3D(index, width, height) + Models[u_Uniforms.ModelIndex].VoxelOffset;
 	uint colorIndex = uint(Voxels[voxel]);
@@ -136,46 +139,81 @@ bool IsFilledVoxel(ivec3 index)
 	return alpha != 0;
 }
 
+bool TryMoveVoxel(ivec3 index, ivec3 newIndex, in VoxelModel model)
+{
+	if (!IsFilledVoxel(newIndex))
+	{				
+		uint voxelIndex = Index3D(index, model.Width, model.Height) + model.VoxelOffset;
+		uint newVoxelIndex = Index3D(newIndex, model.Width, model.Height) + model.VoxelOffset;
+		
+		uint temp = uint(Voxels[voxelIndex]);
+		Voxels[voxelIndex] = uint8_t(Voxels[newVoxelIndex]);
+		Voxels[newVoxelIndex] = uint8_t(temp);
+		
+		return true;
+	}
+	return false;
+}
+
+
+
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
 	VoxelModel model = Models[u_Uniforms.ModelIndex];
 
-	uint modelVoxelOffset = Models[u_Uniforms.ModelIndex].VoxelOffset;
+	ivec2 offsets[9] = {
+		ivec2(0, 0),
+		ivec2(1, 0),
+		ivec2(1, 1),
+		ivec2(0, 1),
+		
+		ivec2(1, 2),
+		ivec2(2, 1),
 
-	for (int y = 1; y < model.Height; y++)
+		ivec2(2, 0),
+		ivec2(2, 2),
+		ivec2(0, 2)
+	};
+
+	for (int y = 1 + u_Uniforms.HeightStage; y < model.Height; y += 2)
 	{
 		ivec3 index = ivec3(int(gl_GlobalInvocationID.x), y, int(gl_GlobalInvocationID.y));
-		if (IsSnow(index))
+		index.x = offsets[u_Uniforms.Stage].x + index.x * 3;
+		index.z = offsets[u_Uniforms.Stage].y + index.z * 3;
+
+		if (IsWater(index))
 		{
 			ivec3 downIndex = ivec3(index.x, index.y - 1, index.z);
-			if (!IsFilledVoxel(downIndex))
-			{				
-				uint voxelIndex = Index3D(index, model.Width, model.Height) + modelVoxelOffset;
-				uint downVoxelIndex = Index3D(downIndex, model.Width, model.Height) + modelVoxelOffset;
-				
-				uint temp = uint(Voxels[voxelIndex]);
-				Voxels[voxelIndex] = uint8_t(Voxels[downVoxelIndex]);
-				Voxels[downVoxelIndex] = uint8_t(temp);
-			}
-			else
-			{
-				// Reset snow to the top of the grid			
-				float seed = float(u_Uniforms.RandSeed) * gl_GlobalInvocationID.x * gl_GlobalInvocationID.y;
-				bool shouldReset = Random(0.0, 10.0, seed) > 9.8;
-				if (shouldReset)
-				{
-					ivec3 upperIndex = ivec3(index.x, model.Height - 1, index.z);
-					uint voxelIndex = Index3D(index, model.Width, model.Height) + modelVoxelOffset;
-					uint upperVoxelIndex = Index3D(upperIndex, model.Width, model.Height) + modelVoxelOffset;
-					
-					uint8_t temp = Voxels[voxelIndex];
-					Voxels[voxelIndex] = uint8_t(Voxels[upperVoxelIndex]);
-					Voxels[upperVoxelIndex] = uint8_t(temp);
-				}		
-			}
+			ivec3 leftIndex = ivec3(index.x - 1, index.y, index.z);
+			ivec3 rightIndex = ivec3(index.x + 1, index.y, index.z);
+			ivec3 frontIndex = ivec3(index.x, index.y, index.z + 1);
+			ivec3 backIndex = ivec3(index.x, index.y, index.z - 1);
 			
-			break;
+
+			if (!TryMoveVoxel(index, downIndex, model))
+			{
+				if (u_Uniforms.Random != 0)
+				{
+					if (!TryMoveVoxel(index, leftIndex, model))
+					{
+						if (!TryMoveVoxel(index, frontIndex, model))
+						{
+							TryMoveVoxel(index, backIndex, model);					
+						}
+					}
+				}
+				else if (!TryMoveVoxel(index, rightIndex, model))
+				{
+					if (!TryMoveVoxel(index, frontIndex, model))
+					{
+						TryMoveVoxel(index, backIndex, model);
+							
+					}
+				}
+				
+			}
+		
 		}
 	}
 }

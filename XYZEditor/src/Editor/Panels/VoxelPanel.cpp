@@ -13,6 +13,7 @@
 #include "XYZ/Utils/Math/Math.h"
 #include "XYZ/Utils/Math/Perlin.h"
 #include "XYZ/Utils/Random.h"
+#include "XYZ/Utils/Algorithms/Raymarch.h"
 
 #include "XYZ/ImGui/ImGui.h"
 
@@ -136,6 +137,17 @@ namespace XYZ {
 				return x + width * (y + height * z);
 			}
 
+			static uint32_t Index3D(const glm::ivec3& index, int width, int height)
+			{
+				return index.x + width * (index.y + height * index.z);
+			}
+
+
+			static uint32_t Index2D(int x, int z, int depth)
+			{
+				return x * depth + z;
+			}
+
 			static AABB VoxelModelToAABB(const glm::mat4& transform, uint32_t width, uint32_t height, uint32_t depth, float voxelSize)
 			{
 				AABB result;
@@ -182,35 +194,12 @@ namespace XYZ {
 			return submesh;
 		}
 
-
 		VoxelPanel::VoxelPanel(std::string name)
 			:
 			EditorPanel(std::forward<std::string>(name)),
 			m_ViewportSize(0.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f)
 		{
-			float maxDistance = 1.0f;
-			float minDistance = 0.1f;
-			float attractionRadius = 5.0f;
-			float killRadius = 0.01f;
-
-			// Create an instance of the Space Colonization class
-			SpaceColonization sc(maxDistance, minDistance, attractionRadius, killRadius);
-
-			// Generate the initial points for the tree
-			glm::vec3 startPosition(0.0f, 0.0f, 0.0f);
-			int numPoints = 100;
-			sc.generatePoints(startPosition, numPoints);
-
-			// Simulate tree growth for a certain number of iterations
-			int numIterations = 50;
-			sc.simulateGrowth(numIterations);
-
-			for (auto& p : sc.GetPoints())
-			{
-
-			}
-
 
 			m_DeerMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));
 			m_CastleMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox"));
@@ -225,24 +214,24 @@ namespace XYZ {
 			submesh.VoxelSize = 3.0f;
 			submesh.MaxTraverses = 1024;
 
+		
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
 			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
 
 			VoxelInstance instance;
 			instance.SubmeshIndex = 0;
 			instance.Transform = glm::mat4(1.0f);
-
-					
+	
 			auto colorPallete = m_KnightMesh->GetColorPallete();
 			
-			colorPallete[Water] = { 0, 150, 250, 150 };
+			colorPallete[Water] = { 0, 150, 250, 255 };
 			colorPallete[Snow] = { 255, 255, 255, 255 }; // Snow
 			colorPallete[Grass] = { 1, 60, 32, 255 }; // Grass
 			colorPallete[Wood] = { 150, 75, 0, 255 };
 			colorPallete[Leaves] = { 1, 100, 40, 255 };
 
 			m_ProceduralMesh->SetColorPallete(colorPallete);
-			m_ProceduralMesh->SetSubmeshes({ submesh });
+			m_ProceduralMesh->SetSubmeshes({ submesh});
 			m_ProceduralMesh->SetInstances({ instance });
 
 	
@@ -331,17 +320,20 @@ namespace XYZ {
 		void VoxelPanel::OnUpdate(Timestep ts)
 		{
 			if (m_VoxelRenderer.Raw())
-			{
+			{			
 				m_EditorCamera.OnUpdate(ts);
-
+			
 				const glm::mat4 mvp = m_EditorCamera.GetViewProjection();
 				
 				if (!m_Generating && m_GenerateVoxelsFuture.valid())
 				{
-					VoxelSubmesh submesh = m_ProceduralMesh->GetSubmeshes()[0];
-					submesh.ColorIndices = m_GenerateVoxelsFuture.get();
+					VoxelSubmesh terrainSubmesh = m_ProceduralMesh->GetSubmeshes()[0];
+					
+					m_Terrain = std::move(m_GenerateVoxelsFuture.get());
+					terrainSubmesh.ColorIndices = m_Terrain.Terrain;
+
 					while (m_ProceduralMesh->IsGeneratingTopGrid()) {} // Wait to finish generating top grid
-					m_ProceduralMesh->SetSubmeshes({ submesh });
+					m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
 				}
 
 				m_VoxelRenderer->BeginScene({
@@ -433,23 +425,29 @@ namespace XYZ {
 			uint32_t seed = m_Seed;
 			uint32_t frequency = m_Frequency;
 			uint32_t octaves = m_Octaves;
-			uint32_t width = m_ProceduralMesh->GetSubmeshes()[0].Width;
-			uint32_t heigth = m_ProceduralMesh->GetSubmeshes()[0].Height;
-			uint32_t depth = m_ProceduralMesh->GetSubmeshes()[0].Depth;
 
+			auto& terrainSubmesh = m_ProceduralMesh->GetSubmeshes()[0];
+
+			uint32_t width = terrainSubmesh.Width;
+			uint32_t height = terrainSubmesh.Height;
+			uint32_t depth = terrainSubmesh.Depth;
+	
 			auto& pool = Application::Get().GetThreadPool();
-			m_GenerateVoxelsFuture = pool.SubmitJob([this, seed, frequency, octaves, width, heigth, depth]() {
+			m_GenerateVoxelsFuture = pool.SubmitJob([this, seed, frequency, octaves, width, height, depth]() {
 
-				auto result = generateVoxelMesh(
+				auto terrain = generateVoxelTerrainMesh(
 					seed, frequency, octaves,
-					width, heigth, depth
+					width, height, depth
 				);
+				
 				m_Generating = false;
-				return result;
+				return terrain;
 			});
 		}
 
-		std::vector<uint8_t> VoxelPanel::generateVoxelMesh(
+		
+		
+		VoxelTerrain VoxelPanel::generateVoxelTerrainMesh(
 			uint32_t seed, uint32_t frequency, uint32_t octaves,
 			uint32_t width, uint32_t height, uint32_t depth
 		)
@@ -457,7 +455,9 @@ namespace XYZ {
 			const double fx = ((double)frequency / (double)width);
 			const double fy = ((double)frequency / (double)height);
 
-			std::vector<uint8_t> result(width * height * depth);
+			VoxelTerrain result;
+			result.Terrain.resize(width * height * depth);
+			result.TerrainHeightmap.resize(width * depth);
 			for (uint32_t x = 0; x < width; ++x)
 			{
 				for (uint32_t z = 0; z < depth; ++z)
@@ -469,101 +469,27 @@ namespace XYZ {
 
 					for (uint32_t y = 0; y < genHeight; ++y)
 					{
-						result[Utils::Index3D(x, y, z, width, height)] = Grass;						
+						result.Terrain[Utils::Index3D(x, y, z, width, height)] = Grass;
 					}
+
+					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight;
 
 					if (Utils::RandomColorIndex(0, 20) == 0) // % chance to generate snow voxel
 					{
 						//result[Utils::Index3D(x, height - 1, z, width, height)] = Snow; // Snow
 					}
-					result[Utils::Index3D(x, 150, z, width, height)] = Water; // Water
+					result.Terrain[Utils::Index3D(x, 150, z, width, height)] = Water; // Water
 					
-					if (RandomNumber(0u, 200u) < 1)
+					if (RandomNumber(0u, 1500u) < 1)
 					{
 						if (genHeight > 150)
 						{
-							//generateVoxelTree(result, 20, 5, 10, x, genHeight, z, width, height, depth);
+							
 						}
 					}
 				}
 			}
 			return result;
 		}
-
-		void VoxelPanel::generateVoxelTree(
-			std::vector<uint8_t>& voxels,
-			uint32_t maxHeight,
-			uint32_t minBranches,
-			uint32_t maxBranches,
-			uint32_t x, uint32_t y, uint32_t z,
-			uint32_t width, uint32_t height, uint32_t depth)
-		{
-			// Generate the trunk of the oak tree.
-			uint32_t trunkHeight = RandomNumber(1u, maxHeight);
-			for (uint32_t i = 0; i < trunkHeight; i++)
-			{
-				const uint32_t currentY = y + i;
-				const uint32_t blockType = (i == trunkHeight - 1) ? Leaves : Wood;
-				const uint32_t index = Utils::Index3D(x, currentY, z, width, height);
-				voxels[index] = blockType;
-			}
-
-			// Generate the canopy of the oak tree.
-			uint32_t numBranches = RandomNumber(minBranches, maxBranches);
-			for (uint32_t i = 0; i < numBranches; i++)
-			{
-				uint32_t branchLength = RandomNumber(4u, 10u);
-				int32_t dx = 0, dz = 0;
-				uint32_t direction = RandomNumber(0u, 3u);
-				switch (direction)
-				{
-				case 0: dx = -1; break;
-				case 1: dx = 1; break;
-				case 2: dz = -1; break;
-				case 3: dz = 1; break;
-				}
-				int32_t endX = x + dx * branchLength;
-				int32_t endZ = z + dz * branchLength;
-				for (uint32_t j = 0; j < branchLength; j++)
-				{
-					uint32_t currentX = x + dx * j;
-					uint32_t currentZ = z + dz * j;
-					uint32_t currentY = y + trunkHeight - 1 + j;
-					const uint32_t index = Utils::Index3D(currentX, currentY, currentZ, width, height);
-					if (index < voxels.size())
-					{
-						voxels[index] = Leaves;
-					}
-				}
-				uint32_t numSideBranches = RandomNumber(5u, 20u);
-				for (uint32_t j = 0; j < numSideBranches; j++)
-				{
-					uint32_t sideBranchLength = RandomNumber(2u, 10u);
-					int32_t sdx = 0, sdz = 0;
-					if (dx == 0)
-					{
-						sdx = (RandomNumber(0u, 1u) == 0) ? -1 : 1;
-					}
-					else
-					{
-						sdz = (RandomNumber(0u, 1u) == 0) ? -1 : 1;
-					}
-					int sendX = endX + sdx * sideBranchLength;
-					int sendZ = endZ + sdz * sideBranchLength;
-					for (int k = 0; k < sideBranchLength; k++)
-					{
-						int currentX = endX + sdx * k;
-						int currentZ = endZ + sdz * k;
-						int currentY = y + trunkHeight - 1 + branchLength + k;
-						const uint32_t index = Utils::Index3D(currentX, currentY, currentZ, width, height);
-						if (index < voxels.size())
-						{
-							voxels[index] = Leaves;
-						}
-					}
-				}
-			}
-		}
-
 	}
 }

@@ -4,8 +4,11 @@
 #include "Renderer.h"
 
 #include "XYZ/API/Vulkan/VulkanPipelineCompute.h"
+#include "XYZ/API/Vulkan/VulkanStorageBufferSet.h"
+
 #include "XYZ/Utils/Math/Math.h"
 #include "XYZ/Utils/Math/AABB.h"
+#include "XYZ/Utils/Random.h"
 
 #include "XYZ/ImGui/ImGui.h"
 
@@ -16,24 +19,10 @@
 #include <glm/gtx/quaternion.hpp>
 
 namespace XYZ {
-	static std::random_device s_RandomDev; // obtain a random number from hardware
-	static std::mt19937 s_RandomGen(s_RandomDev());
 
 #define TILE_SIZE 16
 
-	static uint32_t RandomColor()
-	{
-		// seed the generator
-		std::uniform_int_distribution<> distr(0, 255); // define the range
-
-		uint32_t result = 0;
-		result |= static_cast<uint8_t>(distr(s_RandomGen));		  // R
-		result |= static_cast<uint8_t>(distr(s_RandomGen)) << 8;  // G
-		result |= static_cast<uint8_t>(distr(s_RandomGen)) << 16; // B
-		result |= static_cast<uint8_t>(distr(s_RandomGen)) << 24; // A
-
-		return result;
-	}
+	
 	static AABB VoxelModelToAABB(const glm::mat4& transform, uint32_t width, uint32_t height, uint32_t depth, float voxelSize)
 	{
 		AABB result;
@@ -436,12 +425,39 @@ namespace XYZ {
 
 	void VoxelRenderer::snowPass()
 	{
+		auto ssboBarrier = [](Ref<VulkanPipelineCompute> pipeline, Ref<VulkanStorageBufferSet> storageBufferSet) {
+
+			Renderer::Submit([pipeline, storageBufferSet]() {
+				uint32_t frameIndex = Renderer::GetCurrentFrame();
+				auto storageBuffer = storageBufferSet->Get(SSBOVoxels::Binding, SSBOVoxels::Set, frameIndex).As<VulkanStorageBuffer>();
+				VkBufferMemoryBarrier bufferBarrier = {};
+				bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+				bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT; // Access mask for the source stage
+				bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;  // Access mask for the destination stage
+				bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				bufferBarrier.buffer = storageBuffer->GetVulkanBuffer();  // The SSBO buffer
+				bufferBarrier.offset = 0;                // Offset in the buffer
+				bufferBarrier.size = VK_WHOLE_SIZE;      // Size of the buffer
+				vkCmdPipelineBarrier(
+					pipeline->GetActiveCommandBuffer(),                   // The command buffer
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,  // Source pipeline stage
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,  // Destination pipeline stage
+					0,                               // Dependency flags
+					0, nullptr,                      // Memory barriers (global memory barriers)
+					1, &bufferBarrier,               // Buffer memory barriers
+					0, nullptr                       // Image memory barriers
+				);
+			});
+		};
+
+		
 		bool shouldSnow = m_SnowFramesCounter >= m_SnowFramesDelay;
 		if (shouldSnow && reqDispatchCounter == 0 && m_Snow)
 		{
 			reqDispatchCounter = 3;
 			m_SnowFramesCounter = 0;
-			randSeed = rand();
+			randSeed = RandomNumber(0u, 1u);
 		}
 
 		if (reqDispatchCounter > 0)
@@ -454,16 +470,23 @@ namespace XYZ {
 				m_SnowMaterial
 			);
 
-			Renderer::DispatchCompute(
-				m_SnowPipeline,
-				nullptr,
-				800 / TILE_SIZE, 800 / TILE_SIZE, 1,
-				PushConstBuffer
+			for (uint32_t j = 0; j < 2; ++j)
+			{
+				for (uint32_t i = 0; i < 9; ++i)
 				{
-					0u, 2u, randSeed
+					Renderer::DispatchCompute(
+						m_SnowPipeline,
+						nullptr,
+						256 / TILE_SIZE, 256 / TILE_SIZE, 1,
+						PushConstBuffer
+						{
+							randSeed, 0u, 1u, i, j
+						}
+					);
+					ssboBarrier(m_SnowPipeline, m_StorageBufferSet);
 				}
-			);
-
+			}
+			ssboBarrier(m_SnowPipeline, m_StorageBufferSet);
 			Renderer::EndPipelineCompute(m_SnowPipeline);
 			reqDispatchCounter--;
 		}
@@ -626,7 +649,7 @@ namespace XYZ {
 		m_SSGIPipeline = PipelineCompute::Create(spec);
 
 
-		Ref<Shader> snowShader = Shader::Create("Resources/Shaders/Voxel/Snow.glsl");
+		Ref<Shader> snowShader = Shader::Create("Resources/Shaders/Voxel/Water.glsl");
 		m_SnowMaterial = Material::Create(snowShader);
 		spec.Shader = snowShader;
 		m_SnowPipeline = PipelineCompute::Create(spec);
