@@ -168,13 +168,10 @@ vec3 RandomValue(in vec2 xy, in float seed)
 
 bool RayBoxIntersection(vec3 origin, vec3 direction, vec3 lb, vec3 rt, out float t)
 {
-	vec3 dirfrac;
-    // r.dir is unit direction vector of ray
-    dirfrac.x = 1.0 / direction.x;
-    dirfrac.y = 1.0 / direction.y;
-    dirfrac.z = 1.0 / direction.z;
+	vec3 dirfrac = 1.0 / direction;
     // lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
     // r.org is origin of ray
+   
     float t1 = (lb.x - origin.x) * dirfrac.x;
     float t2 = (rt.x - origin.x) * dirfrac.x;
     float t3 = (lb.y - origin.y) * dirfrac.y;
@@ -211,4 +208,25 @@ bool PointInBox(vec3 point, vec3 boxMin, vec3 boxMax)
 		&& point.y <= boxMax.y
 		&& point.z >= boxMin.z
 		&& point.z <= boxMax.z;
+}
+
+float SDFBox (vec3 p, vec3 c, vec3 s)
+{
+    float x = max
+    (   p.x - c.x - s.x / 2.0,
+        c.x - p.x - s.x / 2.0
+    );
+    float y = max
+    (   p.y - c.y - s.y / 2.0,
+        c.y - p.y - s.y / 2.0
+    );
+    
+    float z = max
+    (   p.z - c.z - s.z / 2.0,
+        c.z - p.z - s.z / 2.0
+    );
+    float d = x;
+    d = max(d,y);
+    d = max(d,z);
+    return d;
 }

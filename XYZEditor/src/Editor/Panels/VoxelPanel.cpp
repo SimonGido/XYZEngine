@@ -69,6 +69,8 @@ namespace XYZ {
 				}
 			}
 
+			const std::vector<Point>& GetPoints() const { return points; }
+
 			void simulateGrowth(int numIterations) {
 
 				std::random_device rd;
@@ -204,6 +206,10 @@ namespace XYZ {
 			int numIterations = 50;
 			sc.simulateGrowth(numIterations);
 
+			for (auto& p : sc.GetPoints())
+			{
+
+			}
 
 
 			m_DeerMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));

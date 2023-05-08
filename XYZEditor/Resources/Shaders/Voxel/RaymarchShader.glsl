@@ -97,6 +97,8 @@ struct AABB
 };
 
 
+Ray g_CameraRay;
+
 AABB VoxelAABB(ivec3 voxel, float voxelSize)
 {
 	AABB result;
@@ -127,6 +129,7 @@ Ray CreateRay(vec3 origin, in mat4 inverseModelSpace, vec2 coords)
 
 	return ray;
 }
+
 
 Ray CreateRay(vec3 origin, vec2 coords)
 {
@@ -197,6 +200,8 @@ struct RaymarchResult
 {
 	vec4  Color;
 	vec3  Normal;
+	vec3  WorldHit;
+	vec3  WorldNormal;
 	float Distance;
 	bool  OpaqueHit;
 	bool  Hit;
@@ -254,6 +259,8 @@ void RayMarch(in Ray ray, inout RaymarchState state, vec3 delta, ivec3 step, in 
 	while (state.Traverses != 0)
 	{
 		state.Traverses -= 1;
+
+		state.Distance = VoxelDistanceFromRay(ray.Origin, ray.Direction, state.CurrentVoxel, model.VoxelSize);
 		if (state.Distance > currentDistance)
 			break;
 
@@ -273,7 +280,6 @@ void RayMarch(in Ray ray, inout RaymarchState state, vec3 delta, ivec3 step, in 
 		}
 
 		PerformStep(state, step, delta);
-		state.Distance += voxelSize * length(ray.Direction);
 	}
 }
 
@@ -324,7 +330,6 @@ RaymarchResult RayMarch(in Ray ray, vec3 origin, vec3 direction, in VoxelModel m
 		result.OpaqueHit = state.Alpha == OPAQUE;
 		result.Distance = state.Distance;
 		result.Normal = state.Normal;
-
 		//if (!result.OpaqueHit)
 		//	state.Traverses = model.MaxTraverses; // Hit was not opaque reset traverses for better visual results
 	}
@@ -383,9 +388,7 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 	result.Hit = false;
 
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
-	float voxelSize = grid.Size;
-	
-	ivec3 current_voxel = ivec3(floor(origin / voxelSize));
+	ivec3 current_voxel = ivec3(floor(origin / grid.Size));
 	
 	ivec3 step = ivec3(
 		(direction.x > 0.0) ? 1 : -1,
@@ -393,23 +396,27 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 		(direction.z > 0.0) ? 1 : -1
 	);
 	vec3 next_boundary = vec3(
-		float((step.x > 0) ? current_voxel.x + 1 : current_voxel.x) * voxelSize,
-		float((step.y > 0) ? current_voxel.y + 1 : current_voxel.y) * voxelSize,
-		float((step.z > 0) ? current_voxel.z + 1 : current_voxel.z) * voxelSize
+		float((step.x > 0) ? current_voxel.x + 1 : current_voxel.x) * grid.Size,
+		float((step.y > 0) ? current_voxel.y + 1 : current_voxel.y) * grid.Size,
+		float((step.z > 0) ? current_voxel.z + 1 : current_voxel.z) * grid.Size
 	);
 	
 
 	vec3 t_max = (next_boundary - origin) / direction; // we will move along the axis with the smallest value
-	vec3 t_delta = voxelSize / direction * vec3(step);	
+	vec3 t_delta = grid.Size / direction * vec3(step);	
 
 	for (uint i = 0; i < grid.MaxTraverses; i++)
 	{
+		float newDistance = VoxelDistanceFromRay(ray.Origin, ray.Direction, current_voxel, grid.Size);
+		if (newDistance > currentDistance)
+			break;
+
 		if (IsValidVoxel(current_voxel, grid.Width, grid.Height, grid.Depth))
 		{
 			uint voxelIndex = Index3D(current_voxel, grid.Width, grid.Height) + grid.CellsOffset;
 			if (uint(TopGridCells[voxelIndex]) != 0)
 			{			
-				float dist = VoxelDistanceFromRay(origin, direction, current_voxel, voxelSize);
+				float dist = VoxelDistanceFromRay(origin, direction, current_voxel, grid.Size);
 				origin += direction * (dist - EPSILON); // Move origin to hit of top grid cell
 							
 				// Raymarch from new origin
@@ -452,9 +459,11 @@ bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelMode
 	return result;
 }
 
+
 void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);	
+
 	if (!result.OpaqueHit)
 	{
 		vec4 originalColor = imageLoad(o_Image, textureIndex);
@@ -465,9 +474,7 @@ void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
 		imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
 	}
 
-	vec3 worldHitPosition = ray.Origin + (ray.Direction * result.Distance);
-	vec3 worldNormal = mat3(model.InverseTransform) * -result.Normal;
-	result.Color.rgb = CalculateDirLights(worldHitPosition, result.Color.rgb, worldNormal);
+	result.Color.rgb = CalculateDirLights(result.WorldHit, result.Color.rgb, result.WorldNormal);
 
 	imageStore(o_Image, textureIndex, result.Color); // Store color		
 }
@@ -483,7 +490,7 @@ layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
-	
+	g_CameraRay = CreateRay(u_CameraPosition.xyz, textureIndex);
 	for (uint i = 0; i < NumModels; i++)
 	{
 		VoxelModel model = Models[i];
@@ -498,6 +505,7 @@ void main()
 		float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
 		RaymarchResult result;
 
+
 		if (Models[i].TopGridIndex != -1 && u_Uniforms.UseTopGrid)
 		{
 			result = RaymarchTopGrid(ray, origin, direction, model, currentDistance, TopGrids[Models[i].TopGridIndex]);
@@ -508,6 +516,10 @@ void main()
 		}
 
 		if (result.Hit)		
+		{ 
+			result.WorldHit = g_CameraRay.Origin + (g_CameraRay.Direction * result.Distance);
+			result.WorldNormal = mat3(model.InverseTransform) * -result.Normal;
 			StoreHitResult(ray, result, model);	
+		}
 	}
 }
