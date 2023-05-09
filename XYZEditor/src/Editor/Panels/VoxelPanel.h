@@ -94,6 +94,8 @@ namespace XYZ {
 			std::future<VoxelTerrain> m_GenerateVoxelsFuture;
 	
 			bool m_Generating = false;
+
+			float m_TopGridSize = 64.0f;
 		};
 	}
 }

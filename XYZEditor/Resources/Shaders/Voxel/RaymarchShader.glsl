@@ -165,8 +165,6 @@ bool IsValidVoxel(ivec3 voxel, uint width, uint height, uint depth)
 		 && (voxel.z < depth && voxel.z >= 0));
 }
 
-
-
 vec4 VoxelToColor(uint voxel)
 {
 	vec4 color;
@@ -202,6 +200,7 @@ struct RaymarchResult
 	vec3  Normal;
 	vec3  WorldHit;
 	vec3  WorldNormal;
+	ivec3 FinalVoxel;
 	float Distance;
 	bool  OpaqueHit;
 	bool  Hit;
@@ -330,8 +329,9 @@ RaymarchResult RayMarch(in Ray ray, vec3 origin, vec3 direction, in VoxelModel m
 		result.OpaqueHit = state.Alpha == OPAQUE;
 		result.Distance = state.Distance;
 		result.Normal = state.Normal;
-		//if (!result.OpaqueHit)
-		//	state.Traverses = model.MaxTraverses; // Hit was not opaque reset traverses for better visual results
+		result.FinalVoxel = state.CurrentVoxel;
+		if (!result.OpaqueHit)
+			state.Traverses = maxTraverses; // Hit was not opaque reset traverses for better visual results
 	}
 
 	if (state.Distance > currentDistance) // Depth test
@@ -351,11 +351,12 @@ RaymarchResult RayMarch(in Ray ray, vec3 origin, vec3 direction, in VoxelModel m
 		// We passed depth test
 		if (state.Hit) // We hit something so mix colors together
 		{
-			result.Color.rgb = mix(result.Color.rgb, state.Color.rgb, state.Color.a);
-			result.Color.a = mix(result.Color.a, state.Color.a, result.Color.a); // Increase alpha of our current result
+			result.Color.rgb += state.Color.a * state.Color.rgb;
+			result.Color.a += state.Color.a;
 			result.Hit = true;
 			result.OpaqueHit = result.Color.a >= 1.0;
 			result.Normal = state.Normal;
+			result.FinalVoxel = state.CurrentVoxel;
 		}
 	}
 	result.Distance = state.Distance;
@@ -381,7 +382,6 @@ vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
 }
 
 
-
 RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, in VoxelTopGrid grid)
 {
 	RaymarchResult result;
@@ -405,6 +405,7 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 	vec3 t_max = (next_boundary - origin) / direction; // we will move along the axis with the smallest value
 	vec3 t_delta = grid.Size / direction * vec3(step);	
 
+
 	for (uint i = 0; i < grid.MaxTraverses; i++)
 	{
 		float newDistance = VoxelDistanceFromRay(ray.Origin, ray.Direction, current_voxel, grid.Size);
@@ -420,7 +421,9 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 				origin += direction * (dist - EPSILON); // Move origin to hit of top grid cell
 							
 				// Raymarch from new origin
-				result = RayMarch(ray, origin, direction, model, currentDistance, grid.MaxTraverses);
+				uint scale = uint(ceil(grid.Size / model.VoxelSize));
+				uint maxTraverses = scale * 3;
+				result = RayMarch(ray, origin, direction, model, currentDistance, maxTraverses);
 				if (result.Hit)
 					return result;
 			}
@@ -460,6 +463,24 @@ bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelMode
 }
 
 
+
+bool IsNeighbourTransparent(in RaymarchResult result, in VoxelModel model)
+{
+	ivec3 neighbourVoxel = result.FinalVoxel + ivec3(result.Normal);
+	if (IsValidVoxel(neighbourVoxel, model.Width, model.Height, model.Depth))
+	{
+		uint voxelIndex = Index3D(neighbourVoxel, model.Width, model.Height) + model.VoxelOffset;
+		uint colorIndex = uint(Voxels[voxelIndex]);
+		uint color = ColorPallete[model.ColorIndex][colorIndex];
+		uint alpha = VoxelAlpha(color);
+		if (alpha != OPAQUE && alpha != 0)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);	
@@ -474,7 +495,8 @@ void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
 		imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
 	}
 
-	result.Color.rgb = CalculateDirLights(result.WorldHit, result.Color.rgb, result.WorldNormal);
+	if (!IsNeighbourTransparent(result, model))
+		result.Color.rgb = CalculateDirLights(result.WorldHit, result.Color.rgb, result.WorldNormal);
 
 	imageStore(o_Image, textureIndex, result.Color); // Store color		
 }

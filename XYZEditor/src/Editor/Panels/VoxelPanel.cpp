@@ -224,7 +224,7 @@ namespace XYZ {
 	
 			auto colorPallete = m_KnightMesh->GetColorPallete();
 			
-			colorPallete[Water] = { 0, 150, 250, 255 };
+			colorPallete[Water] = { 0, 100, 200, 70 };
 			colorPallete[Snow] = { 255, 255, 255, 255 }; // Snow
 			colorPallete[Grass] = { 1, 60, 32, 255 }; // Grass
 			colorPallete[Wood] = { 150, 75, 0, 255 };
@@ -302,6 +302,15 @@ namespace XYZ {
 				if (ImGui::Button("Apply") && !m_Generating)
 				{
 					pushGenerateVoxelMeshJob();
+				}
+				ImGui::DragFloat("Top Grid Size", &m_TopGridSize, 1.0f, 0, 1024);
+				
+				if (ImGui::Button("Generate Top Grid"))
+				{
+					if (!m_ProceduralMesh->IsGeneratingTopGrid())
+						m_ProceduralMesh->GenerateTopGridAsync(m_TopGridSize);
+					else
+						std::cout << "Grid is still generating" << std::endl;
 				}
 			}
 			ImGui::End();

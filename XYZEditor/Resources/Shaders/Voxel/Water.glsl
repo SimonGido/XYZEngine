@@ -210,10 +210,8 @@ void main()
 						TryMoveVoxel(index, backIndex, model);
 							
 					}
-				}
-				
-			}
-		
+				}			
+			}	
 		}
 	}
 }

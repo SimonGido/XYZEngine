@@ -87,7 +87,11 @@ namespace XYZ {
 		const uint32_t height = static_cast<uint32_t>(std::ceil(aabb.Max.y - aabb.Min.y) / size);
 		const uint32_t depth = static_cast<uint32_t>(std::ceil(aabb.Max.z - aabb.Min.z) / size);
 
-		topGrid.MaxTraverses = std::sqrtl(std::powl(width, 2) + std::powl(height, 2) + std::powl(depth, 2)) * 2;
+		const glm::vec3 rayDir = glm::normalize(glm::vec3(1, 1, 1));
+		const glm::vec3 delta = glm::abs(glm::vec3(width, height, depth) / rayDir);
+		const float maxDistance = std::max(delta.x, std::max(delta.y, delta.z));
+
+		topGrid.MaxTraverses = std::ceil(maxDistance);
 		topGrid.Width = width;
 		topGrid.Height = height;
 		topGrid.Depth = depth;
