@@ -23,6 +23,7 @@ namespace XYZ {
 		struct VoxelTerrain
 		{
 			std::vector<uint8_t> Terrain;
+			std::vector<uint8_t> WaterMap;
 			std::vector<uint16_t> TerrainHeightmap;
 		};
 
@@ -47,13 +48,12 @@ namespace XYZ {
 			void drawTransform(TransformComponent& transform, int id) const;
 
 			void pushGenerateVoxelMeshJob();
-
+			void submitWater();
 			
 			static VoxelTerrain generateVoxelTerrainMesh(
 				uint32_t seed, uint32_t frequency, uint32_t octaves,
 				uint32_t width, uint32_t height, uint32_t depth
 			);
-
 
 		private:
 			Ref<VoxelRenderer>			m_VoxelRenderer;
@@ -97,7 +97,10 @@ namespace XYZ {
 	
 			bool m_Generating = false;
 
-			float m_TopGridSize = 64.0f;
+			StorageBufferAllocation m_WaterDensityAllocation;
+			bool m_UpdateWater = false;
+
+			float m_TopGridSize = 16.0f;
 		};
 	}
 }

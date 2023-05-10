@@ -29,7 +29,7 @@ namespace XYZ {
 
 	struct SSBOVoxels
 	{
-		static constexpr uint32_t MaxVoxels = 512 * 1024 * 1024; // Half gig
+		static constexpr uint32_t MaxVoxels = 512 * 1024 * 1024; // 512mb
 				
 		uint8_t Voxels[MaxVoxels];
 
@@ -107,9 +107,7 @@ namespace XYZ {
 
 	struct SSBOVoxelComputeData
 	{
-		static constexpr uint32_t MaxSize = 512 * 1024 * 1024; // Half gig
-
-		uint8_t Data[MaxSize];
+		static constexpr uint32_t MaxSize = 256 * 1024 * 1024; // 256mb
 
 		static constexpr uint32_t Binding = 21;
 		static constexpr uint32_t Set = 0;
@@ -271,7 +269,6 @@ namespace XYZ {
 		SSBOVoxelModels			m_SSBOVoxelModels;
 		SSBOVoxelTopGrids		m_SSBOTopGrids;
 		SSBOColors				m_SSBOColors;
-		SSBOVoxelComputeData    m_SSBOComputeData;
 
 		SSGIValues				m_SSGIValues;
 		Math::Frustum			m_Frustum;

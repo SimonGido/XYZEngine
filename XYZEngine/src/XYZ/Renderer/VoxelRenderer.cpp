@@ -48,12 +48,12 @@ namespace XYZ {
 		m_StorageBufferSet->Create(sizeof(SSBOVoxelModels), SSBOVoxelModels::Set, SSBOVoxelModels::Binding);
 		m_StorageBufferSet->Create(sizeof(SSBOColors), SSBOColors::Set, SSBOColors::Binding);
 		m_StorageBufferSet->Create(sizeof(SSBOVoxelTopGrids), SSBOVoxelTopGrids::Set, SSBOVoxelTopGrids::Binding);
-		m_StorageBufferSet->Create(sizeof(SSBOVoxelComputeData), SSBOVoxelComputeData::Set, SSBOVoxelComputeData::Binding);
+		m_StorageBufferSet->Create(SSBOVoxelComputeData::MaxSize, SSBOVoxelComputeData::Set, SSBOVoxelComputeData::Binding);
 
 		m_VoxelStorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxels), SSBOVoxels::Binding, SSBOVoxels::Set);
 		m_ColorStorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOColors), SSBOColors::Binding, SSBOColors::Set);
 		m_TopGridsAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxelTopGrids), SSBOVoxelTopGrids::Binding, SSBOVoxelTopGrids::Set);
-		m_ComputeStorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxelComputeData), SSBOVoxelComputeData::Binding, SSBOVoxelComputeData::Set);
+		m_ComputeStorageAllocator = Ref<StorageBufferAllocator>::Create(SSBOVoxelComputeData::MaxSize, SSBOVoxelComputeData::Binding, SSBOVoxelComputeData::Set);
 		
 		memset(m_SSBOTopGrids.TopGridCells, 0, sizeof(SSBOVoxelTopGrids));
 
@@ -339,6 +339,33 @@ namespace XYZ {
 
 	void VoxelRenderer::effectPass()
 	{
+		auto ssboBarrier = [](Ref<VulkanPipelineCompute> pipeline, Ref<VulkanStorageBufferSet> storageBufferSet) {
+
+			Renderer::Submit([pipeline, storageBufferSet]() {
+				uint32_t frameIndex = Renderer::GetCurrentFrame();
+				auto storageBuffer = storageBufferSet->Get(SSBOVoxels::Binding, SSBOVoxels::Set, frameIndex).As<VulkanStorageBuffer>();
+				VkBufferMemoryBarrier bufferBarrier = {};
+				bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+				bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT; // Access mask for the source stage
+				bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;  // Access mask for the destination stage
+				bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				bufferBarrier.buffer = storageBuffer->GetVulkanBuffer();  // The SSBO buffer
+				bufferBarrier.offset = 0;                // Offset in the buffer
+				bufferBarrier.size = VK_WHOLE_SIZE;      // Size of the buffer
+				vkCmdPipelineBarrier(
+					pipeline->GetActiveCommandBuffer(),                   // The command buffer
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,  // Source pipeline stage
+					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,  // Destination pipeline stage
+					0,                               // Dependency flags
+					0, nullptr,                      // Memory barriers (global memory barriers)
+					1, &bufferBarrier,               // Buffer memory barriers
+					0, nullptr                       // Image memory barriers
+				);
+				});
+		};
+
+
 		for (auto& [key, effect] : m_EffectCommands)
 		{
 			Ref<PipelineCompute> pipeline = getEffectPipeline(effect.Material);
@@ -355,9 +382,10 @@ namespace XYZ {
 				Renderer::DispatchCompute(
 					pipeline,
 					nullptr,
-					invoc.WorkGroups.x, invoc.WorkGroups.y, invoc.WorkGroups.y,
+					invoc.WorkGroups.x, invoc.WorkGroups.y, invoc.WorkGroups.z,
 					invoc.Constants
 				);
+				ssboBarrier(pipeline, m_StorageBufferSet);
 			}
 
 			Renderer::EndPipelineCompute(pipeline);

@@ -196,7 +196,7 @@ namespace XYZ {
 		}
 		m_Dirty = true;
 		m_DirtySubmeshes.clear();
-		GenerateTopGridAsync(64.0f);
+		GenerateTopGridAsync(16.0f);
 	}
 
 	void VoxelProceduralMesh::SetInstances(const std::vector<VoxelInstance>& instances)

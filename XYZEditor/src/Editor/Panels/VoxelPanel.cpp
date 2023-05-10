@@ -263,7 +263,7 @@ namespace XYZ {
 			}
 			pushGenerateVoxelMeshJob();
 
-			Ref<Shader> waterShader = Shader::Create("Resources/Shaders/Voxel/Water.glsl");
+			Ref<Shader> waterShader = Shader::Create("Resources/Shaders/Voxel/WaterTest.glsl");
 			Ref<ShaderAsset> waterShaderAsset = Ref<ShaderAsset>::Create(waterShader);
 			m_WaterMaterial = Ref<MaterialAsset>::Create(waterShaderAsset);
 		}
@@ -321,6 +321,7 @@ namespace XYZ {
 					else
 						std::cout << "Grid is still generating" << std::endl;
 				}
+				ImGui::Checkbox("Update Water", &m_UpdateWater);
 			}
 			ImGui::End();
 
@@ -340,7 +341,7 @@ namespace XYZ {
 			if (m_VoxelRenderer.Raw())
 			{			
 				m_EditorCamera.OnUpdate(ts);
-			
+				
 				const glm::mat4 mvp = m_EditorCamera.GetViewProjection();
 				
 				if (!m_Generating && m_GenerateVoxelsFuture.valid())
@@ -352,6 +353,7 @@ namespace XYZ {
 
 					while (m_ProceduralMesh->IsGeneratingTopGrid()) {} // Wait to finish generating top grid
 					m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
+					m_VoxelRenderer->SubmitComputeData(m_Terrain.WaterMap.data(), m_Terrain.WaterMap.size(), 0, m_WaterDensityAllocation, true);
 				}
 
 				m_VoxelRenderer->BeginScene({
@@ -384,6 +386,7 @@ namespace XYZ {
 					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
 				}
 				
+				submitWater();
 				
 				if (m_CurrentTime > m_KeyLength)
 				{
@@ -411,6 +414,8 @@ namespace XYZ {
 		void VoxelPanel::SetVoxelRenderer(const Ref<VoxelRenderer>& voxelRenderer)
 		{
 			m_VoxelRenderer = voxelRenderer;
+			m_VoxelRenderer->CreateComputeAllocation(512 * 400 * 512, m_WaterDensityAllocation);
+
 		}
 
 
@@ -463,6 +468,50 @@ namespace XYZ {
 			});
 		}
 
+		static uint32_t reqDispatchCounter = 0;
+		static int randSeeds[9];
+
+		void VoxelPanel::submitWater()
+		{
+			if (reqDispatchCounter == 0 && m_UpdateWater)
+			{
+				reqDispatchCounter = 3;
+				for (int i = 0; i < 9; i++)
+					randSeeds[i] = RandomNumber(0u, 500u);
+			}
+
+			if (reqDispatchCounter > 0)
+			{
+				const glm::ivec3 workGroups = {
+					std::ceil(512.0f / 3.0f / 16),
+					std::ceil(512.0f / 3.0f / 16),
+					400 / 2 / 4 // submesh height / 2 / local_size_z
+				};
+
+				for (uint32_t j = 0; j < 2; ++j)
+				{
+					for (uint32_t i = 0; i < 9; ++i)
+					{
+						m_VoxelRenderer->SubmitEffect(
+							m_WaterMaterial,
+							workGroups,
+							PushConstBuffer
+							{
+								randSeeds[i],
+								0u, // Model index
+								(uint32_t)Empty, 
+								(uint32_t)Water, 
+								255u, // Max density
+								i, 
+								j
+							}
+						);
+					}
+				}
+				reqDispatchCounter--;
+			}
+		}
+
 		
 		
 		VoxelTerrain VoxelPanel::generateVoxelTerrainMesh(
@@ -475,17 +524,20 @@ namespace XYZ {
 
 			VoxelTerrain result;
 			result.Terrain.resize(width * height * depth);
+			result.WaterMap.resize(width * height * depth);
+			memset(result.WaterMap.data(), 0, result.WaterMap.size());
+
 			result.TerrainHeightmap.resize(width * depth);
 			for (uint32_t x = 0; x < width; ++x)
 			{
 				for (uint32_t z = 0; z < depth; ++z)
 				{
-					double xDouble = x;
-					double zDouble = z;
-					double val = Perlin::Octave2D(xDouble * fx, zDouble * fy, octaves);
-					uint32_t genHeight = (val / 2.0) * height;
+					const double xDouble = x;
+					const double zDouble = z;
+					const double val = Perlin::Octave2D(xDouble * fx, zDouble * fy, octaves);
+					const uint32_t genHeight = (val / 2.0) * height;
 
-					for (uint32_t y = 0; y < genHeight * 2; y+=2)
+					for (uint32_t y = 0; y < genHeight * 2; y += 2)
 					{
 						result.Terrain[Utils::Index3D(x, y, z, width, height)] = Grass;
 						result.Terrain[Utils::Index3D(x, y + 1, z, width, height)] = Grass;
@@ -493,19 +545,9 @@ namespace XYZ {
 
 					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight;
 
-					if (Utils::RandomColorIndex(0, 20) == 0) // % chance to generate snow voxel
-					{
-						//result[Utils::Index3D(x, height - 1, z, width, height)] = Snow; // Snow
-					}
-					result.Terrain[Utils::Index3D(x, 150, z, width, height)] = Water; // Water
-					
-					if (RandomNumber(0u, 1500u) < 1)
-					{
-						if (genHeight > 150)
-						{
-							
-						}
-					}
+					const uint32_t waterIndex = Utils::Index3D(x, 150, z, width, height);
+					result.Terrain[waterIndex] = Water; // Water
+					result.WaterMap[waterIndex] = 255; // Max Density
 				}
 			}
 			return result;

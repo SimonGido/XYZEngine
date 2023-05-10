@@ -330,8 +330,6 @@ RaymarchResult RayMarch(in Ray ray, vec3 origin, vec3 direction, in VoxelModel m
 		result.Distance = state.Distance;
 		result.Normal = state.Normal;
 		result.FinalVoxel = state.CurrentVoxel;
-		if (!result.OpaqueHit)
-			state.Traverses = maxTraverses; // Hit was not opaque reset traverses for better visual results
 	}
 
 	if (state.Distance > currentDistance) // Depth test
@@ -381,7 +379,7 @@ vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
 	return CalculateDirLight(F0, u_DirectionalLight, pbr);
 }
 
-
+// TODO: refactor and fix it
 RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, in VoxelTopGrid grid)
 {
 	RaymarchResult result;
@@ -405,7 +403,8 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 	vec3 t_max = (next_boundary - origin) / direction; // we will move along the axis with the smallest value
 	vec3 t_delta = grid.Size / direction * vec3(step);	
 
-
+	bool firstHit = true;
+	vec4 color = vec4(0,0,0,0);
 	for (uint i = 0; i < grid.MaxTraverses; i++)
 	{
 		float newDistance = VoxelDistanceFromRay(ray.Origin, ray.Direction, current_voxel, grid.Size);
@@ -425,7 +424,24 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 				uint maxTraverses = scale * 3;
 				result = RayMarch(ray, origin, direction, model, currentDistance, maxTraverses);
 				if (result.Hit)
-					return result;
+				{
+					if (firstHit)
+					{
+						color = result.Color;
+						firstHit = false;
+					}
+					else
+					{
+						color.rgb += result.Color.rgb * result.Color.a;
+						color.a += result.Color.a;
+					}
+					if (color.a >= 1.0)
+					{
+						result.Color = color;
+						return result;
+					}
+				}
+					
 			}
 		}
 
@@ -462,7 +478,14 @@ bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelMode
 	return result;
 }
 
-
+const ivec3 neighbourVoxels[6] = {
+	ivec3(0, 1, 0),
+	ivec3(0, -1, 0),
+	ivec3(1, 0, 0),
+	ivec3(-1, 0, 0),
+	ivec3(0, 0, 1),
+	ivec3(0, 0, -1),
+};
 
 bool IsNeighbourTransparent(in RaymarchResult result, in VoxelModel model)
 {
