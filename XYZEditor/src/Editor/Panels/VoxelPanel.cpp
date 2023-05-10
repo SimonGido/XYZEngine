@@ -474,11 +474,12 @@ namespace XYZ {
 					double xDouble = x;
 					double zDouble = z;
 					double val = Perlin::Octave2D(xDouble * fx, zDouble * fy, octaves);
-					uint32_t genHeight = val * height;
+					uint32_t genHeight = (val / 2.0) * height;
 
-					for (uint32_t y = 0; y < genHeight; ++y)
+					for (uint32_t y = 0; y < genHeight * 2; y+=2)
 					{
 						result.Terrain[Utils::Index3D(x, y, z, width, height)] = Grass;
+						result.Terrain[Utils::Index3D(x, y + 1, z, width, height)] = Grass;
 					}
 
 					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight;

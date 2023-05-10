@@ -207,7 +207,7 @@ namespace XYZ {
 		void effectPass();
 		void renderPass();
 		void ssgiPass();
-		void snowPass();
+		void waterPass();
 
 		void updateViewportSize();
 		void updateUniformBufferSet();
@@ -238,9 +238,9 @@ namespace XYZ {
 		Ref<StorageBufferSet>	m_StorageBufferSet;
 		Ref<UniformBufferSet>	m_UniformBufferSet;
 
-		// Test SNOW //	
-		Ref<PipelineCompute>	m_SnowPipeline;
-		Ref<Material>			m_SnowMaterial;
+		// Test water //	
+		Ref<PipelineCompute>	m_WaterPipeline;
+		Ref<Material>			m_WaterMaterial;
 		///////////////
 
 
@@ -269,10 +269,10 @@ namespace XYZ {
 	
 		bool					m_UseSSGI = false;
 		bool					m_UseTopGrid = false;
-		bool					m_Snow = false;
+		bool					m_Water = false;
 
-		uint32_t				m_SnowFramesDelay = 0;
-		uint32_t				m_SnowFramesCounter = 0;
+		uint32_t				m_WaterFramesDelay = 0;
+		uint32_t				m_WaterFramesCounter = 0;
 
 		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;
 		std::map<AssetHandle, VoxelEffectCommand> m_EffectCommands;

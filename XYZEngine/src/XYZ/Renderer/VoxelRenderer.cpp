@@ -94,7 +94,7 @@ namespace XYZ {
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 
-		snowPass();
+		waterPass();
 
 		effectPass();
 		clearPass();
@@ -212,8 +212,8 @@ namespace XYZ {
 			ImGui::Checkbox("SSGI", &m_UseSSGI);
 			ImGui::NewLine();
 
-			ImGui::DragInt("Snow Frames Delay", (int*)&m_SnowFramesDelay);
-			ImGui::Checkbox("Snow", &m_Snow);
+			ImGui::DragInt("Water Frames Delay", (int*)&m_WaterFramesDelay);
+			ImGui::Checkbox("Water", &m_Water);
 			ImGui::Checkbox("Top Grid", &m_UseTopGrid);
 			ImGui::NewLine();
 
@@ -423,7 +423,7 @@ namespace XYZ {
 	static uint32_t reqDispatchCounter = 0;
 	static int randSeed = 0;
 
-	void VoxelRenderer::snowPass()
+	void VoxelRenderer::waterPass()
 	{
 		auto ssboBarrier = [](Ref<VulkanPipelineCompute> pipeline, Ref<VulkanStorageBufferSet> storageBufferSet) {
 
@@ -452,11 +452,11 @@ namespace XYZ {
 		};
 
 		
-		bool shouldSnow = m_SnowFramesCounter >= m_SnowFramesDelay;
-		if (shouldSnow && reqDispatchCounter == 0 && m_Snow)
+		bool shouldwater = m_WaterFramesCounter >= m_WaterFramesDelay;
+		if (shouldwater && reqDispatchCounter == 0 && m_Water)
 		{
 			reqDispatchCounter = 3;
-			m_SnowFramesCounter = 0;
+			m_WaterFramesCounter = 0;
 			randSeed = RandomNumber(0u, 1u);
 		}
 
@@ -464,33 +464,37 @@ namespace XYZ {
 		{
 			Renderer::BeginPipelineCompute(
 				m_CommandBuffer,
-				m_SnowPipeline,
+				m_WaterPipeline,
 				m_UniformBufferSet,
 				m_StorageBufferSet,
-				m_SnowMaterial
+				m_WaterMaterial
 			);
-
+			const glm::ivec3 workGroups = {
+				std::ceil(512.0f / 3.0f / TILE_SIZE), 
+				std::ceil(512.0f / 3.0f / TILE_SIZE),
+				400 / 2 / 4 // submesh height / 2 / local_size_z
+			};
 			for (uint32_t j = 0; j < 2; ++j)
 			{
 				for (uint32_t i = 0; i < 9; ++i)
 				{
 					Renderer::DispatchCompute(
-						m_SnowPipeline,
+						m_WaterPipeline,
 						nullptr,
-						256 / TILE_SIZE, 256 / TILE_SIZE, 1,
+						workGroups.x, workGroups.y, workGroups.z,
 						PushConstBuffer
 						{
 							randSeed, 0u, 1u, i, j
 						}
 					);
-					ssboBarrier(m_SnowPipeline, m_StorageBufferSet);
+					ssboBarrier(m_WaterPipeline, m_StorageBufferSet);
 				}
 			}
-			ssboBarrier(m_SnowPipeline, m_StorageBufferSet);
-			Renderer::EndPipelineCompute(m_SnowPipeline);
+			ssboBarrier(m_WaterPipeline, m_StorageBufferSet);
+			Renderer::EndPipelineCompute(m_WaterPipeline);
 			reqDispatchCounter--;
 		}
-		m_SnowFramesCounter++;
+		m_WaterFramesCounter++;
 	}
 	void VoxelRenderer::updateViewportSize()
 	{
@@ -649,10 +653,10 @@ namespace XYZ {
 		m_SSGIPipeline = PipelineCompute::Create(spec);
 
 
-		Ref<Shader> snowShader = Shader::Create("Resources/Shaders/Voxel/Water.glsl");
-		m_SnowMaterial = Material::Create(snowShader);
-		spec.Shader = snowShader;
-		m_SnowPipeline = PipelineCompute::Create(spec);
+		Ref<Shader> waterShader = Shader::Create("Resources/Shaders/Voxel/Water.glsl");
+		m_WaterMaterial = Material::Create(waterShader);
+		spec.Shader = waterShader;
+		m_WaterPipeline = PipelineCompute::Create(spec);
 	}
 
 	Ref<PipelineCompute> VoxelRenderer::getEffectPipeline(const Ref<MaterialAsset>& material)

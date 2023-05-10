@@ -155,14 +155,7 @@ bool TryMoveVoxel(ivec3 index, ivec3 newIndex, in VoxelModel model)
 	return false;
 }
 
-
-
-layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
-void main() 
-{
-	VoxelModel model = Models[u_Uniforms.ModelIndex];
-
-	ivec2 offsets[9] = {
+const ivec2 stageOffsets[9] = {
 		ivec2(0, 0),
 		ivec2(1, 0),
 		ivec2(1, 1),
@@ -176,42 +169,87 @@ void main()
 		ivec2(0, 2)
 	};
 
-	for (int y = 1 + u_Uniforms.HeightStage; y < model.Height; y += 2)
+layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 4) in;
+void main() 
+{
+	VoxelModel model = Models[u_Uniforms.ModelIndex];
+
+	ivec3 index = ivec3(int(gl_GlobalInvocationID.x), int(gl_GlobalInvocationID.z), int(gl_GlobalInvocationID.y));
+	index.x = stageOffsets[u_Uniforms.Stage].x + index.x * 3;
+	index.z = stageOffsets[u_Uniforms.Stage].y + index.z * 3;
+	index.y = u_Uniforms.HeightStage + index.y * 2;
+
+	if (IsWater(index))
 	{
-		ivec3 index = ivec3(int(gl_GlobalInvocationID.x), y, int(gl_GlobalInvocationID.y));
-		index.x = offsets[u_Uniforms.Stage].x + index.x * 3;
-		index.z = offsets[u_Uniforms.Stage].y + index.z * 3;
+		ivec3 downIndex = ivec3(index.x, index.y - 1, index.z);
+		ivec3 leftIndex = ivec3(index.x - 1, index.y, index.z);
+		ivec3 rightIndex = ivec3(index.x + 1, index.y, index.z);
+		ivec3 frontIndex = ivec3(index.x, index.y, index.z + 1);
+		ivec3 backIndex = ivec3(index.x, index.y, index.z - 1);
+		
 
-		if (IsWater(index))
+		if (!TryMoveVoxel(index, downIndex, model))
 		{
-			ivec3 downIndex = ivec3(index.x, index.y - 1, index.z);
-			ivec3 leftIndex = ivec3(index.x - 1, index.y, index.z);
-			ivec3 rightIndex = ivec3(index.x + 1, index.y, index.z);
-			ivec3 frontIndex = ivec3(index.x, index.y, index.z + 1);
-			ivec3 backIndex = ivec3(index.x, index.y, index.z - 1);
-			
-
-			if (!TryMoveVoxel(index, downIndex, model))
+			if (u_Uniforms.Random != 0)
 			{
-				if (u_Uniforms.Random != 0)
-				{
-					if (!TryMoveVoxel(index, leftIndex, model))
-					{
-						if (!TryMoveVoxel(index, frontIndex, model))
-						{
-							TryMoveVoxel(index, backIndex, model);					
-						}
-					}
-				}
-				else if (!TryMoveVoxel(index, rightIndex, model))
+				if (!TryMoveVoxel(index, leftIndex, model))
 				{
 					if (!TryMoveVoxel(index, frontIndex, model))
 					{
-						TryMoveVoxel(index, backIndex, model);
-							
+						TryMoveVoxel(index, backIndex, model);					
 					}
-				}			
-			}	
-		}
+				}
+			}
+			else if (!TryMoveVoxel(index, rightIndex, model))
+			{
+				if (!TryMoveVoxel(index, frontIndex, model))
+				{
+					TryMoveVoxel(index, backIndex, model);
+					
+				}
+			}			
+		}	
 	}
+
+
+
+
+	//for (int y = 1 + u_Uniforms.HeightStage; y < model.Height; y += 2)
+	//{
+	//	ivec3 index = ivec3(int(gl_GlobalInvocationID.x), y, int(gl_GlobalInvocationID.y));
+	//	index.x = stageOffsets[u_Uniforms.Stage].x + index.x * 3;
+	//	index.z = stageOffsets[u_Uniforms.Stage].y + index.z * 3;
+	//
+	//	if (IsWater(index))
+	//	{
+	//		ivec3 downIndex = ivec3(index.x, index.y - 1, index.z);
+	//		ivec3 leftIndex = ivec3(index.x - 1, index.y, index.z);
+	//		ivec3 rightIndex = ivec3(index.x + 1, index.y, index.z);
+	//		ivec3 frontIndex = ivec3(index.x, index.y, index.z + 1);
+	//		ivec3 backIndex = ivec3(index.x, index.y, index.z - 1);
+	//		
+	//
+	//		if (!TryMoveVoxel(index, downIndex, model))
+	//		{
+	//			if (u_Uniforms.Random != 0)
+	//			{
+	//				if (!TryMoveVoxel(index, leftIndex, model))
+	//				{
+	//					if (!TryMoveVoxel(index, frontIndex, model))
+	//					{
+	//						TryMoveVoxel(index, backIndex, model);					
+	//					}
+	//				}
+	//			}
+	//			else if (!TryMoveVoxel(index, rightIndex, model))
+	//			{
+	//				if (!TryMoveVoxel(index, frontIndex, model))
+	//				{
+	//					TryMoveVoxel(index, backIndex, model);
+	//					
+	//				}
+	//			}			
+	//		}	
+	//	}
+	//}
 }
