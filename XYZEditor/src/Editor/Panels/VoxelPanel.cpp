@@ -218,6 +218,7 @@ namespace XYZ {
 				const glm::vec3 delta = glm::abs(glm::vec3(submesh.Width, submesh.Height, submesh.Depth) / rayDir);
 				const float maxDistance = std::max(delta.x, std::max(delta.y, delta.z));
 				submesh.MaxTraverses = std::ceil(maxDistance);
+				submesh.MaxTraverses = submesh.CalculateRequiredTraverses();
 			}
 		
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);

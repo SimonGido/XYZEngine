@@ -11,12 +11,14 @@
 
 namespace XYZ {
 
-	struct VoxelSubmesh
+	struct XYZ_API VoxelSubmesh
 	{		
 		uint32_t Width, Height, Depth;
 		float VoxelSize = 1.0f;
 		uint32_t MaxTraverses;
 		std::vector<uint8_t> ColorIndices;
+
+		uint32_t CalculateRequiredTraverses() const;
 	};
 
 	struct VoxelTransformAnimation
