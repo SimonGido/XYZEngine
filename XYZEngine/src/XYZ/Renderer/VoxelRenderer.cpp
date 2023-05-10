@@ -48,10 +48,13 @@ namespace XYZ {
 		m_StorageBufferSet->Create(sizeof(SSBOVoxelModels), SSBOVoxelModels::Set, SSBOVoxelModels::Binding);
 		m_StorageBufferSet->Create(sizeof(SSBOColors), SSBOColors::Set, SSBOColors::Binding);
 		m_StorageBufferSet->Create(sizeof(SSBOVoxelTopGrids), SSBOVoxelTopGrids::Set, SSBOVoxelTopGrids::Binding);
+		m_StorageBufferSet->Create(sizeof(SSBOVoxelComputeData), SSBOVoxelComputeData::Set, SSBOVoxelComputeData::Binding);
 
 		m_VoxelStorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxels), SSBOVoxels::Binding, SSBOVoxels::Set);
 		m_ColorStorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOColors), SSBOColors::Binding, SSBOColors::Set);
 		m_TopGridsAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxelTopGrids), SSBOVoxelTopGrids::Binding, SSBOVoxelTopGrids::Set);
+		m_ComputeStorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxelComputeData), SSBOVoxelComputeData::Binding, SSBOVoxelComputeData::Set);
+		
 		memset(m_SSBOTopGrids.TopGridCells, 0, sizeof(SSBOVoxelTopGrids));
 
 		TextureProperties props;
@@ -186,8 +189,22 @@ namespace XYZ {
 			return m_SSGITexture->GetImage();
 		return m_OutputTexture->GetImage();
 	}
+
+	bool VoxelRenderer::CreateComputeAllocation(uint32_t size, StorageBufferAllocation& allocation)
+	{
+		return m_ComputeStorageAllocator->Allocate(size, allocation);
+	}
+
+	void VoxelRenderer::SubmitComputeData(const void* data, uint32_t size, uint32_t offset, const StorageBufferAllocation& allocation, bool allFrames)
+	{
+		XYZ_ASSERT(offset + size <= allocation.GetSize(), "");
+		if (allFrames)
+			m_StorageBufferSet->UpdateEachFrame(data, size, allocation.GetOffset() + offset, allocation.GetBinding(), allocation.GetSet());
+		else
+			m_StorageBufferSet->Update(data, size, allocation.GetOffset() + offset, allocation.GetBinding(), allocation.GetSet());
+	}
 	
-	void VoxelRenderer::SubmitEffect(const Ref<MaterialAsset>& material, glm::ivec2 workGroups, const PushConstBuffer& constants)
+	void VoxelRenderer::SubmitEffect(const Ref<MaterialAsset>& material, const glm::ivec3& workGroups, const PushConstBuffer& constants)
 	{
 		auto& effectCommand = m_EffectCommands[material->GetHandle()];
 		effectCommand.Material = material;
@@ -338,7 +355,7 @@ namespace XYZ {
 				Renderer::DispatchCompute(
 					pipeline,
 					nullptr,
-					invoc.WorkGroups.x, invoc.WorkGroups.y, 1,
+					invoc.WorkGroups.x, invoc.WorkGroups.y, invoc.WorkGroups.y,
 					invoc.Constants
 				);
 			}

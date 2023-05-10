@@ -105,6 +105,15 @@ namespace XYZ {
 		static constexpr uint32_t Set = 0;
 	};
 
+	struct SSBOVoxelComputeData
+	{
+		static constexpr uint32_t MaxSize = 512 * 1024 * 1024; // Half gig
+
+		uint8_t Data[MaxSize];
+
+		static constexpr uint32_t Binding = 21;
+		static constexpr uint32_t Set = 0;
+	};
 
 	struct VoxelRendererCamera
 	{
@@ -130,9 +139,13 @@ namespace XYZ {
 		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, const uint32_t* keyFrames);
 		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, bool cull);
 
-		void SubmitEffect(const Ref<MaterialAsset>& material, glm::ivec2 workGroups, const PushConstBuffer& constants);
+		void SubmitEffect(const Ref<MaterialAsset>& material, const glm::ivec3& workGroups, const PushConstBuffer& constants);
 
 		void OnImGuiRender();
+
+		bool CreateComputeAllocation(uint32_t size, StorageBufferAllocation& allocation);
+		void SubmitComputeData(const void* data, uint32_t size, uint32_t offset, const StorageBufferAllocation& allocation, bool allFrames = false);
+
 
 		uint32_t	 GetModelCount() const { return m_SSBOVoxelModels.NumModels; }
 		Ref<Image2D> GetFinalPassImage() const;
@@ -153,7 +166,7 @@ namespace XYZ {
 
 		struct VoxelEffectInvocation
 		{
-			glm::ivec2 WorkGroups;
+			glm::ivec3 WorkGroups;
 			PushConstBuffer Constants;
 		};
 
@@ -247,6 +260,7 @@ namespace XYZ {
 		Ref<StorageBufferAllocator> m_VoxelStorageAllocator;
 		Ref<StorageBufferAllocator> m_TopGridsAllocator;
 		Ref<StorageBufferAllocator> m_ColorStorageAllocator;
+		Ref<StorageBufferAllocator> m_ComputeStorageAllocator;
 
 		Ref<Texture2D>			m_OutputTexture;
 		Ref<Texture2D>			m_DepthTexture;
@@ -257,6 +271,7 @@ namespace XYZ {
 		SSBOVoxelModels			m_SSBOVoxelModels;
 		SSBOVoxelTopGrids		m_SSBOTopGrids;
 		SSBOColors				m_SSBOColors;
+		SSBOVoxelComputeData    m_SSBOComputeData;
 
 		SSGIValues				m_SSGIValues;
 		Math::Frustum			m_Frustum;
