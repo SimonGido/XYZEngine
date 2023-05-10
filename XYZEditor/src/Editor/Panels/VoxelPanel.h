@@ -74,6 +74,8 @@ namespace XYZ {
 			Ref<VoxelSourceMesh> m_KnightMesh;
 			Ref<VoxelSourceMesh> m_DeerMesh;
 			Ref<VoxelProceduralMesh> m_ProceduralMesh;
+
+			Ref<MaterialAsset> m_WaterMaterial;
 			
 			static constexpr uint8_t Empty = 0;
 			static constexpr uint8_t Water = 1;

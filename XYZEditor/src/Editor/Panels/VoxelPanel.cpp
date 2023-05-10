@@ -217,7 +217,6 @@ namespace XYZ {
 				const glm::vec3 rayDir = glm::normalize(glm::vec3(1, 1, 1));
 				const glm::vec3 delta = glm::abs(glm::vec3(submesh.Width, submesh.Height, submesh.Depth) / rayDir);
 				const float maxDistance = std::max(delta.x, std::max(delta.y, delta.z));
-				submesh.MaxTraverses = std::ceil(maxDistance);
 				submesh.MaxTraverses = submesh.CalculateRequiredTraverses();
 			}
 		
@@ -263,6 +262,10 @@ namespace XYZ {
 				xOffset += 30.0f;
 			}
 			pushGenerateVoxelMeshJob();
+
+			Ref<Shader> waterShader = Shader::Create("Resources/Shaders/Voxel/Water.glsl");
+			Ref<ShaderAsset> waterShaderAsset = Ref<ShaderAsset>::Create(waterShader);
+			m_WaterMaterial = Ref<MaterialAsset>::Create(waterShaderAsset);
 		}
 
 		VoxelPanel::~VoxelPanel()
