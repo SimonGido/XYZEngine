@@ -213,7 +213,12 @@ namespace XYZ {
 			submesh.Depth = 512;
 			submesh.VoxelSize = 3.0f;
 			submesh.MaxTraverses = 1024;
-
+			{
+				const glm::vec3 rayDir = glm::normalize(glm::vec3(1, 1, 1));
+				const glm::vec3 delta = glm::abs(glm::vec3(submesh.Width, submesh.Height, submesh.Depth) / rayDir);
+				const float maxDistance = std::max(delta.x, std::max(delta.y, delta.z));
+				submesh.MaxTraverses = std::ceil(maxDistance);
+			}
 		
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
 			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
