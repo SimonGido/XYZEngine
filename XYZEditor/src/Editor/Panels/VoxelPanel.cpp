@@ -229,7 +229,7 @@ namespace XYZ {
 	
 			auto colorPallete = m_KnightMesh->GetColorPallete();
 			
-			colorPallete[Water] = { 0, 100, 220, 25 };
+			colorPallete[Water] = { 0, 100, 220, 5 };
 			colorPallete[Snow] = { 255, 255, 255, 255 }; // Snow
 			colorPallete[Grass] = { 1, 60, 32, 255 }; // Grass
 			colorPallete[Wood] = { 150, 75, 0, 255 };
@@ -544,6 +544,7 @@ namespace XYZ {
 					}
 
 					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight;
+					
 					
 					for (uint32_t y = genHeight; y < 150; ++y)
 					{

@@ -297,19 +297,6 @@ void RayMarchSteps(in Ray ray, inout RaymarchState state, vec3 delta, ivec3 step
 	uint colorPalleteIndex = model.ColorIndex;
 	float voxelSize = model.VoxelSize;
 
-	if (state.Max.x < state.Max.y && state.Max.x < state.Max.z) 
-	{
-		state.Normal = vec3(float(-step.x), 0.0, 0.0);
-	}
-	else if (state.Max.y < state.Max.z) 
-	{
-		state.Normal = vec3(0.0, float(-step.y), 0.0);
-	}
-	else 
-	{
-		state.Normal = vec3(0.0, 0.0, float(-step.z));
-	}	
-	state.Normal = vec3(0, 1, 0);
 	while (state.MaxSteps.x >= 0 && state.MaxSteps.y >= 0 && state.MaxSteps.z >= 0)
 	{
 		state.Distance = VoxelDistanceFromRay(ray.Origin, ray.Direction, state.CurrentVoxel, model.VoxelSize);
@@ -325,8 +312,7 @@ void RayMarchSteps(in Ray ray, inout RaymarchState state, vec3 delta, ivec3 step
 			if (voxel != 0)
 			{
 				state.Color = VoxelToColor(voxel);
-				state.Hit = true;	
-				
+				state.Hit = true;				
 				break;
 			}
 		}
@@ -384,7 +370,7 @@ RaymarchResult RayMarch(in Ray ray, vec4 startColor, vec3 throughput, vec3 origi
 			result.Hit = true;
 			result.Normal = state.Normal;
 			result.FinalVoxel = state.CurrentVoxel;			
-			result.Throughput *= mix(vec3(1.0), state.Color.rgb, state.Color.a) * (1 - state.Color.a);
+			result.Throughput *= mix(vec3(1.0), state.Color.rgb, state.Color.a) * (1.0 - state.Color.a);
 		}
 		
 		// Test if we can pass through
@@ -516,27 +502,18 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 			if (TopGridCells[voxelIndex] != 0)
 			{			
 				float dist = VoxelDistanceFromRay(newOrigin, direction, current_voxel, grid.Size);
-				if (dist != FLT_MAX)
+				newOrigin += direction * (dist - EPSILON); // Move origin to hit of top grid cell
+					
+				// Raymarch from new origin						
+				RaymarchResult newResult = RayMarchSteps(ray, color, throughput, newOrigin, direction, model, currentDistance, ivec3(scale, scale, scale));
+				if (newResult.Hit)
 				{
-					if (dist > 0.0)
-						newOrigin += direction * (dist - EPSILON); // Move origin to hit of top grid cell
-					
-					// Raymarch from new origin				
-					
-					RaymarchResult newResult = RayMarchSteps(ray, color, throughput, newOrigin, direction, model, currentDistance,ivec3(scale, scale, scale));
-					while (newResult.Hit)
-					{
-						color = newResult.Color;
-						throughput = newResult.Throughput;
-						newOrigin = newResult.NextVoxel * model.VoxelSize;
-						result = newResult;
-						
-						if (throughput.x <= EPSILON && throughput.y <= EPSILON && throughput.z <= EPSILON)
-							return result;
-						
-						newResult = RayMarchSteps(ray, color, throughput, newOrigin, direction, model, currentDistance, ivec3(scale, scale, scale));
-					}	
+					color = newResult.Color;
+					throughput = newResult.Throughput;
+					result = newResult;
 				}
+				if (throughput.x <= EPSILON && throughput.y <= EPSILON && throughput.z <= EPSILON)
+					return result;				
 			}
 		}
 
@@ -609,7 +586,7 @@ void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
 	if (!opaque)
 	{
 		vec4 originalColor = imageLoad(o_Image, textureIndex);
-		//result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
+		result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
 	}
 	else // Store depth only for opaque hits
 	{

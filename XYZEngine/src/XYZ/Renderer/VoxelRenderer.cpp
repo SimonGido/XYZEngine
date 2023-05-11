@@ -216,6 +216,19 @@ namespace XYZ {
 	{
 		if (ImGui::Begin("Voxel Renderer"))
 		{
+			if (ImGui::Button("Reload Shader"))
+			{
+				Ref<Shader> shader = Shader::Create("Resources/Shaders/Voxel/RaymarchShader.glsl");
+				m_RaymarchMaterial = Material::Create(shader);
+
+				m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
+				m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+				PipelineComputeSpecification spec;
+				spec.Shader = shader;
+
+				m_RaymarchPipeline = PipelineCompute::Create(spec);
+			}
+
 			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Direction), 0.1f);
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Radiance), 0.1f);
 			ImGui::DragFloat("Light Multiplier", &m_UBVoxelScene.DirectionalLight.Multiplier, 0.1f);
@@ -661,16 +674,17 @@ namespace XYZ {
 
 		const uint32_t meshSize = mesh->GetNumVoxels() * sizeof(uint8_t);
 		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::ColorPallete[0]));
-		const uint32_t topGridsSize = mesh->GetTopGrid().VoxelCount.size() * sizeof(uint32_t);
-
+		
 		const bool reallocated =
 			m_VoxelStorageAllocator->Allocate(meshSize, allocation.VoxelAllocation)
-			|| m_ColorStorageAllocator->Allocate(colorSize, allocation.ColorAllocation)
-			|| m_TopGridsAllocator->Allocate(topGridsSize, allocation.TopGridAllocation);
+			|| m_ColorStorageAllocator->Allocate(colorSize, allocation.ColorAllocation);
 
 
 		if (reallocated || mesh->NeedUpdate())
 		{
+			// It is safe to allocate top grid only here because of multithread generation
+			const uint32_t topGridsSize = mesh->GetTopGrid().VoxelCount.size() * sizeof(uint32_t);
+			m_TopGridsAllocator->Allocate(topGridsSize, allocation.TopGridAllocation);
 			allocation.SubmeshOffsets.resize(submeshes.size());
 
 			// Copy voxels
@@ -691,7 +705,7 @@ namespace XYZ {
 
 			// Copy top grid
 			const uint32_t cellOffset = allocation.TopGridAllocation.GetOffset() / sizeof(uint32_t);
-			memcpy(&m_SSBOTopGrids.TopGridCells[cellOffset], mesh->GetTopGrid().VoxelCount.data(), allocation.TopGridAllocation.GetSize());
+			memcpy(&m_SSBOTopGrids.TopGridCells[cellOffset], mesh->GetTopGrid().VoxelCount.data(), topGridsSize);
 
 			m_UpdatedAllocations.push_back({
 				allocation.VoxelAllocation,
