@@ -357,6 +357,7 @@ RaymarchResult RayMarch(in Ray ray, vec4 startColor, vec3 throughput, vec3 origi
 	vec3 delta = voxelSize / direction * vec3(step);	
 
 	RaymarchState state = CreateRaymarchState(ray, origin, direction, step, maxTraverses, voxelSize);
+	state.MaxSteps = ivec3(model.Width, model.Height, model.Depth);
 
 	// Continue raymarching until we hit opaque object or we are out of traverses
 	while (state.Traverses != 0)
@@ -487,7 +488,6 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 	vec4 color = vec4(0,0,0,0);
 	vec3 throughput = vec3(1,1,1);
 	uint scale = uint(ceil(grid.Size / model.VoxelSize));
-	uint maxTraverses = scale * 3; // 3 dimensions		
 
 	for (uint i = 0; i < grid.MaxTraverses; i++)
 	{
