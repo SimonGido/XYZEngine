@@ -216,6 +216,18 @@ namespace XYZ {
 	{
 		if (ImGui::Begin("Voxel Renderer"))
 		{
+			if (ImGui::Button("Reload Shader"))
+			{
+				Ref<Shader> shader = Shader::Create("Resources/Shaders/Voxel/RaymarchShader.glsl");
+				m_RaymarchMaterial = Material::Create(shader);
+
+				m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
+				m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+				PipelineComputeSpecification spec;
+				spec.Shader = shader;
+
+				m_RaymarchPipeline = PipelineCompute::Create(spec);
+			}
 			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Direction), 0.1f);
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Radiance), 0.1f);
 			ImGui::DragFloat("Light Multiplier", &m_UBVoxelScene.DirectionalLight.Multiplier, 0.1f);

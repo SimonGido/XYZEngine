@@ -229,7 +229,7 @@ namespace XYZ {
 	
 			auto colorPallete = m_KnightMesh->GetColorPallete();
 			
-			colorPallete[Water] = { 0, 100, 220, 30 };
+			colorPallete[Water] = { 0, 100, 220, 80 };
 			colorPallete[Snow] = { 255, 255, 255, 255 }; // Snow
 			colorPallete[Grass] = { 1, 60, 32, 255 }; // Grass
 			colorPallete[Wood] = { 150, 75, 0, 255 };
@@ -544,17 +544,18 @@ namespace XYZ {
 					}
 
 					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight;
-					/*
+					
+					
 					for (uint32_t y = genHeight; y < 150; ++y)
 					{
 						const uint32_t waterIndex = Utils::Index3D(x, y, z, width, height);
 						result.Terrain[waterIndex] = Water; // Water
 						result.WaterMap[waterIndex] = 125; // Half max density
 					}
-					*/
-					const uint32_t waterIndex = Utils::Index3D(x, 150, z, width, height);
-					result.Terrain[waterIndex] = Water; // Water
-					result.WaterMap[waterIndex] = 125; // Half max density
+					
+					//const uint32_t waterIndex = Utils::Index3D(x, 150, z, width, height);
+					//result.Terrain[waterIndex] = Water; // Water
+					//result.WaterMap[waterIndex] = 125; // Half max density
 				}
 			}
 			return result;
