@@ -78,7 +78,7 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 
 layout(std430, binding = 20) readonly buffer buffer_TopGrids
 {		
-	uint8_t TopGridCells[];
+	uint TopGridCells[];
 };
 
 layout(binding = 21, rgba16f) uniform image2D o_Image;
@@ -349,10 +349,10 @@ RaymarchResult RayMarch(in Ray ray, vec3 origin, vec3 direction, in VoxelModel m
 		// We passed depth test
 		if (state.Hit) // We hit something so mix colors together
 		{
-			result.Color.rgb += state.Color.a * state.Color.rgb;
-			result.Color.a += state.Color.a;
+			result.Color.rgb = mix(result.Color.rgb, state.Color.rgb, 1.0 - state.Color.a);		
+			result.Color.a = state.Color.a;
 			result.Hit = true;
-			result.OpaqueHit = result.Color.a >= 1.0;
+			result.OpaqueHit = state.Alpha == OPAQUE;
 			result.Normal = state.Normal;
 			result.FinalVoxel = state.CurrentVoxel;
 		}
@@ -414,14 +414,14 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 		if (IsValidVoxel(current_voxel, grid.Width, grid.Height, grid.Depth))
 		{
 			uint voxelIndex = Index3D(current_voxel, grid.Width, grid.Height) + grid.CellsOffset;
-			if (uint(TopGridCells[voxelIndex]) != 0)
+			if (TopGridCells[voxelIndex] != 0)
 			{			
 				float dist = VoxelDistanceFromRay(origin, direction, current_voxel, grid.Size);
 				origin += direction * (dist - EPSILON); // Move origin to hit of top grid cell
 							
 				// Raymarch from new origin
 				uint scale = uint(ceil(grid.Size / model.VoxelSize));
-				uint maxTraverses = scale * 3;
+				uint maxTraverses = scale * 3; // 3 dimensions
 				result = RayMarch(ray, origin, direction, model, currentDistance, maxTraverses);
 				if (result.Hit)
 				{
@@ -432,11 +432,11 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 					}
 					else
 					{
-						color.rgb += result.Color.rgb * result.Color.a;
-						color.a += result.Color.a;
+						color.rgb = mix(color.rgb, result.Color.rgb, 1.0 - result.Color.a);
+						color.a = result.Color.a;
 					}
 					if (color.a >= 1.0)
-					{
+					{					
 						result.Color = color;
 						return result;
 					}
@@ -461,6 +461,7 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 			current_voxel.z += step.z;		
 		}
 	}
+	result.Color = color;
 	return result;
 }
 
@@ -518,7 +519,7 @@ void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
 		imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
 	}
 
-	if (!IsNeighbourTransparent(result, model))
+	//if (result.Color.a >= 1.0)
 		result.Color.rgb = CalculateDirLights(result.WorldHit, result.Color.rgb, result.WorldNormal);
 
 	imageStore(o_Image, textureIndex, result.Color); // Store color		

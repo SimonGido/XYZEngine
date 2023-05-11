@@ -97,9 +97,9 @@ namespace XYZ {
 
 	struct SSBOVoxelTopGrids
 	{
-		static constexpr uint32_t MaxTopGridCells = 1024 * 1024;
+		static constexpr uint32_t MaxTopGridCells = 10 * 1024 * 1024;
 
-		uint8_t		 TopGridCells[MaxTopGridCells];
+		uint32_t TopGridCells[MaxTopGridCells]; // 40mb
 
 		static constexpr uint32_t Binding = 20;
 		static constexpr uint32_t Set = 0;
@@ -218,8 +218,7 @@ namespace XYZ {
 		void effectPass();
 		void renderPass();
 		void ssgiPass();
-		void waterPass();
-
+		
 		void updateViewportSize();
 		void updateUniformBufferSet();
 		void prepareDrawCommands();
@@ -249,11 +248,6 @@ namespace XYZ {
 		Ref<StorageBufferSet>	m_StorageBufferSet;
 		Ref<UniformBufferSet>	m_UniformBufferSet;
 
-		// Test water //	
-		Ref<PipelineCompute>	m_WaterPipeline;
-		Ref<Material>			m_WaterMaterial;
-		///////////////
-
 
 		Ref<StorageBufferAllocator> m_VoxelStorageAllocator;
 		Ref<StorageBufferAllocator> m_TopGridsAllocator;
@@ -281,10 +275,6 @@ namespace XYZ {
 	
 		bool					m_UseSSGI = false;
 		bool					m_UseTopGrid = false;
-		bool					m_Water = false;
-
-		uint32_t				m_WaterFramesDelay = 0;
-		uint32_t				m_WaterFramesCounter = 0;
 
 		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;
 		std::map<AssetHandle, VoxelEffectCommand> m_EffectCommands;

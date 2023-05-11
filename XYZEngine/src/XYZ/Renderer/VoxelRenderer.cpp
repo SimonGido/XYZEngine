@@ -97,8 +97,7 @@ namespace XYZ {
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
 
-		waterPass();
-
+	
 		effectPass();
 		clearPass();
 		renderPass();
@@ -229,8 +228,6 @@ namespace XYZ {
 			ImGui::Checkbox("SSGI", &m_UseSSGI);
 			ImGui::NewLine();
 
-			ImGui::DragInt("Water Frames Delay", (int*)&m_WaterFramesDelay);
-			ImGui::Checkbox("Water", &m_Water);
 			ImGui::Checkbox("Top Grid", &m_UseTopGrid);
 			ImGui::NewLine();
 
@@ -465,82 +462,6 @@ namespace XYZ {
 	}
 
 
-	static uint32_t reqDispatchCounter = 0;
-	static int randSeed = 0;
-
-	void VoxelRenderer::waterPass()
-	{
-		auto ssboBarrier = [](Ref<VulkanPipelineCompute> pipeline, Ref<VulkanStorageBufferSet> storageBufferSet) {
-
-			Renderer::Submit([pipeline, storageBufferSet]() {
-				uint32_t frameIndex = Renderer::GetCurrentFrame();
-				auto storageBuffer = storageBufferSet->Get(SSBOVoxels::Binding, SSBOVoxels::Set, frameIndex).As<VulkanStorageBuffer>();
-				VkBufferMemoryBarrier bufferBarrier = {};
-				bufferBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
-				bufferBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT; // Access mask for the source stage
-				bufferBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;  // Access mask for the destination stage
-				bufferBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				bufferBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-				bufferBarrier.buffer = storageBuffer->GetVulkanBuffer();  // The SSBO buffer
-				bufferBarrier.offset = 0;                // Offset in the buffer
-				bufferBarrier.size = VK_WHOLE_SIZE;      // Size of the buffer
-				vkCmdPipelineBarrier(
-					pipeline->GetActiveCommandBuffer(),                   // The command buffer
-					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,  // Source pipeline stage
-					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,  // Destination pipeline stage
-					0,                               // Dependency flags
-					0, nullptr,                      // Memory barriers (global memory barriers)
-					1, &bufferBarrier,               // Buffer memory barriers
-					0, nullptr                       // Image memory barriers
-				);
-			});
-		};
-
-		
-		bool shouldwater = m_WaterFramesCounter >= m_WaterFramesDelay;
-		if (shouldwater && reqDispatchCounter == 0 && m_Water)
-		{
-			reqDispatchCounter = 3;
-			m_WaterFramesCounter = 0;
-			randSeed = RandomNumber(0u, 1u);
-		}
-
-		if (reqDispatchCounter > 0)
-		{
-			Renderer::BeginPipelineCompute(
-				m_CommandBuffer,
-				m_WaterPipeline,
-				m_UniformBufferSet,
-				m_StorageBufferSet,
-				m_WaterMaterial
-			);
-			const glm::ivec3 workGroups = {
-				std::ceil(512.0f / 3.0f / TILE_SIZE), 
-				std::ceil(512.0f / 3.0f / TILE_SIZE),
-				400 / 2 / 4 // submesh height / 2 / local_size_z
-			};
-			for (uint32_t j = 0; j < 2; ++j)
-			{
-				for (uint32_t i = 0; i < 9; ++i)
-				{
-					Renderer::DispatchCompute(
-						m_WaterPipeline,
-						nullptr,
-						workGroups.x, workGroups.y, workGroups.z,
-						PushConstBuffer
-						{
-							randSeed, 0u, 1u, i, j
-						}
-					);
-					ssboBarrier(m_WaterPipeline, m_StorageBufferSet);
-				}
-			}
-			ssboBarrier(m_WaterPipeline, m_StorageBufferSet);
-			Renderer::EndPipelineCompute(m_WaterPipeline);
-			reqDispatchCounter--;
-		}
-		m_WaterFramesCounter++;
-	}
 	void VoxelRenderer::updateViewportSize()
 	{
 		if (m_ViewportSizeChanged)
@@ -633,7 +554,7 @@ namespace XYZ {
 		{
 			void* voxelData = &m_SSBOVoxels.Voxels[updated.VoxelAllocation.GetOffset()];
 			void* colorData = &m_SSBOColors.ColorPallete[updated.ColorAllocation.GetOffset() / colorSize];
-			void* topGridData = &m_SSBOTopGrids.TopGridCells[updated.TopGridAllocation.GetOffset()];
+			void* topGridData = &m_SSBOTopGrids.TopGridCells[updated.TopGridAllocation.GetOffset() / sizeof(uint32_t)];
 
 			m_StorageBufferSet->UpdateEachFrame(voxelData, updated.VoxelAllocation.GetSize(), updated.VoxelAllocation.GetOffset(), SSBOVoxels::Binding, SSBOVoxels::Set);
 			m_StorageBufferSet->UpdateEachFrame(colorData, updated.ColorAllocation.GetSize(), updated.ColorAllocation.GetOffset(), SSBOColors::Binding, SSBOColors::Set);
@@ -696,12 +617,6 @@ namespace XYZ {
 
 		spec.Shader = ssgiShader;
 		m_SSGIPipeline = PipelineCompute::Create(spec);
-
-
-		Ref<Shader> waterShader = Shader::Create("Resources/Shaders/Voxel/Water.glsl");
-		m_WaterMaterial = Material::Create(waterShader);
-		spec.Shader = waterShader;
-		m_WaterPipeline = PipelineCompute::Create(spec);
 	}
 
 	Ref<PipelineCompute> VoxelRenderer::getEffectPipeline(const Ref<MaterialAsset>& material)
@@ -746,7 +661,7 @@ namespace XYZ {
 
 		const uint32_t meshSize = mesh->GetNumVoxels() * sizeof(uint8_t);
 		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::ColorPallete[0]));
-		const uint32_t topGridsSize = mesh->GetTopGrid().VoxelCount.size();
+		const uint32_t topGridsSize = mesh->GetTopGrid().VoxelCount.size() * sizeof(uint32_t);
 
 		const bool reallocated =
 			m_VoxelStorageAllocator->Allocate(meshSize, allocation.VoxelAllocation)
@@ -775,9 +690,8 @@ namespace XYZ {
 			memcpy(m_SSBOColors.ColorPallete[colorPalleteIndex], mesh->GetColorPallete().data(), colorSize);
 
 			// Copy top grid
-			uint32_t cellOffset = allocation.TopGridAllocation.GetOffset();
-			for (auto voxelCount : mesh->GetTopGrid().VoxelCount)
-				m_SSBOTopGrids.TopGridCells[cellOffset++] = voxelCount == 0 ? 0 : 1;
+			const uint32_t cellOffset = allocation.TopGridAllocation.GetOffset() / sizeof(uint32_t);
+			memcpy(&m_SSBOTopGrids.TopGridCells[cellOffset], mesh->GetTopGrid().VoxelCount.data(), allocation.TopGridAllocation.GetSize());
 
 			m_UpdatedAllocations.push_back({
 				allocation.VoxelAllocation,
