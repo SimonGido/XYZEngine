@@ -125,3 +125,11 @@ vec3 CalculateDirLight(vec3 F0, in DirectionalLight light, in PBRParameters para
 	specularBRDF = clamp(specularBRDF, vec3(0.0f), vec3(10.0f));
 	return (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
 }
+
+float CalculateLuminance(vec3 color)
+{
+    return 
+		0.2126 * color.r 
+	+	0.7152 * color.g 
+	+	0.0722 * color.b;
+}

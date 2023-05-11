@@ -100,7 +100,7 @@ namespace XYZ {
 			StorageBufferAllocation m_WaterDensityAllocation;
 			bool m_UpdateWater = false;
 
-			float m_TopGridSize = 16.0f;
+			float m_TopGridSize = 15.0f;
 		};
 	}
 }

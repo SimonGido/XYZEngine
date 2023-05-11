@@ -200,9 +200,10 @@ struct RaymarchResult
 	vec3  Normal;
 	vec3  WorldHit;
 	vec3  WorldNormal;
+	vec3  Throughput;
 	ivec3 FinalVoxel;
+	ivec3 NextVoxel;
 	float Distance;
-	bool  OpaqueHit;
 	bool  Hit;
 };
 
@@ -213,7 +214,7 @@ struct RaymarchState
 	vec3  Max;
 	vec3  Normal;
 	ivec3 CurrentVoxel;
-	uint  Alpha;
+	ivec3 MaxSteps;
 	uint  Traverses;
 	bool  Hit;
 	float Distance;
@@ -227,18 +228,21 @@ void PerformStep(inout RaymarchState state, ivec3 step, vec3 delta)
 		state.Normal = vec3(float(-step.x), 0.0, 0.0);
 		state.Max.x += delta.x;
 		state.CurrentVoxel.x += step.x;
+		state.MaxSteps.x--;
 	}
 	else if (state.Max.y < state.Max.z) 
 	{
 		state.Normal = vec3(0.0, float(-step.y), 0.0);
 		state.Max.y += delta.y;
 		state.CurrentVoxel.y += step.y;			
+		state.MaxSteps.y--;
 	}
 	else 
 	{
 		state.Normal = vec3(0.0, 0.0, float(-step.z));
 		state.Max.z += delta.z;
 		state.CurrentVoxel.z += step.z;		
+		state.MaxSteps.z--;
 	}	
 }
 
@@ -246,7 +250,6 @@ void RayMarch(in Ray ray, inout RaymarchState state, vec3 delta, ivec3 step, in 
 {
 	state.Hit = false;
 	state.Color = vec4(0,0,0,0);
-	state.Alpha = 0;
 
 	uint width = model.Width;
 	uint height = model.Height;
@@ -272,7 +275,6 @@ void RayMarch(in Ray ray, inout RaymarchState state, vec3 delta, ivec3 step, in 
 			if (voxel != 0)
 			{
 				state.Color = VoxelToColor(voxel);
-				state.Alpha = VoxelAlpha(voxel);
 				state.Hit = true;	
 				break;
 			}
@@ -281,6 +283,44 @@ void RayMarch(in Ray ray, inout RaymarchState state, vec3 delta, ivec3 step, in 
 		PerformStep(state, step, delta);
 	}
 }
+
+
+void RayMarchSteps(in Ray ray, inout RaymarchState state, vec3 delta, ivec3 step, in VoxelModel model, float currentDistance)
+{
+	state.Hit = false;
+	state.Color = vec4(0,0,0,0);
+
+	uint width = model.Width;
+	uint height = model.Height;
+	uint depth = model.Depth;
+	uint voxelOffset = model.VoxelOffset;
+	uint colorPalleteIndex = model.ColorIndex;
+	float voxelSize = model.VoxelSize;
+
+	while (state.MaxSteps.x >= 0 && state.MaxSteps.y >= 0 && state.MaxSteps.z >= 0)
+	{
+		state.Distance = VoxelDistanceFromRay(ray.Origin, ray.Direction, state.CurrentVoxel, model.VoxelSize);
+		if (state.Distance > currentDistance)
+			break;
+
+		if (IsValidVoxel(state.CurrentVoxel, width, height, depth))
+		{
+			uint voxelIndex = Index3D(state.CurrentVoxel, width, height) + voxelOffset;
+			uint colorIndex = uint(Voxels[voxelIndex]);
+			uint voxel = ColorPallete[colorPalleteIndex][colorIndex];
+
+			if (voxel != 0)
+			{
+				state.Color = VoxelToColor(voxel);
+				state.Hit = true;	
+				break;
+			}
+		}
+		PerformStep(state, step, delta);
+	}
+}
+
+
 
 RaymarchState CreateRaymarchState(in Ray ray, vec3 origin, vec3 direction, ivec3 step, uint maxTraverses, float voxelSize)
 {
@@ -299,13 +339,14 @@ RaymarchState CreateRaymarchState(in Ray ray, vec3 origin, vec3 direction, ivec3
 	return state;
 }
 
-RaymarchResult RayMarch(in Ray ray, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, uint maxTraverses)
+RaymarchResult RayMarch(in Ray ray, vec4 startColor, vec3 throughput, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, uint maxTraverses)
 {
 	RaymarchResult result;
-	result.OpaqueHit = false;
+	result.Color = startColor;
 	result.Hit = false;
 	result.Distance = 0;
-			
+	result.Throughput = throughput;
+
 	ivec3 step = ivec3(
 		(direction.x > 0.0) ? 1 : -1,
 		(direction.y > 0.0) ? 1 : -1,
@@ -317,49 +358,88 @@ RaymarchResult RayMarch(in Ray ray, vec3 origin, vec3 direction, in VoxelModel m
 
 	RaymarchState state = CreateRaymarchState(ray, origin, direction, step, maxTraverses, voxelSize);
 
-	// Raymarch until we find first hit to determine default color
-	RayMarch(ray, state, delta, step, model, currentDistance);
-	
-	
-	// If we hit something it is our default color
-	if (state.Hit)
-	{
-		result.Color = state.Color;
-		result.Hit = true;
-		result.OpaqueHit = state.Alpha == OPAQUE;
-		result.Distance = state.Distance;
-		result.Normal = state.Normal;
-		result.FinalVoxel = state.CurrentVoxel;
-	}
-
-	if (state.Distance > currentDistance) // Depth test
-		return result;
-	
 	// Continue raymarching until we hit opaque object or we are out of traverses
 	while (state.Traverses != 0)
 	{		
-		if (result.OpaqueHit) // Opaque hit => stop raymarching
-			break;
-		
-		PerformStep(state, step, delta); // Hit was not opaque we continue raymarching, perform step to get out transparent voxel
 		RayMarch(ray, state, delta, step, model, currentDistance);
-		if (state.Distance > currentDistance) // if new depth is bigger than currentDepth it means there is something in front of us
-			break;
-		
+			
 		// We passed depth test
 		if (state.Hit) // We hit something so mix colors together
 		{
-			result.Color.rgb = mix(result.Color.rgb, state.Color.rgb, 1.0 - state.Color.a);		
-			result.Color.a = state.Color.a;
+			result.Color.rgb += state.Color.rgb * result.Throughput;
 			result.Hit = true;
-			result.OpaqueHit = state.Alpha == OPAQUE;
 			result.Normal = state.Normal;
-			result.FinalVoxel = state.CurrentVoxel;
+			result.FinalVoxel = state.CurrentVoxel;			
+			result.Throughput *= mix(vec3(1.0), state.Color.rgb, state.Color.a) * (1 - state.Color.a);
 		}
+		
+		// Test if we can pass through
+		if (result.Throughput.x <= EPSILON && result.Throughput.y <= EPSILON && result.Throughput.z <= EPSILON)
+			break;	
+
+		PerformStep(state, step, delta); // Hit was not opaque we continue raymarching, perform step to get out of transparent voxel
+		
+		if (state.Distance > currentDistance) // if new depth is bigger than currentDepth it means there is something in front of us
+			break;		
 	}
+	result.Color.a = 1.0 - CalculateLuminance(result.Throughput);
 	result.Distance = state.Distance;
+	
 	return result;
 }
+
+
+RaymarchResult RayMarchSteps(in Ray ray, vec4 startColor, vec3 throughput, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, ivec3 maxSteps)
+{
+	RaymarchResult result;
+	result.Color = startColor;
+	result.Hit = false;
+	result.Distance = 0;
+	result.Throughput = throughput;
+
+	ivec3 step = ivec3(
+		(direction.x > 0.0) ? 1 : -1,
+		(direction.y > 0.0) ? 1 : -1,
+		(direction.z > 0.0) ? 1 : -1
+	);
+			
+	float voxelSize = model.VoxelSize;
+	vec3 delta = voxelSize / direction * vec3(step);	
+
+	RaymarchState state = CreateRaymarchState(ray, origin, direction, step, 0, voxelSize);
+	state.MaxSteps = maxSteps;
+
+	// Continue raymarching until we hit opaque object or we are out of traverses
+	while (state.MaxSteps.x >= 0 && state.MaxSteps.y >= 0 && state.MaxSteps.z >= 0)
+	{		
+		RayMarchSteps(ray, state, delta, step, model, currentDistance);
+			
+		// We passed depth test
+		if (state.Hit) // We hit something so mix colors together
+		{
+			result.Color.rgb += state.Color.rgb * result.Throughput;
+			result.Hit = true;
+			result.Normal = state.Normal;
+			result.FinalVoxel = state.CurrentVoxel;			
+			result.Throughput *= mix(vec3(1.0), state.Color.rgb, state.Color.a) * (1 - state.Color.a);
+		}
+		
+		// Test if we can pass through
+		if (result.Throughput.x <= EPSILON && result.Throughput.y <= EPSILON && result.Throughput.z <= EPSILON)
+			break;	
+
+		PerformStep(state, step, delta); // Hit was not opaque we continue raymarching, perform step to get out of transparent voxel
+		
+		if (state.Distance > currentDistance) // if new depth is bigger than currentDepth it means there is something in front of us
+			break;		
+	}
+	result.Color.a = 1.0 - CalculateLuminance(result.Throughput);
+	result.Distance = state.Distance;
+	result.NextVoxel = state.CurrentVoxel;
+
+	return result;
+}
+
 
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04);
@@ -387,7 +467,7 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
 	ivec3 current_voxel = ivec3(floor(origin / grid.Size));
-	
+
 	ivec3 step = ivec3(
 		(direction.x > 0.0) ? 1 : -1,
 		(direction.y > 0.0) ? 1 : -1,
@@ -405,43 +485,44 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 
 	bool firstHit = true;
 	vec4 color = vec4(0,0,0,0);
+	vec3 throughput = vec3(1,1,1);
+	uint scale = uint(ceil(grid.Size / model.VoxelSize));
+
+	bool lastHit = false;
 	for (uint i = 0; i < grid.MaxTraverses; i++)
 	{
 		float newDistance = VoxelDistanceFromRay(ray.Origin, ray.Direction, current_voxel, grid.Size);
 		if (newDistance > currentDistance)
 			break;
 
+		bool val = lastHit;
+		lastHit = false;
 		if (IsValidVoxel(current_voxel, grid.Width, grid.Height, grid.Depth))
 		{
 			uint voxelIndex = Index3D(current_voxel, grid.Width, grid.Height) + grid.CellsOffset;
 			if (TopGridCells[voxelIndex] != 0)
 			{			
 				float dist = VoxelDistanceFromRay(origin, direction, current_voxel, grid.Size);
-				origin += direction * (dist - EPSILON); // Move origin to hit of top grid cell
-							
+				vec3 newOrigin = origin + direction * (dist - EPSILON); // Move origin to hit of top grid cell
+				if (val)
+				{
+					dist = VoxelDistanceFromRay(origin, direction, result.NextVoxel, model.VoxelSize);
+					newOrigin = origin + direction * (dist + EPSILON); // Move origin to hit of top grid cell
+				}
+
 				// Raymarch from new origin
-				uint scale = uint(ceil(grid.Size / model.VoxelSize));
-				uint maxTraverses = scale * 3; // 3 dimensions
-				result = RayMarch(ray, origin, direction, model, currentDistance, maxTraverses);
+				
+				//uint maxTraverses = scale * 3; // 3 dimensions		
+				result = RayMarchSteps(ray, color, throughput, newOrigin, direction, model, currentDistance, ivec3(scale, scale, scale));
+							
 				if (result.Hit)
 				{
-					if (firstHit)
-					{
-						color = result.Color;
-						firstHit = false;
-					}
-					else
-					{
-						color.rgb = mix(color.rgb, result.Color.rgb, 1.0 - result.Color.a);
-						color.a = result.Color.a;
-					}
-					if (color.a >= 1.0)
-					{					
-						result.Color = color;
+					color = result.Color;
+					throughput = result.Throughput;
+					lastHit = true;
+					if (throughput.x <= EPSILON && throughput.y <= EPSILON && throughput.z <= EPSILON)
 						return result;
-					}
-				}
-					
+				}				
 			}
 		}
 
@@ -509,7 +590,7 @@ void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);	
 
-	if (!result.OpaqueHit)
+	if (result.Color.a < 1.0)
 	{
 		vec4 originalColor = imageLoad(o_Image, textureIndex);
 		result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
@@ -519,7 +600,7 @@ void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
 		imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
 	}
 
-	//if (result.Color.a >= 1.0)
+	if (result.Color.a >= 1.0)
 		result.Color.rgb = CalculateDirLights(result.WorldHit, result.Color.rgb, result.WorldNormal);
 
 	imageStore(o_Image, textureIndex, result.Color); // Store color		
@@ -535,6 +616,9 @@ bool ValidPixel(ivec2 index)
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
+	vec4 startColor = vec4(0,0,0,0);
+	vec3 startThroughput = vec3(1,1,1);
+
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
 	g_CameraRay = CreateRay(u_CameraPosition.xyz, textureIndex);
 	for (uint i = 0; i < NumModels; i++)
@@ -551,14 +635,14 @@ void main()
 		float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
 		RaymarchResult result;
 
-
+		
 		if (Models[i].TopGridIndex != -1 && u_Uniforms.UseTopGrid)
 		{
-			result = RaymarchTopGrid(ray, origin, direction, model, currentDistance, TopGrids[Models[i].TopGridIndex]);
+			result = RaymarchTopGrid(ray, origin, direction, model, currentDistance, TopGrids[model.TopGridIndex]);
 		}
 		else
 		{
-			result = RayMarch(ray, origin, direction, model, currentDistance, Models[i].MaxTraverses);		
+			result = RayMarch(ray, startColor, startThroughput, origin, direction, model, currentDistance, model.MaxTraverses);		
 		}
 
 		if (result.Hit)		

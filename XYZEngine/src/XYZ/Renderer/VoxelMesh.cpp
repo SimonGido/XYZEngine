@@ -138,7 +138,8 @@ namespace XYZ {
 								for (uint32_t tz = topGridCellStart.z; tz < topGridCellEnd.z; tz++)
 								{
 									const uint32_t topgridIndex = Index3D(tx, ty, tz, grid.Width, grid.Height);
-									grid.VoxelCount[topgridIndex]++;
+									if (topgridIndex < grid.VoxelCount.size())
+										grid.VoxelCount[topgridIndex]++;
 								}
 							}
 						}
@@ -196,7 +197,7 @@ namespace XYZ {
 		}
 		m_Dirty = true;
 		m_DirtySubmeshes.clear();
-		GenerateTopGridAsync(16.0f);
+		GenerateTopGridAsync(15.0f);
 	}
 
 	void VoxelProceduralMesh::SetInstances(const std::vector<VoxelInstance>& instances)
