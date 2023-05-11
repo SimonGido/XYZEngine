@@ -200,7 +200,6 @@ struct RaymarchResult
 	vec3  Normal;
 	vec3  WorldHit;
 	vec3  WorldNormal;
-	vec3  Throughput;
 	ivec3 FinalVoxel;
 	ivec3 NextVoxel;
 	float Distance;
@@ -353,13 +352,12 @@ RaymarchState CreateRaymarchState(in Ray ray, vec3 origin, vec3 direction, ivec3
 	return state;
 }
 
-RaymarchResult RayMarch(in Ray ray, vec4 startColor, vec3 throughput, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, uint maxTraverses)
+RaymarchResult RayMarch(in Ray ray, vec4 startColor, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, uint maxTraverses)
 {
 	RaymarchResult result;
 	result.Color = startColor;
 	result.Hit = false;
 	result.Distance = 0;
-	result.Throughput = throughput;
 
 	ivec3 step = ivec3(
 		(direction.x > 0.0) ? 1 : -1,
@@ -371,7 +369,7 @@ RaymarchResult RayMarch(in Ray ray, vec4 startColor, vec3 throughput, vec3 origi
 	vec3 delta = voxelSize / direction * vec3(step);	
 
 	RaymarchState state = CreateRaymarchState(ray, origin, direction, step, maxTraverses, voxelSize);
-
+	
 	// Continue raymarching until we hit opaque object or we are out of traverses
 	while (state.Traverses != 0)
 	{		
@@ -380,36 +378,31 @@ RaymarchResult RayMarch(in Ray ray, vec4 startColor, vec3 throughput, vec3 origi
 		// We passed depth test
 		if (state.Hit) // We hit something so mix colors together
 		{
-			result.Color.rgb += state.Color.rgb * result.Throughput;
+			result.Color = mix(result.Color, state.Color, state.Color.a);
 			result.Hit = true;
 			result.Normal = state.Normal;
 			result.FinalVoxel = state.CurrentVoxel;			
-			result.Throughput *= mix(vec3(1.0), state.Color.rgb, state.Color.a) * (1 - state.Color.a);
 		}
-		
-		// Test if we can pass through
-		if (result.Throughput.x <= EPSILON && result.Throughput.y <= EPSILON && result.Throughput.z <= EPSILON)
-			break;	
+		if (result.Color.a >= 1.0)
+			break;
 
 		PerformStep(state, step, delta); // Hit was not opaque we continue raymarching, perform step to get out of transparent voxel
 		
 		if (state.Distance > currentDistance) // if new depth is bigger than currentDepth it means there is something in front of us
 			break;		
 	}
-	result.Color.a = 1.0 - CalculateLuminance(result.Throughput);
 	result.Distance = state.Distance;
 	result.NextVoxel = state.CurrentVoxel;
 	return result;
 }
 
 
-RaymarchResult RayMarchSteps(in Ray ray, vec4 startColor, vec3 throughput, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, ivec3 maxSteps)
+RaymarchResult RayMarchSteps(in Ray ray, vec4 startColor, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, ivec3 maxSteps)
 {
 	RaymarchResult result;
 	result.Color = startColor;
 	result.Hit = false;
 	result.Distance = 0;
-	result.Throughput = throughput;
 
 	ivec3 step = ivec3(
 		(direction.x > 0.0) ? 1 : -1,
@@ -431,15 +424,13 @@ RaymarchResult RayMarchSteps(in Ray ray, vec4 startColor, vec3 throughput, vec3 
 		// We passed depth test
 		if (state.Hit) // We hit something so mix colors together
 		{
-			result.Color.rgb += state.Color.rgb * result.Throughput;
+			result.Color = mix(result.Color, state.Color, state.Color.a);
 			result.Hit = true;
 			result.Normal = state.Normal;
 			result.FinalVoxel = state.CurrentVoxel;			
-			result.Throughput *= mix(vec3(1.0), state.Color.rgb, state.Color.a) * (1 - state.Color.a);
 		}
 		
-		// Test if we can pass through
-		if (result.Throughput.x <= EPSILON && result.Throughput.y <= EPSILON && result.Throughput.z <= EPSILON)
+		if (result.Color.a >= 1.0)
 			break;	
 
 		PerformStep(state, step, delta); // Hit was not opaque we continue raymarching, perform step to get out of transparent voxel
@@ -447,10 +438,9 @@ RaymarchResult RayMarchSteps(in Ray ray, vec4 startColor, vec3 throughput, vec3 
 		if (state.Distance > currentDistance) // if new depth is bigger than currentDepth it means there is something in front of us
 			break;		
 	}
-	result.Color.a = 1.0 - CalculateLuminance(result.Throughput);
-	result.Distance = state.Distance;
-	
+	result.Distance = state.Distance;	
 	result.NextVoxel = state.CurrentVoxel;
+
 	return result;
 }
 
@@ -478,6 +468,7 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 {
 	RaymarchResult result;
 	result.Hit = false;
+	result.Color = vec4(0,0,0,0);
 
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
 	ivec3 current_voxel = ivec3(floor(origin / grid.Size));
@@ -498,8 +489,6 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 	vec3 t_delta = grid.Size / direction * vec3(step);	
 
 	vec3 newOrigin = origin;
-	vec4 color = vec4(0,0,0,0);
-	vec3 throughput = vec3(1,1,1);
 	uint scale = uint(ceil(grid.Size / model.VoxelSize));
 	uint maxTraverses = scale * 3; // 3 dimensions		
 
@@ -509,7 +498,6 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 		if (newDistance > currentDistance)
 			break;
 
-
 		if (IsValidVoxel(current_voxel, grid.Width, grid.Height, grid.Depth))
 		{
 			uint voxelIndex = Index3D(current_voxel, grid.Width, grid.Height) + grid.CellsOffset;
@@ -518,24 +506,14 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 				float dist = VoxelDistanceFromRay(newOrigin, direction, current_voxel, grid.Size);
 				if (dist != FLT_MAX)
 				{
-					if (dist > 0.0)
-						newOrigin += direction * (dist - EPSILON); // Move origin to hit of top grid cell
+					newOrigin += direction * (dist - EPSILON); // Move origin to hit of top grid cell
 					
-					// Raymarch from new origin				
-					
-					RaymarchResult newResult = RayMarchSteps(ray, color, throughput, newOrigin, direction, model, currentDistance,ivec3(scale, scale, scale));
-					while (newResult.Hit)
-					{
-						color = newResult.Color;
-						throughput = newResult.Throughput;
-						newOrigin = newResult.NextVoxel * model.VoxelSize;
-						result = newResult;
-						
-						if (throughput.x <= EPSILON && throughput.y <= EPSILON && throughput.z <= EPSILON)
-							return result;
-						
-						newResult = RayMarchSteps(ray, color, throughput, newOrigin, direction, model, currentDistance, ivec3(scale, scale, scale));
-					}	
+					result = RayMarchSteps(ray, result.Color, newOrigin, direction, model, currentDistance, ivec3(scale, scale, scale));
+					if (result.Hit)
+						newOrigin = result.FinalVoxel * model.VoxelSize;
+
+					if (result.Color.a >= 1.0)
+						return result;
 				}
 			}
 		}
@@ -556,7 +534,6 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 			current_voxel.z += step.z;		
 		}
 	}
-	result.Color = color;
 	return result;
 }
 
@@ -604,12 +581,12 @@ void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);	
 
-	bool opaque = result.Throughput.x <= EPSILON && result.Throughput.y <= EPSILON && result.Throughput.z <= EPSILON;
+	bool opaque = result.Color.a >= 1.0;
 
 	if (!opaque)
 	{
 		vec4 originalColor = imageLoad(o_Image, textureIndex);
-		//result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
+		result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
 	}
 	else // Store depth only for opaque hits
 	{
@@ -619,7 +596,6 @@ void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
 	if (opaque)
 		result.Color.rgb = CalculateDirLights(result.WorldHit, result.Color.rgb, result.WorldNormal);
 
-	result.Color.a = 1.0;
 	imageStore(o_Image, textureIndex, result.Color); // Store color		
 }
 
@@ -634,7 +610,6 @@ layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
 	vec4 startColor = vec4(0,0,0,0);
-	vec3 startThroughput = vec3(1,1,1);
 
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
 	g_CameraRay = CreateRay(u_CameraPosition.xyz, textureIndex);
@@ -659,7 +634,7 @@ void main()
 		}
 		else
 		{
-			result = RayMarch(ray, startColor, startThroughput, origin, direction, model, currentDistance, model.MaxTraverses);		
+			result = RayMarch(ray, startColor, origin, direction, model, currentDistance, model.MaxTraverses);		
 		}
 
 		if (result.Hit)		
