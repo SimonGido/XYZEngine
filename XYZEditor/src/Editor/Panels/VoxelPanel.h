@@ -17,6 +17,8 @@
 #include "Editor/EditorPanel.h"
 #include "Editor/EditorCamera.h"
 
+#include "XYZ/Utils/Algorithms/SpaceColonization.h"
+
 namespace XYZ {
 	namespace Editor {
 
@@ -101,6 +103,8 @@ namespace XYZ {
 			bool m_UpdateWater = false;
 
 			float m_TopGridSize = 15.0f;
+
+			SpaceColonization* m_SpaceColonization = nullptr;
 		};
 	}
 }

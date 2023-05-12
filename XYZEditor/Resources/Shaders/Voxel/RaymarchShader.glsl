@@ -175,10 +175,7 @@ vec4 VoxelToColor(uint voxel)
 
 	return color;
 }
-uint VoxelAlpha(uint voxel)
-{
-	return bitfieldExtract(voxel, 24, 8);
-}
+
 
 float VoxelDistanceFromRay(vec3 origin, vec3 direction, ivec3 voxel, float voxelSize)
 {
@@ -551,32 +548,6 @@ bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelMode
 	return result;
 }
 
-const ivec3 neighbourVoxels[6] = {
-	ivec3(0, 1, 0),
-	ivec3(0, -1, 0),
-	ivec3(1, 0, 0),
-	ivec3(-1, 0, 0),
-	ivec3(0, 0, 1),
-	ivec3(0, 0, -1),
-};
-
-bool IsNeighbourTransparent(in RaymarchResult result, in VoxelModel model)
-{
-	ivec3 neighbourVoxel = result.FinalVoxel + ivec3(result.Normal);
-	if (IsValidVoxel(neighbourVoxel, model.Width, model.Height, model.Depth))
-	{
-		uint voxelIndex = Index3D(neighbourVoxel, model.Width, model.Height) + model.VoxelOffset;
-		uint colorIndex = uint(Voxels[voxelIndex]);
-		uint color = ColorPallete[model.ColorIndex][colorIndex];
-		uint alpha = VoxelAlpha(color);
-		if (alpha != OPAQUE && alpha != 0)
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);	
@@ -610,10 +581,13 @@ bool ValidPixel(ivec2 index)
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {
-	vec4 startColor = vec4(0,0,0,0);
-	vec3 startThroughput = vec3(1,1,1);
-
+	
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
+	if (!ValidPixel(textureIndex))
+		return;
+
+	vec4 startColor = vec4(0, 0, 0, 0);
+	vec3 startThroughput = vec3(1, 1, 1);
 	g_CameraRay = CreateRay(u_CameraPosition.xyz, textureIndex);
 	for (uint i = 0; i < NumModels; i++)
 	{

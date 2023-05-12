@@ -13,11 +13,13 @@ namespace XYZ {
 		bool  IntersectsGrid() const { return m_IntersectsGrid; }
 		float GridIntersectionT() const { return m_GridIntersectionT; }
 		
-		const glm::ivec3&	GetCurrentVoxel() const { return m_CurrentVoxel; }
+		const glm::ivec3&	GetStartVoxel() const { return m_StartVoxel; }
+		const glm::ivec3&	GetCurrentVoxel() const { return m_CurrentVoxel; };
 		const glm::vec3&	GetHitNormal() const { return m_HitNormal; }
 		float				GetDistanceTraveled() const { return m_DistanceTraveled; }
 	private:
 		Ray		   m_Ray;
+		glm::ivec3 m_StartVoxel;
 		glm::ivec3 m_CurrentVoxel;
 		glm::ivec3 m_Step;
 		glm::vec3  m_Delta;

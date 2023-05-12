@@ -15,6 +15,7 @@
 #include "XYZ/Utils/Random.h"
 #include "XYZ/Utils/Algorithms/Raymarch.h"
 
+
 #include "XYZ/ImGui/ImGui.h"
 
 #include "Editor/Event/EditorEvents.h"
@@ -32,98 +33,7 @@
 namespace XYZ {
 	namespace Editor {
 
-		struct Point {
-			glm::vec3 position;
-			std::vector<Point*> neighbors;
-
-			Point(const glm::vec3& pos) : position(pos) {}
-		};
-
-		class SpaceColonization {
-		private:
-			std::vector<Point> points;
-			float maxDistance;
-			float minDistance;
-			float attractionRadius;
-			float killRadius;
-
-		public:
-			SpaceColonization(float maxDist, float minDist, float attrRadius, float killRadius)
-				: maxDistance(maxDist), minDistance(minDist), attractionRadius(attrRadius), killRadius(killRadius) {}
-
-			void generatePoints(const glm::vec3& startPosition, int numPoints) {
-				points.clear();
-				points.reserve(numPoints);
-				points.push_back(Point(startPosition));
-
-				std::random_device rd;
-				std::mt19937 gen(rd());
-				std::uniform_real_distribution<float> dis(-10.0f, 10.0f);
-
-				for (int i = 1; i < numPoints; ++i) {
-					float x = dis(gen);
-					float y = dis(gen);
-					float z = dis(gen);
-					glm::vec3 randDirection = glm::normalize(glm::vec3(x, y, z));
-					glm::vec3 newPos = points[0].position + randDirection * maxDistance;
-					points.push_back(Point(newPos));
-				}
-			}
-
-			const std::vector<Point>& GetPoints() const { return points; }
-
-			void simulateGrowth(int numIterations) {
-
-				std::random_device rd;
-				std::mt19937 gen(rd());
-				std::uniform_real_distribution<float> dis(-1.0f, 1.0f);
-
-				for (int i = 0; i < numIterations; ++i) 
-				{
-					// Generate a new point
-					float x = dis(gen);
-					float y = dis(gen);
-					float z = dis(gen);
-					glm::vec3 randDirection = glm::normalize(glm::vec3(x, y, z));
-					glm::vec3 newPos = points[0].position + randDirection * maxDistance;
-					newPos.y = std::abs(newPos.y);
-					points.push_back(Point(newPos));
-
-					// Find nearest neighbor for the new point
-					Point& newPoint = points.back();
-					for (Point& p : points) 
-					{
-						if (&p == &newPoint) 
-						{
-							continue;
-						}
-
-						float distance = (newPoint.position - p.position).length();
-						if (distance < attractionRadius) 
-						{
-							newPoint.neighbors.push_back(&p);
-						}
-						else if (distance < killRadius) 
-						{
-							// Remove neighbors that are too close
-							for (auto it = newPoint.neighbors.begin(); it != newPoint.neighbors.end(); ++it)
-							{
-								if (*it == &p) 
-								{
-									newPoint.neighbors.erase(it);
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-		};
-
-
-
-
-
+		
 		namespace Utils {
 			
 			static uint8_t RandomColorIndex(uint32_t x = 0, uint32_t y = 255)
@@ -346,11 +256,30 @@ namespace XYZ {
 				
 				if (!m_Generating && m_GenerateVoxelsFuture.valid())
 				{
+
+
 					VoxelSubmesh terrainSubmesh = m_ProceduralMesh->GetSubmeshes()[0];
 					
 					m_Terrain = std::move(m_GenerateVoxelsFuture.get());
-					terrainSubmesh.ColorIndices = m_Terrain.Terrain;
+									
+					if (m_SpaceColonization != nullptr)
+						delete m_SpaceColonization;
 
+					const float voxelSize = 3.0f;
+					auto height = m_Terrain.TerrainHeightmap[Utils::Index2D(256, 256, 512)];
+					const glm::vec3 voxelPosition = glm::vec3(256, height, 256) * voxelSize;
+					m_SpaceColonization = new SpaceColonization(
+						400u,
+						voxelPosition + glm::vec3(0, 100 * voxelSize, 0),
+						50.0f * voxelSize,
+						voxelPosition,
+						5 * voxelSize,
+						10.0f * voxelSize,
+						20.0f * voxelSize
+					);
+					m_SpaceColonization->VoxelizeAttractors(m_Terrain.Terrain, 512, 400, 512, voxelSize);
+
+					terrainSubmesh.ColorIndices = m_Terrain.Terrain;
 					while (m_ProceduralMesh->IsGeneratingTopGrid()) {} // Wait to finish generating top grid
 					m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
 					m_VoxelRenderer->SubmitComputeData(m_Terrain.WaterMap.data(), m_Terrain.WaterMap.size(), 0, m_WaterDensityAllocation, true);
@@ -403,6 +332,26 @@ namespace XYZ {
 		{
 			if (m_ViewportHovered && m_ViewportFocused)
 				m_EditorCamera.OnEvent(event);
+
+			if (event.GetEventType() == EventType::KeyPressed)
+			{
+				KeyPressedEvent& keyPressedE = (KeyPressedEvent&)event;
+				if (keyPressedE.IsKeyPressed(KeyCode::KEY_N))
+				{
+					if (m_SpaceColonization != nullptr)
+					{
+						VoxelSubmesh terrainSubmesh = m_ProceduralMesh->GetSubmeshes()[0];
+						m_SpaceColonization->Grow(
+							terrainSubmesh.ColorIndices, 
+							terrainSubmesh.Width, 
+							terrainSubmesh.Height, 
+							terrainSubmesh.Depth, 
+							terrainSubmesh.VoxelSize
+						);		
+						m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
+					}
+				}
+			}
 
 			return false;
 		}
@@ -542,10 +491,10 @@ namespace XYZ {
 						result.Terrain[Utils::Index3D(x, y, z, width, height)] = Grass;
 						result.Terrain[Utils::Index3D(x, y + 1, z, width, height)] = Grass;
 					}
-
-					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight;
+		
+					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight * 2;
 					
-					if (genHeight < 142)
+					if (genHeight < 142 / 2)
 					{
 						const uint32_t waterIndex = Utils::Index3D(x, 142, z, width, height);
 						result.Terrain[waterIndex] = Water; // Water

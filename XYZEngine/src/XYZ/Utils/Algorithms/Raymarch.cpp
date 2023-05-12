@@ -17,6 +17,7 @@ namespace XYZ {
         m_IntersectsGrid = ray.IntersectsAABB(aabb, m_GridIntersectionT);
        
         m_CurrentVoxel = glm::ivec3(floor(ray.Origin / cellSize));
+		m_StartVoxel = m_CurrentVoxel;
 
         m_Step = glm::ivec3(
             (ray.Direction.x > 0.0) ? 1 : -1,
