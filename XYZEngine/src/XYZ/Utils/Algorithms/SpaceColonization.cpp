@@ -34,7 +34,7 @@ namespace XYZ {
 		m_RootBranch = new SCBranch();
 		m_RootBranch->Start = initializer.RootPosition;
 		m_RootBranch->End = initializer.RootPosition + glm::vec3(0.0f, initializer.BranchLength, 0.0f);
-		m_RootBranch->Direction = glm::vec3(0.0f, 1.0f, 0.0f);
+		m_RootBranch->Direction = glm::normalize(glm::vec3(0.0f, 1.0f, 0.0f) + randomGrowVector(m_GrowSize));
 		m_RootBranch->Parent = nullptr;
 		m_Branches.push_back(m_RootBranch);
 		m_Extremities.push_back(m_RootBranch);
@@ -174,7 +174,7 @@ namespace XYZ {
 			}
 		}
 	}
-	void SpaceColonization::Grow(std::vector<uint8_t>& voxels, uint32_t width, uint32_t height, uint32_t depth, float voxelSize)
+	void SpaceColonization::Grow(std::vector<uint8_t>& voxels, uint32_t width, uint32_t height, uint32_t depth, float voxelSize, int32_t radius)
 	{
 		Grow();
 
@@ -184,16 +184,29 @@ namespace XYZ {
 			Ray ray(branch->Start, branch->Direction);
 			Raymarch raymarch(ray, width, height, depth, voxelSize);
 			
-			const glm::vec3 startVoxelPosition = glm::vec3(raymarch.GetStartVoxel()) * voxelSize;
-			glm::vec3 currentVoxelPosition = glm::vec3(raymarch.GetCurrentVoxel()) * voxelSize;
+			glm::ivec3 currentVoxel = raymarch.GetCurrentVoxel();
+			const glm::vec3 startVoxelPosition = glm::vec3(currentVoxel) * voxelSize;
+			glm::vec3 currentVoxelPosition = glm::vec3(currentVoxel) * voxelSize;
 			while (glm::distance(currentVoxelPosition, startVoxelPosition) < m_BranchLength)
 			{
-				const uint32_t index = Index3D(raymarch.GetCurrentVoxel(), width, height);
-				if (index < voxels.size())
-					voxels[index] = Wood;
-
+				for (int32_t x = -radius; x < radius; x++)
+				{
+					for (int32_t z = -radius; z < radius; z++)
+					{
+						// Check if inside radius
+						if ((x * x) + (z * z) <= radius * radius)
+						{
+							glm::ivec3 voxel = currentVoxel + glm::ivec3(x, 0, z);
+							const uint32_t index = Index3D(voxel, width, height);
+							if (index < voxels.size())
+								voxels[index] = Wood;
+						}
+					}
+				}
+	
 				raymarch.Step();
-				currentVoxelPosition = glm::vec3(raymarch.GetCurrentVoxel()) * voxelSize;
+				currentVoxel = raymarch.GetCurrentVoxel();
+				currentVoxelPosition = glm::vec3(currentVoxel) * voxelSize;
 			}
 		}
 	}

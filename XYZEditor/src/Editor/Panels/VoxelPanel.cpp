@@ -256,8 +256,6 @@ namespace XYZ {
 				
 				if (!m_Generating && m_GenerateVoxelsFuture.valid())
 				{
-
-
 					VoxelSubmesh terrainSubmesh = m_ProceduralMesh->GetSubmeshes()[0];
 					
 					m_Terrain = std::move(m_GenerateVoxelsFuture.get());
@@ -276,7 +274,7 @@ namespace XYZ {
 					initializer.AttractionRange = 20.0f * voxelSize;
 					initializer.KillRange = 10.0f * voxelSize;
 					initializer.RootPosition = voxelPosition;
-					initializer.BranchLength = 5 * voxelSize;
+					initializer.BranchLength = 7 * voxelSize;
 
 					m_SpaceColonization = new SpaceColonization(initializer);
 
@@ -331,6 +329,7 @@ namespace XYZ {
 			}
 		}
 
+		static int32_t radius = 10;
 		bool VoxelPanel::OnEvent(Event& event)
 		{
 			if (m_ViewportHovered && m_ViewportFocused)
@@ -349,8 +348,12 @@ namespace XYZ {
 							terrainSubmesh.Width, 
 							terrainSubmesh.Height, 
 							terrainSubmesh.Depth, 
-							terrainSubmesh.VoxelSize
+							terrainSubmesh.VoxelSize,
+							radius
 						);		
+						if (radius > 1 && RandomNumber(0u, 1u) != 0)
+							radius--;
+
 						m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
 					}
 				}

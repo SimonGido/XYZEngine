@@ -14,15 +14,15 @@ namespace XYZ {
 		m_HitNormal(0.0f)
 	{
         AABB aabb(glm::vec3(0.0f), glm::vec3(width, height, depth));
-        m_IntersectsGrid = ray.IntersectsAABB(aabb, m_GridIntersectionT);
+        m_IntersectsGrid = m_Ray.IntersectsAABB(aabb, m_GridIntersectionT);
        
-        m_CurrentVoxel = glm::ivec3(floor(ray.Origin / cellSize));
+        m_CurrentVoxel = glm::ivec3(floor(m_Ray.Origin / cellSize));
 		m_StartVoxel = m_CurrentVoxel;
 
         m_Step = glm::ivec3(
-            (ray.Direction.x > 0.0) ? 1 : -1,
-            (ray.Direction.y > 0.0) ? 1 : -1,
-            (ray.Direction.z > 0.0) ? 1 : -1
+            (m_Ray.Direction.x > 0.0) ? 1 : -1,
+            (m_Ray.Direction.y > 0.0) ? 1 : -1,
+            (m_Ray.Direction.z > 0.0) ? 1 : -1
         );
         glm::vec3 next_boundary = glm::vec3(
             float((m_Step.x > 0) ? m_CurrentVoxel.x + 1 : m_CurrentVoxel.x) * cellSize,
@@ -30,8 +30,8 @@ namespace XYZ {
             float((m_Step.z > 0) ? m_CurrentVoxel.z + 1 : m_CurrentVoxel.z) * cellSize
         );
 
-        m_Max = (next_boundary - ray.Origin) / cellSize; // we will move along the axis with the smallest value
-        m_Delta = cellSize / ray.Direction * glm::vec3(m_Step);
+        m_Max = (next_boundary - m_Ray.Origin) / cellSize; // we will move along the axis with the smallest value
+        m_Delta = cellSize / m_Ray.Direction * glm::vec3(m_Step);
 	}
     void Raymarch::Step()
     {
