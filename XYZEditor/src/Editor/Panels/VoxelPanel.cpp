@@ -268,15 +268,18 @@ namespace XYZ {
 					const float voxelSize = 3.0f;
 					auto height = m_Terrain.TerrainHeightmap[Utils::Index2D(256, 256, 512)];
 					const glm::vec3 voxelPosition = glm::vec3(256, height, 256) * voxelSize;
-					m_SpaceColonization = new SpaceColonization(
-						400u,
-						voxelPosition + glm::vec3(0, 100 * voxelSize, 0),
-						50.0f * voxelSize,
-						voxelPosition,
-						5 * voxelSize,
-						10.0f * voxelSize,
-						20.0f * voxelSize
-					);
+					
+					SCInitializer initializer;
+					initializer.AttractorsCount = 400;
+					initializer.AttractorsCenter = voxelPosition + glm::vec3(0, 100 * voxelSize, 0);
+					initializer.AttractorsRadius = 50.0f * voxelSize;
+					initializer.AttractionRange = 20.0f * voxelSize;
+					initializer.KillRange = 10.0f * voxelSize;
+					initializer.RootPosition = voxelPosition;
+					initializer.BranchLength = 5 * voxelSize;
+
+					m_SpaceColonization = new SpaceColonization(initializer);
+
 					m_SpaceColonization->VoxelizeAttractors(m_Terrain.Terrain, 512, 400, 512, voxelSize);
 
 					terrainSubmesh.ColorIndices = m_Terrain.Terrain;

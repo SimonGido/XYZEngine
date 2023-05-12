@@ -13,34 +13,27 @@ namespace XYZ {
 		return index.x + width * (index.y + height * index.z);
 	}
 
-	SpaceColonization::SpaceColonization(
-		uint32_t numAttractors,
-		const glm::vec3& attractorsCenter, 
-		float attractorsRadius,
-		const glm::vec3& rootPosition,
-		float branchLength,
-		float killRange,
-		float attractionRange
-	)
+
+	SpaceColonization::SpaceColonization(const SCInitializer& initializer)
 		:
-		m_BranchLength(branchLength),
-		m_KillRange(killRange),
-		m_AttractionRange(attractionRange)
+		m_BranchLength(initializer.BranchLength),
+		m_KillRange(initializer.KillRange),
+		m_AttractionRange(initializer.AttractionRange)
 	{
-		m_Attractors.resize(numAttractors);
-		for (uint32_t i = 0; i < numAttractors; i++)
+		m_Attractors.resize(initializer.AttractorsCount);
+		for (uint32_t i = 0; i < initializer.AttractorsCount; i++)
 		{
 			float theta = 2.0 * glm::pi<float>() * RandomNumber(0.0f, 1.0f);      // Random angle around the vertical axis
 			float phi = acos(2.0 * RandomNumber(0.0f, 1.0f) - 1.0);   // Random angle from the vertical axis
 
 			// Convert spherical coordinates to Cartesian coordinates
-			m_Attractors[i].x = attractorsCenter.x + RandomNumber(0.0f, attractorsRadius) * sin(phi) * cos(theta);
-			m_Attractors[i].y = attractorsCenter.y + RandomNumber(0.0f, attractorsRadius) * sin(phi) * sin(theta);
-			m_Attractors[i].z = attractorsCenter.z + RandomNumber(0.0f, attractorsRadius) * cos(phi);
+			m_Attractors[i].x = initializer.AttractorsCenter.x + RandomNumber(0.0f, initializer.AttractorsRadius) * sin(phi) * cos(theta);
+			m_Attractors[i].y = initializer.AttractorsCenter.y + RandomNumber(0.0f, initializer.AttractorsRadius) * sin(phi) * sin(theta);
+			m_Attractors[i].z = initializer.AttractorsCenter.z + RandomNumber(0.0f, initializer.AttractorsRadius) * cos(phi);
 		}
 		m_RootBranch = new SCBranch();
-		m_RootBranch->Start = rootPosition;
-		m_RootBranch->End = rootPosition + glm::vec3(0.0f, branchLength, 0.0f);
+		m_RootBranch->Start = initializer.RootPosition;
+		m_RootBranch->End = initializer.RootPosition + glm::vec3(0.0f, initializer.BranchLength, 0.0f);
 		m_RootBranch->Direction = glm::vec3(0.0f, 1.0f, 0.0f);
 		m_RootBranch->Parent = nullptr;
 		m_Branches.push_back(m_RootBranch);

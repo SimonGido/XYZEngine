@@ -16,20 +16,22 @@ namespace XYZ {
 		std::vector<glm::vec3> Attractors;
 	};
 
+	struct SCInitializer
+	{
+		uint32_t	AttractorsCount;
+		glm::vec3	AttractorsCenter;
+		float		AttractorsRadius;
+		float		AttractionRange;
+		float		KillRange;
 
-	class SpaceColonization
+		glm::vec3	RootPosition;
+		float		BranchLength;
+	};
+
+	class XYZ_API SpaceColonization
 	{
 	public:
-		SpaceColonization(
-			uint32_t numAttractors,
-			const glm::vec3& attractorsCenter,
-			float attractorsRadius,
-			const glm::vec3& rootPosition,
-			float branchLength,
-			float killRange,
-			float attractionRange
-		);
-
+		SpaceColonization(const SCInitializer& initializer);
 
 		void Grow();
 		void Grow(std::vector<uint8_t>& voxels, uint32_t width, uint32_t height, uint32_t depth, float voxelSize);
