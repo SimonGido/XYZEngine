@@ -248,6 +248,7 @@ namespace XYZ {
 			{
 				const uint32_t voxelBufferUsage = 100 * m_VoxelStorageAllocator->GetAllocatedSize() / m_VoxelStorageAllocator->GetSize();
 				const uint32_t colorBufferUsage = 100 * m_ColorStorageAllocator->GetAllocatedSize() / m_ColorStorageAllocator->GetSize();
+				const uint32_t topGridBufferUsage = 100 * m_TopGridsAllocator->GetAllocatedSize() / m_TopGridsAllocator->GetSize();
 
 				UI::TextTableRow("%s", "Mesh Allocations:", "%u", static_cast<uint32_t>(m_LastFrameMeshAllocations.size()));
 				UI::TextTableRow("%s", "Update Allocations:", "%u", static_cast<uint32_t>(m_UpdatedAllocations.size()));
@@ -255,6 +256,8 @@ namespace XYZ {
 				UI::TextTableRow("%s", "Culled Models:", "%u", m_Statistics.CulledModels);
 				UI::TextTableRow("%s", "Voxel Buffer Usage:", "%u%%", voxelBufferUsage);
 				UI::TextTableRow("%s", "Color Buffer Usage:", "%u%%", colorBufferUsage);
+				UI::TextTableRow("%s", "Top Grid Buffer Usage:", "%u%%", topGridBufferUsage);
+
 
 				const uint32_t frameIndex = Renderer::GetCurrentFrame();
 				float gpuTime = m_CommandBuffer->GetExecutionGPUTime(frameIndex, m_GPUTimeQueries.GPUTime);

@@ -133,6 +133,35 @@ namespace XYZ {
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
 			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
 
+			std::vector<VoxelInstance> instances(9);
+			instances[0].SubmeshIndex = 0;
+			instances[0].Transform = glm::mat4(1.0f);
+
+			instances[1].SubmeshIndex = 0;
+			instances[1].Transform = glm::translate(glm::vec3(-512.0f * 3.0f, 0.0f, 0.0f));
+
+			instances[2].SubmeshIndex = 0;
+			instances[2].Transform = glm::translate(glm::vec3(-512.0f * 3.0f, 0.0f, -512.0f * 3.0f));
+
+			instances[3].SubmeshIndex = 0;
+			instances[3].Transform = glm::translate(glm::vec3(512.0f * 3.0f, 0.0f, 0.0f));
+
+			instances[4].SubmeshIndex = 0;
+			instances[4].Transform = glm::translate(glm::vec3(512.0f * 3.0f, 0.0f, 512.0f * 3.0f));
+
+			instances[5].SubmeshIndex = 0;
+			instances[5].Transform = glm::translate(glm::vec3(0.0f, 0.0f, 512.0f * 3.0f));
+
+			instances[6].SubmeshIndex = 0;
+			instances[6].Transform = glm::translate(glm::vec3(0.0f, 0.0f, -512.0f * 3.0f));
+
+			instances[7].SubmeshIndex = 0;
+			instances[7].Transform = glm::translate(glm::vec3(512.0f * 3.0f, 0.0f, -512.0f * 3.0f));
+
+			instances[8].SubmeshIndex = 0;
+			instances[8].Transform = glm::translate(glm::vec3(-512.0f * 3.0f, 0.0f, 512.0f * 3.0f));
+
+
 			VoxelInstance instance;
 			instance.SubmeshIndex = 0;
 			instance.Transform = glm::mat4(1.0f);
