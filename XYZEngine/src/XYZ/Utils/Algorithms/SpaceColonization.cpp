@@ -41,10 +41,6 @@ namespace XYZ {
 	}
 	void SpaceColonization::Grow()
 	{
-		// we parse the extremities to set them as grown 
-		for (SCBranch* extremity : m_Extremities) 
-			extremity->Grown = true;
-		
 		// we remove the attractors in kill range
 		for (int32_t i = m_Attractors.size() - 1; i >= 0; i--) 
 		{

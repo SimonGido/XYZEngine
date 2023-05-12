@@ -34,7 +34,7 @@ namespace XYZ {
 		SpaceColonization(const SCInitializer& initializer);
 
 		void Grow();
-		void Grow(std::vector<uint8_t>& voxels, uint32_t width, uint32_t height, uint32_t depth, float voxelSize, int32_t startRadius);
+		void Grow(std::vector<uint8_t>& voxels, uint32_t width, uint32_t height, uint32_t depth, float voxelSize, int32_t radius);
 		void VoxelizeAttractors(std::vector<uint8_t>& voxels, uint32_t width, uint32_t height, uint32_t depth, float voxelSize);
 
 	private:
