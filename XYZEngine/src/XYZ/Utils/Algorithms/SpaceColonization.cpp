@@ -218,14 +218,19 @@ namespace XYZ {
 				if (branch->Children.empty())
 				{
 					glm::ivec3 voxel = branch->End / voxelSize;
-					radius = RandomNumber(5u, 15u);
-					for (int32_t x = -radius; x < radius; x++)
+					glm::ivec3 elipsoid(RandomNumber(6u, 15u), RandomNumber(3u, 7u), RandomNumber(6u, 15u));
+					
+					for (int32_t x = -elipsoid.x; x < elipsoid.x; x++)
 					{
-						for (int32_t y = -radius; y < radius; y++)
+						for (int32_t y = -elipsoid.y; y < elipsoid.y; y++)
 						{
-							for (int32_t z = -radius; z < radius; z++)
+							for (int32_t z = -elipsoid.z; z < elipsoid.z; z++)
 							{
-								if ((x * x) + (y * y) + (z * z) <= radius * radius)
+								int32_t elX = std::pow((x / elipsoid.x), 2);
+								int32_t elY = std::pow((y / elipsoid.y), 2);
+								int32_t elZ = std::pow((z / elipsoid.z), 2);
+
+								if (elX + elY + elZ <= 1)
 								{
 									glm::ivec3 sphereVoxel = voxel + glm::ivec3(x, y, z);
 									const uint32_t index = Index3D(sphereVoxel, width, height);
