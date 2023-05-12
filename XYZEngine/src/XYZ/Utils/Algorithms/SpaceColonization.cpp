@@ -172,9 +172,14 @@ namespace XYZ {
 	}
 	void SpaceColonization::Grow(std::vector<uint8_t>& voxels, uint32_t width, uint32_t height, uint32_t depth, float voxelSize, int32_t radius)
 	{
+		if (m_Finished)
+			return;
+
 		Grow();
 
+		const uint8_t Grass = 3;
 		const uint32_t Wood = 4;
+
 		for (const SCBranch * branch : m_Branches)
 		{
 			Ray ray(branch->Start, branch->Direction);
@@ -203,6 +208,34 @@ namespace XYZ {
 				raymarch.Step();
 				currentVoxel = raymarch.GetCurrentVoxel();
 				currentVoxelPosition = glm::vec3(currentVoxel) * voxelSize;
+			}
+		}
+		if (m_Attractors.empty())
+		{
+			m_Finished = true;
+			for (const SCBranch* branch : m_Branches)
+			{
+				if (branch->Children.empty())
+				{
+					glm::ivec3 voxel = branch->End / voxelSize;
+					radius = RandomNumber(5u, 15u);
+					for (int32_t x = -radius; x < radius; x++)
+					{
+						for (int32_t y = -radius; y < radius; y++)
+						{
+							for (int32_t z = -radius; z < radius; z++)
+							{
+								if ((x * x) + (y * y) + (z * z) <= radius * radius)
+								{
+									glm::ivec3 sphereVoxel = voxel + glm::ivec3(x, y, z);
+									const uint32_t index = Index3D(sphereVoxel, width, height);
+									if (index < voxels.size())
+										voxels[index] = Grass;
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}

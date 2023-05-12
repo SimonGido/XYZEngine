@@ -10,7 +10,6 @@ namespace XYZ {
 		glm::vec3	Direction;
 		SCBranch*   Parent;				// Pointer to parent of the branch
 		uint32_t	DistanceFromRoot = 0;
-		bool		Grown = false;
 
 		std::vector<SCBranch*> Children;
 		std::vector<glm::vec3> Attractors;
@@ -52,5 +51,6 @@ namespace XYZ {
 		float	  m_KillRange;
 		float	  m_AttractionRange;
 		float	  m_GrowSize = 0.1f;
+		bool	  m_Finished = false;
 	};
 }

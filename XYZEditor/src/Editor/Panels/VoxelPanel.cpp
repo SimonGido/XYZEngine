@@ -329,7 +329,7 @@ namespace XYZ {
 			}
 		}
 
-		static int32_t radius = 10;
+		static int32_t radius = 7;
 		bool VoxelPanel::OnEvent(Event& event)
 		{
 			if (m_ViewportHovered && m_ViewportFocused)
