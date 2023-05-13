@@ -12,23 +12,28 @@
 const float FLT_MAX = 3.402823466e+38;
 const float EPSILON = 0.01;
 const uint OPAQUE = 255;
+const int MULTI_COLOR = 256;
 
 layout(push_constant) uniform Uniforms
 {
 	bool UseTopGrid;
 } u_Uniforms;
 
+struct VoxelTopGridCell
+{
+	uint ColorIndex;
+	uint VoxelOffset;
+};
+
 struct VoxelTopGrid
 {
-	uint  MaxTraverses;
 	uint  CellsOffset;
-
 	uint  Width;
 	uint  Height;
 	uint  Depth;
 	float Size;
 
-	uint Padding[2];
+	uint Padding[3];
 };
 
 struct VoxelModel
@@ -68,7 +73,7 @@ layout(std430, binding = 18) readonly buffer buffer_Models
 {		
 	uint		 NumModels;
 	VoxelModel	 Models[MAX_MODELS];
-	VoxelTopGrid TopGrids[];
+	VoxelTopGrid TopGrids[MAX_MODELS];
 };
 
 layout(std430, binding = 19) readonly buffer buffer_Colors
@@ -78,7 +83,7 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 
 layout(std430, binding = 20) readonly buffer buffer_TopGrids
 {		
-	uint TopGridCells[];
+	VoxelTopGridCell TopGridCells[];
 };
 
 layout(binding = 21, rgba16f) uniform image2D o_Image;
@@ -457,6 +462,21 @@ vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
 	return CalculateDirLight(F0, u_DirectionalLight, pbr);
 }
 
+
+bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelModel model)
+{
+	AABB aabb = ModelAABB(model);
+	bool result = PointInBox(origin, aabb.Min, aabb.Max); // Default is true in case origin is inside
+	if (!result)
+	{
+		// Check if we are intersecting with grid
+		float dist;
+		result = RayBoxIntersection(origin, direction, aabb.Min, aabb.Max, dist);
+		origin = origin + direction * (dist - EPSILON); // Move origin to first intersection
+	}
+	return result;
+}
+
 // TODO: refactor and fix it
 RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, in VoxelTopGrid grid)
 {
@@ -485,68 +505,77 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 	vec4 color = vec4(0,0,0,0);
 	vec3 throughput = vec3(1,1,1);
 	uint scale = uint(ceil(grid.Size / model.VoxelSize));
+	ivec3 steps = ivec3(grid.Width, grid.Height, grid.Depth);
 
-	for (uint i = 0; i < grid.MaxTraverses; i++)
+	while (steps.x >= 0 && steps.y >= 0 && steps.z >= 0)
 	{
 		float newDistance = VoxelDistanceFromRay(ray.Origin, ray.Direction, current_voxel, grid.Size);
 		if (newDistance > currentDistance)
 			break;
 
-
 		if (IsValidVoxel(current_voxel, grid.Width, grid.Height, grid.Depth))
 		{
 			uint voxelIndex = Index3D(current_voxel, grid.Width, grid.Height) + grid.CellsOffset;
-			if (TopGridCells[voxelIndex] != 0)
-			{			
+			uint topGridColorIndex = TopGridCells[voxelIndex].ColorIndex;
+			if (topGridColorIndex == MULTI_COLOR)
+			{
 				float dist = VoxelDistanceFromRay(newOrigin, direction, current_voxel, grid.Size);
 				newOrigin += direction * (dist - EPSILON); // Move origin to hit of top grid cell
-					
+				VoxelModel newModel = model;
+				newModel.VoxelOffset = TopGridCells[voxelIndex].VoxelOffset;
+	
+				newModel.Width = 5;
+				newModel.Height = 5;
+				newModel.Depth = 5;
+
+				//newModel.VoxelSize = model.VoxelSize;
+				//newModel.ColorIndex = model.ColorIndex;
 				// Raymarch from new origin						
-				RaymarchResult newResult = RayMarchSteps(ray, color, throughput, newOrigin, direction, model, currentDistance, ivec3(scale, scale, scale));
+				RaymarchResult newResult = RayMarchSteps(ray, color, throughput, newOrigin, direction, newModel, currentDistance, ivec3(scale, scale, scale));
 				if (newResult.Hit)
 				{
 					color = newResult.Color;
 					throughput = newResult.Throughput;
 					result = newResult;
+					//return result;
 				}
-				if (throughput.x <= EPSILON && throughput.y <= EPSILON && throughput.z <= EPSILON)
-					return result;				
+				//if (throughput.x <= EPSILON && throughput.y <= EPSILON && throughput.z <= EPSILON)
+				//	return result;			
 			}
+			//else if (topGridColorIndex > 0)
+			//{			
+			//	result.Hit = true;
+			//	result.Color = VoxelToColor(ColorPallete[model.ColorIndex][topGridColorIndex]);
+			//	result.Normal = vec3(0,1,0);
+			//	color = result.Color;
+			//	result.Throughput = vec3(0,0,0);
+			//	return result;		
+			//}
 		}
 
 		if (t_max.x < t_max.y && t_max.x < t_max.z) 
 		{
 			t_max.x += t_delta.x;
 			current_voxel.x += step.x;
+			steps.x--;
 		}
 		else if (t_max.y < t_max.z) 
 		{
 			t_max.y += t_delta.y;
 			current_voxel.y += step.y;			
+			steps.y--;
 		}
 		else 
 		{
 			t_max.z += t_delta.z;
 			current_voxel.z += step.z;		
+			steps.z--;
 		}
 	}
 	result.Color = color;
 	return result;
 }
 
-bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelModel model)
-{
-	AABB aabb = ModelAABB(model);
-	bool result = PointInBox(origin, aabb.Min, aabb.Max); // Default is true in case origin is inside
-	if (!result)
-	{
-		// Check if we are intersecting with grid
-		float dist;
-		result = RayBoxIntersection(origin, direction, aabb.Min, aabb.Max, dist);
-		origin = origin + direction * (dist - EPSILON); // Move origin to first intersection
-	}
-	return result;
-}
 
 void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
 {

@@ -44,18 +44,17 @@ namespace XYZ {
 		m_UniformBufferSet->Create(sizeof(UBVoxelScene), UBVoxelScene::Set, UBVoxelScene::Binding);
 		uint32_t size = sizeof(UBVoxelScene);
 		m_StorageBufferSet = StorageBufferSet::Create(framesInFlight);
-		m_StorageBufferSet->Create(sizeof(SSBOVoxels), SSBOVoxels::Set, SSBOVoxels::Binding);
+		m_StorageBufferSet->Create(SSBOVoxels::MaxVoxels, SSBOVoxels::Set, SSBOVoxels::Binding);
 		m_StorageBufferSet->Create(sizeof(SSBOVoxelModels), SSBOVoxelModels::Set, SSBOVoxelModels::Binding);
-		m_StorageBufferSet->Create(sizeof(SSBOColors), SSBOColors::Set, SSBOColors::Binding);
-		m_StorageBufferSet->Create(sizeof(SSBOVoxelTopGrids), SSBOVoxelTopGrids::Set, SSBOVoxelTopGrids::Binding);
+		m_StorageBufferSet->Create(SSBOColors::MaxSize, SSBOColors::Set, SSBOColors::Binding);
+		m_StorageBufferSet->Create(SSBOVoxelTopGrids::MaxSize, SSBOVoxelTopGrids::Set, SSBOVoxelTopGrids::Binding);
 		m_StorageBufferSet->Create(SSBOVoxelComputeData::MaxSize, SSBOVoxelComputeData::Set, SSBOVoxelComputeData::Binding);
 
-		m_VoxelStorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxels), SSBOVoxels::Binding, SSBOVoxels::Set);
-		m_ColorStorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOColors), SSBOColors::Binding, SSBOColors::Set);
-		m_TopGridsAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxelTopGrids), SSBOVoxelTopGrids::Binding, SSBOVoxelTopGrids::Set);
+		m_VoxelStorageAllocator = Ref<StorageBufferAllocator>::Create(SSBOVoxels::MaxVoxels, SSBOVoxels::Binding, SSBOVoxels::Set);
+		m_ColorStorageAllocator = Ref<StorageBufferAllocator>::Create(SSBOColors::MaxSize, SSBOColors::Binding, SSBOColors::Set);
+		m_TopGridsAllocator = Ref<StorageBufferAllocator>::Create(SSBOVoxelTopGrids::MaxSize, SSBOVoxelTopGrids::Binding, SSBOVoxelTopGrids::Set);
 		m_ComputeStorageAllocator = Ref<StorageBufferAllocator>::Create(SSBOVoxelComputeData::MaxSize, SSBOVoxelComputeData::Binding, SSBOVoxelComputeData::Set);
 		
-		memset(m_SSBOTopGrids.TopGridCells, 0, sizeof(SSBOVoxelTopGrids));
 
 		TextureProperties props;
 		props.Storage = true;
@@ -246,9 +245,9 @@ namespace XYZ {
 
 			if (ImGui::BeginTable("##Statistics", 2, ImGuiTableFlags_SizingFixedFit))
 			{
-				const uint32_t voxelBufferUsage = 100 * m_VoxelStorageAllocator->GetAllocatedSize() / m_VoxelStorageAllocator->GetSize();
-				const uint32_t colorBufferUsage = 100 * m_ColorStorageAllocator->GetAllocatedSize() / m_ColorStorageAllocator->GetSize();
-				const uint32_t topGridBufferUsage = 100 * m_TopGridsAllocator->GetAllocatedSize() / m_TopGridsAllocator->GetSize();
+				const uint32_t voxelBufferUsage = 100 * static_cast<float>(m_VoxelStorageAllocator->GetAllocatedSize()) / m_VoxelStorageAllocator->GetSize();
+				const uint32_t colorBufferUsage = 100 * static_cast<float>(m_ColorStorageAllocator->GetAllocatedSize()) / m_ColorStorageAllocator->GetSize();
+				const uint32_t topGridBufferUsage = 100 * static_cast<float>(m_TopGridsAllocator->GetAllocatedSize()) / m_TopGridsAllocator->GetSize();
 
 				UI::TextTableRow("%s", "Mesh Allocations:", "%u", static_cast<uint32_t>(m_LastFrameMeshAllocations.size()));
 				UI::TextTableRow("%s", "Update Allocations:", "%u", static_cast<uint32_t>(m_UpdatedAllocations.size()));
@@ -528,9 +527,6 @@ namespace XYZ {
 	}
 	void VoxelRenderer::prepareDrawCommands()
 	{
-		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::ColorPallete[0]));
-		Ref<VoxelRenderer> instance = this;
-
 		uint32_t topGridCount = 0;
 		for (auto& [key, drawCommand] : m_DrawCommands)
 		{
@@ -542,7 +538,7 @@ namespace XYZ {
 			for (const auto& cmdModel : drawCommand.Models)
 			{
 				VoxelModel& model = m_SSBOVoxelModels.Models[cmdModel.ModelIndex];
-				model.ColorIndex = meshAlloc.ColorAllocation.GetOffset() / colorSize;
+				model.ColorIndex = meshAlloc.ColorAllocation.GetOffset() / SSBOColors::ColorSize;
 				model.VoxelOffset = meshAlloc.SubmeshOffsets[cmdModel.SubmeshIndex];
 				model.TopGridIndex = -1;
 			}
@@ -551,7 +547,7 @@ namespace XYZ {
 			if (drawCommand.Mesh->HasTopGrid())
 			{
 				auto& topGrid = drawCommand.Mesh->GetTopGrid();
-				m_SSBOVoxelModels.TopGrids[topGridCount].MaxTraverses = topGrid.MaxTraverses;
+
 				m_SSBOVoxelModels.TopGrids[topGridCount].CellsOffset = meshAlloc.TopGridAllocation.GetOffset();
 				m_SSBOVoxelModels.TopGrids[topGridCount].Width = topGrid.Width;
 				m_SSBOVoxelModels.TopGrids[topGridCount].Height = topGrid.Height;
@@ -568,21 +564,27 @@ namespace XYZ {
 
 		for (const auto& updated : m_UpdatedAllocations)
 		{
-			void* voxelData = &m_SSBOVoxels.Voxels[updated.VoxelAllocation.GetOffset()];
-			void* colorData = &m_SSBOColors.ColorPallete[updated.ColorAllocation.GetOffset() / colorSize];
-			void* topGridData = &m_SSBOTopGrids.TopGridCells[updated.TopGridAllocation.GetOffset() / sizeof(uint32_t)];
-
-			m_StorageBufferSet->UpdateEachFrame(voxelData, updated.VoxelAllocation.GetSize(), updated.VoxelAllocation.GetOffset(), SSBOVoxels::Binding, SSBOVoxels::Set);
-			m_StorageBufferSet->UpdateEachFrame(colorData, updated.ColorAllocation.GetSize(), updated.ColorAllocation.GetOffset(), SSBOColors::Binding, SSBOColors::Set);
-			m_StorageBufferSet->UpdateEachFrame(topGridData, updated.TopGridAllocation.GetSize(), updated.TopGridAllocation.GetOffset(), SSBOVoxelTopGrids::Binding, SSBOVoxelTopGrids::Set);
-		}
-		for (const auto& updated : m_UpdatedSuballocations)
-		{
-			void* voxelData = &m_SSBOVoxels.Voxels[updated.Offset];
-			m_StorageBufferSet->UpdateEachFrame(voxelData, updated.Size, updated.Offset, SSBOVoxels::Binding, SSBOVoxels::Set);
+			uint32_t voxelOffset = updated.VoxelAllocation.GetOffset();
+			if (updated.Mesh->HasTopGrid())
+			{
+				const auto& submesh = updated.Mesh->GetSubmeshes()[0];
+				const auto& topGrid = updated.Mesh->GetTopGrid();
+				const uint32_t voxelCount = static_cast<uint32_t>(topGrid.Voxels.size());
+				m_StorageBufferSet->UpdateEachFrame(topGrid.Voxels.data(), voxelCount, voxelOffset, SSBOVoxels::Binding, SSBOVoxels::Set);
+			}
+			else
+			{
+				for (auto& submesh : updated.Mesh->GetSubmeshes())
+				{
+					const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
+					m_StorageBufferSet->UpdateEachFrame(submesh.ColorIndices.data(), voxelCount, voxelOffset, SSBOVoxels::Binding, SSBOVoxels::Set);
+					voxelOffset += voxelCount;
+				}
+			}
+			m_StorageBufferSet->UpdateEachFrame(updated.Mesh->GetTopGrid().Cells.data(), updated.TopGridAllocation.GetSize(), updated.TopGridAllocation.GetOffset(), SSBOVoxelTopGrids::Binding, SSBOVoxelTopGrids::Set);
+			m_StorageBufferSet->UpdateEachFrame(updated.Mesh->GetColorPallete().data(), updated.ColorAllocation.GetSize(), updated.ColorAllocation.GetOffset(), SSBOColors::Binding, SSBOColors::Set);
 		}
 		m_UpdatedAllocations.clear();
-		m_UpdatedSuballocations.clear();
 
 		const uint32_t voxelModelsUpdateSize =
 				sizeof(SSBOVoxelModels::NumModels)
@@ -674,60 +676,75 @@ namespace XYZ {
 	void VoxelRenderer::reallocateVoxels(const Ref<VoxelMesh>& mesh, MeshAllocation& allocation)
 	{
 		const auto& submeshes = mesh->GetSubmeshes();
-
-		const uint32_t meshSize = mesh->GetNumVoxels() * sizeof(uint8_t);
-		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::ColorPallete[0]));
-		
-		const bool reallocated =
-			m_VoxelStorageAllocator->Allocate(meshSize, allocation.VoxelAllocation)
-			|| m_ColorStorageAllocator->Allocate(colorSize, allocation.ColorAllocation);
-
-
-		if (reallocated || mesh->NeedUpdate())
+		if (mesh->HasTopGrid())
 		{
-			// It is safe to allocate top grid only here because of multithread generation
-			const uint32_t topGridsSize = mesh->GetTopGrid().VoxelCount.size() * sizeof(uint32_t);
-			m_TopGridsAllocator->Allocate(topGridsSize, allocation.TopGridAllocation);
-			allocation.SubmeshOffsets.resize(submeshes.size());
+			XYZ_ASSERT(submeshes.size() == 1, "Currently only one sumbesh supported for top grid");
+			const auto& topGrid = mesh->GetTopGrid();
+			const uint32_t meshSize = topGrid.Voxels.size() * sizeof(uint8_t);
+			const uint32_t topGridsSize = mesh->GetTopGrid().Cells.size() * sizeof(VoxelMeshTopGridCell);
 
-			// Copy voxels
-			uint32_t submeshIndex = 0;
-			uint32_t offset = allocation.VoxelAllocation.GetOffset();
-			for (auto& submesh : submeshes)
+			bool reallocated = m_VoxelStorageAllocator->Allocate(meshSize, allocation.VoxelAllocation);
+			reallocated |= m_TopGridsAllocator->Allocate(topGridsSize, allocation.TopGridAllocation);
+			reallocated |= m_ColorStorageAllocator->Allocate(SSBOColors::ColorSize, allocation.ColorAllocation);
+
+			if (reallocated || mesh->NeedUpdate())
 			{
-				allocation.SubmeshOffsets[submeshIndex] = offset;
-				const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
-				memcpy(&m_SSBOVoxels.Voxels[offset], submesh.ColorIndices.data(), voxelCount * sizeof(uint8_t));
-				offset += voxelCount;
-				submeshIndex++;
-			}
+				allocation.SubmeshOffsets.resize(submeshes.size());
+				uint32_t submeshIndex = 0;
+				uint32_t offset = allocation.VoxelAllocation.GetOffset();
+				auto& submesh = submeshes[0];
+				allocation.SubmeshOffsets[0] = offset;
 
-			// Copy color pallete
-			const uint32_t colorPalleteIndex = allocation.ColorAllocation.GetOffset() / colorSize;
-			memcpy(m_SSBOColors.ColorPallete[colorPalleteIndex], mesh->GetColorPallete().data(), colorSize);
-
-			// Copy top grid
-			const uint32_t cellOffset = allocation.TopGridAllocation.GetOffset() / sizeof(uint32_t);
-			memcpy(&m_SSBOTopGrids.TopGridCells[cellOffset], mesh->GetTopGrid().VoxelCount.data(), topGridsSize);
-
-			m_UpdatedAllocations.push_back({
-				allocation.VoxelAllocation,
-				allocation.TopGridAllocation,
-				allocation.ColorAllocation
+				m_UpdatedAllocations.push_back({
+					allocation.VoxelAllocation,
+					allocation.TopGridAllocation,
+					allocation.ColorAllocation,
+					mesh
 				});
+			}
 		}
 		else
 		{
-			auto ranges = mesh->DirtySubmeshes();
-			for (auto& [submeshIndex, range] : ranges)
-			{
-				const uint32_t offset = allocation.SubmeshOffsets[submeshIndex] + range.Start;
-				const uint32_t voxelCount = range.End - range.Start;
-				const VoxelSubmesh& submesh = mesh->GetSubmeshes()[submeshIndex];
-				const uint8_t* updateVoxelData = &submesh.ColorIndices.data()[range.Start];
+			const uint32_t meshSize = mesh->GetNumVoxels() * sizeof(uint8_t);
+			const bool reallocated =
+				m_VoxelStorageAllocator->Allocate(meshSize, allocation.VoxelAllocation)
+				|| m_ColorStorageAllocator->Allocate(SSBOColors::ColorSize, allocation.ColorAllocation);
 
-				memcpy(&m_SSBOVoxels.Voxels[offset], updateVoxelData, voxelCount * sizeof(uint8_t));
-				m_UpdatedSuballocations.push_back({ offset, voxelCount });
+
+			if (reallocated || mesh->NeedUpdate())
+			{
+				allocation.SubmeshOffsets.resize(submeshes.size());
+
+				// Copy voxels
+				uint32_t submeshIndex = 0;
+				uint32_t offset = allocation.VoxelAllocation.GetOffset();
+				for (auto& submesh : submeshes)
+				{
+					allocation.SubmeshOffsets[submeshIndex] = offset;
+					const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
+					offset += voxelCount;
+					submeshIndex++;
+				}
+
+				m_UpdatedAllocations.push_back({
+					allocation.VoxelAllocation,
+					allocation.TopGridAllocation,
+					allocation.ColorAllocation,
+					mesh
+					});
+			}
+			else
+			{
+				//auto ranges = mesh->DirtySubmeshes();
+				//for (auto& [submeshIndex, range] : ranges)
+				//{
+				//	const uint32_t offset = allocation.SubmeshOffsets[submeshIndex] + range.Start;
+				//	const uint32_t voxelCount = range.End - range.Start;
+				//	const VoxelSubmesh& submesh = mesh->GetSubmeshes()[submeshIndex];
+				//	const uint8_t* updateVoxelData = &submesh.ColorIndices.data()[range.Start];
+				//
+				//	m_StorageBufferSet->UpdateEachFrame(updateVoxelData, voxelCount, offset, SSBOVoxels::Binding, SSBOVoxels::Set);
+				//}
 			}
 		}
 	}

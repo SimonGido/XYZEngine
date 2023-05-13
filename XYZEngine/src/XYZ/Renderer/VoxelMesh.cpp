@@ -10,75 +10,6 @@ namespace XYZ {
 		return x + width * (y + height * z);
 	}
 
-	static VoxelMeshTopGrid GenerateTopGridFromAABB(const VoxelSubmesh& submesh, const std::array<VoxelColor, 256>& colorPallete, float size)
-	{
-		VoxelMeshTopGrid topGrid;
-
-		const float scale = size / submesh.VoxelSize;
-		const uint32_t width = std::ceil((float)submesh.Width / scale);
-		const uint32_t height = std::ceil((float)submesh.Height / scale);
-		const uint32_t depth = std::ceil((float)submesh.Depth / scale);
-
-		topGrid.MaxTraverses = std::sqrtl(std::powl(width, 2) + std::powl(height, 2) + std::powl(depth, 2)) * 2;
-		topGrid.Width = width;
-		topGrid.Height = height;
-		topGrid.Depth = depth;
-		topGrid.Size = size;
-		topGrid.VoxelCount.resize(width * height * depth);
-		memset(topGrid.VoxelCount.data(), 0, topGrid.VoxelCount.size() * sizeof(uint32_t));
-
-		for (uint32_t x = 0; x < submesh.Width; x++)
-		{
-			for (uint32_t y = 0; y < submesh.Height; y++)
-			{
-				for (uint32_t z = 0; z < submesh.Depth; z++)
-				{
-					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
-					const VoxelColor color = colorPallete[submesh.ColorIndices[index]];
-					if (color.A != 0)
-					{
-						const glm::vec3 voxelPosition = {
-							x * submesh.VoxelSize,
-							y * submesh.VoxelSize,
-							z * submesh.VoxelSize
-						};
-						const glm::ivec3 topGridCellStart = {
-							std::floor(voxelPosition.x / size),
-							std::floor(voxelPosition.y / size),
-							std::floor(voxelPosition.z / size)
-						};
-						const glm::ivec3 topGridCellEnd = {
-							std::ceil((voxelPosition.x + submesh.VoxelSize) / size),
-							std::ceil((voxelPosition.y + submesh.VoxelSize) / size),
-							std::ceil((voxelPosition.z + submesh.VoxelSize) / size)
-						};
-						
-						for (uint32_t tx = topGridCellStart.x; tx < topGridCellEnd.x; tx++)
-						{
-							for (uint32_t ty = topGridCellStart.y; ty < topGridCellEnd.y; ty++)
-							{
-								for (uint32_t tz = topGridCellStart.z; tz < topGridCellEnd.z; tz++)
-								{
-									const uint32_t topgridIndex = Index3D(tx, ty, tz, width, height);
-									topGrid.VoxelCount[topgridIndex]++;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		uint32_t emptyCount = 0;
-		for (auto count : topGrid.VoxelCount)
-		{
-			if (count == 0)
-				emptyCount++;
-		}
-
-		return topGrid;
-	}
-
-
 	static VoxelMeshTopGrid CreateTopGridFromAABB(const AABB& aabb, float size)
 	{
 		VoxelMeshTopGrid topGrid;
@@ -89,57 +20,175 @@ namespace XYZ {
 
 		const glm::vec3 rayDir = glm::normalize(glm::vec3(1, 1, 1));
 		const glm::vec3 delta = glm::abs(glm::vec3(width, height, depth) / rayDir);
-		const float maxDistance = std::max(delta.x, std::max(delta.y, delta.z));
-
-		topGrid.MaxTraverses = std::ceil(maxDistance);
+	
 		topGrid.Width = width;
 		topGrid.Height = height;
 		topGrid.Depth = depth;
 		topGrid.Size = size;
-		topGrid.VoxelCount.resize(width * height * depth);
-		memset(topGrid.VoxelCount.data(), 0, topGrid.VoxelCount.size() * sizeof(uint32_t));
-		
+		topGrid.Cells.resize(width * height * depth);
+
 		return topGrid;
 	}
 
-	static void InsertSubmeshInTopGrid(VoxelMeshTopGrid& grid, const std::array<VoxelColor, 256>& colorPallete, const VoxelSubmesh& submesh)
-	{
-		const float scale = grid.Size / submesh.VoxelSize;
-		for (uint32_t x = 0; x < submesh.Width; x++)
-		{
-			for (uint32_t y = 0; y < submesh.Height; y++)
-			{
-				for (uint32_t z = 0; z < submesh.Depth; z++)
-				{
-					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
-					const VoxelColor color = colorPallete[submesh.ColorIndices[index]];
-					if (color.A != 0)
-					{
-						const glm::vec3 voxelPosition = {
-							x * submesh.VoxelSize,
-							y * submesh.VoxelSize,
-							z * submesh.VoxelSize
-						};
-						const glm::ivec3 topGridCellStart = {
-							std::floor(voxelPosition.x / grid.Size),
-							std::floor(voxelPosition.y / grid.Size),
-							std::floor(voxelPosition.z / grid.Size)
-						};
-						const glm::ivec3 topGridCellEnd = {
-							std::ceil((voxelPosition.x + submesh.VoxelSize) / grid.Size),
-							std::ceil((voxelPosition.y + submesh.VoxelSize) / grid.Size),
-							std::ceil((voxelPosition.z + submesh.VoxelSize) / grid.Size)
-						};
 
-						for (uint32_t tx = topGridCellStart.x; tx < topGridCellEnd.x; tx++)
+	static std::vector<VoxelSubmesh> CompressVoxelSubmesh(const VoxelSubmesh& submesh, uint32_t scale)
+	{
+		std::vector<VoxelSubmesh> result;
+		
+		const uint32_t gridWidth = submesh.Width / scale;
+		const uint32_t gridHeight = submesh.Height / scale;
+		const uint32_t gridDepth = submesh.Depth / scale;
+
+		std::vector<std::vector<uint8_t>> cellVoxels(gridWidth * gridHeight * gridDepth);
+		std::vector<uint8_t> gridCells(gridWidth * gridHeight * gridDepth);
+
+
+		for (uint32_t tx = 0; tx < gridWidth; tx++)
+		{
+			for (uint32_t ty = 0; ty < gridHeight; ty++)
+			{
+				for (uint32_t tz = 0; tz < gridDepth; tz++)
+				{
+					const uint32_t gridIndex = Index3D(tx, ty, tz, gridWidth, gridHeight);
+					bool canCompress = true;
+					uint32_t realX = tx * scale;
+					uint32_t realY = ty * scale;
+					uint32_t realZ = tz * scale;
+					uint32_t index = Index3D(realX, realY, realZ, submesh.Width, submesh.Height);
+					uint32_t colorIndex = static_cast<uint32_t>(submesh.ColorIndices[index]);
+				
+					
+					for (uint32_t x = 1; x < scale; x++)
+					{
+						for (uint32_t y = 1; y < scale; y++)
 						{
-							for (uint32_t ty = topGridCellStart.y; ty < topGridCellEnd.y; ty++)
+							for (uint32_t z = 1; z < scale; z++)
 							{
-								for (uint32_t tz = topGridCellStart.z; tz < topGridCellEnd.z; tz++)
+								realX = tx * scale + x;
+								realY = ty * scale + y;
+								realZ = tz * scale + z;
+								index = Index3D(realX, realY, realZ, submesh.Width, submesh.Height);
+								if (colorIndex != static_cast<uint32_t>(submesh.ColorIndices[index]))
 								{
-									const uint32_t topgridIndex = Index3D(tx, ty, tz, grid.Width, grid.Height);
-									if (topgridIndex < grid.VoxelCount.size())
-										grid.VoxelCount[topgridIndex]++;
+									canCompress = false;
+									gridCells[gridIndex] = VoxelMeshTopGrid::MultiColor;
+									break;
+								}
+							}
+						}
+					}
+					if (canCompress)
+					{
+						gridCells[gridIndex] = colorIndex;
+						cellVoxels[gridIndex].push_back(static_cast<uint8_t>(colorIndex));
+					}
+					else
+					{
+						for (uint32_t x = 0; x < scale; x++)
+						{
+							for (uint32_t y = 0; y < scale; y++)
+							{
+								for (uint32_t z = 0; z < scale; z++)
+								{
+									realX = tx * scale + x;
+									realY = ty * scale + y;
+									realZ = tz * scale + z;
+									index = Index3D(realX, realY, realZ, submesh.Width, submesh.Height);
+									colorIndex = static_cast<uint32_t>(submesh.ColorIndices[index]);
+									cellVoxels[gridIndex].push_back(static_cast<uint8_t>(colorIndex));
+								}
+							}
+						}
+					}			
+				}
+			}
+		}
+		for (uint32_t tx = 0; tx < gridWidth; tx++)
+		{
+			for (uint32_t ty = 0; ty < gridHeight; ty++)
+			{
+				for (uint32_t tz = 0; tz < gridDepth; tz++)
+				{
+				}
+			}
+		}
+
+
+		uint32_t index = 0;
+		uint32_t voxelOffset = 0;
+		for (auto cell : gridCells)
+		{
+			cell.VoxelOffset = voxelOffset;
+			for (auto voxel : cellVoxels[index])
+				grid.Voxels.push_back(voxel);
+
+			voxelOffset += cellVoxels[index].size();
+			index++;
+		}
+
+		
+		return result;
+	}
+
+	static uint32_t InsertSubmeshInTopGrid(VoxelMeshTopGrid& grid, const std::array<VoxelColor, 256>& colorPallete, const VoxelSubmesh& submesh)
+	{
+		std::vector<std::vector<uint8_t>> cellVoxels(grid.Width * grid.Height * grid.Depth);
+
+		const float scale = grid.Size / submesh.VoxelSize;
+		const uint32_t realScale = static_cast<uint32_t>(scale);
+
+		for (uint32_t tx = 0; tx < grid.Width; tx++)
+		{
+			for (uint32_t ty = 0; ty < grid.Height; ty++)
+			{
+				for (uint32_t tz = 0; tz < grid.Depth; tz++)
+				{
+					const uint32_t topgridIndex = Index3D(tx, ty, tz, grid.Width, grid.Height);
+					bool canCompress = true;
+					uint32_t realX = tx * scale;
+					uint32_t realY = ty * scale;
+					uint32_t realZ = tz * scale;
+					uint32_t index = Index3D(realX, realY, realZ, submesh.Width, submesh.Height);
+					uint32_t colorIndex = static_cast<uint32_t>(submesh.ColorIndices[index]);
+					grid.Cells[topgridIndex].ColorIndex = colorIndex;
+					for (uint32_t x = 1; x < realScale; x++)
+					{
+						for (uint32_t y = 1; y < realScale; y++)
+						{
+							for (uint32_t z = 1; z < realScale; z++)
+							{
+								realX = tx * scale + x;
+								realY = ty * scale + y;
+								realZ = tz * scale + z;
+								index = Index3D(realX, realY, realZ, submesh.Width, submesh.Height);
+								if (colorIndex != static_cast<uint32_t>(submesh.ColorIndices[index]))
+								{
+									canCompress = false;
+									grid.Cells[topgridIndex].ColorIndex = VoxelMeshTopGrid::MultiColor;
+									break;
+								}
+							}
+						}
+					}
+					if (canCompress)
+					{
+						grid.Cells[topgridIndex].ColorIndex = colorIndex;
+						cellVoxels[topgridIndex].push_back(static_cast<uint8_t>(colorIndex));
+					}
+					else
+					{
+						for (uint32_t x = 0; x < realScale; x++)
+						{
+							for (uint32_t y = 0; y < realScale; y++)
+							{
+								for (uint32_t z = 0; z < realScale; z++)
+								{
+									realX = tx * scale + x;
+									realY = ty * scale + y;
+									realZ = tz * scale + z;
+									index = Index3D(realX, realY, realZ, submesh.Width, submesh.Height);
+									colorIndex = static_cast<uint32_t>(submesh.ColorIndices[index]);
+									cellVoxels[topgridIndex].push_back(static_cast<uint8_t>(colorIndex));
 								}
 							}
 						}
@@ -147,6 +196,107 @@ namespace XYZ {
 				}
 			}
 		}
+
+		/*
+		for (uint32_t x = 0; x < submesh.Width; x++)
+		{
+			for (uint32_t y = 0; y < submesh.Height; y++)
+			{
+				for (uint32_t z = 0; z < submesh.Depth; z++)
+				{
+					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
+					uint32_t tx = x / scale;
+					uint32_t ty = y / scale;
+					uint32_t tz = z / scale;
+
+
+					const uint32_t topgridIndex = Index3D(tx, ty, tz, grid.Width, grid.Height);
+					if (topgridIndex >= grid.Cells.size())
+						continue;
+
+					if (!cellsInitialized[topgridIndex])
+					{
+						grid.Cells[topgridIndex].ColorIndex = submesh.ColorIndices[index];
+						cellsInitialized[topgridIndex] = true;
+						cellVoxels[topgridIndex].push_back(submesh.ColorIndices[index]);
+					}
+
+					// Cell already has stored color, if it does not equal with another voxel color it is multi color
+					if (grid.Cells[topgridIndex].ColorIndex != submesh.ColorIndices[index])
+					{
+						grid.Cells[topgridIndex].ColorIndex = VoxelMeshTopGrid::MultiColor;
+					}
+					// It is multi color, no compression happens
+					if (grid.Cells[topgridIndex].ColorIndex == VoxelMeshTopGrid::MultiColor)
+					{
+						cellVoxels[topgridIndex].push_back(submesh.ColorIndices[index]);
+					}
+
+
+					const glm::vec3 voxelPosition = {
+						x * submesh.VoxelSize,
+						y * submesh.VoxelSize,
+						z * submesh.VoxelSize
+					};
+					const glm::ivec3 topGridCellStart = {
+						std::floor(voxelPosition.x / grid.Size),
+						std::floor(voxelPosition.y / grid.Size),
+						std::floor(voxelPosition.z / grid.Size)
+					};
+					glm::ivec3 topGridCellEnd = {
+						std::floor((voxelPosition.x + submesh.VoxelSize) / grid.Size),
+						std::floor((voxelPosition.y + submesh.VoxelSize) / grid.Size),
+						std::floor((voxelPosition.z + submesh.VoxelSize) / grid.Size)
+					};
+					topGridCellEnd = topGridCellStart;
+					//for (uint32_t tx = topGridCellStart.x; tx <= topGridCellEnd.x; tx++)
+					//{
+					//	for (uint32_t ty = topGridCellStart.y; ty <= topGridCellEnd.y; ty++)
+					//	{
+					//		for (uint32_t tz = topGridCellStart.z; tz <= topGridCellEnd.z; tz++)
+					//		{
+					//			const uint32_t topgridIndex = Index3D(tx, ty, tz, grid.Width, grid.Height);
+					//			if (topgridIndex >= grid.Cells.size())
+					//				continue;
+					//
+					//			if (!cellsInitialized[topgridIndex])
+					//			{
+					//				grid.Cells[topgridIndex].ColorIndex = submesh.ColorIndices[index];
+					//				cellsInitialized[topgridIndex] = true;
+					//				cellVoxels[topgridIndex].push_back(submesh.ColorIndices[index]);
+					//			}
+					//
+					//			// Cell already has stored color, if it does not equal with another voxel color it is multi color
+					//			if (grid.Cells[topgridIndex].ColorIndex != submesh.ColorIndices[index])
+					//			{
+					//				grid.Cells[topgridIndex].ColorIndex = VoxelMeshTopGrid::MultiColor;
+					//			}
+					//			// It is multi color, no compression happens
+					//			if (grid.Cells[topgridIndex].ColorIndex == VoxelMeshTopGrid::MultiColor)
+					//			{
+					//				cellVoxels[topgridIndex].push_back(submesh.ColorIndices[index]);
+					//			}
+					//		}
+					//	}
+					//}
+					
+				}
+			}
+		}
+		*/
+		uint32_t index = 0;
+		uint32_t voxelOffset = 0;
+		for (auto &cell : grid.Cells)
+		{
+			cell.VoxelOffset = voxelOffset;
+			for (auto voxel : cellVoxels[index])
+				grid.Voxels.push_back(voxel);
+
+			voxelOffset += cellVoxels[index].size();
+			index++;
+		}
+		uint32_t savedSpace = submesh.ColorIndices.size() - grid.Voxels.size();
+		return savedSpace;
 	}
 
 
@@ -197,7 +347,6 @@ namespace XYZ {
 		}
 		m_Dirty = true;
 		m_DirtySubmeshes.clear();
-		GenerateTopGridAsync(15.0f);
 	}
 
 	void VoxelProceduralMesh::SetInstances(const std::vector<VoxelInstance>& instances)

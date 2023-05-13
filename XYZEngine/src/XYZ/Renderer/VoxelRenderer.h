@@ -30,8 +30,7 @@ namespace XYZ {
 	struct SSBOVoxels
 	{
 		static constexpr uint32_t MaxVoxels = 512 * 1024 * 1024; // 512mb
-				
-		uint8_t Voxels[MaxVoxels];
+			
 
 		static constexpr uint32_t Binding = 17;
 		static constexpr uint32_t Set = 0;
@@ -56,7 +55,6 @@ namespace XYZ {
 
 	struct VoxelTopGrid
 	{
-		uint32_t  MaxTraverses;
 		uint32_t  CellsOffset;
 
 		uint32_t  Width;
@@ -65,7 +63,7 @@ namespace XYZ {
 		
 		float	  Size;
 
-		Padding<8> Padding;
+		Padding<12> Padding;
 	};
 
 	struct SSBOVoxelModels
@@ -88,8 +86,9 @@ namespace XYZ {
 	struct SSBOColors
 	{
 		static constexpr uint32_t MaxColors = 1024;
+		static constexpr uint32_t ColorSize = sizeof(uint32_t) * 256;
+		static constexpr uint32_t MaxSize = MaxColors * ColorSize;
 
-		uint32_t ColorPallete[MaxColors][256];
 
 		static constexpr uint32_t Binding = 19;
 		static constexpr uint32_t Set = 0;
@@ -98,8 +97,7 @@ namespace XYZ {
 	struct SSBOVoxelTopGrids
 	{
 		static constexpr uint32_t MaxTopGridCells = 10 * 1024 * 1024;
-
-		uint32_t TopGridCells[MaxTopGridCells]; // 40mb
+		static constexpr uint32_t MaxSize = MaxTopGridCells * sizeof(VoxelMeshTopGridCell);
 
 		static constexpr uint32_t Binding = 20;
 		static constexpr uint32_t Set = 0;
@@ -180,8 +178,8 @@ namespace XYZ {
 			StorageBufferAllocation VoxelAllocation;
 			StorageBufferAllocation	TopGridAllocation;
 			StorageBufferAllocation	ColorAllocation;
-
-			std::vector<uint32_t> SubmeshOffsets;
+			
+			std::vector<uint32_t>   SubmeshOffsets;
 		};
 	
 		struct UpdatedAllocation
@@ -189,13 +187,9 @@ namespace XYZ {
 			StorageBufferAllocation VoxelAllocation;
 			StorageBufferAllocation	TopGridAllocation;
 			StorageBufferAllocation	ColorAllocation;
+			Ref<VoxelMesh>		    Mesh;
 		};
 
-		struct UpdatedSuballocation
-		{
-			uint32_t Offset;
-			uint32_t Size;
-		};
 
 		struct Statistics
 		{
@@ -259,7 +253,6 @@ namespace XYZ {
 		Ref<Texture2D>			m_SSGITexture;
 
 		UBVoxelScene			m_UBVoxelScene;
-		SSBOVoxels				m_SSBOVoxels;
 		SSBOVoxelModels			m_SSBOVoxelModels;
 		SSBOVoxelTopGrids		m_SSBOTopGrids;
 		SSBOColors				m_SSBOColors;
@@ -285,7 +278,6 @@ namespace XYZ {
 		std::unordered_map<AssetHandle, Ref<PipelineCompute>> m_EffectPipelines;
 
 		std::vector<UpdatedAllocation> m_UpdatedAllocations;
-		std::vector<UpdatedSuballocation> m_UpdatedSuballocations;
 
 		struct GPUTimeQueries
 		{

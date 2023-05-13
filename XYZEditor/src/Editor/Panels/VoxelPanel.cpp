@@ -118,10 +118,10 @@ namespace XYZ {
 			m_ProceduralMesh = Ref<VoxelProceduralMesh>::Create();
 
 			VoxelSubmesh submesh;
-			submesh.Width = 512;
-			submesh.Height = 400;
-			submesh.Depth = 512;
-			submesh.VoxelSize = 3.0f;
+			submesh.Width = 100;
+			submesh.Height = 100;
+			submesh.Depth = 100;
+			submesh.VoxelSize = 6.0f;
 			submesh.MaxTraverses = 1024;
 			{
 				const glm::vec3 rayDir = glm::normalize(glm::vec3(1, 1, 1));
@@ -133,42 +133,14 @@ namespace XYZ {
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
 			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
 
-			std::vector<VoxelInstance> instances(9);
-			instances[0].SubmeshIndex = 0;
-			instances[0].Transform = glm::mat4(1.0f);
-
-			instances[1].SubmeshIndex = 0;
-			instances[1].Transform = glm::translate(glm::vec3(-512.0f * 3.0f, 0.0f, 0.0f));
-
-			instances[2].SubmeshIndex = 0;
-			instances[2].Transform = glm::translate(glm::vec3(-512.0f * 3.0f, 0.0f, -512.0f * 3.0f));
-
-			instances[3].SubmeshIndex = 0;
-			instances[3].Transform = glm::translate(glm::vec3(512.0f * 3.0f, 0.0f, 0.0f));
-
-			instances[4].SubmeshIndex = 0;
-			instances[4].Transform = glm::translate(glm::vec3(512.0f * 3.0f, 0.0f, 512.0f * 3.0f));
-
-			instances[5].SubmeshIndex = 0;
-			instances[5].Transform = glm::translate(glm::vec3(0.0f, 0.0f, 512.0f * 3.0f));
-
-			instances[6].SubmeshIndex = 0;
-			instances[6].Transform = glm::translate(glm::vec3(0.0f, 0.0f, -512.0f * 3.0f));
-
-			instances[7].SubmeshIndex = 0;
-			instances[7].Transform = glm::translate(glm::vec3(512.0f * 3.0f, 0.0f, -512.0f * 3.0f));
-
-			instances[8].SubmeshIndex = 0;
-			instances[8].Transform = glm::translate(glm::vec3(-512.0f * 3.0f, 0.0f, 512.0f * 3.0f));
-
-
+			
 			VoxelInstance instance;
 			instance.SubmeshIndex = 0;
 			instance.Transform = glm::mat4(1.0f);
 	
 			auto colorPallete = m_KnightMesh->GetColorPallete();
 			
-			colorPallete[Water] = { 0, 100, 220, 50 };
+			colorPallete[Water] = { 0, 100, 220, 255 };
 			colorPallete[Snow] = { 255, 255, 255, 255 }; // Snow
 			colorPallete[Grass] = { 1, 60, 32, 255 }; // Grass
 			colorPallete[Wood] = { 150, 75, 0, 255 };
@@ -293,11 +265,11 @@ namespace XYZ {
 						delete m_SpaceColonization;
 
 					const float voxelSize = 3.0f;
-					auto height = m_Terrain.TerrainHeightmap[Utils::Index2D(256, 256, 512)];
+					auto height = m_Terrain.TerrainHeightmap[Utils::Index2D(terrainSubmesh.Width / 2, terrainSubmesh.Depth / 2, terrainSubmesh.Depth)];
 					const glm::vec3 voxelPosition = glm::vec3(256, height, 256) * voxelSize;
 					
 					SCInitializer initializer;
-					initializer.AttractorsCount = 400;
+					initializer.AttractorsCount = 200;
 					initializer.AttractorsCenter = voxelPosition + glm::vec3(0, 100 * voxelSize, 0);
 					initializer.AttractorsRadius = 50.0f * voxelSize;
 					initializer.AttractionRange = 20.0f * voxelSize;
@@ -307,7 +279,7 @@ namespace XYZ {
 
 					m_SpaceColonization = new SpaceColonization(initializer);
 
-					m_SpaceColonization->VoxelizeAttractors(m_Terrain.Terrain, 512, 400, 512, voxelSize);
+					m_SpaceColonization->VoxelizeAttractors(m_Terrain.Terrain, terrainSubmesh.Width, terrainSubmesh.Height, terrainSubmesh.Depth, voxelSize);
 
 					terrainSubmesh.ColorIndices = m_Terrain.Terrain;
 					while (m_ProceduralMesh->IsGeneratingTopGrid()) {} // Wait to finish generating top grid
@@ -326,13 +298,13 @@ namespace XYZ {
 				if (Input::IsKeyPressed(KeyCode::KEY_SPACE))
 				{
 					auto& submesh = m_ProceduralMesh->GetSubmeshes()[0];
-					for (uint32_t y = 0; y < 400; ++y)
+					for (uint32_t y = 0; y < submesh.Height; ++y)
 					{
 						m_ProceduralMesh->SetVoxelColor(0, 256, y, 256, RandomNumber(5u, 255u));
 					}
 				}
-
-				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), false);
+				//for (uint32_t i = 0; i < 9; i++)
+					m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), false);
 
 				for (size_t i = 0; i < m_CastleTransforms.size(); ++i)
 				{
@@ -399,7 +371,6 @@ namespace XYZ {
 		{
 			m_VoxelRenderer = voxelRenderer;
 			m_VoxelRenderer->CreateComputeAllocation(512 * 400 * 512, m_WaterDensityAllocation);
-
 		}
 
 
@@ -519,19 +490,18 @@ namespace XYZ {
 					const double xDouble = x;
 					const double zDouble = z;
 					const double val = Perlin::Octave2D(xDouble * fx, zDouble * fy, octaves);
-					const uint32_t genHeight = (val / 2.0) * height;
+					const uint32_t genHeight = val * height;
 
-					for (uint32_t y = 0; y < genHeight * 2; y += 2)
+					for (uint32_t y = 0; y < genHeight; y++)
 					{
 						result.Terrain[Utils::Index3D(x, y, z, width, height)] = Grass;
-						result.Terrain[Utils::Index3D(x, y + 1, z, width, height)] = Grass;
 					}
 		
-					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight * 2;
+					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight;
 					
-					if (genHeight < 142 / 2)
+					if (genHeight < 50)
 					{
-						const uint32_t waterIndex = Utils::Index3D(x, 142, z, width, height);
+						const uint32_t waterIndex = Utils::Index3D(x, 50, z, width, height);
 						result.Terrain[waterIndex] = Water; // Water
 						result.WaterMap[waterIndex] = 125; // Half max density
 					}
