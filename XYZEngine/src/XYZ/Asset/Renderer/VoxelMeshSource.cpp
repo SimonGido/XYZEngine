@@ -22,8 +22,7 @@ namespace XYZ {
 		submesh.Width = voxModel->size_x;
 		submesh.Height = voxModel->size_y;
 		submesh.Depth = voxModel->size_z;
-		submesh.MaxTraverses = submesh.Width + submesh.Height + submesh.Depth;
-
+	
 		for (uint32_t x = 0; x < voxModel->size_x; ++x)
 		{
 			for (uint32_t y = 0; y < voxModel->size_y; ++y)
@@ -59,16 +58,7 @@ namespace XYZ {
 		}
 	}
 
-	uint32_t VoxelSubmesh::CalculateRequiredTraverses() const
-	{
-		const glm::vec3 p0(0.0f);
-		const glm::vec3 p1(Width, Height, Depth);
-		const glm::vec3 rayDir = glm::normalize(p1 - p0); // Diagonal ray
 
-		const glm::vec3 delta = glm::abs(glm::vec3(Width, Height, Depth) / rayDir);
-		const float maxDistance = std::max(delta.x, std::max(delta.y, delta.z));
-		return static_cast<uint32_t>(std::ceil(maxDistance));
-	}
 
 	VoxelMeshSource::VoxelMeshSource(const std::string& filepath)
 		:

@@ -88,7 +88,6 @@ namespace XYZ {
 			submesh.Height = height;
 			submesh.Depth = depth;
 			submesh.VoxelSize = voxelSize;
-			submesh.MaxTraverses = 300;
 
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
 			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
@@ -118,16 +117,14 @@ namespace XYZ {
 			m_ProceduralMesh = Ref<VoxelProceduralMesh>::Create();
 
 			VoxelSubmesh submesh;
-			submesh.Width = 100;
-			submesh.Height = 100;
-			submesh.Depth = 100;
+			submesh.Width = 256;
+			submesh.Height = 256;
+			submesh.Depth = 256;
 			submesh.VoxelSize = 6.0f;
-			submesh.MaxTraverses = 1024;
 			{
 				const glm::vec3 rayDir = glm::normalize(glm::vec3(1, 1, 1));
 				const glm::vec3 delta = glm::abs(glm::vec3(submesh.Width, submesh.Height, submesh.Depth) / rayDir);
 				const float maxDistance = std::max(delta.x, std::max(delta.y, delta.z));
-				submesh.MaxTraverses = submesh.CalculateRequiredTraverses();
 			}
 		
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
@@ -225,12 +222,9 @@ namespace XYZ {
 				}
 				ImGui::DragFloat("Top Grid Size", &m_TopGridSize, 1.0f, 0, 1024);
 				
-				if (ImGui::Button("Generate Top Grid"))
+				if (ImGui::Button("Compress"))
 				{
-					if (!m_ProceduralMesh->IsGeneratingTopGrid())
-						m_ProceduralMesh->GenerateTopGridAsync(m_TopGridSize);
-					else
-						std::cout << "Grid is still generating" << std::endl;
+					m_ProceduralMesh->Compress(64);
 				}
 				ImGui::Checkbox("Update Water", &m_UpdateWater);
 			}
@@ -282,7 +276,7 @@ namespace XYZ {
 					m_SpaceColonization->VoxelizeAttractors(m_Terrain.Terrain, terrainSubmesh.Width, terrainSubmesh.Height, terrainSubmesh.Depth, voxelSize);
 
 					terrainSubmesh.ColorIndices = m_Terrain.Terrain;
-					while (m_ProceduralMesh->IsGeneratingTopGrid()) {} // Wait to finish generating top grid
+					
 					m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
 					m_VoxelRenderer->SubmitComputeData(m_Terrain.WaterMap.data(), m_Terrain.WaterMap.size(), 0, m_WaterDensityAllocation, true);
 				}

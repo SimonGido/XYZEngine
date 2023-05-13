@@ -40,7 +40,7 @@ namespace XYZ {
 			return;
 		VulkanAllocator allocator("VulkanUniformBuffer");
 		uint8_t* pData = allocator.MapMemory<uint8_t>(m_MemoryAlloc);
-		memcpy(pData, (const uint8_t*)data + offset, size);
+		memcpy(pData + offset, (const uint8_t*)data, size);
 		allocator.UnmapMemory(m_MemoryAlloc);
 	}
 	

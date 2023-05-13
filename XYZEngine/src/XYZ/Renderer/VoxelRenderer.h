@@ -5,12 +5,56 @@
 #include "StorageBufferAllocator.h"
 #include "VoxelMesh.h"
 #include "Material.h"
-
+#include "XYZ/Utils/DataStructures/Octree.h"
 #include "XYZ/Scene/Scene.h"
 #include "XYZ/Utils/DataStructures/ThreadQueue.h"
 #include "XYZ/Asset/Renderer/VoxelMeshSource.h"
 
 namespace XYZ {
+
+	struct VoxelModelOctreeNode
+	{
+		glm::vec4 Min;
+		glm::vec4 Max;
+
+		int32_t Children[8]{ -1 };
+		
+		Bool32	IsLeaf;
+		int32_t DataStart;
+		int32_t DataEnd;
+
+		Padding<4> Padding;
+	};
+
+	struct VoxelModel
+	{
+		glm::mat4	InverseTransform;
+
+		uint32_t	VoxelOffset;
+		uint32_t	Width;
+		uint32_t	Height;
+		uint32_t	Depth;
+		uint32_t    ColorIndex;
+
+		float		VoxelSize;
+
+		Padding<8>  Padding;
+	};
+
+
+
+	struct SSBOVoxelModels
+	{
+		static constexpr uint32_t MaxModels = 1024;
+
+		uint32_t NumModels;
+		Padding<12> Padding;
+
+		VoxelModel	 Models[MaxModels];
+
+		static constexpr uint32_t Binding = 18;
+		static constexpr uint32_t Set = 0;
+	};
 
 	struct UBVoxelScene
 	{
@@ -22,6 +66,7 @@ namespace XYZ {
 		// Light info
 		DirectionalLight DirectionalLight;
 
+		
 		static constexpr uint32_t Binding = 16;
 		static constexpr uint32_t Set = 0;
 	};
@@ -37,51 +82,6 @@ namespace XYZ {
 	};
 
 
-
-	struct VoxelModel
-	{
-		glm::mat4	InverseTransform;
-
-		uint32_t	VoxelOffset;
-		uint32_t	Width;
-		uint32_t	Height;
-		uint32_t	Depth;
-		uint32_t    ColorIndex;
-		uint32_t    MaxTraverses;
-
-		float		VoxelSize;	
-		int32_t		TopGridIndex;
-	};
-
-	struct VoxelTopGrid
-	{
-		uint32_t  CellsOffset;
-
-		uint32_t  Width;
-		uint32_t  Height;
-		uint32_t  Depth;
-		
-		float	  Size;
-
-		Padding<12> Padding;
-	};
-
-	struct SSBOVoxelModels
-	{
-		static constexpr uint32_t MaxModels = 1024;
-		static constexpr uint32_t MaxTopGrids = 512;
-
-		uint32_t NumModels;
-		Padding<12> Padding;
-		
-		VoxelModel	 Models[MaxModels];
-
-		VoxelTopGrid TopGrids[MaxTopGrids];
-
-		static constexpr uint32_t Binding = 18;
-		static constexpr uint32_t Set = 0;
-	};
-
 	
 	struct SSBOColors
 	{
@@ -94,21 +94,26 @@ namespace XYZ {
 		static constexpr uint32_t Set = 0;
 	};
 
-	struct SSBOVoxelTopGrids
+	struct SSBOVoxelComputeData
 	{
-		static constexpr uint32_t MaxTopGridCells = 10 * 1024 * 1024;
-		static constexpr uint32_t MaxSize = MaxTopGridCells * sizeof(VoxelMeshTopGridCell);
+		static constexpr uint32_t MaxSize = 256 * 1024 * 1024; // 256mb
 
 		static constexpr uint32_t Binding = 20;
 		static constexpr uint32_t Set = 0;
 	};
 
-	struct SSBOVoxelComputeData
+	struct SSBOOCtree
 	{
-		static constexpr uint32_t MaxSize = 256 * 1024 * 1024; // 256mb
+		static constexpr uint32_t MaxNodes = 4096;
 
-		static constexpr uint32_t Binding = 21;
+		static constexpr uint32_t Binding = 23;
 		static constexpr uint32_t Set = 0;
+
+
+		uint32_t			 NodeCount;
+		Padding<12>			 Padding;
+		VoxelModelOctreeNode Nodes[MaxNodes];
+		uint32_t			 ModelIndices[SSBOVoxelModels::MaxModels];
 	};
 
 	struct VoxelRendererCamera
@@ -176,7 +181,6 @@ namespace XYZ {
 		struct MeshAllocation
 		{
 			StorageBufferAllocation VoxelAllocation;
-			StorageBufferAllocation	TopGridAllocation;
 			StorageBufferAllocation	ColorAllocation;
 			
 			std::vector<uint32_t>   SubmeshOffsets;
@@ -185,7 +189,6 @@ namespace XYZ {
 		struct UpdatedAllocation
 		{
 			StorageBufferAllocation VoxelAllocation;
-			StorageBufferAllocation	TopGridAllocation;
 			StorageBufferAllocation	ColorAllocation;
 			Ref<VoxelMesh>		    Mesh;
 		};
@@ -244,7 +247,6 @@ namespace XYZ {
 
 
 		Ref<StorageBufferAllocator> m_VoxelStorageAllocator;
-		Ref<StorageBufferAllocator> m_TopGridsAllocator;
 		Ref<StorageBufferAllocator> m_ColorStorageAllocator;
 		Ref<StorageBufferAllocator> m_ComputeStorageAllocator;
 
@@ -254,8 +256,8 @@ namespace XYZ {
 
 		UBVoxelScene			m_UBVoxelScene;
 		SSBOVoxelModels			m_SSBOVoxelModels;
-		SSBOVoxelTopGrids		m_SSBOTopGrids;
 		SSBOColors				m_SSBOColors;
+		SSBOOCtree				m_SSBOOctree;
 
 		SSGIValues				m_SSGIValues;
 		Math::Frustum			m_Frustum;
@@ -267,8 +269,9 @@ namespace XYZ {
 		Statistics				m_Statistics;
 	
 		bool					m_UseSSGI = false;
-		bool					m_UseTopGrid = false;
-
+		bool					m_UseOctree = false;
+		bool					m_ShowOctree = false;
+		
 		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;
 		std::map<AssetHandle, VoxelEffectCommand> m_EffectCommands;
 
@@ -286,6 +289,8 @@ namespace XYZ {
 			static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
 		};
 		GPUTimeQueries m_GPUTimeQueries;
+
+		Octree m_ModelsOctree;
 	};
 
 }

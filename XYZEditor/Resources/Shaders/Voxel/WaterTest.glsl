@@ -71,7 +71,7 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 };
 
 
-layout(std430, binding = 21) buffer buffer_WaterDensity
+layout(std430, binding = 20) buffer buffer_WaterDensity
 {		
 	uint8_t WaterDensity[];
 };

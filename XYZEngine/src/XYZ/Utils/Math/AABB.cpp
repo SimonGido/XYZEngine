@@ -27,12 +27,12 @@ namespace XYZ {
 	}
 	bool AABB::Contains(const AABB& aabb) const
 	{
-		bool result = true;
-		result = result && Min.x <= aabb.Min.x;
-		result = result && Min.y <= aabb.Min.y;
-		result = result && aabb.Max.x <=Max.x;
-		result = result && aabb.Max.y <=Max.y;
-		return result;
+		return (aabb.Min.x >= Min.x) &&
+			   (aabb.Min.y >= Min.y) &&
+			   (aabb.Min.z >= Min.z) &&
+			   (aabb.Max.x <= Max.x) &&
+			   (aabb.Max.y <= Max.y) &&
+			   (aabb.Max.z <= Max.z);
 	}
 
 	bool AABB::Intersect(const AABB& aabb) const
