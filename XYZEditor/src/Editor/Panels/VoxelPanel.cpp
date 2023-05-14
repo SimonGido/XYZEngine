@@ -294,7 +294,7 @@ namespace XYZ {
 					terrainSubmesh.ColorIndices = m_Terrain.Terrain;
 					
 					m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
-					m_VoxelRenderer->SubmitComputeData(m_Terrain.WaterMap.data(), m_Terrain.WaterMap.size(), 0, m_WaterDensityAllocation, true);
+					//m_VoxelRenderer->SubmitComputeData(m_Terrain.WaterMap.data(), m_Terrain.WaterMap.size(), 0, m_WaterDensityAllocation, true);
 				}
 
 				m_VoxelRenderer->BeginScene({
@@ -379,7 +379,7 @@ namespace XYZ {
 		void VoxelPanel::SetVoxelRenderer(const Ref<VoxelRenderer>& voxelRenderer)
 		{
 			m_VoxelRenderer = voxelRenderer;
-			m_VoxelRenderer->CreateComputeAllocation(512 * 400 * 512, m_WaterDensityAllocation);
+			//m_VoxelRenderer->CreateComputeAllocation(512 * 400 * 512, m_WaterDensityAllocation);
 		}
 
 
