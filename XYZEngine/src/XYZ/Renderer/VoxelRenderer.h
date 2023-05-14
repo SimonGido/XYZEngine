@@ -12,19 +12,6 @@
 
 namespace XYZ {
 
-	struct VoxelModelOctreeNode
-	{
-		glm::vec4 Min;
-		glm::vec4 Max;
-
-		int32_t Children[8]{ -1 };
-		
-		Bool32	IsLeaf;
-		int32_t DataStart;
-		int32_t DataEnd;
-
-		uint32_t Depth;
-	};
 
 	struct VoxelModel
 	{
@@ -102,19 +89,6 @@ namespace XYZ {
 		static constexpr uint32_t Set = 0;
 	};
 
-	struct SSBOOCtree
-	{
-		static constexpr uint32_t MaxNodes = 4096;
-
-		static constexpr uint32_t Binding = 23;
-		static constexpr uint32_t Set = 0;
-
-
-		uint32_t			 NodeCount;
-		Padding<12>			 Padding;
-		VoxelModelOctreeNode Nodes[MaxNodes];
-		uint32_t			 ModelIndices[SSBOVoxelModels::MaxModels];
-	};
 
 	struct VoxelRendererCamera
 	{
@@ -257,7 +231,6 @@ namespace XYZ {
 		UBVoxelScene			m_UBVoxelScene;
 		SSBOVoxelModels			m_SSBOVoxelModels;
 		SSBOColors				m_SSBOColors;
-		SSBOOCtree				m_SSBOOctree;
 
 		SSGIValues				m_SSGIValues;
 		Math::Frustum			m_Frustum;

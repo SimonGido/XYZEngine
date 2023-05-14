@@ -38,18 +38,17 @@ struct AABB
 };
 
 
-struct VoxelModelOctreeNode
+struct VoxelOctreeNode
 {
-	vec4 Min;
-	vec4 Max;
+	uint	Size;
+	uint	X, Y, Z;
 
-	int  Children[8];
-	
-	bool IsLeaf;
-	int  DataStart;
-	int  DataEnd;
+	uint	Children[8];
 
-	uint Depth;
+	uint	ColorIndex;
+	uint	IsLeaf;
+
+	uint Padding[2];
 };
 
 
@@ -83,7 +82,9 @@ layout (std140, binding = 16) uniform Scene
 
 layout(std430, binding = 17) readonly buffer buffer_Voxels
 {		
-	uint8_t Voxels[];
+	uint		 NumNodes;
+	uint		 Padding[3];
+	VoxelOctreeNode Octree[];
 };
 
 layout(std430, binding = 18) readonly buffer buffer_Models
@@ -97,21 +98,20 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 	uint ColorPallete[MAX_COLORS][256];
 };
 
-layout(std430, binding = 23) readonly buffer buffer_Octree
-{		
-	uint NodeCount;
-	uint Padding[3];
-	VoxelModelOctreeNode Nodes[MAX_NODES];
-	uint ModelIndices[MAX_MODELS];
-};
-
-	
 
 layout(binding = 21, rgba16f) uniform image2D o_Image;
 layout(binding = 22, r32f) uniform image2D o_DepthImage;
 
 
 Ray g_CameraRay;
+
+AABB OctreeNodeAABB(in VoxelOctreeNode node, float voxelSize)
+{
+	AABB result;
+	result.Min = vec3(node.X, node.Y, node.Z) * voxelSize;
+	result.Max = vec3(node.X + node.Size, node.Y + node.Size, node.Z + node.Size) * voxelSize;
+	return result;
+}
 
 AABB VoxelAABB(ivec3 voxel, float voxelSize)
 {
@@ -139,7 +139,7 @@ Ray CreateRay(vec3 origin, in mat4 inverseModelSpace, vec2 coords)
 	ray.Origin = (inverseModelSpace * vec4(origin, 1.0)).xyz;
 
 	ray.Direction = vec3(inverseModelSpace * u_InverseView * vec4(normalize(target.xyz / target.w), 0)); // World space
-	ray.Direction = normalize(ray.Direction) + EPSILON;
+	ray.Direction = normalize(ray.Direction);
 
 	return ray;
 }
@@ -231,315 +231,128 @@ struct RaymarchState
 };
 
 
-void PerformStep(inout RaymarchState state, ivec3 step, vec3 delta)
+struct OctreeRaycastResult
 {
-	if (state.Max.x < state.Max.y && state.Max.x < state.Max.z) 
-	{
-		state.Normal = vec3(float(-step.x), 0.0, 0.0);
-		state.Max.x += delta.x;
-		state.CurrentVoxel.x += step.x;
-		state.MaxSteps.x--;
-	}
-	else if (state.Max.y < state.Max.z) 
-	{
-		state.Normal = vec3(0.0, float(-step.y), 0.0);
-		state.Max.y += delta.y;
-		state.CurrentVoxel.y += step.y;			
-		state.MaxSteps.y--;
-	}
-	else 
-	{
-		state.Normal = vec3(0.0, 0.0, float(-step.z));
-		state.Max.z += delta.z;
-		state.CurrentVoxel.z += step.z;		
-		state.MaxSteps.z--;
-	}	
-}
+	vec4 Color;
+	bool Hit;
+};
 
-void RayMarch(in Ray ray, inout RaymarchState state, vec3 delta, ivec3 step, in VoxelModel model, float currentDistance)
+OctreeRaycastResult RaycastOctreeSteps(in Ray ray)
 {
-	state.Hit = false;
-	state.Color = vec4(0,0,0,0);
-
-	uint width = model.Width;
-	uint height = model.Height;
-	uint depth = model.Depth;
-	uint voxelOffset = model.VoxelOffset;
-	uint colorPalleteIndex = model.ColorIndex;
-	float voxelSize = model.VoxelSize;
-
-	while (state.MaxSteps.x >= 0 && state.MaxSteps.y >= 0 && state.MaxSteps.z >= 0)
-	{
-		state.Distance = VoxelDistanceFromRay(ray.Origin, ray.Direction, state.CurrentVoxel, model.VoxelSize);
-		if (state.Distance > currentDistance)
-			break;
-
-		if (IsValidVoxel(state.CurrentVoxel, width, height, depth))
-		{
-			uint voxelIndex = Index3D(state.CurrentVoxel, width, height) + voxelOffset;
-			uint colorIndex = uint(Voxels[voxelIndex]);
-			uint voxel = ColorPallete[colorPalleteIndex][colorIndex];
-
-			if (voxel != 0)
-			{
-				state.Color = VoxelToColor(voxel);
-				state.Hit = true;	
-				break;
-			}
-		}
-
-		PerformStep(state, step, delta);
-	}
-}
-
-
-RaymarchState CreateRaymarchState(in Ray ray, vec3 origin, vec3 direction, ivec3 step, ivec3 maxSteps, float voxelSize)
-{
-	RaymarchState state;
-	state.Distance = distance(ray.Origin, origin);
-	state.CurrentVoxel = ivec3(floor(origin / voxelSize));
-	state.MaxSteps = maxSteps;
-
-	vec3 next_boundary = vec3(
-		float((step.x > 0) ? state.CurrentVoxel.x + 1 : state.CurrentVoxel.x) * voxelSize,
-		float((step.y > 0) ? state.CurrentVoxel.y + 1 : state.CurrentVoxel.y) * voxelSize,
-		float((step.z > 0) ? state.CurrentVoxel.z + 1 : state.CurrentVoxel.z) * voxelSize
-	);
-
-	state.Max = (next_boundary - origin) / direction; // we will move along the axis with the smallest value
-	return state;
-}
-
-RaymarchResult RayMarch(in Ray ray, vec4 startColor, vec3 throughput, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance)
-{
-	RaymarchResult result;
-	result.Color = startColor;
+	OctreeRaycastResult result;
 	result.Hit = false;
-	result.Distance = 0;
-	result.Throughput = throughput;
 
-	ivec3 step = ivec3(
-		(direction.x > 0.0) ? 1 : -1,
-		(direction.y > 0.0) ? 1 : -1,
-		(direction.z > 0.0) ? 1 : -1
-	);
-			
-	float voxelSize = model.VoxelSize;
-	vec3 delta = voxelSize / direction * vec3(step);	
-
-	RaymarchState state = CreateRaymarchState(ray, origin, direction, step, ivec3(model.Width, model.Height, model.Depth), voxelSize);
-
-	// Continue raymarching until we hit opaque object or we are out of traverses
-	while (state.MaxSteps.x >= 0 && state.MaxSteps.y >= 0 && state.MaxSteps.z >= 0)
-	{		
-		RayMarch(ray, state, delta, step, model, currentDistance);
-			
-		// We passed depth test
-		if (state.Hit) // We hit something so mix colors together
-		{
-			result.Color.rgb += state.Color.rgb * result.Throughput;
-			result.Hit = true;
-			result.Normal = state.Normal;
-			result.FinalVoxel = state.CurrentVoxel;			
-			result.Throughput *= mix(vec3(1.0), state.Color.rgb, state.Color.a) * (1.0 - state.Color.a);
-		}		
-		// Test if we can pass through
-		if (result.Throughput.x <= EPSILON && result.Throughput.y <= EPSILON && result.Throughput.z <= EPSILON)
-			break;	
-
-		PerformStep(state, step, delta); // Hit was not opaque we continue raymarching, perform step to get out of transparent voxel
-		
-		if (state.Distance > currentDistance) // if new depth is bigger than currentDepth it means there is something in front of us
-			break;		
-	}
-	result.Color.a = 1.0 - CalculateLuminance(result.Throughput);
-	result.Distance = state.Distance;
-	result.NextVoxel = state.CurrentVoxel;
-	return result;
-}
-
-
-// Constant normal incidence Fresnel factor for all dielectrics.
-const vec3 Fdielectric = vec3(0.04);
-
-vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
-{
-	PBRParameters pbr;
-	pbr.Roughness = 0.8;
-	pbr.Metalness = 0.2;
+	 // Set initial step size for ray jumps
+    float stepSize = 0.1;
 	
-	pbr.Normal = normal;
-	pbr.View = normalize(u_CameraPosition.xyz - voxelPosition);
-	pbr.NdotV = max(dot(pbr.Normal, pbr.View), 0.0);
-	pbr.Albedo = albedo;
+    // Start at the origin of the ray
+    vec3 position = ray.Origin;
 
-	vec3 F0 = mix(Fdielectric, pbr.Albedo, pbr.Metalness);
-	return CalculateDirLight(F0, u_DirectionalLight, pbr);
-}
-
-
-bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelModel model)
-{
-	AABB aabb = ModelAABB(model);
-	bool result = PointInBox(origin, aabb.Min, aabb.Max); // Default is true in case origin is inside
-	if (!result)
+	VoxelOctreeNode root = Octree[0];
+	AABB rootAABB = OctreeNodeAABB(root, 6.0);
+	for (int i = 0; i < 128; i++) 
 	{
-		// Check if we are intersecting with grid
-		float dist;
-		result = RayBoxIntersection(origin, direction, aabb.Min, aabb.Max, dist);
-		origin = origin + direction * (dist - EPSILON); // Move origin to first intersection
-	}
-	return result;
-}
+        // Advance the ray position along the ray direction by the current step size
+        position += ray.Direction * stepSize;
 
+        // Check if the current position is inside the octree bounds
+		//if (!PointInBox(position, rootAABB.Min, rootAABB.Max))
+		//	break;
 
-void StoreHitResult(in RaymarchResult result)
-{
-	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);	
-
-	bool opaque = result.Throughput.x <= EPSILON && result.Throughput.y <= EPSILON && result.Throughput.z <= EPSILON;
-
-	if (!opaque)
-	{
-		vec4 originalColor = imageLoad(o_Image, textureIndex);
-		result.Color.rgb = mix(result.Color.rgb, originalColor.rgb, 1.0 - result.Color.a);
-	}
-	else // Store depth only for opaque hits
-	{
-		imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
-	}
-
-	if (opaque)
-		result.Color.rgb = CalculateDirLights(result.WorldHit, result.Color.rgb, result.WorldNormal);
-
-	result.Color.a = 1.0;
-	imageStore(o_Image, textureIndex, result.Color); // Store color		
-}
-
-
-bool DrawModel(uint modelIndex)
-{
-	vec4 startColor = vec4(0, 0, 0, 0);
-	vec3 startThroughput = vec3(1, 1, 1);
-	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
-	
-	VoxelModel model = Models[modelIndex];
-	Ray ray = CreateRay(u_CameraPosition.xyz, model.InverseTransform, textureIndex);
-	vec3 origin = ray.Origin;
-	vec3 direction = ray.Direction;
-				
-	// Check if ray intersects with model and move origin of ray
-	if (!ResolveRayModelIntersection(origin, direction, model))
-		return false;
-
-	float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
-	RaymarchResult result = RayMarch(ray, startColor, startThroughput, origin, direction, model, currentDistance);		
-
-	if (result.Hit)		
-	{ 
-		result.WorldHit = g_CameraRay.Origin + (g_CameraRay.Direction * result.Distance);
-		result.WorldNormal = mat3(model.InverseTransform) * -result.Normal;
-		StoreHitResult(result);	
-		return true;
-	}
-	return false;
-}
-
-
-void TraverseNodes(in Ray ray)
-{
-	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
-	float t = 0.0;
-	float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
-
-	for (int n = 0; n < NodeCount; n++)
-	{
-		VoxelModelOctreeNode node = Nodes[n];
-		if (RayAABBOverlap(ray.Origin, ray.Direction, node.Min.xyz, node.Max.xyz))
+        // Traverse the octree to find the intersected node
+        uint nodeIndex = 0; // Start from the root node
+        while (Octree[nodeIndex].IsLeaf == 0) 
 		{
-			for (int i = node.DataStart; i < node.DataEnd; i++)
+            // Check if the current position intersects with any child node AABBs
+            bool hitChildNode = false;
+			
+			uint newNodeIndex = 0;
+            for (int c = 0; c < 8; c++) 
 			{
-				DrawModel(ModelIndices[i]);
-			}
-		}
-	}
+                uint childIndex = Octree[nodeIndex].Children[c];
+				VoxelOctreeNode child = Octree[childIndex];
+				AABB aabb = OctreeNodeAABB(child, 6.0);
+			
+				
+                if (RayAABBOverlap(position, ray.Direction, aabb.Min, aabb.Max)) 
+				{
+	
+					nodeIndex = childIndex; // Move to the intersected child node
+                    hitChildNode = true;
+					break;
+                }
+            }
+			
+            if (!hitChildNode) 
+			{
+                break; // Exit loop if no child node is intersected
+            }
+        }
+
+		VoxelOctreeNode currentNode = Octree[nodeIndex];
+        // Check if the intersected node is a leaf node
+        if (currentNode.IsLeaf != 0 && currentNode.ColorIndex != 0) 
+		{
+            result.Hit = true;
+            // Perform additional operations for leaf nodes (e.g., shading, accumulating color)
+            result.Color = VoxelToColor(ColorPallete[0][Octree[nodeIndex].ColorIndex]);
+            break; // Exit loop after finding a hit
+        }
+
+        // Increase the step size for the next iteration to cover a larger distance
+        stepSize *= 2.0;
+    }
+
+
+
+
+	return result;
 }
 
-void RaycastOctree(in Ray ray)
+
+OctreeRaycastResult RaycastOctree(in Ray ray)
 {
+	OctreeRaycastResult result;
+	result.Hit = false;
+	if (NumNodes == 0)
+		return result;
+
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
 	float t = 0.0;
 	float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
-	int stack[MAX_DEPTH * 5];
+	VoxelOctreeNode stack[MAX_DEPTH * 10];
 	int stackIndex = 0;
-	stack[stackIndex++] = 0; // Start with the root node
+	stack[stackIndex++] = Octree[0];
 	
-
 	int pixelComplexity = 0;
 	while (stackIndex > 0)
 	{
 		pixelComplexity++;
 		stackIndex--;
-		int nodeIndex = stack[stackIndex];
-		VoxelModelOctreeNode node = Nodes[nodeIndex];
+		VoxelOctreeNode node = stack[stackIndex];
 		float t = 0.0;
 		
-		for (int i = node.DataStart; i < node.DataEnd; i++)
-		{
-			DrawModel(ModelIndices[i]);
-		}
-
-		if (u_Uniforms.ShowAABB)
-		{
-			for (int i = node.DataStart; i < node.DataEnd; i++)
-			{
-				VoxelModel model = Models[ModelIndices[i]];
-				AABB aabb = ModelAABB(model);
-				TransformAABB(inverse(model.InverseTransform), aabb.Min, aabb.Max);
-				if (RayAABBOverlap(ray.Origin, ray.Direction, aabb.Min, aabb.Max))
-				{
-					vec4 origColor = imageLoad(o_Image, textureIndex);
-					origColor.rgb += vec3(0.5, 0.4, 0.3);
-					imageStore(o_Image, textureIndex, origColor); // Store color
-				}
-			}
-		}
-
-		
-		if (u_Uniforms.ShowOctree)
-		{
-			float numModels = float(node.DataEnd - node.DataStart);
-			vec3 gradient = GetGradient(numModels);
-			vec4 origColor = imageLoad(o_Image, textureIndex);
-			origColor.rgb += gradient;
-			imageStore(o_Image, textureIndex, origColor); // Store color		
-		}
-
-		if (!node.IsLeaf)
+		if (node.IsLeaf == 0)
 		{
 			for (int c = 0; c < 8; c++)
 			{
-				VoxelModelOctreeNode child = Nodes[node.Children[c]];
-				if (child.DataEnd - child.DataStart == 0 && child.IsLeaf)
-					continue;
-
-				if (RayAABBOverlap(ray.Origin, ray.Direction, child.Min.xyz, child.Max.xyz))
+				VoxelOctreeNode child = Octree[node.Children[c]];
+				AABB aabb = OctreeNodeAABB(child, 6.0);
+				if (RayAABBOverlap(ray.Origin, ray.Direction, aabb.Min, aabb.Max))
 				{
-					stack[stackIndex++] = node.Children[c];
+					stack[stackIndex++] = child;
 				}
 			}
 		}
+		else if (node.ColorIndex != 0)
+		{
+			result.Hit = true;
+			result.Color = VoxelToColor(ColorPallete[0][node.ColorIndex]);
+			return result;
+		}
 	}
-
-	if (u_Uniforms.ShowPixelComplexity)
-	{
-		vec3 gradient = GetGradient(float(pixelComplexity)) * 0.2;
-		vec4 origColor = imageLoad(o_Image, textureIndex);
-		origColor.rgb += gradient;
-		imageStore(o_Image, textureIndex, origColor); // Store color		
-	}
+	return result;
 }
-
 
 bool ValidPixel(ivec2 index)
 {
@@ -559,20 +372,23 @@ void main()
 
 	if (u_Uniforms.UseOctree)
 	{
-		if (u_Uniforms.OnlyFilledNodes)
+		if (u_Uniforms.ShowAABB)
 		{
-			TraverseNodes(g_CameraRay);
+			Ray ray = CreateRay(u_CameraPosition.xyz, Models[0].InverseTransform, textureIndex);
+			OctreeRaycastResult result = RaycastOctreeSteps(ray);
+			if (result.Hit)
+			{
+				imageStore(o_Image, textureIndex, result.Color);
+			}
 		}
 		else
 		{
-			RaycastOctree(g_CameraRay);
-		}
-	}
-	else
-	{
-		for (uint i = 0; i < NumModels; i++)
-		{
-			DrawModel(i);			
+			Ray ray = CreateRay(u_CameraPosition.xyz, Models[0].InverseTransform, textureIndex);
+			OctreeRaycastResult result = RaycastOctree(ray);
+			if (result.Hit)
+			{
+				imageStore(o_Image, textureIndex, result.Color);
+			}
 		}
 	}
 }

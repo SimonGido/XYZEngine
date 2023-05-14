@@ -4,12 +4,14 @@
 #include "XYZ/Utils/Math/AABB.h"
 
 
+
 namespace XYZ {
 	static uint32_t Index3D(uint32_t x, uint32_t y, uint32_t z, uint32_t width, uint32_t height)
 	{
 		return x + width * (y + height * z);
 	}
 	
+	/*
 	struct VoxelOctreeNode
 	{
 		static constexpr uint32_t MultiColor = 256;
@@ -188,11 +190,11 @@ namespace XYZ {
 
 		std::vector<VoxelOctreeNode*> m_AllNodes;
 	};
-
+	*/
 	static std::vector<VoxelSubmesh> CompressVoxelSubmesh(const VoxelSubmesh& submesh, uint32_t scale, std::vector<glm::mat4>& transforms)
 	{
 		std::vector<VoxelSubmesh> result;
-		
+		/*
 		VoxelOctree octree(submesh.Width, submesh.Height, submesh.Depth, scale);
 		for (uint32_t x = 0; x < submesh.Width; x++)
 		{
@@ -249,6 +251,7 @@ namespace XYZ {
 			}
 		}
 		int32_t savedSpace = submesh.ColorIndices.size() - voxelCount;
+		*/
 		return result;
 	}
 
@@ -315,16 +318,25 @@ namespace XYZ {
 	}
 	void VoxelProceduralMesh::Compress(uint32_t scale)
 	{
-		std::vector<glm::mat4> transforms;
-		m_Submeshes = CompressVoxelSubmesh(m_Submeshes[0], scale, transforms);
-		m_Instances.clear();
-		uint32_t submeshIndex = 0;
-		for (auto& transform : transforms)
-		{
-			auto& instance = m_Instances.emplace_back();
-			instance.Transform = transform;
-			instance.SubmeshIndex = submeshIndex++;
-		}
+		//std::vector<glm::mat4> transforms;
+		//m_Submeshes = CompressVoxelSubmesh(m_Submeshes[0], scale, transforms);
+		//m_Instances.clear();
+		//uint32_t submeshIndex = 0;
+		//for (auto& transform : transforms)
+		//{
+		//	auto& instance = m_Instances.emplace_back();
+		//	instance.Transform = transform;
+		//	instance.SubmeshIndex = submeshIndex++;
+		//}
+		if (m_Octree != nullptr)
+			delete m_Octree;
+
+		auto& submesh = m_Submeshes[0];
+		m_Octree = new VoxelOctree(submesh.Width, submesh.Height, submesh.Depth);
+		m_Octree->InsertVoxels(submesh.ColorIndices, submesh.Width, submesh.Height);
+
+		uint32_t octreeSize = m_Octree->GetNodes().size() * sizeof(VoxelOctreeNode);
+		uint32_t savedMemory = submesh.ColorIndices.size() - octreeSize;
 		m_Dirty = true;
 	}
 

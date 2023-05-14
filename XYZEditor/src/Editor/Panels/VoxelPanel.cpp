@@ -117,9 +117,9 @@ namespace XYZ {
 			m_ProceduralMesh = Ref<VoxelProceduralMesh>::Create();
 
 			VoxelSubmesh submesh;
-			submesh.Width = 128;
-			submesh.Height = 128;
-			submesh.Depth = 128;
+			submesh.Width = 512;
+			submesh.Height = 512;
+			submesh.Depth = 512;
 			submesh.VoxelSize = 6.0f;
 			{
 				const glm::vec3 rayDir = glm::normalize(glm::vec3(1, 1, 1));
@@ -315,16 +315,16 @@ namespace XYZ {
 				}
 				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), false);
 
-				for (size_t i = 0; i < m_CastleTransforms.size(); ++i)
-				{
-					const glm::mat4 castleTransform = m_CastleTransforms[i].GetLocalTransform();
-					const glm::mat4 knightTransform = m_KnightTransforms[i].GetLocalTransform();
-					const glm::mat4 deerTransform = m_DeerTransforms[i].GetLocalTransform();
-				
-					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
-					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
-					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
-				}
+				//for (size_t i = 0; i < m_CastleTransforms.size(); ++i)
+				//{
+				//	const glm::mat4 castleTransform = m_CastleTransforms[i].GetLocalTransform();
+				//	const glm::mat4 knightTransform = m_KnightTransforms[i].GetLocalTransform();
+				//	const glm::mat4 deerTransform = m_DeerTransforms[i].GetLocalTransform();
+				//
+				//	m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
+				//	m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
+				//	m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
+				//}
 				
 				submitWater();
 				

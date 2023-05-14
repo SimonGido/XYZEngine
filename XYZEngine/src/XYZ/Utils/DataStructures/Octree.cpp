@@ -1,8 +1,25 @@
 #include "stdafx.h"
 #include "Octree.h"
 
+#include <queue>
 
 namespace XYZ {
+	static bool VoxelInsideNode(const glm::ivec3& voxel, const VoxelOctreeNode& node)
+	{
+		return voxel.x >= node.X
+			&& voxel.y >= node.Y
+			&& voxel.z >= node.Z
+			&& voxel.x < node.X + node.Size
+			&& voxel.y < node.Y + node.Size
+			&& voxel.z < node.Z + node.Size;
+	}
+
+	static uint32_t Index3D(uint32_t x, uint32_t y, uint32_t z, uint32_t width, uint32_t height)
+	{
+		return x + width * (y + height * z);
+	}
+
+
 	Octree::Octree(const AABB& aabb, uint32_t maxDepth)
 		:
 		m_MaxDepth(maxDepth)
@@ -147,5 +164,85 @@ namespace XYZ {
 				newOctree.InsertData(data.BoundingBox, data.Data);
 		}
 		return newOctree;
+	}
+	VoxelOctree::VoxelOctree(uint32_t width, uint32_t height, uint32_t depth)
+	{		
+		VoxelOctreeNode& root = m_Nodes.emplace_back();
+		uint32_t maxDimension = std::max(width, std::max(height, depth));
+		root.Size = Math::RoundUp(maxDimension, 16);
+	}
+
+	void VoxelOctree::InsertVoxels(const std::vector<uint8_t>& voxels, uint32_t width, uint32_t height)
+	{
+		std::queue<uint32_t> nodesToIterate;
+		nodesToIterate.push(0); // Start from root
+
+		while (!nodesToIterate.empty())
+		{
+			int32_t nodeIndex = nodesToIterate.front();
+			nodesToIterate.pop();
+
+			bool isUniform = true;
+			VoxelOctreeNode* node = &m_Nodes[nodeIndex];
+			const uint8_t colorIndex = voxels[Index3D(node->X, node->Y, node->Z, width, height)];
+			for (uint32_t x = node->X; x < node->X + node->Size; ++x)
+			{
+				for (uint32_t y = node->Y; y < node->Y + node->Size; ++y)
+				{
+					for (uint32_t z = node->Z; z < node->Z + node->Size; ++z)
+					{
+						const uint8_t newColorIndex = voxels[Index3D(x, y, z, width, height)];
+						if (colorIndex != newColorIndex)
+						{
+							isUniform = false;
+							break;
+						}
+					}
+					if (!isUniform)
+						break;
+				}
+				if (!isUniform)
+					break;
+			}
+			if (!isUniform)
+			{
+				splitNode(nodeIndex);
+				node = &m_Nodes[nodeIndex];
+				for (uint32_t i = 0; i < 8; ++i)
+					nodesToIterate.push(node->Children[i]);
+			}
+			else
+			{
+				node->ColorIndex = colorIndex;
+			}
+		}
+	}
+
+	void VoxelOctree::splitNode(int32_t nodeIndex)
+	{
+		VoxelOctreeNode* parent = &m_Nodes[nodeIndex];
+		parent->IsLeaf = false;
+		uint16_t halfSize = parent->Size / 2;
+
+		uint32_t childIndex = 0;
+		for (uint32_t z = 0; z < 2; ++z)
+		{
+			for (uint32_t y = 0; y < 2; ++y)
+			{
+				for (uint32_t x = 0; x < 2; ++x)
+				{
+					parent->Children[childIndex] = static_cast<int32_t>(m_Nodes.size());
+					auto& child = m_Nodes.emplace_back();
+					parent = &m_Nodes[nodeIndex];
+
+					child.Size = halfSize;
+		
+					child.X = parent->X + x * halfSize;
+					child.Y = parent->Y + y * halfSize;
+					child.Z = parent->Z + z * halfSize;
+					childIndex++;
+				}
+			}
+		}
 	}
 }

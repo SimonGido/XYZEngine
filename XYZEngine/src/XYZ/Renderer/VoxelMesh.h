@@ -5,6 +5,7 @@
 
 #include "XYZ/Asset/Renderer/VoxelMeshSource.h"
 #include "XYZ/Asset/AssetReference.h"
+#include "XYZ/Utils/DataStructures/Octree.h"
 
 #include <glm/glm.hpp>
 
@@ -21,6 +22,7 @@ namespace XYZ {
 		virtual const AssetHandle& GetRenderID() const = 0;
 		virtual uint32_t GetNumVoxels() const = 0;
 
+		virtual VoxelOctree* GetOctree() const { return nullptr; }
 	protected:
 		struct DirtyRange
 		{
@@ -82,6 +84,7 @@ namespace XYZ {
 		virtual const std::vector<VoxelInstance>& GetInstances() const override;
 		virtual const AssetHandle& GetRenderID() const override;
 		virtual uint32_t GetNumVoxels() const override { return m_NumVoxels; }
+		virtual VoxelOctree* GetOctree() const override { return m_Octree; }
 
 		std::vector<VoxelInstance>& GetInstances() { return m_Instances; }
 		
@@ -98,6 +101,8 @@ namespace XYZ {
 
 		mutable std::unordered_map<uint32_t, DirtyRange> m_DirtySubmeshes;		
 		mutable std::atomic_bool m_Dirty;
+
+		VoxelOctree* m_Octree = nullptr;
 
 		uint32_t m_NumVoxels;
 	};

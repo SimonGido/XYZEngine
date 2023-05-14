@@ -43,4 +43,31 @@ namespace XYZ {
 		uint32_t m_MaxDepth;
 	};
 
+	struct VoxelOctreeNode
+	{
+		uint32_t	Size;
+		uint32_t	X, Y, Z;
+
+		uint32_t	Children[8];
+		uint32_t	ColorIndex = 0;
+		uint32_t	IsLeaf = true;
+		Padding<8> Padding;
+	};
+
+	class VoxelOctree
+	{
+	public:
+		VoxelOctree(uint32_t width, uint32_t height, uint32_t depth);
+
+
+		void InsertVoxels(const std::vector<uint8_t>& voxels, uint32_t width, uint32_t height);
+
+		const std::vector<VoxelOctreeNode>& GetNodes() const { return m_Nodes; }
+	private:
+	
+		void splitNode(int32_t nodeIndex);
+
+	private:
+		std::vector<VoxelOctreeNode> m_Nodes;
+	};
 }

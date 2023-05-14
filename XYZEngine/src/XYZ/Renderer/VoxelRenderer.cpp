@@ -50,7 +50,6 @@ namespace XYZ {
 		m_StorageBufferSet->Create(sizeof(SSBOVoxelModels), SSBOVoxelModels::Set, SSBOVoxelModels::Binding);
 		m_StorageBufferSet->Create(SSBOColors::MaxSize, SSBOColors::Set, SSBOColors::Binding);
 		m_StorageBufferSet->Create(SSBOVoxelComputeData::MaxSize, SSBOVoxelComputeData::Set, SSBOVoxelComputeData::Binding);
-		m_StorageBufferSet->Create(sizeof(SSBOOCtree), SSBOOCtree::Set, SSBOOCtree::Binding);
 
 		m_VoxelStorageAllocator = Ref<StorageBufferAllocator>::Create(SSBOVoxels::MaxVoxels, SSBOVoxels::Binding, SSBOVoxels::Set);
 		m_ColorStorageAllocator = Ref<StorageBufferAllocator>::Create(SSBOColors::MaxSize, SSBOColors::Binding, SSBOColors::Set);
@@ -540,48 +539,7 @@ namespace XYZ {
 
 	}
 	void VoxelRenderer::prepareDrawCommands()
-	{
-		
-		uint32_t nodeCount = 0;
-		uint32_t dataCount = 0;
-		for (auto& octreeNode : m_ModelsOctree.GetNodes())
-		{
-			if (m_PushOnlyFilledNodes && octreeNode.Data.empty())
-				continue;
-
-			auto& node = m_SSBOOctree.Nodes[nodeCount];
-			memcpy(node.Children, octreeNode.Children, 8 * sizeof(uint32_t));
-			node.IsLeaf = octreeNode.IsLeaf;
-			node.Max = glm::vec4(octreeNode.BoundingBox.Max, 1.0f);
-			node.Min = glm::vec4(octreeNode.BoundingBox.Min, 1.0f);
-			node.DataStart = dataCount;
-			node.Depth = octreeNode.Depth;
-			for (const auto& data : octreeNode.Data)
-			{
-				m_SSBOOctree.ModelIndices[dataCount++] = data.Data;
-			}
-			node.DataEnd = dataCount;
-			nodeCount++;
-		}
-		m_SSBOOctree.NodeCount = nodeCount;
-
-		const uint32_t firstUpdateSize =
-			sizeof(SSBOOCtree::NodeCount)
-			+ sizeof(SSBOOCtree::Padding)
-			+ sizeof(VoxelModelOctreeNode) * nodeCount;
-
-		const uint32_t secondUpdateSize = sizeof(uint32_t) * dataCount;
-		const uint32_t secondUpdateOffset =
-			sizeof(SSBOOCtree::NodeCount)
-			+ sizeof(SSBOOCtree::Padding)
-			+ sizeof(SSBOOCtree::Nodes);
-
-		m_StorageBufferSet->Update(&m_SSBOOctree, firstUpdateSize, 0, SSBOOCtree::Binding, SSBOOCtree::Set);
-		void* secondUpdateData = &reinterpret_cast<uint8_t*>(&m_SSBOOctree)[secondUpdateOffset];
-
-		m_StorageBufferSet->Update(secondUpdateData, secondUpdateSize, secondUpdateOffset, SSBOOCtree::Binding, SSBOOCtree::Set);
-
-
+	{	
 		for (auto& [key, drawCommand] : m_DrawCommands)
 		{
 			if (drawCommand.Models.empty())
@@ -600,14 +558,25 @@ namespace XYZ {
 		for (const auto& updated : m_UpdatedAllocations)
 		{
 			uint32_t voxelOffset = updated.VoxelAllocation.GetOffset();
-			
-			for (auto& submesh : updated.Mesh->GetSubmeshes())
+			if (updated.Mesh->GetOctree() != nullptr)
 			{
-				const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
-				m_StorageBufferSet->UpdateEachFrame(submesh.ColorIndices.data(), voxelCount, voxelOffset, SSBOVoxels::Binding, SSBOVoxels::Set);
-				voxelOffset += voxelCount;
+				auto octree = updated.Mesh->GetOctree();
+				uint32_t nodeCount = octree->GetNodes().size();
+				m_StorageBufferSet->UpdateEachFrame(&nodeCount, sizeof(uint32_t), voxelOffset, SSBOVoxels::Binding, SSBOVoxels::Set);
+				voxelOffset += sizeof(uint32_t) + 12; // Padding
+
+				uint32_t octreeSize = octree->GetNodes().size() * sizeof(VoxelOctreeNode);
+				m_StorageBufferSet->UpdateEachFrame(octree->GetNodes().data(), octreeSize, voxelOffset, SSBOVoxels::Binding, SSBOVoxels::Set);
 			}
-			
+			else
+			{
+				for (auto& submesh : updated.Mesh->GetSubmeshes())
+				{
+					const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
+					m_StorageBufferSet->UpdateEachFrame(submesh.ColorIndices.data(), voxelCount, voxelOffset, SSBOVoxels::Binding, SSBOVoxels::Set);
+					voxelOffset += voxelCount;
+				}
+			}
 			m_StorageBufferSet->UpdateEachFrame(updated.Mesh->GetColorPallete().data(), updated.ColorAllocation.GetSize(), updated.ColorAllocation.GetOffset(), SSBOColors::Binding, SSBOColors::Set);
 		}
 		m_UpdatedAllocations.clear();
