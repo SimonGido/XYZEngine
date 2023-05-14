@@ -128,7 +128,7 @@ namespace XYZ {
 		
 		AABB result;
 		result.Min = glm::vec3(std::numeric_limits<float>::max());
-		result.Max = glm::vec3(std::numeric_limits<float>::min());
+		result.Max = glm::vec3(-std::numeric_limits<float>::max());
 
 		for (uint32_t i = 0; i < 8; ++i)
 		{

@@ -17,7 +17,7 @@ namespace XYZ {
 		uint32_t Depth = 0;
 		int32_t  Children[8]{ -1 };
 
-		bool IsLeaf = false;
+		bool IsLeaf = true;
 		std::vector<OctreeData> Data;
 	};
 

@@ -117,9 +117,9 @@ namespace XYZ {
 			m_ProceduralMesh = Ref<VoxelProceduralMesh>::Create();
 
 			VoxelSubmesh submesh;
-			submesh.Width = 256;
-			submesh.Height = 256;
-			submesh.Depth = 256;
+			submesh.Width = 128;
+			submesh.Height = 128;
+			submesh.Depth = 128;
 			submesh.VoxelSize = 6.0f;
 			{
 				const glm::vec3 rayDir = glm::normalize(glm::vec3(1, 1, 1));
@@ -157,14 +157,17 @@ namespace XYZ {
 			for (uint32_t i = 0; i < count; ++i)
 			{
 				m_CastleTransforms[i].GetTransform().Translation.x = xOffset;
+				m_CastleTransforms[i].GetTransform().Translation.z = RandomNumber(-200.0f, 200.0f);
 				m_CastleTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
 
 				m_KnightTransforms[i].GetTransform().Translation.x = xOffset;
 				m_KnightTransforms[i].GetTransform().Translation.y = 30.0f;
+				m_KnightTransforms[i].GetTransform().Translation.z = RandomNumber(-200.0f, 200.0f);
 				m_KnightTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
 
 				m_DeerTransforms[i].GetTransform().Translation.x = xOffset;
 				m_DeerTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
+				m_DeerTransforms[i].GetTransform().Translation.z = RandomNumber(-200.0f, 200.0f);
 				m_DeerTransforms[i].GetTransform().Translation.y = 50.0f;
 
 				xOffset += 30.0f;
@@ -224,7 +227,7 @@ namespace XYZ {
 				
 				if (ImGui::Button("Compress"))
 				{
-					m_ProceduralMesh->Compress(64);
+					m_ProceduralMesh->Compress(16);
 				}
 				ImGui::Checkbox("Update Water", &m_UpdateWater);
 			}
@@ -232,10 +235,23 @@ namespace XYZ {
 
 			if (ImGui::Begin("Transforms"))
 			{
-				int id = 0;
-				ImGui::Text("%d", id);
-				for (auto& transform : m_CastleTransforms)
+				int id = 0;		
+				for (auto& transform : m_DeerTransforms)
+				{
+					ImGui::Text("%d", id);
 					drawTransform(transform, id++);
+				}
+				for (auto& transform : m_CastleTransforms)
+				{
+					ImGui::Text("%d", id);
+					drawTransform(transform, id++);
+				}
+				for (auto& instance : m_ProceduralMesh->GetInstances())
+				{
+					ImGui::Text("%d", id);
+					drawTransform(instance.Transform, id++);
+				}
+
 				ImGui::NewLine();
 			}
 			ImGui::End();
@@ -297,8 +313,7 @@ namespace XYZ {
 						m_ProceduralMesh->SetVoxelColor(0, 256, y, 256, RandomNumber(5u, 255u));
 					}
 				}
-				//for (uint32_t i = 0; i < 9; i++)
-					m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), false);
+				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), false);
 
 				for (size_t i = 0; i < m_CastleTransforms.size(); ++i)
 				{
@@ -388,6 +403,14 @@ namespace XYZ {
 				transform.GetTransform().Rotation = glm::radians(rotation);
 			}
 			ImGui::PopID();
+		}
+		void VoxelPanel::drawTransform(glm::mat4& transform, int id) const
+		{
+			TransformComponent transformComponent;
+			transformComponent.DecomposeTransform(transform);
+
+			drawTransform(transformComponent, id);
+			transform = transformComponent.GetLocalTransform();
 		}
 
 		void VoxelPanel::pushGenerateVoxelMeshJob()

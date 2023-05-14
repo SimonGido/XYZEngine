@@ -11,7 +11,6 @@
 #define MAX_NODES 4096
 #define MAX_DEPTH 16
 
-const float FLT_MAX = 3.402823466e+38;
 const float EPSILON = 0.01;
 const uint OPAQUE = 255;
 const int MULTI_COLOR = 256;
@@ -20,6 +19,9 @@ layout(push_constant) uniform Uniforms
 {
 	bool UseOctree; 
 	bool ShowOctree;
+	bool ShowAABB;
+	bool ShowPixelComplexity;
+	bool OnlyFilledNodes;
 
 } u_Uniforms;
 
@@ -47,7 +49,7 @@ struct VoxelModelOctreeNode
 	int  DataStart;
 	int  DataEnd;
 
-	uint Padding;
+	uint Depth;
 };
 
 
@@ -153,7 +155,7 @@ Ray CreateRay(vec3 origin, vec2 coords)
 	ray.Origin = origin;
 
 	ray.Direction = vec3(u_InverseView * vec4(normalize(vec3(target) / target.w), 0)); // World space
-	ray.Direction = normalize(ray.Direction) + EPSILON;
+	ray.Direction = normalize(ray.Direction);
 
 	return ray;
 }
@@ -391,7 +393,7 @@ bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelMode
 }
 
 
-void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
+void StoreHitResult(in RaymarchResult result)
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);	
 
@@ -415,7 +417,7 @@ void StoreHitResult(in Ray ray, in RaymarchResult result, in VoxelModel model)
 }
 
 
-void DrawModel(uint modelIndex)
+bool DrawModel(uint modelIndex)
 {
 	vec4 startColor = vec4(0, 0, 0, 0);
 	vec3 startThroughput = vec3(1, 1, 1);
@@ -428,7 +430,7 @@ void DrawModel(uint modelIndex)
 				
 	// Check if ray intersects with model and move origin of ray
 	if (!ResolveRayModelIntersection(origin, direction, model))
-		return;
+		return false;
 
 	float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
 	RaymarchResult result = RayMarch(ray, startColor, startThroughput, origin, direction, model, currentDistance);		
@@ -437,31 +439,72 @@ void DrawModel(uint modelIndex)
 	{ 
 		result.WorldHit = g_CameraRay.Origin + (g_CameraRay.Direction * result.Distance);
 		result.WorldNormal = mat3(model.InverseTransform) * -result.Normal;
-		StoreHitResult(ray, result, model);	
+		StoreHitResult(result);	
+		return true;
+	}
+	return false;
+}
+
+
+void TraverseNodes(in Ray ray)
+{
+	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
+	float t = 0.0;
+	float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
+
+	for (int n = 0; n < NodeCount; n++)
+	{
+		VoxelModelOctreeNode node = Nodes[n];
+		if (RayAABBOverlap(ray.Origin, ray.Direction, node.Min.xyz, node.Max.xyz))
+		{
+			for (int i = node.DataStart; i < node.DataEnd; i++)
+			{
+				DrawModel(ModelIndices[i]);
+			}
+		}
 	}
 }
 
 void RaycastOctree(in Ray ray)
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
-	VoxelModelOctreeNode node = Nodes[0];
 	float t = 0.0;
-
-	int stack[MAX_DEPTH * 10];
+	float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
+	int stack[MAX_DEPTH * 5];
 	int stackIndex = 0;
 	stack[stackIndex++] = 0; // Start with the root node
+	
 
+	int pixelComplexity = 0;
 	while (stackIndex > 0)
 	{
+		pixelComplexity++;
 		stackIndex--;
 		int nodeIndex = stack[stackIndex];
-	    node = Nodes[nodeIndex];
+		VoxelModelOctreeNode node = Nodes[nodeIndex];
 		float t = 0.0;
 		
 		for (int i = node.DataStart; i < node.DataEnd; i++)
 		{
 			DrawModel(ModelIndices[i]);
 		}
+
+		if (u_Uniforms.ShowAABB)
+		{
+			for (int i = node.DataStart; i < node.DataEnd; i++)
+			{
+				VoxelModel model = Models[ModelIndices[i]];
+				AABB aabb = ModelAABB(model);
+				TransformAABB(inverse(model.InverseTransform), aabb.Min, aabb.Max);
+				if (RayAABBOverlap(ray.Origin, ray.Direction, aabb.Min, aabb.Max))
+				{
+					vec4 origColor = imageLoad(o_Image, textureIndex);
+					origColor.rgb += vec3(0.5, 0.4, 0.3);
+					imageStore(o_Image, textureIndex, origColor); // Store color
+				}
+			}
+		}
+
 		
 		if (u_Uniforms.ShowOctree)
 		{
@@ -472,20 +515,28 @@ void RaycastOctree(in Ray ray)
 			imageStore(o_Image, textureIndex, origColor); // Store color		
 		}
 
-		if (node.IsLeaf)
+		if (!node.IsLeaf)
 		{
 			for (int c = 0; c < 8; c++)
 			{
 				VoxelModelOctreeNode child = Nodes[node.Children[c]];
-				if (child.DataEnd - child.DataStart == 0 && !child.IsLeaf)
+				if (child.DataEnd - child.DataStart == 0 && child.IsLeaf)
 					continue;
 
-				if (RayBoxIntersection(ray.Origin, ray.Direction, child.Min.xyz, child.Max.xyz, t))
+				if (RayAABBOverlap(ray.Origin, ray.Direction, child.Min.xyz, child.Max.xyz))
 				{
 					stack[stackIndex++] = node.Children[c];
 				}
 			}
 		}
+	}
+
+	if (u_Uniforms.ShowPixelComplexity)
+	{
+		vec3 gradient = GetGradient(float(pixelComplexity)) * 0.2;
+		vec4 origColor = imageLoad(o_Image, textureIndex);
+		origColor.rgb += gradient;
+		imageStore(o_Image, textureIndex, origColor); // Store color		
 	}
 }
 
@@ -503,18 +554,25 @@ void main()
 	if (!ValidPixel(textureIndex))
 		return;
 
-	
+	float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
 	g_CameraRay = CreateRay(u_CameraPosition.xyz, textureIndex);
 
 	if (u_Uniforms.UseOctree)
 	{
-		RaycastOctree(g_CameraRay);
+		if (u_Uniforms.OnlyFilledNodes)
+		{
+			TraverseNodes(g_CameraRay);
+		}
+		else
+		{
+			RaycastOctree(g_CameraRay);
+		}
 	}
 	else
 	{
 		for (uint i = 0; i < NumModels; i++)
 		{
-			DrawModel(i);
+			DrawModel(i);			
 		}
 	}
 }

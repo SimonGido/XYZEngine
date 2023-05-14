@@ -83,6 +83,7 @@ namespace XYZ {
 		virtual const AssetHandle& GetRenderID() const override;
 		virtual uint32_t GetNumVoxels() const override { return m_NumVoxels; }
 
+		std::vector<VoxelInstance>& GetInstances() { return m_Instances; }
 		
 		static AssetType GetStaticType() { return AssetType::None; }
 

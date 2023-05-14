@@ -217,8 +217,7 @@ namespace XYZ {
 
 				
 				if (node->ColorIndex != VoxelOctreeNode::MultiColor && node->ColorIndex != 0)
-				{
-					
+				{					
 					VoxelSubmesh& childSubmesh = result.emplace_back();
 					const uint32_t minDimension = std::min(node->Width, std::min(node->Height, node->Depth));
 					childSubmesh.Width = node->Width / minDimension;

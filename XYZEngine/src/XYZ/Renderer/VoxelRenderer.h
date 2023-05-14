@@ -23,7 +23,7 @@ namespace XYZ {
 		int32_t DataStart;
 		int32_t DataEnd;
 
-		Padding<4> Padding;
+		uint32_t Depth;
 	};
 
 	struct VoxelModel
@@ -271,7 +271,10 @@ namespace XYZ {
 		bool					m_UseSSGI = false;
 		bool					m_UseOctree = false;
 		bool					m_ShowOctree = false;
-		
+		bool					m_ShowAABB = false;
+		bool					m_ShowPixelComplexity = false;
+		bool					m_PushOnlyFilledNodes = false;
+
 		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;
 		std::map<AssetHandle, VoxelEffectCommand> m_EffectCommands;
 

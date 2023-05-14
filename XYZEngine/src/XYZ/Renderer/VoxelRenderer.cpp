@@ -164,7 +164,7 @@ namespace XYZ {
 		}	
 	}
 
-	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform,bool cull)
+	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, bool cull)
 	{
 		auto& drawCommand = m_DrawCommands[mesh->GetHandle()];
 		const auto& submeshes = mesh->GetSubmeshes();
@@ -244,7 +244,9 @@ namespace XYZ {
 
 			ImGui::Checkbox("Octree", &m_UseOctree);
 			ImGui::Checkbox("Show Octree", &m_ShowOctree);
-
+			ImGui::Checkbox("Show AABB", &m_ShowAABB);
+			ImGui::Checkbox("Show PixelComplexity", &m_ShowPixelComplexity);
+			ImGui::Checkbox("Only FilledNodes", &m_PushOnlyFilledNodes);
 			ImGui::NewLine();
 
 			if (ImGui::BeginTable("##Statistics", 2, ImGuiTableFlags_SizingFixedFit))
@@ -274,17 +276,10 @@ namespace XYZ {
 	
 	void VoxelRenderer::submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, uint32_t submeshIndex)
 	{
-		const AABB aabb = VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, submesh.VoxelSize);
-		m_ModelsOctree.InsertData(aabb, m_SSBOVoxelModels.NumModels);
-
-		m_Statistics.ModelCount++;
-
-		const glm::vec3 aabbMax = glm::vec3(submesh.Width, submesh.Height, submesh.Depth) * submesh.VoxelSize;
-
 		glm::vec3 centerTranslation = -glm::vec3(
-			submesh.Width / 2  * submesh.VoxelSize,
-			submesh.Height / 2 * submesh.VoxelSize,
-			submesh.Depth / 2  * submesh.VoxelSize
+			static_cast<float>(submesh.Width) / 2.0f  * submesh.VoxelSize,
+			static_cast<float>(submesh.Height) / 2.0f * submesh.VoxelSize,
+			static_cast<float>(submesh.Depth) / 2.0f  * submesh.VoxelSize
 		);
 		const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
 
@@ -293,7 +288,13 @@ namespace XYZ {
 		cmdModel.ModelIndex = m_SSBOVoxelModels.NumModels;
 
 		VoxelModel& model = m_SSBOVoxelModels.Models[m_SSBOVoxelModels.NumModels];
-		model.InverseTransform = glm::inverse(transform * glm::translate(glm::mat4(1.0f), centerTranslation));
+		const glm::mat4 centeredTransform = transform * glm::translate(glm::mat4(1.0f), centerTranslation);
+		model.InverseTransform = glm::inverse(centeredTransform);
+
+
+		const AABB aabb = VoxelModelToAABB(centeredTransform, submesh.Width, submesh.Height, submesh.Depth, submesh.VoxelSize);
+		m_ModelsOctree.InsertData(aabb, m_SSBOVoxelModels.NumModels);
+
 
 		model.Width = submesh.Width;
 		model.Height = submesh.Height;
@@ -301,6 +302,7 @@ namespace XYZ {
 		model.VoxelSize = submesh.VoxelSize;
 
 		m_SSBOVoxelModels.NumModels++;
+		m_Statistics.ModelCount++;
 	}
 
 	void VoxelRenderer::clearPass()
@@ -442,6 +444,9 @@ namespace XYZ {
 
 		Bool32 useOctree = m_UseOctree;
 		Bool32 showOctree = m_ShowOctree;
+		Bool32 showAABB = m_ShowAABB;
+		Bool32 showPixelComplexity = m_ShowPixelComplexity;
+		Bool32 onlyFilledNodes = m_PushOnlyFilledNodes;
 		Renderer::DispatchCompute(
 			m_RaymarchPipeline,
 			nullptr,
@@ -449,7 +454,10 @@ namespace XYZ {
 			PushConstBuffer
 			{
 				useOctree,
-				showOctree
+				showOctree,
+				showAABB,
+				showPixelComplexity,
+				onlyFilledNodes
 			}
 		);
 
@@ -533,16 +541,21 @@ namespace XYZ {
 	}
 	void VoxelRenderer::prepareDrawCommands()
 	{
+		
 		uint32_t nodeCount = 0;
 		uint32_t dataCount = 0;
 		for (auto& octreeNode : m_ModelsOctree.GetNodes())
 		{
+			if (m_PushOnlyFilledNodes && octreeNode.Data.empty())
+				continue;
+
 			auto& node = m_SSBOOctree.Nodes[nodeCount];
 			memcpy(node.Children, octreeNode.Children, 8 * sizeof(uint32_t));
 			node.IsLeaf = octreeNode.IsLeaf;
 			node.Max = glm::vec4(octreeNode.BoundingBox.Max, 1.0f);
 			node.Min = glm::vec4(octreeNode.BoundingBox.Min, 1.0f);
 			node.DataStart = dataCount;
+			node.Depth = octreeNode.Depth;
 			for (const auto& data : octreeNode.Data)
 			{
 				m_SSBOOctree.ModelIndices[dataCount++] = data.Data;

@@ -65,6 +65,7 @@ namespace XYZ {
 		private:
 			void handlePanelResize(const glm::vec2& newSize);
 			void drawTransform(TransformComponent& transform, int id) const;
+			void drawTransform(glm::mat4& transform, int id) const;
 
 			void pushGenerateVoxelMeshJob();
 			void submitWater();

@@ -40,13 +40,13 @@ namespace XYZ {
 			OctreeNode* node = &m_Nodes[nodeIndex];
 		
 			bool canInsert = true;
-			if (!node->IsLeaf && node->Depth != m_MaxDepth)
+			if (node->IsLeaf && node->Depth != m_MaxDepth)
 			{
 				splitNode(nodeIndex);
 			}
 
 			node = &m_Nodes[nodeIndex];
-			if (node->IsLeaf)
+			if (!node->IsLeaf)
 			{
 				for (int32_t childIndex : node->Children)
 				{
@@ -88,7 +88,7 @@ namespace XYZ {
 			OctreeNode* node = &m_Nodes[nodeIndex];
 
 			bool canReturn = true;
-			if (node->IsLeaf)
+			if (!node->IsLeaf)
 			{
 				for (int32_t childIndex : node->Children)
 				{
@@ -116,7 +116,7 @@ namespace XYZ {
 	void Octree::splitNode(int32_t nodeIndex)
 	{
 		OctreeNode* parent = &m_Nodes[nodeIndex];
-		parent->IsLeaf = true;
+		parent->IsLeaf = false;
 		const glm::vec3 halfSize = (parent->BoundingBox.Max - parent->BoundingBox.Min) / 2.0f;
 
 		uint32_t childIndex = 0;
