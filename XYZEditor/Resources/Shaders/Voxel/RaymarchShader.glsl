@@ -243,21 +243,27 @@ OctreeRaycastResult RaycastOctreeSteps(in Ray ray)
 	result.Hit = false;
 
 	 // Set initial step size for ray jumps
-    float stepSize = 0.1;
+    float stepSize = 0.8;
 	
     // Start at the origin of the ray
     vec3 position = ray.Origin;
 
 	VoxelOctreeNode root = Octree[0];
 	AABB rootAABB = OctreeNodeAABB(root, 6.0);
-	for (int i = 0; i < 128; i++) 
+
+	float t = 0.0;
+	if (!RayBoxIntersection(position, ray.Direction, rootAABB.Min, rootAABB.Max, t))
+		return result;
+
+	ray.Origin += ray.Direction * (t + 1.0);
+	for (int i = 0; i < 10048; i++) 
 	{
         // Advance the ray position along the ray direction by the current step size
         position += ray.Direction * stepSize;
 
         // Check if the current position is inside the octree bounds
-		//if (!PointInBox(position, rootAABB.Min, rootAABB.Max))
-		//	break;
+		if (!PointInBox(position, rootAABB.Min, rootAABB.Max))
+			break;
 
         // Traverse the octree to find the intersected node
         uint nodeIndex = 0; // Start from the root node
@@ -267,22 +273,25 @@ OctreeRaycastResult RaycastOctreeSteps(in Ray ray)
             bool hitChildNode = false;
 			
 			uint newNodeIndex = 0;
+			float minDistance = FLT_MAX;
+			float dist = FLT_MAX;
             for (int c = 0; c < 8; c++) 
 			{
                 uint childIndex = Octree[nodeIndex].Children[c];
 				VoxelOctreeNode child = Octree[childIndex];
 				AABB aabb = OctreeNodeAABB(child, 6.0);
-			
-				
-                if (RayAABBOverlap(position, ray.Direction, aabb.Min, aabb.Max)) 
+		
+                if (RayBoxIntersection(position, ray.Direction, aabb.Min, aabb.Max, dist)) 
 				{
-	
-					nodeIndex = childIndex; // Move to the intersected child node
+					if (dist < minDistance)
+					{
+						newNodeIndex = childIndex; // Move to the intersected child node
+						minDistance = dist;
+					}			
                     hitChildNode = true;
-					break;
                 }
             }
-			
+			nodeIndex = newNodeIndex;
             if (!hitChildNode) 
 			{
                 break; // Exit loop if no child node is intersected
