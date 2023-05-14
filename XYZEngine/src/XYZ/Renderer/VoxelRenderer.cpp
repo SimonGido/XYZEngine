@@ -234,21 +234,15 @@ namespace XYZ {
 			ImGui::DragFloat("Light Multiplier", &m_UBVoxelScene.DirectionalLight.Multiplier, 0.1f);
 			
 			ImGui::NewLine();
-			ImGui::DragInt("SSGI SampleCount", (int*) &m_SSGIValues.SampleCount, 1, 0, 20);
-			ImGui::DragFloat("SSGI IndirectAmount", &m_SSGIValues.IndirectAmount);
-			ImGui::DragFloat("SSGI NoiseAmount", &m_SSGIValues.NoiseAmount);
-			ImGui::Checkbox("SSGI Noise", (bool*)&m_SSGIValues.Noise);
-			ImGui::Checkbox("SSGI", &m_UseSSGI);
-			ImGui::NewLine();
 
 			ImGui::Checkbox("Top Grid", &m_UseTopGrid);
 			ImGui::NewLine();
 
 			if (ImGui::BeginTable("##Statistics", 2, ImGuiTableFlags_SizingFixedFit))
 			{
-				const uint32_t voxelBufferUsage = 100 * m_VoxelStorageAllocator->GetAllocatedSize() / m_VoxelStorageAllocator->GetSize();
-				const uint32_t colorBufferUsage = 100 * m_ColorStorageAllocator->GetAllocatedSize() / m_ColorStorageAllocator->GetSize();
-				const uint32_t topGridBufferUsage = 100 * m_TopGridsAllocator->GetAllocatedSize() / m_TopGridsAllocator->GetSize();
+				const uint32_t voxelBufferUsage = 100.0f * static_cast<float>(m_VoxelStorageAllocator->GetAllocatedSize()) / m_VoxelStorageAllocator->GetSize();
+				const uint32_t colorBufferUsage = 100.0f * static_cast<float>(m_ColorStorageAllocator->GetAllocatedSize()) / m_ColorStorageAllocator->GetSize();
+				const uint32_t topGridBufferUsage = 100.0f * static_cast<float>(m_TopGridsAllocator->GetAllocatedSize()) / m_TopGridsAllocator->GetSize();
 
 				UI::TextTableRow("%s", "Mesh Allocations:", "%u", static_cast<uint32_t>(m_LastFrameMeshAllocations.size()));
 				UI::TextTableRow("%s", "Update Allocations:", "%u", static_cast<uint32_t>(m_UpdatedAllocations.size()));
@@ -467,11 +461,7 @@ namespace XYZ {
 		Renderer::DispatchCompute(
 			m_SSGIPipeline,
 			nullptr,
-			m_WorkGroups.x, m_WorkGroups.y, 1,
-			PushConstBuffer
-			{
-				m_SSGIValues
-			}
+			m_WorkGroups.x, m_WorkGroups.y, 1
 		);
 		
 		Renderer::EndPipelineCompute(m_SSGIPipeline);

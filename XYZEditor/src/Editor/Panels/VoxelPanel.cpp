@@ -118,9 +118,9 @@ namespace XYZ {
 			m_ProceduralMesh = Ref<VoxelProceduralMesh>::Create();
 
 			VoxelSubmesh submesh;
-			submesh.Width = 512;
+			submesh.Width = 1024;
 			submesh.Height = 400;
-			submesh.Depth = 512;
+			submesh.Depth = 1024;
 			submesh.VoxelSize = 3.0f;
 			submesh.MaxTraverses = 1024;
 			{
@@ -312,7 +312,7 @@ namespace XYZ {
 					terrainSubmesh.ColorIndices = m_Terrain.Terrain;
 					while (m_ProceduralMesh->IsGeneratingTopGrid()) {} // Wait to finish generating top grid
 					m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
-					m_VoxelRenderer->SubmitComputeData(m_Terrain.WaterMap.data(), m_Terrain.WaterMap.size(), 0, m_WaterDensityAllocation, true);
+					//m_VoxelRenderer->SubmitComputeData(m_Terrain.WaterMap.data(), m_Terrain.WaterMap.size(), 0, m_WaterDensityAllocation, true);
 				}
 
 				m_VoxelRenderer->BeginScene({
@@ -398,8 +398,7 @@ namespace XYZ {
 		void VoxelPanel::SetVoxelRenderer(const Ref<VoxelRenderer>& voxelRenderer)
 		{
 			m_VoxelRenderer = voxelRenderer;
-			m_VoxelRenderer->CreateComputeAllocation(512 * 400 * 512, m_WaterDensityAllocation);
-
+			//m_VoxelRenderer->CreateComputeAllocation(1024 * 400 * 1024, m_WaterDensityAllocation);
 		}
 
 
@@ -521,17 +520,16 @@ namespace XYZ {
 					const double val = Perlin::Octave2D(xDouble * fx, zDouble * fy, octaves);
 					const uint32_t genHeight = (val / 2.0) * height;
 
-					for (uint32_t y = 0; y < genHeight * 2; y += 2)
+					for (uint32_t y = 0; y < genHeight; y ++)
 					{
 						result.Terrain[Utils::Index3D(x, y, z, width, height)] = Grass;
-						result.Terrain[Utils::Index3D(x, y + 1, z, width, height)] = Grass;
 					}
 		
-					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight * 2;
+					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight;
 					
-					if (genHeight < 142 / 2)
+					if (genHeight < 70)
 					{
-						const uint32_t waterIndex = Utils::Index3D(x, 142, z, width, height);
+						const uint32_t waterIndex = Utils::Index3D(x, 70, z, width, height);
 						result.Terrain[waterIndex] = Water; // Water
 						result.WaterMap[waterIndex] = 125; // Half max density
 					}

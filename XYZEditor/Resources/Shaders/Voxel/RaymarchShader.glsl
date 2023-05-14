@@ -485,8 +485,9 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 	vec4 color = vec4(0,0,0,0);
 	vec3 throughput = vec3(1,1,1);
 	uint scale = uint(ceil(grid.Size / model.VoxelSize));
+	ivec3 maxSteps = ivec3(grid.Width, grid.Height, grid.Depth);
 
-	for (uint i = 0; i < grid.MaxTraverses; i++)
+	while (maxSteps.x >= 0 && maxSteps.y >= 0 && maxSteps.z >= 0)
 	{
 		float newDistance = VoxelDistanceFromRay(ray.Origin, ray.Direction, current_voxel, grid.Size);
 		if (newDistance > currentDistance)
@@ -518,16 +519,19 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 		{
 			t_max.x += t_delta.x;
 			current_voxel.x += step.x;
+			maxSteps.x--;
 		}
 		else if (t_max.y < t_max.z) 
 		{
 			t_max.y += t_delta.y;
-			current_voxel.y += step.y;			
+			current_voxel.y += step.y;		
+			maxSteps.y--;
 		}
 		else 
 		{
 			t_max.z += t_delta.z;
-			current_voxel.z += step.z;		
+			current_voxel.z += step.z;	
+			maxSteps.z--;
 		}
 	}
 	result.Color = color;

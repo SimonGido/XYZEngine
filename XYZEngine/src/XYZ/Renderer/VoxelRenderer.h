@@ -29,7 +29,7 @@ namespace XYZ {
 
 	struct SSBOVoxels
 	{
-		static constexpr uint32_t MaxVoxels = 512 * 1024 * 1024; // 512mb
+		static constexpr uint32_t MaxVoxels = 512 * 1024 * 1024; // 1gb
 				
 		uint8_t Voxels[MaxVoxels];
 
@@ -99,7 +99,7 @@ namespace XYZ {
 	{
 		static constexpr uint32_t MaxTopGridCells = 10 * 1024 * 1024;
 
-		uint32_t TopGridCells[MaxTopGridCells]; // 40mb
+		uint32_t TopGridCells[MaxTopGridCells]; //10mb
 
 		static constexpr uint32_t Binding = 20;
 		static constexpr uint32_t Set = 0;
@@ -203,14 +203,6 @@ namespace XYZ {
 			uint32_t CulledModels = 0;
 		};
 
-		struct SSGIValues
-		{
-			uint32_t SampleCount = 10;
-			float	 IndirectAmount = 1.0f;
-			float	 NoiseAmount = 2.0f;
-			Bool32   Noise = true;
-		};
-
 	private:
 		void submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, uint32_t submeshIndex);
 
@@ -264,7 +256,6 @@ namespace XYZ {
 		SSBOVoxelTopGrids		m_SSBOTopGrids;
 		SSBOColors				m_SSBOColors;
 
-		SSGIValues				m_SSGIValues;
 		Math::Frustum			m_Frustum;
 
 		glm::ivec2				m_ViewportSize;
