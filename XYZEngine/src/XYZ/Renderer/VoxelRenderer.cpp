@@ -560,7 +560,7 @@ namespace XYZ {
 		{
 			void* voxelData = &m_SSBOVoxels.Voxels[updated.VoxelAllocation.GetOffset()];
 			void* colorData = &m_SSBOColors.ColorPallete[updated.ColorAllocation.GetOffset() / colorSize];
-			void* topGridData = &m_SSBOTopGrids.TopGridCells[updated.TopGridAllocation.GetOffset() / sizeof(uint32_t)];
+			void* topGridData = &m_SSBOTopGrids.TopGridCells[updated.TopGridAllocation.GetOffset()];
 
 			m_StorageBufferSet->UpdateEachFrame(voxelData, updated.VoxelAllocation.GetSize(), updated.VoxelAllocation.GetOffset(), SSBOVoxels::Binding, SSBOVoxels::Set);
 			m_StorageBufferSet->UpdateEachFrame(colorData, updated.ColorAllocation.GetSize(), updated.ColorAllocation.GetOffset(), SSBOColors::Binding, SSBOColors::Set);
@@ -676,7 +676,7 @@ namespace XYZ {
 		if (reallocated || mesh->NeedUpdate())
 		{
 			// It is safe to allocate top grid only here because of multithread generation
-			const uint32_t topGridsSize = mesh->GetTopGrid().VoxelCount.size() * sizeof(uint32_t);
+			const uint32_t topGridsSize = mesh->GetTopGrid().VoxelCount.size();
 			m_TopGridsAllocator->Allocate(topGridsSize, allocation.TopGridAllocation);
 			allocation.SubmeshOffsets.resize(submeshes.size());
 
@@ -697,9 +697,11 @@ namespace XYZ {
 			memcpy(m_SSBOColors.ColorPallete[colorPalleteIndex], mesh->GetColorPallete().data(), colorSize);
 
 			// Copy top grid
-			const uint32_t cellOffset = allocation.TopGridAllocation.GetOffset() / sizeof(uint32_t);
-			memcpy(&m_SSBOTopGrids.TopGridCells[cellOffset], mesh->GetTopGrid().VoxelCount.data(), topGridsSize);
-
+			uint32_t cellOffset = allocation.TopGridAllocation.GetOffset();
+			auto& topGrid = mesh->GetTopGrid();
+			for (auto count : topGrid.VoxelCount)
+				m_SSBOTopGrids.TopGridCells[cellOffset++] = count > 0 ? 1 : 0;
+			
 			m_UpdatedAllocations.push_back({
 				allocation.VoxelAllocation,
 				allocation.TopGridAllocation,

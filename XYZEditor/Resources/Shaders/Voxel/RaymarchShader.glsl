@@ -78,7 +78,7 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 
 layout(std430, binding = 20) readonly buffer buffer_TopGrids
 {		
-	uint TopGridCells[];
+	uint8_t TopGridCells[];
 };
 
 layout(binding = 21, rgba16f) uniform image2D o_Image;
@@ -268,7 +268,7 @@ void RayMarch(in Ray ray, inout RaymarchState state, vec3 delta, ivec3 step, in 
 			uint voxelIndex = Index3D(state.CurrentVoxel, width, height) + voxelOffset;
 			uint colorIndex = uint(Voxels[voxelIndex]);
 			uint voxel = ColorPallete[colorPalleteIndex][colorIndex];
-
+	
 			if (voxel != 0)
 			{
 				state.Color = VoxelToColor(voxel);
@@ -355,7 +355,6 @@ RaymarchResult RayMarch(in Ray ray, vec4 startColor, vec3 throughput, vec3 origi
 
 	RaymarchState state = CreateRaymarchState(ray, origin, direction, step, maxTraverses, voxelSize);
 	state.MaxSteps = ivec3(model.Width, model.Height, model.Depth);
-
 	// Continue raymarching until we hit opaque object or we are out of traverses
 	while (state.Traverses != 0)
 	{		
@@ -406,7 +405,6 @@ RaymarchResult RayMarchSteps(in Ray ray, vec4 startColor, vec3 throughput, vec3 
 
 	RaymarchState state = CreateRaymarchState(ray, origin, direction, step, 0, voxelSize);
 	state.MaxSteps = maxSteps;
-
 	// Continue raymarching until we hit opaque object or we are out of traverses
 	while (state.MaxSteps.x >= 0 && state.MaxSteps.y >= 0 && state.MaxSteps.z >= 0)
 	{		
@@ -497,7 +495,7 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 		if (IsValidVoxel(current_voxel, grid.Width, grid.Height, grid.Depth))
 		{
 			uint voxelIndex = Index3D(current_voxel, grid.Width, grid.Height) + grid.CellsOffset;
-			if (TopGridCells[voxelIndex] != 0)
+			if (uint(TopGridCells[voxelIndex]) != 0)
 			{			
 				float dist = VoxelDistanceFromRay(newOrigin, direction, current_voxel, grid.Size);
 				newOrigin += direction * (dist - EPSILON); // Move origin to hit of top grid cell

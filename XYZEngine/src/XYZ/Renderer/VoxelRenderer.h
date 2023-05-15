@@ -29,7 +29,7 @@ namespace XYZ {
 
 	struct SSBOVoxels
 	{
-		static constexpr uint32_t MaxVoxels = 512 * 1024 * 1024; // 1gb
+		static constexpr uint32_t MaxVoxels = 1024 * 1024 * 1024; // 1gb
 				
 		uint8_t Voxels[MaxVoxels];
 
@@ -97,9 +97,9 @@ namespace XYZ {
 
 	struct SSBOVoxelTopGrids
 	{
-		static constexpr uint32_t MaxTopGridCells = 10 * 1024 * 1024;
+		static constexpr uint32_t MaxTopGridCells = 40 * 1024 * 1024;
 
-		uint32_t TopGridCells[MaxTopGridCells]; //10mb
+		uint8_t TopGridCells[MaxTopGridCells];
 
 		static constexpr uint32_t Binding = 20;
 		static constexpr uint32_t Set = 0;

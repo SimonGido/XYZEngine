@@ -68,25 +68,8 @@ namespace XYZ {
 			void displayStats();
 
 		private:
-			Ref<Scene>					m_Scene;
-			Ref<SceneRenderer>			m_SceneRenderer;
-		
 			// Overlay rendering
 			Ref<PrimaryRenderCommandBuffer>	m_CommandBuffer;
-			Ref<Renderer2D>				m_OverlayRenderer2D;
-			Ref<Texture2D>				m_CameraTexture;
-			
-			Ref<Material>				m_QuadMaterial;
-			Ref<Material>				m_LineMaterial;
-			Ref<Material>				m_CircleMaterial;
-
-			Ref<MaterialInstance>		m_QuadMaterialInstance;
-			Ref<MaterialInstance>		m_LineMaterialInstance;
-			Ref<MaterialInstance>		m_CircleMaterialInstance;
-
-			Ref<Pipeline>				m_OverlayQuadPipeline;
-			Ref<Pipeline>				m_OverlayLinePipeline;
-			Ref<Pipeline>				m_OverlayCirclePipeline;
 
 			EditorCamera*				m_EditorCamera = nullptr;
 

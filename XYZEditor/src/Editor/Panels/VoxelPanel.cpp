@@ -119,7 +119,7 @@ namespace XYZ {
 
 			VoxelSubmesh submesh;
 			submesh.Width = 1024;
-			submesh.Height = 400;
+			submesh.Height = 512;
 			submesh.Depth = 1024;
 			submesh.VoxelSize = 3.0f;
 			submesh.MaxTraverses = 1024;
