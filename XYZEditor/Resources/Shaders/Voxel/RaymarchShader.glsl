@@ -243,7 +243,7 @@ OctreeRaycastResult RaycastOctreeSteps(in Ray ray)
 	result.Hit = false;
 
 	 // Set initial step size for ray jumps
-    float stepSize = 0.8;
+    float stepSize = 1.0;
 	
     // Start at the origin of the ray
     vec3 position = ray.Origin;
@@ -251,12 +251,11 @@ OctreeRaycastResult RaycastOctreeSteps(in Ray ray)
 	VoxelOctreeNode root = Octree[0];
 	AABB rootAABB = OctreeNodeAABB(root, 6.0);
 
-	float t = 0.0;
-	if (!RayBoxIntersection(position, ray.Direction, rootAABB.Min, rootAABB.Max, t))
+	if (!RayBoxIntersection(position, ray.Direction, rootAABB.Min, rootAABB.Max, stepSize))
 		return result;
 
-	ray.Origin += ray.Direction * (t + 1.0);
-	for (int i = 0; i < 10048; i++) 
+	//position += ray.Direction * (t + 1.0);
+	for (int i = 0; i < 128; i++) 
 	{
         // Advance the ray position along the ray direction by the current step size
         position += ray.Direction * stepSize;
@@ -267,6 +266,7 @@ OctreeRaycastResult RaycastOctreeSteps(in Ray ray)
 
         // Traverse the octree to find the intersected node
         uint nodeIndex = 0; // Start from the root node
+		float newStepSize = FLT_MAX;
         while (Octree[nodeIndex].IsLeaf == 0) 
 		{
             // Check if the current position intersects with any child node AABBs
@@ -274,24 +274,28 @@ OctreeRaycastResult RaycastOctreeSteps(in Ray ray)
 			
 			uint newNodeIndex = 0;
 			float minDistance = FLT_MAX;
-			float dist = FLT_MAX;
+			float nearDist = FLT_MAX;
+			float farDist = FLT_MAX;
             for (int c = 0; c < 8; c++) 
 			{
                 uint childIndex = Octree[nodeIndex].Children[c];
 				VoxelOctreeNode child = Octree[childIndex];
 				AABB aabb = OctreeNodeAABB(child, 6.0);
 		
-                if (RayBoxIntersection(position, ray.Direction, aabb.Min, aabb.Max, dist)) 
+                if (RayBoxIntersection(position, ray.Direction, aabb.Min, aabb.Max, nearDist, farDist)) 
 				{
-					if (dist < minDistance)
+					if (nearDist < minDistance)
 					{
 						newNodeIndex = childIndex; // Move to the intersected child node
-						minDistance = dist;
-					}			
+						minDistance = nearDist;					
+					}	
+					if (farDist < newStepSize)
+						newStepSize = farDist;
                     hitChildNode = true;
                 }
             }
-			nodeIndex = newNodeIndex;
+			//stepSize = minDistance;
+			nodeIndex = newNodeIndex;			
             if (!hitChildNode) 
 			{
                 break; // Exit loop if no child node is intersected
@@ -300,16 +304,21 @@ OctreeRaycastResult RaycastOctreeSteps(in Ray ray)
 
 		VoxelOctreeNode currentNode = Octree[nodeIndex];
         // Check if the intersected node is a leaf node
-        if (currentNode.IsLeaf != 0 && currentNode.ColorIndex != 0) 
-		{
-            result.Hit = true;
-            // Perform additional operations for leaf nodes (e.g., shading, accumulating color)
-            result.Color = VoxelToColor(ColorPallete[0][Octree[nodeIndex].ColorIndex]);
-            break; // Exit loop after finding a hit
+		
+        if (currentNode.IsLeaf != 0) 
+		{		
+			if (currentNode.ColorIndex != 0)
+			{
+				result.Hit = true;
+				// Perform additional operations for leaf nodes (e.g., shading, accumulating color)
+				result.Color = VoxelToColor(ColorPallete[0][Octree[nodeIndex].ColorIndex]);
+				break; // Exit loop after finding a hit		
+			}
+			else
+			{
+				stepSize = newStepSize;
+			}
         }
-
-        // Increase the step size for the next iteration to cover a larger distance
-        stepSize *= 2.0;
     }
 
 

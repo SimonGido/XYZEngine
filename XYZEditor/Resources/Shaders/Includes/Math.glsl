@@ -203,6 +203,37 @@ bool RayBoxIntersection(vec3 origin, vec3 direction, vec3 lb, vec3 rt, out float
 	return true;
 }
 
+bool RayBoxIntersection(vec3 origin, vec3 direction, vec3 lb, vec3 rt, out float tnear, out float tfar)
+{
+	vec3 dirfrac = 1.0 / direction;
+    // lb is the corner of AABB with minimal coordinates - left bottom, rt is maximal corner
+    // r.org is origin of ray
+   
+    float t1 = (lb.x - origin.x) * dirfrac.x;
+    float t2 = (rt.x - origin.x) * dirfrac.x;
+    float t3 = (lb.y - origin.y) * dirfrac.y;
+    float t4 = (rt.y - origin.y) * dirfrac.y;
+    float t5 = (lb.z - origin.z) * dirfrac.z;
+    float t6 = (rt.z - origin.z) * dirfrac.z;
+
+    tnear = max(max(min(t1, t2), min(t3, t4)), min(t5, t6));
+    tfar = min(min(max(t1, t2), max(t3, t4)), max(t5, t6));
+
+    // if tmax < 0, ray (line) is intersecting AABB, but the whole AABB is behind us
+    if (tfar < 0.0)
+    {
+        return false;
+    }
+
+    // if tmin > tmax, ray doesn't intersect AABB
+    if (tnear > tfar)
+    {
+        return false;
+    }
+	return true;
+}
+
+
 bool RayAABBOverlap(vec3 rayOrigin, vec3 rayDirection, vec3 boxMin, vec3 boxMax)
 {
     vec3 invRayDir = 1.0 / rayDirection;  // Inverse ray direction
