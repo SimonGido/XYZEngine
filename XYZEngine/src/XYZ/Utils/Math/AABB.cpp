@@ -112,6 +112,27 @@ namespace XYZ {
 		return Min + (Max - Min) / 2.0f;
 	}
 
+	glm::vec3 AABB::ClosestPoint(const glm::vec3& startPoint) const
+	{
+		glm::vec3 closestPoint;
+
+		closestPoint.x = std::max(Min.x, std::min(startPoint.x, Max.x));
+		closestPoint.y = std::max(Min.y, std::min(startPoint.y, Max.y));
+		closestPoint.z = std::max(Min.z, std::min(startPoint.z, Max.z));
+
+		return closestPoint;
+	}
+
+	float AABB::Distance(const glm::vec3& point) const
+	{
+		glm::vec3 closestPoint = ClosestPoint(point);
+		float dx = closestPoint.x - point.x;
+		float dy = closestPoint.y - point.y;
+		float dz = closestPoint.z - point.z;
+
+		return std::sqrt(dx * dx + dy * dy + dz * dz);
+	}
+
 	AABB AABB::TransformAABB(const glm::mat4& transform) const
 	{
 		glm::vec4 corners[8] = {

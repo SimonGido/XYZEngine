@@ -29,6 +29,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtc/random.hpp>
+
 
 namespace XYZ {
 	namespace Editor {
@@ -155,29 +157,27 @@ namespace XYZ {
 
 			m_TreeTransforms.push_back({});
 
-			uint32_t count = 50;
+			uint32_t count = 300;
 			m_CastleTransforms.resize(count);
 			m_KnightTransforms.resize(count);
 			m_DeerTransforms.resize(count);
 
-			float xOffset = 0.0f;
+			const glm::vec3 halfTerrainSize(
+				submesh.Width / 2.0 * submesh.VoxelSize,
+				submesh.Height / 2.0 * submesh.VoxelSize,
+				submesh.Depth / 2.0 * submesh.VoxelSize
+			);
+
 			for (uint32_t i = 0; i < count; ++i)
 			{
-				m_CastleTransforms[i].GetTransform().Translation.x = xOffset;
-				m_CastleTransforms[i].GetTransform().Translation.z = RandomNumber(-200.0f, 200.0f);
+				m_CastleTransforms[i].GetTransform().Translation = glm::linearRand(-halfTerrainSize, halfTerrainSize);
 				m_CastleTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
 
-				m_KnightTransforms[i].GetTransform().Translation.x = xOffset;
-				m_KnightTransforms[i].GetTransform().Translation.y = 30.0f;
-				m_KnightTransforms[i].GetTransform().Translation.z = RandomNumber(-200.0f, 200.0f);
+				m_KnightTransforms[i].GetTransform().Translation = glm::linearRand(-halfTerrainSize, halfTerrainSize);
 				m_KnightTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
 
-				m_DeerTransforms[i].GetTransform().Translation.x = xOffset;
+				m_DeerTransforms[i].GetTransform().Translation = glm::linearRand(-halfTerrainSize, halfTerrainSize);
 				m_DeerTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
-				m_DeerTransforms[i].GetTransform().Translation.z = RandomNumber(-200.0f, 200.0f);
-				m_DeerTransforms[i].GetTransform().Translation.y = 50.0f;
-
-				xOffset += 30.0f;
 			}
 			pushGenerateVoxelMeshJob();
 

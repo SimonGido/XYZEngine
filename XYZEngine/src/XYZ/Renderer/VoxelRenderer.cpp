@@ -36,7 +36,7 @@ namespace XYZ {
 
 	VoxelRenderer::VoxelRenderer()
 		:
-		m_ModelsOctree(AABB(glm::vec3(-1024), glm::vec3(1024)), 16)
+		m_ModelsOctree(AABB(glm::vec3(-1024), glm::vec3(1024)), 12)
 	{
 		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "VoxelRenderer");
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
@@ -297,8 +297,7 @@ namespace XYZ {
 
 	
 	void VoxelRenderer::submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, uint32_t submeshIndex)
-	{
-		
+	{		
 		const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
 
 		VoxelCommandModel& cmdModel = drawCommand.Models.emplace_back();

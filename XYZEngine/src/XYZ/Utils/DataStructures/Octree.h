@@ -32,6 +32,9 @@ namespace XYZ {
 
 		int32_t FindNode(const glm::vec3& position);
 
+		void SortNodeDistance(int32_t nodeIndex, const glm::vec3& position);
+		void SortNodeDistanceInverse(int32_t nodeIndex, const glm::vec3& position);
+
 		const std::vector<OctreeNode>& GetNodes() const { return m_Nodes; }
 	private:
 

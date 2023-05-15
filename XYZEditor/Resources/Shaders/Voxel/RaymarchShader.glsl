@@ -10,7 +10,7 @@
 #define MAX_MODELS 1024
 #define MULTI_COLOR 256
 #define MAX_DEPTH 16
-#define MAX_NODES 4096
+#define MAX_NODES 16384
 
 
 const float EPSILON = 0.01;
@@ -156,7 +156,7 @@ Ray CreateRay(vec3 origin, in mat4 inverseModelSpace, vec2 coords)
 	ray.Origin = (inverseModelSpace * vec4(origin, 1.0)).xyz;
 
 	ray.Direction = vec3(inverseModelSpace * u_InverseView * vec4(normalize(target.xyz / target.w), 0)); // World space
-	ray.Direction = normalize(ray.Direction) + EPSILON;
+	ray.Direction = normalize(ray.Direction);
 
 	return ray;
 }
@@ -172,7 +172,7 @@ Ray CreateRay(vec3 origin, vec2 coords)
 	ray.Origin = origin;
 
 	ray.Direction = vec3(u_InverseView * vec4(normalize(vec3(target) / target.w), 0)); // World space
-	ray.Direction = normalize(ray.Direction) + EPSILON;
+	ray.Direction = normalize(ray.Direction);
 
 	return ray;
 }
@@ -587,10 +587,11 @@ bool DrawModel(uint modelIndex)
 		result.WorldHit = g_CameraRay.Origin + (g_CameraRay.Direction * result.Distance);
 		result.WorldNormal = mat3(model.InverseTransform) * -result.Normal;
 		StoreHitResult(result);	
-		return true;
+		return result.Color.a == 1.0; // We hit opaque object
 	}
 	return false;
 }
+
 
 
 void RaycastOctree(in Ray ray)
@@ -607,11 +608,12 @@ void RaycastOctree(in Ray ray)
 		stackIndex--;
 		int nodeIndex = stack[stackIndex];
 		VoxelModelOctreeNode node = Nodes[nodeIndex];
-	
+			
 		for (int i = node.DataStart; i < node.DataEnd; i++)
 		{
 			DrawModel(ModelIndices[i]);
 		}
+
 		if (!node.IsLeaf)
 		{
 			for (int c = 0; c < 8; c++)

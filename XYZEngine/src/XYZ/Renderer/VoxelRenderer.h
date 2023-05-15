@@ -130,7 +130,7 @@ namespace XYZ {
 
 	struct SSBOOCtree
 	{
-		static constexpr uint32_t MaxNodes = 4096;
+		static constexpr uint32_t MaxNodes = 16384;
 
 		static constexpr uint32_t Binding = 23;
 		static constexpr uint32_t Set = 0;
@@ -180,14 +180,8 @@ namespace XYZ {
 
 		struct VoxelCommandModel
 		{
-			uint32_t  ModelIndex;
-			uint32_t  SubmeshIndex;
-			glm::mat4 InverseTransform;
-			uint32_t  Width;
-			uint32_t  Height;
-			uint32_t  Depth;
-			float	  VoxelSize = 1.0f;
-			AABB	  BoundingBox;
+			uint32_t ModelIndex;
+			uint32_t SubmeshIndex;
 		};
 
 		struct VoxelDrawCommand
@@ -306,7 +300,6 @@ namespace XYZ {
 		bool					m_ShowOctree = false;
 		bool					m_ShowAABB = false;
 
-		std::vector<VoxelCommandModel*> m_SortedModels;
 		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;
 		std::map<AssetHandle, VoxelEffectCommand> m_EffectCommands;
 

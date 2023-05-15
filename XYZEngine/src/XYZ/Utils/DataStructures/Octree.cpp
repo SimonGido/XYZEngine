@@ -55,6 +55,7 @@ namespace XYZ {
 			nodesToIterate.pop();
 
 			OctreeNode* node = &m_Nodes[nodeIndex];
+			XYZ_ASSERT(node->Depth <= m_MaxDepth, "Wrong depth");
 
 			bool canInsert = true;
 			if (node->IsLeaf && node->Depth != m_MaxDepth)
@@ -128,7 +129,35 @@ namespace XYZ {
 		return 0;
 	}
 
+	void Octree::SortNodeDistance(int32_t nodeIndex, const glm::vec3& position)
+	{
+		OctreeNode* node = &m_Nodes[nodeIndex];
+		if (!node->IsLeaf)
+		{
+			std::sort(&node->Children[0], &node->Children[0] + 8, [this, position](int32_t indexA, int32_t indexB) {
 
+				OctreeNode* aChild = &m_Nodes[indexA];
+				OctreeNode* bChild = &m_Nodes[indexB];
+
+				return aChild->BoundingBox.Distance(position) < bChild->BoundingBox.Distance(position);
+			});
+		}
+	}
+
+	void Octree::SortNodeDistanceInverse(int32_t nodeIndex, const glm::vec3& position)
+	{
+		OctreeNode* node = &m_Nodes[nodeIndex];
+		if (!node->IsLeaf)
+		{
+			std::sort(&node->Children[0], &node->Children[0] + 8, [this, position](int32_t indexA, int32_t indexB) {
+
+				OctreeNode* aChild = &m_Nodes[indexA];
+				OctreeNode* bChild = &m_Nodes[indexB];
+
+				return aChild->BoundingBox.Distance(position) > bChild->BoundingBox.Distance(position);
+			});
+		}
+	}
 
 	void Octree::splitNode(int32_t nodeIndex)
 	{
