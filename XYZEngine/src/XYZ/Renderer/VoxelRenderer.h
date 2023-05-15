@@ -180,8 +180,14 @@ namespace XYZ {
 
 		struct VoxelCommandModel
 		{
-			uint32_t ModelIndex;
-			uint32_t SubmeshIndex;
+			uint32_t  ModelIndex;
+			uint32_t  SubmeshIndex;
+			glm::mat4 InverseTransform;
+			uint32_t  Width;
+			uint32_t  Height;
+			uint32_t  Depth;
+			float	  VoxelSize = 1.0f;
+			AABB	  BoundingBox;
 		};
 
 		struct VoxelDrawCommand
@@ -296,7 +302,11 @@ namespace XYZ {
 	
 		bool					m_UseSSGI = false;
 		bool					m_UseTopGrid = false;
+		bool					m_UseOctree = false;
+		bool					m_ShowOctree = false;
+		bool					m_ShowAABB = false;
 
+		std::vector<VoxelCommandModel*> m_SortedModels;
 		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;
 		std::map<AssetHandle, VoxelEffectCommand> m_EffectCommands;
 

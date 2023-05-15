@@ -27,12 +27,12 @@ namespace XYZ {
 	}
 	bool AABB::Contains(const AABB& aabb) const
 	{
-		bool result = true;
-		result = result && Min.x <= aabb.Min.x;
-		result = result && Min.y <= aabb.Min.y;
-		result = result && aabb.Max.x <=Max.x;
-		result = result && aabb.Max.y <=Max.y;
-		return result;
+		return (aabb.Min.x >= Min.x) &&
+			(aabb.Min.y >= Min.y) &&
+			(aabb.Min.z >= Min.z) &&
+			(aabb.Max.x <= Max.x) &&
+			(aabb.Max.y <= Max.y) &&
+			(aabb.Max.z <= Max.z);
 	}
 
 	bool AABB::Intersect(const AABB& aabb) const
@@ -128,7 +128,7 @@ namespace XYZ {
 		
 		AABB result;
 		result.Min = glm::vec3(std::numeric_limits<float>::max());
-		result.Max = glm::vec3(std::numeric_limits<float>::min());
+		result.Max = glm::vec3(-std::numeric_limits<float>::max());
 
 		for (uint32_t i = 0; i < 8; ++i)
 		{

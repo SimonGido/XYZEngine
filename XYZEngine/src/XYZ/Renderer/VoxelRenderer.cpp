@@ -26,8 +26,8 @@ namespace XYZ {
 	static AABB VoxelModelToAABB(const glm::mat4& transform, uint32_t width, uint32_t height, uint32_t depth, float voxelSize)
 	{
 		AABB result;
-		glm::vec3 min = glm::vec3(0.0f);
-		glm::vec3 max = glm::vec3(width, height, depth) * voxelSize;
+		result.Min = glm::vec3(0.0f);
+		result.Max = glm::vec3(width, height, depth) * voxelSize;
 
 		result = result.TransformAABB(transform);
 		return result;
@@ -134,13 +134,21 @@ namespace XYZ {
 			const glm::mat4 instanceTransform = transform * instance.Transform;
 			const VoxelSubmesh& submesh = submeshes[instance.SubmeshIndex];
 
-			if (cullSubmesh(submesh, instanceTransform))
+			// TODO: this should be handled during model creation, store transform instance probably
+			glm::vec3 centerTranslation = -glm::vec3(
+				static_cast<float>(submesh.Width) / 2.0f * submesh.VoxelSize,
+				static_cast<float>(submesh.Height) / 2.0f * submesh.VoxelSize,
+				static_cast<float>(submesh.Depth) / 2.0f * submesh.VoxelSize
+			);
+			const glm::mat4 centeredTransform = instanceTransform * glm::translate(glm::mat4(1.0f), centerTranslation);
+
+			if (cullSubmesh(submesh, centeredTransform))
 			{
 				m_Statistics.CulledModels++;
 				continue;
 			}
 
-			submitSubmesh(submesh, drawCommand, instanceTransform, instance.SubmeshIndex);
+			submitSubmesh(submesh, drawCommand, centeredTransform, instance.SubmeshIndex);
 		}	
 	}
 
@@ -156,7 +164,15 @@ namespace XYZ {
 			const VoxelSubmesh& submesh = submeshes[submeshIndex];
 			const glm::mat4 instanceTransform = transform * instance.Transform;
 
-			if (cullSubmesh(submesh, instanceTransform))
+			// TODO: this should be handled during model creation, store transform instance probably
+			glm::vec3 centerTranslation = -glm::vec3(
+				static_cast<float>(submesh.Width) / 2.0f * submesh.VoxelSize,
+				static_cast<float>(submesh.Height) / 2.0f * submesh.VoxelSize,
+				static_cast<float>(submesh.Depth) / 2.0f * submesh.VoxelSize
+			);
+			const glm::mat4 centeredTransform = instanceTransform * glm::translate(glm::mat4(1.0f), centerTranslation);
+
+			if (cullSubmesh(submesh, centeredTransform))
 			{
 				m_Statistics.CulledModels++;
 				continue;
@@ -177,12 +193,20 @@ namespace XYZ {
 			const glm::mat4 instanceTransform = transform * instance.Transform;
 			const VoxelSubmesh& submesh = submeshes[instance.SubmeshIndex];
 	
-			if (cull && cullSubmesh(submesh, instanceTransform))
+			// TODO: this should be handled during model creation, store transform instance probably
+			glm::vec3 centerTranslation = -glm::vec3(
+				static_cast<float>(submesh.Width) / 2.0f * submesh.VoxelSize,
+				static_cast<float>(submesh.Height) / 2.0f * submesh.VoxelSize,
+				static_cast<float>(submesh.Depth) / 2.0f * submesh.VoxelSize
+			);
+			const glm::mat4 centeredTransform = instanceTransform * glm::translate(glm::mat4(1.0f), centerTranslation);
+
+			if (cull && cullSubmesh(submesh, centeredTransform))
 			{
 				m_Statistics.CulledModels++;
 				continue;
 			}
-			submitSubmesh(submesh, drawCommand, instanceTransform, instance.SubmeshIndex);
+			submitSubmesh(submesh, drawCommand, centeredTransform, instance.SubmeshIndex);
 		}
 	}
 
@@ -240,6 +264,9 @@ namespace XYZ {
 			ImGui::NewLine();
 
 			ImGui::Checkbox("Top Grid", &m_UseTopGrid);
+			ImGui::Checkbox("Octree", &m_UseOctree);
+			ImGui::Checkbox("Show Octree", &m_ShowOctree);
+			ImGui::Checkbox("Show AABB", &m_ShowAABB);
 			ImGui::NewLine();
 
 			if (ImGui::BeginTable("##Statistics", 2, ImGuiTableFlags_SizingFixedFit))
@@ -271,11 +298,7 @@ namespace XYZ {
 	
 	void VoxelRenderer::submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, uint32_t submeshIndex)
 	{
-		glm::vec3 centerTranslation = -glm::vec3(
-			static_cast<float>(submesh.Width) / 2.0f * submesh.VoxelSize,
-			static_cast<float>(submesh.Height) / 2.0f * submesh.VoxelSize,
-			static_cast<float>(submesh.Depth) / 2.0f * submesh.VoxelSize
-		);
+		
 		const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
 
 		VoxelCommandModel& cmdModel = drawCommand.Models.emplace_back();
@@ -283,11 +306,10 @@ namespace XYZ {
 		cmdModel.ModelIndex = m_SSBOVoxelModels.NumModels;
 
 		VoxelModel& model = m_SSBOVoxelModels.Models[m_SSBOVoxelModels.NumModels];
-		const glm::mat4 centeredTransform = transform * glm::translate(glm::mat4(1.0f), centerTranslation);
-		model.InverseTransform = glm::inverse(centeredTransform);
+		model.InverseTransform = glm::inverse(transform);
 
 
-		const AABB aabb = VoxelModelToAABB(centeredTransform, submesh.Width, submesh.Height, submesh.Depth, submesh.VoxelSize);
+		const AABB aabb = VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, submesh.VoxelSize);
 		m_ModelsOctree.InsertData(aabb, m_SSBOVoxelModels.NumModels);
 
 
@@ -438,11 +460,15 @@ namespace XYZ {
 		);
 
 		Bool32 useTopGrid = m_UseTopGrid;
+		Bool32 useOctree = m_UseOctree;
+		Bool32 showOctree = m_ShowOctree;
+		Bool32 showAABB = m_ShowAABB;
+
 		Renderer::DispatchCompute(
 			m_RaymarchPipeline,
 			nullptr,
 			m_WorkGroups.x, m_WorkGroups.y, 1,
-			PushConstBuffer{ useTopGrid }
+			PushConstBuffer{ useTopGrid, useOctree, showOctree, showAABB }
 		);
 
 

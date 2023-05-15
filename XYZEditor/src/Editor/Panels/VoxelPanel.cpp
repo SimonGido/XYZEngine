@@ -164,14 +164,17 @@ namespace XYZ {
 			for (uint32_t i = 0; i < count; ++i)
 			{
 				m_CastleTransforms[i].GetTransform().Translation.x = xOffset;
+				m_CastleTransforms[i].GetTransform().Translation.z = RandomNumber(-200.0f, 200.0f);
 				m_CastleTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
 
 				m_KnightTransforms[i].GetTransform().Translation.x = xOffset;
 				m_KnightTransforms[i].GetTransform().Translation.y = 30.0f;
+				m_KnightTransforms[i].GetTransform().Translation.z = RandomNumber(-200.0f, 200.0f);
 				m_KnightTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
 
 				m_DeerTransforms[i].GetTransform().Translation.x = xOffset;
 				m_DeerTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
+				m_DeerTransforms[i].GetTransform().Translation.z = RandomNumber(-200.0f, 200.0f);
 				m_DeerTransforms[i].GetTransform().Translation.y = 50.0f;
 
 				xOffset += 30.0f;
@@ -308,8 +311,8 @@ namespace XYZ {
 					const glm::mat4 knightTransform = m_KnightTransforms[i].GetLocalTransform();
 					const glm::mat4 deerTransform = m_DeerTransforms[i].GetLocalTransform();
 				
-					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
-					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
+					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform, false);
+					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform, false);
 					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
 				}
 				

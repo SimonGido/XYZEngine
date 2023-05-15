@@ -1,3 +1,6 @@
+#define FLT_MAX 3.402823466e+38
+#define FLT_MIN 1.175494351e-38
+
 vec4 EulerToQuat(in vec3 eulerAngles)
 {
     vec4 result;
@@ -199,6 +202,25 @@ bool RayBoxIntersection(vec3 origin, vec3 direction, vec3 lb, vec3 rt, out float
 	return true;
 }
 
+bool RayAABBOverlap(vec3 rayOrigin, vec3 rayDirection, vec3 boxMin, vec3 boxMax)
+{
+    vec3 invRayDir = 1.0 / rayDirection;  // Inverse ray direction
+
+    // Compute t-values for each pair of min and max planes
+    vec3 tMin = (boxMin - rayOrigin) * invRayDir;
+    vec3 tMax = (boxMax - rayOrigin) * invRayDir;
+
+    // Find the largest tMin and the smallest tMax
+    vec3 tEnter = min(tMin, tMax);
+    vec3 tExit = max(tMin, tMax);
+
+    float tNear = max(max(tEnter.x, tEnter.y), tEnter.z);
+    float tFar = min(min(tExit.x, tExit.y), tExit.z);
+
+    // Check for overlap
+    return tNear <= tFar;
+}
+
 bool PointInBox(vec3 point, vec3 boxMin, vec3 boxMax)
 {
 	return
@@ -229,4 +251,57 @@ float SDFBox (vec3 p, vec3 c, vec3 s)
     d = max(d,y);
     d = max(d,z);
     return d;
+}
+
+vec3 GetGradient(float value)
+{
+	vec3 zero = vec3(0.0, 0.0, 0.0);
+	vec3 white = vec3(0.0, 0.1, 0.9);
+	vec3 red = vec3(0.2, 0.9, 0.4);
+	vec3 blue = vec3(0.8, 0.8, 0.3);
+	vec3 green = vec3(0.9, 0.2, 0.3);
+
+	float step0 = 0.0f;
+	float step1 = 2.0f;
+	float step2 = 4.0f;
+	float step3 = 8.0f;
+	float step4 = 16.0f;
+
+	vec3 color = mix(zero, white, smoothstep(step0, step1, value));
+	color = mix(color, white, smoothstep(step1, step2, value));
+	color = mix(color, red, smoothstep(step1, step2, value));
+	color = mix(color, blue, smoothstep(step2, step3, value));
+	color = mix(color, green, smoothstep(step3, step4, value));
+
+	return color;
+}
+
+void TransformAABB(in mat4 transform, inout vec3 aabbMin, inout vec3 aabbMax)
+{
+    vec4 corners[8] = {
+			vec4(aabbMin.x, aabbMin.y, aabbMin.z, 1.0), // x y z
+			vec4(aabbMax.x, aabbMin.y, aabbMin.z, 1.0), // X y z
+			vec4(aabbMin.x, aabbMax.y, aabbMin.z, 1.0), // x Y z
+			vec4(aabbMax.x, aabbMax.y, aabbMin.z, 1.0), // X Y z
+
+			vec4(aabbMin.x, aabbMin.y, aabbMax.z, 1.0), // x y Z
+			vec4(aabbMax.x, aabbMin.y, aabbMax.z, 1.0), // X y Z
+			vec4(aabbMin.x, aabbMax.y, aabbMax.z, 1.0), // x Y Z
+			vec4(aabbMax.x, aabbMax.y, aabbMax.z, 1.0), // X Y Z
+		};
+
+    aabbMin = vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+    aabbMax = vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+    for (int i = 0; i < 8; i++)
+    {
+        corners[i] = transform * corners[i];
+        aabbMin.x = min(aabbMin.x, corners[i].x);
+		aabbMin.y = min(aabbMin.y, corners[i].y);
+		aabbMin.z = min(aabbMin.z, corners[i].z);
+
+		aabbMax.x = max(aabbMax.x, corners[i].x);
+		aabbMax.y = max(aabbMax.y, corners[i].y);
+		aabbMax.z = max(aabbMax.z, corners[i].z);
+    }
 }
