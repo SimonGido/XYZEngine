@@ -219,18 +219,18 @@ namespace XYZ {
 				{
 					glm::ivec3 voxel = branch->End / voxelSize;
 					glm::ivec3 elipsoid(RandomNumber(6u, 15u), RandomNumber(3u, 7u), RandomNumber(6u, 15u));
-					
-					for (int32_t x = -elipsoid.x * 2; x < elipsoid.x * 2; x++)
+					int32_t max = std::max(elipsoid.x, std::max(elipsoid.y, elipsoid.z));
+					for (int32_t x = -max * 2; x < max * 2; x++)
 					{
-						for (int32_t y = -elipsoid.y * 2; y < elipsoid.y * 2; y++)
+						for (int32_t y = -max * 2; y < max * 2; y++)
 						{
-							for (int32_t z = -elipsoid.z * 2; z < elipsoid.z * 2; z++)
+							for (int32_t z = -max * 2; z < max * 2; z++)
 							{
-								int32_t elX = std::pow((x / elipsoid.x), 2);
-								int32_t elY = std::pow((y / elipsoid.y), 2);
-								int32_t elZ = std::pow((z / elipsoid.z), 2);
+								float elX = std::pow((static_cast<float>(x) / elipsoid.x), 2);
+								float elY = std::pow((static_cast<float>(y) / elipsoid.y), 2);
+								float elZ = std::pow((static_cast<float>(z) / elipsoid.z), 2);
 
-								if (elX + elY + elZ <= 1)
+								if (elX + elY + elZ <= 1.0f)
 								{
 									glm::ivec3 sphereVoxel = voxel + glm::ivec3(x, y, z);
 									const uint32_t index = Index3D(sphereVoxel, width, height);

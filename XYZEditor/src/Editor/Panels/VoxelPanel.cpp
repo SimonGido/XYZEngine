@@ -88,7 +88,6 @@ namespace XYZ {
 			submesh.Height = height;
 			submesh.Depth = depth;
 			submesh.VoxelSize = voxelSize;
-			submesh.MaxTraverses = 300;
 
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
 			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
@@ -116,52 +115,16 @@ namespace XYZ {
 			m_KnightMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/chr_knight.vox"));
 
 			m_ProceduralMesh = Ref<VoxelProceduralMesh>::Create();
+			m_TreeMesh = Ref<VoxelProceduralMesh>::Create();
 
 			VoxelSubmesh submesh;
 			submesh.Width = 1024;
 			submesh.Height = 512;
 			submesh.Depth = 1024;
 			submesh.VoxelSize = 3.0f;
-			submesh.MaxTraverses = 1024;
-			{
-				const glm::vec3 rayDir = glm::normalize(glm::vec3(1, 1, 1));
-				const glm::vec3 delta = glm::abs(glm::vec3(submesh.Width, submesh.Height, submesh.Depth) / rayDir);
-				const float maxDistance = std::max(delta.x, std::max(delta.y, delta.z));
-				submesh.MaxTraverses = submesh.CalculateRequiredTraverses();
-			}
+	
+			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth, 0);
 		
-			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
-			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
-
-			std::vector<VoxelInstance> instances(9);
-			instances[0].SubmeshIndex = 0;
-			instances[0].Transform = glm::mat4(1.0f);
-
-			instances[1].SubmeshIndex = 0;
-			instances[1].Transform = glm::translate(glm::vec3(-512.0f * 3.0f, 0.0f, 0.0f));
-
-			instances[2].SubmeshIndex = 0;
-			instances[2].Transform = glm::translate(glm::vec3(-512.0f * 3.0f, 0.0f, -512.0f * 3.0f));
-
-			instances[3].SubmeshIndex = 0;
-			instances[3].Transform = glm::translate(glm::vec3(512.0f * 3.0f, 0.0f, 0.0f));
-
-			instances[4].SubmeshIndex = 0;
-			instances[4].Transform = glm::translate(glm::vec3(512.0f * 3.0f, 0.0f, 512.0f * 3.0f));
-
-			instances[5].SubmeshIndex = 0;
-			instances[5].Transform = glm::translate(glm::vec3(0.0f, 0.0f, 512.0f * 3.0f));
-
-			instances[6].SubmeshIndex = 0;
-			instances[6].Transform = glm::translate(glm::vec3(0.0f, 0.0f, -512.0f * 3.0f));
-
-			instances[7].SubmeshIndex = 0;
-			instances[7].Transform = glm::translate(glm::vec3(512.0f * 3.0f, 0.0f, -512.0f * 3.0f));
-
-			instances[8].SubmeshIndex = 0;
-			instances[8].Transform = glm::translate(glm::vec3(-512.0f * 3.0f, 0.0f, 512.0f * 3.0f));
-
-
 			VoxelInstance instance;
 			instance.SubmeshIndex = 0;
 			instance.Transform = glm::mat4(1.0f);
@@ -178,7 +141,20 @@ namespace XYZ {
 			m_ProceduralMesh->SetSubmeshes({ submesh});
 			m_ProceduralMesh->SetInstances({ instance });
 
-	
+			VoxelSubmesh treeSubmesh;
+			treeSubmesh.Width = 100;
+			treeSubmesh.Height = 300;
+			treeSubmesh.Depth = 100;
+			treeSubmesh.VoxelSize = 1.0f;
+
+			treeSubmesh.ColorIndices.resize(treeSubmesh.Width * treeSubmesh.Height * treeSubmesh.Depth, 0);
+
+			m_TreeMesh->SetColorPallete(colorPallete);
+			m_TreeMesh->SetSubmeshes({ treeSubmesh });
+			m_TreeMesh->SetInstances({ instance });
+
+			m_TreeTransforms.push_back({});
+
 			uint32_t count = 50;
 			m_CastleTransforms.resize(count);
 			m_KnightTransforms.resize(count);
@@ -243,6 +219,9 @@ namespace XYZ {
 			}
 			if (ImGui::Begin("Voxels Generator"))
 			{
+				drawSpaceColonizationData();
+				ImGui::NewLine();
+
 				ImGui::DragInt("Frequency", (int*)&m_Frequency, 1.0f, 0, INT_MAX);
 				ImGui::DragInt("Octaves", (int*)&m_Octaves, 1.0f, 0, INT_MAX);
 				ImGui::DragInt("Seed", (int*)&m_Seed, 1.0f, 0, INT_MAX);
@@ -255,10 +234,7 @@ namespace XYZ {
 				
 				if (ImGui::Button("Generate Top Grid"))
 				{
-					if (!m_ProceduralMesh->IsGeneratingTopGrid())
-						m_ProceduralMesh->GenerateTopGridAsync(m_TopGridSize);
-					else
-						std::cout << "Grid is still generating" << std::endl;
+					m_ProceduralMesh->GenerateTopGridAsync(m_TopGridSize);
 				}
 				ImGui::Checkbox("Update Water", &m_UpdateWater);
 			}
@@ -267,9 +243,17 @@ namespace XYZ {
 			if (ImGui::Begin("Transforms"))
 			{
 				int id = 0;
-				ImGui::Text("%d", id);
-				for (auto& transform : m_CastleTransforms)
+
+				for (auto& transform : m_TreeTransforms)
+				{
+					ImGui::Text("%d", id);
 					drawTransform(transform, id++);
+				}
+				for (auto& transform : m_CastleTransforms)
+				{
+					ImGui::Text("%d", id);
+					drawTransform(transform, id++);			
+				}
 				ImGui::NewLine();
 			}
 			ImGui::End();
@@ -288,30 +272,12 @@ namespace XYZ {
 					VoxelSubmesh terrainSubmesh = m_ProceduralMesh->GetSubmeshes()[0];
 					
 					m_Terrain = std::move(m_GenerateVoxelsFuture.get());
-									
-					if (m_SpaceColonization != nullptr)
-						delete m_SpaceColonization;
-
-					const float voxelSize = 3.0f;
-					auto height = m_Terrain.TerrainHeightmap[Utils::Index2D(256, 256, 512)];
-					const glm::vec3 voxelPosition = glm::vec3(256, height, 256) * voxelSize;
-					
-					SCInitializer initializer;
-					initializer.AttractorsCount = 400;
-					initializer.AttractorsCenter = voxelPosition + glm::vec3(0, 100 * voxelSize, 0);
-					initializer.AttractorsRadius = 50.0f * voxelSize;
-					initializer.AttractionRange = 20.0f * voxelSize;
-					initializer.KillRange = 10.0f * voxelSize;
-					initializer.RootPosition = voxelPosition;
-					initializer.BranchLength = 7 * voxelSize;
-
-					m_SpaceColonization = new SpaceColonization(initializer);
-
-					m_SpaceColonization->VoxelizeAttractors(m_Terrain.Terrain, 512, 400, 512, voxelSize);
-
+		
 					terrainSubmesh.ColorIndices = m_Terrain.Terrain;
-					while (m_ProceduralMesh->IsGeneratingTopGrid()) {} // Wait to finish generating top grid
+
 					m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
+					while (!m_ProceduralMesh->GenerateTopGridAsync(m_TopGridSize)) {}
+
 					//m_VoxelRenderer->SubmitComputeData(m_Terrain.WaterMap.data(), m_Terrain.WaterMap.size(), 0, m_WaterDensityAllocation, true);
 				}
 
@@ -333,6 +299,8 @@ namespace XYZ {
 				}
 
 				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), false);
+				for (auto& transform : m_TreeTransforms)
+					m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform(), false);
 
 				for (size_t i = 0; i < m_CastleTransforms.size(); ++i)
 				{
@@ -367,23 +335,49 @@ namespace XYZ {
 			if (event.GetEventType() == EventType::KeyPressed)
 			{
 				KeyPressedEvent& keyPressedE = (KeyPressedEvent&)event;
-				if (keyPressedE.IsKeyPressed(KeyCode::KEY_N))
+				if (keyPressedE.IsKeyPressed(KeyCode::KEY_M))
+				{
+					radius = m_SpaceColonizationData.TreeRadius;
+					auto treeSubmesh = m_TreeMesh->GetSubmeshes()[0];
+					if (m_SpaceColonization != nullptr)
+						delete m_SpaceColonization;
+
+					const float voxelSize = treeSubmesh.VoxelSize;
+					const glm::vec3 voxelPosition = glm::vec3(treeSubmesh.Width / 2, 0, treeSubmesh.Depth / 2) * voxelSize;
+
+					SCInitializer initializer;
+					initializer.AttractorsCount = m_SpaceColonizationData.AttractorsCount;
+					initializer.AttractorsCenter = voxelPosition + m_SpaceColonizationData.AttractorsOffset;
+					initializer.AttractorsRadius = m_SpaceColonizationData.AttractorsRadius * voxelSize;
+					initializer.AttractionRange = m_SpaceColonizationData.AttractionRange * voxelSize;
+					initializer.KillRange = m_SpaceColonizationData.KillRange * voxelSize;
+					initializer.RootPosition = voxelPosition;
+					initializer.BranchLength = m_SpaceColonizationData.BranchLength * voxelSize;
+
+
+					m_SpaceColonization = new SpaceColonization(initializer);
+					memset(treeSubmesh.ColorIndices.data(), 0, treeSubmesh.ColorIndices.size());
+
+					m_SpaceColonization->VoxelizeAttractors(treeSubmesh.ColorIndices, treeSubmesh.Width, treeSubmesh.Height, treeSubmesh.Depth, voxelSize);
+					m_TreeMesh->SetSubmeshes({ treeSubmesh });
+				}
+				else if (keyPressedE.IsKeyPressed(KeyCode::KEY_N))
 				{
 					if (m_SpaceColonization != nullptr)
 					{
-						VoxelSubmesh terrainSubmesh = m_ProceduralMesh->GetSubmeshes()[0];
+						VoxelSubmesh treeSubmesh = m_TreeMesh->GetSubmeshes()[0];
 						m_SpaceColonization->Grow(
-							terrainSubmesh.ColorIndices, 
-							terrainSubmesh.Width, 
-							terrainSubmesh.Height, 
-							terrainSubmesh.Depth, 
-							terrainSubmesh.VoxelSize,
+							treeSubmesh.ColorIndices, 
+							treeSubmesh.Width, 
+							treeSubmesh.Height, 
+							treeSubmesh.Depth, 
+							treeSubmesh.VoxelSize,
 							radius
 						);		
 						if (radius > 1 && RandomNumber(0u, 1u) != 0)
 							radius--;
 
-						m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
+						m_TreeMesh->SetSubmeshes({ treeSubmesh });
 					}
 				}
 			}
@@ -422,6 +416,19 @@ namespace XYZ {
 				transform.GetTransform().Rotation = glm::radians(rotation);
 			}
 			ImGui::PopID();
+		}
+		void VoxelPanel::drawSpaceColonizationData()
+		{
+			ImGui::Text("Space Colonization Data");
+			ImGui::DragInt("Attractors Count", (int*)&m_SpaceColonizationData.AttractorsCount);
+			ImGui::DragFloat3("Attractors Offset", (float*)&m_SpaceColonizationData.AttractorsOffset);
+			ImGui::DragFloat("Attractors Radius", &m_SpaceColonizationData.AttractorsRadius);
+			ImGui::DragFloat("Attractors Range", &m_SpaceColonizationData.AttractionRange);
+			ImGui::DragFloat("Kill Range", &m_SpaceColonizationData.KillRange);
+			ImGui::DragFloat("Branch Length", &m_SpaceColonizationData.BranchLength);
+
+			ImGui::DragInt("Tree Radius", (int*)&m_SpaceColonizationData.TreeRadius);
+
 		}
 
 		void VoxelPanel::pushGenerateVoxelMeshJob()
@@ -534,12 +541,12 @@ namespace XYZ {
 						result.WaterMap[waterIndex] = 125; // Half max density
 					}
 
-					//for (int32_t y = genHeight; y < 150; ++y)
-					//{
-					//	const uint32_t waterIndex = Utils::Index3D(x, y, z, width, height);
-					//	result.Terrain[waterIndex] = Water; // Water
-					//	result.WaterMap[waterIndex] = 125; // Half max density
-					//}
+					for (int32_t y = genHeight; y < 70; ++y)
+					{
+						const uint32_t waterIndex = Utils::Index3D(x, y, z, width, height);
+						result.Terrain[waterIndex] = Water; // Water
+						result.WaterMap[waterIndex] = 125; // Half max density
+					}
 					
 					//const uint32_t waterIndex = Utils::Index3D(x, 150, z, width, height);
 					//result.Terrain[waterIndex] = Water; // Water

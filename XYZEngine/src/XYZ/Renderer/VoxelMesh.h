@@ -13,12 +13,12 @@ namespace XYZ {
 
 	struct VoxelMeshTopGrid
 	{
-		uint32_t  MaxTraverses;
 		uint32_t  Width;
 		uint32_t  Height;
 		uint32_t  Depth;
 		float	  Size;
-		std::vector<uint32_t> VoxelCount;
+
+		std::vector<uint32_t> Cells;
 	};
 
 	class XYZ_API VoxelMesh : public Asset
@@ -85,11 +85,10 @@ namespace XYZ {
 		void SetInstances(const std::vector<VoxelInstance>& instances);
 		void SetColorPallete(const std::array<VoxelColor, 256>& pallete);
 
-		void GenerateTopGridAsync(float size);
+		bool GenerateTopGridAsync(float size);
 
 		void SetVoxelColor(uint32_t submeshIndex, uint32_t x, uint32_t y, uint32_t z, uint8_t value);
 
-		bool IsGeneratingTopGrid() const { return m_GeneratingTopGrid; }
 
 		virtual const std::array<VoxelColor, 256>& GetColorPallete() const override;
 		virtual const std::vector<VoxelSubmesh>& GetSubmeshes() const override;

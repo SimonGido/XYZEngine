@@ -29,6 +29,17 @@ namespace XYZ {
 			std::vector<uint16_t> TerrainHeightmap;
 		};
 
+		struct SpaceColonizationData
+		{
+			uint32_t AttractorsCount = 300;
+			glm::vec3 AttractorsOffset = glm::vec3(0.0f, 100.0f, 0.0f);
+			float AttractorsRadius = 50.0f;
+			float AttractionRange = 20.0f;
+			float KillRange = 10.0f;
+			float BranchLength = 7.0f;
+			int32_t TreeRadius = 7;
+		};
+
 		class VoxelPanel : public EditorPanel
 		{
 		public:
@@ -48,6 +59,7 @@ namespace XYZ {
 		private:
 			void handlePanelResize(const glm::vec2& newSize);
 			void drawTransform(TransformComponent& transform, int id) const;
+			void drawSpaceColonizationData();
 
 			void pushGenerateVoxelMeshJob();
 			void submitWater();
@@ -67,6 +79,7 @@ namespace XYZ {
 
 			EditorCamera m_EditorCamera;
 			
+			std::vector<TransformComponent> m_TreeTransforms;
 			std::vector<TransformComponent> m_CastleTransforms;
 			std::vector<TransformComponent> m_KnightTransforms;
 			std::vector<TransformComponent> m_DeerTransforms;
@@ -76,6 +89,8 @@ namespace XYZ {
 			Ref<VoxelSourceMesh> m_KnightMesh;
 			Ref<VoxelSourceMesh> m_DeerMesh;
 			Ref<VoxelProceduralMesh> m_ProceduralMesh;
+
+			Ref<VoxelProceduralMesh> m_TreeMesh;
 
 			Ref<MaterialAsset> m_WaterMaterial;
 			
@@ -102,9 +117,10 @@ namespace XYZ {
 			StorageBufferAllocation m_WaterDensityAllocation;
 			bool m_UpdateWater = false;
 
-			float m_TopGridSize = 15.0f;
+			float m_TopGridSize = 32;
 
 			SpaceColonization* m_SpaceColonization = nullptr;
+			SpaceColonizationData m_SpaceColonizationData;
 		};
 	}
 }

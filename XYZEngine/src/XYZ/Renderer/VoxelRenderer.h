@@ -7,10 +7,25 @@
 #include "Material.h"
 
 #include "XYZ/Scene/Scene.h"
-#include "XYZ/Utils/DataStructures/ThreadQueue.h"
+#include "XYZ/Utils/DataStructures/Octree.h"
 #include "XYZ/Asset/Renderer/VoxelMeshSource.h"
 
 namespace XYZ {
+
+	struct VoxelModelOctreeNode
+	{
+		glm::vec4 Min;
+		glm::vec4 Max;
+
+		int32_t Children[8]{ -1 };
+
+		Bool32	IsLeaf;
+		int32_t DataStart;
+		int32_t DataEnd;
+
+		Padding<4> Padding;
+	};
+
 
 	struct UBVoxelScene
 	{
@@ -48,15 +63,15 @@ namespace XYZ {
 		uint32_t	Height;
 		uint32_t	Depth;
 		uint32_t    ColorIndex;
-		uint32_t    MaxTraverses;
 
 		float		VoxelSize;	
 		int32_t		TopGridIndex;
+
+		Padding<4>	Padding;
 	};
 
 	struct VoxelTopGrid
 	{
-		uint32_t  MaxTraverses;
 		uint32_t  CellsOffset;
 
 		uint32_t  Width;
@@ -65,7 +80,7 @@ namespace XYZ {
 		
 		float	  Size;
 
-		Padding<8> Padding;
+		Padding<12> Padding;
 	};
 
 	struct SSBOVoxelModels
@@ -111,6 +126,20 @@ namespace XYZ {
 
 		static constexpr uint32_t Binding = 21;
 		static constexpr uint32_t Set = 0;
+	};
+
+	struct SSBOOCtree
+	{
+		static constexpr uint32_t MaxNodes = 4096;
+
+		static constexpr uint32_t Binding = 23;
+		static constexpr uint32_t Set = 0;
+
+
+		uint32_t			 NodeCount;
+		Padding<12>			 Padding;
+		VoxelModelOctreeNode Nodes[MaxNodes];
+		uint32_t			 ModelIndices[SSBOVoxelModels::MaxModels];
 	};
 
 	struct VoxelRendererCamera
@@ -255,6 +284,7 @@ namespace XYZ {
 		SSBOVoxelModels			m_SSBOVoxelModels;
 		SSBOVoxelTopGrids		m_SSBOTopGrids;
 		SSBOColors				m_SSBOColors;
+		SSBOOCtree				m_SSBOOctree;
 
 		Math::Frustum			m_Frustum;
 
@@ -285,6 +315,8 @@ namespace XYZ {
 			static constexpr uint32_t Count() { return sizeof(GPUTimeQueries) / sizeof(uint32_t); }
 		};
 		GPUTimeQueries m_GPUTimeQueries;
+
+		Octree m_ModelsOctree;
 	};
 
 }

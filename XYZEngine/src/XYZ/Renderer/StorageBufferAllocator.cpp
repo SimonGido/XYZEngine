@@ -276,7 +276,7 @@ namespace XYZ {
 		allocation.m_Valid = true;
 		allocation.m_IsSuballocation = false;
 		allocation.m_ID = nextAllocationID();
-
+		m_AllocationRefCounter[allocation.m_ID]++;
 		m_Next += size;
 	}
 

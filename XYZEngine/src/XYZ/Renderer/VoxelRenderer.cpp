@@ -35,6 +35,8 @@ namespace XYZ {
 
 
 	VoxelRenderer::VoxelRenderer()
+		:
+		m_ModelsOctree(AABB(glm::vec3(-1024), glm::vec3(1024)), 16)
 	{
 		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "VoxelRenderer");
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
@@ -49,6 +51,7 @@ namespace XYZ {
 		m_StorageBufferSet->Create(sizeof(SSBOColors), SSBOColors::Set, SSBOColors::Binding);
 		m_StorageBufferSet->Create(sizeof(SSBOVoxelTopGrids), SSBOVoxelTopGrids::Set, SSBOVoxelTopGrids::Binding);
 		m_StorageBufferSet->Create(SSBOVoxelComputeData::MaxSize, SSBOVoxelComputeData::Set, SSBOVoxelComputeData::Binding);
+		m_StorageBufferSet->Create(sizeof(SSBOOCtree), SSBOOCtree::Set, SSBOOCtree::Binding);
 
 		m_VoxelStorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxels), SSBOVoxels::Binding, SSBOVoxels::Set);
 		m_ColorStorageAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOColors), SSBOColors::Binding, SSBOColors::Set);
@@ -88,6 +91,7 @@ namespace XYZ {
 
 		updateViewportSize();
 		updateUniformBufferSet();
+		m_ModelsOctree.Clear();
 
 	}
 	void VoxelRenderer::EndScene()
@@ -267,16 +271,10 @@ namespace XYZ {
 	
 	void VoxelRenderer::submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, uint32_t submeshIndex)
 	{
-		const AABB aabb = VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, submesh.VoxelSize);
-
-		m_Statistics.ModelCount++;
-
-		const glm::vec3 aabbMax = glm::vec3(submesh.Width, submesh.Height, submesh.Depth) * submesh.VoxelSize;
-
 		glm::vec3 centerTranslation = -glm::vec3(
-			submesh.Width / 2  * submesh.VoxelSize,
-			submesh.Height / 2 * submesh.VoxelSize,
-			submesh.Depth / 2  * submesh.VoxelSize
+			static_cast<float>(submesh.Width) / 2.0f * submesh.VoxelSize,
+			static_cast<float>(submesh.Height) / 2.0f * submesh.VoxelSize,
+			static_cast<float>(submesh.Depth) / 2.0f * submesh.VoxelSize
 		);
 		const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
 
@@ -285,16 +283,21 @@ namespace XYZ {
 		cmdModel.ModelIndex = m_SSBOVoxelModels.NumModels;
 
 		VoxelModel& model = m_SSBOVoxelModels.Models[m_SSBOVoxelModels.NumModels];
-		model.InverseTransform = glm::inverse(transform * glm::translate(glm::mat4(1.0f), centerTranslation));
+		const glm::mat4 centeredTransform = transform * glm::translate(glm::mat4(1.0f), centerTranslation);
+		model.InverseTransform = glm::inverse(centeredTransform);
 
-		model.MaxTraverses = submesh.MaxTraverses;
-		
+
+		const AABB aabb = VoxelModelToAABB(centeredTransform, submesh.Width, submesh.Height, submesh.Depth, submesh.VoxelSize);
+		m_ModelsOctree.InsertData(aabb, m_SSBOVoxelModels.NumModels);
+
+
 		model.Width = submesh.Width;
 		model.Height = submesh.Height;
 		model.Depth = submesh.Depth;
 		model.VoxelSize = submesh.VoxelSize;
 
 		m_SSBOVoxelModels.NumModels++;
+		m_Statistics.ModelCount++;
 	}
 
 	void VoxelRenderer::clearPass()
@@ -518,9 +521,44 @@ namespace XYZ {
 	}
 	void VoxelRenderer::prepareDrawCommands()
 	{
-		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::ColorPallete[0]));
-		Ref<VoxelRenderer> instance = this;
+		uint32_t nodeCount = 0;
+		uint32_t dataCount = 0;
+		for (auto& octreeNode : m_ModelsOctree.GetNodes())
+		{
+			auto& node = m_SSBOOctree.Nodes[nodeCount];
+			memcpy(node.Children, octreeNode.Children, 8 * sizeof(uint32_t));
+			node.IsLeaf = octreeNode.IsLeaf;
+			node.Max = glm::vec4(octreeNode.BoundingBox.Max, 1.0f);
+			node.Min = glm::vec4(octreeNode.BoundingBox.Min, 1.0f);
+			node.DataStart = dataCount;
+			for (const auto& data : octreeNode.Data)
+			{
+				m_SSBOOctree.ModelIndices[dataCount++] = data.Data;
+			}
+			node.DataEnd = dataCount;
+			nodeCount++;
+		}
+		m_SSBOOctree.NodeCount = nodeCount;
 
+		const uint32_t firstUpdateSize =
+			sizeof(SSBOOCtree::NodeCount)
+			+ sizeof(SSBOOCtree::Padding)
+			+ sizeof(VoxelModelOctreeNode) * nodeCount;
+
+		const uint32_t secondUpdateSize = sizeof(uint32_t) * dataCount;
+		const uint32_t secondUpdateOffset =
+			sizeof(SSBOOCtree::NodeCount)
+			+ sizeof(SSBOOCtree::Padding)
+			+ sizeof(SSBOOCtree::Nodes);
+
+		m_StorageBufferSet->Update(&m_SSBOOctree, firstUpdateSize, 0, SSBOOCtree::Binding, SSBOOCtree::Set);
+		void* secondUpdateData = &reinterpret_cast<uint8_t*>(&m_SSBOOctree)[secondUpdateOffset];
+
+		m_StorageBufferSet->Update(secondUpdateData, secondUpdateSize, secondUpdateOffset, SSBOOCtree::Binding, SSBOOCtree::Set);
+
+
+		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::ColorPallete[0]));
+	
 		uint32_t topGridCount = 0;
 		for (auto& [key, drawCommand] : m_DrawCommands)
 		{
@@ -541,7 +579,6 @@ namespace XYZ {
 			if (drawCommand.Mesh->HasTopGrid())
 			{
 				auto& topGrid = drawCommand.Mesh->GetTopGrid();
-				m_SSBOVoxelModels.TopGrids[topGridCount].MaxTraverses = topGrid.MaxTraverses;
 				m_SSBOVoxelModels.TopGrids[topGridCount].CellsOffset = meshAlloc.TopGridAllocation.GetOffset();
 				m_SSBOVoxelModels.TopGrids[topGridCount].Width = topGrid.Width;
 				m_SSBOVoxelModels.TopGrids[topGridCount].Height = topGrid.Height;
@@ -676,8 +713,19 @@ namespace XYZ {
 		if (reallocated || mesh->NeedUpdate())
 		{
 			// It is safe to allocate top grid only here because of multithread generation
-			const uint32_t topGridsSize = mesh->GetTopGrid().VoxelCount.size();
-			m_TopGridsAllocator->Allocate(topGridsSize, allocation.TopGridAllocation);
+			if (mesh->HasTopGrid())
+			{
+				auto& topGrid = mesh->GetTopGrid();
+				const uint32_t topGridsSize = topGrid.Cells.size();
+				m_TopGridsAllocator->Allocate(topGridsSize, allocation.TopGridAllocation);
+				uint32_t cellOffset = allocation.TopGridAllocation.GetOffset();
+				
+				// Copy top grid
+				for (auto count : topGrid.Cells)
+					m_SSBOTopGrids.TopGridCells[cellOffset++] = count > 0 ? 1 : 0;
+			}
+
+			
 			allocation.SubmeshOffsets.resize(submeshes.size());
 
 			// Copy voxels
@@ -696,11 +744,6 @@ namespace XYZ {
 			const uint32_t colorPalleteIndex = allocation.ColorAllocation.GetOffset() / colorSize;
 			memcpy(m_SSBOColors.ColorPallete[colorPalleteIndex], mesh->GetColorPallete().data(), colorSize);
 
-			// Copy top grid
-			uint32_t cellOffset = allocation.TopGridAllocation.GetOffset();
-			auto& topGrid = mesh->GetTopGrid();
-			for (auto count : topGrid.VoxelCount)
-				m_SSBOTopGrids.TopGridCells[cellOffset++] = count > 0 ? 1 : 0;
 			
 			m_UpdatedAllocations.push_back({
 				allocation.VoxelAllocation,

@@ -10,74 +10,6 @@ namespace XYZ {
 		return x + width * (y + height * z);
 	}
 
-	static VoxelMeshTopGrid GenerateTopGridFromAABB(const VoxelSubmesh& submesh, const std::array<VoxelColor, 256>& colorPallete, float size)
-	{
-		VoxelMeshTopGrid topGrid;
-
-		const float scale = size / submesh.VoxelSize;
-		const uint32_t width = std::ceil((float)submesh.Width / scale);
-		const uint32_t height = std::ceil((float)submesh.Height / scale);
-		const uint32_t depth = std::ceil((float)submesh.Depth / scale);
-
-		topGrid.MaxTraverses = std::sqrtl(std::powl(width, 2) + std::powl(height, 2) + std::powl(depth, 2)) * 2;
-		topGrid.Width = width;
-		topGrid.Height = height;
-		topGrid.Depth = depth;
-		topGrid.Size = size;
-		topGrid.VoxelCount.resize(width * height * depth);
-		memset(topGrid.VoxelCount.data(), 0, topGrid.VoxelCount.size() * sizeof(uint32_t));
-
-		for (uint32_t x = 0; x < submesh.Width; x++)
-		{
-			for (uint32_t y = 0; y < submesh.Height; y++)
-			{
-				for (uint32_t z = 0; z < submesh.Depth; z++)
-				{
-					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
-					const VoxelColor color = colorPallete[submesh.ColorIndices[index]];
-					if (color.A != 0)
-					{
-						const glm::vec3 voxelPosition = {
-							x * submesh.VoxelSize,
-							y * submesh.VoxelSize,
-							z * submesh.VoxelSize
-						};
-						const glm::ivec3 topGridCellStart = {
-							std::floor(voxelPosition.x / size),
-							std::floor(voxelPosition.y / size),
-							std::floor(voxelPosition.z / size)
-						};
-						const glm::ivec3 topGridCellEnd = {
-							std::ceil((voxelPosition.x + submesh.VoxelSize) / size),
-							std::ceil((voxelPosition.y + submesh.VoxelSize) / size),
-							std::ceil((voxelPosition.z + submesh.VoxelSize) / size)
-						};
-						
-						for (uint32_t tx = topGridCellStart.x; tx < topGridCellEnd.x; tx++)
-						{
-							for (uint32_t ty = topGridCellStart.y; ty < topGridCellEnd.y; ty++)
-							{
-								for (uint32_t tz = topGridCellStart.z; tz < topGridCellEnd.z; tz++)
-								{
-									const uint32_t topgridIndex = Index3D(tx, ty, tz, width, height);
-									topGrid.VoxelCount[topgridIndex]++;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		uint32_t emptyCount = 0;
-		for (auto count : topGrid.VoxelCount)
-		{
-			if (count == 0)
-				emptyCount++;
-		}
-
-		return topGrid;
-	}
-
 
 	static VoxelMeshTopGrid CreateTopGridFromAABB(const AABB& aabb, float size)
 	{
@@ -87,17 +19,11 @@ namespace XYZ {
 		const uint32_t height = static_cast<uint32_t>(std::ceil(aabb.Max.y - aabb.Min.y) / size);
 		const uint32_t depth = static_cast<uint32_t>(std::ceil(aabb.Max.z - aabb.Min.z) / size);
 
-		const glm::vec3 rayDir = glm::normalize(glm::vec3(1, 1, 1));
-		const glm::vec3 delta = glm::abs(glm::vec3(width, height, depth) / rayDir);
-		const float maxDistance = std::max(delta.x, std::max(delta.y, delta.z));
-
-		topGrid.MaxTraverses = std::ceil(maxDistance);
 		topGrid.Width = width;
 		topGrid.Height = height;
 		topGrid.Depth = depth;
 		topGrid.Size = size;
-		topGrid.VoxelCount.resize(width * height * depth);
-		memset(topGrid.VoxelCount.data(), 0, topGrid.VoxelCount.size() * sizeof(uint32_t));
+		topGrid.Cells.resize(width * height * depth, 0);
 		
 		return topGrid;
 	}
@@ -112,7 +38,8 @@ namespace XYZ {
 				for (uint32_t z = 0; z < submesh.Depth; z++)
 				{
 					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
-					const VoxelColor color = colorPallete[submesh.ColorIndices[index]];
+					const uint16_t colorIndex = static_cast<uint16_t>(submesh.ColorIndices[index]);
+					const VoxelColor color = colorPallete[colorIndex];
 					if (color.A != 0)
 					{
 						const glm::vec3 voxelPosition = {
@@ -138,8 +65,10 @@ namespace XYZ {
 								for (uint32_t tz = topGridCellStart.z; tz < topGridCellEnd.z; tz++)
 								{
 									const uint32_t topgridIndex = Index3D(tx, ty, tz, grid.Width, grid.Height);
-									if (topgridIndex < grid.VoxelCount.size())
-										grid.VoxelCount[topgridIndex]++;
+									if (topgridIndex < grid.Cells.size())
+									{
+										grid.Cells[topgridIndex]++;
+									}
 								}
 							}
 						}
@@ -197,7 +126,6 @@ namespace XYZ {
 		}
 		m_Dirty = true;
 		m_DirtySubmeshes.clear();
-		GenerateTopGridAsync(15.0f);
 	}
 
 	void VoxelProceduralMesh::SetInstances(const std::vector<VoxelInstance>& instances)
@@ -212,21 +140,23 @@ namespace XYZ {
 		m_ColorPallete = pallete;
 	}
 
-	void VoxelProceduralMesh::GenerateTopGridAsync(float size)
+	bool VoxelProceduralMesh::GenerateTopGridAsync(float size)
 	{
-		if (!m_GeneratingTopGrid)
-		{
-			m_HasTopGrid = false;
-			m_GeneratingTopGrid = true;
-			Ref<VoxelProceduralMesh> instance = this;
-			auto& pool = Application::Get().GetThreadPool();
-			pool.PushJob([instance, submeshes = m_Submeshes, colorPallete = m_ColorPallete, size]() mutable {
-				instance->m_TopGrid = generateTopGrid(submeshes, colorPallete, size);
-				instance->m_HasTopGrid = true;
-				instance->m_GeneratingTopGrid = false;
-				instance->m_Dirty = true;
-			});
-		}
+		if (m_GeneratingTopGrid)
+			return false;
+
+		m_HasTopGrid = false;
+		m_GeneratingTopGrid = true;
+		Ref<VoxelProceduralMesh> instance = this;
+		auto& pool = Application::Get().GetThreadPool();
+		pool.PushJob([instance, submeshes = m_Submeshes, colorPallete = m_ColorPallete, size]() mutable {
+			instance->m_TopGrid = generateTopGrid(submeshes, colorPallete, size);
+			instance->m_HasTopGrid = true;
+			instance->m_GeneratingTopGrid = false;
+			instance->m_Dirty = true;
+		});
+		
+		return true;
 	}
 
 	void VoxelProceduralMesh::SetVoxelColor(uint32_t submeshIndex, uint32_t x, uint32_t y, uint32_t z, uint8_t value)
