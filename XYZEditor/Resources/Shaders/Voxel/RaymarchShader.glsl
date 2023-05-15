@@ -378,7 +378,7 @@ vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
 }
 
 
-bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelModel model)
+bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelModel model, float currentDistance)
 {
 	AABB aabb = ModelAABB(model);
 	bool result = PointInBox(origin, aabb.Min, aabb.Max); // Default is true in case origin is inside
@@ -387,6 +387,8 @@ bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelMode
 		// Check if we are intersecting with grid
 		float dist;
 		result = RayBoxIntersection(origin, direction, aabb.Min, aabb.Max, dist);
+		if (dist > currentDistance)
+			return false;
 		origin = origin + direction * (dist - EPSILON); // Move origin to first intersection
 	}
 	return result;
@@ -428,11 +430,11 @@ bool DrawModel(uint modelIndex)
 	vec3 origin = ray.Origin;
 	vec3 direction = ray.Direction;
 				
+	float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
 	// Check if ray intersects with model and move origin of ray
-	if (!ResolveRayModelIntersection(origin, direction, model))
+	if (!ResolveRayModelIntersection(origin, direction, model, currentDistance))
 		return false;
 
-	float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
 	RaymarchResult result = RayMarch(ray, startColor, startThroughput, origin, direction, model, currentDistance);		
 
 	if (result.Hit)		
