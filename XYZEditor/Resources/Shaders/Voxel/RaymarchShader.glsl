@@ -613,7 +613,7 @@ void RaycastOctree(in Ray ray)
 		{
 			DrawModel(ModelIndices[i]);
 		}
-
+		float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
 		if (!node.IsLeaf)
 		{
 			for (int c = 0; c < 8; c++)
@@ -622,9 +622,11 @@ void RaycastOctree(in Ray ray)
 				if (child.DataEnd - child.DataStart == 0 && child.IsLeaf)
 					continue;
 
-				if (RayAABBOverlap(ray.Origin, ray.Direction, child.Min.xyz, child.Max.xyz))
+				float dist = -FLT_MAX;
+				if (RayBoxIntersection(ray.Origin, ray.Direction, child.Min.xyz, child.Max.xyz, dist))
 				{
-					stack[stackIndex++] = node.Children[c];
+					if (dist < currentDistance)
+						stack[stackIndex++] = node.Children[c];
 				}
 			}
 		}
@@ -640,7 +642,7 @@ void RaycastOctree(in Ray ray)
 			VoxelModelOctreeNode node = Nodes[nodeIndex];
 
 			float numModels = float(node.DataEnd - node.DataStart);
-			vec3 gradient = GetGradient(numModels);
+			vec3 gradient = GetGradient(numModels) * 0.1;
 			vec4 origColor = imageLoad(o_Image, textureIndex);
 			origColor.rgb += gradient;
 			imageStore(o_Image, textureIndex, origColor); // Store color
@@ -652,7 +654,7 @@ void RaycastOctree(in Ray ray)
 					VoxelModelOctreeNode child = Nodes[node.Children[c]];
 					if (child.DataEnd - child.DataStart == 0 && child.IsLeaf)
 						continue;
-
+					
 					if (RayAABBOverlap(ray.Origin, ray.Direction, child.Min.xyz, child.Max.xyz))
 					{
 						stack[stackIndex++] = node.Children[c];
