@@ -28,6 +28,8 @@ namespace XYZ {
 		Octree(const AABB& aabb, uint32_t maxDepth);
 
 		void InsertData(const AABB& aabb, int32_t data);
+		bool TryInsert(const AABB& aabb, int32_t data, const Math::Frustum& frustum);
+
 		void Clear();
 
 		int32_t FindNode(const glm::vec3& position);

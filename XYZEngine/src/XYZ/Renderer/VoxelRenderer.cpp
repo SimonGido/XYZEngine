@@ -83,7 +83,9 @@ namespace XYZ {
 		m_UBVoxelScene.ViewportSize.y = m_ViewportSize.y;
 		m_SSBOVoxelModels.NumModels = 0;
 		
-		m_DrawCommands.clear();
+		m_RenderModelsSorted.clear();
+		m_RenderModels.clear();
+		m_VoxelMeshBuckets.clear();
 		m_EffectCommands.clear();
 
 		m_Frustum = camera.Frustum;
@@ -96,7 +98,8 @@ namespace XYZ {
 	}
 	void VoxelRenderer::EndScene()
 	{
-		prepareDrawCommands();
+		prepareModels();
+		submitAllocations();
 
 		m_CommandBuffer->Begin();
 		m_GPUTimeQueries.GPUTime = m_CommandBuffer->BeginTimestampQuery();
@@ -126,9 +129,7 @@ namespace XYZ {
 
 	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform)
 	{
-		auto& drawCommand = m_DrawCommands[mesh->GetHandle()];
 		const auto& submeshes = mesh->GetSubmeshes();
-		drawCommand.Mesh = mesh;
 		for (const auto& instance : mesh->GetInstances())
 		{
 			const glm::mat4 instanceTransform = transform * instance.Transform;
@@ -142,21 +143,13 @@ namespace XYZ {
 			);
 			const glm::mat4 centeredTransform = instanceTransform * glm::translate(glm::mat4(1.0f), centerTranslation);
 
-			if (cullSubmesh(submesh, centeredTransform))
-			{
-				m_Statistics.CulledModels++;
-				continue;
-			}
-
-			submitSubmesh(submesh, drawCommand, centeredTransform, instance.SubmeshIndex);
+			submitSubmesh(mesh, submesh, centeredTransform, instance.SubmeshIndex);
 		}	
 	}
 
 	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, const uint32_t* keyFrames)
 	{
-		auto& drawCommand = m_DrawCommands[mesh->GetHandle()];
 		const auto& submeshes = mesh->GetSubmeshes();
-		drawCommand.Mesh = mesh;
 		uint32_t index = 0;
 		for (const auto& instance : mesh->GetInstances())
 		{
@@ -172,42 +165,9 @@ namespace XYZ {
 			);
 			const glm::mat4 centeredTransform = instanceTransform * glm::translate(glm::mat4(1.0f), centerTranslation);
 
-			if (cullSubmesh(submesh, centeredTransform))
-			{
-				m_Statistics.CulledModels++;
-				continue;
-			}
-
-			submitSubmesh(submesh, drawCommand, instanceTransform, submeshIndex);
+			submitSubmesh(mesh, submesh, instanceTransform, submeshIndex);
 			index++;
 		}	
-	}
-
-	void VoxelRenderer::SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform,bool cull)
-	{
-		auto& drawCommand = m_DrawCommands[mesh->GetHandle()];
-		const auto& submeshes = mesh->GetSubmeshes();
-		drawCommand.Mesh = mesh;
-		for (const auto& instance : mesh->GetInstances())
-		{
-			const glm::mat4 instanceTransform = transform * instance.Transform;
-			const VoxelSubmesh& submesh = submeshes[instance.SubmeshIndex];
-	
-			// TODO: this should be handled during model creation, store transform instance probably
-			glm::vec3 centerTranslation = -glm::vec3(
-				static_cast<float>(submesh.Width) / 2.0f * submesh.VoxelSize,
-				static_cast<float>(submesh.Height) / 2.0f * submesh.VoxelSize,
-				static_cast<float>(submesh.Depth) / 2.0f * submesh.VoxelSize
-			);
-			const glm::mat4 centeredTransform = instanceTransform * glm::translate(glm::mat4(1.0f), centerTranslation);
-
-			if (cull && cullSubmesh(submesh, centeredTransform))
-			{
-				m_Statistics.CulledModels++;
-				continue;
-			}
-			submitSubmesh(submesh, drawCommand, centeredTransform, instance.SubmeshIndex);
-		}
 	}
 
 	Ref<Image2D> VoxelRenderer::GetFinalPassImage() const
@@ -260,7 +220,7 @@ namespace XYZ {
 			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Direction), 0.1f);
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Radiance), 0.1f);
 			ImGui::DragFloat("Light Multiplier", &m_UBVoxelScene.DirectionalLight.Multiplier, 0.1f);
-			
+			ImGui::Checkbox("Cull", &m_Cull);
 			ImGui::NewLine();
 
 			ImGui::Checkbox("Top Grid", &m_UseTopGrid);
@@ -296,28 +256,77 @@ namespace XYZ {
 	}
 
 	
-	void VoxelRenderer::submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, uint32_t submeshIndex)
+	void VoxelRenderer::updateVoxelModelsSSBO(uint32_t topGridCount)
+	{
+		// Update ssbos
+		const uint32_t voxelModelsUpdateSize =
+			sizeof(SSBOVoxelModels::NumModels)
+			+ sizeof(SSBOVoxelModels::Padding)
+			+ m_SSBOVoxelModels.NumModels * sizeof(VoxelModel);
+
+
+		const uint32_t topGridDataOffset =
+			sizeof(SSBOVoxelModels::NumModels)
+			+ sizeof(SSBOVoxelModels::Padding)
+			+ SSBOVoxelModels::MaxModels * sizeof(VoxelModel);
+
+
+		const uint32_t topGridUpdateSize = topGridCount * sizeof(VoxelTopGrid);
+		void* topGridData = (uint8_t*)&m_SSBOVoxelModels + topGridDataOffset;
+
+		m_StorageBufferSet->Update((void*)&m_SSBOVoxelModels, voxelModelsUpdateSize, 0, SSBOVoxelModels::Binding, SSBOVoxelModels::Set);
+		m_StorageBufferSet->Update(topGridData, topGridUpdateSize, topGridDataOffset, SSBOVoxelModels::Binding, SSBOVoxelModels::Set);
+	}
+
+	void VoxelRenderer::updateOctreeSSBO()
+	{
+		// Update octree
+		uint32_t nodeCount = 0;
+		uint32_t dataCount = 0;
+		const glm::vec3 cameraPosition(glm::vec3(m_UBVoxelScene.CameraPosition));
+		for (auto& octreeNode : m_ModelsOctree.GetNodes())
+		{
+			auto& node = m_SSBOOctree.Nodes[nodeCount];
+			memcpy(node.Children, octreeNode.Children, 8 * sizeof(uint32_t));
+			node.IsLeaf = octreeNode.IsLeaf;
+			node.Max = glm::vec4(octreeNode.BoundingBox.Max, 1.0f);
+			node.Min = glm::vec4(octreeNode.BoundingBox.Min, 1.0f);
+			node.DataStart = dataCount;
+			for (const auto& data : octreeNode.Data)
+			{
+				m_SSBOOctree.ModelIndices[dataCount++] = data.Data;
+			}
+			node.DataEnd = dataCount;
+			nodeCount++;
+		}
+		m_SSBOOctree.NodeCount = nodeCount;
+
+		const uint32_t firstUpdateSize =
+			sizeof(SSBOOCtree::NodeCount)
+			+ sizeof(SSBOOCtree::Padding)
+			+ sizeof(VoxelModelOctreeNode) * nodeCount;
+
+		const uint32_t secondUpdateSize = sizeof(uint32_t) * dataCount;
+		const uint32_t secondUpdateOffset =
+			sizeof(SSBOOCtree::NodeCount)
+			+ sizeof(SSBOOCtree::Padding)
+			+ sizeof(SSBOOCtree::Nodes);
+
+		m_StorageBufferSet->Update(&m_SSBOOctree, firstUpdateSize, 0, SSBOOCtree::Binding, SSBOOCtree::Set);
+		void* secondUpdateData = &reinterpret_cast<uint8_t*>(&m_SSBOOctree)[secondUpdateOffset];
+		m_StorageBufferSet->Update(secondUpdateData, secondUpdateSize, secondUpdateOffset, SSBOOCtree::Binding, SSBOOCtree::Set);
+	}
+
+	void VoxelRenderer::submitSubmesh(const Ref<VoxelMesh>& mesh, const VoxelSubmesh& submesh, const glm::mat4& transform, uint32_t submeshIndex)
 	{		
 		const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
 
-		VoxelCommandModel& cmdModel = drawCommand.Models.emplace_back();
-		cmdModel.SubmeshIndex = submeshIndex;
-		cmdModel.ModelIndex = m_SSBOVoxelModels.NumModels;
+		auto& renderModel = m_RenderModels.emplace_back();
+		renderModel.BoundingBox =  VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, submesh.VoxelSize);
+		renderModel.SubmeshIndex = submeshIndex;
+		renderModel.Transform = transform;
+		renderModel.Mesh = mesh;
 
-		VoxelModel& model = m_SSBOVoxelModels.Models[m_SSBOVoxelModels.NumModels];
-		model.InverseTransform = glm::inverse(transform);
-
-
-		const AABB aabb = VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, submesh.VoxelSize);
-		m_ModelsOctree.InsertData(aabb, m_SSBOVoxelModels.NumModels);
-
-
-		model.Width = submesh.Width;
-		model.Height = submesh.Height;
-		model.Depth = submesh.Depth;
-		model.VoxelSize = submesh.VoxelSize;
-
-		m_SSBOVoxelModels.NumModels++;
 		m_Statistics.ModelCount++;
 	}
 
@@ -538,86 +547,100 @@ namespace XYZ {
 		});
 	}
 	
-	bool VoxelRenderer::cullSubmesh(const VoxelSubmesh& submesh, const glm::mat4& transform) const
+
+
+	void VoxelRenderer::prepareModels()
 	{
-		const AABB aabb = VoxelModelToAABB(transform, submesh.Width, submesh.Height, submesh.Depth, submesh.VoxelSize);
-		return !aabb.InsideFrustum(m_Frustum);
-
-	}
-	void VoxelRenderer::prepareDrawCommands()
-	{
-		uint32_t nodeCount = 0;
-		uint32_t dataCount = 0;
-		for (auto& octreeNode : m_ModelsOctree.GetNodes())
-		{
-			auto& node = m_SSBOOctree.Nodes[nodeCount];
-			memcpy(node.Children, octreeNode.Children, 8 * sizeof(uint32_t));
-			node.IsLeaf = octreeNode.IsLeaf;
-			node.Max = glm::vec4(octreeNode.BoundingBox.Max, 1.0f);
-			node.Min = glm::vec4(octreeNode.BoundingBox.Min, 1.0f);
-			node.DataStart = dataCount;
-			for (const auto& data : octreeNode.Data)
-			{
-				m_SSBOOctree.ModelIndices[dataCount++] = data.Data;
-			}
-			node.DataEnd = dataCount;
-			nodeCount++;
-		}
-		m_SSBOOctree.NodeCount = nodeCount;
-
-		const uint32_t firstUpdateSize =
-			sizeof(SSBOOCtree::NodeCount)
-			+ sizeof(SSBOOCtree::Padding)
-			+ sizeof(VoxelModelOctreeNode) * nodeCount;
-
-		const uint32_t secondUpdateSize = sizeof(uint32_t) * dataCount;
-		const uint32_t secondUpdateOffset =
-			sizeof(SSBOOCtree::NodeCount)
-			+ sizeof(SSBOOCtree::Padding)
-			+ sizeof(SSBOOCtree::Nodes);
-
-		m_StorageBufferSet->Update(&m_SSBOOctree, firstUpdateSize, 0, SSBOOCtree::Binding, SSBOOCtree::Set);
-		void* secondUpdateData = &reinterpret_cast<uint8_t*>(&m_SSBOOctree)[secondUpdateOffset];
-
-		m_StorageBufferSet->Update(secondUpdateData, secondUpdateSize, secondUpdateOffset, SSBOOCtree::Binding, SSBOOCtree::Set);
-
-
-		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::ColorPallete[0]));
+		for (auto& renderModel : m_RenderModels)
+			m_RenderModelsSorted.push_back(&renderModel);
 	
-		uint32_t topGridCount = 0;
-		for (auto& [key, drawCommand] : m_DrawCommands)
+		// Sort by distance from camera
+		const glm::vec3 cameraPosition(m_UBVoxelScene.CameraPosition);
+		std::sort(m_RenderModelsSorted.begin(), m_RenderModelsSorted.end(), [&](const VoxelRenderModel* a, const VoxelRenderModel* b) {
+			return a->BoundingBox.Distance(cameraPosition) < b->BoundingBox.Distance(cameraPosition);
+		});
+
+		// Try insert into octree if pass frustum culling
+		int32_t modelIndex = 0;
+		if (m_Cull)
 		{
-			if (drawCommand.Models.empty())
+			for (auto model : m_RenderModelsSorted)
+			{
+				if (m_ModelsOctree.TryInsert(model->BoundingBox, modelIndex, m_Frustum))
+				{
+					auto& allocation = m_VoxelMeshBuckets[model->Mesh->GetHandle()];
+					model->ModelIndex = modelIndex;
+					allocation.Mesh = model->Mesh;
+					allocation.Models.push_back(model);
+					modelIndex++;
+				}
+				else
+				{
+					m_Statistics.CulledModels++;
+				}
+			}
+		}
+		else
+		{
+			for (auto model : m_RenderModelsSorted)
+			{
+				m_ModelsOctree.InsertData(model->BoundingBox, modelIndex);
+				auto& allocation = m_VoxelMeshBuckets[model->Mesh->GetHandle()];
+				model->ModelIndex = modelIndex;
+				allocation.Mesh = model->Mesh;
+				allocation.Models.push_back(model);
+				modelIndex++;
+			}
+		}
+
+		// Pass it to ssbo data
+		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::ColorPallete[0]));
+		uint32_t topGridCount = 0;
+		for (auto& [key, meshAllocation] : m_VoxelMeshBuckets)
+		{
+			if (meshAllocation.Models.empty())
 				continue;
 
-			MeshAllocation& meshAlloc = createMeshAllocation(drawCommand.Mesh);
-			
-			for (const auto& cmdModel : drawCommand.Models)
+			MeshAllocation& meshAlloc = createMeshAllocation(meshAllocation.Mesh);
+
+			for (const auto& cmdModel : meshAllocation.Models)
 			{
-				VoxelModel& model = m_SSBOVoxelModels.Models[cmdModel.ModelIndex];
+				const VoxelSubmesh& submesh = cmdModel->Mesh->GetSubmeshes()[cmdModel->SubmeshIndex];
+				VoxelModel& model = m_SSBOVoxelModels.Models[cmdModel->ModelIndex];
 				model.ColorIndex = meshAlloc.ColorAllocation.GetOffset() / colorSize;
-				model.VoxelOffset = meshAlloc.SubmeshOffsets[cmdModel.SubmeshIndex];
+				model.VoxelOffset = meshAlloc.SubmeshOffsets[cmdModel->SubmeshIndex];
+				model.InverseTransform = glm::inverse(cmdModel->Transform);
+				model.Width = submesh.Width;
+				model.Height = submesh.Height;
+				model.Depth = submesh.Depth;
+				model.VoxelSize = submesh.VoxelSize;
 				model.TopGridIndex = -1;
+				m_SSBOVoxelModels.NumModels++;
 			}
 
 			// Store mesh top grid
-			if (drawCommand.Mesh->HasTopGrid())
+			if (meshAllocation.Mesh->HasTopGrid())
 			{
-				auto& topGrid = drawCommand.Mesh->GetTopGrid();
+				auto& topGrid = meshAllocation.Mesh->GetTopGrid();
 				m_SSBOVoxelModels.TopGrids[topGridCount].CellsOffset = meshAlloc.TopGridAllocation.GetOffset();
 				m_SSBOVoxelModels.TopGrids[topGridCount].Width = topGrid.Width;
 				m_SSBOVoxelModels.TopGrids[topGridCount].Height = topGrid.Height;
 				m_SSBOVoxelModels.TopGrids[topGridCount].Depth = topGrid.Depth;
 				m_SSBOVoxelModels.TopGrids[topGridCount].Size = topGrid.Size;
-				for (const auto& cmdModel : drawCommand.Models)
+				for (const auto& cmdModel : meshAllocation.Models)
 				{
-					VoxelModel& model = m_SSBOVoxelModels.Models[cmdModel.ModelIndex];
+					VoxelModel& model = m_SSBOVoxelModels.Models[cmdModel->ModelIndex];
 					model.TopGridIndex = topGridCount;
 				}
 				topGridCount++;
-			}				
+			}
 		}
-
+		updateVoxelModelsSSBO(topGridCount);
+		updateOctreeSSBO();
+	}
+	void VoxelRenderer::submitAllocations()
+	{
+		const uint32_t colorSize = static_cast<uint32_t>(sizeof(SSBOColors::ColorPallete[0]));
 		for (const auto& updated : m_UpdatedAllocations)
 		{
 			void* voxelData = &m_SSBOVoxels.Voxels[updated.VoxelAllocation.GetOffset()];
@@ -635,25 +658,6 @@ namespace XYZ {
 		}
 		m_UpdatedAllocations.clear();
 		m_UpdatedSuballocations.clear();
-
-		const uint32_t voxelModelsUpdateSize =
-				sizeof(SSBOVoxelModels::NumModels)
-			+	sizeof(SSBOVoxelModels::Padding)
-			+	m_SSBOVoxelModels.NumModels * sizeof(VoxelModel);
-
-
-		const uint32_t topGridDataOffset =
-				sizeof(SSBOVoxelModels::NumModels)
-			+	sizeof(SSBOVoxelModels::Padding)
-			+	SSBOVoxelModels::MaxModels * sizeof(VoxelModel);
-
-
-		const uint32_t topGridUpdateSize = topGridCount * sizeof(VoxelTopGrid);
-
-		void* topGridData = (uint8_t*)&m_SSBOVoxelModels + topGridDataOffset;
-
-		m_StorageBufferSet->Update((void*)&m_SSBOVoxelModels, voxelModelsUpdateSize, 0, SSBOVoxelModels::Binding, SSBOVoxelModels::Set);	
-		m_StorageBufferSet->Update(topGridData, topGridUpdateSize, topGridDataOffset, SSBOVoxelModels::Binding, SSBOVoxelModels::Set);
 	}
 	void VoxelRenderer::createDefaultPipelines()
 	{

@@ -164,7 +164,6 @@ namespace XYZ {
 
 		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform);
 		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, const uint32_t* keyFrames);
-		void SubmitMesh(const Ref<VoxelMesh>& mesh, const glm::mat4& transform, bool cull);
 
 		void SubmitEffect(const Ref<MaterialAsset>& material, const glm::ivec3& workGroups, const PushConstBuffer& constants);
 
@@ -177,20 +176,22 @@ namespace XYZ {
 		uint32_t	 GetModelCount() const { return m_SSBOVoxelModels.NumModels; }
 		Ref<Image2D> GetFinalPassImage() const;
 	private:
-
-		struct VoxelCommandModel
+		struct VoxelRenderModel
 		{
-			uint32_t ModelIndex;
-			uint32_t SubmeshIndex;
+			uint32_t  SubmeshIndex;
+			uint32_t  ModelIndex;
+			AABB	  BoundingBox;
+			glm::mat4 Transform;
+			Ref<VoxelMesh> Mesh;
 		};
 
-		struct VoxelDrawCommand
+		struct VoxelMeshBucket
 		{
 			Ref<VoxelMesh> Mesh;
-	
-			std::vector<VoxelCommandModel> Models;
+			std::vector<VoxelRenderModel*> Models;
 		};
 
+	
 		struct VoxelEffectInvocation
 		{
 			glm::ivec3 WorkGroups;
@@ -233,7 +234,7 @@ namespace XYZ {
 		};
 
 	private:
-		void submitSubmesh(const VoxelSubmesh& submesh, VoxelDrawCommand& drawCommand, const glm::mat4& transform, uint32_t submeshIndex);
+		void submitSubmesh(const Ref<VoxelMesh>& mesh, const VoxelSubmesh& submesh, const glm::mat4& transform, uint32_t submeshIndex);
 
 		void clearPass();
 		void effectPass();
@@ -242,7 +243,13 @@ namespace XYZ {
 		
 		void updateViewportSize();
 		void updateUniformBufferSet();
-		void prepareDrawCommands();
+
+		void submitAllocations();
+		void prepareModels();
+		
+
+		void updateVoxelModelsSSBO(uint32_t topGridCount);
+		void updateOctreeSSBO();
 
 		void createDefaultPipelines();
 		Ref<PipelineCompute> getEffectPipeline(const Ref<MaterialAsset>& material);
@@ -250,7 +257,7 @@ namespace XYZ {
 		MeshAllocation& createMeshAllocation(const Ref<VoxelMesh>& mesh);	
 
 		void reallocateVoxels(const Ref<VoxelMesh>& mesh, MeshAllocation& allocation);
-		bool cullSubmesh(const VoxelSubmesh& submesh, const glm::mat4& transform) const;
+
 	private:
 		Ref<PrimaryRenderCommandBuffer> m_CommandBuffer;
 
@@ -299,9 +306,12 @@ namespace XYZ {
 		bool					m_UseOctree = false;
 		bool					m_ShowOctree = false;
 		bool					m_ShowAABB = false;
+		bool					m_Cull = true;
 
-		std::map<AssetHandle, VoxelDrawCommand> m_DrawCommands;
-		std::map<AssetHandle, VoxelEffectCommand> m_EffectCommands;
+		std::vector<VoxelRenderModel*>					 m_RenderModelsSorted;
+		std::vector<VoxelRenderModel>					 m_RenderModels;
+		std::unordered_map<AssetHandle, VoxelMeshBucket> m_VoxelMeshBuckets;
+		std::map<AssetHandle, VoxelEffectCommand>		 m_EffectCommands;
 
 		std::unordered_map<AssetHandle, MeshAllocation> m_MeshAllocations;
 		std::unordered_map<AssetHandle, MeshAllocation> m_LastFrameMeshAllocations;

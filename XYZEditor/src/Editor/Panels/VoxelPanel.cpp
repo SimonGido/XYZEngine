@@ -301,9 +301,9 @@ namespace XYZ {
 					}
 				}
 
-				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f), false);
+				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
 				for (auto& transform : m_TreeTransforms)
-					m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform(), false);
+					m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());
 
 				for (size_t i = 0; i < m_CastleTransforms.size(); ++i)
 				{
@@ -311,8 +311,8 @@ namespace XYZ {
 					const glm::mat4 knightTransform = m_KnightTransforms[i].GetLocalTransform();
 					const glm::mat4 deerTransform = m_DeerTransforms[i].GetLocalTransform();
 				
-					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform, false);
-					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform, false);
+					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
+					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
 					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
 				}
 				

@@ -726,7 +726,7 @@ void main()
 	{
 		for (uint i = 0; i < NumModels; i++)
 		{
-			DrawModel(i);			
+			DrawModel(i);
 		}
 	}
 }

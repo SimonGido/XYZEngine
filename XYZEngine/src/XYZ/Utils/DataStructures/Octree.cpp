@@ -85,6 +85,68 @@ namespace XYZ {
 		}
 	}
 
+	bool Octree::TryInsert(const AABB& aabb, int32_t data, const Math::Frustum& frustum)
+	{
+		constexpr float resizeConstant = 1.5f;
+		OctreeNode* root = &m_Nodes[0];
+		if (!root->BoundingBox.Contains(aabb))
+		{
+			AABB newAABB;
+			newAABB.Min.x = std::min(root->BoundingBox.Min.x, aabb.Min.x) * resizeConstant;
+			newAABB.Min.y = std::min(root->BoundingBox.Min.y, aabb.Min.y) * resizeConstant;
+			newAABB.Min.z = std::min(root->BoundingBox.Min.z, aabb.Min.z) * resizeConstant;
+
+			newAABB.Max.x = std::max(root->BoundingBox.Max.x, aabb.Max.x) * resizeConstant;
+			newAABB.Max.y = std::max(root->BoundingBox.Max.y, aabb.Max.y) * resizeConstant;
+			newAABB.Max.z = std::max(root->BoundingBox.Max.z, aabb.Max.z) * resizeConstant;
+
+			Octree newOctree = resize(newAABB, *this);
+			m_Nodes = std::move(newOctree.m_Nodes);
+		}
+
+		std::stack<int32_t> nodesToIterate;
+		nodesToIterate.push(0); // Start from root
+
+		while (!nodesToIterate.empty())
+		{
+			int32_t nodeIndex = nodesToIterate.top();
+			nodesToIterate.pop();
+
+			OctreeNode* node = &m_Nodes[nodeIndex];
+			if (!node->BoundingBox.InsideFrustum(frustum))
+				return false;
+
+			XYZ_ASSERT(node->Depth <= m_MaxDepth, "Wrong depth");
+
+			bool canInsert = true;
+			if (node->IsLeaf && node->Depth != m_MaxDepth)
+			{
+				splitNode(nodeIndex);
+			}
+
+			node = &m_Nodes[nodeIndex];
+			if (!node->IsLeaf)
+			{
+				for (int32_t childIndex : node->Children)
+				{
+					OctreeNode* childNode = &m_Nodes[childIndex];
+					if (childNode->BoundingBox.Contains(aabb))
+					{
+						nodesToIterate.push(childIndex);
+						canInsert = false;
+						break;
+					}
+				}
+			}
+			if (canInsert)
+			{
+				node->Data.push_back({ data, aabb });
+				break;
+			}
+		}
+		return true;
+	}
+
 	void Octree::Clear()
 	{
 		for (auto& node : m_Nodes)
