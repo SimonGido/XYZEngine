@@ -566,6 +566,7 @@ namespace XYZ {
 		{
 			for (auto model : m_RenderModelsSorted)
 			{
+				// TODO: frustum culling should be outside of renderer in VoxelScene or something
 				if (m_ModelsOctree.TryInsert(model->BoundingBox, modelIndex, m_Frustum))
 				{
 					auto& allocation = m_VoxelMeshBuckets[model->Mesh->GetHandle()];
