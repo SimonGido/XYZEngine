@@ -5,6 +5,16 @@
 
 namespace XYZ {
 
+
+	static AABB VoxelModelToAABB(const glm::mat4& transform, uint32_t width, uint32_t height, uint32_t depth, float voxelSize)
+	{
+		AABB result;
+		result.Min = glm::vec3(0.0f);
+		result.Max = glm::vec3(width, height, depth) * voxelSize;
+
+		result = result.TransformAABB(transform);
+		return result;
+	}
 	static glm::mat4 VoxMat4ToGLM(const ogt_vox_transform& voxTransform)
 	{
 		glm::mat4 result;
@@ -75,11 +85,22 @@ namespace XYZ {
 			LoadSubmeshModel(submesh, scene->models[i]);
 			m_NumVoxels += static_cast<uint32_t>(submesh.ColorIndices.size());
 		}
+
 		for (uint32_t i = 0; i < scene->num_instances; ++i)
 		{
 			VoxelInstance& instance = m_Instances.emplace_back();
-			instance.Transform = VoxMat4ToGLM(scene->instances[i].transform);
 			instance.SubmeshIndex = scene->instances[i].model_index;
+			const auto& submesh = m_Submeshes[instance.SubmeshIndex];
+			
+			glm::vec3 centerTranslation = -glm::vec3(
+				static_cast<float>(submesh.Width) / 2.0f * submesh.VoxelSize,
+				static_cast<float>(submesh.Height) / 2.0f * submesh.VoxelSize,
+				static_cast<float>(submesh.Depth) / 2.0f * submesh.VoxelSize
+			);
+			
+			instance.Transform = VoxMat4ToGLM(scene->instances[i].transform) * glm::translate(glm::mat4(1.0f), centerTranslation);
+			AABB::Union(m_AABB, VoxelModelToAABB(instance.Transform, submesh.Width, submesh.Height, submesh.Depth, submesh.VoxelSize));
+
 			LoadVoxelAnimation(instance.TransformAnimation, scene->instances[i]);
 			LoadVoxelModelAnimation(instance.ModelAnimation, scene->instances[i]);
 		}

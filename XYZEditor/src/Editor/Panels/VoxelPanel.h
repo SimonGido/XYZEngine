@@ -11,6 +11,7 @@
 #include "XYZ/Renderer/Texture.h"
 #include "XYZ/Renderer/VoxelRenderer.h"
 #include "XYZ/Utils/Math/Ray.h"
+#include "XYZ/Utils/DataStructures/Octree.h"
 
 #include "XYZ/Asset/Renderer/VoxelMeshSource.h"
 
@@ -80,9 +81,7 @@ namespace XYZ {
 			EditorCamera m_EditorCamera;
 			
 			std::vector<TransformComponent> m_TreeTransforms;
-			std::vector<TransformComponent> m_CastleTransforms;
-			std::vector<TransformComponent> m_KnightTransforms;
-			std::vector<TransformComponent> m_DeerTransforms;
+			std::vector<TransformComponent> m_Transforms;
 
 
 			Ref<VoxelSourceMesh> m_CastleMesh;
@@ -121,6 +120,9 @@ namespace XYZ {
 
 			SpaceColonization* m_SpaceColonization = nullptr;
 			SpaceColonizationData m_SpaceColonizationData;
+
+
+			Octree m_Octree;
 		};
 	}
 }

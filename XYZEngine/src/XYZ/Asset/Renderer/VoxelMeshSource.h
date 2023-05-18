@@ -1,5 +1,6 @@
 #pragma once
 #include "XYZ/Asset/Asset.h"
+#include "XYZ/Utils/Math/AABB.h"
 
 #include <glm/glm.hpp>
 #include <glm/ext/matrix_transform.hpp>
@@ -53,15 +54,17 @@ namespace XYZ {
 		virtual AssetType GetAssetType() const override { return AssetType::VoxelMeshSource; }
 		static AssetType	GetStaticType() { return AssetType::VoxelMeshSource; }
 
+		const AABB&							GetAABB()		  const { return m_AABB; }
 		const std::array<VoxelColor, 256>&	GetColorPallete() const { return m_ColorPallete; }
 		const std::vector<VoxelSubmesh>&	GetSubmeshes()	  const { return m_Submeshes; }
 		const std::vector<VoxelInstance>&	GetInstances()	  const { return m_Instances; }
-		uint32_t GetNumVoxels() const { return m_NumVoxels; }
+		uint32_t							GetNumVoxels() const { return m_NumVoxels; }
 	private:
 		std::string m_Filepath;
 		std::array<VoxelColor, 256> m_ColorPallete;
 		std::vector<VoxelSubmesh>  m_Submeshes;
 		std::vector<VoxelInstance> m_Instances;
+		AABB					   m_AABB;
 		uint32_t				   m_NumVoxels;
 	};
 }

@@ -109,7 +109,8 @@ namespace XYZ {
 			:
 			EditorPanel(std::forward<std::string>(name)),
 			m_ViewportSize(0.0f),
-			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f)
+			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f),
+			m_Octree(AABB(glm::vec3(0.0f), glm::vec3(0.0f)), 10)
 		{
 
 			m_DeerMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));
@@ -157,11 +158,9 @@ namespace XYZ {
 
 			m_TreeTransforms.push_back({});
 
-			uint32_t count = 300;
-			m_CastleTransforms.resize(count);
-			m_KnightTransforms.resize(count);
-			m_DeerTransforms.resize(count);
-
+			uint32_t count = 900;
+			m_Transforms.resize(count);
+	
 			const glm::vec3 halfTerrainSize(
 				submesh.Width / 2.0 * submesh.VoxelSize,
 				submesh.Height / 2.0 * submesh.VoxelSize,
@@ -170,14 +169,8 @@ namespace XYZ {
 
 			for (uint32_t i = 0; i < count; ++i)
 			{
-				m_CastleTransforms[i].GetTransform().Translation = glm::linearRand(-halfTerrainSize, halfTerrainSize);
-				m_CastleTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
-
-				m_KnightTransforms[i].GetTransform().Translation = glm::linearRand(-halfTerrainSize, halfTerrainSize);
-				m_KnightTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
-
-				m_DeerTransforms[i].GetTransform().Translation = glm::linearRand(-halfTerrainSize, halfTerrainSize);
-				m_DeerTransforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
+				m_Transforms[i].GetTransform().Translation = glm::linearRand(-halfTerrainSize, halfTerrainSize);
+				
 			}
 			pushGenerateVoxelMeshJob();
 
@@ -252,7 +245,7 @@ namespace XYZ {
 					ImGui::Text("%d", id);
 					drawTransform(transform, id++);
 				}
-				for (auto& transform : m_CastleTransforms)
+				for (auto& transform : m_Transforms)
 				{
 					ImGui::Text("%d", id);
 					drawTransform(transform, id++);			
@@ -305,11 +298,11 @@ namespace XYZ {
 				for (auto& transform : m_TreeTransforms)
 					m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());
 
-				for (size_t i = 0; i < m_CastleTransforms.size(); ++i)
+				for (size_t i = 0; i < m_Transforms.size(); i += 3)
 				{
-					const glm::mat4 castleTransform = m_CastleTransforms[i].GetLocalTransform();
-					const glm::mat4 knightTransform = m_KnightTransforms[i].GetLocalTransform();
-					const glm::mat4 deerTransform = m_DeerTransforms[i].GetLocalTransform();
+					const glm::mat4 castleTransform = m_Transforms[i].GetLocalTransform();
+					const glm::mat4 knightTransform = m_Transforms[i + 1].GetLocalTransform();
+					const glm::mat4 deerTransform = m_Transforms[i + 2].GetLocalTransform();
 				
 					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
 					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);

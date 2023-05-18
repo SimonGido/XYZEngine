@@ -135,15 +135,8 @@ namespace XYZ {
 			const glm::mat4 instanceTransform = transform * instance.Transform;
 			const VoxelSubmesh& submesh = submeshes[instance.SubmeshIndex];
 
-			// TODO: this should be handled during model creation, store transform instance probably
-			glm::vec3 centerTranslation = -glm::vec3(
-				static_cast<float>(submesh.Width) / 2.0f * submesh.VoxelSize,
-				static_cast<float>(submesh.Height) / 2.0f * submesh.VoxelSize,
-				static_cast<float>(submesh.Depth) / 2.0f * submesh.VoxelSize
-			);
-			const glm::mat4 centeredTransform = instanceTransform * glm::translate(glm::mat4(1.0f), centerTranslation);
-
-			submitSubmesh(mesh, submesh, centeredTransform, instance.SubmeshIndex);
+		
+			submitSubmesh(mesh, submesh, instanceTransform, instance.SubmeshIndex);
 		}	
 	}
 
@@ -156,14 +149,6 @@ namespace XYZ {
 			const uint32_t submeshIndex = instance.ModelAnimation.SubmeshIndices[keyFrames[index]];
 			const VoxelSubmesh& submesh = submeshes[submeshIndex];
 			const glm::mat4 instanceTransform = transform * instance.Transform;
-
-			// TODO: this should be handled during model creation, store transform instance probably
-			glm::vec3 centerTranslation = -glm::vec3(
-				static_cast<float>(submesh.Width) / 2.0f * submesh.VoxelSize,
-				static_cast<float>(submesh.Height) / 2.0f * submesh.VoxelSize,
-				static_cast<float>(submesh.Depth) / 2.0f * submesh.VoxelSize
-			);
-			const glm::mat4 centeredTransform = instanceTransform * glm::translate(glm::mat4(1.0f), centerTranslation);
 
 			submitSubmesh(mesh, submesh, instanceTransform, submeshIndex);
 			index++;
