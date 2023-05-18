@@ -130,7 +130,11 @@ namespace XYZ {
 		
 			VoxelInstance instance;
 			instance.SubmeshIndex = 0;
-			instance.Transform = glm::mat4(1.0f);
+			instance.Transform = glm::translate(glm::mat4(1.0f), -glm::vec3(
+				submesh.Width / 2.0f * submesh.VoxelSize,
+				submesh.Height / 2.0f * submesh.VoxelSize,
+				submesh.Depth / 2.0f * submesh.VoxelSize
+			));
 	
 			auto colorPallete = m_KnightMesh->GetColorPallete();
 			
@@ -158,7 +162,7 @@ namespace XYZ {
 
 			m_TreeTransforms.push_back({});
 
-			uint32_t count = 900;
+			uint32_t count = 30;
 			m_Transforms.resize(count);
 	
 			const glm::vec3 halfTerrainSize(
@@ -169,8 +173,8 @@ namespace XYZ {
 
 			for (uint32_t i = 0; i < count; ++i)
 			{
-				m_Transforms[i].GetTransform().Translation = glm::linearRand(-halfTerrainSize, halfTerrainSize);
-				
+				m_Transforms[i].GetTransform().Translation = glm::linearRand(-halfTerrainSize, halfTerrainSize);				
+				m_Transforms[i].GetTransform().Rotation.x = -90.0f;
 			}
 			pushGenerateVoxelMeshJob();
 
@@ -296,8 +300,9 @@ namespace XYZ {
 
 				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
 				for (auto& transform : m_TreeTransforms)
+				{
 					m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());
-
+				}
 				for (size_t i = 0; i < m_Transforms.size(); i += 3)
 				{
 					const glm::mat4 castleTransform = m_Transforms[i].GetLocalTransform();

@@ -230,7 +230,6 @@ namespace XYZ {
 		struct Statistics
 		{
 			uint32_t ModelCount = 0;
-			uint32_t CulledModels = 0;
 		};
 
 	private:
@@ -293,7 +292,6 @@ namespace XYZ {
 		SSBOColors				m_SSBOColors;
 		SSBOOCtree				m_SSBOOctree;
 
-		Math::Frustum			m_Frustum;
 
 		glm::ivec2				m_ViewportSize;
 		glm::ivec2				m_WorkGroups;
@@ -306,7 +304,6 @@ namespace XYZ {
 		bool					m_UseOctree = false;
 		bool					m_ShowOctree = false;
 		bool					m_ShowAABB = false;
-		bool					m_Cull = true;
 
 		std::vector<VoxelRenderModel*>					 m_RenderModelsSorted;
 		std::vector<VoxelRenderModel>					 m_RenderModels;

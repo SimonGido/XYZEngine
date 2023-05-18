@@ -88,7 +88,6 @@ namespace XYZ {
 		m_VoxelMeshBuckets.clear();
 		m_EffectCommands.clear();
 
-		m_Frustum = camera.Frustum;
 		m_Statistics = {};
 
 		updateViewportSize();
@@ -205,7 +204,6 @@ namespace XYZ {
 			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Direction), 0.1f);
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Radiance), 0.1f);
 			ImGui::DragFloat("Light Multiplier", &m_UBVoxelScene.DirectionalLight.Multiplier, 0.1f);
-			ImGui::Checkbox("Cull", &m_Cull);
 			ImGui::NewLine();
 
 			ImGui::Checkbox("Top Grid", &m_UseTopGrid);
@@ -223,7 +221,7 @@ namespace XYZ {
 				UI::TextTableRow("%s", "Mesh Allocations:", "%u", static_cast<uint32_t>(m_LastFrameMeshAllocations.size()));
 				UI::TextTableRow("%s", "Update Allocations:", "%u", static_cast<uint32_t>(m_UpdatedAllocations.size()));
 				UI::TextTableRow("%s", "Model Count:", "%u", m_Statistics.ModelCount);
-				UI::TextTableRow("%s", "Culled Models:", "%u", m_Statistics.CulledModels);
+
 				UI::TextTableRow("%s", "Voxel Buffer Usage:", "%u%%", voxelBufferUsage);
 				UI::TextTableRow("%s", "Color Buffer Usage:", "%u%%", colorBufferUsage);
 				UI::TextTableRow("%s", "Top Grid Buffer Usage:", "%u%%", topGridBufferUsage);
@@ -547,36 +545,14 @@ namespace XYZ {
 
 		// Try insert into octree if pass frustum culling
 		int32_t modelIndex = 0;
-		if (m_Cull)
+		for (auto model : m_RenderModelsSorted)
 		{
-			for (auto model : m_RenderModelsSorted)
-			{
-				// TODO: frustum culling should be outside of renderer in VoxelScene or something
-				if (m_ModelsOctree.TryInsert(model->BoundingBox, modelIndex, m_Frustum))
-				{
-					auto& allocation = m_VoxelMeshBuckets[model->Mesh->GetHandle()];
-					model->ModelIndex = modelIndex;
-					allocation.Mesh = model->Mesh;
-					allocation.Models.push_back(model);
-					modelIndex++;
-				}
-				else
-				{
-					m_Statistics.CulledModels++;
-				}
-			}
-		}
-		else
-		{
-			for (auto model : m_RenderModelsSorted)
-			{
-				m_ModelsOctree.InsertData(model->BoundingBox, modelIndex);
-				auto& allocation = m_VoxelMeshBuckets[model->Mesh->GetHandle()];
-				model->ModelIndex = modelIndex;
-				allocation.Mesh = model->Mesh;
-				allocation.Models.push_back(model);
-				modelIndex++;
-			}
+			m_ModelsOctree.InsertData(model->BoundingBox, modelIndex);
+			auto& allocation = m_VoxelMeshBuckets[model->Mesh->GetHandle()];
+			model->ModelIndex = modelIndex;
+			allocation.Mesh = model->Mesh;
+			allocation.Models.push_back(model);
+			modelIndex++;
 		}
 
 		// Pass it to ssbo data
