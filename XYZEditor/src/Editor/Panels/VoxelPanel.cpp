@@ -121,9 +121,9 @@ namespace XYZ {
 			m_TreeMesh = Ref<VoxelProceduralMesh>::Create();
 
 			VoxelSubmesh submesh;
-			submesh.Width = 1024;
-			submesh.Height = 512;
-			submesh.Depth = 1024;
+			submesh.Width = 128;
+			submesh.Height = 128;
+			submesh.Depth = 128;
 			submesh.VoxelSize = 3.0f;
 	
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth, 0);
@@ -174,7 +174,7 @@ namespace XYZ {
 			for (uint32_t i = 0; i < count; ++i)
 			{
 				m_Transforms[i].GetTransform().Translation = glm::linearRand(-halfTerrainSize, halfTerrainSize);				
-				m_Transforms[i].GetTransform().Rotation.x = -90.0f;
+				m_Transforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
 			}
 			pushGenerateVoxelMeshJob();
 
@@ -234,7 +234,7 @@ namespace XYZ {
 				
 				if (ImGui::Button("Generate Top Grid"))
 				{
-					m_ProceduralMesh->GenerateTopGridAsync(m_TopGridSize);
+					m_ProceduralMesh->Compress(0, 16);
 				}
 				ImGui::Checkbox("Update Water", &m_UpdateWater);
 			}
@@ -276,8 +276,7 @@ namespace XYZ {
 					terrainSubmesh.ColorIndices = m_Terrain.Terrain;
 
 					m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
-					while (!m_ProceduralMesh->GenerateTopGridAsync(m_TopGridSize)) {}
-
+			
 					//m_VoxelRenderer->SubmitComputeData(m_Terrain.WaterMap.data(), m_Terrain.WaterMap.size(), 0, m_WaterDensityAllocation, true);
 				}
 

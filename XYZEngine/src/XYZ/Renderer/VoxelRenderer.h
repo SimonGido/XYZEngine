@@ -65,35 +65,28 @@ namespace XYZ {
 		uint32_t    ColorIndex;
 
 		float		VoxelSize;	
-		int32_t		TopGridIndex;
+		uint32_t	CellsOffset;
+		uint32_t	CompressScale;
+		Bool32		Compressed = false;
 
-		Padding<4>	Padding;
+		Padding<12> Padding{};
 	};
 
-	struct VoxelTopGrid
+
+	struct VoxelCompressedCell
 	{
-		uint32_t  CellsOffset;
-
-		uint32_t  Width;
-		uint32_t  Height;
-		uint32_t  Depth;
-		
-		float	  Size;
-
-		Padding<12> Padding;
+		uint32_t VoxelOffset;
+		uint32_t VoxelCount;
 	};
 
 	struct SSBOVoxelModels
 	{
 		static constexpr uint32_t MaxModels = 1024;
-		static constexpr uint32_t MaxTopGrids = 512;
 
 		uint32_t NumModels;
 		Padding<12> Padding;
 		
 		VoxelModel	 Models[MaxModels];
-
-		VoxelTopGrid TopGrids[MaxTopGrids];
 
 		static constexpr uint32_t Binding = 18;
 		static constexpr uint32_t Set = 0;
@@ -110,11 +103,11 @@ namespace XYZ {
 		static constexpr uint32_t Set = 0;
 	};
 
-	struct SSBOVoxelTopGrids
+	struct SSBOVoxelCompressed
 	{
-		static constexpr uint32_t MaxTopGridCells = 40 * 1024 * 1024;
+		static constexpr uint32_t MaxCompressedCells = 40 * 1024 * 1024;
 
-		uint8_t TopGridCells[MaxTopGridCells];
+		VoxelCompressedCell CompressedCells[MaxCompressedCells];
 
 		static constexpr uint32_t Binding = 20;
 		static constexpr uint32_t Set = 0;
@@ -208,7 +201,7 @@ namespace XYZ {
 		struct MeshAllocation
 		{
 			StorageBufferAllocation VoxelAllocation;
-			StorageBufferAllocation	TopGridAllocation;
+			StorageBufferAllocation	CompressedAllocation;
 			StorageBufferAllocation	ColorAllocation;
 
 			std::vector<uint32_t> SubmeshOffsets;
@@ -217,7 +210,7 @@ namespace XYZ {
 		struct UpdatedAllocation
 		{
 			StorageBufferAllocation VoxelAllocation;
-			StorageBufferAllocation	TopGridAllocation;
+			StorageBufferAllocation	CompressedAllocation;
 			StorageBufferAllocation	ColorAllocation;
 		};
 
@@ -247,7 +240,7 @@ namespace XYZ {
 		void prepareModels();
 		
 
-		void updateVoxelModelsSSBO(uint32_t topGridCount);
+		void updateVoxelModelsSSBO(uint32_t compressedCount);
 		void updateOctreeSSBO();
 
 		void createDefaultPipelines();
@@ -277,7 +270,7 @@ namespace XYZ {
 
 
 		Ref<StorageBufferAllocator> m_VoxelStorageAllocator;
-		Ref<StorageBufferAllocator> m_TopGridsAllocator;
+		Ref<StorageBufferAllocator> m_CompressedAllocator;
 		Ref<StorageBufferAllocator> m_ColorStorageAllocator;
 		Ref<StorageBufferAllocator> m_ComputeStorageAllocator;
 
@@ -288,7 +281,7 @@ namespace XYZ {
 		UBVoxelScene			m_UBVoxelScene;
 		SSBOVoxels				m_SSBOVoxels;
 		SSBOVoxelModels			m_SSBOVoxelModels;
-		SSBOVoxelTopGrids		m_SSBOTopGrids;
+		SSBOVoxelCompressed		m_SSBOCompressed;
 		SSBOColors				m_SSBOColors;
 		SSBOOCtree				m_SSBOOctree;
 
@@ -300,7 +293,6 @@ namespace XYZ {
 		Statistics				m_Statistics;
 	
 		bool					m_UseSSGI = false;
-		bool					m_UseTopGrid = false;
 		bool					m_UseOctree = false;
 		bool					m_ShowOctree = false;
 		bool					m_ShowAABB = false;

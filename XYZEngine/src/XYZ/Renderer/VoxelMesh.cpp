@@ -11,73 +11,41 @@ namespace XYZ {
 	}
 
 
-	static VoxelMeshTopGrid CreateTopGridFromAABB(const AABB& aabb, float size)
+	static void CompressSubmesh(VoxelSubmesh& compressed, const VoxelSubmesh& submesh, uint32_t scale)
 	{
-		VoxelMeshTopGrid topGrid;
-
-		const uint32_t width = static_cast<uint32_t>(std::ceil(aabb.Max.x - aabb.Min.x) / size);
-		const uint32_t height = static_cast<uint32_t>(std::ceil(aabb.Max.y - aabb.Min.y) / size);
-		const uint32_t depth = static_cast<uint32_t>(std::ceil(aabb.Max.z - aabb.Min.z) / size);
-
-		topGrid.Width = width;
-		topGrid.Height = height;
-		topGrid.Depth = depth;
-		topGrid.Size = size;
-		topGrid.Cells.resize(width * height * depth, 0);
-		
-		return topGrid;
-	}
-
-	static void InsertSubmeshInTopGrid(VoxelMeshTopGrid& grid, const std::array<VoxelColor, 256>& colorPallete, const VoxelSubmesh& submesh)
-	{
-		const float scale = grid.Size / submesh.VoxelSize;
+		compressed.CompressedCells.resize(compressed.Width * compressed.Height * compressed.Depth);
+		compressed.CompressedVoxelCount = 0;
+		compressed.CompressScale = scale;
 		for (uint32_t x = 0; x < submesh.Width; x++)
 		{
 			for (uint32_t y = 0; y < submesh.Height; y++)
 			{
 				for (uint32_t z = 0; z < submesh.Depth; z++)
 				{
+					const uint32_t cellX = x / scale;
+					const uint32_t cellY = y / scale;
+					const uint32_t cellZ = z / scale;
 					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
-					const uint16_t colorIndex = static_cast<uint16_t>(submesh.ColorIndices[index]);
-					const VoxelColor color = colorPallete[colorIndex];
-					if (color.A != 0)
+					const uint8_t voxel = submesh.ColorIndices[index];
+					const uint32_t cellIndex = Index3D(cellX, cellY, cellZ, compressed.Width, compressed.Height);
+					if (cellIndex < compressed.CompressedCells.size())
 					{
-						const glm::vec3 voxelPosition = {
-							x * submesh.VoxelSize,
-							y * submesh.VoxelSize,
-							z * submesh.VoxelSize
-						};
-						const glm::ivec3 topGridCellStart = {
-							std::floor(voxelPosition.x / grid.Size),
-							std::floor(voxelPosition.y / grid.Size),
-							std::floor(voxelPosition.z / grid.Size)
-						};
-						const glm::ivec3 topGridCellEnd = {
-							std::ceil((voxelPosition.x + submesh.VoxelSize) / grid.Size),
-							std::ceil((voxelPosition.y + submesh.VoxelSize) / grid.Size),
-							std::ceil((voxelPosition.z + submesh.VoxelSize) / grid.Size)
-						};
+						if (compressed.CompressedCells[cellIndex].Voxels.size() == 1 
+						 && compressed.CompressedCells[cellIndex].Voxels[0] == voxel)
+							continue;
 
-						for (uint32_t tx = topGridCellStart.x; tx < topGridCellEnd.x; tx++)
-						{
-							for (uint32_t ty = topGridCellStart.y; ty < topGridCellEnd.y; ty++)
-							{
-								for (uint32_t tz = topGridCellStart.z; tz < topGridCellEnd.z; tz++)
-								{
-									const uint32_t topgridIndex = Index3D(tx, ty, tz, grid.Width, grid.Height);
-									if (topgridIndex < grid.Cells.size())
-									{
-										grid.Cells[topgridIndex]++;
-									}
-								}
-							}
-						}
+						compressed.CompressedCells[cellIndex].Voxels.push_back(voxel);
 					}
 				}
 			}
 		}
+		uint32_t voxelOffset = 0;
+		for (auto& cell : compressed.CompressedCells)
+		{
+			voxelOffset += cell.Voxels.size();
+		}
+		compressed.CompressedVoxelCount = voxelOffset;
 	}
-
 
 	VoxelSourceMesh::VoxelSourceMesh(const Ref<VoxelMeshSource>& meshSource)
 		:
@@ -109,9 +77,7 @@ namespace XYZ {
 	VoxelProceduralMesh::VoxelProceduralMesh()
 		:
 		m_NumVoxels(0),
-		m_Dirty(false),
-		m_HasTopGrid(false),
-		m_GeneratingTopGrid(false)
+		m_Dirty(false)
 	{
 	}
 
@@ -140,22 +106,18 @@ namespace XYZ {
 		m_ColorPallete = pallete;
 	}
 
-	bool VoxelProceduralMesh::GenerateTopGridAsync(float size)
-	{
-		if (m_GeneratingTopGrid)
-			return false;
 
-		m_HasTopGrid = false;
-		m_GeneratingTopGrid = true;
-		Ref<VoxelProceduralMesh> instance = this;
-		auto& pool = Application::Get().GetThreadPool();
-		pool.PushJob([instance, submeshes = m_Submeshes, colorPallete = m_ColorPallete, size]() mutable {
-			instance->m_TopGrid = generateTopGrid(submeshes, colorPallete, size);
-			instance->m_HasTopGrid = true;
-			instance->m_GeneratingTopGrid = false;
-			instance->m_Dirty = true;
-		});
-		
+	bool VoxelProceduralMesh::Compress(uint32_t submeshIndex, uint32_t scale)
+	{
+		auto& submesh = m_Submeshes[submeshIndex];
+		VoxelSubmesh compressed;
+		compressed.Width = Math::RoundUp(submesh.Width, scale) / scale;
+		compressed.Height = Math::RoundUp(submesh.Height, scale) / scale;
+		compressed.Depth = Math::RoundUp(submesh.Depth, scale) / scale;
+		compressed.VoxelSize = scale * submesh.VoxelSize;
+		CompressSubmesh(compressed, submesh, scale);
+		m_Submeshes[submeshIndex] = std::move(compressed);
+		m_Dirty = true;
 		return true;
 	}
 
@@ -192,28 +154,10 @@ namespace XYZ {
 		m_Dirty = false;
 		return dirty;
 	}
-	bool VoxelProceduralMesh::HasTopGrid() const
-	{
-		return m_HasTopGrid;
-	}
+
 	std::unordered_map<uint32_t, VoxelMesh::DirtyRange> VoxelProceduralMesh::DirtySubmeshes() const
 	{
 		return std::move(m_DirtySubmeshes);
 	}
-	VoxelMeshTopGrid VoxelProceduralMesh::generateTopGrid(const std::vector<VoxelSubmesh>& submeshes, const std::array<VoxelColor, 256>& colorPallete, float size)
-	{
-		AABB aabb(glm::vec3(0), glm::vec3(FLT_MIN));
-		for (auto& submesh : submeshes)
-		{
-			aabb.Max.x = std::max(static_cast<float>(submesh.Width) * submesh.VoxelSize, aabb.Max.x);
-			aabb.Max.y = std::max(static_cast<float>(submesh.Height) * submesh.VoxelSize, aabb.Max.y);
-			aabb.Max.z = std::max(static_cast<float>(submesh.Depth) * submesh.VoxelSize, aabb.Max.z);
-		}
-		VoxelMeshTopGrid topGrid = CreateTopGridFromAABB(aabb, size);
-		for (auto& submesh : submeshes)
-		{
-			InsertSubmeshInTopGrid(topGrid, colorPallete, submesh);
-		}
-		return topGrid;
-	}
+	
 }

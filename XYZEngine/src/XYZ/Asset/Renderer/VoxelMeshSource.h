@@ -12,11 +12,21 @@
 
 namespace XYZ {
 
-	struct XYZ_API VoxelSubmesh
+	struct CompressedCell
+	{
+		std::vector<uint8_t> Voxels;
+	};
+
+	struct VoxelSubmesh
 	{		
 		uint32_t Width, Height, Depth;
 		float VoxelSize = 1.0f;
 		std::vector<uint8_t> ColorIndices;
+
+
+		std::vector<CompressedCell> CompressedCells;
+		uint32_t CompressedVoxelCount = 0;
+		uint32_t CompressScale = 0;
 	};
 
 	struct VoxelTransformAnimation
