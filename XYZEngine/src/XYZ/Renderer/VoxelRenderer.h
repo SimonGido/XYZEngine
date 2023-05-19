@@ -205,6 +205,14 @@ namespace XYZ {
 			std::vector<VoxelEffectInvocation> Invocations;
 		};
 
+		struct SSGIValues
+		{
+			uint32_t SampleCount = 1;
+			float	 IndirectAmount = 1.0f;
+			float	 NoiseAmount = 1.0f;
+			Bool32	 Noise = true;
+		};
+
 		struct MeshAllocation
 		{
 			StorageBufferAllocation VoxelAllocation;
@@ -274,11 +282,11 @@ namespace XYZ {
 		UBVoxelScene			m_UBVoxelScene;
 		SSBOVoxels				m_SSBOVoxels;
 		SSBOVoxelModels			m_SSBOVoxelModels;
-		SSBOVoxelAccelerationGrids		m_SSBOAccelerationGrids;
+		SSBOVoxelAccelerationGrids	m_SSBOAccelerationGrids;
 		SSBOColors				m_SSBOColors;
 		SSBOOCtree				m_SSBOOctree;
 
-
+		SSGIValues				m_SSGIValues;
 		glm::ivec2				m_ViewportSize;
 		glm::ivec2				m_WorkGroups;
 		bool				    m_ViewportSizeChanged = false;

@@ -203,6 +203,12 @@ namespace XYZ {
 			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Direction), 0.1f);
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Radiance), 0.1f);
 			ImGui::DragFloat("Light Multiplier", &m_UBVoxelScene.DirectionalLight.Multiplier, 0.1f);
+			
+			ImGui::Checkbox("SSGI", &m_UseSSGI);
+			ImGui::DragInt("Light Multiplier", (int*) & m_SSGIValues.SampleCount);
+			ImGui::DragFloat("Light Multiplier", &m_SSGIValues.IndirectAmount, 0.1f);
+			ImGui::DragFloat("Light Multiplier", &m_SSGIValues.NoiseAmount, 0.1f);
+			ImGui::Checkbox("SSGI Noise", (bool*)&m_SSGIValues.Noise);
 			ImGui::NewLine();
 
 			ImGui::Checkbox("Acceleration Grid", &m_UseAccelerationGrid);
@@ -479,7 +485,8 @@ namespace XYZ {
 		Renderer::DispatchCompute(
 			m_SSGIPipeline,
 			nullptr,
-			m_WorkGroups.x, m_WorkGroups.y, 1
+			m_WorkGroups.x, m_WorkGroups.y, 1,
+			PushConstBuffer{ m_SSGIValues }
 		);
 		
 		Renderer::EndPipelineCompute(m_SSGIPipeline);
