@@ -205,9 +205,9 @@ namespace XYZ {
 			ImGui::DragFloat("Light Multiplier", &m_UBVoxelScene.DirectionalLight.Multiplier, 0.1f);
 			
 			ImGui::Checkbox("SSGI", &m_UseSSGI);
-			ImGui::DragInt("Light Multiplier", (int*) & m_SSGIValues.SampleCount);
-			ImGui::DragFloat("Light Multiplier", &m_SSGIValues.IndirectAmount, 0.1f);
-			ImGui::DragFloat("Light Multiplier", &m_SSGIValues.NoiseAmount, 0.1f);
+			ImGui::DragInt("SSGI Sample Count", (int*) & m_SSGIValues.SampleCount);
+			ImGui::DragFloat("SSGI Indirect Amount", &m_SSGIValues.IndirectAmount, 0.1f);
+			ImGui::DragFloat("SSGI Noise Amount", &m_SSGIValues.NoiseAmount, 0.1f);
 			ImGui::Checkbox("SSGI Noise", (bool*)&m_SSGIValues.Noise);
 			ImGui::NewLine();
 
