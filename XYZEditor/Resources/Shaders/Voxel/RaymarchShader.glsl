@@ -18,7 +18,7 @@ const uint OPAQUE = 255;
 
 layout(push_constant) uniform Uniforms
 {
-	bool UseTopGrid;
+	bool UseAccelerationGrid;
 	bool UseOctree;
 	bool ShowOctree;
 	bool ShowAABB;
@@ -52,7 +52,7 @@ struct VoxelModelOctreeNode
 	uint Padding;
 };
 
-struct VoxelTopGrid
+struct VoxelAccelerationGrid
 {
 	uint  CellsOffset;
 
@@ -75,7 +75,7 @@ struct VoxelModel
 	uint  ColorIndex;
 
 	float VoxelSize;
-	int   TopGridIndex;
+	int   AccelerationGridIndex;
 
 	uint  Padding;
 };
@@ -102,7 +102,7 @@ layout(std430, binding = 18) readonly buffer buffer_Models
 {		
 	uint		 NumModels;
 	VoxelModel	 Models[MAX_MODELS];
-	VoxelTopGrid TopGrids[];
+	VoxelAccelerationGrid AccelerationGrids[];
 };
 
 layout(std430, binding = 19) readonly buffer buffer_Colors
@@ -110,9 +110,9 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 	uint ColorPallete[MAX_COLORS][256];
 };
 
-layout(std430, binding = 20) readonly buffer buffer_TopGrids
+layout(std430, binding = 20) readonly buffer buffer_AccelerationGrids
 {		
-	uint8_t TopGridCells[];
+	uint8_t AccelerationGridCells[];
 };
 
 layout(std430, binding = 23) readonly buffer buffer_Octree
@@ -439,7 +439,7 @@ vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
 }
 
 // TODO: refactor and fix it
-RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, in VoxelTopGrid grid)
+RaymarchResult RaymarchAccelerationGrid(in Ray ray, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, in VoxelAccelerationGrid grid)
 {
 	RaymarchResult result;
 	result.ColorUINT = 0;
@@ -479,7 +479,7 @@ RaymarchResult RaymarchTopGrid(in Ray ray, vec3 origin, vec3 direction, in Voxel
 		if (IsValidVoxel(current_voxel, grid.Width, grid.Height, grid.Depth))
 		{
 			uint voxelIndex = Index3D(current_voxel, grid.Width, grid.Height) + grid.CellsOffset;
-			if (uint(TopGridCells[voxelIndex]) != 0)
+			if (uint(AccelerationGridCells[voxelIndex]) != 0)
 			{			
 				float dist = VoxelDistanceFromRay(newOrigin, direction, current_voxel, grid.Size);
 				newOrigin += direction * (dist - EPSILON); // Move origin to hit of top grid cell
@@ -574,9 +574,9 @@ bool DrawModel(uint modelIndex)
 		return false;
 
 	RaymarchResult result;
-	if (model.TopGridIndex != -1 && u_Uniforms.UseTopGrid)
+	if (model.AccelerationGridIndex != -1 && u_Uniforms.UseAccelerationGrid)
 	{
-		result = RaymarchTopGrid(ray, origin, direction, model, currentDistance, TopGrids[model.TopGridIndex]);
+		result = RaymarchAccelerationGrid(ray, origin, direction, model, currentDistance, AccelerationGrids[model.AccelerationGridIndex]);
 	}
 	else
 	{

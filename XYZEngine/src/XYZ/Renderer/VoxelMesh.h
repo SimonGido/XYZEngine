@@ -11,7 +11,7 @@
 
 namespace XYZ {
 
-	struct VoxelMeshTopGrid
+	struct VoxelMeshAccelerationGrid
 	{
 		uint32_t  Width;
 		uint32_t  Height;
@@ -42,8 +42,8 @@ namespace XYZ {
 		virtual bool NeedUpdate() const = 0;
 		virtual std::unordered_map<uint32_t, DirtyRange> DirtySubmeshes() const { return {}; }
 		
-		virtual const VoxelMeshTopGrid& GetTopGrid() const { return {}; }
-		virtual bool HasTopGrid() const { return false; }
+		virtual const VoxelMeshAccelerationGrid& GetAccelerationGrid() const { return {}; }
+		virtual bool HasAccelerationGrid() const { return false; }
 
 		friend class VoxelRenderer;
 	};
@@ -85,7 +85,7 @@ namespace XYZ {
 		void SetInstances(const std::vector<VoxelInstance>& instances);
 		void SetColorPallete(const std::array<VoxelColor, 256>& pallete);
 
-		bool GenerateTopGridAsync(float size);
+		bool GenerateAccelerationGridAsync(float size);
 
 		void SetVoxelColor(uint32_t submeshIndex, uint32_t x, uint32_t y, uint32_t z, uint8_t value);
 
@@ -101,12 +101,12 @@ namespace XYZ {
 
 	private:
 		virtual bool NeedUpdate() const override;
-		virtual bool HasTopGrid() const override;
-		virtual const VoxelMeshTopGrid& GetTopGrid() const override { return m_TopGrid; }
+		virtual bool HasAccelerationGrid() const override;
+		virtual const VoxelMeshAccelerationGrid& GetAccelerationGrid() const override { return m_AccelerationGrid; }
 		virtual std::unordered_map<uint32_t, DirtyRange> DirtySubmeshes() const override;
 	
 	
-		static VoxelMeshTopGrid generateTopGrid(
+		static VoxelMeshAccelerationGrid generateAccelerationGrid(
 			const std::vector<VoxelSubmesh>& submeshes,
 			const std::array<VoxelColor, 256>& colorPallete,
 			float size
@@ -116,9 +116,9 @@ namespace XYZ {
 		std::vector<VoxelInstance>	m_Instances;
 		std::array<VoxelColor, 256> m_ColorPallete;
 
-		VoxelMeshTopGrid m_TopGrid;
-		bool			 m_HasTopGrid;
-		bool			 m_GeneratingTopGrid;
+		VoxelMeshAccelerationGrid m_AccelerationGrid;
+		bool			 m_HasAccelerationGrid;
+		bool			 m_GeneratingAccelerationGrid;
 
 		mutable std::unordered_map<uint32_t, DirtyRange> m_DirtySubmeshes;		
 		mutable std::atomic_bool m_Dirty;

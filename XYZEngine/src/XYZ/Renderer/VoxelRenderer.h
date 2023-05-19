@@ -44,9 +44,9 @@ namespace XYZ {
 
 	struct SSBOVoxels
 	{
-		static constexpr uint32_t MaxVoxels = 1024 * 1024 * 1024; // 1gb
+		static constexpr uint32_t MaxVoxels = 2 * 1024 * 1024 * 1024; // 2gb
 				
-		uint8_t Voxels[MaxVoxels];
+
 
 		static constexpr uint32_t Binding = 17;
 		static constexpr uint32_t Set = 0;
@@ -65,12 +65,12 @@ namespace XYZ {
 		uint32_t    ColorIndex;
 
 		float		VoxelSize;	
-		int32_t		TopGridIndex;
+		int32_t		AccelerationGridIndex;
 
 		Padding<4>	Padding;
 	};
 
-	struct VoxelTopGrid
+	struct VoxelAccelerationGrid
 	{
 		uint32_t  CellsOffset;
 
@@ -86,14 +86,14 @@ namespace XYZ {
 	struct SSBOVoxelModels
 	{
 		static constexpr uint32_t MaxModels = 1024;
-		static constexpr uint32_t MaxTopGrids = 512;
+		static constexpr uint32_t MaxAccelerationGrids = 512;
 
 		uint32_t NumModels;
 		Padding<12> Padding;
 		
 		VoxelModel	 Models[MaxModels];
 
-		VoxelTopGrid TopGrids[MaxTopGrids];
+		VoxelAccelerationGrid AccelerationGrids[MaxAccelerationGrids];
 
 		static constexpr uint32_t Binding = 18;
 		static constexpr uint32_t Set = 0;
@@ -103,18 +103,18 @@ namespace XYZ {
 	struct SSBOColors
 	{
 		static constexpr uint32_t MaxColors = 1024;
-
-		uint32_t ColorPallete[MaxColors][256];
+		static constexpr uint32_t ColorPalleteSize = 256 * sizeof(uint32_t);
+		static constexpr uint32_t MaxSize = MaxColors * ColorPalleteSize;
 
 		static constexpr uint32_t Binding = 19;
 		static constexpr uint32_t Set = 0;
 	};
 
-	struct SSBOVoxelTopGrids
+	struct SSBOVoxelAccelerationGrids
 	{
-		static constexpr uint32_t MaxTopGridCells = 40 * 1024 * 1024;
+		static constexpr uint32_t MaxAccelerationGridCells = 40 * 1024 * 1024;
 
-		uint8_t TopGridCells[MaxTopGridCells];
+		uint8_t AccelerationGridCells[MaxAccelerationGridCells];
 
 		static constexpr uint32_t Binding = 20;
 		static constexpr uint32_t Set = 0;
@@ -208,23 +208,10 @@ namespace XYZ {
 		struct MeshAllocation
 		{
 			StorageBufferAllocation VoxelAllocation;
-			StorageBufferAllocation	TopGridAllocation;
+			StorageBufferAllocation	AccelerationGridAllocation;
 			StorageBufferAllocation	ColorAllocation;
 
 			std::vector<uint32_t> SubmeshOffsets;
-		};
-	
-		struct UpdatedAllocation
-		{
-			StorageBufferAllocation VoxelAllocation;
-			StorageBufferAllocation	TopGridAllocation;
-			StorageBufferAllocation	ColorAllocation;
-		};
-
-		struct UpdatedSuballocation
-		{
-			uint32_t Offset;
-			uint32_t Size;
 		};
 
 		struct Statistics
@@ -243,11 +230,10 @@ namespace XYZ {
 		void updateViewportSize();
 		void updateUniformBufferSet();
 
-		void submitAllocations();
 		void prepareModels();
 		
 
-		void updateVoxelModelsSSBO(uint32_t topGridCount);
+		void updateVoxelModelsSSBO(uint32_t AccelerationGridCount);
 		void updateOctreeSSBO();
 
 		void createDefaultPipelines();
@@ -277,7 +263,7 @@ namespace XYZ {
 
 
 		Ref<StorageBufferAllocator> m_VoxelStorageAllocator;
-		Ref<StorageBufferAllocator> m_TopGridsAllocator;
+		Ref<StorageBufferAllocator> m_AccelerationGridsAllocator;
 		Ref<StorageBufferAllocator> m_ColorStorageAllocator;
 		Ref<StorageBufferAllocator> m_ComputeStorageAllocator;
 
@@ -288,7 +274,7 @@ namespace XYZ {
 		UBVoxelScene			m_UBVoxelScene;
 		SSBOVoxels				m_SSBOVoxels;
 		SSBOVoxelModels			m_SSBOVoxelModels;
-		SSBOVoxelTopGrids		m_SSBOTopGrids;
+		SSBOVoxelAccelerationGrids		m_SSBOAccelerationGrids;
 		SSBOColors				m_SSBOColors;
 		SSBOOCtree				m_SSBOOctree;
 
@@ -300,7 +286,7 @@ namespace XYZ {
 		Statistics				m_Statistics;
 	
 		bool					m_UseSSGI = false;
-		bool					m_UseTopGrid = false;
+		bool					m_UseAccelerationGrid = false;
 		bool					m_UseOctree = false;
 		bool					m_ShowOctree = false;
 		bool					m_ShowAABB = false;
@@ -315,9 +301,7 @@ namespace XYZ {
 
 		std::unordered_map<AssetHandle, Ref<PipelineCompute>> m_EffectPipelines;
 
-		std::vector<UpdatedAllocation> m_UpdatedAllocations;
-		std::vector<UpdatedSuballocation> m_UpdatedSuballocations;
-
+	
 		struct GPUTimeQueries
 		{
 			uint32_t GPUTime = 0;

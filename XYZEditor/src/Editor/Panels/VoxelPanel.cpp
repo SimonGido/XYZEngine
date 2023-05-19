@@ -43,7 +43,6 @@ namespace XYZ {
 				return static_cast<uint8_t>(RandomNumber(x, y));
 			}
 
-
 			static uint32_t Index3D(int x, int y, int z, int width, int height)
 			{
 				return x + width * (y + height * z);
@@ -230,11 +229,11 @@ namespace XYZ {
 				{
 					pushGenerateVoxelMeshJob();
 				}
-				ImGui::DragFloat("Top Grid Size", &m_TopGridSize, 1.0f, 0, 1024);
+				ImGui::DragFloat("Acceleration Grid Size", &m_AccelerationGridSize, 1.0f, 0, 1024);
 				
-				if (ImGui::Button("Generate Top Grid"))
+				if (ImGui::Button("Generate Acceleration Grid"))
 				{
-					m_ProceduralMesh->GenerateTopGridAsync(m_TopGridSize);
+					m_ProceduralMesh->GenerateAccelerationGridAsync(m_AccelerationGridSize);
 				}
 				ImGui::Checkbox("Update Water", &m_UpdateWater);
 			}
@@ -276,7 +275,7 @@ namespace XYZ {
 					terrainSubmesh.ColorIndices = m_Terrain.Terrain;
 
 					m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
-					while (!m_ProceduralMesh->GenerateTopGridAsync(m_TopGridSize)) {}
+					while (!m_ProceduralMesh->GenerateAccelerationGridAsync(m_AccelerationGridSize)) {}
 
 					//m_VoxelRenderer->SubmitComputeData(m_Terrain.WaterMap.data(), m_Terrain.WaterMap.size(), 0, m_WaterDensityAllocation, true);
 				}

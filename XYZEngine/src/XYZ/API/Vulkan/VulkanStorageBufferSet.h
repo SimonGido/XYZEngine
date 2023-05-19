@@ -16,7 +16,7 @@ namespace XYZ {
 		virtual void Update(void** data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set = 0) override;
 		virtual void UpdateEachFrame(const void* data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set = 0) override;
 		virtual void CreateDescriptors(const Ref<Shader>& shader) override;
-		virtual void Create(uint32_t size, uint32_t set, uint32_t binding, bool indirect = false) override;
+		virtual void Create(uint32_t size, uint32_t set, uint32_t binding, bool indirect = false, bool shared = false) override;
 		virtual void Set(Ref<StorageBuffer> storageBuffer, uint32_t set = 0, uint32_t frame = 0) override;
 		virtual void Resize(uint32_t size, uint32_t set, uint32_t binding) override;
 		virtual void SetBufferInfo(uint32_t size, uint32_t offset, uint32_t binding, uint32_t set = 0) override;

@@ -14,7 +14,7 @@ namespace XYZ {
 		virtual void Update(const void* data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set = 0) = 0;
 		virtual void Update(void** data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set = 0) = 0;
 		virtual void UpdateEachFrame(const void* data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set = 0) = 0;
-		virtual void Create(uint32_t size, uint32_t set, uint32_t binding, bool indirect = false) = 0;
+		virtual void Create(uint32_t size, uint32_t set, uint32_t binding, bool indirect = false, bool shared = false) = 0;
 	
 		virtual void Set(Ref<StorageBuffer> storageBuffer, uint32_t set = 0, uint32_t frame = 0) = 0;
 		virtual void Resize(uint32_t size, uint32_t set, uint32_t binding) = 0;

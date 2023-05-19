@@ -23,6 +23,23 @@
 namespace XYZ {
 	namespace Editor {
 
+
+		class ChunkSystem
+		{
+		public:
+			ChunkSystem(const std::filesystem::path& worldPath);
+
+			void Update(const glm::vec3& position)
+
+		private:
+			static constexpr uint32_t sc_ChunkSize = 512;
+
+			std::array<Ref<VoxelProceduralMesh>, 9> m_ActiveChunks;
+
+			std::filesystem::path m_WorldPath;
+		};
+
+
 		struct VoxelTerrain
 		{
 			std::vector<uint8_t> Terrain;
@@ -116,7 +133,7 @@ namespace XYZ {
 			StorageBufferAllocation m_WaterDensityAllocation;
 			bool m_UpdateWater = false;
 
-			float m_TopGridSize = 32;
+			float m_AccelerationGridSize = 32;
 
 			SpaceColonization* m_SpaceColonization = nullptr;
 			SpaceColonizationData m_SpaceColonizationData;

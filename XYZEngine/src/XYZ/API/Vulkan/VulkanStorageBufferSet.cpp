@@ -74,12 +74,21 @@ namespace XYZ {
 			instance->RT_createDescriptors(vulkanShader);
 		});
 	}
-	void VulkanStorageBufferSet::Create(uint32_t size, uint32_t set, uint32_t binding, bool indirect)
+	void VulkanStorageBufferSet::Create(uint32_t size, uint32_t set, uint32_t binding, bool indirect, bool shared)
 	{
-		for (uint32_t frame = 0; frame < m_Frames; frame++)
+		if (shared)
 		{
 			Ref<StorageBuffer> storageBuffer = StorageBuffer::Create(size, binding, indirect);
-			Set(storageBuffer, set, frame);
+			for (uint32_t frame = 0; frame < m_Frames; frame++)
+				Set(storageBuffer, set, frame);
+		}
+		else
+		{
+			for (uint32_t frame = 0; frame < m_Frames; frame++)
+			{
+				Ref<StorageBuffer> storageBuffer = StorageBuffer::Create(size, binding, indirect);
+				Set(storageBuffer, set, frame);
+			}
 		}
 	}
 	void VulkanStorageBufferSet::Set(Ref<StorageBuffer> storageBuffer, uint32_t set, uint32_t frame)
