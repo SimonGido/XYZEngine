@@ -62,17 +62,25 @@ namespace XYZ {
 	class VoxelOctree
 	{
 	public:
-		VoxelOctree(uint32_t width, uint32_t height, uint32_t depth);
+		VoxelOctree(const std::vector<uint8_t>& voxels, uint32_t width, uint32_t height, uint32_t depth);
 
 
-		void InsertVoxels(const std::vector<uint8_t>& voxels, uint32_t width, uint32_t height);
+		static VoxelOctree FromGrid(const std::vector<uint8_t>& voxels, uint32_t width, uint32_t height, uint32_t depth);
+
+		std::vector<uint8_t> ToGrid() const;
 
 		const std::vector<VoxelOctreeNode>& GetNodes() const { return m_Nodes; }
+		
+		uint32_t GetWidth() const { return m_Width; }
+		uint32_t GetHeight() const { return m_Height; }
+		uint32_t GetDepth() const { return m_Depth; }
 	private:
-
 		void splitNode(int32_t nodeIndex);
 
 	private:
 		std::vector<VoxelOctreeNode> m_Nodes;
+		uint32_t m_Width;
+		uint32_t m_Height;
+		uint32_t m_Depth;
 	};
 }

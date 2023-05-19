@@ -82,36 +82,15 @@ namespace XYZ {
 			}
 		}
 
-		VoxelSubmesh GenerateSnow(uint32_t width, uint32_t height, uint32_t depth, float voxelSize)
-		{
-			VoxelSubmesh submesh;
-			submesh.Width = width;
-			submesh.Height = height;
-			submesh.Depth = depth;
-			submesh.VoxelSize = voxelSize;
-
-			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth);
-			memset(submesh.ColorIndices.data(), 0, submesh.ColorIndices.size());
-
-			for (uint32_t x = 0; x < width; x++)
-			{
-				for (uint32_t z = 0; z < depth; z++)
-				{
-					if (Utils::RandomColorIndex(0, 10) == 0) // % chance to generate snow voxel
-						submesh.ColorIndices[Utils::Index3D(x, height - 1, z, width, height)] = Utils::RandomColorIndex(0, 1);
-				}
-			}
-			return submesh;
-		}
-
+		
 		VoxelPanel::VoxelPanel(std::string name)
 			:
 			EditorPanel(std::forward<std::string>(name)),
 			m_ViewportSize(0.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f),
-			m_Octree(AABB(glm::vec3(0.0f), glm::vec3(0.0f)), 10)
+			m_Octree(AABB(glm::vec3(0.0f), glm::vec3(0.0f)), 10),
+			m_World("blabla", 50)
 		{
-
 			m_DeerMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));
 			m_CastleMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox"));
 			m_KnightMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/chr_knight.vox"));
@@ -120,9 +99,9 @@ namespace XYZ {
 			m_TreeMesh = Ref<VoxelProceduralMesh>::Create();
 
 			VoxelSubmesh submesh;
-			submesh.Width = 1024;
+			submesh.Width = 256;
 			submesh.Height = 512;
-			submesh.Depth = 1024;
+			submesh.Depth = 256;
 			submesh.VoxelSize = 3.0f;
 	
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth, 0);
@@ -296,8 +275,14 @@ namespace XYZ {
 						m_ProceduralMesh->SetVoxelColor(0, 256, y, 256, RandomNumber(5u, 255u));
 					}
 				}
+				m_World.Update(m_EditorCamera.GetPosition());
+				for (const auto& chunkRow : m_World.GetActiveChunks())
+				{
+					for (const auto& chunk : chunkRow)
+						m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
+				}
 
-				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
+				//m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
 				for (auto& transform : m_TreeTransforms)
 				{
 					m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());

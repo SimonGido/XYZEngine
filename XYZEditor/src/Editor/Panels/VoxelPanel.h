@@ -20,24 +20,10 @@
 
 #include "XYZ/Utils/Algorithms/SpaceColonization.h"
 
+#include "Voxel/VoxelWorld.h"
+
 namespace XYZ {
 	namespace Editor {
-
-
-		class ChunkSystem
-		{
-		public:
-			ChunkSystem(const std::filesystem::path& worldPath);
-
-			void Update(const glm::vec3& position)
-
-		private:
-			static constexpr uint32_t sc_ChunkSize = 512;
-
-			std::array<Ref<VoxelProceduralMesh>, 9> m_ActiveChunks;
-
-			std::filesystem::path m_WorldPath;
-		};
 
 
 		struct VoxelTerrain
@@ -140,6 +126,7 @@ namespace XYZ {
 
 
 			Octree m_Octree;
+			VoxelWorld m_World;
 		};
 	}
 }

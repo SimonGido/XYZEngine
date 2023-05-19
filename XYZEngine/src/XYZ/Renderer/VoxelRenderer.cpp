@@ -205,7 +205,7 @@ namespace XYZ {
 			ImGui::DragFloat("Light Multiplier", &m_UBVoxelScene.DirectionalLight.Multiplier, 0.1f);
 			ImGui::NewLine();
 
-			ImGui::Checkbox("Top Grid", &m_UseAccelerationGrid);
+			ImGui::Checkbox("Acceleration Grid", &m_UseAccelerationGrid);
 			ImGui::Checkbox("Octree", &m_UseOctree);
 			ImGui::Checkbox("Show Octree", &m_ShowOctree);
 			ImGui::Checkbox("Show AABB", &m_ShowAABB);

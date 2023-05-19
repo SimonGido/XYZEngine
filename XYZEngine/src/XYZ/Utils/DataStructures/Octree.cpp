@@ -256,15 +256,17 @@ namespace XYZ {
 		}
 		return newOctree;
 	}
-	VoxelOctree::VoxelOctree(uint32_t width, uint32_t height, uint32_t depth)
+	VoxelOctree::VoxelOctree(const std::vector<uint8_t>& voxels, uint32_t width, uint32_t height, uint32_t depth)
+		:
+		m_Width(width),
+		m_Height(height),
+		m_Depth(depth)
 	{
 		VoxelOctreeNode& root = m_Nodes.emplace_back();
 		uint32_t maxDimension = std::max(width, std::max(height, depth));
 		root.Size = Math::RoundUp(maxDimension, 16);
-	}
 
-	void VoxelOctree::InsertVoxels(const std::vector<uint8_t>& voxels, uint32_t width, uint32_t height)
-	{
+
 		std::queue<uint32_t> nodesToIterate;
 		nodesToIterate.push(0); // Start from root
 
@@ -307,7 +309,40 @@ namespace XYZ {
 				node->ColorIndex = colorIndex;
 			}
 		}
+
 	}
+
+
+	
+	VoxelOctree VoxelOctree::FromGrid(const std::vector<uint8_t>& voxels, uint32_t width, uint32_t height, uint32_t depth)
+	{
+		return VoxelOctree(voxels, width, height, depth);
+	}
+
+	std::vector<uint8_t> VoxelOctree::ToGrid() const
+	{
+		std::vector<uint8_t> result(m_Width * m_Height * m_Depth, 0);
+		for (auto& node : m_Nodes)
+		{
+			if (node.IsLeaf)
+			{
+				for (uint32_t x = 0; x < node.Size; ++x)
+				{
+					for (uint32_t y = 0; y < node.Size; ++y)
+					{
+						for (uint32_t z = 0; z < node.Size; ++z)
+						{
+							const uint32_t index = Index3D(node.X + x, node.Y + y, node.Z + z, m_Width, m_Height);
+							if (index < result.size())
+								result[index] = static_cast<uint8_t>(node.ColorIndex);
+						}
+					}
+				}
+			}
+		}
+		return result;
+	}
+
 
 	void VoxelOctree::splitNode(int32_t nodeIndex)
 	{
