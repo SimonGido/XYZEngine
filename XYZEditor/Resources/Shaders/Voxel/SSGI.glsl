@@ -46,17 +46,6 @@ float fmod(float x, float y)
     return x - y * trunc(x/y);
 }
 
-float Pow(float x, float y)
-{   
-    int sign = 1;
-    if (x < 0)
-    {    
-        sign = -1;
-        x = -x;
-    }
-    return pow(x, y) * sign;
-}
-
 float distToDepth(float dist)
 {
     return (dist - NearClip) / (FarClip - NearClip);
@@ -121,7 +110,7 @@ vec3 getViewNormal(vec2 uv)
 
 float lenSq(vec3 v)
 {
-    return Pow(v.x, 2.0) + Pow(v.y, 2.0) + Pow(v.z, 2.0);
+    return pow(v.x, 2.0) + pow(v.y, 2.0) + pow(v.z, 2.0);
 }
 
 
@@ -157,7 +146,7 @@ vec3 lightSample(vec2 uv, vec2 lightUV, vec3 normal, vec3 position, float n, vec
                 //falloff calculations
     float cosemit = clamp(dot(lightdir, -lightnormal), 0.0, 1.0); //emit only in one direction
     float coscatch = clamp(dot(lightdir, normal) * 0.5 + 0.5, 0.0, 1.0); //recieve light from one direction
-    float distfall = Pow(lenSq(lightpath), 0.1) + 1.0; //fall off with distance
+    float distfall = pow(lenSq(lightpath), 0.1) + 1.0; //fall off with distance
     
     return (lightcolor * cosemit * coscatch / distfall) * (length(lightposition) / 20.0);
 }

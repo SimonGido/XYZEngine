@@ -46,11 +46,23 @@ namespace XYZ{
 		VoxelChunk generateChunk(int64_t chunkX, int64_t chunkZ, const VoxelBiom& biom) const;
 
 	private:
+		struct GeneratedChunk
+		{
+			int64_t IndexX;
+			int64_t IndexZ;
+
+			VoxelChunk Chunk;
+		};
+
+
+	private:
 		ActiveChunkStorage m_ActiveChunks;
 
 		std::filesystem::path m_WorldPath;
 
 		std::unordered_map<std::string, VoxelBiom> m_Bioms;
+
+		std::vector<std::future<GeneratedChunk>> m_ChunksGenerated;
 
 		uint32_t m_Seed;
 

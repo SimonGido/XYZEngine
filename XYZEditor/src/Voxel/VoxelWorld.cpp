@@ -39,6 +39,17 @@ namespace XYZ {
 		constexpr uint32_t halfDimensionX = sc_ChunkDimensions.x / 2;
 		constexpr uint32_t halfDimensionZ = sc_ChunkDimensions.z / 2;
 
+		for (int32_t i = m_ChunksGenerated.size() - 1; i >= 0; i--)
+		{
+			if (m_ChunksGenerated[i]._Is_ready())
+			{
+				auto chunk = m_ChunksGenerated[i].get();
+				m_ActiveChunks[chunk.IndexX][chunk.IndexZ] = std::move(chunk.Chunk);
+				m_ChunksGenerated.erase(m_ChunksGenerated.begin() + i);
+			}
+		}
+
+
 		const int64_t centerChunkX = static_cast<int64_t>(std::floor((position.x + halfDimensionX) / sc_ChunkDimensions.x));
 		const int64_t centerChunkZ = static_cast<int64_t>(std::floor((position.z + halfDimensionZ) / sc_ChunkDimensions.z));
 		
@@ -50,6 +61,7 @@ namespace XYZ {
 		if (shiftDirX != 0 || shiftDirZ != 0)
 			m_ActiveChunks = std::move(shiftChunks(shiftDirX, shiftDirZ));
 
+		m_ChunksGenerated.clear();
 		generateChunks(centerChunkX, centerChunkZ);
 		m_LastCenterChunkX = centerChunkX;
 		m_LastCenterChunkZ = centerChunkZ;
@@ -64,7 +76,7 @@ namespace XYZ {
 		const int64_t chunkMinCoordZ = centerChunkZ - m_ChunkViewDistance;
 		const int64_t chunkMaxCoordZ = centerChunkZ - m_ChunkViewDistance;
 	
-
+		auto& pool = Application::Get().GetThreadPool();
 		VoxelBiom& forestBiom = m_Bioms["Forest"];
 		for (int64_t chunkX = 0; chunkX < chunksWidth; chunkX++)
 		{
@@ -74,7 +86,15 @@ namespace XYZ {
 				const int64_t worldChunkZ = chunkZ + centerChunkX - m_ChunkViewDistance;
 
 				if (!m_ActiveChunks[chunkX][chunkZ].Mesh.Raw()) // Chunk was shifted away
-					m_ActiveChunks[chunkX][chunkZ] = generateChunk(worldChunkX, worldChunkZ, forestBiom);
+				{
+					m_ChunksGenerated.push_back(pool.SubmitJob([=]() {
+						GeneratedChunk result;
+						result.IndexX = chunkX;
+						result.IndexZ = chunkZ;
+						result.Chunk = generateChunk(worldChunkX, worldChunkZ, forestBiom);
+						return result;
+					}));
+				}
 			}
 		}
 	}

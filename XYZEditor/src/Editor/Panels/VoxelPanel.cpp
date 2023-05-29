@@ -279,7 +279,10 @@ namespace XYZ {
 				for (const auto& chunkRow : m_World.GetActiveChunks())
 				{
 					for (const auto& chunk : chunkRow)
-						m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
+					{
+						if (chunk.Mesh.Raw())
+							m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
+					}
 				}
 
 				//m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
