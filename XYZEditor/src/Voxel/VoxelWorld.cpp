@@ -58,6 +58,7 @@ namespace XYZ {
 		if (shiftDirX == 0 && shiftDirZ == 0)
 			return;
 
+		
 		if (shiftDirX != 0 || shiftDirZ != 0)
 			m_ActiveChunks = std::move(shiftChunks(shiftDirX, shiftDirZ));
 
@@ -83,7 +84,7 @@ namespace XYZ {
 			for (int64_t chunkZ = 0; chunkZ < chunksWidth; chunkZ++)
 			{
 				const int64_t worldChunkX = chunkX + centerChunkX - m_ChunkViewDistance;
-				const int64_t worldChunkZ = chunkZ + centerChunkX - m_ChunkViewDistance;
+				const int64_t worldChunkZ = chunkZ + centerChunkZ - m_ChunkViewDistance;
 
 				if (!m_ActiveChunks[chunkX][chunkZ].Mesh.Raw()) // Chunk was shifted away
 				{
@@ -108,23 +109,16 @@ namespace XYZ {
 		for (int64_t chunkX = 0; chunkX < chunksWidth; chunkX++)
 		{
 			const int64_t shiftedChunkX = chunkX + dirX;
-			if (shiftedChunkX < sc_MaxVisibleChunksPerAxis && shiftedChunkX >= 0)
+			if (shiftedChunkX >= sc_MaxVisibleChunksPerAxis || shiftedChunkX < 0)
+				continue;
+
+			for (int64_t chunkZ = 0; chunkZ < chunksWidth; chunkZ++)
 			{
-				shiftedChunks[shiftedChunkX] = std::move(m_ActiveChunks[chunkX]);
-			}
-			if (dirZ < 0)
-			{
-				for (int64_t chunkZ = chunksWidth - 1; chunkZ >= chunksWidth + dirZ; chunkZ--)
-				{
-					shiftedChunks[chunkX][chunkZ] = VoxelChunk();
-				}
-			}
-			else
-			{
-				for (int64_t chunkZ = 0; chunkZ < dirZ; chunkZ++)
-				{
-					shiftedChunks[chunkX][chunkZ] = VoxelChunk();
-				}
+				const int64_t shiftedChunkZ = chunkZ + dirZ;
+				if (shiftedChunkZ >= sc_MaxVisibleChunksPerAxis || shiftedChunkZ < 0)
+					continue;
+
+				shiftedChunks[shiftedChunkX][shiftedChunkZ] = std::move(m_ActiveChunks[chunkX][chunkZ]);
 			}
 		}
 		return shiftedChunks;
@@ -165,6 +159,7 @@ namespace XYZ {
 		const double fy = static_cast<double>(biom.Frequency / submesh.Height);
 
 		submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth, 0);
+		submesh.RendererCopy = new uint8_t[submesh.ColorIndices.size()];
 		for (uint32_t x = 0; x < submesh.Width; ++x)
 		{
 			for (uint32_t z = 0; z < submesh.Depth; ++z)
@@ -176,13 +171,15 @@ namespace XYZ {
 
 				for (uint32_t y = 0; y < genHeight; y++)
 				{
-					submesh.ColorIndices[Index3D(x, y, z, submesh.Width, submesh.Height)] = 1;
+					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
+					submesh.ColorIndices[index] = 1;
+					submesh.RendererCopy[index] = submesh.ColorIndices[index];
 				}
 			}
 		}
 		chunk.Mesh->SetSubmeshes({ submesh });
 		chunk.Mesh->SetInstances({ instance });
-		chunk.Mesh->GenerateAccelerationGridAsync(16.0f);
+		//chunk.Mesh->GenerateAccelerationGrid(16.0f);
 		return chunk;
 	}
 }

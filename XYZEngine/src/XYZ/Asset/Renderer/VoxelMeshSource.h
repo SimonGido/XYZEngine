@@ -17,6 +17,7 @@ namespace XYZ {
 		uint32_t Width, Height, Depth;
 		float VoxelSize = 1.0f;
 		std::vector<uint8_t> ColorIndices;
+		mutable uint8_t* RendererCopy = nullptr;
 	};
 
 	struct VoxelTransformAnimation

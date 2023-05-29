@@ -64,7 +64,7 @@ namespace XYZ {
 		virtual const std::vector<VoxelInstance>& GetInstances() const override;
 		virtual const AssetHandle& GetRenderID() const override;
 		virtual uint32_t GetNumVoxels() const override { return m_MeshSource->GetNumVoxels(); }
-
+		
 		static AssetType GetStaticType() { return AssetType::VoxelSourceMesh; }
 	
 	private:
@@ -85,7 +85,9 @@ namespace XYZ {
 		void SetInstances(const std::vector<VoxelInstance>& instances);
 		void SetColorPallete(const std::array<VoxelColor, 256>& pallete);
 
+		bool GenerateAccelerationGrid(float size);
 		bool GenerateAccelerationGridAsync(float size);
+
 
 		void SetVoxelColor(uint32_t submeshIndex, uint32_t x, uint32_t y, uint32_t z, uint8_t value);
 
@@ -95,8 +97,7 @@ namespace XYZ {
 		virtual const std::vector<VoxelInstance>& GetInstances() const override;
 		virtual const AssetHandle& GetRenderID() const override;
 		virtual uint32_t GetNumVoxels() const override { return m_NumVoxels; }
-
-		
+	
 		static AssetType GetStaticType() { return AssetType::None; }
 
 	private:
@@ -116,10 +117,11 @@ namespace XYZ {
 		std::vector<VoxelInstance>	m_Instances;
 		std::array<VoxelColor, 256> m_ColorPallete;
 
-		VoxelMeshAccelerationGrid m_AccelerationGrid;
-		bool			 m_HasAccelerationGrid;
-		bool			 m_GeneratingAccelerationGrid;
 
+		VoxelMeshAccelerationGrid	m_AccelerationGrid;
+		bool						m_HasAccelerationGrid;
+		bool						m_GeneratingAccelerationGrid;
+		
 		mutable std::unordered_map<uint32_t, DirtyRange> m_DirtySubmeshes;		
 		mutable std::atomic_bool m_Dirty;
 

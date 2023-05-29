@@ -108,6 +108,7 @@ namespace XYZ {
 		
 		if (m_Valid && !m_IsSuballocation)
 			m_Allocator->m_AllocationRefCounter[m_ID]++;
+		
 		return *this;
 	}
 
@@ -285,7 +286,7 @@ namespace XYZ {
 		uint32_t result;
 		if (!m_FreeAllocationIDs.empty())
 		{
-			result = m_FreeAllocationIDs.back();
+			result = m_FreeAllocationIDs.front();
 			m_FreeAllocationIDs.pop();
 		}
 		else

@@ -41,7 +41,7 @@ namespace XYZ {
 	{
 		Ref<VulkanStorageBufferSet> instance = this;
 		void* dataPtr = *data;
-		data = nullptr;
+		*data = nullptr;
 
 		Renderer::Submit([dataPtr, instance, size, offset, binding, set]() mutable {
 			const uint32_t frame = Renderer::GetCurrentFrame();

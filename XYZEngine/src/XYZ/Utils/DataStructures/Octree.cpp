@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Octree.h"
 
+#include "XYZ/Debug/Profiler.h"
+
 #include <queue>
 
 namespace XYZ {
@@ -29,6 +31,7 @@ namespace XYZ {
 	}
 	void Octree::InsertData(const AABB& aabb, int32_t data)
 	{
+		XYZ_PROFILE_FUNC("Octree::InsertData");
 		constexpr float resizeConstant = 1.5f;
 		OctreeNode* root = &m_Nodes[0];
 		if (!root->BoundingBox.Contains(aabb))

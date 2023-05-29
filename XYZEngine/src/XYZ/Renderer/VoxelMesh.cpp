@@ -140,6 +140,17 @@ namespace XYZ {
 		m_ColorPallete = pallete;
 	}
 
+	bool VoxelProceduralMesh::GenerateAccelerationGrid(float size)
+	{
+		if (m_GeneratingAccelerationGrid)
+			return false;
+
+		m_AccelerationGrid = generateAccelerationGrid(m_Submeshes, m_ColorPallete, size);
+		m_HasAccelerationGrid = true;
+		m_Dirty = true;
+		return true;
+	}
+
 	bool VoxelProceduralMesh::GenerateAccelerationGridAsync(float size)
 	{
 		if (m_GeneratingAccelerationGrid)

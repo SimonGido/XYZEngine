@@ -245,6 +245,7 @@ namespace XYZ {
 	
 	void VoxelRenderer::updateVoxelModelsSSBO(uint32_t AccelerationGridCount)
 	{
+		XYZ_PROFILE_FUNC("VoxelRenderer::updateVoxelModelsSSBO");
 		// Update ssbos
 		const uint32_t voxelModelsUpdateSize =
 			sizeof(SSBOVoxelModels::NumModels)
@@ -267,6 +268,7 @@ namespace XYZ {
 
 	void VoxelRenderer::updateOctreeSSBO()
 	{
+		XYZ_PROFILE_FUNC("VoxelRenderer::updateOctreeSSBO");
 		// Update octree
 		uint32_t nodeCount = 0;
 		uint32_t dataCount = 0;
@@ -539,6 +541,7 @@ namespace XYZ {
 
 	void VoxelRenderer::prepareModels()
 	{
+		XYZ_PROFILE_FUNC("VoxelRenderer::prepareModels");
 		for (auto& renderModel : m_RenderModels)
 			m_RenderModelsSorted.push_back(&renderModel);
 	
@@ -548,21 +551,23 @@ namespace XYZ {
 			return a->BoundingBox.Distance(cameraPosition) < b->BoundingBox.Distance(cameraPosition);
 		});
 
-		// Try insert into octree if pass frustum culling
+
 		int32_t modelIndex = 0;
 		for (auto model : m_RenderModelsSorted)
 		{
-			m_ModelsOctree.InsertData(model->BoundingBox, modelIndex);
+			if (m_UseOctree)
+				m_ModelsOctree.InsertData(model->BoundingBox, modelIndex);
 			auto& allocation = m_VoxelMeshBuckets[model->Mesh->GetHandle()];
 			model->ModelIndex = modelIndex;
 			allocation.Mesh = model->Mesh;
 			allocation.Models.push_back(model);
 			modelIndex++;
 		}
+		
 
 		// Pass it to ssbo data
 		const uint32_t colorSize = SSBOColors::ColorPalleteSize;
-		uint32_t AccelerationGridCount = 0;
+		uint32_t accelerationGridCount = 0;
 		for (auto& [key, meshAllocation] : m_VoxelMeshBuckets)
 		{
 			if (meshAllocation.Models.empty())
@@ -589,21 +594,22 @@ namespace XYZ {
 			if (meshAllocation.Mesh->HasAccelerationGrid())
 			{
 				auto& AccelerationGrid = meshAllocation.Mesh->GetAccelerationGrid();
-				m_SSBOVoxelModels.AccelerationGrids[AccelerationGridCount].CellsOffset = meshAlloc.AccelerationGridAllocation.GetOffset();
-				m_SSBOVoxelModels.AccelerationGrids[AccelerationGridCount].Width = AccelerationGrid.Width;
-				m_SSBOVoxelModels.AccelerationGrids[AccelerationGridCount].Height = AccelerationGrid.Height;
-				m_SSBOVoxelModels.AccelerationGrids[AccelerationGridCount].Depth = AccelerationGrid.Depth;
-				m_SSBOVoxelModels.AccelerationGrids[AccelerationGridCount].Size = AccelerationGrid.Size;
+				m_SSBOVoxelModels.AccelerationGrids[accelerationGridCount].CellsOffset = meshAlloc.AccelerationGridAllocation.GetOffset();
+				m_SSBOVoxelModels.AccelerationGrids[accelerationGridCount].Width = AccelerationGrid.Width;
+				m_SSBOVoxelModels.AccelerationGrids[accelerationGridCount].Height = AccelerationGrid.Height;
+				m_SSBOVoxelModels.AccelerationGrids[accelerationGridCount].Depth = AccelerationGrid.Depth;
+				m_SSBOVoxelModels.AccelerationGrids[accelerationGridCount].Size = AccelerationGrid.Size;
 				for (const auto& cmdModel : meshAllocation.Models)
 				{
 					VoxelModel& model = m_SSBOVoxelModels.Models[cmdModel->ModelIndex];
-					model.AccelerationGridIndex = AccelerationGridCount;
+					model.AccelerationGridIndex = accelerationGridCount;
 				}
-				AccelerationGridCount++;
+				accelerationGridCount++;
 			}
 		}
-		updateVoxelModelsSSBO(AccelerationGridCount);
-		updateOctreeSSBO();
+		updateVoxelModelsSSBO(accelerationGridCount);
+		if (m_UseOctree)
+			updateOctreeSSBO();
 	}
 	
 	void VoxelRenderer::createDefaultPipelines()
@@ -657,6 +663,7 @@ namespace XYZ {
 
 	VoxelRenderer::MeshAllocation& VoxelRenderer::createMeshAllocation(const Ref<VoxelMesh>& mesh)
 	{
+		XYZ_PROFILE_FUNC("VoxelRenderer::createMeshAllocation");
 		const AssetHandle& meshHandle = mesh->GetHandle();
 		const auto& submeshes = mesh->GetSubmeshes();
 		const uint32_t meshSize = mesh->GetNumVoxels() * sizeof(uint8_t);
@@ -676,6 +683,7 @@ namespace XYZ {
 	}
 	void VoxelRenderer::reallocateVoxels(const Ref<VoxelMesh>& mesh, MeshAllocation& allocation)
 	{
+		XYZ_PROFILE_FUNC("VoxelRenderer::reallocateVoxels");
 		const auto& submeshes = mesh->GetSubmeshes();
 
 		const uint32_t meshSize = mesh->GetNumVoxels() * sizeof(uint8_t);
@@ -713,7 +721,15 @@ namespace XYZ {
 			{
 				allocation.SubmeshOffsets[submeshIndex] = offset;
 				const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
-				m_StorageBufferSet->Update(submesh.ColorIndices.data(), submesh.ColorIndices.size(), offset, SSBOVoxels::Binding, SSBOVoxels::Set);			
+				if (submesh.RendererCopy != nullptr)
+				{
+					void** data = (void**)&submesh.RendererCopy;
+					m_StorageBufferSet->Update(data, submesh.ColorIndices.size(), offset, SSBOVoxels::Binding, SSBOVoxels::Set);
+				}
+				else
+				{
+					m_StorageBufferSet->Update(submesh.ColorIndices.data(), submesh.ColorIndices.size(), offset, SSBOVoxels::Binding, SSBOVoxels::Set);
+				}
 				offset += voxelCount;
 				submeshIndex++;
 			}
