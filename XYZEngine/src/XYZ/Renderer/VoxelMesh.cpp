@@ -62,7 +62,7 @@ namespace XYZ {
 	}
 
 
-	static void FillAccelerationGrid(VoxelMeshAccelerationGrid& grid, const std::array<VoxelColor, 256>& colorPallete, const VoxelSubmesh& submesh,  uint32_t scale)
+	static void FillFullAccelerationGrid(VoxelMeshAccelerationGrid& grid, const std::array<VoxelColor, 256>& colorPallete, const VoxelSubmesh& submesh,  uint32_t scale)
 	{
 		for (uint32_t ax = 0; ax < grid.Width; ++ax)
 		{
@@ -107,9 +107,13 @@ namespace XYZ {
 				for (uint32_t z = 0; z < grid.Depth; z += axisCells)
 				{
 					const glm::uvec3 cellStart(x, y, z);
-					const glm::uvec3 cellEnd(x + axisCells, y + axisCells, z + axisCells);
-					futures.push_back(pool.SubmitJob([grid, colorPallete, submesh, scale, cellStart, cellEnd]() {
-
+					const glm::uvec3 cellEnd(
+						std::min(x + axisCells, grid.Width), 
+						std::min(y + axisCells, grid.Height), 
+						std::min(z + axisCells, grid.Depth)
+					);
+					futures.push_back(pool.SubmitJob([&grid, &colorPallete, &submesh, scale, cellStart, cellEnd]() mutable {
+						FillAccelerationGrid(grid, colorPallete, submesh, cellStart, cellEnd, scale);
 						return true;
 					}));
 				}
@@ -118,60 +122,6 @@ namespace XYZ {
 
 		return futures;
 	}
-
-
-	static void InsertSubmeshInAccelerationGrid(VoxelMeshAccelerationGrid& grid, const std::array<VoxelColor, 256>& colorPallete, const VoxelSubmesh& submesh)
-	{
-
-
-		const float scale = grid.Size / submesh.VoxelSize;
-		for (uint32_t x = 0; x < submesh.Width; x++)
-		{
-			for (uint32_t y = 0; y < submesh.Height; y++)
-			{
-				for (uint32_t z = 0; z < submesh.Depth; z++)
-				{
-					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
-					const uint16_t colorIndex = static_cast<uint16_t>(submesh.ColorIndices[index]);
-					const VoxelColor color = colorPallete[colorIndex];
-					if (color.A != 0)
-					{
-						const glm::vec3 voxelPosition = {
-							x * submesh.VoxelSize,
-							y * submesh.VoxelSize,
-							z * submesh.VoxelSize
-						};
-						const glm::ivec3 accelerationGridCellStart = {
-							std::floor(voxelPosition.x / grid.Size),
-							std::floor(voxelPosition.y / grid.Size),
-							std::floor(voxelPosition.z / grid.Size)
-						};
-						const glm::ivec3 accelerationGridCellEnd = {
-							std::ceil((voxelPosition.x + submesh.VoxelSize) / grid.Size),
-							std::ceil((voxelPosition.y + submesh.VoxelSize) / grid.Size),
-							std::ceil((voxelPosition.z + submesh.VoxelSize) / grid.Size)
-						};
-
-						for (uint32_t tx = accelerationGridCellStart.x; tx < accelerationGridCellEnd.x; tx++)
-						{
-							for (uint32_t ty = accelerationGridCellStart.y; ty < accelerationGridCellEnd.y; ty++)
-							{
-								for (uint32_t tz = accelerationGridCellStart.z; tz < accelerationGridCellEnd.z; tz++)
-								{
-									const uint32_t accelerationGridIndex = Index3D(tx, ty, tz, grid.Width, grid.Height);
-									if (accelerationGridIndex < grid.Cells.size())
-									{
-										grid.Cells[accelerationGridIndex]++;
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
 
 	VoxelSourceMesh::VoxelSourceMesh(const Ref<VoxelMeshSource>& meshSource)
 		:
@@ -315,32 +265,9 @@ namespace XYZ {
 		accelerationGrid.Size = submesh.VoxelSize * scale;
 		accelerationGrid.Cells.resize(accelerationGrid.Width * accelerationGrid.Height * accelerationGrid.Depth, 0);
 
-
-		for (uint32_t ax = 0; ax < accelerationGrid.Width; ++ax)
-		{
-			for (uint32_t ay = 0; ay < accelerationGrid.Height; ++ay)
-			{
-				for (uint32_t az = 0; az < accelerationGrid.Depth; ++az)
-				{
-					const uint32_t acIndex = Index3D(ax, ay, az, accelerationGrid.Width, accelerationGrid.Height);
-					for (uint32_t x = 0; x < scale; ++x)
-					{
-						for (uint32_t y = 0; y < scale; ++y)
-						{
-							for (uint32_t z = 0; z < scale; ++z)
-							{
-								const uint32_t index = Index3D(ax * scale + x, ay * scale + y, az * scale + z, submesh.Width, submesh.Height);
-								if (index < submesh.ColorIndices.size())
-								{
-									accelerationGrid.Cells[acIndex]++;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
+		auto futures = FillAccelerationGrid(accelerationGrid, colorPallete, submesh, scale, 8);
+		for (auto& future : futures)
+			future.wait();
 
 		return accelerationGrid;
 	}

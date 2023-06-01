@@ -86,6 +86,9 @@ namespace XYZ {
 		void SetColorPallete(const std::array<VoxelColor, 256>& pallete);
 
 		bool GenerateAccelerationGrid(uint32_t scale);
+		bool GenerateAccelerationGridAsync(uint32_t scale);
+
+
 		void SetVoxelColor(uint32_t submeshIndex, uint32_t x, uint32_t y, uint32_t z, uint8_t value);
 
 
@@ -105,7 +108,7 @@ namespace XYZ {
 	
 	
 		static VoxelMeshAccelerationGrid generateAccelerationGrid(
-			const std::vector<VoxelSubmesh>& submeshes,
+			const VoxelSubmesh& submesh,
 			const std::array<VoxelColor, 256>& colorPallete,
 			uint32_t scale
 		);

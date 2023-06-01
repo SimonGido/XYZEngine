@@ -179,7 +179,7 @@ namespace XYZ {
 		}
 		chunk.Mesh->SetSubmeshes({ submesh });
 		chunk.Mesh->SetInstances({ instance });
-		//chunk.Mesh->GenerateAccelerationGrid(16.0f);
+		chunk.Mesh->GenerateAccelerationGrid(16);
 		return chunk;
 	}
 }
