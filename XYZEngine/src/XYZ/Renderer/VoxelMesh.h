@@ -85,10 +85,7 @@ namespace XYZ {
 		void SetInstances(const std::vector<VoxelInstance>& instances);
 		void SetColorPallete(const std::array<VoxelColor, 256>& pallete);
 
-		bool GenerateAccelerationGrid(float size);
-		bool GenerateAccelerationGridAsync(float size);
-
-
+		bool GenerateAccelerationGrid(uint32_t scale);
 		void SetVoxelColor(uint32_t submeshIndex, uint32_t x, uint32_t y, uint32_t z, uint8_t value);
 
 
@@ -110,7 +107,7 @@ namespace XYZ {
 		static VoxelMeshAccelerationGrid generateAccelerationGrid(
 			const std::vector<VoxelSubmesh>& submeshes,
 			const std::array<VoxelColor, 256>& colorPallete,
-			float size
+			uint32_t scale
 		);
 	private:
 		std::vector<VoxelSubmesh>	m_Submeshes;

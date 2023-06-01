@@ -28,8 +28,102 @@ namespace XYZ {
 		return AccelerationGrid;
 	}
 
+	static void FillAccelerationGrid(VoxelMeshAccelerationGrid& grid, const std::array<VoxelColor, 256>& colorPallete, const VoxelSubmesh& submesh, const glm::uvec3& cellStart, const glm::uvec3& cellEnd, uint32_t cellSize)
+	{
+		for (uint32_t ax = cellStart.x; ax < cellEnd.x; ++ax)
+		{
+			for (uint32_t ay = cellStart.y; ay < cellEnd.y; ++ay)
+			{
+				for (uint32_t az = cellStart.z; az < cellEnd.z; ++az)
+				{
+					const uint32_t acIndex = Index3D(ax, ay, az, grid.Width, grid.Height);
+					if (acIndex >= grid.Cells.size())
+						continue;
+
+					for (uint32_t x = 0; x < cellSize; ++x)
+					{
+						for (uint32_t y = 0; y < cellSize; ++y)
+						{
+							for (uint32_t z = 0; z < cellSize; ++z)
+							{
+								const uint32_t index = Index3D(ax * cellSize + x, ay * cellSize + y, az * cellSize + z, submesh.Width, submesh.Height);
+								if (index < submesh.ColorIndices.size())
+								{
+									const auto& color = colorPallete[submesh.ColorIndices[index]];
+									if (color.A != 0)
+										grid.Cells[acIndex]++;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+	static void FillAccelerationGrid(VoxelMeshAccelerationGrid& grid, const std::array<VoxelColor, 256>& colorPallete, const VoxelSubmesh& submesh,  uint32_t scale)
+	{
+		for (uint32_t ax = 0; ax < grid.Width; ++ax)
+		{
+			for (uint32_t ay = 0; ay < grid.Height; ++ay)
+			{
+				for (uint32_t az = 0; az < grid.Depth; ++az)
+				{
+					const uint32_t acIndex = Index3D(ax, ay, az, grid.Width, grid.Height);
+					for (uint32_t x = 0; x < scale; ++x)
+					{
+						for (uint32_t y = 0; y < scale; ++y)
+						{
+							for (uint32_t z = 0; z < scale; ++z)
+							{
+								const uint32_t index = Index3D(ax * scale + x, ay * scale + y, az * scale + z, submesh.Width, submesh.Height);
+								if (index < submesh.ColorIndices.size())
+								{
+									const auto& color = colorPallete[submesh.ColorIndices[index]];
+									if (color.A != 0)
+										grid.Cells[acIndex]++;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+
+
+	static std::vector<std::future<bool>> FillAccelerationGrid(VoxelMeshAccelerationGrid& grid, const std::array<VoxelColor, 256>& colorPallete, const VoxelSubmesh& submesh, uint32_t scale, uint32_t axisCells)
+	{
+		auto& pool = Application::Get().GetThreadPool();
+		std::vector<std::future<bool>> futures;
+		futures.reserve(axisCells * axisCells * axisCells);
+
+		for (uint32_t x = 0; x < grid.Width; x += axisCells)
+		{
+			for (uint32_t y = 0; y < grid.Height; y += axisCells)
+			{
+				for (uint32_t z = 0; z < grid.Depth; z += axisCells)
+				{
+					const glm::uvec3 cellStart(x, y, z);
+					const glm::uvec3 cellEnd(x + axisCells, y + axisCells, z + axisCells);
+					futures.push_back(pool.SubmitJob([grid, colorPallete, submesh, scale, cellStart, cellEnd]() {
+
+						return true;
+					}));
+				}
+			}
+		}
+
+		return futures;
+	}
+
+
 	static void InsertSubmeshInAccelerationGrid(VoxelMeshAccelerationGrid& grid, const std::array<VoxelColor, 256>& colorPallete, const VoxelSubmesh& submesh)
 	{
+
+
 		const float scale = grid.Size / submesh.VoxelSize;
 		for (uint32_t x = 0; x < submesh.Width; x++)
 		{
@@ -47,27 +141,27 @@ namespace XYZ {
 							y * submesh.VoxelSize,
 							z * submesh.VoxelSize
 						};
-						const glm::ivec3 AccelerationGridCellStart = {
+						const glm::ivec3 accelerationGridCellStart = {
 							std::floor(voxelPosition.x / grid.Size),
 							std::floor(voxelPosition.y / grid.Size),
 							std::floor(voxelPosition.z / grid.Size)
 						};
-						const glm::ivec3 AccelerationGridCellEnd = {
+						const glm::ivec3 accelerationGridCellEnd = {
 							std::ceil((voxelPosition.x + submesh.VoxelSize) / grid.Size),
 							std::ceil((voxelPosition.y + submesh.VoxelSize) / grid.Size),
 							std::ceil((voxelPosition.z + submesh.VoxelSize) / grid.Size)
 						};
 
-						for (uint32_t tx = AccelerationGridCellStart.x; tx < AccelerationGridCellEnd.x; tx++)
+						for (uint32_t tx = accelerationGridCellStart.x; tx < accelerationGridCellEnd.x; tx++)
 						{
-							for (uint32_t ty = AccelerationGridCellStart.y; ty < AccelerationGridCellEnd.y; ty++)
+							for (uint32_t ty = accelerationGridCellStart.y; ty < accelerationGridCellEnd.y; ty++)
 							{
-								for (uint32_t tz = AccelerationGridCellStart.z; tz < AccelerationGridCellEnd.z; tz++)
+								for (uint32_t tz = accelerationGridCellStart.z; tz < accelerationGridCellEnd.z; tz++)
 								{
-									const uint32_t AccelerationGridIndex = Index3D(tx, ty, tz, grid.Width, grid.Height);
-									if (AccelerationGridIndex < grid.Cells.size())
+									const uint32_t accelerationGridIndex = Index3D(tx, ty, tz, grid.Width, grid.Height);
+									if (accelerationGridIndex < grid.Cells.size())
 									{
-										grid.Cells[AccelerationGridIndex]++;
+										grid.Cells[accelerationGridIndex]++;
 									}
 								}
 							}
@@ -113,6 +207,7 @@ namespace XYZ {
 		m_HasAccelerationGrid(false),
 		m_GeneratingAccelerationGrid(false)
 	{
+		memset(&m_ColorPallete, 0, sizeof(VoxelColor) * m_ColorPallete.size());
 	}
 
 	void VoxelProceduralMesh::SetSubmeshes(const std::vector<VoxelSubmesh>& submeshes)
@@ -140,18 +235,18 @@ namespace XYZ {
 		m_ColorPallete = pallete;
 	}
 
-	bool VoxelProceduralMesh::GenerateAccelerationGrid(float size)
+	bool VoxelProceduralMesh::GenerateAccelerationGrid(uint32_t scale)
 	{
 		if (m_GeneratingAccelerationGrid)
 			return false;
 
-		m_AccelerationGrid = generateAccelerationGrid(m_Submeshes, m_ColorPallete, size);
+		m_AccelerationGrid = generateAccelerationGrid(m_Submeshes[0], m_ColorPallete, scale);
 		m_HasAccelerationGrid = true;
 		m_Dirty = true;
 		return true;
 	}
 
-	bool VoxelProceduralMesh::GenerateAccelerationGridAsync(float size)
+	bool VoxelProceduralMesh::GenerateAccelerationGridAsync(uint32_t scale)
 	{
 		if (m_GeneratingAccelerationGrid)
 			return false;
@@ -160,8 +255,8 @@ namespace XYZ {
 		m_GeneratingAccelerationGrid = true;
 		Ref<VoxelProceduralMesh> instance = this;
 		auto& pool = Application::Get().GetThreadPool();
-		pool.PushJob([instance, submeshes = m_Submeshes, colorPallete = m_ColorPallete, size]() mutable {
-			instance->m_AccelerationGrid = generateAccelerationGrid(submeshes, colorPallete, size);
+		pool.PushJob([instance, &submesh = m_Submeshes[0], colorPallete = m_ColorPallete, scale]() mutable {
+			instance->m_AccelerationGrid = generateAccelerationGrid(submesh, colorPallete, scale);
 			instance->m_HasAccelerationGrid = true;
 			instance->m_GeneratingAccelerationGrid = false;
 			instance->m_Dirty = true;
@@ -211,20 +306,42 @@ namespace XYZ {
 	{
 		return std::move(m_DirtySubmeshes);
 	}
-	VoxelMeshAccelerationGrid VoxelProceduralMesh::generateAccelerationGrid(const std::vector<VoxelSubmesh>& submeshes, const std::array<VoxelColor, 256>& colorPallete, float size)
+	VoxelMeshAccelerationGrid VoxelProceduralMesh::generateAccelerationGrid(const VoxelSubmesh& submesh, const std::array<VoxelColor, 256>& colorPallete, uint32_t scale)
 	{
-		AABB aabb(glm::vec3(0), glm::vec3(FLT_MIN));
-		for (auto& submesh : submeshes)
+		VoxelMeshAccelerationGrid accelerationGrid;
+		accelerationGrid.Width = Math::RoundUp(submesh.Width, scale) / scale;
+		accelerationGrid.Height = Math::RoundUp(submesh.Height, scale) / scale;
+		accelerationGrid.Depth = Math::RoundUp(submesh.Depth, scale) / scale;
+		accelerationGrid.Size = submesh.VoxelSize * scale;
+		accelerationGrid.Cells.resize(accelerationGrid.Width * accelerationGrid.Height * accelerationGrid.Depth, 0);
+
+
+		for (uint32_t ax = 0; ax < accelerationGrid.Width; ++ax)
 		{
-			aabb.Max.x = std::max(static_cast<float>(submesh.Width) * submesh.VoxelSize, aabb.Max.x);
-			aabb.Max.y = std::max(static_cast<float>(submesh.Height) * submesh.VoxelSize, aabb.Max.y);
-			aabb.Max.z = std::max(static_cast<float>(submesh.Depth) * submesh.VoxelSize, aabb.Max.z);
+			for (uint32_t ay = 0; ay < accelerationGrid.Height; ++ay)
+			{
+				for (uint32_t az = 0; az < accelerationGrid.Depth; ++az)
+				{
+					const uint32_t acIndex = Index3D(ax, ay, az, accelerationGrid.Width, accelerationGrid.Height);
+					for (uint32_t x = 0; x < scale; ++x)
+					{
+						for (uint32_t y = 0; y < scale; ++y)
+						{
+							for (uint32_t z = 0; z < scale; ++z)
+							{
+								const uint32_t index = Index3D(ax * scale + x, ay * scale + y, az * scale + z, submesh.Width, submesh.Height);
+								if (index < submesh.ColorIndices.size())
+								{
+									accelerationGrid.Cells[acIndex]++;
+								}
+							}
+						}
+					}
+				}
+			}
 		}
-		VoxelMeshAccelerationGrid AccelerationGrid = CreateAccelerationGridFromAABB(aabb, size);
-		for (auto& submesh : submeshes)
-		{
-			InsertSubmeshInAccelerationGrid(AccelerationGrid, colorPallete, submesh);
-		}
-		return AccelerationGrid;
+
+
+		return accelerationGrid;
 	}
 }
