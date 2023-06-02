@@ -265,9 +265,10 @@ namespace XYZ {
 		accelerationGrid.Size = submesh.VoxelSize * scale;
 		accelerationGrid.Cells.resize(accelerationGrid.Width * accelerationGrid.Height * accelerationGrid.Depth, 0);
 
-		auto futures = FillAccelerationGrid(accelerationGrid, colorPallete, submesh, scale, 8);
-		for (auto& future : futures)
-			future.wait();
+		FillFullAccelerationGrid(accelerationGrid, colorPallete, submesh, scale);
+		//auto futures = FillAccelerationGrid(accelerationGrid, colorPallete, submesh, scale, 8);
+		//for (auto& future : futures)
+		//	future.wait();
 
 		return accelerationGrid;
 	}

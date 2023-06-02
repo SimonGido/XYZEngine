@@ -26,9 +26,9 @@ namespace XYZ{
 	class VoxelWorld
 	{
 	public:
-		static constexpr glm::ivec3 sc_ChunkDimensions = glm::ivec3(256, 512, 256);
-		static constexpr int64_t    sc_MaxVisibleChunksPerAxis = 3;
-		static constexpr int64_t    sc_MinVisibleChunks = 1;
+		static constexpr glm::ivec3 sc_ChunkDimensions = glm::ivec3(64, 512, 64);
+		static constexpr uint32_t	sc_ChunkViewDistance = 6; // View distance from center
+		static constexpr int64_t    sc_MaxVisibleChunksPerAxis = sc_ChunkViewDistance * 2 + 1;
 		static constexpr float      sc_ChunkVoxelSize = 1.0f;
 
 		using ActiveChunkStorage = std::array<std::array<VoxelChunk, sc_MaxVisibleChunksPerAxis>, sc_MaxVisibleChunksPerAxis>;
@@ -50,8 +50,9 @@ namespace XYZ{
 		{
 			int64_t IndexX;
 			int64_t IndexZ;
-
+			
 			VoxelChunk Chunk;
+			bool Finished = false;
 		};
 
 
@@ -62,12 +63,9 @@ namespace XYZ{
 
 		std::unordered_map<std::string, VoxelBiom> m_Bioms;
 
-		std::vector<std::future<GeneratedChunk>> m_ChunksGenerated;
+		std::vector<std::shared_ptr<GeneratedChunk>> m_ChunksGenerated;
 
 		uint32_t m_Seed;
-
-		uint32_t m_ChunkViewDistance = 1; // View distance from center
-
 		int64_t m_LastCenterChunkX = 0;
 		int64_t m_LastCenterChunkZ = 0;
 	};

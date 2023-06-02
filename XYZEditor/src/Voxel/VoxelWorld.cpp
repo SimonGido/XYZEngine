@@ -39,13 +39,18 @@ namespace XYZ {
 		constexpr uint32_t halfDimensionX = sc_ChunkDimensions.x / 2;
 		constexpr uint32_t halfDimensionZ = sc_ChunkDimensions.z / 2;
 
-		for (int32_t i = m_ChunksGenerated.size() - 1; i >= 0; i--)
+
+		for (auto it = m_ChunksGenerated.begin(); it != m_ChunksGenerated.end(); )
 		{
-			if (m_ChunksGenerated[i]._Is_ready())
+			std::shared_ptr<GeneratedChunk> chunk = (*it);
+			if (chunk->Finished)
 			{
-				auto chunk = m_ChunksGenerated[i].get();
-				m_ActiveChunks[chunk.IndexX][chunk.IndexZ] = std::move(chunk.Chunk);
-				m_ChunksGenerated.erase(m_ChunksGenerated.begin() + i);
+				m_ActiveChunks[chunk->IndexX][chunk->IndexZ] = std::move(chunk->Chunk);
+				it = m_ChunksGenerated.erase(it);
+			}
+			else
+			{
+				it++;
 			}
 		}
 
@@ -62,20 +67,20 @@ namespace XYZ {
 		if (shiftDirX != 0 || shiftDirZ != 0)
 			m_ActiveChunks = std::move(shiftChunks(shiftDirX, shiftDirZ));
 
-		m_ChunksGenerated.clear();
+		
 		generateChunks(centerChunkX, centerChunkZ);
 		m_LastCenterChunkX = centerChunkX;
 		m_LastCenterChunkZ = centerChunkZ;
 	}
 	void VoxelWorld::generateChunks(int64_t centerChunkX, int64_t centerChunkZ)
 	{
-		const int64_t chunksWidth = m_ChunkViewDistance * 3;
+		const int64_t chunksWidth = sc_MaxVisibleChunksPerAxis;
 
-		const int64_t chunkMinCoordX = centerChunkX - m_ChunkViewDistance;
-		const int64_t chunkMaxCoordX = centerChunkX - m_ChunkViewDistance;
+		const int64_t chunkMinCoordX = centerChunkX - sc_ChunkViewDistance;
+		const int64_t chunkMaxCoordX = centerChunkX - sc_ChunkViewDistance;
 
-		const int64_t chunkMinCoordZ = centerChunkZ - m_ChunkViewDistance;
-		const int64_t chunkMaxCoordZ = centerChunkZ - m_ChunkViewDistance;
+		const int64_t chunkMinCoordZ = centerChunkZ - sc_ChunkViewDistance;
+		const int64_t chunkMaxCoordZ = centerChunkZ - sc_ChunkViewDistance;
 	
 		auto& pool = Application::Get().GetThreadPool();
 		VoxelBiom& forestBiom = m_Bioms["Forest"];
@@ -83,18 +88,19 @@ namespace XYZ {
 		{
 			for (int64_t chunkZ = 0; chunkZ < chunksWidth; chunkZ++)
 			{
-				const int64_t worldChunkX = chunkX + centerChunkX - m_ChunkViewDistance;
-				const int64_t worldChunkZ = chunkZ + centerChunkZ - m_ChunkViewDistance;
+				const int64_t worldChunkX = chunkX + centerChunkX - sc_ChunkViewDistance;
+				const int64_t worldChunkZ = chunkZ + centerChunkZ - sc_ChunkViewDistance;
 
 				if (!m_ActiveChunks[chunkX][chunkZ].Mesh.Raw()) // Chunk was shifted away
 				{
-					m_ChunksGenerated.push_back(pool.SubmitJob([=]() {
-						GeneratedChunk result;
-						result.IndexX = chunkX;
-						result.IndexZ = chunkZ;
-						result.Chunk = generateChunk(worldChunkX, worldChunkZ, forestBiom);
-						return result;
-					}));
+					m_ChunksGenerated.push_back(std::make_shared<GeneratedChunk>());
+					std::shared_ptr<GeneratedChunk> gen = m_ChunksGenerated.back();
+					pool.PushJob([=]() {
+						gen->IndexX = chunkX;
+						gen->IndexZ = chunkZ;
+						gen->Chunk = generateChunk(worldChunkX, worldChunkZ, forestBiom);
+						gen->Finished = true;
+					});
 				}
 			}
 		}
@@ -102,10 +108,10 @@ namespace XYZ {
 	VoxelWorld::ActiveChunkStorage VoxelWorld::shiftChunks(int64_t dirX, int64_t dirZ)
 	{
 		ActiveChunkStorage shiftedChunks;
-		if (dirX > m_ChunkViewDistance || dirZ > m_ChunkViewDistance)
+		if (dirX > sc_ChunkViewDistance || dirZ > sc_ChunkViewDistance)
 			return shiftedChunks;
 
-		const int64_t chunksWidth = m_ChunkViewDistance * 3;
+		const int64_t chunksWidth = sc_MaxVisibleChunksPerAxis;
 		for (int64_t chunkX = 0; chunkX < chunksWidth; chunkX++)
 		{
 			const int64_t shiftedChunkX = chunkX + dirX;
