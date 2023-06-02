@@ -26,6 +26,7 @@ namespace XYZ {
 	}
 	void VulkanStorageBufferSet::Update(const void* data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set)
 	{
+		XYZ_PROFILE_FUNC("VulkanStorageBufferSet::Update");
 		// TODO: queue for buffers
 		Ref<VulkanStorageBufferSet> instance = this;
 		ByteBuffer buffer = getBuffer(set, binding, size);
@@ -39,6 +40,7 @@ namespace XYZ {
 	}
 	void VulkanStorageBufferSet::Update(void** data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set)
 	{
+		XYZ_PROFILE_FUNC("VulkanStorageBufferSet::Update");
 		Ref<VulkanStorageBufferSet> instance = this;
 		void* dataPtr = *data;
 		*data = nullptr;

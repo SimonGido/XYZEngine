@@ -38,7 +38,7 @@ namespace XYZ {
 		m_Specification(specification)
 	{
 		m_ApplicationThreadID = std::this_thread::get_id();
-		m_ThreadPool.Start(std::thread::hardware_concurrency() - 1);
+		m_ThreadPool.Start(std::thread::hardware_concurrency() - 2);
 		s_Application = this;
 		m_Running = true;
 		m_ImGuiLayer = nullptr;

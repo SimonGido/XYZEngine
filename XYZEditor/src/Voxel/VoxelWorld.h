@@ -26,8 +26,8 @@ namespace XYZ{
 	class VoxelWorld
 	{
 	public:
-		static constexpr glm::ivec3 sc_ChunkDimensions = glm::ivec3(64, 512, 64);
-		static constexpr uint32_t	sc_ChunkViewDistance = 6; // View distance from center
+		static constexpr glm::ivec3 sc_ChunkDimensions = glm::ivec3(128, 512, 128);
+		static constexpr uint32_t	sc_ChunkViewDistance = 3; // View distance from center
 		static constexpr int64_t    sc_MaxVisibleChunksPerAxis = sc_ChunkViewDistance * 2 + 1;
 		static constexpr float      sc_ChunkVoxelSize = 1.0f;
 
@@ -43,7 +43,7 @@ namespace XYZ{
 
 		ActiveChunkStorage shiftChunks(int64_t dirX, int64_t dirZ);
 
-		VoxelChunk generateChunk(int64_t chunkX, int64_t chunkZ, const VoxelBiom& biom) const;
+		static VoxelChunk generateChunk(int64_t chunkX, int64_t chunkZ, const VoxelBiom& biom);
 
 	private:
 		struct GeneratedChunk

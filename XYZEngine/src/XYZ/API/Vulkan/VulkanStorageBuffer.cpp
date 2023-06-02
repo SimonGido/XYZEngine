@@ -72,6 +72,7 @@ namespace XYZ {
 	}
 	void VulkanStorageBuffer::RT_Update(const void* data, uint32_t size, uint32_t offset)
 	{
+		XYZ_PROFILE_FUNC("VulkanStorageBufferSet::RT_Update");
 		//RT_ApplySize();
 		XYZ_ASSERT(size + offset <= m_Size, "");
 		if (size == 0)

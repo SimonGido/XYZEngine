@@ -542,16 +542,20 @@ namespace XYZ {
 	void VoxelRenderer::prepareModels()
 	{
 		XYZ_PROFILE_FUNC("VoxelRenderer::prepareModels");
-		for (auto& renderModel : m_RenderModels)
-			m_RenderModelsSorted.push_back(&renderModel);
+		{
+			XYZ_PROFILE_FUNC("VoxelRenderer::prepareModelsCopy");
+			for (auto& renderModel : m_RenderModels)
+				m_RenderModelsSorted.push_back(&renderModel);
+		}
 	
 		// Sort by distance from camera
-		const glm::vec3 cameraPosition(m_UBVoxelScene.CameraPosition);
-		std::sort(m_RenderModelsSorted.begin(), m_RenderModelsSorted.end(), [&](const VoxelRenderModel* a, const VoxelRenderModel* b) {
-			return a->BoundingBox.Distance(cameraPosition) < b->BoundingBox.Distance(cameraPosition);
-		});
-
-
+		{
+			XYZ_PROFILE_FUNC("VoxelRenderer::prepareModelsSort");
+			const glm::vec3 cameraPosition(m_UBVoxelScene.CameraPosition);
+			std::sort(m_RenderModelsSorted.begin(), m_RenderModelsSorted.end(), [&](const VoxelRenderModel* a, const VoxelRenderModel* b) {
+				return a->BoundingBox.Distance(cameraPosition) < b->BoundingBox.Distance(cameraPosition);
+				});
+		}
 		int32_t modelIndex = 0;
 		for (auto model : m_RenderModelsSorted)
 		{
@@ -575,7 +579,7 @@ namespace XYZ {
 
 			MeshAllocation& meshAlloc = createMeshAllocation(meshAllocation.Mesh);
 
-			for (const auto& cmdModel : meshAllocation.Models)
+			for (const auto cmdModel : meshAllocation.Models)
 			{
 				const VoxelSubmesh& submesh = cmdModel->Mesh->GetSubmeshes()[cmdModel->SubmeshIndex];
 				VoxelModel& model = m_SSBOVoxelModels.Models[cmdModel->ModelIndex];
@@ -703,10 +707,13 @@ namespace XYZ {
 				const uint32_t accelerationGridsSize = accelerationGrid.Cells.size();
 				m_AccelerationGridsAllocator->Allocate(accelerationGridsSize, allocation.AccelerationGridAllocation);
 				uint32_t cellOffset = allocation.AccelerationGridAllocation.GetOffset();
-				
-				// Copy acceleration grid
-				for (auto count : accelerationGrid.Cells)
-					m_SSBOAccelerationGrids.AccelerationGridCells[cellOffset++] = count > 0 ? 1 : 0;
+
+				{
+					XYZ_PROFILE_FUNC("VoxelRenderer::reallocateVoxels_CopyAccelerationGrid");
+					// Copy acceleration grid
+					for (auto count : accelerationGrid.Cells)
+						m_SSBOAccelerationGrids.AccelerationGridCells[cellOffset++] = count > 0 ? 1 : 0;
+				}
 			}
 			// Update acceleration grid SSBO
 			void* accelerationGridData = &m_SSBOAccelerationGrids.AccelerationGridCells[allocation.AccelerationGridAllocation.GetOffset()];
