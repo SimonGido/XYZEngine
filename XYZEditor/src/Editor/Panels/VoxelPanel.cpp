@@ -534,14 +534,8 @@ namespace XYZ {
 		
 					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight;
 					
-					if (genHeight < 70)
-					{
-						const uint32_t waterIndex = Utils::Index3D(x, 70, z, width, height);
-						result.Terrain[waterIndex] = Water; // Water
-						result.WaterMap[waterIndex] = 125; // Half max density
-					}
-
-					for (int32_t y = genHeight; y < 70; ++y)
+			
+					for (int32_t y = genHeight; y < 10; ++y)
 					{
 						const uint32_t waterIndex = Utils::Index3D(x, y, z, width, height);
 						result.Terrain[waterIndex] = Water; // Water

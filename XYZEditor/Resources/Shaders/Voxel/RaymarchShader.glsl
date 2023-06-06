@@ -132,6 +132,7 @@ AABB VoxelAABB(ivec3 voxel, float voxelSize)
 	return result;
 }
 
+
 AABB ModelAABB(in VoxelModel model)
 {
 	AABB result;
@@ -215,6 +216,17 @@ float VoxelDistanceFromRay(vec3 origin, vec3 direction, ivec3 voxel, float voxel
 	return FLT_MAX;
 }
 
+mat4 VoxelTransform(in VoxelModel model, ivec3 voxel)
+{
+	mat4 voxelTransform = TranslationMatrix(vec3(voxel.x * model.VoxelSize, voxel.y * model.VoxelSize, voxel.z * model.VoxelSize), vec3(1.0, 1.0, 1.0));
+	mat4 worldVoxelTransform = inverse(model.InverseTransform) * voxelTransform;
+	return worldVoxelTransform;
+}
+
+vec3 VoxelPosition(ivec3 voxel, float voxelSize)
+{
+	return vec3(voxel.x * voxelSize, voxel.y * voxelSize, voxel.z * voxelSize);
+}
 
 struct RaymarchResult
 {
@@ -325,6 +337,24 @@ RaymarchState CreateRaymarchState(in Ray ray, vec3 origin, vec3 direction, ivec3
 	return state;
 }
 
+RaymarchState CreateRaymarchStateTest(in Ray ray, vec3 origin, vec3 direction, ivec3 step, ivec3 maxSteps, float voxelSize, ivec3 uncompressedVoxel)
+{
+	RaymarchState state;
+	state.Distance = distance(ray.Origin, origin);
+	state.CurrentVoxel = ivec3(floor(origin / voxelSize)) - uncompressedVoxel;
+	state.MaxSteps = maxSteps;
+	state.ColorUINT = 0;
+	vec3 next_boundary = vec3(
+		float((step.x > 0) ? state.CurrentVoxel.x + 1 : state.CurrentVoxel.x) * voxelSize,
+		float((step.y > 0) ? state.CurrentVoxel.y + 1 : state.CurrentVoxel.y) * voxelSize,
+		float((step.z > 0) ? state.CurrentVoxel.z + 1 : state.CurrentVoxel.z) * voxelSize
+	);
+
+	state.Max = (next_boundary - origin) / direction; // we will move along the axis with the smallest value
+	return state;
+}
+
+
 const ivec3 neighbours[6] = {
 	ivec3(-1, 0, 0),
 	ivec3( 1, 0, 0),
@@ -408,11 +438,70 @@ RaymarchResult RayMarchSteps(in Ray ray, vec4 startColor, uint startColorUINT, v
 }
 
 
+RaymarchResult RayMarchStepsTest(in Ray ray, vec4 startColor, uint startColorUINT, vec3 throughput, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, ivec3 maxSteps, ivec3 uncompressedVoxel)
+{
+	RaymarchResult result;
+	result.Color = startColor;
+	result.Hit = false;
+	result.Distance = 0;
+	result.Throughput = throughput;
+	result.ColorUINT = startColorUINT;
+
+	ivec3 step = ivec3(
+		(direction.x > 0.0) ? 1 : -1,
+		(direction.y > 0.0) ? 1 : -1,
+		(direction.z > 0.0) ? 1 : -1
+	);
+			
+	float voxelSize = model.VoxelSize;
+	vec3 delta = voxelSize / direction * vec3(step);	
+
+	RaymarchState state = CreateRaymarchStateTest(ray, origin, direction, step, maxSteps, voxelSize, uncompressedVoxel);
+	// Continue raymarching until we hit opaque object or we are out of traverses
+	while (state.MaxSteps.x >= 0 && state.MaxSteps.y >= 0 && state.MaxSteps.z >= 0)
+	{		
+		RayMarch(ray, state, delta, step, model, currentDistance);
+			
+		// We passed depth test
+		if (state.Hit) // We hit something so mix colors together
+		{
+			if (result.ColorUINT != state.ColorUINT)
+			{
+				result.Color.rgb += state.Color.rgb * result.Throughput;
+				result.Hit = true;
+				result.Normal = state.Normal;
+				result.FinalVoxel = state.CurrentVoxel;	
+				result.ColorUINT = state.ColorUINT;
+				result.Throughput *= mix(vec3(1.0), state.Color.rgb, state.Color.a) * (1.0 - state.Color.a);
+			}
+		}
+		
+
+		// Test if we can pass through
+		if (result.Throughput.x <= EPSILON && result.Throughput.y <= EPSILON && result.Throughput.z <= EPSILON)
+			break;	
+
+		PerformStep(state, step, delta); // Hit was not opaque we continue raymarching, perform step to get out of transparent voxel
+		
+		if (state.Distance > currentDistance) // if new depth is bigger than currentDepth it means there is something in front of us
+			break;		
+		
+	}
+	result.Color.a = 1.0 - CalculateLuminance(result.Throughput);
+	result.Distance = state.Distance;
+	result.NextVoxel = state.CurrentVoxel;
+	return result;
+}
+
 RaymarchResult RayMarch(in Ray ray, vec4 startColor, uint startColorUINT, vec3 throughput, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance)
 {
 	return RayMarchSteps(ray, startColor, startColorUINT, throughput, origin, direction, model, currentDistance, ivec3(model.Width, model.Height, model.Depth));
 }
 
+RaymarchResult RayMarchTest(in Ray ray, vec4 startColor, uint startColorUINT, vec3 throughput, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, ivec3 uncompressedVoxel)
+{
+	return RayMarchStepsTest(ray, startColor, startColorUINT, throughput, origin, direction, model, currentDistance, ivec3(model.Width, model.Height, model.Depth), uncompressedVoxel);
+}
 
 // Constant normal incidence Fresnel factor for all dielectrics.
 const vec3 Fdielectric = vec3(0.04);
@@ -441,6 +530,7 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
 	ivec3 current_voxel = ivec3(floor(origin / model.VoxelSize));
+	
 
 	ivec3 step = ivec3(
 		(direction.x > 0.0) ? 1 : -1,
@@ -456,7 +546,6 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 
 	vec3 t_max = (next_boundary - origin) / direction; // we will move along the axis with the smallest value
 	vec3 t_delta = model.VoxelSize / direction * vec3(step);	
-
 
 	vec4 color = vec4(0,0,0,0);
 	vec3 throughput = vec3(1,1,1);
@@ -488,12 +577,22 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 			}
 			else
 			{
+				ivec3 current_uncompressed_voxel = current_voxel * int(model.CompressScale);
+				float uncompressedVoxelSize = model.VoxelSize / model.CompressScale;
 				float dist = VoxelDistanceFromRay(origin, direction, current_voxel, model.VoxelSize);
 				vec3 newOrigin = origin + direction * (dist - EPSILON); // Move origin to hit of top grid cell
+				vec3 voxelPosition = VoxelPosition(current_voxel, model.VoxelSize);
+				newOrigin -= voxelPosition;
+
 				VoxelModel cellModel = model;
 				cellModel.VoxelOffset = cell.VoxelOffset;
+				cellModel.Width = model.CompressScale;
+				cellModel.Height = model.CompressScale;
+				cellModel.Depth = model.CompressScale;
+				cellModel.VoxelSize = uncompressedVoxelSize;
+
 				// Raymarch from new origin						
-				RaymarchResult newResult = RayMarch(ray, color, result.ColorUINT, throughput, origin, direction, cellModel, currentDistance);
+				RaymarchResult newResult = RayMarch(ray, color, result.ColorUINT, throughput, newOrigin, direction, cellModel, currentDistance);
 				if (newResult.Hit)
 				{
 					color = newResult.Color;
