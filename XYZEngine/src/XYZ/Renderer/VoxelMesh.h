@@ -21,6 +21,8 @@ namespace XYZ {
 		std::vector<uint32_t> Cells;
 	};
 
+
+
 	class XYZ_API VoxelMesh : public Asset
 	{
 	public:

@@ -21,7 +21,7 @@ namespace XYZ {
 		memcpy(&result, &voxTransform, sizeof(glm::mat4));
 		return result;
 	}
-	static uint32_t Index3D(int x, int y, int z, int width, int height)
+	static uint32_t Index3D(uint32_t x, uint32_t y, uint32_t z, uint32_t width, uint32_t height)
 	{
 		return x + width * (y + height * z);
 	}
@@ -105,5 +105,75 @@ namespace XYZ {
 			LoadVoxelModelAnimation(instance.ModelAnimation, scene->instances[i]);
 		}
 		ogt_vox_destroy_scene(scene);
+	}
+	VoxelCompressedSubmesh VoxelSubmesh::Compress(uint32_t scale) const
+	{
+		VoxelCompressedSubmesh result;
+		result.Width = Math::RoundUp(Width, scale) / scale;
+		result.Height = Math::RoundUp(Height, scale) / scale;
+		result.Depth = Math::RoundUp(Depth, scale) / scale;
+		result.VoxelSize = VoxelSize;
+
+		result.Cells.resize(result.Width * result.Height * result.Depth);
+		for (uint32_t cx = 0; cx < result.Width; ++cx)
+		{
+			for (uint32_t cy = 0; cy < result.Height; ++cy)
+			{
+				for (uint32_t cz = 0; cz < result.Depth; ++cz)
+				{
+					const uint32_t cIndex = Index3D(cx, cy, cz, result.Width, result.Height);
+					VoxelCompressedSubmesh::Cell& cell = result.Cells[cIndex];
+
+					const uint32_t xStart = cx * scale;
+					const uint32_t yStart = cy * scale;
+					const uint32_t zStart = cz * scale;
+				
+					const uint32_t xEnd = std::min(xStart + scale, Width);
+					const uint32_t yEnd = std::min(yStart + scale, Height);
+					const uint32_t zEnd = std::min(zStart + scale, Depth);
+					for (uint32_t x = xStart; x < xEnd; ++x)
+					{
+						for (uint32_t y = yStart; y < yEnd; ++y)
+						{
+							for (uint32_t z = zStart; z < zEnd; ++z)
+							{
+								const uint32_t index = Index3D(x, y, z, Width, Height);
+								const uint8_t colorIndex = ColorIndices[index];
+
+								// Cell not initialized yet
+								if (cell.VoxelCount == 0)
+								{
+									result.ColorIndices.push_back(colorIndex);
+									cell.VoxelCount++;
+								}
+								// Cell initialized but color index does not match
+								else if (cell.VoxelCount == 1 && result.ColorIndices.back() != colorIndex)
+								{
+									result.ColorIndices.push_back(colorIndex);
+									cell.VoxelCount++;
+								}
+								// Cell is not compressed
+								else if (cell.VoxelCount > 1)
+								{
+									result.ColorIndices.push_back(colorIndex);
+									cell.VoxelCount++;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		uint32_t offset = 0;
+		for (auto& cell : result.Cells)
+		{
+			cell.VoxelOffset = offset;
+			offset += cell.VoxelCount;
+		}
+
+		const int64_t resultSize = result.ColorIndices.size() + result.Cells.size() * sizeof(result.Cells[0]);
+		const int64_t savedSpace = static_cast<int64_t>(ColorIndices.size()) - resultSize;
+		return result;
 	}
 }

@@ -182,6 +182,7 @@ namespace XYZ {
 				}
 			}
 		}
+		submesh.Compress(16);
 		chunk.Mesh->SetSubmeshes({ submesh });
 		chunk.Mesh->SetInstances({ instance });
 		chunk.Mesh->GenerateAccelerationGrid(16);
