@@ -97,7 +97,7 @@ namespace XYZ {
 				static_cast<float>(submesh.Height) / 2.0f * submesh.VoxelSize,
 				static_cast<float>(submesh.Depth) / 2.0f * submesh.VoxelSize
 			);
-			
+			centerTranslation = glm::vec3(0.0f);
 			instance.Transform = VoxMat4ToGLM(scene->instances[i].transform) * glm::translate(glm::mat4(1.0f), centerTranslation);
 			AABB::Union(m_AABB, VoxelModelToAABB(instance.Transform, submesh.Width, submesh.Height, submesh.Depth, submesh.VoxelSize));
 

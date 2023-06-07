@@ -3,11 +3,121 @@
 
 #include "XYZ/Utils/Math/AABB.h"
 
+#include "XYZ/Utils/Random.h"
 
 namespace XYZ {
 	static uint32_t Index3D(uint32_t x, uint32_t y, uint32_t z, uint32_t width, uint32_t height)
 	{
 		return x + width * (y + height * z);
+	}
+
+	static std::vector<uint8_t> Rotate3DArray(const std::vector<uint8_t>& arr, uint32_t size)
+	{
+		std::vector<uint8_t> result(arr.size(), 0);
+
+		for (uint32_t x = 0; x < size; ++x)
+		{
+			for (uint32_t y = 0; y < size; ++y)
+			{
+				for (uint32_t z = 0; z < size; ++z)
+				{
+					const uint32_t origIndex = Index3D(x, y, z, size, size);
+					const uint32_t rotIndex = Index3D(z, y, x, size, size);
+					result[rotIndex] = arr[origIndex];
+				}
+			}
+		}
+
+		return result;
+	}
+
+	static void CompressSubmeshTest(VoxelSubmesh& compressed, const VoxelSubmesh& submesh, uint32_t scale)
+	{
+		compressed.CompressedCells.resize(compressed.Width * compressed.Height * compressed.Depth);
+		compressed.CompressedVoxelCount = 0;
+		compressed.CompressScale = scale;
+
+		for (uint32_t cx = 0; cx < compressed.Width; ++cx)
+		{
+			for (uint32_t cy = 0; cy < compressed.Height; ++cy)
+			{
+				for (uint32_t cz = 0; cz < compressed.Depth; ++cz)
+				{
+					const uint32_t cIndex = Index3D(cx, cy, cz, compressed.Width, compressed.Height);
+					CompressedCell& cell = compressed.CompressedCells[cIndex];
+
+					const uint32_t xStart = cx * scale;
+					const uint32_t yStart = cy * scale;
+					const uint32_t zStart = cz * scale;
+
+					const uint32_t xEnd = std::min(xStart + scale, submesh.Width);
+					const uint32_t yEnd = std::min(yStart + scale, submesh.Height);
+					const uint32_t zEnd = std::min(zStart + scale, submesh.Depth);
+
+					bool isUniform = true;
+					const uint32_t oldIndex = Index3D(xStart, yStart, zStart, submesh.Width, submesh.Height);
+					const uint8_t oldColorIndex = submesh.ColorIndices[oldIndex];
+					for (uint32_t x = xStart; x < xEnd; ++x)
+					{
+						for (uint32_t y = yStart; y < yEnd; ++y)
+						{
+							for (uint32_t z = zStart; z < zEnd; ++z)
+							{
+								const uint32_t newIndex = Index3D(x, y, z, submesh.Width, submesh.Height);
+								const uint8_t newColorIndex = submesh.ColorIndices[newIndex];
+								if (newColorIndex != oldColorIndex)
+								{
+									isUniform = false;
+									break;
+								}
+							}
+							if (!isUniform)
+								break;
+						}
+						if (!isUniform)
+							break;
+					}
+
+					if (isUniform)
+					{
+						cell.Voxels.push_back(oldColorIndex);
+						continue;
+					}
+
+					for (uint32_t x = xStart; x < xEnd; ++x)
+					{
+						for (uint32_t y = yStart; y < yEnd; ++y)
+						{
+							for (uint32_t z = zStart; z < zEnd; ++z)
+							{
+								const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
+								const uint8_t colorIndex = submesh.ColorIndices[index];
+
+								cell.Voxels.push_back(colorIndex);
+							}
+						}
+					}
+					cell.Voxels = Rotate3DArray(cell.Voxels, compressed.CompressScale);
+				}
+			}
+		}
+		uint32_t voxelOffset = 0;
+		for (auto& cell : compressed.CompressedCells)
+		{
+			if (cell.Voxels.size() != 1)
+			{
+				uint8_t randomVoxel = RandomNumber(1, 255);
+				for (auto& voxel : cell.Voxels)
+				{
+					if (voxel != 0)
+					{
+						voxel = randomVoxel;
+					}
+				}
+			}
+			voxelOffset += cell.Voxels.size();
+		}
+		compressed.CompressedVoxelCount = voxelOffset;
 	}
 
 
@@ -115,9 +225,10 @@ namespace XYZ {
 		compressed.Height = Math::RoundUp(submesh.Height, scale) / scale;
 		compressed.Depth = Math::RoundUp(submesh.Depth, scale) / scale;
 		compressed.VoxelSize = scale * submesh.VoxelSize;
-		CompressSubmesh(compressed, submesh, scale);
+		CompressSubmeshTest(compressed, submesh, scale);
 		m_Submeshes[submeshIndex] = std::move(compressed);
 		m_Dirty = true;
+		m_NumVoxels = compressed.CompressedVoxelCount;
 		return true;
 	}
 

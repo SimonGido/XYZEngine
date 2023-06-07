@@ -551,6 +551,7 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 	vec3 throughput = vec3(1,1,1);
 	ivec3 maxSteps = ivec3(model.Width, model.Height, model.Depth);
 
+	vec3 normal = vec3(0.0, 0.0, 0.0);
 	while (maxSteps.x >= 0 && maxSteps.y >= 0 && maxSteps.z >= 0)
 	{
 		float newDistance = VoxelDistanceFromRay(ray.Origin, ray.Direction, current_voxel, model.VoxelSize);
@@ -572,6 +573,8 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 				{
 					result.Color = VoxelToColor(colorUINT); 
 					result.Hit = true;
+					result.Distance = newDistance;
+					result.Normal = normal;
 					return result;
 				}		
 			}
@@ -590,7 +593,7 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 				cellModel.Height = model.CompressScale;
 				cellModel.Depth = model.CompressScale;
 				cellModel.VoxelSize = uncompressedVoxelSize;
-
+				
 				// Raymarch from new origin						
 				RaymarchResult newResult = RayMarch(ray, color, result.ColorUINT, throughput, newOrigin, direction, cellModel, currentDistance);
 				if (newResult.Hit)
@@ -608,18 +611,21 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 		{
 			t_max.x += t_delta.x;
 			current_voxel.x += step.x;
+			normal = vec3(-step.x, 0.0, 0.0);
 			maxSteps.x--;
 		}
 		else if (t_max.y < t_max.z) 
 		{
 			t_max.y += t_delta.y;
-			current_voxel.y += step.y;		
+			current_voxel.y += step.y;	
+			normal = vec3(0.0, -step.y, 0.0);
 			maxSteps.y--;
 		}
 		else 
 		{
 			t_max.z += t_delta.z;
 			current_voxel.z += step.z;	
+			normal = vec3(0.0, 0.0, -step.z);
 			maxSteps.z--;
 		}
 	}

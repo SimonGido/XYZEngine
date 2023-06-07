@@ -270,7 +270,9 @@ namespace XYZ {
 				if (!m_Generating && m_GenerateVoxelsFuture.valid())
 				{
 					VoxelSubmesh terrainSubmesh = m_ProceduralMesh->GetSubmeshes()[0];
-					
+					terrainSubmesh.CompressedCells.clear();
+					terrainSubmesh.CompressedVoxelCount = 0;
+
 					m_Terrain = std::move(m_GenerateVoxelsFuture.get());
 		
 					terrainSubmesh.ColorIndices = m_Terrain.Terrain;
@@ -298,19 +300,19 @@ namespace XYZ {
 				}
 
 				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
-				for (auto& transform : m_TreeTransforms)
-				{
-					m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());
-				}
+				//for (auto& transform : m_TreeTransforms)
+				//{
+				//	m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());
+				//}
 				for (size_t i = 0; i < m_Transforms.size(); i += 3)
 				{
 					const glm::mat4 castleTransform = m_Transforms[i].GetLocalTransform();
 					const glm::mat4 knightTransform = m_Transforms[i + 1].GetLocalTransform();
 					const glm::mat4 deerTransform = m_Transforms[i + 2].GetLocalTransform();
 				
-					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
-					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
-					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
+					//m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
+					//m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
+					//m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
 				}
 				
 				submitWater();
@@ -439,7 +441,8 @@ namespace XYZ {
 			uint32_t frequency = m_Frequency;
 			uint32_t octaves = m_Octaves;
 
-			auto& terrainSubmesh = m_ProceduralMesh->GetSubmeshes()[0];
+			auto terrainSubmesh = m_ProceduralMesh->GetSubmeshes()[0];
+
 
 			uint32_t width = terrainSubmesh.Width;
 			uint32_t height = terrainSubmesh.Height;
