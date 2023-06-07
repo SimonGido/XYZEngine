@@ -11,7 +11,7 @@ namespace XYZ {
 		return x + width * (y + height * z);
 	}
 
-	static std::vector<uint8_t> Rotate3DArray(const std::vector<uint8_t>& arr, uint32_t size)
+	static std::vector<uint8_t> Rotate3DArrayXZ(const std::vector<uint8_t>& arr, uint32_t size)
 	{
 		std::vector<uint8_t> result(arr.size(), 0);
 
@@ -27,7 +27,6 @@ namespace XYZ {
 				}
 			}
 		}
-
 		return result;
 	}
 
@@ -97,24 +96,14 @@ namespace XYZ {
 							}
 						}
 					}
-					cell.Voxels = Rotate3DArray(cell.Voxels, compressed.CompressScale);
+					// I do not know why it has to be rotated
+					cell.Voxels = Rotate3DArrayXZ(cell.Voxels, compressed.CompressScale);
 				}
 			}
 		}
 		uint32_t voxelOffset = 0;
 		for (auto& cell : compressed.CompressedCells)
 		{
-			if (cell.Voxels.size() != 1)
-			{
-				uint8_t randomVoxel = RandomNumber(1, 255);
-				for (auto& voxel : cell.Voxels)
-				{
-					if (voxel != 0)
-					{
-						voxel = randomVoxel;
-					}
-				}
-			}
 			voxelOffset += cell.Voxels.size();
 		}
 		compressed.CompressedVoxelCount = voxelOffset;

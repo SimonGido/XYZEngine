@@ -575,8 +575,9 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 					result.Hit = true;
 					result.Distance = newDistance;
 					result.Normal = normal;
-					return result;
-				}		
+					result.Throughput *= mix(vec3(1.0), result.Color.rgb, result.Color.a) * (1.0 - result.Color.a);
+					throughput = result.Throughput;
+				}					
 			}
 			else
 			{
@@ -601,10 +602,10 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 					color = newResult.Color;
 					throughput = newResult.Throughput;
 					result = newResult;
-				}
-				if (throughput.x <= EPSILON && throughput.y <= EPSILON && throughput.z <= EPSILON)
-					return result;				
+				}			
 			}
+			if (throughput.x <= EPSILON && throughput.y <= EPSILON && throughput.z <= EPSILON)
+				return result;			
 		}
 
 		if (t_max.x < t_max.y && t_max.x < t_max.z) 
