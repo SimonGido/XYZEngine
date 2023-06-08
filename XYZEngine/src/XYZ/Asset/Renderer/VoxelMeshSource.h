@@ -12,31 +12,29 @@
 
 namespace XYZ {
 
-	struct VoxelCompressedSubmesh
-	{
-		struct Cell
-		{
-			uint32_t VoxelCount = 0;
-			uint32_t VoxelOffset = 0;
-		};
-		uint32_t Width, Height, Depth;
-		uint32_t Scale;
-		float VoxelSize = 1.0f;
-
-		std::vector<uint8_t> ColorIndices;
-		std::vector<Cell>	 Cells;
-	};
-
 
 
 	struct XYZ_API VoxelSubmesh
 	{		
-		uint32_t Width, Height, Depth;
-		float VoxelSize = 1.0f;
-		std::vector<uint8_t> ColorIndices;
-		mutable uint8_t* RendererCopy = nullptr;
+		struct CompressedCell
+		{
+			uint32_t VoxelCount = 0;
+			uint32_t VoxelOffset = 0;
+		};
 
-		VoxelCompressedSubmesh Compress(uint32_t scale) const;
+
+		uint32_t Width;
+		uint32_t Height;
+		uint32_t Depth;
+		uint32_t CompressScale;
+		float	 VoxelSize = 1.0f;
+		
+		std::vector<uint8_t> ColorIndices;
+		std::vector<uint8_t> CompressedColorIndices;
+		std::vector<CompressedCell> CompressedCells;
+
+		int64_t	Compress(uint32_t scale);
+		int64_t CompressSavedSpace() const;
 	};
 
 

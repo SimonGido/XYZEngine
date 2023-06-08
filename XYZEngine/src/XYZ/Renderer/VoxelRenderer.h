@@ -65,35 +65,23 @@ namespace XYZ {
 		uint32_t    ColorIndex;
 
 		float		VoxelSize;	
-		int32_t		AccelerationGridIndex;
+		uint32_t    CellsOffset;
+		uint32_t    CompressScale;
+		Bool32		Compressed = false;
 
-		Padding<4>	Padding;
+		Padding<12>	Padding;
 	};
 
-	struct VoxelAccelerationGrid
-	{
-		uint32_t  CellsOffset;
 
-		uint32_t  Width;
-		uint32_t  Height;
-		uint32_t  Depth;
-		
-		float	  Size;
-
-		Padding<12> Padding;
-	};
 
 	struct SSBOVoxelModels
 	{
 		static constexpr uint32_t MaxModels = 1024;
-		static constexpr uint32_t MaxAccelerationGrids = 512;
 
 		uint32_t NumModels;
 		Padding<12> Padding;
 		
 		VoxelModel	 Models[MaxModels];
-
-		VoxelAccelerationGrid AccelerationGrids[MaxAccelerationGrids];
 
 		static constexpr uint32_t Binding = 18;
 		static constexpr uint32_t Set = 0;
@@ -110,11 +98,17 @@ namespace XYZ {
 		static constexpr uint32_t Set = 0;
 	};
 
-	struct SSBOVoxelAccelerationGrids
+	struct VoxelCompressedCell
 	{
-		static constexpr uint32_t MaxAccelerationGridCells = 40 * 1024 * 1024;
+		uint32_t VoxelCount;
+		uint32_t VoxelOffset;
+	};
 
-		uint8_t AccelerationGridCells[MaxAccelerationGridCells];
+	struct SSBOVoxelCompressed
+	{
+		static constexpr uint32_t MaxCompressedCells = 40 * 1024 * 1024;
+
+		VoxelCompressedCell CompressedCells[MaxCompressedCells];
 
 		static constexpr uint32_t Binding = 20;
 		static constexpr uint32_t Set = 0;
@@ -216,7 +210,7 @@ namespace XYZ {
 		struct MeshAllocation
 		{
 			StorageBufferAllocation VoxelAllocation;
-			StorageBufferAllocation	AccelerationGridAllocation;
+			StorageBufferAllocation	CompressAllocation;
 			StorageBufferAllocation	ColorAllocation;
 
 			std::vector<uint32_t> SubmeshOffsets;
@@ -241,7 +235,7 @@ namespace XYZ {
 		void prepareModels();
 		
 
-		void updateVoxelModelsSSBO(uint32_t AccelerationGridCount);
+		void updateVoxelModelsSSBO();
 		void updateOctreeSSBO();
 
 		void createDefaultPipelines();
@@ -271,7 +265,7 @@ namespace XYZ {
 
 
 		Ref<StorageBufferAllocator> m_VoxelStorageAllocator;
-		Ref<StorageBufferAllocator> m_AccelerationGridsAllocator;
+		Ref<StorageBufferAllocator> m_CompressedCellAllocator;
 		Ref<StorageBufferAllocator> m_ColorStorageAllocator;
 		Ref<StorageBufferAllocator> m_ComputeStorageAllocator;
 
@@ -280,10 +274,7 @@ namespace XYZ {
 		Ref<Texture2D>			m_SSGITexture;
 
 		UBVoxelScene			m_UBVoxelScene;
-		SSBOVoxels				m_SSBOVoxels;
 		SSBOVoxelModels			m_SSBOVoxelModels;
-		SSBOVoxelAccelerationGrids	m_SSBOAccelerationGrids;
-		SSBOColors				m_SSBOColors;
 		SSBOOCtree				m_SSBOOctree;
 
 		SSGIValues				m_SSGIValues;
@@ -294,7 +285,6 @@ namespace XYZ {
 		Statistics				m_Statistics;
 	
 		bool					m_UseSSGI = false;
-		bool					m_UseAccelerationGrid = false;
 		bool					m_UseOctree = false;
 		bool					m_ShowOctree = false;
 		bool					m_ShowAABB = false;

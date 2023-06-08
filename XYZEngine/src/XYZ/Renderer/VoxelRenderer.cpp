@@ -49,16 +49,14 @@ namespace XYZ {
 		m_StorageBufferSet->Create(SSBOVoxels::MaxVoxels, SSBOVoxels::Set, SSBOVoxels::Binding, false, true);
 		m_StorageBufferSet->Create(sizeof(SSBOVoxelModels), SSBOVoxelModels::Set, SSBOVoxelModels::Binding);
 		m_StorageBufferSet->Create(SSBOColors::MaxSize, SSBOColors::Set, SSBOColors::Binding, false, true);
-		m_StorageBufferSet->Create(sizeof(SSBOVoxelAccelerationGrids), SSBOVoxelAccelerationGrids::Set, SSBOVoxelAccelerationGrids::Binding, false, true);
+		m_StorageBufferSet->Create(sizeof(SSBOVoxelCompressed), SSBOVoxelCompressed::Set, SSBOVoxelCompressed::Binding, false, true);
 		m_StorageBufferSet->Create(SSBOVoxelComputeData::MaxSize, SSBOVoxelComputeData::Set, SSBOVoxelComputeData::Binding);
 		m_StorageBufferSet->Create(sizeof(SSBOOCtree), SSBOOCtree::Set, SSBOOCtree::Binding);
 
 		m_VoxelStorageAllocator = Ref<StorageBufferAllocator>::Create(SSBOVoxels::MaxVoxels, SSBOVoxels::Binding, SSBOVoxels::Set);
 		m_ColorStorageAllocator = Ref<StorageBufferAllocator>::Create(SSBOColors::MaxSize, SSBOColors::Binding, SSBOColors::Set);
-		m_AccelerationGridsAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxelAccelerationGrids), SSBOVoxelAccelerationGrids::Binding, SSBOVoxelAccelerationGrids::Set);
+		m_CompressedCellAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxelCompressed), SSBOVoxelCompressed::Binding, SSBOVoxelCompressed::Set);
 		m_ComputeStorageAllocator = Ref<StorageBufferAllocator>::Create(SSBOVoxelComputeData::MaxSize, SSBOVoxelComputeData::Binding, SSBOVoxelComputeData::Set);
-		
-		memset(m_SSBOAccelerationGrids.AccelerationGridCells, 0, sizeof(SSBOVoxelAccelerationGrids));
 
 		TextureProperties props;
 		props.Storage = true;
@@ -211,7 +209,6 @@ namespace XYZ {
 			ImGui::Checkbox("SSGI Noise", (bool*)&m_SSGIValues.Noise);
 			ImGui::NewLine();
 
-			ImGui::Checkbox("Acceleration Grid", &m_UseAccelerationGrid);
 			ImGui::Checkbox("Octree", &m_UseOctree);
 			ImGui::Checkbox("Show Octree", &m_ShowOctree);
 			ImGui::Checkbox("Show AABB", &m_ShowAABB);
@@ -221,14 +218,14 @@ namespace XYZ {
 			{
 				const uint32_t voxelBufferUsage = 100.0f * static_cast<float>(m_VoxelStorageAllocator->GetAllocatedSize()) / m_VoxelStorageAllocator->GetSize();
 				const uint32_t colorBufferUsage = 100.0f * static_cast<float>(m_ColorStorageAllocator->GetAllocatedSize()) / m_ColorStorageAllocator->GetSize();
-				const uint32_t AccelerationGridBufferUsage = 100.0f * static_cast<float>(m_AccelerationGridsAllocator->GetAllocatedSize()) / m_AccelerationGridsAllocator->GetSize();
+				const uint32_t compressBufferUsage = 100.0f * static_cast<float>(m_CompressedCellAllocator->GetAllocatedSize()) / m_CompressedCellAllocator->GetSize();
 
 				UI::TextTableRow("%s", "Mesh Allocations:", "%u", static_cast<uint32_t>(m_LastFrameMeshAllocations.size()));
 				UI::TextTableRow("%s", "Model Count:", "%u", m_Statistics.ModelCount);
 
 				UI::TextTableRow("%s", "Voxel Buffer Usage:", "%u%%", voxelBufferUsage);
 				UI::TextTableRow("%s", "Color Buffer Usage:", "%u%%", colorBufferUsage);
-				UI::TextTableRow("%s", "Top Grid Buffer Usage:", "%u%%", AccelerationGridBufferUsage);
+				UI::TextTableRow("%s", "Compress Buffer Usage:", "%u%%", compressBufferUsage);
 
 
 				const uint32_t frameIndex = Renderer::GetCurrentFrame();
@@ -243,7 +240,7 @@ namespace XYZ {
 	}
 
 	
-	void VoxelRenderer::updateVoxelModelsSSBO(uint32_t AccelerationGridCount)
+	void VoxelRenderer::updateVoxelModelsSSBO()
 	{
 		XYZ_PROFILE_FUNC("VoxelRenderer::updateVoxelModelsSSBO");
 		// Update ssbos
@@ -252,18 +249,8 @@ namespace XYZ {
 			+ sizeof(SSBOVoxelModels::Padding)
 			+ m_SSBOVoxelModels.NumModels * sizeof(VoxelModel);
 
-
-		const uint32_t AccelerationGridDataOffset =
-			sizeof(SSBOVoxelModels::NumModels)
-			+ sizeof(SSBOVoxelModels::Padding)
-			+ SSBOVoxelModels::MaxModels * sizeof(VoxelModel);
-
-
-		const uint32_t AccelerationGridUpdateSize = AccelerationGridCount * sizeof(VoxelAccelerationGrid);
-		void* AccelerationGridData = (uint8_t*)&m_SSBOVoxelModels + AccelerationGridDataOffset;
-
 		m_StorageBufferSet->Update((void*)&m_SSBOVoxelModels, voxelModelsUpdateSize, 0, SSBOVoxelModels::Binding, SSBOVoxelModels::Set);
-		m_StorageBufferSet->Update(AccelerationGridData, AccelerationGridUpdateSize, AccelerationGridDataOffset, SSBOVoxelModels::Binding, SSBOVoxelModels::Set);
+		
 	}
 
 	void VoxelRenderer::updateOctreeSSBO()
@@ -456,7 +443,6 @@ namespace XYZ {
 			m_RaymarchMaterial
 		);
 
-		Bool32 useAccelerationGrid = m_UseAccelerationGrid;
 		Bool32 useOctree = m_UseOctree;
 		Bool32 showOctree = m_ShowOctree;
 		Bool32 showAABB = m_ShowAABB;
@@ -465,7 +451,7 @@ namespace XYZ {
 			m_RaymarchPipeline,
 			nullptr,
 			m_WorkGroups.x, m_WorkGroups.y, 1,
-			PushConstBuffer{ useAccelerationGrid, useOctree, showOctree, showAABB }
+			PushConstBuffer{ useOctree, showOctree, showAABB }
 		);
 
 
@@ -570,8 +556,6 @@ namespace XYZ {
 		
 
 		// Pass it to ssbo data
-		const uint32_t colorSize = SSBOColors::ColorPalleteSize;
-		uint32_t accelerationGridCount = 0;
 		for (auto& [key, meshAllocation] : m_VoxelMeshBuckets)
 		{
 			if (meshAllocation.Models.empty())
@@ -583,35 +567,24 @@ namespace XYZ {
 			{
 				const VoxelSubmesh& submesh = cmdModel->Mesh->GetSubmeshes()[cmdModel->SubmeshIndex];
 				VoxelModel& model = m_SSBOVoxelModels.Models[cmdModel->ModelIndex];
-				model.ColorIndex = meshAlloc.ColorAllocation.GetOffset() / colorSize;
+				model.ColorIndex = meshAlloc.ColorAllocation.GetOffset() / SSBOColors::ColorPalleteSize;
 				model.VoxelOffset = meshAlloc.SubmeshOffsets[cmdModel->SubmeshIndex];
 				model.InverseTransform = glm::inverse(cmdModel->Transform);
 				model.Width = submesh.Width;
 				model.Height = submesh.Height;
 				model.Depth = submesh.Depth;
 				model.VoxelSize = submesh.VoxelSize;
-				model.AccelerationGridIndex = -1;
+				if (!submesh.CompressedCells.empty())
+				{
+					model.Compressed = true;
+					model.CompressScale = submesh.CompressScale;
+					model.CellsOffset = meshAlloc.CompressAllocation.GetOffset() / sizeof(VoxelCompressedCell);			
+				}
 				m_SSBOVoxelModels.NumModels++;
 			}
 
-			// Store mesh top grid
-			if (meshAllocation.Mesh->HasAccelerationGrid())
-			{
-				auto& AccelerationGrid = meshAllocation.Mesh->GetAccelerationGrid();
-				m_SSBOVoxelModels.AccelerationGrids[accelerationGridCount].CellsOffset = meshAlloc.AccelerationGridAllocation.GetOffset();
-				m_SSBOVoxelModels.AccelerationGrids[accelerationGridCount].Width = AccelerationGrid.Width;
-				m_SSBOVoxelModels.AccelerationGrids[accelerationGridCount].Height = AccelerationGrid.Height;
-				m_SSBOVoxelModels.AccelerationGrids[accelerationGridCount].Depth = AccelerationGrid.Depth;
-				m_SSBOVoxelModels.AccelerationGrids[accelerationGridCount].Size = AccelerationGrid.Size;
-				for (const auto& cmdModel : meshAllocation.Models)
-				{
-					VoxelModel& model = m_SSBOVoxelModels.Models[cmdModel->ModelIndex];
-					model.AccelerationGridIndex = accelerationGridCount;
-				}
-				accelerationGridCount++;
-			}
 		}
-		updateVoxelModelsSSBO(accelerationGridCount);
+		updateVoxelModelsSSBO();
 		if (m_UseOctree)
 			updateOctreeSSBO();
 	}
@@ -692,52 +665,38 @@ namespace XYZ {
 
 		const uint32_t meshSize = mesh->GetNumVoxels() * sizeof(uint8_t);
 		const uint32_t colorSize = SSBOColors::ColorPalleteSize;
-		
+		const uint32_t compressedCellsSize = mesh->GetNumCompressedCells() * sizeof(VoxelCompressedCell);
+
 		const bool reallocated =
 			m_VoxelStorageAllocator->Allocate(meshSize, allocation.VoxelAllocation)
-			|| m_ColorStorageAllocator->Allocate(colorSize, allocation.ColorAllocation);
+			|| m_ColorStorageAllocator->Allocate(colorSize, allocation.ColorAllocation)
+			|| m_CompressedCellAllocator->Allocate(compressedCellsSize, allocation.CompressAllocation);
 
 
 		if (reallocated || mesh->NeedUpdate())
 		{
-			// It is safe to allocate top grid only here because of multithread generation
-			if (mesh->HasAccelerationGrid())
-			{
-				auto& accelerationGrid = mesh->GetAccelerationGrid();
-				const uint32_t accelerationGridsSize = accelerationGrid.Cells.size();
-				m_AccelerationGridsAllocator->Allocate(accelerationGridsSize, allocation.AccelerationGridAllocation);
-				uint32_t cellOffset = allocation.AccelerationGridAllocation.GetOffset();
-
-				{
-					XYZ_PROFILE_FUNC("VoxelRenderer::reallocateVoxels_CopyAccelerationGrid");
-					// Copy acceleration grid
-					for (auto count : accelerationGrid.Cells)
-						m_SSBOAccelerationGrids.AccelerationGridCells[cellOffset++] = count > 0 ? 1 : 0;
-				}
-			}
-			// Update acceleration grid SSBO
-			void* accelerationGridData = &m_SSBOAccelerationGrids.AccelerationGridCells[allocation.AccelerationGridAllocation.GetOffset()];
-			m_StorageBufferSet->Update(accelerationGridData, allocation.AccelerationGridAllocation.GetSize(), allocation.AccelerationGridAllocation.GetOffset(), SSBOVoxelAccelerationGrids::Binding, SSBOVoxelAccelerationGrids::Set);
-			
-
 			// Copy voxels
 			uint32_t submeshIndex = 0;
-			uint32_t offset = allocation.VoxelAllocation.GetOffset();
+			uint32_t voxelOffset = allocation.VoxelAllocation.GetOffset();
+			uint32_t cellOffset = allocation.CompressAllocation.GetOffset();
+
 			allocation.SubmeshOffsets.resize(submeshes.size());
 			for (auto& submesh : submeshes)
 			{
-				allocation.SubmeshOffsets[submeshIndex] = offset;
-				const uint32_t voxelCount = static_cast<uint32_t>(submesh.ColorIndices.size());
-				if (submesh.RendererCopy != nullptr)
+				allocation.SubmeshOffsets[submeshIndex] = voxelOffset;
+				
+				m_StorageBufferSet->Update(submesh.CompressedCells.data(), allocation.CompressAllocation.GetSize(), cellOffset, SSBOVoxelCompressed::Binding, SSBOVoxelCompressed::Set);
+				if (submesh.CompressedCells.empty()) // Submesh is not compressed
 				{
-					void** data = (void**)&submesh.RendererCopy;
-					m_StorageBufferSet->Update(data, submesh.ColorIndices.size(), offset, SSBOVoxels::Binding, SSBOVoxels::Set);
+					m_StorageBufferSet->Update(submesh.ColorIndices.data(), submesh.ColorIndices.size(), voxelOffset, SSBOVoxels::Binding, SSBOVoxels::Set);
+					voxelOffset += static_cast<uint32_t>(submesh.ColorIndices.size());
 				}
-				else
+				else // Submesh is compressed
 				{
-					m_StorageBufferSet->Update(submesh.ColorIndices.data(), submesh.ColorIndices.size(), offset, SSBOVoxels::Binding, SSBOVoxels::Set);
+					m_StorageBufferSet->Update(submesh.CompressedColorIndices.data(), submesh.CompressedColorIndices.size(), voxelOffset, SSBOVoxels::Binding, SSBOVoxels::Set);
+					voxelOffset += static_cast<uint32_t>(submesh.CompressedColorIndices.size());
 				}
-				offset += voxelCount;
+				cellOffset += static_cast<uint32_t>(submesh.CompressedCells.size());
 				submeshIndex++;
 			}
 			// Update color pallete SSBO

@@ -164,7 +164,6 @@ namespace XYZ {
 		const double fz = static_cast<double>(biom.Frequency / submesh.Depth);
 
 		submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth, 0);
-		submesh.RendererCopy = new uint8_t[submesh.ColorIndices.size()];
 		for (uint32_t x = 0; x < submesh.Width; ++x)
 		{
 			for (uint32_t z = 0; z < submesh.Depth; ++z)
@@ -178,14 +177,13 @@ namespace XYZ {
 				{
 					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
 					submesh.ColorIndices[index] = 1;
-					submesh.RendererCopy[index] = submesh.ColorIndices[index];
 				}
 			}
 		}
 		submesh.Compress(16);
 		chunk.Mesh->SetSubmeshes({ submesh });
 		chunk.Mesh->SetInstances({ instance });
-		chunk.Mesh->GenerateAccelerationGrid(16);
+
 		return chunk;
 	}
 }

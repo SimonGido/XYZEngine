@@ -26,6 +26,45 @@ namespace XYZ {
 		return x + width * (y + height * z);
 	}
 
+	static void RotateGridXZ(uint8_t* arr, uint32_t size)
+	{
+		std::vector<uint8_t> result(size * size * size, 0);
+
+		for (uint32_t x = 0; x < size; ++x)
+		{
+			for (uint32_t y = 0; y < size; ++y)
+			{
+				for (uint32_t z = 0; z < size; ++z)
+				{
+					const uint32_t origIndex = Index3D(x, y, z, size, size);
+					const uint32_t rotIndex = Index3D(z, y, x, size, size);
+					result[rotIndex] = arr[origIndex];
+				}
+			}
+		}
+		memcpy(arr, result.data(), result.size());
+	}
+
+	static bool IsBlockUniform(const std::vector<uint8_t>& arr, const glm::uvec3& start, const glm::uvec3& end, uint32_t width, uint32_t height)
+	{
+		const uint32_t oldIndex = Index3D(start.x, start.y, start.z, width, height);
+		const uint8_t oldColorIndex = arr[oldIndex];
+		for (uint32_t x = start.x; x < end.x; ++x)
+		{
+			for (uint32_t y = start.y; y < end.y; ++y)
+			{
+				for (uint32_t z = start.z; z < end.z; ++z)
+				{
+					const uint32_t newIndex = Index3D(x, y, z, width, height);
+					const uint8_t newColorIndex = arr[newIndex];
+					if (newColorIndex != oldColorIndex)
+						return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	static void LoadSubmeshModel(VoxelSubmesh& submesh, const ogt_vox_model* voxModel)
 	{
 		submesh.ColorIndices.resize(voxModel->size_x * voxModel->size_y * voxModel->size_z);
@@ -106,74 +145,71 @@ namespace XYZ {
 		}
 		ogt_vox_destroy_scene(scene);
 	}
-	VoxelCompressedSubmesh VoxelSubmesh::Compress(uint32_t scale) const
+	int64_t VoxelSubmesh::Compress(uint32_t scale)
 	{
-		VoxelCompressedSubmesh result;
-		result.Width = Math::RoundUp(Width, scale) / scale;
-		result.Height = Math::RoundUp(Height, scale) / scale;
-		result.Depth = Math::RoundUp(Depth, scale) / scale;
-		result.VoxelSize = VoxelSize;
+		VoxelSubmesh copy = *this;
+		CompressScale = scale;
+		Width = Math::RoundUp(Width, scale) / scale;
+		Height = Math::RoundUp(Height, scale) / scale;
+		Depth = Math::RoundUp(Depth, scale) / scale;
 
-		result.Cells.resize(result.Width * result.Height * result.Depth);
-		for (uint32_t cx = 0; cx < result.Width; ++cx)
+
+		CompressedCells.resize(Width * Height * Depth);
+
+		uint32_t voxelOffset = 0;
+		for (uint32_t cx = 0; cx < Width; ++cx)
 		{
-			for (uint32_t cy = 0; cy < result.Height; ++cy)
+			for (uint32_t cy = 0; cy < Height; ++cy)
 			{
-				for (uint32_t cz = 0; cz < result.Depth; ++cz)
+				for (uint32_t cz = 0; cz < Depth; ++cz)
 				{
-					const uint32_t cIndex = Index3D(cx, cy, cz, result.Width, result.Height);
-					VoxelCompressedSubmesh::Cell& cell = result.Cells[cIndex];
+					const uint32_t cIndex = Index3D(cx, cy, cz, Width, Height);
+					CompressedCell& cell = CompressedCells[cIndex];
 
 					const uint32_t xStart = cx * scale;
 					const uint32_t yStart = cy * scale;
 					const uint32_t zStart = cz * scale;
 				
-					const uint32_t xEnd = std::min(xStart + scale, Width);
-					const uint32_t yEnd = std::min(yStart + scale, Height);
-					const uint32_t zEnd = std::min(zStart + scale, Depth);
-					for (uint32_t x = xStart; x < xEnd; ++x)
-					{
-						for (uint32_t y = yStart; y < yEnd; ++y)
-						{
-							for (uint32_t z = zStart; z < zEnd; ++z)
-							{
-								const uint32_t index = Index3D(x, y, z, Width, Height);
-								const uint8_t colorIndex = ColorIndices[index];
+					const uint32_t xEnd = std::min(xStart + scale, copy.Width);
+					const uint32_t yEnd = std::min(yStart + scale, copy.Height);
+					const uint32_t zEnd = std::min(zStart + scale, copy.Depth);
 
-								// Cell not initialized yet
-								if (cell.VoxelCount == 0)
+					const bool isUniform = IsBlockUniform(ColorIndices, { xStart, yStart, zStart }, { xEnd, yEnd, zEnd }, copy.Width, copy.Height);
+					if (isUniform)
+					{
+						cell.VoxelCount = 1;
+						CompressedColorIndices.push_back(ColorIndices[Index3D(xStart, yStart, zStart, copy.Width, copy.Height)]);						
+					}
+					else
+					{
+						const uint32_t offset = static_cast<uint32_t>(CompressedColorIndices.size());
+						cell.VoxelCount = scale * scale * scale;
+						for (uint32_t x = xStart; x < xEnd; ++x)
+						{
+							for (uint32_t y = yStart; y < yEnd; ++y)
+							{
+								for (uint32_t z = zStart; z < zEnd; ++z)
 								{
-									result.ColorIndices.push_back(colorIndex);
-									cell.VoxelCount++;
-								}
-								// Cell initialized but color index does not match
-								else if (cell.VoxelCount == 1 && result.ColorIndices.back() != colorIndex)
-								{
-									result.ColorIndices.push_back(colorIndex);
-									cell.VoxelCount++;
-								}
-								// Cell is not compressed
-								else if (cell.VoxelCount > 1)
-								{
-									result.ColorIndices.push_back(colorIndex);
-									cell.VoxelCount++;
+									const uint32_t index = Index3D(x, y, z, copy.Width, copy.Height);
+									const uint8_t colorIndex = ColorIndices[index];
+									CompressedColorIndices.push_back(colorIndex);							
 								}
 							}
 						}
-					}
+						RotateGridXZ(&CompressedColorIndices[offset], scale);
+					}	
+					cell.VoxelOffset = voxelOffset;
+					voxelOffset += cell.VoxelCount;
 				}
 			}
 		}
-
-		uint32_t offset = 0;
-		for (auto& cell : result.Cells)
-		{
-			cell.VoxelOffset = offset;
-			offset += cell.VoxelCount;
-		}
-
-		const int64_t resultSize = result.ColorIndices.size() + result.Cells.size() * sizeof(result.Cells[0]);
+		return CompressSavedSpace();
+	}
+	
+	int64_t VoxelSubmesh::CompressSavedSpace() const
+	{
+		const int64_t resultSize = CompressedColorIndices.size() + CompressedCells.size() * sizeof(CompressedCell);
 		const int64_t savedSpace = static_cast<int64_t>(ColorIndices.size()) - resultSize;
-		return result;
+		return savedSpace;
 	}
 }

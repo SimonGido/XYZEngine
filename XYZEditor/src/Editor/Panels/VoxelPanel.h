@@ -118,15 +118,15 @@ namespace XYZ {
 
 			StorageBufferAllocation m_WaterDensityAllocation;
 			bool m_UpdateWater = false;
+			bool m_Compress = false;
 
-			float m_AccelerationGridSize = 32;
 
 			SpaceColonization* m_SpaceColonization = nullptr;
 			SpaceColonizationData m_SpaceColonizationData;
 
 
 			Octree m_Octree;
-			VoxelWorld m_World;
+			//VoxelWorld m_World;
 		};
 	}
 }

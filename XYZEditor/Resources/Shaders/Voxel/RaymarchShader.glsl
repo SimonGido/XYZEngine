@@ -18,7 +18,6 @@ const uint OPAQUE = 255;
 
 layout(push_constant) uniform Uniforms
 {
-	bool UseAccelerationGrid;
 	bool UseOctree;
 	bool ShowOctree;
 	bool ShowAABB;
@@ -52,17 +51,6 @@ struct VoxelModelOctreeNode
 	uint Padding;
 };
 
-struct VoxelAccelerationGrid
-{
-	uint  CellsOffset;
-
-	uint  Width;
-	uint  Height;
-	uint  Depth;
-	float Size;
-
-	uint Padding[3];
-};
 
 struct VoxelModel
 {
@@ -75,9 +63,17 @@ struct VoxelModel
 	uint  ColorIndex;
 
 	float VoxelSize;
-	int   AccelerationGridIndex;
+	uint  CellOffset;
+	uint  CompressScale;
+	bool  Compressed;
 
-	uint  Padding;
+	uint  Padding[3];
+};
+
+struct VoxelCompressedCell
+{
+	uint VoxelCount;
+	uint VoxelOffset;
 };
 
 layout (std140, binding = 16) uniform Scene
@@ -102,7 +98,6 @@ layout(std430, binding = 18) readonly buffer buffer_Models
 {		
 	uint		 NumModels;
 	VoxelModel	 Models[MAX_MODELS];
-	VoxelAccelerationGrid AccelerationGrids[];
 };
 
 layout(std430, binding = 19) readonly buffer buffer_Colors
@@ -110,9 +105,9 @@ layout(std430, binding = 19) readonly buffer buffer_Colors
 	uint ColorPallete[MAX_COLORS][256];
 };
 
-layout(std430, binding = 20) readonly buffer buffer_AccelerationGrids
+layout(std430, binding = 20) readonly buffer buffer_Compressed
 {		
-	uint8_t AccelerationGridCells[];
+	VoxelCompressedCell CompressedCells[];
 };
 
 layout(std430, binding = 23) readonly buffer buffer_Octree
@@ -141,8 +136,12 @@ AABB VoxelAABB(ivec3 voxel, float voxelSize)
 AABB ModelAABB(in VoxelModel model)
 {
 	AABB result;
+	float voxelSize = model.VoxelSize;
+	if (model.Compressed)
+		voxelSize = model.VoxelSize * model.CompressScale;
+
 	result.Min = vec3(0.0);
-	result.Max = vec3(model.Width, model.Height, model.Depth) * model.VoxelSize;
+	result.Max = vec3(model.Width, model.Height, model.Depth) * voxelSize;
 	return result;
 }
 
@@ -219,6 +218,11 @@ float VoxelDistanceFromRay(vec3 origin, vec3 direction, ivec3 voxel, float voxel
 		return dist;
 		
 	return FLT_MAX;
+}
+
+vec3 VoxelPosition(ivec3 voxel, float voxelSize)
+{
+	return vec3(voxel.x * voxelSize, voxel.y * voxelSize, voxel.z * voxelSize);
 }
 
 
@@ -331,32 +335,6 @@ RaymarchState CreateRaymarchState(in Ray ray, vec3 origin, vec3 direction, ivec3
 	return state;
 }
 
-const ivec3 neighbours[6] = {
-	ivec3(-1, 0, 0),
-	ivec3( 1, 0, 0),
-	ivec3( 0, 1, 0),
-	ivec3( 0,-1, 0),
-
-	ivec3(0, 0, 1),
-	ivec3(0, 0, -1)
-};
-
-bool IdenticalNeighbour(ivec3 voxel, in VoxelModel model)
-{
-	uint current = Index3D(voxel, model.Width, model.Height) + model.VoxelOffset;
-	uint colorIndex = uint(Voxels[current]);
-	for (int i = 0; i < 6; i++)
-	{
-		if (IsValidVoxel(voxel + neighbours[i], model.Width, model.Height, model.Depth))
-		{
-			uint neighbour = Index3D(voxel + neighbours[i], model.Width, model.Height) + model.VoxelOffset;
-			uint neighbourColorIndex = uint(Voxels[neighbour]);
-			if (neighbourColorIndex == colorIndex)
-				return true;
-		}
-	}
-	return false;
-}
 
 RaymarchResult RayMarchSteps(in Ray ray, vec4 startColor, uint startColorUINT, vec3 throughput, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, ivec3 maxSteps)
 {
@@ -439,84 +417,78 @@ vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
 }
 
 // TODO: refactor and fix it
-RaymarchResult RaymarchAccelerationGrid(in Ray ray, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance, in VoxelAccelerationGrid grid)
+RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in VoxelModel model, float currentDistance)
 {
 	RaymarchResult result;
 	result.ColorUINT = 0;
 	result.Hit = false;
-
-	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
-	ivec3 current_voxel = ivec3(floor(origin / grid.Size));
-
+	result.Throughput = vec3(1,1,1);
+	result.Color = vec4(0,0,0,0);
+	
+	float compressVoxelSize = model.VoxelSize * model.CompressScale;
 	ivec3 step = ivec3(
 		(direction.x > 0.0) ? 1 : -1,
 		(direction.y > 0.0) ? 1 : -1,
 		(direction.z > 0.0) ? 1 : -1
 	);
-	vec3 next_boundary = vec3(
-		float((step.x > 0) ? current_voxel.x + 1 : current_voxel.x) * grid.Size,
-		float((step.y > 0) ? current_voxel.y + 1 : current_voxel.y) * grid.Size,
-		float((step.z > 0) ? current_voxel.z + 1 : current_voxel.z) * grid.Size
-	);
+	ivec3 maxSteps = ivec3(model.Width, model.Height, model.Depth);
+	RaymarchState state = CreateRaymarchState(ray, origin, direction, step, maxSteps, compressVoxelSize);
+	vec3 t_delta = compressVoxelSize / direction * vec3(step);
+
 	
-
-	vec3 t_max = (next_boundary - origin) / direction; // we will move along the axis with the smallest value
-	vec3 t_delta = grid.Size / direction * vec3(step);	
-
-	vec3 newOrigin = origin;
-	vec4 color = vec4(0,0,0,0);
-	vec3 throughput = vec3(1,1,1);
-	uint scale = uint(ceil(grid.Size / model.VoxelSize));
-	ivec3 maxSteps = ivec3(grid.Width, grid.Height, grid.Depth);
-
-	while (maxSteps.x >= 0 && maxSteps.y >= 0 && maxSteps.z >= 0)
+	while (state.MaxSteps.x >= 0 && state.MaxSteps.y >= 0 && state.MaxSteps.z >= 0)
 	{
-		float newDistance = VoxelDistanceFromRay(ray.Origin, ray.Direction, current_voxel, grid.Size);
-		if (newDistance > currentDistance)
+		state.Distance = VoxelDistanceFromRay(ray.Origin, ray.Direction, state.CurrentVoxel, compressVoxelSize);
+		if (state.Distance > currentDistance)
 			break;
 
-
-		if (IsValidVoxel(current_voxel, grid.Width, grid.Height, grid.Depth))
+		if (IsValidVoxel(state.CurrentVoxel, model.Width, model.Height, model.Depth))
 		{
-			uint voxelIndex = Index3D(current_voxel, grid.Width, grid.Height) + grid.CellsOffset;
-			if (uint(AccelerationGridCells[voxelIndex]) != 0)
-			{			
-				float dist = VoxelDistanceFromRay(newOrigin, direction, current_voxel, grid.Size);
-				newOrigin += direction * (dist - EPSILON); // Move origin to hit of top grid cell
+			uint cellIndex = Index3D(state.CurrentVoxel, model.Width, model.Height) + model.CellOffset;
+			VoxelCompressedCell cell = CompressedCells[cellIndex];
+			if (cell.VoxelCount == 1)
+			{
+				uint voxelIndex = model.VoxelOffset + cell.VoxelOffset;
+				uint colorIndex = uint(Voxels[voxelIndex]);
+				uint colorUINT = ColorPallete[model.ColorIndex][colorIndex];
+				if (colorUINT != 0)
+				{
+					result.Color = VoxelToColor(colorUINT); 
+					result.Hit = true;
+					result.Distance = state.Distance;
+					result.Normal = state.Normal;
+					result.Throughput *= mix(vec3(1.0), result.Color.rgb, result.Color.a) * (1.0 - result.Color.a);
+				}					
+			}
+			else
+			{
+				float dist = VoxelDistanceFromRay(origin, direction, state.CurrentVoxel, compressVoxelSize);
+				vec3 newOrigin = origin + direction * (dist - EPSILON); // Move origin to hit of top grid cell
+				vec3 voxelPosition = VoxelPosition(state.CurrentVoxel, compressVoxelSize);
+				newOrigin -= voxelPosition;
 
+				VoxelModel cellModel = model;
+				cellModel.VoxelOffset = model.VoxelOffset + cell.VoxelOffset;
+				cellModel.Width = model.CompressScale;
+				cellModel.Height = model.CompressScale;
+				cellModel.Depth = model.CompressScale;
+				cellModel.VoxelSize = model.VoxelSize;
+				
 				// Raymarch from new origin						
-				RaymarchResult newResult = RayMarchSteps(ray, color, result.ColorUINT, throughput, newOrigin, direction, model, currentDistance, ivec3(scale, scale, scale));
+				RaymarchResult newResult = RayMarch(ray, result.Color, result.ColorUINT, result.Throughput, newOrigin, direction, cellModel, currentDistance);
 				if (newResult.Hit)
 				{
-					color = newResult.Color;
-					throughput = newResult.Throughput;
 					result = newResult;
-				}
-				if (throughput.x <= EPSILON && throughput.y <= EPSILON && throughput.z <= EPSILON)
-					return result;				
+				}			
 			}
+
+			if (result.Throughput.x <= EPSILON && result.Throughput.y <= EPSILON && result.Throughput.z <= EPSILON)
+				return result;	
 		}
 
-		if (t_max.x < t_max.y && t_max.x < t_max.z) 
-		{
-			t_max.x += t_delta.x;
-			current_voxel.x += step.x;
-			maxSteps.x--;
-		}
-		else if (t_max.y < t_max.z) 
-		{
-			t_max.y += t_delta.y;
-			current_voxel.y += step.y;		
-			maxSteps.y--;
-		}
-		else 
-		{
-			t_max.z += t_delta.z;
-			current_voxel.z += step.z;	
-			maxSteps.z--;
-		}
+		PerformStep(state, step, t_delta);
 	}
-	result.Color = color;
+	
 	return result;
 }
 
@@ -574,9 +546,9 @@ bool DrawModel(uint modelIndex)
 		return false;
 
 	RaymarchResult result;
-	if (model.AccelerationGridIndex != -1 && u_Uniforms.UseAccelerationGrid)
+	if (model.Compressed)
 	{
-		result = RaymarchAccelerationGrid(ray, origin, direction, model, currentDistance, AccelerationGrids[model.AccelerationGridIndex]);
+		result = RaymarchCompressed(ray, origin, direction, model, currentDistance);
 	}
 	else
 	{
