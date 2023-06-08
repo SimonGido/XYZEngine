@@ -58,8 +58,10 @@ namespace XYZ {
 		uint32_t index = 0;
 		for (auto& submesh : m_Submeshes)
 		{
-			m_NumVoxels += static_cast<uint32_t>(submesh.ColorIndices.size());
-			m_NumVoxels += static_cast<uint32_t>(submesh.CompressedColorIndices.size());
+			if (submesh.CompressedColorIndices.empty())
+				m_NumVoxels += static_cast<uint32_t>(submesh.ColorIndices.size());
+			else
+				m_NumVoxels += static_cast<uint32_t>(submesh.CompressedColorIndices.size());
 			m_NumCompressedCells += static_cast<uint32_t>(submesh.CompressedCells.size());
 		}
 		m_Dirty = true;

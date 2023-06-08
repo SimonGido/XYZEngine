@@ -574,6 +574,7 @@ namespace XYZ {
 				model.Height = submesh.Height;
 				model.Depth = submesh.Depth;
 				model.VoxelSize = submesh.VoxelSize;
+				model.Compressed = false;
 				if (!submesh.CompressedCells.empty())
 				{
 					model.Compressed = true;

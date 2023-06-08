@@ -47,7 +47,6 @@ namespace XYZ {
 		static constexpr uint32_t MaxVoxels = 2 * 1024 * 1024 * 1024; // 2gb
 				
 
-
 		static constexpr uint32_t Binding = 17;
 		static constexpr uint32_t Set = 0;
 	};

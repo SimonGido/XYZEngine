@@ -99,9 +99,9 @@ namespace XYZ {
 			m_TreeMesh = Ref<VoxelProceduralMesh>::Create();
 
 			VoxelSubmesh submesh;
-			submesh.Width = 128;
-			submesh.Height = 128;
-			submesh.Depth = 128;
+			submesh.Width = 512;
+			submesh.Height = 512;
+			submesh.Depth = 512;
 			submesh.VoxelSize = 3.0f;
 	
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth, 0);
@@ -152,7 +152,7 @@ namespace XYZ {
 			for (uint32_t i = 0; i < count; ++i)
 			{
 				m_Transforms[i].GetTransform().Translation = glm::linearRand(-halfTerrainSize, halfTerrainSize);				
-				m_Transforms[i].GetTransform().Rotation.x = -90.0f;
+				m_Transforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
 			}
 			pushGenerateVoxelMeshJob();
 
@@ -280,22 +280,22 @@ namespace XYZ {
 				//			m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
 				//	}
 				//}
-
+	
 				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
-				//for (auto& transform : m_TreeTransforms)
-				//{
-				//	m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());
-				//}
-				//for (size_t i = 0; i < m_Transforms.size(); i += 3)
-				//{
-				//	const glm::mat4 castleTransform = m_Transforms[i].GetLocalTransform();
-				//	const glm::mat4 knightTransform = m_Transforms[i + 1].GetLocalTransform();
-				//	const glm::mat4 deerTransform = m_Transforms[i + 2].GetLocalTransform();
-				//
-				//	m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
-				//	m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
-				//	m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
-				//}
+				for (auto& transform : m_TreeTransforms)
+				{
+					//m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());
+				}
+				for (size_t i = 0; i < m_Transforms.size(); i += 3)
+				{
+					const glm::mat4 castleTransform = m_Transforms[i].GetLocalTransform();
+					const glm::mat4 knightTransform = m_Transforms[i + 1].GetLocalTransform();
+					const glm::mat4 deerTransform = m_Transforms[i + 2].GetLocalTransform();
+				
+					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
+					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
+					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
+				}
 				
 				submitWater();
 				
