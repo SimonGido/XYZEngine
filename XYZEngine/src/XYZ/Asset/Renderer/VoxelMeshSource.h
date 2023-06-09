@@ -33,7 +33,7 @@ namespace XYZ {
 		std::vector<uint8_t> CompressedColorIndices;
 		std::vector<CompressedCell> CompressedCells;
 
-		int64_t	Compress(uint32_t scale);
+		int64_t	Compress(uint32_t scale, bool keepDecompressed = true);
 		int64_t SavedSpaceCompression() const;
 	};
 

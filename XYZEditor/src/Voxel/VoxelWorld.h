@@ -8,6 +8,7 @@
 
 namespace XYZ{
 
+
 	struct VoxelChunk
 	{
 		int64_t X = 0;
@@ -26,8 +27,8 @@ namespace XYZ{
 	class VoxelWorld
 	{
 	public:
-		static constexpr glm::ivec3 sc_ChunkDimensions = glm::ivec3(128, 512, 128);
-		static constexpr uint32_t	sc_ChunkViewDistance = 3; // View distance from center
+		static constexpr glm::ivec3 sc_ChunkDimensions = glm::ivec3(512, 512, 512);
+		static constexpr uint32_t	sc_ChunkViewDistance = 1; // View distance from center
 		static constexpr int64_t    sc_MaxVisibleChunksPerAxis = sc_ChunkViewDistance * 2 + 1;
 		static constexpr float      sc_ChunkVoxelSize = 1.0f;
 

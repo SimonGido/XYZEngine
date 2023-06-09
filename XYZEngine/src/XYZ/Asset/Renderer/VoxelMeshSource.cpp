@@ -145,7 +145,7 @@ namespace XYZ {
 		}
 		ogt_vox_destroy_scene(scene);
 	}
-	int64_t VoxelSubmesh::Compress(uint32_t scale)
+	int64_t VoxelSubmesh::Compress(uint32_t scale, bool keepDecompressed)
 	{
 		VoxelSubmesh copy = *this;
 		CompressScale = scale;
@@ -203,6 +203,8 @@ namespace XYZ {
 				}
 			}
 		}
+		if (!keepDecompressed)
+			ColorIndices.clear();
 		return SavedSpaceCompression();
 	}
 	

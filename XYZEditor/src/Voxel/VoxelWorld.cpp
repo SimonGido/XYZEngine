@@ -222,7 +222,7 @@ namespace XYZ {
 				}
 			}
 		}
-		submesh.Compress(16);
+		submesh.Compress(16, false);
 		chunk.Mesh->SetSubmeshes({ submesh });
 		chunk.Mesh->SetInstances({ instance });
 
