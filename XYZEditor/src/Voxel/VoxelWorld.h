@@ -11,21 +11,13 @@ namespace XYZ{
 
 	struct VoxelChunk
 	{
-		~VoxelChunk()
-		{
-			if (!ColorIndices.empty())
-				DataPool->EmplaceBack(std::move(ColorIndices));
-		}
-
+		~VoxelChunk();
 
 		int64_t X = 0;
 		int64_t Z = 0;
 
 		Ref<VoxelProceduralMesh> Mesh;
 		std::vector<uint8_t>	 ColorIndices;
-
-	private:
-		ThreadQueue<std::vector<uint8_t>>* DataPool = nullptr;
 	};
 
 	struct VoxelBiom
