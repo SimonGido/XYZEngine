@@ -26,25 +26,6 @@ namespace XYZ {
 		return x + width * (y + height * z);
 	}
 
-	static void RotateGridXZ(uint8_t* arr, uint32_t size)
-	{
-		std::vector<uint8_t> result(size * size * size, 0);
-
-		for (uint32_t x = 0; x < size; ++x)
-		{
-			for (uint32_t y = 0; y < size; ++y)
-			{
-				for (uint32_t z = 0; z < size; ++z)
-				{
-					const uint32_t origIndex = Index3D(x, y, z, size, size);
-					const uint32_t rotIndex = Index3D(z, y, x, size, size);
-					result[rotIndex] = arr[origIndex];
-				}
-			}
-		}
-		memcpy(arr, result.data(), result.size());
-	}
-
 	static bool IsBlockUniform(const std::vector<uint8_t>& arr, const glm::uvec3& start, const glm::uvec3& end, uint32_t width, uint32_t height)
 	{
 		const uint32_t oldIndex = Index3D(start.x, start.y, start.z, width, height);
@@ -184,6 +165,8 @@ namespace XYZ {
 					{
 						const uint32_t offset = static_cast<uint32_t>(CompressedColorIndices.size());
 						cell.VoxelCount = scale * scale * scale;
+						CompressedColorIndices.resize(offset + cell.VoxelCount);
+						uint8_t* cellColorIndices = &CompressedColorIndices[offset];
 						for (uint32_t x = xStart; x < xEnd; ++x)
 						{
 							for (uint32_t y = yStart; y < yEnd; ++y)
@@ -191,12 +174,12 @@ namespace XYZ {
 								for (uint32_t z = zStart; z < zEnd; ++z)
 								{
 									const uint32_t index = Index3D(x, y, z, copy.Width, copy.Height);
+									const uint32_t insertIndex = Index3D(x - xStart, y - yStart, z - zStart, scale, scale);
 									const uint8_t colorIndex = ColorIndices[index];
-									CompressedColorIndices.push_back(colorIndex);							
+									cellColorIndices[insertIndex] = colorIndex;
 								}
 							}
 						}
-						RotateGridXZ(&CompressedColorIndices[offset], scale);
 					}	
 					cell.VoxelOffset = voxelOffset;
 					voxelOffset += cell.VoxelCount;
@@ -254,6 +237,8 @@ namespace XYZ {
 					{
 						const uint32_t offset = static_cast<uint32_t>(result.CompressedColorIndices.size());
 						cell.VoxelCount = scale * scale * scale;
+						result.CompressedColorIndices.resize(offset + cell.VoxelCount);
+						uint8_t* cellColorIndices = &result.CompressedColorIndices[offset];
 						for (uint32_t x = xStart; x < xEnd; ++x)
 						{
 							for (uint32_t y = yStart; y < yEnd; ++y)
@@ -261,12 +246,12 @@ namespace XYZ {
 								for (uint32_t z = zStart; z < zEnd; ++z)
 								{
 									const uint32_t index = Index3D(x, y, z, width, height);
+									const uint32_t insertIndex = Index3D(x - xStart, y - yStart, z - zStart, scale, scale);
 									const uint8_t colorIndex = colorIndices[index];
-									result.CompressedColorIndices.push_back(colorIndex);
+									cellColorIndices[insertIndex] = colorIndex;
 								}
 							}
 						}
-						RotateGridXZ(&result.CompressedColorIndices[offset], scale);
 					}
 					cell.VoxelOffset = voxelOffset;
 					voxelOffset += cell.VoxelCount;

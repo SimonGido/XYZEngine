@@ -99,9 +99,9 @@ namespace XYZ {
 			m_TreeMesh = Ref<VoxelProceduralMesh>::Create();
 
 			VoxelSubmesh submesh;
-			submesh.Width = 2048;
+			submesh.Width = 512;
 			submesh.Height = 512;
-			submesh.Depth = 2048;
+			submesh.Depth = 512;
 			submesh.VoxelSize = 3.0f;
 	
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth, 0);
@@ -281,8 +281,7 @@ namespace XYZ {
 				//	}
 				//}
 				
-				if (!m_ProceduralMesh->GetSubmeshes()[0].CompressedCells.empty())
-					m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
+				m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
 				for (auto& transform : m_TreeTransforms)
 				{
 					//m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());

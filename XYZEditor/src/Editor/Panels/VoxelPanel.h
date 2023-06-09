@@ -118,7 +118,7 @@ namespace XYZ {
 
 			StorageBufferAllocation m_WaterDensityAllocation;
 			bool m_UpdateWater = false;
-			bool m_Compress = true;
+			bool m_Compress = false;
 
 
 			SpaceColonization* m_SpaceColonization = nullptr;
