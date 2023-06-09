@@ -193,7 +193,4 @@ void main()
     float depth = distToDepth(dist);
 
     imageStore(o_SSGIImage, ivec2(gl_GlobalInvocationID.xy), vec4(direct.rgb, 1.0));
-
-    //imageStore(o_SSGIImage, ivec2(gl_GlobalInvocationID.xy), vec4(depth, depth, depth, 1.0));
-
 }

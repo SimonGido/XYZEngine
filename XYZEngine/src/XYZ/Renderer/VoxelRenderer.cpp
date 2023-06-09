@@ -197,6 +197,20 @@ namespace XYZ {
 
 				m_RaymarchPipeline = PipelineCompute::Create(spec);
 			}
+			if (ImGui::Button("Reload Shader SSGI"))
+			{
+				Ref<Shader> shader = Shader::Create("Resources/Shaders/Voxel/SSGI.glsl");
+				m_SSGIMaterial = Material::Create(shader);
+
+				m_SSGIMaterial->SetImage("u_Image", m_OutputTexture->GetImage());
+				m_SSGIMaterial->SetImage("u_DepthImage", m_DepthTexture->GetImage());
+				m_SSGIMaterial->SetImage("o_SSGIImage", m_SSGITexture->GetImage());
+
+				PipelineComputeSpecification spec;
+				spec.Shader = shader;
+
+				m_SSGIPipeline = PipelineCompute::Create(spec);
+			}
 
 			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Direction), 0.1f);
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Radiance), 0.1f);
