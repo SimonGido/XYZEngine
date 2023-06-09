@@ -115,7 +115,7 @@ namespace XYZ {
 
 	struct SSBOVoxelComputeData
 	{
-		static constexpr uint32_t MaxSize = 256 * 1024 * 1024; // 256mb
+		static constexpr uint32_t MaxSize = 1024 * 1024 * 1024; // 1gb
 
 		static constexpr uint32_t Binding = 21;
 		static constexpr uint32_t Set = 0;

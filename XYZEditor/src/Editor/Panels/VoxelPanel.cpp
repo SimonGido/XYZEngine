@@ -441,21 +441,14 @@ namespace XYZ {
 				return terrain;
 			});
 		}
-
-		static uint32_t reqDispatchCounter = 0;
-		static int randSeeds[9];
-
 		void VoxelPanel::submitWater()
 		{
-			if (reqDispatchCounter == 0 && m_UpdateWater)
+			if (m_UpdateWater)
 			{
-				reqDispatchCounter = 3;
+				int randSeeds[9];
 				for (int i = 0; i < 9; i++)
 					randSeeds[i] = RandomNumber(0u, 500u);
-			}
 
-			if (reqDispatchCounter > 0)
-			{
 				const glm::ivec3 workGroups = {
 					std::ceil(512.0f / 3.0f / 16),
 					std::ceil(512.0f / 3.0f / 16),
@@ -473,20 +466,17 @@ namespace XYZ {
 							{
 								randSeeds[i],
 								0u, // Model index
-								(uint32_t)Empty, 
-								(uint32_t)Water, 
+								(uint32_t)Empty,
+								(uint32_t)Water,
 								255u, // Max density
-								i, 
+								i,
 								j
 							}
 						);
 					}
 				}
-				reqDispatchCounter--;
 			}
-		}
-
-		
+		}		
 		
 		VoxelTerrain VoxelPanel::generateVoxelTerrainMesh(
 			uint32_t seed, uint32_t frequency, uint32_t octaves,
