@@ -60,7 +60,7 @@ namespace XYZ {
 		return true;
 	}
 
-
+	ThreadQueue<std::vector<uint8_t>> VoxelWorld::DataPool;
 
 	VoxelWorld::VoxelWorld(const std::filesystem::path& worldPath, uint32_t seed)
 		:
@@ -139,7 +139,7 @@ namespace XYZ {
 					std::shared_ptr<GeneratedChunk> gen = m_ChunksGenerated.back();
 					gen->IndexX = chunkX;
 					gen->IndexZ = chunkZ;
-					pool.PushJob([gen, worldChunkX, worldChunkZ, &forestBiom]() {
+					pool.PushJob([this, gen, worldChunkX, worldChunkZ, &forestBiom]() {
 						gen->Chunk = generateChunk(worldChunkX, worldChunkZ, forestBiom);
 						gen->Finished = true;
 					});
@@ -205,6 +205,10 @@ namespace XYZ {
 		const double fx = static_cast<double>(biom.Frequency / submesh.Width);
 		const double fz = static_cast<double>(biom.Frequency / submesh.Depth);
 
+		
+		if (!DataPool.Empty())
+			submesh.ColorIndices = DataPool.PopBack();
+
 		submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth, 0);
 		for (uint32_t x = 0; x < submesh.Width; ++x)
 		{
@@ -222,10 +226,15 @@ namespace XYZ {
 				}
 			}
 		}
-		submesh.Compress(16, false);
+		submesh.Compress(16);
 		chunk.Mesh->SetSubmeshes({ submesh });
 		chunk.Mesh->SetInstances({ instance });
 
 		return chunk;
 	}	
+	VoxelChunk::~VoxelChunk()
+	{
+		if (!ColorIndices.empty())
+			VoxelWorld::DataPool.EmplaceBack(std::move(ColorIndices));
+	}
 }

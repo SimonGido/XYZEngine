@@ -33,8 +33,11 @@ namespace XYZ {
 		std::vector<uint8_t> CompressedColorIndices;
 		std::vector<CompressedCell> CompressedCells;
 
+
 		int64_t	Compress(uint32_t scale, bool keepDecompressed = true);
-		int64_t SavedSpaceCompression() const;
+		int64_t GetSavedSpaceCompression() const;
+
+		static VoxelSubmesh Compress(uint32_t scale, uint32_t width, uint32_t height, uint32_t depth, float voxelSize, const std::vector<uint8_t>& colorIndices);
 	};
 
 

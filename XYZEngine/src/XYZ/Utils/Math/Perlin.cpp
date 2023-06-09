@@ -6,7 +6,7 @@
 
 namespace XYZ {
 
-	static siv::PerlinNoise s_Noise(rand());
+	static thread_local siv::PerlinNoise s_Noise(rand());
 
 	void Perlin::SetSeed(uint32_t seed)
 	{

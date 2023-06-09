@@ -94,11 +94,9 @@ namespace XYZ {
 		std::vector<VoxelInstance>	m_Instances;
 		std::array<VoxelColor, 256> m_ColorPallete;
 
-		bool						m_HasAccelerationGrid;
-		bool						m_GeneratingAccelerationGrid;
 		
 		mutable std::unordered_map<uint32_t, DirtyRange> m_DirtySubmeshes;		
-		mutable std::atomic_bool m_Dirty;
+		mutable bool m_Dirty;
 
 		uint32_t m_NumVoxels;
 		uint32_t m_NumCompressedCells;

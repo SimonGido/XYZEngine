@@ -43,9 +43,7 @@ namespace XYZ {
 		:
 		m_NumVoxels(0),
 		m_NumCompressedCells(0),
-		m_Dirty(false),
-		m_HasAccelerationGrid(false),
-		m_GeneratingAccelerationGrid(false)
+		m_Dirty(false)
 	{
 		memset(&m_ColorPallete, 0, sizeof(VoxelColor) * m_ColorPallete.size());
 	}
@@ -105,6 +103,7 @@ namespace XYZ {
 	{
 		return m_Instances;
 	}
+
 	const AssetHandle& VoxelProceduralMesh::GetRenderID() const
 	{
 		return GetHandle();
