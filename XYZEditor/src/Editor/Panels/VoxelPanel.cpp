@@ -88,8 +88,8 @@ namespace XYZ {
 			EditorPanel(std::forward<std::string>(name)),
 			m_ViewportSize(0.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f),
-			m_Octree(AABB(glm::vec3(0.0f), glm::vec3(0.0f)), 10),
-			m_World("blabla", 50)
+			m_Octree(AABB(glm::vec3(0.0f), glm::vec3(0.0f)), 10)
+			//m_World("blabla", 50)
 		{
 			m_DeerMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));
 			m_CastleMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox"));
@@ -99,9 +99,9 @@ namespace XYZ {
 			m_TreeMesh = Ref<VoxelProceduralMesh>::Create();
 
 			VoxelSubmesh submesh;
-			submesh.Width = 512;
+			submesh.Width = 2048;
 			submesh.Height = 512;
-			submesh.Depth = 512;
+			submesh.Depth = 2048;
 			submesh.VoxelSize = 3.0f;
 	
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth, 0);
@@ -249,7 +249,7 @@ namespace XYZ {
 		
 					terrainSubmesh.ColorIndices = m_Terrain.Terrain;
 					if (m_Compress)
-						terrainSubmesh.Compress(16);
+						terrainSubmesh.Compress(16, false);
 
 					m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
 					//m_VoxelRenderer->SubmitComputeData(m_Terrain.WaterMap.data(), m_Terrain.WaterMap.size(), 0, m_WaterDensityAllocation, true);
@@ -271,17 +271,18 @@ namespace XYZ {
 						m_ProceduralMesh->SetVoxelColor(0, 256, y, 256, RandomNumber(5u, 255u));
 					}
 				}
-				m_World.Update(m_EditorCamera.GetPosition());
-				for (const auto& chunkRow : m_World.GetActiveChunks())
-				{
-					for (const auto& chunk : chunkRow)
-					{
-						if (chunk.Mesh.Raw())
-							m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
-					}
-				}
-	
-				//m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
+				//m_World.Update(m_EditorCamera.GetPosition());
+				//for (const auto& chunkRow : m_World.GetActiveChunks())
+				//{
+				//	for (const auto& chunk : chunkRow)
+				//	{
+				//		if (chunk.Mesh.Raw())
+				//			m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
+				//	}
+				//}
+				
+				if (!m_ProceduralMesh->GetSubmeshes()[0].CompressedCells.empty())
+					m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
 				for (auto& transform : m_TreeTransforms)
 				{
 					//m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());
@@ -508,7 +509,7 @@ namespace XYZ {
 		
 					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight;
 
-					for (int32_t y = genHeight; y < 20; ++y)
+					for (int32_t y = genHeight; y < 50; ++y)
 					{
 						const uint32_t waterIndex = Utils::Index3D(x, y, z, width, height);
 						result.Terrain[waterIndex] = Water; // Water

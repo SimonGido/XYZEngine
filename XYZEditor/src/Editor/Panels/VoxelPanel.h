@@ -126,7 +126,7 @@ namespace XYZ {
 
 
 			Octree m_Octree;
-			VoxelWorld m_World;
+			//VoxelWorld m_World;
 		};
 	}
 }
