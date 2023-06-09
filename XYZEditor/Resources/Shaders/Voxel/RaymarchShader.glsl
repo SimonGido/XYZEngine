@@ -136,12 +136,8 @@ AABB VoxelAABB(ivec3 voxel, float voxelSize)
 AABB ModelAABB(in VoxelModel model)
 {
 	AABB result;
-	float voxelSize = model.VoxelSize;
-	if (model.Compressed)
-		voxelSize = model.VoxelSize * model.CompressScale;
-
 	result.Min = vec3(0.0);
-	result.Max = vec3(model.Width, model.Height, model.Depth) * voxelSize;
+	result.Max = vec3(model.Width, model.Height, model.Depth) * model.VoxelSize;
 	return result;
 }
 
@@ -437,19 +433,18 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 	result.Color = vec4(0,0,0,0);
 	result.Distance = 0.0;
 	
-	float compressVoxelSize = model.VoxelSize * model.CompressScale;
 	ivec3 step = ivec3(
 		(direction.x > 0.0) ? 1 : -1,
 		(direction.y > 0.0) ? 1 : -1,
 		(direction.z > 0.0) ? 1 : -1
 	);
 	ivec3 maxSteps = ivec3(model.Width, model.Height, model.Depth);
-	RaymarchState state = CreateRaymarchState(ray, origin, direction, step, maxSteps, compressVoxelSize, ivec3(0,0,0));
-	vec3 t_delta = compressVoxelSize / direction * vec3(step);
+	RaymarchState state = CreateRaymarchState(ray, origin, direction, step, maxSteps, model.VoxelSize, ivec3(0,0,0));
+	vec3 t_delta = model.VoxelSize / direction * vec3(step);
 
 	while (state.MaxSteps.x >= 0 && state.MaxSteps.y >= 0 && state.MaxSteps.z >= 0)
 	{
-		state.Distance = VoxelDistanceFromRay(ray.Origin, ray.Direction, state.CurrentVoxel, compressVoxelSize);
+		state.Distance = VoxelDistanceFromRay(ray.Origin, ray.Direction, state.CurrentVoxel, model.VoxelSize);
 		if (state.Distance > currentDistance)
 			break;
 
@@ -476,7 +471,7 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 			{
 				ivec3 decompressedVoxelOffset = state.CurrentVoxel * int(model.CompressScale); // Required for proper distance calculation
 				vec3 newOrigin = ray.Origin + direction * (state.Distance - EPSILON); // Move origin to hit of top grid cell
-				vec3 voxelPosition = VoxelPosition(state.CurrentVoxel, compressVoxelSize);
+				vec3 voxelPosition = VoxelPosition(state.CurrentVoxel, model.VoxelSize);
 				vec3 cellOrigin = newOrigin - voxelPosition;
 			
 				VoxelModel cellModel = model;
@@ -484,7 +479,7 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 				cellModel.Width = model.CompressScale;
 				cellModel.Height = model.CompressScale;
 				cellModel.Depth = model.CompressScale;
-				cellModel.VoxelSize = model.VoxelSize;
+				cellModel.VoxelSize = model.VoxelSize / model.CompressScale;
 				
 				// Raymarch from new origin						
 				RaymarchResult newResult = RayMarch(ray, result.Color, result.ColorUINT, result.Throughput, cellOrigin, direction, cellModel, currentDistance, decompressedVoxelOffset);
@@ -504,14 +499,14 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 	return result;
 }
 
-bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelModel model)
+bool ResolveRayModelIntersection(inout vec3 origin, vec3 direction, in VoxelModel model, out float dist)
 {
 	AABB aabb = ModelAABB(model);
 	bool result = PointInBox(origin, aabb.Min, aabb.Max); // Default is true in case origin is inside
+	dist = 0.0;
 	if (!result)
 	{
 		// Check if we are intersecting with grid
-		float dist;
 		result = RayBoxIntersection(origin, direction, aabb.Min, aabb.Max, dist);
 		origin = origin + direction * (dist - EPSILON); // Move origin to first intersection
 	}
@@ -553,8 +548,11 @@ bool DrawModel(uint modelIndex)
 	vec3 direction = ray.Direction;
 				
 	float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
+	float newDistance = 0.0;
 	// Check if ray intersects with model and move origin of ray
-	if (!ResolveRayModelIntersection(origin, direction, model))
+	if (!ResolveRayModelIntersection(origin, direction, model, newDistance))
+		return false;
+	if (newDistance > currentDistance)
 		return false;
 
 	RaymarchResult result;

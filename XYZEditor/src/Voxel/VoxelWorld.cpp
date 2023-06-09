@@ -20,6 +20,48 @@ namespace XYZ {
 		return x * depth + z;
 	}
 
+
+	static void RotateGridXZ(uint8_t* arr, uint32_t size)
+	{
+		std::vector<uint8_t> result(size * size * size, 0);
+
+		for (uint32_t x = 0; x < size; ++x)
+		{
+			for (uint32_t y = 0; y < size; ++y)
+			{
+				for (uint32_t z = 0; z < size; ++z)
+				{
+					const uint32_t origIndex = Index3D(x, y, z, size, size);
+					const uint32_t rotIndex = Index3D(z, y, x, size, size);
+					result[rotIndex] = arr[origIndex];
+				}
+			}
+		}
+		memcpy(arr, result.data(), result.size());
+	}
+
+	static bool IsBlockUniform(const std::vector<uint8_t>& arr, const glm::uvec3& start, const glm::uvec3& end, uint32_t width, uint32_t height)
+	{
+		const uint32_t oldIndex = Index3D(start.x, start.y, start.z, width, height);
+		const uint8_t oldColorIndex = arr[oldIndex];
+		for (uint32_t x = start.x; x < end.x; ++x)
+		{
+			for (uint32_t y = start.y; y < end.y; ++y)
+			{
+				for (uint32_t z = start.z; z < end.z; ++z)
+				{
+					const uint32_t newIndex = Index3D(x, y, z, width, height);
+					const uint8_t newColorIndex = arr[newIndex];
+					if (newColorIndex != oldColorIndex)
+						return false;
+				}
+			}
+		}
+		return true;
+	}
+
+
+
 	VoxelWorld::VoxelWorld(const std::filesystem::path& worldPath, uint32_t seed)
 		:
 		m_WorldPath(worldPath),
@@ -185,6 +227,5 @@ namespace XYZ {
 		chunk.Mesh->SetInstances({ instance });
 
 		return chunk;
-	}
-	
+	}	
 }

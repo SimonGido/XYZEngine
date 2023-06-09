@@ -44,7 +44,8 @@ namespace XYZ{
 		ActiveChunkStorage shiftChunks(int64_t dirX, int64_t dirZ);
 
 		static VoxelChunk generateChunk(int64_t chunkX, int64_t chunkZ, const VoxelBiom& biom);
-		
+
+
 	private:
 		struct GeneratedChunk
 		{

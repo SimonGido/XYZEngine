@@ -34,7 +34,7 @@ namespace XYZ {
 		std::vector<CompressedCell> CompressedCells;
 
 		int64_t	Compress(uint32_t scale);
-		int64_t CompressSavedSpace() const;
+		int64_t SavedSpaceCompression() const;
 	};
 
 

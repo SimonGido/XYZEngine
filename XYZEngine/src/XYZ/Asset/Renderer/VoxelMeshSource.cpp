@@ -152,7 +152,7 @@ namespace XYZ {
 		Width = Math::RoundUp(Width, scale) / scale;
 		Height = Math::RoundUp(Height, scale) / scale;
 		Depth = Math::RoundUp(Depth, scale) / scale;
-
+		VoxelSize = VoxelSize * scale;
 
 		CompressedCells.resize(Width * Height * Depth);
 
@@ -203,10 +203,10 @@ namespace XYZ {
 				}
 			}
 		}
-		return CompressSavedSpace();
+		return SavedSpaceCompression();
 	}
 	
-	int64_t VoxelSubmesh::CompressSavedSpace() const
+	int64_t VoxelSubmesh::SavedSpaceCompression() const
 	{
 		const int64_t resultSize = CompressedColorIndices.size() + CompressedCells.size() * sizeof(CompressedCell);
 		const int64_t savedSpace = static_cast<int64_t>(ColorIndices.size()) - resultSize;
