@@ -536,7 +536,7 @@ void StoreHitResult(in RaymarchResult result)
 	imageStore(o_Image, textureIndex, result.Color); // Store color		
 }
 
-bool DrawModel(uint modelIndex)
+bool DrawModel(uint modelIndex, out float drawDistance)
 {
 	vec4 startColor = vec4(0, 0, 0, 0);
 	vec3 startThroughput = vec3(1, 1, 1);
@@ -569,6 +569,7 @@ bool DrawModel(uint modelIndex)
 		result.WorldHit = g_CameraRay.Origin + (g_CameraRay.Direction * result.Distance);
 		result.WorldNormal = mat3(model.InverseTransform) * -result.Normal;
 		StoreHitResult(result);	
+		drawDistance = result.Distance;
 		return result.Color.a == 1.0; // We hit opaque object
 	}
 	return false;
@@ -593,7 +594,8 @@ void RaycastOctree(in Ray ray)
 			
 		for (int i = node.DataStart; i < node.DataEnd; i++)
 		{
-			DrawModel(ModelIndices[i]);
+			float drawDistance;
+			DrawModel(ModelIndices[i], drawDistance);
 		}
 		float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
 		if (!node.IsLeaf)
@@ -708,7 +710,8 @@ void main()
 	{
 		for (uint i = 0; i < NumModels; i++)
 		{
-			DrawModel(i);
+			float drawDistance;
+			DrawModel(i, drawDistance);
 		}
 	}
 }
