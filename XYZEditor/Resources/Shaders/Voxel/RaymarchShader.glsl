@@ -66,8 +66,9 @@ struct VoxelModel
 	uint  CellOffset;
 	uint  CompressScale;
 	bool  Compressed;
+	float DistanceFromCamera;
 
-	uint  Padding[3];
+	uint  Padding[2];
 };
 
 struct VoxelCompressedCell
@@ -536,13 +537,12 @@ void StoreHitResult(in RaymarchResult result)
 	imageStore(o_Image, textureIndex, result.Color); // Store color		
 }
 
-bool DrawModel(uint modelIndex, out float drawDistance)
+bool DrawModel(in VoxelModel model, out float drawDistance)
 {
 	vec4 startColor = vec4(0, 0, 0, 0);
 	vec3 startThroughput = vec3(1, 1, 1);
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
 	
-	VoxelModel model = Models[modelIndex];
 	Ray ray = CreateRay(u_CameraPosition.xyz, model.InverseTransform, textureIndex);
 	vec3 origin = ray.Origin;
 	vec3 direction = ray.Direction;
@@ -564,12 +564,13 @@ bool DrawModel(uint modelIndex, out float drawDistance)
 	{
 		result = RayMarch(ray, startColor, 0, startThroughput, origin, direction, model, currentDistance, ivec3(0,0,0));	
 	}
+	drawDistance = result.Distance;
+
 	if (result.Hit)		
 	{ 
 		result.WorldHit = g_CameraRay.Origin + (g_CameraRay.Direction * result.Distance);
 		result.WorldNormal = mat3(model.InverseTransform) * -result.Normal;
-		StoreHitResult(result);	
-		drawDistance = result.Distance;
+		StoreHitResult(result);			
 		return result.Color.a == 1.0; // We hit opaque object
 	}
 	return false;
@@ -586,6 +587,7 @@ void RaycastOctree(in Ray ray)
 	stack[stackIndex++] = 0; // Start with the root node
 	
 
+	float minDistance = FLT_MAX;
 	while (stackIndex > 0)
 	{
 		stackIndex--;
@@ -595,7 +597,12 @@ void RaycastOctree(in Ray ray)
 		for (int i = node.DataStart; i < node.DataEnd; i++)
 		{
 			float drawDistance;
-			DrawModel(ModelIndices[i], drawDistance);
+			VoxelModel model = Models[ModelIndices[i]];
+			if (model.DistanceFromCamera > minDistance)
+				break;
+
+			if (DrawModel(model, drawDistance))
+				minDistance = drawDistance;			
 		}
 		float currentDistance = imageLoad(o_DepthImage, textureIndex).r;
 		if (!node.IsLeaf)
@@ -609,7 +616,7 @@ void RaycastOctree(in Ray ray)
 				float dist = -FLT_MAX;
 				if (RayBoxIntersection(ray.Origin, ray.Direction, child.Min.xyz, child.Max.xyz, dist))
 				{
-					if (dist < currentDistance)
+					if (dist < currentDistance && dist < minDistance)
 						stack[stackIndex++] = node.Children[c];
 				}
 			}
@@ -692,7 +699,6 @@ bool ValidPixel(ivec2 index)
 	return index.x <= int(u_ViewportSize.x) && index.y <= int(u_ViewportSize.y);
 }
 
-
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
 {	
@@ -708,10 +714,17 @@ void main()
 	}
 	else
 	{
+		float minDistance = FLT_MAX;
 		for (uint i = 0; i < NumModels; i++)
 		{
+			VoxelModel model = Models[i];
+
+			if (model.DistanceFromCamera > minDistance)
+				break;
+			
 			float drawDistance;
-			DrawModel(i, drawDistance);
+			if (DrawModel(model, drawDistance))
+				minDistance = drawDistance;
 		}
 	}
 }

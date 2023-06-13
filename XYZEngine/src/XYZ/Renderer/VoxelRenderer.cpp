@@ -36,7 +36,7 @@ namespace XYZ {
 
 	VoxelRenderer::VoxelRenderer()
 		:
-		m_ModelsOctree(AABB(glm::vec3(-1024), glm::vec3(1024)), 4)
+		m_ModelsOctree(AABB(glm::vec3(-2048), glm::vec3(2048)), 4)
 	{
 		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "VoxelRenderer");
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());
@@ -542,18 +542,22 @@ namespace XYZ {
 	void VoxelRenderer::prepareModels()
 	{
 		XYZ_PROFILE_FUNC("VoxelRenderer::prepareModels");
+		const glm::vec3 cameraPosition(m_UBVoxelScene.CameraPosition);
 		{
 			XYZ_PROFILE_FUNC("VoxelRenderer::prepareModelsCopy");
+
 			for (auto& renderModel : m_RenderModels)
+			{
+				renderModel.DistanceFromCamera = renderModel.BoundingBox.Distance(cameraPosition);
 				m_RenderModelsSorted.push_back(&renderModel);
+			}
 		}
 	
 		// Sort by distance from camera
 		{
-			XYZ_PROFILE_FUNC("VoxelRenderer::prepareModelsSort");
-			const glm::vec3 cameraPosition(m_UBVoxelScene.CameraPosition);
+			XYZ_PROFILE_FUNC("VoxelRenderer::prepareModelsSort");		
 			std::sort(m_RenderModelsSorted.begin(), m_RenderModelsSorted.end(), [&](const VoxelRenderModel* a, const VoxelRenderModel* b) {
-				return a->BoundingBox.Distance(cameraPosition) < b->BoundingBox.Distance(cameraPosition);
+				return a->DistanceFromCamera < b->DistanceFromCamera;
 				});
 		}
 		int32_t modelIndex = 0;
@@ -589,6 +593,7 @@ namespace XYZ {
 				model.Depth = submesh.Depth;
 				model.VoxelSize = submesh.VoxelSize;
 				model.Compressed = false;
+				model.DistanceFromCamera = cmdModel->DistanceFromCamera;
 				if (!submesh.CompressedCells.empty())
 				{
 					model.Compressed = true;

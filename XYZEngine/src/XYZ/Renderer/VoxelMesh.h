@@ -95,7 +95,8 @@ namespace XYZ {
 		std::array<VoxelColor, 256> m_ColorPallete;
 
 		
-		mutable std::unordered_map<uint32_t, DirtyRange> m_DirtySubmeshes;		
+		mutable std::unordered_map<uint32_t, DirtyRange> m_DirtySubmeshes;	
+
 		mutable bool m_Dirty;
 
 		uint32_t m_NumVoxels;

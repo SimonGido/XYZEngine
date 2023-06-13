@@ -67,8 +67,8 @@ namespace XYZ {
 		uint32_t    CellsOffset;
 		uint32_t    CompressScale;
 		Bool32		Compressed = false;
-
-		Padding<12>	Padding;
+		float		DistanceFromCamera;
+		Padding<8>	Padding;
 	};
 
 
@@ -176,6 +176,7 @@ namespace XYZ {
 			AABB	  BoundingBox;
 			glm::mat4 Transform;
 			Ref<VoxelMesh> Mesh;
+			float	  DistanceFromCamera;
 		};
 
 		struct VoxelMeshBucket
