@@ -247,7 +247,7 @@ namespace XYZ {
 				{
 					m_Terrain = std::move(m_GenerateVoxelsFuture.get());
 					m_ProceduralMesh->SetSubmeshes({ m_Terrain.Terrain });
-					//m_ProceduralMesh->DecompressCell(0, 0, 0, 0);
+					
 					//m_VoxelRenderer->SubmitComputeData(m_Terrain.WaterMap.data(), m_Terrain.WaterMap.size(), 0, m_WaterDensityAllocation, true);
 				}
 
@@ -261,11 +261,12 @@ namespace XYZ {
 				
 				if (Input::IsKeyPressed(KeyCode::KEY_SPACE))
 				{
-					auto& submesh = m_ProceduralMesh->GetSubmeshes()[0];
-					for (uint32_t y = 0; y < 400; ++y)
-					{
-						m_ProceduralMesh->SetVoxelColor(0, 256, y, 256, RandomNumber(5u, 255u));
-					}
+					m_ProceduralMesh->DecompressCell(0, 0, 0, 0);
+					//auto& submesh = m_ProceduralMesh->GetSubmeshes()[0];
+					//for (uint32_t y = 0; y < 400; ++y)
+					//{
+					//	m_ProceduralMesh->SetVoxelColor(0, 256, y, 256, RandomNumber(5u, 255u));
+					//}
 				}
 				//m_World.Update(m_EditorCamera.GetPosition());
 				//for (const auto& chunkRow : m_World.GetActiveChunks())
