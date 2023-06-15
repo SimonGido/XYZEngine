@@ -28,9 +28,11 @@ namespace XYZ {
 			uint32_t Start = std::numeric_limits<uint32_t>::max();
 			uint32_t End = 0;
 		};
+		
+		virtual bool ColorPalleteDirty() const = 0;
 
-		virtual bool NeedUpdate() const = 0;
-		virtual std::unordered_map<uint32_t, DirtyRange> DirtySubmeshes() const { return {}; }
+		virtual std::unordered_map<uint32_t, DirtyRange>			DirtySubmeshes() const { return {}; }
+		virtual std::unordered_map<uint32_t, std::vector<uint32_t>> DirtyCompressedCells() const { return {}; }
 
 		friend class VoxelRenderer;
 	};
@@ -56,7 +58,7 @@ namespace XYZ {
 		static AssetType GetStaticType() { return AssetType::VoxelSourceMesh; }
 	
 	private:
-		virtual bool NeedUpdate() const override;
+		virtual bool ColorPalleteDirty() const { return false; }
 
 	private:
 		AssetReference<VoxelMeshSource> m_MeshSource;
@@ -69,12 +71,13 @@ namespace XYZ {
 
 		virtual AssetType GetAssetType() const override { return AssetType::None; }
 
+		void SetSubmeshes(std::vector<VoxelSubmesh>&& submeshes);
 		void SetSubmeshes(const std::vector<VoxelSubmesh>& submeshes);
 		void SetInstances(const std::vector<VoxelInstance>& instances);
 		void SetColorPallete(const std::array<VoxelColor, 256>& pallete);
-
 		void SetVoxelColor(uint32_t submeshIndex, uint32_t x, uint32_t y, uint32_t z, uint8_t value);
 
+		void DecompressCell(uint32_t submeshIndex, uint32_t cx, uint32_t cy, uint32_t cz);
 
 		virtual const std::array<VoxelColor, 256>& GetColorPallete() const override;
 		virtual const std::vector<VoxelSubmesh>& GetSubmeshes() const override;
@@ -85,9 +88,9 @@ namespace XYZ {
 		static AssetType GetStaticType() { return AssetType::None; }
 
 	private:
-		virtual bool NeedUpdate() const override;
-		virtual std::unordered_map<uint32_t, DirtyRange> DirtySubmeshes() const override;
-	
+		virtual bool												ColorPalleteDirty() const override;
+		virtual std::unordered_map<uint32_t, DirtyRange>			DirtySubmeshes() const override;
+		virtual std::unordered_map<uint32_t, std::vector<uint32_t>> DirtyCompressedCells() const override;
 
 	private:
 		std::vector<VoxelSubmesh>	m_Submeshes;
@@ -95,9 +98,9 @@ namespace XYZ {
 		std::array<VoxelColor, 256> m_ColorPallete;
 
 		
-		mutable std::unordered_map<uint32_t, DirtyRange> m_DirtySubmeshes;	
-
-		mutable bool m_Dirty;
+		mutable std::unordered_map<uint32_t, DirtyRange>			m_DirtySubmeshes;	
+		mutable std::unordered_map<uint32_t, std::vector<uint32_t>> m_DirtyCompressedCells;
+		mutable bool												m_ColorPalleteDirty;
 
 		uint32_t m_NumVoxels;
 		uint32_t m_NumCompressedCells;

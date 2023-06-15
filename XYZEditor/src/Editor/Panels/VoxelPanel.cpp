@@ -82,14 +82,15 @@ namespace XYZ {
 			}
 		}
 
-		
+		static constexpr float sc_TerrainVoxelSize = 1.0f;
+
 		VoxelPanel::VoxelPanel(std::string name)
 			:
 			EditorPanel(std::forward<std::string>(name)),
 			m_ViewportSize(0.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f),
-			m_Octree(AABB(glm::vec3(0.0f), glm::vec3(0.0f)), 10),
-			m_World("blabla", 50)
+			m_Octree(AABB(glm::vec3(0.0f), glm::vec3(0.0f)), 10)
+			//m_World("blabla", 50)
 		{
 			m_DeerMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));
 			m_CastleMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox"));
@@ -102,7 +103,7 @@ namespace XYZ {
 			submesh.Width = 512;
 			submesh.Height = 512;
 			submesh.Depth = 512;
-			submesh.VoxelSize = 3.0f;
+			submesh.VoxelSize = sc_TerrainVoxelSize;
 	
 			submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth, 0);
 		
@@ -205,8 +206,7 @@ namespace XYZ {
 				ImGui::DragInt("Frequency", (int*)&m_Frequency, 1.0f, 0, INT_MAX);
 				ImGui::DragInt("Octaves", (int*)&m_Octaves, 1.0f, 0, INT_MAX);
 				ImGui::DragInt("Seed", (int*)&m_Seed, 1.0f, 0, INT_MAX);
-				ImGui::Checkbox("Compress", &m_Compress);
-
+				
 				if (ImGui::Button("Apply") && !m_Generating)
 				{
 					pushGenerateVoxelMeshJob();
@@ -245,15 +245,9 @@ namespace XYZ {
 				
 				if (!m_Generating && m_GenerateVoxelsFuture.valid())
 				{
-					VoxelSubmesh terrainSubmesh = m_ProceduralMesh->GetSubmeshes()[0];
-					
 					m_Terrain = std::move(m_GenerateVoxelsFuture.get());
-		
-					terrainSubmesh.ColorIndices = m_Terrain.Terrain;
-					if (m_Compress)
-						terrainSubmesh.Compress(16, false);
-
-					m_ProceduralMesh->SetSubmeshes({ terrainSubmesh });
+					m_ProceduralMesh->SetSubmeshes({ m_Terrain.Terrain });
+					//m_ProceduralMesh->DecompressCell(0, 0, 0, 0);
 					//m_VoxelRenderer->SubmitComputeData(m_Terrain.WaterMap.data(), m_Terrain.WaterMap.size(), 0, m_WaterDensityAllocation, true);
 				}
 
@@ -273,17 +267,18 @@ namespace XYZ {
 						m_ProceduralMesh->SetVoxelColor(0, 256, y, 256, RandomNumber(5u, 255u));
 					}
 				}
-				m_World.Update(m_EditorCamera.GetPosition());
-				for (const auto& chunkRow : m_World.GetActiveChunks())
-				{
-					for (const auto& chunk : chunkRow)
-					{
-						if (chunk.Mesh.Raw())
-							m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
-					}
-				}
+				//m_World.Update(m_EditorCamera.GetPosition());
+				//for (const auto& chunkRow : m_World.GetActiveChunks())
+				//{
+				//	for (const auto& chunk : chunkRow)
+				//	{
+				//		if (chunk.Mesh.Raw())
+				//			m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
+				//	}
+				//}
 				
-				//m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
+				if (!m_ProceduralMesh->GetSubmeshes()[0].CompressedCells.empty())
+					m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
 				for (auto& transform : m_TreeTransforms)
 				{
 					//m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());
@@ -294,9 +289,9 @@ namespace XYZ {
 					const glm::mat4 knightTransform = m_Transforms[i + 1].GetLocalTransform();
 					const glm::mat4 deerTransform = m_Transforms[i + 2].GetLocalTransform();
 				
-					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
-					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
-					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
+					//m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
+					//m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
+					//m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
 				}
 				
 				submitWater();
@@ -430,6 +425,12 @@ namespace XYZ {
 			uint32_t width = terrainSubmesh.Width;
 			uint32_t height = terrainSubmesh.Height;
 			uint32_t depth = terrainSubmesh.Depth;
+			if (!terrainSubmesh.CompressedCells.empty())
+			{
+				width *= terrainSubmesh.CompressScale;
+				height *= terrainSubmesh.CompressScale;
+				depth *= terrainSubmesh.CompressScale;
+			}
 	
 			auto& pool = Application::Get().GetThreadPool();
 			m_GenerateVoxelsFuture = pool.SubmitJob([this, seed, frequency, octaves, width, height, depth]() {
@@ -489,7 +490,12 @@ namespace XYZ {
 			const double fy = ((double)frequency / (double)height);
 
 			VoxelTerrain result;
-			result.Terrain.resize(width * height * depth);
+			result.Terrain.Width = width;
+			result.Terrain.Height = height;
+			result.Terrain.Depth = depth;
+			result.Terrain.VoxelSize = sc_TerrainVoxelSize;
+
+			result.Terrain.ColorIndices.resize(width * height * depth);
 			result.WaterMap.resize(width * height * depth);
 			memset(result.WaterMap.data(), 0, result.WaterMap.size());
 
@@ -505,7 +511,7 @@ namespace XYZ {
 
 					for (uint32_t y = 0; y < genHeight; y ++)
 					{
-						result.Terrain[Utils::Index3D(x, y, z, width, height)] = Grass;
+						result.Terrain.ColorIndices[Utils::Index3D(x, y, z, width, height)] = Grass;
 					}
 		
 					result.TerrainHeightmap[Utils::Index2D(x, z, depth)] = genHeight;
@@ -513,7 +519,7 @@ namespace XYZ {
 					for (int32_t y = genHeight; y < 50; ++y)
 					{
 						const uint32_t waterIndex = Utils::Index3D(x, y, z, width, height);
-						result.Terrain[waterIndex] = Water; // Water
+						result.Terrain.ColorIndices[waterIndex] = Water; // Water
 						result.WaterMap[waterIndex] = 125; // Half max density
 					}
 					
@@ -522,6 +528,7 @@ namespace XYZ {
 					//result.WaterMap[waterIndex] = 125; // Half max density
 				}
 			}
+			result.Terrain.Compress(16);
 			return result;
 		}
 	}

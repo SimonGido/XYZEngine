@@ -55,14 +55,18 @@ namespace XYZ {
 		friend StorageBufferAllocator;
 	};
 
-
 	class XYZ_API StorageBufferAllocator : public RefCount
 	{
 	public:
+		enum AllocationFlags
+		{
+			Reallocated = BIT(0),
+			Extended	= BIT(1)
+		};
 		StorageBufferAllocator(uint32_t size, uint32_t binding, uint32_t set);
 		~StorageBufferAllocator();
 
-		bool Allocate(uint32_t size, StorageBufferAllocation& allocation);
+		uint32_t Allocate(uint32_t size, StorageBufferAllocation& allocation);
 
 		uint32_t GetAllocatedSize() const;
 		uint32_t GetBinding()		const { return m_Binding; };
@@ -76,7 +80,8 @@ namespace XYZ {
 
 		StorageBufferAllocation createNewAllocation(uint32_t size);
 		void updateAllocation(uint32_t size, StorageBufferAllocation& allocation);
-
+		bool extendAllocation(uint32_t size, StorageBufferAllocation& allocation);
+		
 		uint32_t nextAllocationID();
 	private:
 		struct Allocation

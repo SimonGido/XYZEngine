@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "VoxelMeshSource.h"
 
+#include "XYZ/Utils/Random.h"
+
 #include <ogt_vox.h>
 
 namespace XYZ {
@@ -126,7 +128,7 @@ namespace XYZ {
 		}
 		ogt_vox_destroy_scene(scene);
 	}
-	int64_t VoxelSubmesh::Compress(uint32_t scale, bool keepDecompressed)
+	int64_t VoxelSubmesh::Compress(uint32_t scale)
 	{
 		VoxelSubmesh copy = *this;
 		CompressScale = scale;
@@ -134,8 +136,10 @@ namespace XYZ {
 		Height = Math::RoundUp(Height, scale) / scale;
 		Depth = Math::RoundUp(Depth, scale) / scale;
 		VoxelSize = VoxelSize * scale;
+		Compressed = true;
 
 		CompressedCells.resize(Width * Height * Depth);
+		std::vector<uint8_t> compressedColorIndices;
 
 		uint32_t voxelOffset = 0;
 		for (uint32_t cx = 0; cx < Width; ++cx)
@@ -159,14 +163,14 @@ namespace XYZ {
 					if (isUniform)
 					{
 						cell.VoxelCount = 1;
-						CompressedColorIndices.push_back(ColorIndices[Index3D(xStart, yStart, zStart, copy.Width, copy.Height)]);						
+						compressedColorIndices.push_back(ColorIndices[Index3D(xStart, yStart, zStart, copy.Width, copy.Height)]);
 					}
 					else
 					{
-						const uint32_t offset = static_cast<uint32_t>(CompressedColorIndices.size());
+						const uint32_t offset = static_cast<uint32_t>(compressedColorIndices.size());
 						cell.VoxelCount = scale * scale * scale;
-						CompressedColorIndices.resize(offset + cell.VoxelCount);
-						uint8_t* cellColorIndices = &CompressedColorIndices[offset];
+						compressedColorIndices.resize(offset + cell.VoxelCount);
+						uint8_t* cellColorIndices = &compressedColorIndices[offset];
 						for (uint32_t x = xStart; x < xEnd; ++x)
 						{
 							for (uint32_t y = yStart; y < yEnd; ++y)
@@ -186,17 +190,42 @@ namespace XYZ {
 				}
 			}
 		}
-		if (!keepDecompressed)
-			ColorIndices.clear();
-		return GetSavedSpaceCompression();
-	}
 
-	int64_t VoxelSubmesh::GetSavedSpaceCompression() const
-	{
-		const int64_t resultSize = CompressedColorIndices.size() + CompressedCells.size() * sizeof(CompressedCell);
-		const int64_t savedSpace = static_cast<int64_t>(ColorIndices.size()) - resultSize;
+		const int64_t savedSpace = ColorIndices.size() - compressedColorIndices.size();
+		ColorIndices = std::move(compressedColorIndices);
 		return savedSpace;
 	}
+
+	bool VoxelSubmesh::DecompressCell(uint32_t cx, uint32_t cy, uint32_t cz)
+	{
+		const uint32_t cIndex = Index3D(cx, cy, cz, Width, Height);
+		XYZ_ASSERT(cIndex < CompressedCells.size(), "");
+		CompressedCell& cell = CompressedCells[cIndex];
+		if (cell.VoxelCount != 1)
+			return false;
+
+		CompressedCell origCell = cell;
+		m_FreeSpace.push_back(cell);
+
+		cell.VoxelCount = CompressScale * CompressScale * CompressScale;
+		cell.VoxelOffset = static_cast<uint32_t>(ColorIndices.size());
+		ColorIndices.resize(cell.VoxelOffset + cell.VoxelCount);
+
+		uint8_t* cellColorIndices = &ColorIndices[cell.VoxelOffset];
+		for (uint32_t x = 0; x < CompressScale; ++x)
+		{
+			for (uint32_t y = 0; y < CompressScale; ++y)
+			{
+				for (uint32_t z = 0; z < CompressScale; ++z)
+				{
+					const uint32_t index = Index3D(x, y, z,CompressScale, CompressScale);
+					cellColorIndices[index] = ColorIndices[origCell.VoxelOffset];
+				}
+			}
+		}
+		return true;
+	}
+
 
 	VoxelSubmesh VoxelSubmesh::Compress(uint32_t scale, uint32_t width, uint32_t height, uint32_t depth, float voxelSize, const std::vector<uint8_t>& colorIndices)
 	{
@@ -206,7 +235,7 @@ namespace XYZ {
 		result.Height = Math::RoundUp(height, scale) / scale;
 		result.Depth = Math::RoundUp(depth, scale) / scale;
 		result.VoxelSize = voxelSize * scale;
-
+		result.Compressed = true;
 		result.CompressedCells.resize(result.Width * result.Height * result.Depth);
 
 		uint32_t voxelOffset = 0;
@@ -231,14 +260,14 @@ namespace XYZ {
 					if (isUniform)
 					{
 						cell.VoxelCount = 1;
-						result.CompressedColorIndices.push_back(colorIndices[Index3D(xStart, yStart, zStart, width, height)]);
+						result.ColorIndices.push_back(colorIndices[Index3D(xStart, yStart, zStart, width, height)]);
 					}
 					else
 					{
-						const uint32_t offset = static_cast<uint32_t>(result.CompressedColorIndices.size());
+						const uint32_t offset = static_cast<uint32_t>(result.ColorIndices.size());
 						cell.VoxelCount = scale * scale * scale;
-						result.CompressedColorIndices.resize(offset + cell.VoxelCount);
-						uint8_t* cellColorIndices = &result.CompressedColorIndices[offset];
+						result.ColorIndices.resize(offset + cell.VoxelCount);
+						uint8_t* cellColorIndices = &result.ColorIndices[offset];
 						for (uint32_t x = xStart; x < xEnd; ++x)
 						{
 							for (uint32_t y = yStart; y < yEnd; ++y)

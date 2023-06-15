@@ -28,7 +28,7 @@ namespace XYZ {
 
 		struct VoxelTerrain
 		{
-			std::vector<uint8_t> Terrain;
+			VoxelSubmesh Terrain;
 			std::vector<uint8_t> WaterMap;
 			std::vector<uint16_t> TerrainHeightmap;
 		};
@@ -118,15 +118,14 @@ namespace XYZ {
 
 			StorageBufferAllocation m_WaterDensityAllocation;
 			bool m_UpdateWater = false;
-			bool m_Compress = false;
-
+		
 
 			SpaceColonization* m_SpaceColonization = nullptr;
 			SpaceColonizationData m_SpaceColonizationData;
 
 
 			Octree m_Octree;
-			VoxelWorld m_World;
+			//VoxelWorld m_World;
 		};
 	}
 }

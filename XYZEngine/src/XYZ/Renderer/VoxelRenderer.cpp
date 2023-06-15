@@ -586,7 +586,7 @@ namespace XYZ {
 				const VoxelSubmesh& submesh = cmdModel->Mesh->GetSubmeshes()[cmdModel->SubmeshIndex];
 				VoxelModel& model = m_SSBOVoxelModels.Models[cmdModel->ModelIndex];
 				model.ColorIndex = meshAlloc.ColorAllocation.GetOffset() / SSBOColors::ColorPalleteSize;
-				model.VoxelOffset = meshAlloc.SubmeshOffsets[cmdModel->SubmeshIndex];
+				model.VoxelOffset = meshAlloc.Offsets[cmdModel->SubmeshIndex].Voxel;
 				model.InverseTransform = glm::inverse(cmdModel->Transform);
 				model.Width = submesh.Width;
 				model.Height = submesh.Height;
@@ -594,11 +594,11 @@ namespace XYZ {
 				model.VoxelSize = submesh.VoxelSize;
 				model.Compressed = false;
 				model.DistanceFromCamera = cmdModel->DistanceFromCamera;
-				if (!submesh.CompressedCells.empty())
+				if (submesh.Compressed)
 				{
 					model.Compressed = true;
 					model.CompressScale = submesh.CompressScale;
-					model.CellsOffset = meshAlloc.CompressAllocation.GetOffset() / sizeof(VoxelCompressedCell);			
+					model.CellsOffset = meshAlloc.Offsets[cmdModel->SubmeshIndex].CompressedCell;
 				}
 				m_SSBOVoxelModels.NumModels++;
 			}
@@ -687,53 +687,78 @@ namespace XYZ {
 		const uint32_t colorSize = SSBOColors::ColorPalleteSize;
 		const uint32_t compressedCellsSize = mesh->GetNumCompressedCells() * sizeof(VoxelCompressedCell);
 
-		const bool reallocated =
-			m_VoxelStorageAllocator->Allocate(meshSize, allocation.VoxelAllocation)
-			|| m_ColorStorageAllocator->Allocate(colorSize, allocation.ColorAllocation)
-			|| m_CompressedCellAllocator->Allocate(compressedCellsSize, allocation.CompressAllocation);
+		const uint32_t voxelAllocationFlags = m_VoxelStorageAllocator->Allocate(meshSize, allocation.VoxelAllocation);
+		const uint32_t colorAllocationFlags = m_ColorStorageAllocator->Allocate(colorSize, allocation.ColorAllocation);
+		const uint32_t cellAllocationFlags = m_CompressedCellAllocator->Allocate(compressedCellsSize, allocation.CompressAllocation);
 
+		// We call it here to clear it from mesh even if reallocated 
+		auto dirtySubmeshes = mesh->DirtySubmeshes();
+		auto dirtyCells = mesh->DirtyCompressedCells();
 
-		if (reallocated || mesh->NeedUpdate())
-		{
-			// Copy voxels
-			uint32_t submeshIndex = 0;
+		{	// Recreate offsets per submesh
 			uint32_t voxelOffset = allocation.VoxelAllocation.GetOffset();
-			uint32_t cellOffset = allocation.CompressAllocation.GetOffset();
-
-			allocation.SubmeshOffsets.resize(submeshes.size());
-			for (auto& submesh : submeshes)
+			uint32_t cellOffset = allocation.CompressAllocation.GetOffset() / sizeof(VoxelCompressedCell);
+			allocation.Offsets.clear();
+			for (const auto& submesh : submeshes)
 			{
-				allocation.SubmeshOffsets[submeshIndex] = voxelOffset;
-				
-				m_StorageBufferSet->Update(submesh.CompressedCells.data(), allocation.CompressAllocation.GetSize(), cellOffset, SSBOVoxelCompressed::Binding, SSBOVoxelCompressed::Set);
-				if (submesh.CompressedCells.empty()) // Submesh is not compressed
-				{
-					m_StorageBufferSet->Update(submesh.ColorIndices.data(), submesh.ColorIndices.size(), voxelOffset, SSBOVoxels::Binding, SSBOVoxels::Set);
-					voxelOffset += static_cast<uint32_t>(submesh.ColorIndices.size());
-				}
-				else // Submesh is compressed
-				{
-					m_StorageBufferSet->Update(submesh.CompressedColorIndices.data(), submesh.CompressedColorIndices.size(), voxelOffset, SSBOVoxels::Binding, SSBOVoxels::Set);
-					voxelOffset += static_cast<uint32_t>(submesh.CompressedColorIndices.size());
-				}
+				allocation.Offsets.push_back({ voxelOffset, cellOffset });
 				cellOffset += static_cast<uint32_t>(submesh.CompressedCells.size());
-				submeshIndex++;
+				voxelOffset += submesh.ColorIndices.size();
 			}
-			// Update color pallete SSBO
-			m_StorageBufferSet->Update(mesh->GetColorPallete().data(), allocation.ColorAllocation.GetSize(), allocation.ColorAllocation.GetOffset(), SSBOColors::Binding, SSBOColors::Set);					
 		}
-		else
+		// Update color pallete
+		if (IS_SET(colorAllocationFlags, StorageBufferAllocator::Reallocated) || mesh->ColorPalleteDirty())
 		{
-			auto ranges = mesh->DirtySubmeshes();
-			for (auto& [submeshIndex, range] : ranges)
+			m_StorageBufferSet->Update(mesh->GetColorPallete().data(), allocation.ColorAllocation.GetSize(), allocation.ColorAllocation.GetOffset(), SSBOColors::Binding, SSBOColors::Set);
+		}
+		// Update voxels
+		if (IS_SET(voxelAllocationFlags, StorageBufferAllocator::Reallocated))
+		{
+			for (uint32_t submeshIndex = 0; submeshIndex < submeshes.size(); ++submeshIndex)
 			{
-				const uint32_t offset = allocation.SubmeshOffsets[submeshIndex] + range.Start;
-				const uint32_t voxelCount = range.End - range.Start;
-				const VoxelSubmesh& submesh = mesh->GetSubmeshes()[submeshIndex];
-				const uint8_t* updateVoxelData = &submesh.ColorIndices.data()[range.Start];
+				const auto& submesh = submeshes[submeshIndex];
+				const uint32_t voxelOffset = allocation.Offsets[submeshIndex].Voxel;
+				m_StorageBufferSet->Update(submesh.ColorIndices.data(), submesh.ColorIndices.size(), voxelOffset, SSBOVoxels::Binding, SSBOVoxels::Set);
+			}
+		}
+		else // Update only dirty parts of submeshes
+		{			
+			for (auto& [submeshIndex, range] : dirtySubmeshes)
+			{
+				const auto& submesh = submeshes[submeshIndex];
+				const uint32_t offset = allocation.Offsets[submeshIndex].Voxel + range.Start; // calculate update offset
+				const uint32_t voxelCount = range.End - range.Start; // calculate num voxels to update
 
+				// Get voxels pointer
+				const uint8_t* updateVoxelData = &submesh.ColorIndices.data()[range.Start];
 				m_StorageBufferSet->Update(updateVoxelData, voxelCount, offset, SSBOVoxels::Binding, SSBOVoxels::Set);
 			}
 		}
+		// Update compressed cells
+		if (IS_SET(cellAllocationFlags, StorageBufferAllocator::Reallocated))
+		{
+			for (uint32_t submeshIndex = 0; submeshIndex < submeshes.size(); ++submeshIndex)
+			{
+				const auto& submesh = submeshes[submeshIndex];
+				const uint32_t cellOffset = allocation.Offsets[submeshIndex].CompressedCell;
+				const uint32_t cellsSize = static_cast<uint32_t>(submesh.CompressedCells.size() * sizeof(VoxelCompressedCell));
+				m_StorageBufferSet->Update(submesh.CompressedCells.data(), cellsSize, cellOffset, SSBOVoxelCompressed::Binding, SSBOVoxelCompressed::Set);
+			}
+		}
+		else // Update only dirty cells
+		{		
+			for (auto& [submeshIndex, cells] : dirtyCells)
+			{
+				const auto& submesh = submeshes[submeshIndex];
+
+				for (uint32_t cell : cells)
+				{
+					uint32_t cellOffset = allocation.Offsets[submeshIndex].CompressedCell + cell;
+					const auto* updateCellData = &submesh.CompressedCells[cell];
+					m_StorageBufferSet->Update(updateCellData, sizeof(VoxelCompressedCell), cellOffset, SSBOVoxelCompressed::Binding, SSBOVoxelCompressed::Set);
+				}
+			}
+		}
+
 	}
 }

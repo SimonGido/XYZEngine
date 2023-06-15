@@ -34,51 +34,64 @@ namespace XYZ {
 	{
 		return GetHandle();
 	}
-	bool VoxelSourceMesh::NeedUpdate() const
-	{
-		return false;
-	}
 
 	VoxelProceduralMesh::VoxelProceduralMesh()
 		:
 		m_NumVoxels(0),
 		m_NumCompressedCells(0),
-		m_Dirty(false)
+		m_ColorPalleteDirty(false)
 	{
 		memset(&m_ColorPallete, 0, sizeof(VoxelColor) * m_ColorPallete.size());
 	}
 
+	void VoxelProceduralMesh::SetSubmeshes(std::vector<VoxelSubmesh>&& submeshes)
+	{
+		m_DirtySubmeshes.clear();
+		m_DirtyCompressedCells.clear();
+
+		m_Submeshes = std::forward<std::vector<VoxelSubmesh>>(submeshes);
+		m_NumVoxels = 0;
+		m_NumCompressedCells = 0;
+		uint32_t index = 0;
+		for (auto& submesh : m_Submeshes)
+		{
+			m_NumVoxels += static_cast<uint32_t>(submesh.ColorIndices.size());
+			m_NumCompressedCells += static_cast<uint32_t>(submesh.CompressedCells.size());
+			m_DirtySubmeshes[index] = { 0, static_cast<uint32_t>(submesh.ColorIndices.size()) };
+			index++;
+		}
+		m_DirtySubmeshes.clear();
+		m_DirtyCompressedCells.clear();
+	}
+
 	void VoxelProceduralMesh::SetSubmeshes(const std::vector<VoxelSubmesh>& submeshes)
 	{
+		m_DirtySubmeshes.clear();
+		m_DirtyCompressedCells.clear();
+
 		m_Submeshes = submeshes;
 		m_NumVoxels = 0;
 		m_NumCompressedCells = 0;
 		uint32_t index = 0;
 		for (auto& submesh : m_Submeshes)
 		{
-			if (submesh.CompressedColorIndices.empty())
-				m_NumVoxels += static_cast<uint32_t>(submesh.ColorIndices.size());
-			else
-				m_NumVoxels += static_cast<uint32_t>(submesh.CompressedColorIndices.size());
+			m_NumVoxels += static_cast<uint32_t>(submesh.ColorIndices.size());
 			m_NumCompressedCells += static_cast<uint32_t>(submesh.CompressedCells.size());
-		}
-		m_Dirty = true;
-		m_DirtySubmeshes.clear();
+			m_DirtySubmeshes[index] = { 0, static_cast<uint32_t>(submesh.ColorIndices.size()) };
+			index++;
+		}		
 	}
 
 	void VoxelProceduralMesh::SetInstances(const std::vector<VoxelInstance>& instances)
 	{
 		m_Instances = instances;
-		m_Dirty = true;
-		m_DirtySubmeshes.clear();
 	}
 
 	void VoxelProceduralMesh::SetColorPallete(const std::array<VoxelColor, 256>& pallete)
 	{
 		m_ColorPallete = pallete;
+		m_ColorPalleteDirty = true;
 	}
-
-	
 
 	void VoxelProceduralMesh::SetVoxelColor(uint32_t submeshIndex, uint32_t x, uint32_t y, uint32_t z, uint8_t value)
 	{
@@ -88,6 +101,29 @@ namespace XYZ {
 		auto& range = m_DirtySubmeshes[submeshIndex];
 		range.Start = std::min(range.Start, index);
 		range.End = std::max(range.End, index + 1);
+	}
+
+	void VoxelProceduralMesh::DecompressCell(uint32_t submeshIndex, uint32_t cx, uint32_t cy, uint32_t cz)
+	{
+		auto& submesh = m_Submeshes[submeshIndex];
+		const uint32_t cIndex = Index3D(cx, cy, cz, submesh.Width, submesh.Height);
+
+		const uint32_t origCount = static_cast<uint32_t>(submesh.ColorIndices.size());
+		
+		if (submesh.DecompressCell(cx, cy, cz))
+		{
+			m_NumVoxels -= origCount;
+			m_NumVoxels += static_cast<uint32_t>(submesh.ColorIndices.size());
+
+			auto start = submesh.CompressedCells[cIndex].VoxelOffset;
+			auto end = start + static_cast<uint32_t>(std::pow(submesh.CompressScale, 3u));
+
+			auto& range = m_DirtySubmeshes[submeshIndex];
+			range.Start = std::min(range.Start, start);
+			range.End = std::max(range.End, end);
+
+			m_DirtyCompressedCells[submeshIndex].push_back(cIndex);
+		}	
 	}
 
 	const std::array<VoxelColor, 256>& VoxelProceduralMesh::GetColorPallete() const
@@ -108,16 +144,23 @@ namespace XYZ {
 	{
 		return GetHandle();
 	}
-	bool VoxelProceduralMesh::NeedUpdate() const
+
+	
+	bool VoxelProceduralMesh::ColorPalleteDirty() const
 	{
-		bool dirty = m_Dirty;
-		m_Dirty = false;
+		bool dirty = m_ColorPalleteDirty;
+		m_ColorPalleteDirty = false;
 		return dirty;
 	}
-	
+
 	std::unordered_map<uint32_t, VoxelMesh::DirtyRange> VoxelProceduralMesh::DirtySubmeshes() const
 	{
 		return std::move(m_DirtySubmeshes);
+	}
+
+	std::unordered_map<uint32_t, std::vector<uint32_t>> VoxelProceduralMesh::DirtyCompressedCells() const
+	{
+		return std::move(m_DirtyCompressedCells);
 	}
 	
 }

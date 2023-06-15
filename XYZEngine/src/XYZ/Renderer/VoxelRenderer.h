@@ -213,7 +213,13 @@ namespace XYZ {
 			StorageBufferAllocation	CompressAllocation;
 			StorageBufferAllocation	ColorAllocation;
 
-			std::vector<uint32_t> SubmeshOffsets;
+			struct OffsetPair
+			{
+				uint32_t Voxel = 0;
+				uint32_t CompressedCell = 0;
+			};
+
+			std::vector<OffsetPair> Offsets;
 		};
 
 		struct Statistics
