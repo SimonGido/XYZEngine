@@ -30,8 +30,8 @@ namespace XYZ{
 	class VoxelWorld
 	{
 	public:
-		static constexpr glm::ivec3 sc_ChunkDimensions = glm::ivec3(128, 512, 128);
-		static constexpr uint32_t	sc_ChunkViewDistance = 4; // View distance from center
+		static constexpr glm::ivec3 sc_ChunkDimensions = glm::ivec3(64, 64, 64);
+		static constexpr uint32_t	sc_ChunkViewDistance = 9; // View distance from center
 		static constexpr int64_t    sc_MaxVisibleChunksPerAxis = sc_ChunkViewDistance * 2 + 1;
 		static constexpr float      sc_ChunkVoxelSize = 1.0f;
 		static ThreadQueue<std::vector<uint8_t>> DataPool;
@@ -41,12 +41,13 @@ namespace XYZ{
 		VoxelWorld(const std::filesystem::path& worldPath, uint32_t seed);
 		
 		void Update(const glm::vec3& position);
+		void ProcessGenerated();
 
-		const ActiveChunkStorage& GetActiveChunks() const { return m_ActiveChunks; }
+		const std::unique_ptr<ActiveChunkStorage>& GetActiveChunks() const { return m_ActiveChunks; }
 	private:
 		void generateChunks(int64_t centerChunkX, int64_t centerChunkZ);
 
-		ActiveChunkStorage shiftChunks(int64_t dirX, int64_t dirZ);
+		std::unique_ptr<ActiveChunkStorage> shiftChunks(int64_t dirX, int64_t dirZ);
 
 		VoxelChunk generateChunk(int64_t chunkX, int64_t chunkZ, const VoxelBiom& biom);
 
@@ -63,7 +64,7 @@ namespace XYZ{
 
 
 	private:
-		ActiveChunkStorage m_ActiveChunks;
+		std::unique_ptr<ActiveChunkStorage> m_ActiveChunks;
 
 		std::filesystem::path m_WorldPath;
 

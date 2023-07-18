@@ -211,6 +211,16 @@ namespace XYZ {
 
 				m_SSGIPipeline = PipelineCompute::Create(spec);
 			}
+			if (ImGui::Button("Clear Allocations"))
+			{
+				m_LastFrameMeshAllocations.clear();
+				m_MeshAllocations.clear();
+				m_VoxelStorageAllocator = Ref<StorageBufferAllocator>::Create(SSBOVoxels::MaxVoxels, SSBOVoxels::Binding, SSBOVoxels::Set);
+				m_ColorStorageAllocator = Ref<StorageBufferAllocator>::Create(SSBOColors::MaxSize, SSBOColors::Binding, SSBOColors::Set);
+				m_CompressedCellAllocator = Ref<StorageBufferAllocator>::Create(sizeof(SSBOVoxelCompressed), SSBOVoxelCompressed::Binding, SSBOVoxelCompressed::Set);
+				m_ComputeStorageAllocator = Ref<StorageBufferAllocator>::Create(SSBOVoxelComputeData::MaxSize, SSBOVoxelComputeData::Binding, SSBOVoxelComputeData::Set);
+
+			}
 
 			ImGui::DragFloat3("Light Direction", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Direction), 0.1f);
 			ImGui::DragFloat3("Light Color", glm::value_ptr(m_UBVoxelScene.DirectionalLight.Radiance), 0.1f);
@@ -662,9 +672,6 @@ namespace XYZ {
 	{
 		XYZ_PROFILE_FUNC("VoxelRenderer::createMeshAllocation");
 		const AssetHandle& meshHandle = mesh->GetHandle();
-		const auto& submeshes = mesh->GetSubmeshes();
-		const uint32_t meshSize = mesh->GetNumVoxels() * sizeof(uint8_t);
-
 		// Check if we have cached allocation from previous frame
 		auto lastFrame = m_LastFrameMeshAllocations.find(meshHandle);
 		if (lastFrame != m_LastFrameMeshAllocations.end())
@@ -740,7 +747,7 @@ namespace XYZ {
 			for (uint32_t submeshIndex = 0; submeshIndex < submeshes.size(); ++submeshIndex)
 			{
 				const auto& submesh = submeshes[submeshIndex];
-				const uint32_t cellOffset = allocation.Offsets[submeshIndex].CompressedCell;
+				const uint32_t cellOffset = allocation.Offsets[submeshIndex].CompressedCell * sizeof(VoxelCompressedCell);
 				const uint32_t cellsSize = static_cast<uint32_t>(submesh.CompressedCells.size() * sizeof(VoxelCompressedCell));
 				m_StorageBufferSet->Update(submesh.CompressedCells.data(), cellsSize, cellOffset, SSBOVoxelCompressed::Binding, SSBOVoxelCompressed::Set);
 			}
@@ -753,7 +760,7 @@ namespace XYZ {
 
 				for (uint32_t cell : cells)
 				{
-					uint32_t cellOffset = allocation.Offsets[submeshIndex].CompressedCell + cell;
+					const uint32_t cellOffset = (allocation.Offsets[submeshIndex].CompressedCell + cell) * sizeof(VoxelCompressedCell);
 					const auto* updateCellData = &submesh.CompressedCells[cell];
 					m_StorageBufferSet->Update(updateCellData, sizeof(VoxelCompressedCell), cellOffset, SSBOVoxelCompressed::Binding, SSBOVoxelCompressed::Set);
 				}

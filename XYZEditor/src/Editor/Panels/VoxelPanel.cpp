@@ -89,8 +89,8 @@ namespace XYZ {
 			EditorPanel(std::forward<std::string>(name)),
 			m_ViewportSize(0.0f),
 			m_EditorCamera(30.0f, 1.778f, 0.1f, 1000.0f),
-			m_Octree(AABB(glm::vec3(0.0f), glm::vec3(0.0f)), 10)
-			//m_World("blabla", 50)
+			m_Octree(AABB(glm::vec3(0.0f), glm::vec3(0.0f)), 10),
+			m_World("blabla", 50)
 		{
 			m_DeerMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/anim/deer.vox"));
 			m_CastleMesh = Ref<VoxelSourceMesh>::Create(Ref<VoxelMeshSource>::Create("Assets/Voxel/castle.vox"));
@@ -206,7 +206,7 @@ namespace XYZ {
 				ImGui::DragInt("Frequency", (int*)&m_Frequency, 1.0f, 0, INT_MAX);
 				ImGui::DragInt("Octaves", (int*)&m_Octaves, 1.0f, 0, INT_MAX);
 				ImGui::DragInt("Seed", (int*)&m_Seed, 1.0f, 0, INT_MAX);
-				
+
 				if (ImGui::Button("Apply") && !m_Generating)
 				{
 					pushGenerateVoxelMeshJob();
@@ -268,21 +268,24 @@ namespace XYZ {
 					//	m_ProceduralMesh->SetVoxelColor(0, 256, y, 256, RandomNumber(5u, 255u));
 					//}
 				}
-				//m_World.Update(m_EditorCamera.GetPosition());
-				//for (const auto& chunkRow : m_World.GetActiveChunks())
-				//{
-				//	for (const auto& chunk : chunkRow)
-				//	{
-				//		if (chunk.Mesh.Raw())
-				//			m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
-				//	}
-				//}
+				m_World.Update(m_EditorCamera.GetPosition());
+
+				for (const auto& chunkRow : *m_World.GetActiveChunks())
+				{
+					for (const auto& chunk : chunkRow)
+					{
+						if (chunk.Mesh.Raw())
+						{
+							m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
+						}
+					}
+				}
 				
-				if (!m_ProceduralMesh->GetSubmeshes()[0].CompressedCells.empty())
-					m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
+				//if (!m_ProceduralMesh->GetSubmeshes()[0].CompressedCells.empty())
+				//	m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
 				for (auto& transform : m_TreeTransforms)
 				{
-					m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());
+					//m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());
 				}
 				for (size_t i = 0; i < m_Transforms.size(); i += 3)
 				{
@@ -290,9 +293,9 @@ namespace XYZ {
 					const glm::mat4 knightTransform = m_Transforms[i + 1].GetLocalTransform();
 					const glm::mat4 deerTransform = m_Transforms[i + 2].GetLocalTransform();
 				
-					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
-					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
-					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
+					//m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
+					//m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
+					//m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
 				}
 				
 				submitWater();

@@ -68,6 +68,7 @@ namespace XYZ {
 
 		uint32_t Allocate(uint32_t size, StorageBufferAllocation& allocation);
 
+
 		uint32_t GetAllocatedSize() const;
 		uint32_t GetBinding()		const { return m_Binding; };
 		uint32_t GetSet()			const { return m_Set; }

@@ -72,6 +72,7 @@ namespace XYZ {
 		forestBiom.ColorPallete[1] = { 1, 60, 32, 255 }; // Grass
 		forestBiom.Octaves = 1;
 		forestBiom.Frequency = 2.0f;
+		m_ActiveChunks = std::make_unique<ActiveChunkStorage>();
 
 		Perlin::SetSeed(seed);
 		generateChunks(0, 0);
@@ -82,19 +83,7 @@ namespace XYZ {
 		constexpr uint32_t halfDimensionZ = sc_ChunkDimensions.z / 2;
 
 
-		for (auto it = m_ChunksGenerated.begin(); it != m_ChunksGenerated.end(); )
-		{
-			std::shared_ptr<GeneratedChunk> chunk = (*it);
-			if (chunk->Finished)
-			{
-				m_ActiveChunks[chunk->IndexX][chunk->IndexZ] = std::move(chunk->Chunk);
-				it = m_ChunksGenerated.erase(it);
-			}
-			else
-			{
-				it++;
-			}
-		}
+		ProcessGenerated();
 
 
 		const int64_t centerChunkX = static_cast<int64_t>(std::floor((position.x + halfDimensionX) / sc_ChunkDimensions.x));
@@ -113,6 +102,22 @@ namespace XYZ {
 		generateChunks(centerChunkX, centerChunkZ);
 		m_LastCenterChunkX = centerChunkX;
 		m_LastCenterChunkZ = centerChunkZ;
+	}
+	void VoxelWorld::ProcessGenerated()
+	{
+		for (auto it = m_ChunksGenerated.begin(); it != m_ChunksGenerated.end(); )
+		{
+			std::shared_ptr<GeneratedChunk> chunk = (*it);
+			if (chunk->Finished)
+			{
+				(*m_ActiveChunks)[chunk->IndexX][chunk->IndexZ] = std::move(chunk->Chunk);
+				it = m_ChunksGenerated.erase(it);
+			}
+			else
+			{
+				it++;
+			}
+		}
 	}
 	void VoxelWorld::generateChunks(int64_t centerChunkX, int64_t centerChunkZ)
 	{
@@ -133,7 +138,7 @@ namespace XYZ {
 				const int64_t worldChunkX = chunkX + centerChunkX - sc_ChunkViewDistance;
 				const int64_t worldChunkZ = chunkZ + centerChunkZ - sc_ChunkViewDistance;
 
-				if (!m_ActiveChunks[chunkX][chunkZ].Mesh.Raw()) // Chunk was shifted away
+				if (!(*m_ActiveChunks)[chunkX][chunkZ].Mesh.Raw()) // Chunk was shifted away
 				{
 					m_ChunksGenerated.push_back(std::make_shared<GeneratedChunk>());
 					std::shared_ptr<GeneratedChunk> gen = m_ChunksGenerated.back();
@@ -147,9 +152,9 @@ namespace XYZ {
 			}
 		}
 	}
-	VoxelWorld::ActiveChunkStorage VoxelWorld::shiftChunks(int64_t dirX, int64_t dirZ)
+	std::unique_ptr<VoxelWorld::ActiveChunkStorage> VoxelWorld::shiftChunks(int64_t dirX, int64_t dirZ)
 	{
-		ActiveChunkStorage shiftedChunks;
+		std::unique_ptr<ActiveChunkStorage> shiftedChunks = std::make_unique<ActiveChunkStorage>();
 		if (dirX > sc_ChunkViewDistance || dirZ > sc_ChunkViewDistance)
 			return shiftedChunks;
 
@@ -166,7 +171,7 @@ namespace XYZ {
 				if (shiftedChunkZ >= sc_MaxVisibleChunksPerAxis || shiftedChunkZ < 0)
 					continue;
 
-				shiftedChunks[shiftedChunkX][shiftedChunkZ] = std::move(m_ActiveChunks[chunkX][chunkZ]);
+				(*shiftedChunks)[shiftedChunkX][shiftedChunkZ] = std::move((*m_ActiveChunks)[chunkX][chunkZ]);
 			}
 		}
 		return shiftedChunks;

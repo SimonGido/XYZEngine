@@ -179,6 +179,7 @@ namespace XYZ {
 		return flags;
 	}
 
+
 	uint32_t StorageBufferAllocator::GetAllocatedSize() const
 	{
 		return m_AllocatedSize;

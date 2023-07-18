@@ -130,7 +130,7 @@ namespace XYZ {
 	}
 	int64_t VoxelSubmesh::Compress(uint32_t scale)
 	{
-		VoxelSubmesh copy = *this;
+		VoxelSubmesh copy = std::move(*this);
 		CompressScale = scale;
 		Width = Math::RoundUp(Width, scale) / scale;
 		Height = Math::RoundUp(Height, scale) / scale;
@@ -159,11 +159,11 @@ namespace XYZ {
 					const uint32_t yEnd = std::min(yStart + scale, copy.Height);
 					const uint32_t zEnd = std::min(zStart + scale, copy.Depth);
 
-					const bool isUniform = IsBlockUniform(ColorIndices, { xStart, yStart, zStart }, { xEnd, yEnd, zEnd }, copy.Width, copy.Height);
+					const bool isUniform = IsBlockUniform(copy.ColorIndices, { xStart, yStart, zStart }, { xEnd, yEnd, zEnd }, copy.Width, copy.Height);
 					if (isUniform)
 					{
 						cell.VoxelCount = 1;
-						compressedColorIndices.push_back(ColorIndices[Index3D(xStart, yStart, zStart, copy.Width, copy.Height)]);
+						compressedColorIndices.push_back(copy.ColorIndices[Index3D(xStart, yStart, zStart, copy.Width, copy.Height)]);
 					}
 					else
 					{
@@ -179,7 +179,7 @@ namespace XYZ {
 								{
 									const uint32_t index = Index3D(x, y, z, copy.Width, copy.Height);
 									const uint32_t insertIndex = Index3D(x - xStart, y - yStart, z - zStart, scale, scale);
-									const uint8_t colorIndex = ColorIndices[index];
+									const uint8_t colorIndex = copy.ColorIndices[index];
 									cellColorIndices[insertIndex] = colorIndex;
 								}
 							}
@@ -191,7 +191,7 @@ namespace XYZ {
 			}
 		}
 
-		const int64_t savedSpace = ColorIndices.size() - compressedColorIndices.size();
+		const int64_t savedSpace = copy.ColorIndices.size() - compressedColorIndices.size();
 		ColorIndices = std::move(compressedColorIndices);
 		return savedSpace;
 	}
