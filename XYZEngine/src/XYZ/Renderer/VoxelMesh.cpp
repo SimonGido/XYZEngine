@@ -60,8 +60,6 @@ namespace XYZ {
 			m_DirtySubmeshes[index] = { 0, static_cast<uint32_t>(submesh.ColorIndices.size()) };
 			index++;
 		}
-		m_DirtySubmeshes.clear();
-		m_DirtyCompressedCells.clear();
 	}
 
 	void VoxelProceduralMesh::SetSubmeshes(const std::vector<VoxelSubmesh>& submeshes)

@@ -282,7 +282,7 @@ namespace XYZ {
 					m_VoxelRenderer->SubmitMesh(m_ProceduralMesh, glm::mat4(1.0f));
 				for (auto& transform : m_TreeTransforms)
 				{
-					//m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());
+					m_VoxelRenderer->SubmitMesh(m_TreeMesh, transform.GetLocalTransform());
 				}
 				for (size_t i = 0; i < m_Transforms.size(); i += 3)
 				{
@@ -290,9 +290,9 @@ namespace XYZ {
 					const glm::mat4 knightTransform = m_Transforms[i + 1].GetLocalTransform();
 					const glm::mat4 deerTransform = m_Transforms[i + 2].GetLocalTransform();
 				
-					//m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
-					//m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
-					//m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
+					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
+					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
+					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
 				}
 				
 				submitWater();
