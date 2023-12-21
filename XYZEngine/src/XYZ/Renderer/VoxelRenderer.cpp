@@ -36,7 +36,7 @@ namespace XYZ {
 
 	VoxelRenderer::VoxelRenderer()
 		:
-		m_ModelsOctree(AABB(glm::vec3(-2048), glm::vec3(2048)), 4)
+		m_ModelsOctree(AABB(glm::vec3(-2048, -64, -2048), glm::vec3(2048)), 4)
 	{
 		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "VoxelRenderer");
 		m_CommandBuffer->CreateTimestampQueries(GPUTimeQueries::Count());

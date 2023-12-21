@@ -470,6 +470,7 @@ RaymarchResult RaymarchCompressed(in Ray ray, vec3 origin, vec3 direction, in Vo
 			}
 			else
 			{
+				// Calculates real coordinates of CurrentVoxel in decompressed model
 				ivec3 decompressedVoxelOffset = state.CurrentVoxel * int(model.CompressScale); // Required for proper distance calculation
 				vec3 newOrigin = ray.Origin + direction * (state.Distance - EPSILON); // Move origin to hit of top grid cell
 				vec3 voxelPosition = VoxelPosition(state.CurrentVoxel, model.VoxelSize);

@@ -97,7 +97,17 @@ namespace XYZ {
 	template <typename Key0, typename Key1, typename Key2, typename Value>
 	using map3D = map2D<Key0, Key1, std::map<Key2, Value>>;
 
+	template <std::size_t dimx, std::size_t dimy, typename T>
+	using array2D = std::array<std::array<T, dimx>, dimy>;
 
+	template <std::size_t dimx, std::size_t dimy, std::size_t dimz, typename T>
+	using array3D = std::array<std::array<std::array<T, dimx>, dimy>, dimz>;
+
+	template <std::size_t dim, typename T>
+	using array_grid2D = array2D<dim, dim, T>;
+
+	template <std::size_t dim, typename T>
+	using array_grid3D = array3D<dim, dim, dim, T>;
 
 
 	template <size_t size>

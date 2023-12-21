@@ -70,8 +70,8 @@ namespace XYZ {
 		VoxelBiom& forestBiom = m_Bioms["Forest"];
 		forestBiom.ColorPallete[0] = { 0, 0, 0, 0 };
 		forestBiom.ColorPallete[1] = { 1, 60, 32, 255 }; // Grass
-		forestBiom.Octaves = 1;
-		forestBiom.Frequency = 2.0f;
+		forestBiom.Octaves = 3;
+		forestBiom.Frequency = 1.0f;
 		m_ActiveChunks = std::make_unique<ActiveChunkStorage>();
 
 		Perlin::SetSeed(seed);
@@ -184,6 +184,15 @@ namespace XYZ {
 
 		chunk.Mesh = Ref<VoxelProceduralMesh>::Create();
 		chunk.Mesh->SetColorPallete(biom.ColorPallete);
+		if (rand() % 2)
+		{
+			auto transparentPallete = biom.ColorPallete;
+			for (size_t i = 1; i < transparentPallete.size(); i++)
+				transparentPallete[i].A = 150;
+
+			chunk.Mesh->SetColorPallete(transparentPallete);
+		}
+
 
 		VoxelSubmesh submesh;
 		submesh.Width = sc_ChunkDimensions.x;
