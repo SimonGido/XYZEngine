@@ -276,6 +276,7 @@ namespace XYZ {
 		Ref<StorageBufferAllocator> m_ComputeStorageAllocator;
 
 		Ref<Texture2D>			m_OutputTexture;
+		Ref<Texture2D>			m_ThroughputTexture;
 		Ref<Texture2D>			m_DepthTexture;
 		Ref<Texture2D>			m_SSGITexture;
 

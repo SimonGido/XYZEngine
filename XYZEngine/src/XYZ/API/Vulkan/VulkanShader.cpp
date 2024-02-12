@@ -390,13 +390,15 @@ namespace XYZ {
 		{
 			XYZ_CORE_INFO("Compiling shader {}", m_Name);
 		}
-
-		m_ShaderData = compileOrGetVulkanBinaries(preprocessData.Sources, forceCompile);
-		reflectAllStages(m_ShaderData, preprocessData);
-		createProgram(m_ShaderData);
-		createDescriptorSetLayout();
-		m_Compiled = true;
-		Renderer::OnShaderReload(GetHash());		
+		m_ShaderData.clear();
+		if (compileOrGetVulkanBinaries(preprocessData.Sources, m_ShaderData, forceCompile))
+		{
+			reflectAllStages(m_ShaderData, preprocessData);
+			createProgram(m_ShaderData);
+			createDescriptorSetLayout();
+			m_Compiled = true;
+			Renderer::OnShaderReload(GetHash());
+		}
 	}
 
 
@@ -723,69 +725,7 @@ namespace XYZ {
 
 		return result;
 	}
-	VulkanShader::StageMap<std::vector<uint32_t>> VulkanShader::compileOrGetVulkanBinaries(const VulkanShader::StageMap<std::string>& shaderSources, bool forceCompile)
-	{
-		StageMap<std::vector<uint32_t>> outputBinary;
-		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
-		for (auto [stage, source] : shaderSources)
-		{
-			std::filesystem::path shaderFilePath = m_FilePath;
-			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::VkShaderStageCachedFileExtension(stage));
 
-			if (!forceCompile)
-			{
-				std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
-				if (in.is_open())
-				{
-					in.seekg(0, std::ios::end);
-					auto size = in.tellg();
-					in.seekg(0, std::ios::beg);
-
-					auto& data = outputBinary[stage];
-					data.resize(size / sizeof(uint32_t));
-					in.read((char*)data.data(), size);
-					continue;
-				}
-			}
-			else
-			{
-				// Do we need to init a compiler for each stage?
-				shaderc::Compiler compiler;
-				shaderc::CompileOptions options;
-
-				options.SetIncluder(ShaderCIncluder::Create(Renderer::GetDefaultResources().Includer));
-
-				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-				options.SetWarningsAsErrors();
-				options.SetGenerateDebugInfo();
-
-#ifdef XYZ_RELEASE
-					options.SetOptimizationLevel(shaderc_optimization_level_performance);
-#endif
-				// Compile shader
-				{
-					auto& shaderSource = shaderSources.at(stage);
-					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, Utils::VkShaderStageToShaderC(stage), m_FilePath.c_str(), options);
-
-					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
-					{
-						XYZ_CORE_ERROR(module.GetErrorMessage());
-					}
-					outputBinary[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
-				}
-				// Cache compiled shader
-				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
-				if (out.is_open())
-				{
-					auto& data = outputBinary[stage];
-					out.write((char*)data.data(), data.size() * sizeof(uint32_t));
-					out.flush();
-					out.close();
-				}
-			}
-		}
-		return outputBinary;
-	}
 	void VulkanShader::createProgram(const StageMap<std::vector<uint32_t>>& shaderData)
 	{
 		const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
@@ -809,6 +749,70 @@ namespace XYZ {
 			shaderStage.module = shaderModule;
 			shaderStage.pName = "main";
 		}
+	}
+
+	bool VulkanShader::compileOrGetVulkanBinaries(const StageMap<std::string>& sources, StageMap<std::vector<uint32_t>>& output, bool forceCompile)
+	{
+		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
+		for (auto [stage, source] : sources)
+		{
+			std::filesystem::path shaderFilePath = m_FilePath;
+			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::VkShaderStageCachedFileExtension(stage));
+
+			if (!forceCompile)
+			{
+				std::ifstream in(cachedPath, std::ios::in | std::ios::binary);
+				if (in.is_open())
+				{
+					in.seekg(0, std::ios::end);
+					auto size = in.tellg();
+					in.seekg(0, std::ios::beg);
+
+					auto& data = output[stage];
+					data.resize(size / sizeof(uint32_t));
+					in.read((char*)data.data(), size);
+					continue;
+				}
+			}
+			else
+			{
+				// Do we need to init a compiler for each stage?
+				shaderc::Compiler compiler;
+				shaderc::CompileOptions options;
+
+				options.SetIncluder(ShaderCIncluder::Create(Renderer::GetDefaultResources().Includer));
+
+				options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+				options.SetWarningsAsErrors();
+				options.SetGenerateDebugInfo();
+
+#ifdef XYZ_RELEASE
+				options.SetOptimizationLevel(shaderc_optimization_level_performance);
+#endif
+				// Compile shader
+				{
+					auto& shaderSource = sources.at(stage);
+					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, Utils::VkShaderStageToShaderC(stage), m_FilePath.c_str(), options);
+
+					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
+					{
+						XYZ_CORE_ERROR(module.GetErrorMessage());
+						return false;
+					}
+					output[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+				}
+				// Cache compiled shader
+				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
+				if (out.is_open())
+				{
+					auto& data = output[stage];
+					out.write((char*)data.data(), data.size() * sizeof(uint32_t));
+					out.flush();
+					out.close();
+				}
+			}
+		}
+		return true;
 	}
 
 	VulkanShader::PreprocessData VulkanShader::preProcess(const std::string& source) const

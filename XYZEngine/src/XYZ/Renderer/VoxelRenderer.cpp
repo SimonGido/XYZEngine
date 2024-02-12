@@ -61,7 +61,8 @@ namespace XYZ {
 		TextureProperties props;
 		props.Storage = true;
 		props.SamplerWrap = TextureWrap::Clamp;
-		m_OutputTexture = Texture2D::Create(ImageFormat::RGBA16F, 1280, 720, nullptr, props);
+		m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
+		m_ThroughputTexture = Texture2D::Create(ImageFormat::RGBA32F, 128, 720, nullptr, props);
 		m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, 1280, 720, nullptr, props);
 		m_SSGITexture = Texture2D::Create(ImageFormat::RGBA16F, 1280, 720, nullptr, props);
 		createDefaultPipelines();
@@ -188,14 +189,41 @@ namespace XYZ {
 			if (ImGui::Button("Reload Shader"))
 			{
 				Ref<Shader> shader = Shader::Create("Resources/Shaders/Voxel/RaymarchShader.glsl");
-				m_RaymarchMaterial = Material::Create(shader);
+				if (shader->IsCompiled())
+				{
+					m_RaymarchMaterial = Material::Create(shader);
 
-				m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
-				m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
-				PipelineComputeSpecification spec;
-				spec.Shader = shader;
+					m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
+					m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+					PipelineComputeSpecification spec;
+					spec.Shader = shader;
 
-				m_RaymarchPipeline = PipelineCompute::Create(spec);
+					m_RaymarchPipeline = PipelineCompute::Create(spec);
+				}
+				else
+				{
+					XYZ_CORE_WARN("Failed to compile raymarch shader");
+				}
+			}
+			if (ImGui::Button("Reload Shader Test"))
+			{
+				Ref<Shader> shader = Shader::Create("Resources/Shaders/Voxel/TestRaymarchShader.glsl");
+				if (shader->IsCompiled())
+				{
+					m_RaymarchMaterial = Material::Create(shader);
+
+					m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
+					m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+					m_RaymarchMaterial->SetImage("o_Throughput", m_ThroughputTexture->GetImage());
+					PipelineComputeSpecification spec;
+					spec.Shader = shader;
+
+					m_RaymarchPipeline = PipelineCompute::Create(spec);
+				}
+				else
+				{
+					XYZ_CORE_WARN("Failed to compile raymarch shader");
+				}
 			}
 			if (ImGui::Button("Reload Shader SSGI"))
 			{
@@ -368,11 +396,12 @@ namespace XYZ {
 			m_WorkGroups.x, m_WorkGroups.y, 1,
 			PushConstBuffer
 			{
-				glm::vec4(0.3, 0.2, 0.7, 1.0),
+				glm::vec4(0.3, 0.4, 0.7, 1.0),
 				std::numeric_limits<float>::max()
 			}
 		);
 		imageBarrier(m_ClearPipeline, m_OutputTexture->GetImage());
+		imageBarrier(m_ClearPipeline, m_ThroughputTexture->GetImage());
 		imageBarrier(m_ClearPipeline, m_DepthTexture->GetImage());
 		Renderer::EndPipelineCompute(m_ClearPipeline);
 	}
@@ -480,6 +509,7 @@ namespace XYZ {
 
 
 		imageBarrier(m_RaymarchPipeline, m_OutputTexture->GetImage());
+		imageBarrier(m_RaymarchPipeline, m_ThroughputTexture->GetImage());
 		imageBarrier(m_RaymarchPipeline, m_DepthTexture->GetImage());
 
 		Renderer::EndPipelineCompute(m_RaymarchPipeline);		
@@ -513,16 +543,19 @@ namespace XYZ {
 			TextureProperties props;
 			props.Storage = true;
 			props.SamplerWrap = TextureWrap::Clamp;
-			m_OutputTexture = Texture2D::Create(ImageFormat::RGBA16F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
+			m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
+			m_ThroughputTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			m_SSGITexture = Texture2D::Create(ImageFormat::RGBA16F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			
 			m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+			m_RaymarchMaterial->SetImage("o_Throughput", m_ThroughputTexture->GetImage());
 
 			m_ClearMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_ClearMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
-		
+			m_ClearMaterial->SetImage("o_Throughput", m_ThroughputTexture->GetImage());
+
 			m_SSGIMaterial->SetImage("u_Image", m_OutputTexture->GetImage());
 			m_SSGIMaterial->SetImage("u_DepthImage", m_DepthTexture->GetImage());
 			m_SSGIMaterial->SetImage("o_SSGIImage", m_SSGITexture->GetImage());
@@ -567,8 +600,16 @@ namespace XYZ {
 		{
 			XYZ_PROFILE_FUNC("VoxelRenderer::prepareModelsSort");		
 			std::sort(m_RenderModelsSorted.begin(), m_RenderModelsSorted.end(), [&](const VoxelRenderModel* a, const VoxelRenderModel* b) {
+				
+
 				return a->DistanceFromCamera < b->DistanceFromCamera;
-				});
+
+				//if (a->Mesh->IsOpaque() && b->Mesh->IsOpaque())
+				//	return a->DistanceFromCamera < b->DistanceFromCamera;
+				//else if (!a->Mesh->IsOpaque() && !b->Mesh->IsOpaque())
+				//	return a->DistanceFromCamera > b->DistanceFromCamera;
+				//return a->Mesh->IsOpaque();				
+			});
 		}
 		int32_t modelIndex = 0;
 		for (auto model : m_RenderModelsSorted)
@@ -621,11 +662,12 @@ namespace XYZ {
 	
 	void VoxelRenderer::createDefaultPipelines()
 	{
-		Ref<Shader> shader = Shader::Create("Resources/Shaders/Voxel/RaymarchShader.glsl");
+		Ref<Shader> shader = Shader::Create("Resources/Shaders/Voxel/TestRaymarchShader.glsl");
 		m_RaymarchMaterial = Material::Create(shader);
 
 		m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 		m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+		m_RaymarchMaterial->SetImage("o_Throughput", m_ThroughputTexture->GetImage());
 		PipelineComputeSpecification spec;
 		spec.Shader = shader;
 	
@@ -636,6 +678,7 @@ namespace XYZ {
 		m_ClearMaterial = Material::Create(clearShader);
 		m_ClearMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 		m_ClearMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
+		m_ClearMaterial->SetImage("o_Throughput", m_ThroughputTexture->GetImage());
 
 		spec.Shader = clearShader;
 		m_ClearPipeline = PipelineCompute::Create(spec);

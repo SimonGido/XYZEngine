@@ -122,9 +122,9 @@ namespace XYZ {
 			StageMap<std::unordered_map<std::string, ShaderParser::ShaderLayoutInfo>> LayoutInfo;
 		};
 
-		StageMap<std::vector<uint32_t>> compileOrGetVulkanBinaries(const StageMap<std::string>& sources, bool forceCompile);
-		PreprocessData				    preProcess(const std::string& source) const;
-		void						    createProgram(const StageMap<std::vector<uint32_t>>& shaderData);
+		bool			compileOrGetVulkanBinaries(const StageMap<std::string>& sources, StageMap<std::vector<uint32_t>>& output, bool forceCompile);
+		PreprocessData	preProcess(const std::string& source) const;
+		void			createProgram(const StageMap<std::vector<uint32_t>>& shaderData);
 		
 		void reflectAllStages(const StageMap<std::vector<uint32_t>>& shaderData, const PreprocessData& preprocessData);
 		void reflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData, const PreprocessData& preprocessData);

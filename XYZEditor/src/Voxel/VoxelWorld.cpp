@@ -70,6 +70,7 @@ namespace XYZ {
 		VoxelBiom& forestBiom = m_Bioms["Forest"];
 		forestBiom.ColorPallete[0] = { 0, 0, 0, 0 };
 		forestBiom.ColorPallete[1] = { 1, 60, 32, 255 }; // Grass
+		forestBiom.ColorPallete[2] = { 1, 30, 220, 5}; // Water
 		forestBiom.Octaves = 3;
 		forestBiom.Frequency = 1.0f;
 		m_ActiveChunks = std::make_unique<ActiveChunkStorage>();
@@ -184,15 +185,6 @@ namespace XYZ {
 
 		chunk.Mesh = Ref<VoxelProceduralMesh>::Create();
 		chunk.Mesh->SetColorPallete(biom.ColorPallete);
-		if (rand() % 2)
-		{
-			auto transparentPallete = biom.ColorPallete;
-			for (size_t i = 1; i < transparentPallete.size(); i++)
-				transparentPallete[i].A = 150;
-
-			chunk.Mesh->SetColorPallete(transparentPallete);
-		}
-
 
 		VoxelSubmesh submesh;
 		submesh.Width = sc_ChunkDimensions.x;
@@ -236,11 +228,17 @@ namespace XYZ {
 				for (uint32_t y = 0; y < genHeight; y++)
 				{
 					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
-					submesh.ColorIndices[index] = 1;
+					submesh.ColorIndices[index] = 1; // Grass
+				}
+
+				for (uint32_t y = genHeight; y < 70; y++)
+				{
+					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
+					submesh.ColorIndices[index] = 2; // Water
 				}
 			}
 		}
-		submesh.Compress(16);
+		//submesh.Compress(16);
 		chunk.Mesh->SetSubmeshes({ submesh });
 		chunk.Mesh->SetInstances({ instance });
 
