@@ -150,10 +150,12 @@ namespace XYZ {
 				submesh.Depth / 2.0 * submesh.VoxelSize
 			);
 
-			float xOffset = 0.0f;
+			float xOffset = -200;
+			float zOffset = -160;
 			for (uint32_t i = 0; i < count; ++i)
 			{
 				m_Transforms[i].GetTransform().Translation.x = xOffset;
+				m_Transforms[i].GetTransform().Translation.z = zOffset;
 				m_Transforms[i].GetTransform().Rotation.x = glm::radians(-90.0f);
 				xOffset += 30.0f;
 			}
@@ -220,11 +222,11 @@ namespace XYZ {
 			{
 				int id = 0;
 
-				for (auto& transform : m_TreeTransforms)
-				{
-					ImGui::Text("%d", id);
-					drawTransform(transform, id++);
-				}
+				//for (auto& transform : m_TreeTransforms)
+				//{
+				//	ImGui::Text("%d", id);
+				//	drawTransform(transform, id++);
+				//}
 				for (auto& transform : m_Transforms)
 				{
 					ImGui::Text("%d", id);
@@ -284,12 +286,12 @@ namespace XYZ {
 							//if (compressed)
 								m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
 							counter++;
-							//if (counter == 2)
-							//	break;
+							if (counter == 2)
+								break;
 						}
 					}
-					//if (counter == 2)
-					//	break;
+					if (counter == 2)
+						break;
 				}
 				
 				for (auto& transform : m_TreeTransforms)
@@ -303,8 +305,9 @@ namespace XYZ {
 					const glm::mat4 deerTransform = m_Transforms[i + 2].GetLocalTransform();
 				
 					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
-					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
-					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
+					break;
+					//m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
+					//m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
 				}
 				
 				submitWater();

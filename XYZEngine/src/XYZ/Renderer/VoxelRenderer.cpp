@@ -601,14 +601,25 @@ namespace XYZ {
 			XYZ_PROFILE_FUNC("VoxelRenderer::prepareModelsSort");		
 			std::sort(m_RenderModelsSorted.begin(), m_RenderModelsSorted.end(), [&](const VoxelRenderModel* a, const VoxelRenderModel* b) {
 				
+				bool isAOpaque = a->Mesh->IsOpaque();
+				bool isBOpaque = b->Mesh->IsOpaque();
 
-				return a->DistanceFromCamera < b->DistanceFromCamera;
-
-				//if (a->Mesh->IsOpaque() && b->Mesh->IsOpaque())
-				//	return a->DistanceFromCamera < b->DistanceFromCamera;
-				//else if (!a->Mesh->IsOpaque() && !b->Mesh->IsOpaque())
-				//	return a->DistanceFromCamera > b->DistanceFromCamera;
-				//return a->Mesh->IsOpaque();				
+				if (isAOpaque && isBOpaque) {
+					// Both are opaque, sort by DistanceFromCamera
+					return a->DistanceFromCamera < b->DistanceFromCamera;
+				}
+				else if (isAOpaque) {
+					// Only a is opaque, prioritize a
+					return true;
+				}
+				else if (isBOpaque) {
+					// Only b is opaque, prioritize b
+					return false;
+				}
+				else {
+					// Both are transparent, sort by DistanceFromCamera
+					return a->DistanceFromCamera < b->DistanceFromCamera;
+				}
 			});
 		}
 		int32_t modelIndex = 0;

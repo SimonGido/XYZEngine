@@ -347,6 +347,10 @@ RaymarchResult RayMarchSteps(in Ray ray, vec4 startColor, vec3 origin, vec3 dire
 	result.Hit = false;
 	result.Distance = 0.0;
 	result.Throughput = vec3(1,1,1);
+	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
+	float storedDistance = imageLoad(o_DepthImage, textureIndex).x;
+	vec3 storedThroughput = imageLoad(o_Throughput, textureIndex).rgb;
+	vec4 storedColor = imageLoad(o_Image, textureIndex);
 
 	ivec3 step = ivec3(
 		(direction.x > 0.0) ? 1 : -1,
@@ -357,6 +361,7 @@ RaymarchResult RayMarchSteps(in Ray ray, vec4 startColor, vec3 origin, vec3 dire
 	float voxelSize = model.VoxelSize;
 	vec3 delta = voxelSize / direction * vec3(step);	
 	bool firstHit = false;
+	bool firstThroughput = false;
 
 	RaymarchState state = CreateRaymarchState(ray, origin, direction, step, maxSteps, voxelSize, decompressedVoxelOffset);
 	// Continue raymarching until we hit opaque object or we are out of traverses
@@ -370,26 +375,26 @@ RaymarchResult RayMarchSteps(in Ray ray, vec4 startColor, vec3 origin, vec3 dire
 			if (!firstHit)
 			{
 				firstHit = true;
-				result.Distance = state.Distance;
-				ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
-				float storedDistance = imageLoad(o_DepthImage, textureIndex).x;
-				if (storedDistance < state.Distance)
-				{
-					vec3 storedThoughput = imageLoad(o_Throughput, textureIndex).rgb;
-					vec4 storedColor = imageLoad(o_Image, textureIndex);
-					result.Throughput = storedThoughput;
-					result.Color = storedColor;
-				}
+				result.Distance = state.Distance;			
+			}
+			
+			if (!firstThroughput && storedDistance < state.Distance)
+			{		
+				firstThroughput = true;
+				//result.Throughput = storedThroughput;
+				//result.Color = storedColor;
+
+				result.Color.rgb += storedColor.rgb * result.Throughput;
+				result.Throughput *= mix(vec3(1.0), storedColor.rgb, storedColor.a) * (1.0 - storedColor.a);
 				if (result.Throughput.x <= EPSILON && result.Throughput.y <= EPSILON && result.Throughput.z <= EPSILON)
 					break;	
 			}
-
+			
 			result.Color.rgb += state.Color.rgb * result.Throughput;
 			result.Hit = true;
 			result.Normal = state.Normal;
 			result.Throughput *= mix(vec3(1.0), state.Color.rgb, state.Color.a) * (1.0 - state.Color.a);
-			
-		
+				
 			// Test if we can pass through
 			if (result.Throughput.x <= EPSILON && result.Throughput.y <= EPSILON && result.Throughput.z <= EPSILON)
 				break;	
@@ -533,10 +538,20 @@ void StoreHitResult(in RaymarchResult result)
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);	
 
-	bool opaque = result.Throughput.x <= EPSILON && result.Throughput.y <= EPSILON && result.Throughput.z <= EPSILON;
-	//if (opaque)
-	//	result.Color.rgb = CalculateDirLights(result.WorldHit, result.Color.rgb, result.WorldNormal);
+	float storedDistance = imageLoad(o_DepthImage, textureIndex).x;
+	vec3 storedThroughput = imageLoad(o_Throughput, textureIndex).rgb;
+	vec4 storedColor = imageLoad(o_Image, textureIndex);
 
+	bool opaque = result.Throughput.x <= EPSILON && result.Throughput.y <= EPSILON && result.Throughput.z <= EPSILON;
+	if (opaque)
+	{
+		//result.Color.rgb = CalculateDirLights(result.WorldHit, result.Color.rgb, result.WorldNormal);
+	}
+	else
+	{
+		result.Color.rgb += storedColor.rgb * result.Throughput;
+		//result.Throughput *= mix(vec3(1.0), storedColor.rgb, storedColor.a) * (1.0 - storedColor.a);
+	}
 	imageStore(o_Throughput, textureIndex, vec4(result.Throughput, 1.0));
 	imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
 	imageStore(o_Image, textureIndex, result.Color); // Store color		
