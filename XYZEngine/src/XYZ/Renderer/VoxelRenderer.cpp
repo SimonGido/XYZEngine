@@ -396,7 +396,7 @@ namespace XYZ {
 			m_WorkGroups.x, m_WorkGroups.y, 1,
 			PushConstBuffer
 			{
-				glm::vec4(0.3, 0.4, 0.7, 1.0),
+				glm::vec4(0.0, 0.0, 0.0, 0.0),
 				std::numeric_limits<float>::max()
 			}
 		);
@@ -604,21 +604,25 @@ namespace XYZ {
 				bool isAOpaque = a->Mesh->IsOpaque();
 				bool isBOpaque = b->Mesh->IsOpaque();
 
-				if (isAOpaque && isBOpaque) {
+				if (isAOpaque && isBOpaque) 
+				{
 					// Both are opaque, sort by DistanceFromCamera
 					return a->DistanceFromCamera < b->DistanceFromCamera;
 				}
-				else if (isAOpaque) {
+				else if (isAOpaque) 
+				{
 					// Only a is opaque, prioritize a
 					return true;
 				}
-				else if (isBOpaque) {
+				else if (isBOpaque) 
+				{
 					// Only b is opaque, prioritize b
 					return false;
 				}
-				else {
-					// Both are transparent, sort by DistanceFromCamera
-					return a->DistanceFromCamera < b->DistanceFromCamera;
+				else 
+				{
+					// Both are transparent, sort by DistanceFromCamera inverse
+					return a->DistanceFromCamera > b->DistanceFromCamera;
 				}
 			});
 		}
