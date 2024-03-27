@@ -282,10 +282,13 @@ namespace XYZ {
 							for (auto& submesh : chunk.Mesh->GetSubmeshes())
 								compressed &= submesh.Compressed;
 
-							//if (compressed)
+							if (compressed)
 								m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
+							break;
 						}
+						break;
 					}
+					break;
 				}
 				
 				for (auto& transform : m_TreeTransforms)

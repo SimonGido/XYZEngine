@@ -18,27 +18,12 @@ layout (std140, binding = 16) uniform Scene
 	DirectionalLight u_DirectionalLight;
 };
 
+
 layout(binding = 1, rgba32f) uniform image2D o_Image;
 layout(binding = 2, rgba32f) uniform image2D o_Normal;
 layout(binding = 3, rgba32f) uniform image2D o_Position;
 
 const vec3 Fdielectric = vec3(0.04);
-
-vec3 CalculateDirLights(vec3 voxelPosition, vec3 albedo, vec3 normal)
-{
-	PBRParameters pbr;
-	pbr.Roughness = 0.8;
-	pbr.Metalness = 0.2;
-	
-	pbr.Normal = normal;
-	pbr.View = normalize(u_CameraPosition.xyz - voxelPosition);
-	pbr.NdotV = max(dot(pbr.Normal, pbr.View), 0.0);
-	pbr.Albedo = albedo;
-
-	vec3 F0 = mix(Fdielectric, pbr.Albedo, pbr.Metalness);
-	return CalculateDirLight(F0, u_DirectionalLight, pbr);
-}
-
 
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 1) in;
 void main() 
@@ -50,7 +35,18 @@ void main()
 	vec3 normal = imageLoad(o_Normal, location).rgb;
 	vec3 position = imageLoad(o_Position, location).xyz;
 
-	color.rgb = CalculateDirLights(position, color.rgb, normal);
-	
-	imageStore(o_Image, location, color);
+	PBRParameters pbr;
+	pbr.Roughness = 0.9;
+	pbr.Metalness = 0.3;
+	pbr.Normal = normal;
+	pbr.View = normalize(u_CameraPosition.xyz - position);
+	pbr.NdotV = max(dot(pbr.Normal, pbr.View), 0.0);
+	pbr.Albedo = color.rgb;
+	vec3 F0 = mix(Fdielectric, pbr.Albedo, pbr.Metalness);
+	vec3 Lr = 2.0 * pbr.NdotV * pbr.Normal - pbr.View;
+	vec3 iblContribution = IBL(F0, Lr, pbr);
+	vec3 lightContribution = CalculateDirLight(F0, u_DirectionalLight, pbr);
+
+	color.rgb = iblContribution * lightContribution;
+	//imageStore(o_Image, location, color);
 }
