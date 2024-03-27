@@ -263,15 +263,15 @@ vec3 GetNormalFromState(in RaymarchState state, ivec3 step)
 {
 	if (state.Max.x < state.Max.y && state.Max.x < state.Max.z) 
 	{
-		return vec3(float(-step.x), 0.0, 0.0);
+		return vec3(float(step.x), 0.0, 0.0);
 	}
 	else if (state.Max.y < state.Max.z) 
 	{
-		return vec3(0.0, float(-step.y), 0.0);
+		return vec3(0.0, float(step.y), 0.0);
 	}
 	else 
 	{
-		return vec3(0.0, 0.0, float(-step.z));
+		return vec3(0.0, 0.0, float(step.z));
 	}	
 }
 
@@ -279,21 +279,21 @@ void PerformStep(inout RaymarchState state, ivec3 step, vec3 delta)
 {
 	if (state.Max.x < state.Max.y && state.Max.x < state.Max.z) 
 	{
-		state.Normal = vec3(float(-step.x), 0.0, 0.0);
+		state.Normal = vec3(float(step.x), 0.0, 0.0);
 		state.Max.x += delta.x;
 		state.CurrentVoxel.x += step.x;
 		state.MaxSteps.x--;
 	}
 	else if (state.Max.y < state.Max.z) 
 	{
-		state.Normal = vec3(0.0, float(-step.y), 0.0);
+		state.Normal = vec3(0.0, float(step.y), 0.0);
 		state.Max.y += delta.y;
 		state.CurrentVoxel.y += step.y;			
 		state.MaxSteps.y--;
 	}
 	else 
 	{
-		state.Normal = vec3(0.0, 0.0, float(-step.z));
+		state.Normal = vec3(0.0, 0.0, float(step.z));
 		state.Max.z += delta.z;
 		state.CurrentVoxel.z += step.z;		
 		state.MaxSteps.z--;

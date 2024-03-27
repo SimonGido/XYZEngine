@@ -272,7 +272,6 @@ namespace XYZ {
 				}
 				//m_World.Update(m_EditorCamera.GetPosition());
 				m_World.Update(glm::vec3(0));
-				int counter = 0;
 				for (const auto& chunkRow : *m_World.GetActiveChunks())
 				{
 					for (const auto& chunk : chunkRow)
@@ -285,13 +284,8 @@ namespace XYZ {
 
 							//if (compressed)
 								m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
-							counter++;
-							if (counter == 2)
-								break;
 						}
 					}
-					if (counter == 2)
-						break;
 				}
 				
 				for (auto& transform : m_TreeTransforms)
