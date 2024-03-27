@@ -70,7 +70,7 @@ namespace XYZ {
 		VoxelBiom& forestBiom = m_Bioms["Forest"];
 		forestBiom.ColorPallete[0] = { 0, 0, 0, 0 };
 		forestBiom.ColorPallete[1] = { 1, 60, 32, 255 }; // Grass
-		forestBiom.ColorPallete[2] = { 1, 30, 220, 5}; // Water
+		forestBiom.ColorPallete[2] = { 1, 30, 230, 50}; // Water
 		forestBiom.Octaves = 3;
 		forestBiom.Frequency = 1.0f;
 		m_ActiveChunks = std::make_unique<ActiveChunkStorage>();
@@ -231,7 +231,7 @@ namespace XYZ {
 					submesh.ColorIndices[index] = 1; // Grass
 				}
 
-				for (uint32_t y = genHeight; y < 70; y++)
+				for (uint32_t y = genHeight; y < 100; y++)
 				{
 					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
 					submesh.ColorIndices[index] = 2; // Water

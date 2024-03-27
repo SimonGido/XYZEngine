@@ -231,10 +231,13 @@ namespace XYZ {
 		void submitSubmesh(const Ref<VoxelMesh>& mesh, const VoxelSubmesh& submesh, const glm::mat4& transform, uint32_t submeshIndex);
 
 		void clearPass();
+		void lightPass();
 		void effectPass();
 		void renderPass();
 		void ssgiPass();
 		
+		void imageBarrier(Ref<PipelineCompute> pipeline, Ref<Image2D> image);
+
 		void updateViewportSize();
 		void updateUniformBufferSet();
 
@@ -260,6 +263,9 @@ namespace XYZ {
 		Ref<PipelineCompute>	m_ClearPipeline;
 		Ref<Material>			m_ClearMaterial;
 
+		Ref<PipelineCompute>	m_LightPipeline;
+		Ref<Material>			m_LightMaterial;
+
 		Ref<PipelineCompute>	m_ShadowPipeline;
 		Ref<Material>			m_ShadowMaterial;
 
@@ -276,7 +282,8 @@ namespace XYZ {
 		Ref<StorageBufferAllocator> m_ComputeStorageAllocator;
 
 		Ref<Texture2D>			m_OutputTexture;
-		Ref<Texture2D>			m_ThroughputTexture;
+		Ref<Texture2D>			m_NormalTexture;
+		Ref<Texture2D>			m_PositionTexture;
 		Ref<Texture2D>			m_DepthTexture;
 		Ref<Texture2D>			m_SSGITexture;
 
@@ -295,6 +302,8 @@ namespace XYZ {
 		bool					m_UseOctree = false;
 		bool					m_ShowOctree = false;
 		bool					m_ShowAABB = false;
+		bool					m_ShowPosition = false;
+		bool					m_ShowNormals = false;
 
 		std::vector<VoxelRenderModel*>					 m_RenderModelsSorted;
 		std::vector<VoxelRenderModel>					 m_RenderModels;

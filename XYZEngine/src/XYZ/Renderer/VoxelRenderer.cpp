@@ -62,7 +62,8 @@ namespace XYZ {
 		props.Storage = true;
 		props.SamplerWrap = TextureWrap::Clamp;
 		m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
-		m_ThroughputTexture = Texture2D::Create(ImageFormat::RGBA32F, 128, 720, nullptr, props);
+		m_NormalTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
+		m_PositionTexture = Texture2D::Create(ImageFormat::RGBA32F, 1280, 720, nullptr, props);
 		m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, 1280, 720, nullptr, props);
 		m_SSGITexture = Texture2D::Create(ImageFormat::RGBA16F, 1280, 720, nullptr, props);
 		createDefaultPipelines();
@@ -105,6 +106,7 @@ namespace XYZ {
 		effectPass();
 		clearPass();
 		renderPass();
+		lightPass();
 		if (m_UseSSGI)
 			ssgiPass();
 
@@ -214,7 +216,8 @@ namespace XYZ {
 
 					m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 					m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
-					m_RaymarchMaterial->SetImage("o_Throughput", m_ThroughputTexture->GetImage());
+					m_RaymarchMaterial->SetImage("o_Normal", m_NormalTexture->GetImage());
+					m_RaymarchMaterial->SetImage("o_Position", m_PositionTexture->GetImage());
 					PipelineComputeSpecification spec;
 					spec.Shader = shader;
 
@@ -225,6 +228,28 @@ namespace XYZ {
 					XYZ_CORE_WARN("Failed to compile raymarch shader");
 				}
 			}
+
+			if (ImGui::Button("Reload Shader Light"))
+			{
+				Ref<Shader> shader = Shader::Create("Resources/Shaders/Voxel/VoxelLightShader.glsl");
+				if (shader->IsCompiled())
+				{
+					m_LightMaterial = Material::Create(shader);
+
+					m_LightMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
+					m_LightMaterial->SetImage("o_Normal", m_NormalTexture->GetImage());
+					m_LightMaterial->SetImage("o_Position", m_PositionTexture->GetImage());
+					PipelineComputeSpecification spec;
+					spec.Shader = shader;
+
+					m_LightPipeline = PipelineCompute::Create(spec);
+				}
+				else
+				{
+					XYZ_CORE_WARN("Failed to compile raymarch shader");
+				}
+			}
+
 			if (ImGui::Button("Reload Shader SSGI"))
 			{
 				Ref<Shader> shader = Shader::Create("Resources/Shaders/Voxel/SSGI.glsl");
@@ -264,6 +289,10 @@ namespace XYZ {
 			ImGui::Checkbox("Octree", &m_UseOctree);
 			ImGui::Checkbox("Show Octree", &m_ShowOctree);
 			ImGui::Checkbox("Show AABB", &m_ShowAABB);
+
+			ImGui::Checkbox("Show Position", &m_ShowPosition);
+			ImGui::Checkbox("Show Normals", &m_ShowNormals);
+
 			ImGui::NewLine();
 
 			if (ImGui::BeginTable("##Statistics", 2, ImGuiTableFlags_SizingFixedFit))
@@ -359,30 +388,7 @@ namespace XYZ {
 	}
 
 	void VoxelRenderer::clearPass()
-	{
-		auto imageBarrier = [](Ref<VulkanPipelineCompute> pipeline, Ref<VulkanImage2D> image) {
-
-			Renderer::Submit([pipeline, image]() {
-				VkImageMemoryBarrier imageMemoryBarrier = {};
-				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
-				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-				imageMemoryBarrier.image = image->GetImageInfo().Image;
-				imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
-				imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-				imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-				vkCmdPipelineBarrier(
-					pipeline->GetActiveCommandBuffer(),
-					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-					0,
-					0, nullptr,
-					0, nullptr,
-					1, &imageMemoryBarrier);
-					});
-		};
-
-		
+	{		
 		Renderer::BeginPipelineCompute(
 			m_CommandBuffer,
 			m_ClearPipeline,
@@ -401,9 +407,30 @@ namespace XYZ {
 			}
 		);
 		imageBarrier(m_ClearPipeline, m_OutputTexture->GetImage());
-		imageBarrier(m_ClearPipeline, m_ThroughputTexture->GetImage());
+		imageBarrier(m_ClearPipeline, m_NormalTexture->GetImage());
+		imageBarrier(m_ClearPipeline, m_PositionTexture->GetImage());
 		imageBarrier(m_ClearPipeline, m_DepthTexture->GetImage());
 		Renderer::EndPipelineCompute(m_ClearPipeline);
+	}
+
+	void VoxelRenderer::lightPass()
+	{
+		Renderer::BeginPipelineCompute(
+			m_CommandBuffer,
+			m_LightPipeline,
+			m_UniformBufferSet,
+			m_StorageBufferSet,
+			m_LightMaterial
+		);
+		Renderer::DispatchCompute(
+			m_LightPipeline,
+			nullptr,
+			m_WorkGroups.x, m_WorkGroups.y, 1
+		);
+		imageBarrier(m_LightPipeline, m_OutputTexture->GetImage());
+		imageBarrier(m_LightPipeline, m_NormalTexture->GetImage());
+		imageBarrier(m_LightPipeline, m_PositionTexture->GetImage());
+		Renderer::EndPipelineCompute(m_LightPipeline);
 	}
 
 	void VoxelRenderer::effectPass()
@@ -465,29 +492,6 @@ namespace XYZ {
 
 	void VoxelRenderer::renderPass()
 	{
-		auto imageBarrier = [](Ref<VulkanPipelineCompute> pipeline, Ref<VulkanImage2D> image) {
-
-			Renderer::Submit([pipeline, image]() {
-				VkImageMemoryBarrier imageMemoryBarrier = {};
-				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
-				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
-				imageMemoryBarrier.image = image->GetImageInfo().Image;
-				imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
-				imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
-				imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-				vkCmdPipelineBarrier(
-					pipeline->GetActiveCommandBuffer(),
-					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-					VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-					0,
-					0, nullptr,
-					0, nullptr,
-					1, &imageMemoryBarrier);
-				});
-		};
-
-
 		Renderer::BeginPipelineCompute(
 			m_CommandBuffer,
 			m_RaymarchPipeline,
@@ -499,17 +503,20 @@ namespace XYZ {
 		Bool32 useOctree = m_UseOctree;
 		Bool32 showOctree = m_ShowOctree;
 		Bool32 showAABB = m_ShowAABB;
+		Bool32 showPosition = m_ShowPosition;
+		Bool32 showNormals = m_ShowNormals;
 
 		Renderer::DispatchCompute(
 			m_RaymarchPipeline,
 			nullptr,
 			m_WorkGroups.x, m_WorkGroups.y, 1,
-			PushConstBuffer{ useOctree, showOctree, showAABB }
+			PushConstBuffer{ useOctree, showOctree, showAABB, showPosition, showNormals }
 		);
 
 
 		imageBarrier(m_RaymarchPipeline, m_OutputTexture->GetImage());
-		imageBarrier(m_RaymarchPipeline, m_ThroughputTexture->GetImage());
+		imageBarrier(m_RaymarchPipeline, m_NormalTexture->GetImage());
+		imageBarrier(m_RaymarchPipeline, m_PositionTexture->GetImage());
 		imageBarrier(m_RaymarchPipeline, m_DepthTexture->GetImage());
 
 		Renderer::EndPipelineCompute(m_RaymarchPipeline);		
@@ -534,6 +541,31 @@ namespace XYZ {
 		Renderer::EndPipelineCompute(m_SSGIPipeline);
 	}
 
+	void VoxelRenderer::imageBarrier(Ref<PipelineCompute> pipeline, Ref<Image2D> image)
+	{
+		Ref<VulkanPipelineCompute> vulkanPipeline = pipeline.As<VulkanPipelineCompute>();
+		Ref<VulkanImage2D> vulkanImage = image.As<VulkanImage2D>();
+
+		Renderer::Submit([vulkanPipeline, vulkanImage]() {
+			VkImageMemoryBarrier imageMemoryBarrier = {};
+			imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
+			imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
+			imageMemoryBarrier.image = vulkanImage->GetImageInfo().Image;
+			imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, vulkanImage->GetSpecification().Mips, 0, 1 };
+			imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+			imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			vkCmdPipelineBarrier(
+				vulkanPipeline->GetActiveCommandBuffer(),
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+				0,
+				0, nullptr,
+				0, nullptr,
+				1, &imageMemoryBarrier);
+			});
+	}
+
 
 	void VoxelRenderer::updateViewportSize()
 	{
@@ -544,17 +576,24 @@ namespace XYZ {
 			props.Storage = true;
 			props.SamplerWrap = TextureWrap::Clamp;
 			m_OutputTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
-			m_ThroughputTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
+			m_PositionTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
+			m_NormalTexture = Texture2D::Create(ImageFormat::RGBA32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			m_DepthTexture = Texture2D::Create(ImageFormat::RED32F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			m_SSGITexture = Texture2D::Create(ImageFormat::RGBA16F, m_ViewportSize.x, m_ViewportSize.y, nullptr, props);
 			
 			m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
-			m_RaymarchMaterial->SetImage("o_Throughput", m_ThroughputTexture->GetImage());
+			m_RaymarchMaterial->SetImage("o_Normal", m_NormalTexture->GetImage());
+			m_RaymarchMaterial->SetImage("o_Position", m_PositionTexture->GetImage());
 
 			m_ClearMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 			m_ClearMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
-			m_ClearMaterial->SetImage("o_Throughput", m_ThroughputTexture->GetImage());
+			m_ClearMaterial->SetImage("o_Normal", m_NormalTexture->GetImage());
+			m_ClearMaterial->SetImage("o_Position", m_PositionTexture->GetImage());
+
+			m_LightMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
+			m_LightMaterial->SetImage("o_Normal", m_NormalTexture->GetImage());
+			m_LightMaterial->SetImage("o_Position", m_PositionTexture->GetImage());
 
 			m_SSGIMaterial->SetImage("u_Image", m_OutputTexture->GetImage());
 			m_SSGIMaterial->SetImage("u_DepthImage", m_DepthTexture->GetImage());
@@ -682,7 +721,9 @@ namespace XYZ {
 
 		m_RaymarchMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 		m_RaymarchMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
-		m_RaymarchMaterial->SetImage("o_Throughput", m_ThroughputTexture->GetImage());
+		m_RaymarchMaterial->SetImage("o_Normal", m_NormalTexture->GetImage());
+		m_RaymarchMaterial->SetImage("o_Position", m_PositionTexture->GetImage());
+
 		PipelineComputeSpecification spec;
 		spec.Shader = shader;
 	
@@ -693,10 +734,21 @@ namespace XYZ {
 		m_ClearMaterial = Material::Create(clearShader);
 		m_ClearMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
 		m_ClearMaterial->SetImage("o_DepthImage", m_DepthTexture->GetImage());
-		m_ClearMaterial->SetImage("o_Throughput", m_ThroughputTexture->GetImage());
+		m_ClearMaterial->SetImage("o_Normal", m_NormalTexture->GetImage());
+		m_ClearMaterial->SetImage("o_Position", m_PositionTexture->GetImage());
 
 		spec.Shader = clearShader;
 		m_ClearPipeline = PipelineCompute::Create(spec);
+
+
+		Ref<Shader> lightShader = Shader::Create("Resources/Shaders/Voxel/VoxelLightShader.glsl");
+		m_LightMaterial = Material::Create(lightShader);
+		m_LightMaterial->SetImage("o_Image", m_OutputTexture->GetImage());
+		m_LightMaterial->SetImage("o_Normal", m_NormalTexture->GetImage());
+		m_LightMaterial->SetImage("o_Position", m_PositionTexture->GetImage());
+
+		spec.Shader = lightShader;
+		m_LightPipeline = PipelineCompute::Create(spec);
 
 
 		Ref<Shader> ssgiShader = Shader::Create("Resources/Shaders/Voxel/SSGI.glsl");
