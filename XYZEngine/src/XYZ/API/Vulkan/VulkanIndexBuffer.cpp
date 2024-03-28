@@ -28,6 +28,8 @@ namespace XYZ {
 		case XYZ::IndexType::Uint32:
 			return VK_INDEX_TYPE_UINT32;
 		}
+		XYZ_ASSERT(false, "Invalid index type");
+		return VK_INDEX_TYPE_NONE_NV;
 	}
 
 	VulkanIndexBuffer::VulkanIndexBuffer(const void* indices, uint32_t count, IndexType type)
@@ -64,9 +66,9 @@ namespace XYZ {
 			allocator.UnmapMemory(stagingBufferAllocation);
 
 			VkBufferCreateInfo indexBufferCreateInfo = {};
-			indexBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			indexBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO ;
 			indexBufferCreateInfo.size = instance->m_Size;
-			indexBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+			indexBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
 			instance->m_MemoryAllocation = allocator.AllocateBuffer(indexBufferCreateInfo, VMA_MEMORY_USAGE_GPU_ONLY, instance->m_VulkanBuffer);
 
 			const VkCommandBuffer copyCmd = device->GetCommandBuffer(true);

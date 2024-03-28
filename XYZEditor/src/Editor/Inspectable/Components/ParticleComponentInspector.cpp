@@ -304,16 +304,16 @@ namespace XYZ {
 				if (ImGui::BeginTable("##ParticleRendererTable", 2, ImGuiTableFlags_SizingStretchProp))
 				{
 					std::string materialName = "None";
-					if (component.MaterialAsset.Raw() && AssetManager::Exist(component.MaterialAsset->GetHandle()))
+					if (component.MaterialAsset.Valid() && AssetManager::Exist(component.MaterialAsset->GetHandle()))
 					{
-						materialName = Utils::GetFilename(AssetManager::GetMetadata(component.MaterialAsset).FilePath.string());
+						materialName = Utils::GetFilename(AssetManager::GetMetadata(component.MaterialAsset.Value()).FilePath.string());
 					}
 					UI::TableRow("Material",
 						[]() { ImGui::Text("Material"); },
 						[&]() {
 						UI::ScopedWidth w(150.0f);
 						ImGui::InputText("##Material", (char*)materialName.c_str(), materialName.size(), ImGuiInputTextFlags_ReadOnly);
-						EditorHelper::AssetDragAcceptor(component.MaterialAsset);
+						EditorHelper::AssetDragAcceptor(component.MaterialAsset.Value());
 					});
 
 					ImGui::EndTable();

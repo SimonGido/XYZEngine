@@ -61,6 +61,18 @@ namespace XYZ {
 			For(func, std::make_index_sequence<I>());
 		}
 
+		template <typename ...Args>
+		auto ArgsToArray(Args& ... args)
+		{
+			std::array<void*, sizeof...(args)> result = { &args... };
+			return result;
+		}
+		template <typename ...Args>
+		auto ArgsToArray(const Args& ... args)
+		{
+			std::array<const void*, sizeof...(args)> result = { &args... };
+			return result;
+		}
 
 		template <
 			size_t Index = 0, // start iteration at 0 index

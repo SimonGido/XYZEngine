@@ -390,13 +390,15 @@ namespace XYZ {
 		{
 			XYZ_CORE_INFO("Compiling shader {}", m_Name);
 		}
-
-		m_ShaderData = compileOrGetVulkanBinaries(preprocessData.Sources, forceCompile);
-		reflectAllStages(m_ShaderData, preprocessData);
-		createProgram(m_ShaderData);
-		createDescriptorSetLayout();
-		m_Compiled = true;
-		Renderer::OnShaderReload(GetHash());		
+		m_ShaderData.clear();
+		if (compileOrGetVulkanBinaries(preprocessData.Sources, m_ShaderData, forceCompile))
+		{
+			reflectAllStages(m_ShaderData, preprocessData);
+			createProgram(m_ShaderData);
+			createDescriptorSetLayout();
+			m_Compiled = true;
+			Renderer::OnShaderReload(GetHash());
+		}
 	}
 
 
@@ -417,7 +419,7 @@ namespace XYZ {
 			return m_ShaderData.at(VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT);
 		}
 		XYZ_ASSERT(false, "Shader does not have shader type");
-		return {};
+		return m_ShaderData.at(VkShaderStageFlagBits::VK_SHADER_STAGE_ALL);
 	}
 
 	bool VulkanShader::IsCompute() const
@@ -642,6 +644,17 @@ namespace XYZ {
 			offset += spec.Size;
 		}
 	}
+	const VkPipelineShaderStageCreateInfo* VulkanShader::GetPipelineVertexShaderStageCreateInfo() const
+	{
+		for (const auto& stage : m_PipelineShaderStageCreateInfos)
+		{
+			if (stage.stage == VK_SHADER_STAGE_VERTEX_BIT)
+			{
+				return &stage;
+			}
+		}
+		return nullptr;
+	}
 	const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(const std::string& name, uint32_t set) const
 	{
 		XYZ_ASSERT(set < m_DescriptorSets.size(), "");
@@ -712,11 +725,36 @@ namespace XYZ {
 
 		return result;
 	}
-	VulkanShader::StageMap<std::vector<uint32_t>> VulkanShader::compileOrGetVulkanBinaries(const VulkanShader::StageMap<std::string>& shaderSources, bool forceCompile)
+
+	void VulkanShader::createProgram(const StageMap<std::vector<uint32_t>>& shaderData)
 	{
-		StageMap<std::vector<uint32_t>> outputBinary;
+		const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
+		m_PipelineShaderStageCreateInfos.clear();
+
+		for (auto [stage, data] : shaderData)
+		{
+			XYZ_ASSERT(data.size(), "");
+			VkShaderModuleCreateInfo moduleCreateInfo{};
+			
+			moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+			moduleCreateInfo.codeSize = data.size() * sizeof(uint32_t);
+			moduleCreateInfo.pCode = data.data();
+			
+			VkShaderModule shaderModule;
+			VK_CHECK_RESULT(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
+
+			VkPipelineShaderStageCreateInfo& shaderStage = m_PipelineShaderStageCreateInfos.emplace_back();
+			shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+			shaderStage.stage = stage;
+			shaderStage.module = shaderModule;
+			shaderStage.pName = "main";
+		}
+	}
+
+	bool VulkanShader::compileOrGetVulkanBinaries(const StageMap<std::string>& sources, StageMap<std::vector<uint32_t>>& output, bool forceCompile)
+	{
 		std::filesystem::path cacheDirectory = Utils::GetCacheDirectory();
-		for (auto [stage, source] : shaderSources)
+		for (auto [stage, source] : sources)
 		{
 			std::filesystem::path shaderFilePath = m_FilePath;
 			std::filesystem::path cachedPath = cacheDirectory / (shaderFilePath.filename().string() + Utils::VkShaderStageCachedFileExtension(stage));
@@ -730,7 +768,7 @@ namespace XYZ {
 					auto size = in.tellg();
 					in.seekg(0, std::ios::beg);
 
-					auto& data = outputBinary[stage];
+					auto& data = output[stage];
 					data.resize(size / sizeof(uint32_t));
 					in.read((char*)data.data(), size);
 					continue;
@@ -748,58 +786,33 @@ namespace XYZ {
 				options.SetWarningsAsErrors();
 				options.SetGenerateDebugInfo();
 
-
-				const bool optimize = false;
-				if (optimize)
-					options.SetOptimizationLevel(shaderc_optimization_level_performance);
-
+#ifdef XYZ_RELEASE
+				options.SetOptimizationLevel(shaderc_optimization_level_performance);
+#endif
 				// Compile shader
 				{
-					auto& shaderSource = shaderSources.at(stage);
+					auto& shaderSource = sources.at(stage);
 					shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(shaderSource, Utils::VkShaderStageToShaderC(stage), m_FilePath.c_str(), options);
 
 					if (module.GetCompilationStatus() != shaderc_compilation_status_success)
 					{
 						XYZ_CORE_ERROR(module.GetErrorMessage());
+						return false;
 					}
-					outputBinary[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
+					output[stage] = std::vector<uint32_t>(module.cbegin(), module.cend());
 				}
 				// Cache compiled shader
 				std::ofstream out(cachedPath, std::ios::out | std::ios::binary);
 				if (out.is_open())
 				{
-					auto& data = outputBinary[stage];
+					auto& data = output[stage];
 					out.write((char*)data.data(), data.size() * sizeof(uint32_t));
 					out.flush();
 					out.close();
 				}
 			}
 		}
-		return outputBinary;
-	}
-	void VulkanShader::createProgram(const StageMap<std::vector<uint32_t>>& shaderData)
-	{
-		const VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-		m_PipelineShaderStageCreateInfos.clear();
-
-		for (auto [stage, data] : shaderData)
-		{
-			XYZ_ASSERT(data.size(), "");
-			VkShaderModuleCreateInfo moduleCreateInfo{};
-
-			moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-			moduleCreateInfo.codeSize = data.size() * sizeof(uint32_t);
-			moduleCreateInfo.pCode = data.data();
-			
-			VkShaderModule shaderModule;
-			VK_CHECK_RESULT(vkCreateShaderModule(device, &moduleCreateInfo, NULL, &shaderModule));
-
-			VkPipelineShaderStageCreateInfo& shaderStage = m_PipelineShaderStageCreateInfos.emplace_back();
-			shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-			shaderStage.stage = stage;
-			shaderStage.module = shaderModule;
-			shaderStage.pName = "main";
-		}
+		return true;
 	}
 
 	VulkanShader::PreprocessData VulkanShader::preProcess(const std::string& source) const

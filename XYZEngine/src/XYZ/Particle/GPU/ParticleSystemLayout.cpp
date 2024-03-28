@@ -23,6 +23,14 @@ namespace XYZ {
 		}
 		m_Stride = Math::RoundUp(offset, 16);
 	}
+	ParticleSystemLayout::ParticleSystemLayout(std::string name, std::vector<ParticleVariable> variables, uint32_t stride)
+		:
+		m_Name(std::move(name)),
+		m_Variables(std::move(variables)),
+		m_Stride(stride)
+	{
+
+	}
 	uint32_t ParticleSystemLayout::GetVariableOffset(const std::string_view name) const
 	{
 		for (const auto& var : m_Variables)

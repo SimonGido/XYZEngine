@@ -43,7 +43,6 @@ namespace XYZ {
 
 		Scene*				  GetScene() { return m_Scene; }
 		const Scene*		  GetScene() const { return m_Scene; }
-		entt::registry*		  GetRegistry();
 		const entt::registry* GetRegistry() const;
 
 	

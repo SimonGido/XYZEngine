@@ -27,7 +27,7 @@ namespace XYZ {
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
-			return new Ref<MaterialAsset>(ent.GetComponent<MeshComponent>().MaterialAsset);
+			return new Ref<MaterialAsset>(ent.GetComponent<MeshComponent>().MaterialAsset.Value());
 		}
 		Ref<StaticMesh>* MeshComponentNative::GetMesh(uint32_t entity)
 		{
@@ -36,7 +36,7 @@ namespace XYZ {
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
 
-			return new Ref<StaticMesh>(ent.GetComponent<MeshComponent>().Mesh);
+			return new Ref<StaticMesh>(ent.GetComponent<MeshComponent>().Mesh.Value());
 		}
 		void MeshComponentNative::SetMaterial(uint32_t entity, Ref<MaterialAsset>* material)
 		{
@@ -68,7 +68,7 @@ namespace XYZ {
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
-			return new Ref<MaterialAsset>(ent.GetComponent<AnimatedMeshComponent>().MaterialAsset);
+			return new Ref<MaterialAsset>(ent.GetComponent<AnimatedMeshComponent>().MaterialAsset.Value());
 		}
 		Ref<AnimatedMesh>* AnimatedMeshComponentNative::GetMesh(uint32_t entity)
 		{
@@ -76,7 +76,7 @@ namespace XYZ {
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
-			return new Ref<AnimatedMesh>(ent.GetComponent<AnimatedMeshComponent>().Mesh);
+			return new Ref<AnimatedMesh>(ent.GetComponent<AnimatedMeshComponent>().Mesh.Value());
 
 		}
 		MonoArray* AnimatedMeshComponentNative::GetBoneEntities(uint32_t entity)

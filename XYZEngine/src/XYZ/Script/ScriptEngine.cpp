@@ -324,21 +324,22 @@ namespace XYZ {
 
 	void ScriptEngine::Shutdown()
 	{
-		shutdownRuntimeAssembly();
+		if (s_CoreAssembly != nullptr)
+		{
+			shutdownRuntimeAssembly();
 
-		auto garbageCollectMethod = GetMethod(s_CoreAssemblyImage, "XYZ.Core::CollectGarbage()");
-		MonoObject* result = mono_runtime_invoke(garbageCollectMethod, nullptr, nullptr, nullptr);
+			auto garbageCollectMethod = GetMethod(s_CoreAssemblyImage, "XYZ.Core::CollectGarbage()");
+			MonoObject* result = mono_runtime_invoke(garbageCollectMethod, nullptr, nullptr, nullptr);
 
 
-		mono_assembly_close(s_CoreAssembly);
-		mono_domain_unload(s_MonoDomain);
-		s_CoreAssembly = nullptr;
-		s_CoreAssemblyImage = nullptr;
-		s_MonoDomain = nullptr;
-
+			mono_assembly_close(s_CoreAssembly);
+			mono_domain_unload(s_MonoDomain);
+			s_CoreAssembly = nullptr;
+			s_CoreAssemblyImage = nullptr;
+			s_MonoDomain = nullptr;		
+		}
 		s_ScriptEntityInstances.Clear();
 		s_EntityClassMap.clear();
-
 		s_SceneContext.Reset();
 		s_Logger.reset();
 	}

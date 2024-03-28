@@ -357,6 +357,11 @@ namespace XYZ {
 		s_Data.QueueData.ExecuteResourceQueue(currentFrame);
 	}
 
+	void Renderer::ExecuteResources(uint32_t index)
+	{
+		s_Data.QueueData.ExecuteResourceQueue(index);
+	}
+
 	Ref<APIContext> Renderer::GetAPIContext()
 	{
 		return s_Data.APIContext;
@@ -405,82 +410,77 @@ namespace XYZ {
 	}
 	void RendererResources::Init()
 	{
-		auto whiteTextureFuture						= AssetManager::GetAssetAsync<Texture2D>("Resources/Textures/WhiteTexture.tex");
-		auto defaultQuadMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/DefaultLit.mat");
-		auto defaultLineMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/DefaultLine.mat");
-		auto defaultCircleMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/DefaultCircle.mat");
-		auto overlayQuadMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/OverlayQuad.mat");
-		auto overlayLineMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/OverlayLine.mat");
-		auto overlayCircleMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/OverlayCircle.mat");
-		auto defaultParticleMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
-		auto defaultDepth3DMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepth.mat");
-		auto defaultDepth3DAnimMaterialFuture		= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepthAnim.mat");
-		auto defaultDepth2DMaterialFuture			= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepth2D.mat");
-		auto defaultDepthInstancedMaterialFuture	= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/PreDepthInstanced.mat");
-		auto lightCullingMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/LightCulling.mat");
-		auto gridMaterialFuture						= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/Grid.mat");
-		auto animationPBRMaterialFuture				= AssetManager::GetAssetAsync<MaterialAsset>("Resources/Materials/AnimationPBR.mat");
-		
-		
 		Includer.AddIncludes("Resources/Shaders/Includes");
 
-		auto whiteTexture = whiteTextureFuture.get();
+		auto whiteTexture = AssetManager::GetAsset<Texture2D>("Resources/Textures/WhiteTexture.tex");
 		whiteTexture->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["WhiteTexture"] = whiteTexture;
+		
+		auto defaultQuadMaterial				= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/DefaultLit.mat");
+		auto defaultLineMaterial				= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/DefaultLine.mat");
+		auto defaultCircleMaterial				= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/DefaultCircle.mat");
+		auto overlayQuadMaterial				= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/OverlayQuad.mat");
+		auto overlayLineMaterial				= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/OverlayLine.mat");
+		auto overlayCircleMaterial				= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/OverlayCircle.mat");
+		auto defaultParticleMaterial			= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/DefaultParticle.mat");
+		auto defaultDepth3DMaterial				= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/PreDepth.mat");
+		auto defaultDepth3DAnimMaterial			= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/PreDepthAnim.mat");
+		auto defaultDepth2DMaterial				= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/PreDepth2D.mat");
+		auto defaultDepthInstancedMaterial		= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/PreDepthInstanced.mat");
+		auto lightCullingMaterial				= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/LightCulling.mat");
+		auto gridMaterial						= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/Grid.mat");
+		auto animationPBRMaterial				= AssetManager::GetAssetWait<MaterialAsset>("Resources/Materials/AnimationPBR.mat");
+		
+		
+		
 
-		auto defaultQuadMaterial = defaultQuadMaterialFuture.get();
 		defaultQuadMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["QuadMaterial"] = defaultQuadMaterial;
 
-		auto defaultLineMaterial = defaultLineMaterialFuture.get();
 		defaultLineMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["LineMaterial"] = defaultLineMaterial;
 
-		auto defaultCircleMaterial = defaultCircleMaterialFuture.get();
 		defaultCircleMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["CircleMaterial"] = defaultCircleMaterial;
 
-		auto overlayQuadMaterial = overlayQuadMaterialFuture.get();
 		overlayQuadMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["OverlayQuadMaterial"] = overlayQuadMaterial;
 
-		auto overlayLineMaterial = overlayLineMaterialFuture.get();
 		overlayLineMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["OverlayLineMaterial"] = overlayLineMaterial;
 
-		auto overlayCircleMaterial = overlayCircleMaterialFuture.get();
 		overlayCircleMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["OverlayCircleMaterial"] = overlayCircleMaterial;
 
-		auto defaultParticleMaterial = defaultParticleMaterialFuture.get();
+
 		defaultParticleMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["ParticleMaterial"] = defaultParticleMaterial;
 
-		auto defaultDepth3DMaterial = defaultDepth3DMaterialFuture.get();
+
 		defaultDepth3DMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["Depth3DMaterial"] = defaultDepth3DMaterial;
 
-		auto defaultDepth3DAnimMaterial = defaultDepth3DAnimMaterialFuture.get();
+
 		defaultDepth3DAnimMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["Depth3DMaterialAnim"] = defaultDepth3DAnimMaterial;
 
-		auto defaultDepth2DMaterial = defaultDepth2DMaterialFuture.get();
+
 		defaultDepth2DMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["Depth2DMaterial"] = defaultDepth2DMaterial;
 
-		auto defaultDepthInstancedMaterial = defaultDepthInstancedMaterialFuture.get();
+
 		defaultDepthInstancedMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["DepthInstancedMaterial"] = defaultDepthInstancedMaterial;
 
-		auto lightCullingMaterial = lightCullingMaterialFuture.get();
+
 		lightCullingMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["LightCullingMaterial"] = lightCullingMaterial;
 
-		auto gridMaterial = gridMaterialFuture.get();
+
 		gridMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["GridMaterial"] = gridMaterial;
 
-		auto animationPBRMaterial = animationPBRMaterialFuture.get();
+
 		animationPBRMaterial->SetFlag(AssetFlag::ReadOnly);
 		RendererAssets["AnimationPBR"] = animationPBRMaterial;
 	}

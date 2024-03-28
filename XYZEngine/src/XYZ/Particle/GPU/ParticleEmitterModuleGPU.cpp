@@ -108,6 +108,13 @@ namespace XYZ {
 				*endVelocity = glm::linearRand(glm::vec4(-0.5f), glm::vec4(0.5f));
 				currOffset += sizeof(glm::vec4);
 
+				glm::vec2* velocityCurve = reinterpret_cast<glm::vec2*>(&buffer[currOffset]);
+				velocityCurve[0] = glm::vec2(0.0f);
+				velocityCurve[1] = glm::vec2(0.0f, 0.0f);
+				velocityCurve[2] = glm::vec2(10.0f,0.0f);
+				velocityCurve[3] = glm::vec2(10.0f,10.0f);
+				currOffset += sizeof(glm::vec2) * 4;
+
 				glm::vec4* position = reinterpret_cast<glm::vec4*>(&buffer[currOffset]);
 				*position = *reinterpret_cast<glm::vec4*>(&buffer[offset - 16]);
 				currOffset += sizeof(glm::vec4);

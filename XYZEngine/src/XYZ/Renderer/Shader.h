@@ -141,7 +141,7 @@ namespace XYZ {
 		virtual const std::vector<BufferLayout>& GetLayouts() const = 0;
 		virtual const std::string& GetPath() const = 0;
 		virtual const std::string& GetName() const = 0;
-		virtual const std::string& GetSource() const { return std::string(); }
+		virtual const std::string& GetSource() const = 0;
 		
 		virtual size_t   GetVertexBufferSize() const = 0;
 		virtual size_t	 GetHash()	     const = 0;

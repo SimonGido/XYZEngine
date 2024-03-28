@@ -8,7 +8,6 @@ namespace XYZ {
 
 	class VulkanUniformBuffer : public UniformBuffer
 	{
-
 	public:
 		VulkanUniformBuffer(uint32_t size, uint32_t binding);
 		virtual ~VulkanUniformBuffer() override;

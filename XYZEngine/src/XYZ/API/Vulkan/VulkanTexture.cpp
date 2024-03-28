@@ -36,6 +36,7 @@ namespace XYZ {
 		{
 			switch (format)
 			{
+			case ImageFormat::RED32F:  return width * height * sizeof(float);
 			case ImageFormat::RGBA:    return width * height * 4;
 			case ImageFormat::RGBA16F: return width * height * 4 * 2;
 			case ImageFormat::RGBA32F: return width * height * 4 * sizeof(float);
@@ -69,7 +70,7 @@ namespace XYZ {
 		m_Width = width;
 		m_Height = height;
 
-		uint32_t size = Utils::GetMemorySize(format, width, height);
+		uint32_t size = static_cast<uint32_t>(Utils::GetMemorySize(format, width, height));
 	
 		ImageSpecification imageSpec;
 		imageSpec.Format = m_Format;

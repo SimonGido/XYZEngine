@@ -2,6 +2,7 @@
 #include "SceneSerializer.h"
 
 #include "XYZ/Scene/SceneEntity.h"
+#include "XYZ/Scene/Prefab.h"
 #include "XYZ/Asset/AssetManager.h"
 #include "XYZ/Script/ScriptEngine.h"
 
@@ -22,7 +23,7 @@ namespace XYZ {
 		out << YAML::BeginMap;
 
 		const auto& reg = *entity.GetRegistry();
-		
+
 		if (reg.valid(val.GetParent()))
 			out << YAML::Key << "Parent" << YAML::Value << reg.get<IDComponent>(val.GetParent()).ID;
 		if (reg.valid(val.GetNextSibling()))
@@ -86,17 +87,17 @@ namespace XYZ {
 
 		AssetHandle materialHandle;
 		AssetHandle subTextureHandle;
-		
-		if (val.Material.Raw())
+
+		if (val.Material.Valid())
 			materialHandle = val.Material->GetHandle();
-		if (val.SubTexture.Raw())
+		if (val.SubTexture.Valid())
 			subTextureHandle = val.SubTexture->GetHandle();
-		
+
 		out << YAML::Key << "Material" << YAML::Value << materialHandle;
 		out << YAML::Key << "SubTexture" << YAML::Value << subTextureHandle;
-		out << YAML::Key << "Color"		<< YAML::Value << val.Color;
-		out << YAML::Key << "SortLayer"	<< YAML::Value << val.SortLayer;
-		out << YAML::Key << "Visible"	<< YAML::Value << val.Visible;
+		out << YAML::Key << "Color" << YAML::Value << val.Color;
+		out << YAML::Key << "SortLayer" << YAML::Value << val.SortLayer;
+		out << YAML::Key << "Visible" << YAML::Value << val.Visible;
 		out << YAML::EndMap; // SpriteRenderer
 	}
 	template <>
@@ -140,6 +141,20 @@ namespace XYZ {
 
 		out << YAML::EndMap;
 	}
+
+	template<>
+	void SceneSerializer::serialize<DirectionalLightComponent>(YAML::Emitter& out, const DirectionalLightComponent& val, SceneEntity entity)
+	{
+		out << YAML::Key << "DirectionalLightComponent";
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Radiance" << YAML::Value << val.Radiance;
+		out << YAML::Key << "Direction" << YAML::Value << val.Direction;
+		out << YAML::Key << "Intensity" << YAML::Value << val.Intensity;
+
+		out << YAML::EndMap;
+	}
+
 	template <>
 	void SceneSerializer::serialize<RigidBody2DComponent>(YAML::Emitter& out, const RigidBody2DComponent& val, SceneEntity entity)
 	{
@@ -178,7 +193,7 @@ namespace XYZ {
 	{
 		out << YAML::Key << "ChainCollider2D";
 		out << YAML::BeginMap;
-		
+
 
 		out << YAML::Key << "Points" << YAML::Value << YAML::BeginSeq;
 		for (auto& p : val.Points)
@@ -254,7 +269,7 @@ namespace XYZ {
 
 		out << YAML::Key << "MaxParticles" << val.GetSystem()->GetMaxParticles();
 		out << YAML::Key << "Speed" << val.GetSystem()->Speed;
-		
+
 		out << YAML::Key << "AnimationTiles" << val.GetSystem()->AnimationTiles;
 		out << YAML::Key << "AnimationStartFrame" << val.GetSystem()->AnimationStartFrame;
 		out << YAML::Key << "AnimationCycleLength" << val.GetSystem()->AnimationCycleLength;
@@ -262,11 +277,11 @@ namespace XYZ {
 		out << YAML::Key << "EndRotation" << val.GetSystem()->EndRotation;
 		out << YAML::Key << "EndSize" << val.GetSystem()->EndSize;
 		out << YAML::Key << "EndColor" << val.GetSystem()->EndColor;
-		
+
 		out << YAML::Key << "LightEndColor" << val.GetSystem()->LightEndColor;
 		out << YAML::Key << "LightEndIntensity" << val.GetSystem()->LightEndIntensity;
 		out << YAML::Key << "LightEndRadius" << val.GetSystem()->LightEndRadius;
-		
+
 		// Modules enabled
 		out << YAML::Key << "ModulesEnabled";
 		out << YAML::Value << YAML::BeginSeq;
@@ -278,21 +293,21 @@ namespace XYZ {
 		{  // Emitter
 			out << YAML::Key << "Emitter";
 			out << YAML::BeginMap; // Emitter
-		
+
 			out << YAML::Key << "Shape" << static_cast<uint32_t>(val.GetSystem()->Emitter.Shape);
-			out << YAML::Key << "BoxMin" <<  val.GetSystem()->Emitter.BoxMin;
-			out << YAML::Key << "BoxMax" <<  val.GetSystem()->Emitter.BoxMax;
-			out << YAML::Key << "Radius" <<  val.GetSystem()->Emitter.Radius;
-		
+			out << YAML::Key << "BoxMin" << val.GetSystem()->Emitter.BoxMin;
+			out << YAML::Key << "BoxMax" << val.GetSystem()->Emitter.BoxMax;
+			out << YAML::Key << "Radius" << val.GetSystem()->Emitter.Radius;
+
 			out << YAML::Key << "EmitRate" << val.GetSystem()->Emitter.EmitRate;
 			out << YAML::Key << "LifeTime" << val.GetSystem()->Emitter.LifeTime;
-			
+
 			out << YAML::Key << "MinVelocity" << val.GetSystem()->Emitter.MinVelocity;
 			out << YAML::Key << "MaxVelocity" << val.GetSystem()->Emitter.MaxVelocity;
-			
-			out << YAML::Key << "Size" <<    val.GetSystem()->Emitter.Size;
-			out << YAML::Key << "Color" <<   val.GetSystem()->Emitter.Color;
-		
+
+			out << YAML::Key << "Size" << val.GetSystem()->Emitter.Size;
+			out << YAML::Key << "Color" << val.GetSystem()->Emitter.Color;
+
 			out << YAML::Key << "LightColor" << val.GetSystem()->Emitter.LightColor;
 			out << YAML::Key << "LightRadius" << val.GetSystem()->Emitter.LightRadius;
 			out << YAML::Key << "LightIntensity" << val.GetSystem()->Emitter.LightIntensity;
@@ -320,6 +335,14 @@ namespace XYZ {
 	template <>
 	void SceneSerializer::serialize<ParticleComponentGPU>(YAML::Emitter& out, const ParticleComponentGPU& val, SceneEntity entity)
 	{
+		out << YAML::Key << "ParticleComponentGPU";
+		out << YAML::BeginMap;
+		out << YAML::Key << "Mesh" << val.Mesh->GetHandle();
+		out << YAML::Key << "UpdateMaterial" << val.UpdateMaterial->GetHandle();
+		out << YAML::Key << "RenderMaterial" << val.RenderMaterial->GetHandle();
+		out << YAML::Key << "System" << val.System->GetHandle();
+		
+		out << YAML::EndMap;
 	}
 
 	template <>
@@ -355,7 +378,7 @@ namespace XYZ {
 	{
 		out << YAML::Key << "AnimationComponent";
 		out << YAML::BeginMap;
-		if (val.Controller.Raw())
+		if (val.Controller.Valid())
 		{
 			out << YAML::Key << "Controller" << val.Controller->GetHandle();
 		}
@@ -377,57 +400,33 @@ namespace XYZ {
 	}
 
 
-	template <>
-	std::future<MeshComponent> SceneSerializer::deserializeAsync<MeshComponent>(YAML::Node& data)
-	{
-		auto& threadPool = Application::Get().GetThreadPool();
-
-		return threadPool.SubmitJob([&data]() {
-			MeshComponent component;
-			component.Mesh = AssetManager::GetAsset<StaticMesh>(AssetHandle(data["Mesh"].as<std::string>()));
-			component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
-			return component;
-		});
-	}
 
 	template <>
 	void SceneSerializer::deserialize<MeshComponent>(YAML::Node& data, MeshComponent& component, SceneEntity entity)
 	{
-		component.Mesh = AssetManager::GetAsset<StaticMesh>(AssetHandle(data["Mesh"].as<std::string>()));
-		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
+		component.Mesh = AssetHandle(data["Mesh"].as<std::string>());
+		component.MaterialAsset = AssetHandle(data["Material"].as<std::string>());
 	}
 
-	template <>
-	std::future<AnimatedMeshComponent> SceneSerializer::deserializeAsync<AnimatedMeshComponent>(YAML::Node& data)
-	{
-		auto& threadPool = Application::Get().GetThreadPool();
-		
-		return threadPool.SubmitJob([&data]() {
-			AnimatedMeshComponent component;
-			component.Mesh = AssetManager::GetAsset<AnimatedMesh>(AssetHandle(data["Mesh"].as<std::string>()));
-			component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
 
-			return component;
-		});
-	}
 
 	template <>
 	void SceneSerializer::deserialize<AnimatedMeshComponent>(YAML::Node& data, AnimatedMeshComponent& component, SceneEntity entity)
 	{
-		component.Mesh = AssetManager::GetAsset<AnimatedMesh>(AssetHandle(data["Mesh"].as<std::string>()));
-		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
+		component.Mesh = AssetHandle(data["Mesh"].as<std::string>());
+		component.MaterialAsset = AssetHandle(data["Material"].as<std::string>());
 	}
 
 	template <>
 	void SceneSerializer::deserialize<ParticleComponent>(YAML::Node& data, ParticleComponent& component, SceneEntity entity)
 	{
 		component.GetSystem()->SetMaxParticles(data["MaxParticles"].as<uint32_t>());
-		component.GetSystem()->Speed				   = data["Speed"].as<float>();
-		component.GetSystem()->AnimationTiles		   = data["AnimationTiles"].as<glm::ivec2>();
-		component.GetSystem()->AnimationStartFrame     = data["AnimationStartFrame"].as<uint32_t>();
-		component.GetSystem()->AnimationCycleLength    = data["AnimationCycleLength"].as<float>();
-		component.GetSystem()->EndRotation			   = data["EndRotation"].as<glm::vec3>();
-		
+		component.GetSystem()->Speed = data["Speed"].as<float>();
+		component.GetSystem()->AnimationTiles = data["AnimationTiles"].as<glm::ivec2>();
+		component.GetSystem()->AnimationStartFrame = data["AnimationStartFrame"].as<uint32_t>();
+		component.GetSystem()->AnimationCycleLength = data["AnimationCycleLength"].as<float>();
+		component.GetSystem()->EndRotation = data["EndRotation"].as<glm::vec3>();
+
 		size_t counter = 0;
 		for (auto enabled : data["ModulesEnabled"])
 			component.GetSystem()->ModuleEnabled[counter++] = enabled.as<bool>();
@@ -438,20 +437,20 @@ namespace XYZ {
 			component.GetSystem()->Emitter.BoxMin = emitter["BoxMin"].as<glm::vec3>();
 			component.GetSystem()->Emitter.BoxMax = emitter["BoxMax"].as<glm::vec3>();
 			component.GetSystem()->Emitter.Radius = emitter["Radius"].as<float>();
-		
+
 			component.GetSystem()->Emitter.EmitRate = emitter["EmitRate"].as<float>();
 			component.GetSystem()->Emitter.LifeTime = emitter["LifeTime"].as<float>();
-			
+
 			component.GetSystem()->Emitter.MinVelocity = emitter["MinVelocity"].as<glm::vec3>();
 			component.GetSystem()->Emitter.MaxVelocity = emitter["MaxVelocity"].as<glm::vec3>();
-			
-			component.GetSystem()->Emitter.Size  = emitter["Size"].as<glm::vec3>();
+
+			component.GetSystem()->Emitter.Size = emitter["Size"].as<glm::vec3>();
 			component.GetSystem()->Emitter.Color = emitter["Color"].as<glm::vec4>();
-		
-			component.GetSystem()->Emitter.LightColor     = emitter["LightColor"].as<glm::vec3>();
-			component.GetSystem()->Emitter.LightRadius    = emitter["LightRadius"].as<float>();
+
+			component.GetSystem()->Emitter.LightColor = emitter["LightColor"].as<glm::vec3>();
+			component.GetSystem()->Emitter.LightRadius = emitter["LightRadius"].as<float>();
 			component.GetSystem()->Emitter.LightIntensity = emitter["LightIntensity"].as<float>();
-			component.GetSystem()->Emitter.MaxLights		= emitter["MaxLights"].as<uint32_t>();
+			component.GetSystem()->Emitter.MaxLights = emitter["MaxLights"].as<uint32_t>();
 
 
 			component.GetSystem()->Emitter.BurstInterval = emitter["BurstInterval"].as<float>();
@@ -461,20 +460,24 @@ namespace XYZ {
 					burst["Count"].as<uint32_t>(),
 					burst["Time"].as<float>(),
 					burst["Probability"].as<float>()
-				});	
+					});
 			}
 		}
 	}
 	template <>
 	void SceneSerializer::deserialize<ParticleComponentGPU>(YAML::Node& data, ParticleComponentGPU& component, SceneEntity entity)
 	{
+		component.Mesh = AssetHandle(data["Mesh"].as<std::string>());
+		component.UpdateMaterial = AssetHandle(data["UpdateMaterial"].as<std::string>());
+		component.RenderMaterial = AssetHandle(data["RenderMaterial"].as<std::string>());
+		component.System = AssetHandle(data["System"].as<std::string>());
 	}
 
 	template <>
 	void SceneSerializer::deserialize<ParticleRenderer>(YAML::Node& data, ParticleRenderer& component, SceneEntity entity)
 	{
-		component.Mesh = AssetManager::GetAsset<Mesh>(AssetHandle(data["Mesh"].as<std::string>()));
-		component.MaterialAsset = AssetManager::GetAsset<MaterialAsset>(AssetHandle(data["Material"].as<std::string>()));
+		component.Mesh = AssetHandle(data["Mesh"].as<std::string>());
+		component.MaterialAsset = AssetHandle(data["Material"].as<std::string>());
 	}
 	template <>
 	void SceneSerializer::deserialize<ScriptComponent>(YAML::Node& data, ScriptComponent& component, SceneEntity entity)
@@ -522,25 +525,22 @@ namespace XYZ {
 	template <>
 	void SceneSerializer::deserialize<SpriteRenderer>(YAML::Node& data, SpriteRenderer& component, SceneEntity entity)
 	{
-		const GUID materialHandle(data["Material"].as<std::string>());
-		const GUID subTextureHandle(data["SubTexture"].as<std::string>());
-		const glm::vec4 color	 = data["Color"].as<glm::vec4>();
+		const AssetHandle materialHandle(data["Material"].as<std::string>());
+		const AssetHandle subTextureHandle(data["SubTexture"].as<std::string>());
+		const glm::vec4 color = data["Color"].as<glm::vec4>();
 		const uint16_t sortLayer = data["SortLayer"].as<uint16_t>();
-		const bool visible	     = data["Visible"].as<bool>();
+		const bool visible = data["Visible"].as<bool>();
 
-		Ref<MaterialAsset> material;
-		Ref<SubTexture> subTexture;
 		if (AssetManager::Exist(materialHandle))
 		{
-			material = AssetManager::GetAsset<MaterialAsset>(materialHandle);
+			component.Material = materialHandle;
 		}
 		if (AssetManager::Exist(subTextureHandle))
 		{
-			subTexture = AssetManager::GetAsset<SubTexture>(subTextureHandle);
+			component.SubTexture = subTextureHandle;
 		}
 
-		component.Material = material;
-		component.SubTexture = subTexture;
+		
 		component.Color = color;
 		component.SortLayer = sortLayer;
 		component.Visible = visible;
@@ -573,7 +573,7 @@ namespace XYZ {
 		orthoProps.OrthographicNear = data["OrthographicNear"].as<float>();
 		orthoProps.OrthographicFar = data["OrthographicFar"].as<float>();
 
-		
+
 		component.Camera.SetProjectionType(projectionType);
 		component.Camera.SetPerspective(perspectiveProps);
 		component.Camera.SetOrthographic(orthoProps);
@@ -618,6 +618,14 @@ namespace XYZ {
 		component.CastsShadows = data["CastShadows"].as<bool>();
 		component.SoftShadows = data["SoftShadows"].as<bool>();
 		component.Falloff = data["Falloff"].as<float>();
+	}
+
+	template <>
+	void SceneSerializer::deserialize<DirectionalLightComponent>(YAML::Node& data, DirectionalLightComponent& component, SceneEntity entity)
+	{
+		component.Radiance = data["Radiance"].as<glm::vec3>();
+		component.Direction = data["Direction"].as<glm::vec3>();
+		component.Intensity = data["Intensity"].as<float>();
 	}
 
 	template <>
@@ -670,24 +678,17 @@ namespace XYZ {
 		if (!controllerData.empty())
 		{
 			AssetHandle handle(controllerData);
-			component.Controller = AssetManager::TryGetAsset<AnimationController>(handle);
+			component.Controller = handle;
 		}
 	}
 
-	void SceneSerializer::deserializeEntity(YAML::Node& data,  WeakRef<Scene> scene)
+	void SceneSerializer::deserializeEntity(const YAML::Node& data, WeakRef<Scene> scene)
 	{
 		GUID guid = data["Entity"].as<std::string>();
 		auto& tagComponent = data["SceneTagComponent"];
-		
+
 		SceneTagComponent tag = tagComponent["Name"].as<std::string>();
 		SceneEntity entity = scene->CreateEntity(tag, guid);
-
-
-
-		bool animatedMeshComponentFutureAssigned = false;
-		bool meshComponentFutureAssigned = false;
-		std::future<AnimatedMeshComponent> animatedMeshComponentFuture;
-		std::future<MeshComponent> meshComponentFuture;
 
 		auto transformComponent = data["TransformComponent"];
 		if (transformComponent)
@@ -698,17 +699,13 @@ namespace XYZ {
 		auto meshComponent = data["MeshComponent"];
 		if (meshComponent)
 		{
-			//deserialize<MeshComponent>(meshComponent, entity);
-			meshComponentFuture = deserializeAsync<MeshComponent>(meshComponent);
-			meshComponentFutureAssigned = true;
+			deserialize<MeshComponent>(meshComponent, entity.EmplaceComponent<MeshComponent>(), entity);
 		}
 
 		auto animatedMeshComponent = data["AnimatedMeshComponent"];
 		if (animatedMeshComponent)
 		{
-			//deserialize<AnimatedMeshComponent>(animatedMeshComponent, entity);
-			animatedMeshComponentFuture = deserializeAsync<AnimatedMeshComponent>(animatedMeshComponent);
-			animatedMeshComponentFutureAssigned = true;
+			deserialize<AnimatedMeshComponent>(animatedMeshComponent, entity.EmplaceComponent<AnimatedMeshComponent>(), entity);
 		}
 
 		auto cameraComponent = data["CameraComponent"];
@@ -751,7 +748,7 @@ namespace XYZ {
 		{
 			deserialize<ScriptComponent>(scriptComponent, entity.EmplaceComponent<ScriptComponent>(), entity);
 		}
-			
+
 		auto pointLightComponent = data["PointLight2D"];
 		if (pointLightComponent)
 		{
@@ -770,12 +767,18 @@ namespace XYZ {
 			deserialize<ParticleComponent>(particleComponent, entity.EmplaceComponent<ParticleComponent>(), entity);
 		}
 
+		auto particleComponentGPU = data["ParticleComponentGPU"];
+		if (particleComponentGPU)
+		{
+			deserialize<ParticleComponentGPU>(particleComponentGPU, entity.EmplaceComponent<ParticleComponentGPU>(), entity);
+		}
+
 		auto particleRenderer = data["ParticleRenderer"];
 		if (particleRenderer)
 		{
 			deserialize<ParticleRenderer>(particleRenderer, entity.EmplaceComponent<ParticleRenderer>(), entity);
 		}
-		
+
 
 		auto animationComponent = data["AnimationComponent"];
 		if (animationComponent)
@@ -789,14 +792,10 @@ namespace XYZ {
 			deserialize<PointLightComponent3D>(pointLightComponent3D, entity.EmplaceComponent<PointLightComponent3D>(), entity);
 		}
 
-
-		if (animatedMeshComponentFutureAssigned)
+		auto dirLightComponent = data["DirectionalLightComponent"];
+		if (dirLightComponent)
 		{
-			entity.AddComponent<AnimatedMeshComponent>(animatedMeshComponentFuture.get());
-		}
-		if (meshComponentFutureAssigned)
-		{
-			entity.AddComponent<MeshComponent>(meshComponentFuture.get());
+			deserialize<DirectionalLightComponent>(dirLightComponent, entity.EmplaceComponent<DirectionalLightComponent>(), entity);
 		}
 	}
 
@@ -804,13 +803,14 @@ namespace XYZ {
 	void SceneSerializer::Serialize(const std::string& filepath, WeakRef<Scene> scene)
 	{
 		YAML::Emitter out;
-		
+
 		SceneEntity sceneEntity = scene->GetSceneEntity();
 		const IDComponent& idComponent = sceneEntity.GetComponent<IDComponent>();
 		const Relationship& relationship = sceneEntity.GetComponent<Relationship>();
 		const auto& registry = scene->GetRegistry();
 
-		out << YAML::BeginMap;
+		out << YAML::BeginMap; // Scene
+
 		out << YAML::Key << "Scene" << scene->m_Name;
 		out << YAML::Key << "SceneEntity" << idComponent.ID;
 		if (registry.valid(relationship.FirstChild))
@@ -829,7 +829,20 @@ namespace XYZ {
 		});
 
 		out << YAML::EndSeq;
-		out << YAML::EndMap;
+		
+		out << YAML::Key << "Assets";
+		out << YAML::Value << YAML::BeginSeq;
+
+		auto loadedAssets = AssetManager::FindAllLoadedAssets();
+		for (const auto& handle : loadedAssets)
+		{
+			if (handle != scene->GetHandle())
+				out << YAML::Value << handle;
+		}
+		out << YAML::EndSeq;
+
+		out << YAML::EndMap; // Scene
+		
 		std::ofstream fout(filepath);
 		fout << out.c_str();
 		fout.flush();
@@ -846,6 +859,20 @@ namespace XYZ {
 		return entt::null;
 	}
 
+	void PreloadAssets(const YAML::Node& assets)
+	{
+		std::vector<AssetHandle> assetHandles;	
+
+		for (auto asset : assets)
+		{
+			assetHandles.push_back(AssetHandle(asset.as<std::string>()));
+			AssetManager::LoadAssetAsync(AssetHandle(asset.as<std::string>()), [](Ref<Asset>& asset) {
+				
+			});
+		}
+	}
+
+
 	Ref<Scene> SceneSerializer::Deserialize(const std::string& filepath)
 	{
 		std::ifstream stream(filepath);
@@ -855,13 +882,20 @@ namespace XYZ {
 
 		const std::string sceneName = data["Scene"].as<std::string>();
 		const GUID sceneEntityGuid = data["SceneEntity"].as<std::string>();
-		
+
 
 		Ref<Scene> scene = Ref<Scene>::Create(sceneName, sceneEntityGuid);
 		entt::registry& reg = scene->m_Registry;
 		SceneEntity sceneEntity = scene->GetSceneEntity();
 
 		auto entities = data["Entities"];
+		auto assets = data["Assets"];
+
+		std::vector<Ref<Asset>> preloadedAssets;
+		if (assets)
+		{
+			PreloadAssets(assets);
+		}
 		if (entities)
 		{
 			for (auto entity : entities)
@@ -886,6 +920,7 @@ namespace XYZ {
 					setupAnimatedMeshComponent(animatedMeshComponent, setupEntity);
 			}
 		}
+
 		return scene;
 	}
 
@@ -894,7 +929,7 @@ namespace XYZ {
 	{
 		out << YAML::BeginMap;
 		out << YAML::Key << "Entity" << YAML::Value << entity.GetComponent<IDComponent>().ID;
-		
+
 		serializeEntityComponents<XYZ_COMPONENTS>(out, entity);
 
 		out << YAML::EndMap; // Entity

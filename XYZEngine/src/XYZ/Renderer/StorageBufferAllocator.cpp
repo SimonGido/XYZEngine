@@ -108,6 +108,7 @@ namespace XYZ {
 		
 		if (m_Valid && !m_IsSuballocation)
 			m_Allocator->m_AllocationRefCounter[m_ID]++;
+		
 		return *this;
 	}
 
@@ -148,27 +149,36 @@ namespace XYZ {
 	}
 
 	
-	bool StorageBufferAllocator::Allocate(uint32_t size, StorageBufferAllocation& allocation)
+	uint32_t StorageBufferAllocator::Allocate(uint32_t size, StorageBufferAllocation& allocation)
 	{
 		XYZ_PROFILE_FUNC("StorageBufferAllocator::Allocate");
+		uint32_t flags = 0;
 		// Allocation is not valid, create new
 		if (!allocation.m_Valid)
 		{
 			allocation = createNewAllocation(size);
 			m_AllocatedSize += size;
 			m_UnusedSpace = m_Next - m_AllocatedSize;
-			return true;
+			flags |= Reallocated;
 		}
 		else if (reallocationRequired(size, allocation))
 		{		
-			updateAllocation(size, allocation);
+			if (extendAllocation(size, allocation))
+			{
+				flags |= Extended;
+			}
+			else
+			{
+				updateAllocation(size, allocation);
+				flags |= Reallocated;
+			}
 			m_AllocatedSize += size;
 			m_UnusedSpace = m_Next - m_AllocatedSize;
-			return true;
 		}
 			
-		return false;
+		return flags;
 	}
+
 
 	uint32_t StorageBufferAllocator::GetAllocatedSize() const
 	{
@@ -262,6 +272,7 @@ namespace XYZ {
 	void StorageBufferAllocator::updateAllocation(uint32_t size, StorageBufferAllocation& allocation)
 	{
 		uint32_t offset = m_Next;
+		
 		if (!allocateFromFree(size, offset))
 		{
 			XYZ_ASSERT(m_Next + size < m_Size, "");
@@ -276,8 +287,20 @@ namespace XYZ {
 		allocation.m_Valid = true;
 		allocation.m_IsSuballocation = false;
 		allocation.m_ID = nextAllocationID();
-
+		m_AllocationRefCounter[allocation.m_ID]++;
 		m_Next += size;
+	}
+
+	bool StorageBufferAllocator::extendAllocation(uint32_t size, StorageBufferAllocation& allocation)
+	{
+		if (allocation.m_Offset + allocation.m_Size == m_Next) // It is possible to just extend allocation
+		{
+			m_AllocatedSize -= allocation.m_Size;
+			allocation.m_Size = size; // Update size
+			m_Next = allocation.m_Offset + allocation.m_Size; // Calculate new m_Next
+			return true;
+		}
+		return false;
 	}
 
 	uint32_t StorageBufferAllocator::nextAllocationID()
@@ -285,7 +308,7 @@ namespace XYZ {
 		uint32_t result;
 		if (!m_FreeAllocationIDs.empty())
 		{
-			result = m_FreeAllocationIDs.back();
+			result = m_FreeAllocationIDs.front();
 			m_FreeAllocationIDs.pop();
 		}
 		else

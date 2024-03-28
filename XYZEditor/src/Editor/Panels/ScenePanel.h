@@ -36,9 +36,6 @@ namespace XYZ {
 		private:
 			bool onKeyPressed(KeyPressedEvent& e);
 
-			std::pair<glm::vec3, glm::vec3> castRay(float mx, float my) const;
-			std::pair<float, float>		    getMouseViewportSpace()		const;
-
 			bool playBar();
 			bool toolsBar();
 

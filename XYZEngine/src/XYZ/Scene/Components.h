@@ -7,10 +7,11 @@
 #include "XYZ/Renderer/Material.h"
 #include "XYZ/Renderer/SubTexture.h"
 #include "XYZ/Renderer/Mesh.h"
-#include "XYZ/Renderer/StorageBufferAllocator.h"
+#include "XYZ/Renderer/VoxelMesh.h"
 
 #include "XYZ/Asset/Renderer/MaterialAsset.h"
 #include "XYZ/Asset/Animation/AnimationController.h"
+#include "XYZ/Asset/AssetReference.h"
 
 #include "XYZ/Script/ScriptPublicField.h"
 #include "XYZ/Particle/CPU/ParticleSystem.h"
@@ -116,13 +117,23 @@ namespace XYZ {
 
 		SpriteRenderer& operator =(const SpriteRenderer& other);
 
-		Ref<MaterialAsset> Material;
-		Ref<SubTexture>	   SubTexture;
+		AssetReference<MaterialAsset>  Material;
+		AssetReference<SubTexture>	   SubTexture;
 		
 		glm::vec4 Color = glm::vec4(1.0f);
 		uint32_t  SortLayer = 0;
 		bool	  Visible = true;
 	};
+
+
+	struct XYZ_API VoxelMeshComponent
+	{
+		VoxelMeshComponent() = default;
+		VoxelMeshComponent(const Ref<VoxelSourceMesh>& mesh);
+
+		AssetReference<VoxelSourceMesh> Mesh;
+	};
+
 
 	struct XYZ_API MeshComponent
 	{
@@ -130,9 +141,10 @@ namespace XYZ {
 		MeshComponent(const MeshComponent& other);
 		MeshComponent(const Ref<StaticMesh>& mesh, const Ref<MaterialAsset>& materialAsset);
 
-		Ref<StaticMesh>		  Mesh;
-		Ref<MaterialAsset>    MaterialAsset;
-		Ref<MaterialInstance> OverrideMaterial;
+
+		AssetReference<StaticMesh>		 Mesh;
+		AssetReference<MaterialAsset>    MaterialAsset;
+		Ref<MaterialInstance>			 OverrideMaterial;
 	};
 
 	struct XYZ_API AnimatedMeshComponent
@@ -141,9 +153,9 @@ namespace XYZ {
 		AnimatedMeshComponent(const AnimatedMeshComponent& other);
 		AnimatedMeshComponent(const Ref<AnimatedMesh>& mesh, const Ref<MaterialAsset>& materialAsset);
 
-		Ref<AnimatedMesh>	  Mesh;
-		Ref<MaterialAsset>    MaterialAsset;
-		Ref<MaterialInstance> OverrideMaterial;
+		AssetReference<AnimatedMesh>	  Mesh;
+		AssetReference<MaterialAsset>     MaterialAsset;
+		Ref<MaterialInstance>			  OverrideMaterial;
 		
 		std::vector<ozz::math::Float4x4> BoneTransforms;
 		std::vector<entt::entity>		 BoneEntities;
@@ -154,10 +166,10 @@ namespace XYZ {
 		AnimationComponent() = default;
 		AnimationComponent(const AnimationComponent& other);
 
-		Ref<AnimationController>  Controller;
-		SamplingContext			  Context; // It is not owned by controller so single controller can update on multiple threads
-		float					  AnimationTime = 0.0f;
-		bool					  Playing = false;
+		AssetReference<AnimationController>  Controller;
+		SamplingContext						 Context; // It is not owned by controller so single controller can update on multiple threads
+		float								 AnimationTime = 0.0f;
+		bool								 Playing = false;
 	};
 
 	class Prefab;
@@ -167,8 +179,8 @@ namespace XYZ {
 		PrefabComponent(const PrefabComponent& other);
 		PrefabComponent(const Ref<Prefab>& prefabAsset, const entt::entity owner);
 
-		Ref<Prefab>	 PrefabAsset;
-		entt::entity Owner = entt::null;
+		AssetReference<Prefab>	 PrefabAsset;
+		entt::entity			 Owner = entt::null;
 	};
 
 	struct XYZ_API ParticleRenderer
@@ -178,9 +190,9 @@ namespace XYZ {
 		ParticleRenderer(const Ref<Mesh>&mesh, const Ref<MaterialAsset>&materialAsset);
 
 
-		Ref<Mesh>		      Mesh;
-		Ref<MaterialAsset>    MaterialAsset;
-		Ref<MaterialInstance> OverrideMaterial;
+		AssetReference<Mesh>		      Mesh;
+		AssetReference<MaterialAsset>     MaterialAsset;
+		Ref<MaterialInstance>			  OverrideMaterial;
 	};
 
 	struct XYZ_API CameraComponent
@@ -207,11 +219,11 @@ namespace XYZ {
 
 	struct ParticleComponentGPU
 	{
-		Ref<Mesh>			    Mesh;
-		Ref<MaterialAsset>	    RenderMaterial;
-		Ref<MaterialInstance>   OverrideMaterial;
-
-		Ref<ParticleSystemGPU>  System;
+		AssetReference<Mesh>			    Mesh;
+		AssetReference<MaterialAsset>	    RenderMaterial;
+		Ref<MaterialInstance>				OverrideMaterial;
+		AssetReference<MaterialAsset>		UpdateMaterial;
+		AssetReference<ParticleSystemGPU>	System;
 	};
 
 	struct XYZ_API PointLightComponent2D
@@ -249,6 +261,13 @@ namespace XYZ {
 		bool	  CastsShadows = true;
 		bool	  SoftShadows = true;
 		float	  Falloff = 1.f;
+	};
+
+	struct DirectionalLightComponent
+	{
+		glm::vec3 Radiance = { 1.0f, 1.0f, 1.0f };
+		glm::vec3 Direction = { 0.0f, 0.0f, 0.0f };
+		float     Intensity = 1.0f;
 	};
 
 	struct XYZ_API Relationship
@@ -391,7 +410,6 @@ namespace XYZ {
 	};
 
 
-
 #define XYZ_COMPONENTS \
 	IDComponent, \
 	SceneTagComponent, \
@@ -408,6 +426,7 @@ namespace XYZ {
 	PointLightComponent2D, \
 	SpotLightComponent2D, \
 	PointLightComponent3D, \
+	DirectionalLightComponent,\
 	Relationship, \
 	ScriptComponent, \
 	RigidBody2DComponent, \

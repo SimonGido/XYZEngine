@@ -55,16 +55,7 @@ namespace XYZ {
 		m_ActiveScene(scene)
 	{
 		m_ViewportSize = { 1280, 720 };
-		Init();
-	}
-
-	SceneRenderer::~SceneRenderer()
-	{		
-	}
-
-	void SceneRenderer::Init()
-	{
-		XYZ_PROFILE_FUNC("SceneRenderer::Init");
+		XYZ_PROFILE_FUNC("SceneRenderer::SceneRenderer");
 
 		m_CommandBuffer = PrimaryRenderCommandBuffer::Create(0, "SceneRenderer");
 
@@ -81,14 +72,15 @@ namespace XYZ {
 		m_UniformBufferSet = UniformBufferSet::Create(framesInFlight);
 		m_UniformBufferSet->Create(sizeof(UBCameraData), UBCameraData::Set, UBCameraData::Binding);
 		m_UniformBufferSet->Create(sizeof(UBRendererData), UBRendererData::Set, UBRendererData::Binding);
+		m_UniformBufferSet->Create(sizeof(UBSceneData), UBSceneData::Set, UBSceneData::Binding);
 
 		m_StorageBufferSet = StorageBufferSet::Create(framesInFlight);
 		m_StorageBufferSet->Create(sizeof(SSBOPointLights3D), SSBOPointLights3D::Set, SSBOPointLights3D::Binding);
 		m_StorageBufferSet->Create(1, SSBOLightCulling::Set, SSBOLightCulling::Binding);
 		m_StorageBufferSet->Create(sizeof(SSBOBoneTransformData), SSBOBoneTransformData::Set, SSBOBoneTransformData::Binding);
-		
+
 		m_StorageBufferSet->Create(SSBOIndirectData::MaxSize, SSBOIndirectData::Set, SSBOIndirectData::Binding, true);
-	
+
 		for (uint32_t i = 0; i < SSBOComputeData::Count; ++i)
 		{
 			m_StorageBufferSet->Create(SSBOComputeData::MaxSize, SSBOComputeData::Set, SSBOComputeData::Binding[i]);
@@ -96,22 +88,27 @@ namespace XYZ {
 		}
 		m_IndirectCommandAllocator = Ref<StorageBufferAllocator>::Create(SSBOIndirectData::MaxSize, SSBOIndirectData::Binding, SSBOIndirectData::Set);
 
-		m_CompositeShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
-		m_LightShaderAsset	 = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/LightShader.shader");
-		m_BloomShaderAsset = AssetManager::GetAsset<ShaderAsset>("Resources/Shaders/Bloom.shader");
-		
+		m_CompositeShaderAsset = AssetManager::GetAssetWait<ShaderAsset>("Resources/Shaders/CompositeShader.shader");
+		m_LightShaderAsset = AssetManager::GetAssetWait<ShaderAsset>("Resources/Shaders/LightShader.shader");
+		m_BloomShaderAsset = AssetManager::GetAssetWait<ShaderAsset>("Resources/Shaders/Bloom.shader");
+
 		m_GeometryPass.Init(this);
 		m_DeferredLightPass.Init({ m_LightRenderPass, m_LightShaderAsset->GetShader() }, m_CommandBuffer);
 		m_BloomPass.Init({ m_BloomShaderAsset->GetShader(), m_BloomTexture }, m_CommandBuffer);
 		m_CompositePass.Init({ m_CompositeRenderPass, m_CompositeShaderAsset->GetShader() }, m_CommandBuffer);
 		m_LightCullingPass.Init({ m_UniformBufferSet, m_StorageBufferSet });
-	
-		m_LightCullingWorkGroups = { 
-			(m_ViewportSize.x + m_ViewportSize.x % 16) / 16, 
-			(m_ViewportSize.y + m_ViewportSize.y % 16) / 16, 
-			1 
+
+		m_LightCullingWorkGroups = {
+			(m_ViewportSize.x + m_ViewportSize.x % 16) / 16,
+			(m_ViewportSize.y + m_ViewportSize.y % 16) / 16,
+			1
 		};
 	}
+
+	SceneRenderer::~SceneRenderer()
+	{		
+	}
+
 
 	void SceneRenderer::SetScene(Ref<Scene> scene)
 	{
@@ -133,8 +130,13 @@ namespace XYZ {
 		m_CameraDataUB.ViewProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix() * m_SceneCamera.ViewMatrix;
 		m_CameraDataUB.ProjectionMatrix = m_SceneCamera.Camera.GetProjectionMatrix();
 		m_CameraDataUB.ViewMatrix = m_SceneCamera.ViewMatrix;
-		
+		m_CameraDataUB.CameraPosition = m_SceneCamera.ViewPosition;
+
 		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
+		m_SceneDataUB.NumberDirectionalLights = static_cast<uint32_t>(lightEnvironment.DirectionalLights.size());
+		memcpy(m_SceneDataUB.DirectionalLights, lightEnvironment.DirectionalLights.data(), lightEnvironment.DirectionalLights.size() * sizeof(DirectionalLight));
+
+		
 		m_PointsLights3DSSBO.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
 		memcpy(m_PointsLights3DSSBO.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
 		updateViewportSize();
@@ -145,8 +147,12 @@ namespace XYZ {
 		m_CameraDataUB.ViewProjectionMatrix = viewProjectionMatrix;
 		m_CameraDataUB.ProjectionMatrix = projection;
 		m_CameraDataUB.ViewMatrix = viewMatrix;
+		m_CameraDataUB.CameraPosition = glm::inverse(viewMatrix)[3];
 
 		const auto& lightEnvironment = m_ActiveScene->m_LightEnvironment;
+		m_SceneDataUB.NumberDirectionalLights = static_cast<uint32_t>(lightEnvironment.DirectionalLights.size());
+		memcpy(m_SceneDataUB.DirectionalLights, lightEnvironment.DirectionalLights.data(), lightEnvironment.DirectionalLights.size() * sizeof(DirectionalLight));
+
 		m_PointsLights3DSSBO.Count = static_cast<uint32_t>(lightEnvironment.PointLights3D.size());
 		memcpy(m_PointsLights3DSSBO.PointLights, lightEnvironment.PointLights3D.data(), lightEnvironment.PointLights3D.size() * sizeof(PointLight3D));
 		updateViewportSize();
@@ -163,7 +169,7 @@ namespace XYZ {
 		Ref<Image2D> colorImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(0);
 		Ref<Image2D> positionImage = m_GeometryRenderPass->GetSpecification().TargetFramebuffer->GetImage(1);
 		Ref<Image2D> lightImage = m_LightRenderPass->GetSpecification().TargetFramebuffer->GetImage();
-
+		//depthImage = m_DepthRenderPass->GetSpecification().TargetFramebuffer->GetImage(0);
 		
 
 		const bool clearGeometryPass = !m_Options.ShowGrid;
@@ -330,10 +336,18 @@ namespace XYZ {
 		for (uint32_t i = 0; i < count; ++i)
 		{
 			auto& data = computeData[i];
-			auto& commandData = command.Data.emplace_back();
-			commandData.Allocation = data.Allocation;
-			commandData.ComputeData.resize(data.DataSize);
-			memcpy(commandData.ComputeData.data(), data.Data, data.DataSize);
+			auto& allocationData = command.AllocationData.emplace_back();
+			const uint32_t dataOffset = command.ComputeData.size();
+			
+			// Allocation stores info about where is result of computation stored
+			allocationData.Allocation = data.Allocation;
+
+			// Store data required for computation
+			allocationData.ComputeDataOffset = dataOffset;
+			allocationData.ComputeDataSize = data.DataSize;
+
+			command.ComputeData.resize(dataOffset + data.DataSize);
+			memcpy(command.ComputeData.data() + dataOffset, data.Data, data.DataSize);
 		}
 		command.OverrideUniformData = uniformComputeData;
 	}
@@ -535,7 +549,8 @@ namespace XYZ {
 			}
 			if (UI::BeginTreeNode("Pre Depth Map"))
 			{
-				auto image = m_DepthRenderPass->GetSpecification().TargetFramebuffer->GetDepthImage();
+				// Debug image
+				auto image = m_DepthRenderPass->GetSpecification().TargetFramebuffer->GetImage(0);
 				const float size = ImGui::GetContentRegionAvail().x;
 				UI::Image(image, { size, size });
 
@@ -611,6 +626,7 @@ namespace XYZ {
 		FramebufferSpecification depthFramebufferSpec;
 		depthFramebufferSpec.Attachments = { ImageFormat::RED32F, ImageFormat::DEPTH32F};
 		depthFramebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+		
 
 		RenderPassSpecification depthRenderPassSpec;
 		depthRenderPassSpec.TargetFramebuffer = Framebuffer::Create(depthFramebufferSpec);
@@ -677,7 +693,14 @@ namespace XYZ {
 				};
 				m_RendererDataUB.TilesCountX = m_LightCullingWorkGroups.x;
 
-				m_StorageBufferSet->Resize(m_LightCullingWorkGroups.x * m_LightCullingWorkGroups.y * 4096, SSBOLightCulling::Set, SSBOLightCulling::Binding);
+
+				const uint32_t lightCullingSize = 
+						m_LightCullingWorkGroups.x
+					*	m_LightCullingWorkGroups.y
+					*	SSBOPointLights3D::MaxLights * sizeof(uint32_t);
+
+
+				m_StorageBufferSet->Resize(lightCullingSize, SSBOLightCulling::Set, SSBOLightCulling::Binding);
 			}
 			m_ViewportSizeChanged = false;
 		}
@@ -721,6 +744,7 @@ namespace XYZ {
 			const uint32_t currentFrame = Renderer::GetCurrentFrame();
 			instance->m_UniformBufferSet->Get(UBCameraData::Binding, UBCameraData::Set, currentFrame)->RT_Update(&instance->m_CameraDataUB, sizeof(UBCameraData), 0);
 			instance->m_UniformBufferSet->Get(UBRendererData::Binding, UBRendererData::Set, currentFrame)->RT_Update(&instance->m_RendererDataUB, sizeof(UBRendererData), 0);
+			instance->m_UniformBufferSet->Get(UBSceneData::Binding, UBSceneData::Set, currentFrame)->RT_Update(&instance->m_SceneDataUB, sizeof(UBSceneData), 0);
 			instance->m_StorageBufferSet->Get(SSBOPointLights3D::Binding, SSBOPointLights3D::Set, currentFrame)->RT_Update(&instance->m_PointsLights3DSSBO, sizeof(SSBOPointLights3D), 0);
 		});
 	}

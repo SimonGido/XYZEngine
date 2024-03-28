@@ -4,6 +4,7 @@
 #include "VulkanContext.h"
 
 namespace XYZ {
+
 	struct SwapChainSupportDetails
 	{
 		VkSurfaceCapabilitiesKHR		Capabilities;
@@ -105,14 +106,18 @@ namespace XYZ {
 		uint32_t score = 0;
 		for (const auto& device : devices)
 		{
-			VkPhysicalDeviceProperties deviceProperties;
-			vkGetPhysicalDeviceProperties(device, &deviceProperties);
+			VkPhysicalDeviceProperties2 deviceProperties;
+			deviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+			VkPhysicalDeviceRayTracingPipelinePropertiesKHR rtProperties{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR };
+			deviceProperties.pNext = &rtProperties;
+
+			vkGetPhysicalDeviceProperties2(device, &deviceProperties);
 			SwapChainSupportDetails swapChainDetails = QuerySwapChainSupport(surface, device);
 
-			if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+			if (deviceProperties.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
 				score += discreteGPUScore;
 
-			score += deviceProperties.limits.maxImageDimension2D;
+			score += deviceProperties.properties.limits.maxImageDimension2D;
 
 			if (score > maxScore 
 			&& !swapChainDetails.Formats.empty()
@@ -128,14 +133,21 @@ namespace XYZ {
 
 	VulkanPhysicalDevice::VulkanPhysicalDevice(VkSurfaceKHR surface)
 		:
-		m_DepthFormat(VK_FORMAT_UNDEFINED)
+		m_DepthFormat(VK_FORMAT_UNDEFINED),
+		m_RaytracingProperties{ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_PROPERTIES_KHR }
 	{
 		const auto vkInstance = VulkanContext::GetInstance();
 
 		const std::vector<VkPhysicalDevice> devices = GetPhysicalDevices(vkInstance);
 		m_PhysicalDevice = FindSuitableGPU(surface, devices);
 		XYZ_ASSERT(m_PhysicalDevice != VK_NULL_HANDLE, "failed to find GPUs with Vulkan support!");
-		vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_Properties);
+
+
+		m_Properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
+		m_Properties.pNext = &m_RaytracingProperties;
+
+		vkGetPhysicalDeviceProperties2(m_PhysicalDevice, &m_Properties);
+
 		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_Features);
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);
 
@@ -314,7 +326,7 @@ namespace XYZ {
 
 	}
 
-	VulkanDevice::VulkanDevice(VkPhysicalDeviceFeatures enabledFeatures)
+	VulkanDevice::VulkanDevice(VkPhysicalDeviceFeatures2 enabledFeatures)
 		:
 		m_LogicalDevice(VK_NULL_HANDLE),
 		m_EnabledFeatures(enabledFeatures),
@@ -337,27 +349,61 @@ namespace XYZ {
 		// If the device will be used for presenting to a display via a swapchain we need to request the swapchain extension
 		XYZ_ASSERT(m_PhysicalDevice->IsExtensionSupported(VK_KHR_SWAPCHAIN_EXTENSION_NAME), "");
 		deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-		deviceExtensions.push_back("VK_KHR_swapchain");
-		deviceExtensions.push_back("VK_KHR_external_memory");
 		deviceExtensions.push_back("VK_KHR_external_memory_win32");
-		deviceExtensions.push_back("VK_KHR_external_fence");
 		deviceExtensions.push_back("VK_KHR_external_fence_win32");
-		deviceExtensions.push_back("VK_KHR_external_semaphore");
 		deviceExtensions.push_back("VK_KHR_external_semaphore_win32");
 		deviceExtensions.push_back("VK_KHR_get_memory_requirements2");
-		deviceExtensions.push_back("VK_KHR_dedicated_allocation");
+
+		
+		// Raytracing
+		//deviceExtensions.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+		//deviceExtensions.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+		//deviceExtensions.push_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
+		//deviceExtensions.push_back(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+		
+		// Storage
+		if (m_PhysicalDevice->IsExtensionSupported(VK_KHR_8BIT_STORAGE_EXTENSION_NAME))
+			deviceExtensions.push_back(VK_KHR_8BIT_STORAGE_EXTENSION_NAME);
+		if (m_PhysicalDevice->IsExtensionSupported(VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME))
+			deviceExtensions.push_back(VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME);
 
 		if (m_PhysicalDevice->IsExtensionSupported(VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME))
 			deviceExtensions.push_back(VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME);
 		if (m_PhysicalDevice->IsExtensionSupported(VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME))
 			deviceExtensions.push_back(VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME);
+		
+
+
+		VkPhysicalDeviceAccelerationStructureFeaturesKHR accelFeature;
+		memset(&accelFeature, 0, sizeof(accelFeature));
+		accelFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+		accelFeature.accelerationStructure = true;
+		accelFeature.pNext = NULL;
+
+		
+		VkPhysicalDeviceRayTracingPipelineFeaturesKHR rtPipelineFeature;
+		memset(&rtPipelineFeature, 0, sizeof(rtPipelineFeature));
+		rtPipelineFeature.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+		rtPipelineFeature.rayTracingPipeline = true;
+		rtPipelineFeature.pNext = &accelFeature;
+
+		VkPhysicalDeviceVulkan12Features features12;
+		memset(&features12, 0, sizeof(VkPhysicalDeviceVulkan12Features));
+		features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+		features12.bufferDeviceAddress = true;
+		features12.pNext = &rtPipelineFeature;
+		features12.uniformAndStorageBuffer8BitAccess = true;
+		features12.storageBuffer8BitAccess = true;
+		features12.shaderInt8 = true;
 
 		VkDeviceCreateInfo deviceCreateInfo = {};
 		deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+		m_EnabledFeatures.pNext = &features12;
+
 
 		deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(m_PhysicalDevice->m_QueueCreateInfos.size());;
 		deviceCreateInfo.pQueueCreateInfos = m_PhysicalDevice->m_QueueCreateInfos.data();
-		deviceCreateInfo.pEnabledFeatures = &m_EnabledFeatures;
+		deviceCreateInfo.pNext = &m_EnabledFeatures;
 
 		// Enable the debug marker extension if it is present (likely meaning a debugging tool is present)
 		if (m_PhysicalDevice->IsExtensionSupported(VK_EXT_DEBUG_MARKER_EXTENSION_NAME))

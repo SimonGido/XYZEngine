@@ -11,6 +11,7 @@ namespace XYZ {
 
 	struct XYZ_API GPUSceneQueue
 	{
+
 		struct TransformData
 		{
 			glm::vec4 TransformRow[3];
@@ -37,22 +38,30 @@ namespace XYZ {
 			}
 		};
 
-		struct ParticleSystemCommand
+		struct XYZ_API ParticleSystemData
 		{
-			Ref<ParticleSystemGPU>					System;
+			Ref<ParticleSystemGPU>	System;
+			StorageBufferAllocation	ParticlePropertiesAllocation;
+			StorageBufferAllocation	ParticlesResultAllocation;
+		};
+
+		struct ParticleSystemCommand
+		{			
+			Ref<MaterialAsset>						UpdateMaterial;
 			
-			StorageBufferAllocation					ParticlePropertiesAllocation;
-			StorageBufferAllocation					ParticlesResultAllocation;
 			StorageBufferAllocation					IndirectCommandAllocation;
 			StorageBufferAllocation					CommandDataAllocation;
 			
 			CommandData								PerCommandData;
-			std::vector<IndirectIndexedDrawCommand> IndirectDrawCommands;
-			std::vector<IndirectDrawCommand>		DrawCommands;
+			
+			std::set<AssetHandle>					  ParticleDataHandles;
+			std::vector<IndirectIndexedDrawCommand>   IndirectDrawCommands;
+			std::vector<IndirectDrawCommand>		  DrawCommands;
+			
 		};
 
-
 		std::map<AssetHandle, ParticleSystemCommand> ParticleCommands;
+		std::unordered_map<AssetHandle, ParticleSystemData> ParticleData;
 
 		void Clear();
 	};
@@ -79,24 +88,32 @@ namespace XYZ {
 		void prepareCommands(Ref<Scene>& scene, Ref<SceneRenderer>& sceneRenderer);
 		void submitParticleCommands(Ref<Scene>& scene, Ref<SceneRenderer>& sceneRenderer);
 
+		void createParticleDataAllocations(GPUSceneQueue::ParticleSystemData& data, Ref<SceneRenderer>& sceneRenderer);
 		void createParticleCommandAllocations(GPUSceneQueue::ParticleSystemCommand& command, Ref<SceneRenderer>& sceneRenderer);
-		void storeParticleAllocationsCache(GPUSceneQueue::ParticleSystemCommand& command);
-		
-		void submitParticleCommandEmission(GPUSceneQueue::ParticleSystemCommand& command, Ref<SceneRenderer>& sceneRenderer);
+		void storeParticleDataAllocationsCache(GPUSceneQueue::ParticleSystemData& data);
+		void storeParticleCommandAllocationsCache(GPUSceneQueue::ParticleSystemCommand& command);
+
+		void submitParticleEmission(Ref<SceneRenderer>& sceneRenderer);
 		void submitParticleCommandCompute(GPUSceneQueue::ParticleSystemCommand& command, Ref<SceneRenderer>& sceneRenderer);
 	private:
 		float    m_FrameTimestep; // It can be updated only once per FramesInFlight
 		uint32_t m_FrameCounter;
 		GPUSceneQueue m_Queue;
 
-		struct ParticleAllocation
+		struct ParticleDataAllocation
 		{
 			StorageBufferAllocation ParticlePropertiesAllocation;
 			StorageBufferAllocation ParticlesResultAllocation;
+
+		};
+
+		struct ParticleCommandAllocation
+		{
 			StorageBufferAllocation IndirectCommandAllocation;
 			StorageBufferAllocation CommandDataAllocation;
 		};
 
-		std::unordered_map<AssetHandle, ParticleAllocation> m_AllocationCache;
+		std::unordered_map<AssetHandle, ParticleDataAllocation> m_ParticleDataAllocationCache;
+		std::unordered_map<AssetHandle, ParticleCommandAllocation> m_ParticleCommandAllocationCache;
 	};
 }

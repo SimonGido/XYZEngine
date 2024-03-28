@@ -13,6 +13,7 @@ layout(std140, binding = 0) uniform Camera
 	mat4 u_ViewProjection;
 	mat4 u_Projection;
 	mat4 u_View;
+	vec3 u_CameraPosition;
 };
 
 layout(push_constant) uniform ScreenData
@@ -42,6 +43,7 @@ shared uint minDepthInt;
 shared uint maxDepthInt;
 shared uint visibleLightCount;
 shared vec4 frustumPlanes[6];
+shared mat4 inverseViewProjection;
 
 // Shared local storage for visible indices, will be written out to the global buffer at the end
 shared int visibleLightIndices[MAX_POINT_LIGHTS];
@@ -54,13 +56,14 @@ void main()
 	ivec2 tileID = ivec2(gl_WorkGroupID.xy);
 	ivec2 tileNumber = ivec2(gl_NumWorkGroups.xy);
 	uint index = tileID.y * tileNumber.x + tileID.x;
-
+	
 	// Initialize shared global values for depth and light count
 	if (gl_LocalInvocationIndex == 0)
 	{
 		minDepthInt = 0xFFFFFFFF;
 		maxDepthInt = 0;
 		visibleLightCount = 0;
+		inverseViewProjection = inverse(u_ViewProjection);
 	}
 
 	barrier();
@@ -68,6 +71,7 @@ void main()
 	// Step 1: Calculate the minimum and maximum depth values (from the depth buffer) for this group's tile
 	vec2 tc = vec2(location) / u_ScreenData.u_ScreenSize;
 	float depth = texture(u_PreDepthMap, tc).r;
+
 	// Linearize depth value (keeping in mind Vulkan depth is 0->1 and we're using GLM_FORCE_DEPTH_ZERO_TO_ONE)
 	depth = u_Projection[3][2] / (depth + u_Projection[2][2]);
 
@@ -85,7 +89,7 @@ void main()
 		float minDepth = uintBitsToFloat(minDepthInt);
 		float maxDepth = uintBitsToFloat(maxDepthInt);
 
-		// Steps based on tile sale
+		// Steps based on tile scale
 		vec2 negativeStep = (2.0 * vec2(tileID)) / vec2(tileNumber);
 		vec2 positiveStep = (2.0 * vec2(tileID + ivec2(1, 1))) / vec2(tileNumber);
 
@@ -100,7 +104,7 @@ void main()
 		// Transform the first four planes
 		for (uint i = 0; i < 4; i++)
 		{
-			frustumPlanes[i] *= u_ViewProjection;
+			frustumPlanes[i] *= inverseViewProjection;
 			frustumPlanes[i] /= length(frustumPlanes[i].xyz);
 		}
 

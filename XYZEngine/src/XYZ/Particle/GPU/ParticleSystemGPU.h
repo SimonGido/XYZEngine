@@ -12,47 +12,33 @@
 
 namespace XYZ {
 	
-	
 
-	struct ParticleGPU
+	class XYZ_API ParticleView
 	{
-		// Data that are rendered
-		glm::vec4  TransformRow0;
-		glm::vec4  TransformRow1;
-		glm::vec4  TransformRow2;
-		glm::vec4  Color;	
-	};
+	public:
+		ParticleView(std::byte* data, uint32_t size);
 
-	struct ParticlePropertyGPU
-	{
-		// Spawn state
-		glm::vec4 StartPosition;
-		glm::vec4 StartColor;
-		glm::quat StartRotation;
-		glm::vec4 StartScale;
-		glm::vec4 StartVelocity;
-	
-		// If module enabled, end state
-		glm::vec4 EndColor;
-		glm::quat EndRotation;
-		glm::vec4 EndScale;
-		glm::vec4 EndVelocity;
+		template <typename T>
+		T* DataAs(uint32_t offset) const
+		{
+			XYZ_ASSERT(offset + sizeof(T) <= m_Size, "Accessing out of range data");
+			return reinterpret_cast<T*>(&m_Data[offset]);
+		}
 
-		glm::vec4  Position;
-		float	   LifeTime;
-		float      LifeReamining;
+		std::byte* GetData() const { return m_Data; }
+
+		uint32_t GetSize() const { return m_Size; }
+
 	private:
-		Padding<8> Padding;
+		std::byte* m_Data;
+		uint32_t   m_Size;
 	};
-
 
 	class XYZ_API ParticleBuffer
 	{
 	public:
 		ParticleBuffer() = default;
 		ParticleBuffer(uint32_t maxParticles, uint32_t stride);
-
-		void SetMaxParticles(uint32_t maxParticles, uint32_t stride);
 
 		std::byte* GetData() { return m_Data.data(); }
 		std::byte* GetData(uint32_t particleOffset);
@@ -65,8 +51,13 @@ namespace XYZ {
 		uint32_t   GetBufferSize()   const { return static_cast<uint32_t>(m_Data.size()); }
 	
 	private:
+		void setMaxParticles(uint32_t maxParticles, uint32_t stride);
+
+	private:
 		std::vector<std::byte> m_Data;
 		uint32_t			   m_Stride = 0;
+
+		friend class ParticleSystemGPU;
 	};
 
 	struct XYZ_API EmissionResult
@@ -86,7 +77,6 @@ namespace XYZ {
 		virtual AssetType GetAssetType() const { return AssetType::ParticleSystemGPU; }
 		static  AssetType GetStaticType() { return AssetType::ParticleSystemGPU; }
 
-		uint32_t Update(Timestep ts);
 		void	 Reset();
 
 		const ParticleSystemLayout& GetInputLayout()	const { return m_InputLayout; }
@@ -94,6 +84,8 @@ namespace XYZ {
 		const ParticleBuffer&		GetParticleBuffer() const { return m_ParticleBuffer; }
 		const EmissionResult		LastEmission()		const;
 		
+		ParticleView Emit(uint32_t particleCount);
+
 		uint32_t GetInputSize()  const { return m_ParticleBuffer.GetBufferSize(); }
 		uint32_t GetOutputSize() const { return GetMaxParticles() * m_OutputLayout.GetStride(); }
 
@@ -101,9 +93,6 @@ namespace XYZ {
 		uint32_t GetEmittedParticles() const { return m_EmittedParticles; }
 		uint32_t GetMaxParticles()	   const { return m_ParticleBuffer.GetMaxParticles(); }
 
-		std::vector<ParticleEmitterGPU> ParticleEmitters;
-		
-		Ref<MaterialAsset>				ParticleUpdateMaterial;
 
 		float    Speed = 1.0f;
 		bool	 Loop  = true;

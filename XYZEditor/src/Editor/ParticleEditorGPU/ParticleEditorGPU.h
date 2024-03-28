@@ -1,4 +1,5 @@
 #pragma once
+#include "XYZ/Asset/AssetReference.h"
 #include "XYZ/Scene/Blueprint.h"
 
 #include "Editor/EditorPanel.h"
@@ -28,9 +29,9 @@ namespace XYZ {
 
 			Ref<Blueprint> createBlueprint() const;
 		private:
-			Ref<Scene>			   m_Scene;
-			Ref<ParticleSystemGPU> m_ParticleSystem;
-			Ref<Blueprint>		   m_Blueprint;
+			Ref<Scene>						  m_Scene;
+			AssetReference<ParticleSystemGPU> m_ParticleSystem;
+			Ref<Blueprint>					  m_Blueprint;
 
 			float				   m_Timestep = 0.0f;
 			float				   m_SplitterWidth = 200.0f;

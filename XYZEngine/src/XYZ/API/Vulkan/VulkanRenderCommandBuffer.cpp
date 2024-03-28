@@ -26,7 +26,7 @@ namespace XYZ {
 		cmdPoolInfo.queueFamilyIndex = device->GetPhysicalDevice()->GetQueueFamilyIndices().Graphics;
 		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		VK_CHECK_RESULT(vkCreateCommandPool(device->GetVulkanDevice(), &cmdPoolInfo, nullptr, &m_CommandPool));
-
+		
 		VkCommandBufferAllocateInfo commandBufferAllocateInfo{};
 		commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		commandBufferAllocateInfo.commandPool = m_CommandPool;
@@ -310,16 +310,18 @@ namespace XYZ {
 		auto device = VulkanContext::GetCurrentDevice();
 		const uint32_t frameIndex = Renderer::GetCurrentFrame();
 
-
-		vkGetQueryPoolResults(device->GetVulkanDevice(), m_TimestampQueryPools[frameIndex], 0, m_TimestampQueryCount,
-			m_TimestampQueryCount * sizeof(uint64_t), m_TimestampQueryResults[frameIndex].data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
-
-		for (uint32_t i = 0; i < m_TimestampQueryCount; i += 2)
+		if (!m_TimestampQueryPools.empty())
 		{
-			uint64_t startTime = m_TimestampQueryResults[frameIndex][i];
-			uint64_t endTime = m_TimestampQueryResults[frameIndex][i + 1];
-			float nsTime = endTime > startTime ? (endTime - startTime) * device->GetPhysicalDevice()->GetLimits().timestampPeriod : 0.0f;
-			m_ExecutionGPUTimes[frameIndex][i / 2] = nsTime * 0.000001f; // Time in ms
+			vkGetQueryPoolResults(device->GetVulkanDevice(), m_TimestampQueryPools[frameIndex], 0, m_TimestampQueryCount,
+				m_TimestampQueryCount * sizeof(uint64_t), m_TimestampQueryResults[frameIndex].data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+
+			for (uint32_t i = 0; i < m_TimestampQueryCount; i += 2)
+			{
+				uint64_t startTime = m_TimestampQueryResults[frameIndex][i];
+				uint64_t endTime = m_TimestampQueryResults[frameIndex][i + 1];
+				float nsTime = endTime > startTime ? (endTime - startTime) * device->GetPhysicalDevice()->GetLimits().timestampPeriod : 0.0f;
+				m_ExecutionGPUTimes[frameIndex][i / 2] = nsTime * 0.000001f; // Time in ms
+			}
 		}
 	}
 	void VulkanPrimaryRenderCommandBuffer::getPipelineQueryResults()

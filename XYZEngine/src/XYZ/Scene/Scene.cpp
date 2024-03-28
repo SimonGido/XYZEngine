@@ -81,6 +81,33 @@ namespace XYZ {
 			(CopyComponentIfExists<Args>(src, dst, srcEntity, dstEntity), ...);
 		}
 
+		// TODO: do not use storages but something like ReplicationQueue<T> ?
+		template <typename T>
+		static std::future<bool> ReplicationCallback(entt::storage<T>& storage)
+		{
+			ThreadPool& pool = Application::Get().GetThreadPool();
+			return pool.SubmitJob([]() {
+
+				return true;
+				});
+		}
+
+		template <typename T>
+		static std::future<bool> Replicate(entt::registry& registry)
+		{
+			auto& storage = registry.storage<T>();
+			return ReplicationCallback(storage);
+		}
+
+		template <typename ...Args>
+		static void ReplicateAllAndWait(entt::registry& registry)
+		{
+			std::array<std::future<bool>, sizeof...(Args)> futures;
+			futures[index++] = { Replicate<Args>(registry)... };
+			for (auto& future : futures)
+				future.wait();
+		}
+
 
 		static void CloneRegistry(const entt::registry& src, entt::registry& dst, bool clearDestination = true)
 		{
@@ -106,6 +133,9 @@ namespace XYZ {
 	
 	static entt::registry s_CopyRegistry;
 
+
+	static std::vector<ParticleEmitterGPU> s_ParticleEmitters;
+
 	Scene::Scene(const std::string& name, const GUID& guid)
 		:
 		m_PhysicsWorld({ 0.0f, -9.8f }),
@@ -129,7 +159,36 @@ namespace XYZ {
 
 		m_Registry.on_construct<ScriptComponent>().connect<&Scene::onScriptComponentConstruct>(this);
 		m_Registry.on_destroy<ScriptComponent>().connect<&Scene::onScriptComponentDestruct>(this);
+	
+		
+
+		// Temporary
+
+		ParticleSystemLayout inputLayout("Input", {
+			{"StartPosition", VariableType{"vec4", 16}},
+			{"StartColor",	  VariableType{"vec4", 16}},
+			{"StartRotation", VariableType{"vec4", 16}},
+			{"StartScale",	  VariableType{"vec4", 16}},
+			{"StartVelocity", VariableType{"vec4", 16}},
+			{"EndColor",	  VariableType{"vec4", 16}},
+			{"EndRotation",   VariableType{"vec4", 16}},
+			{"EndScale",	  VariableType{"vec4", 16}},
+			{"EndVelocity",   VariableType{"vec4", 16}},
+			{"VelocityCurve", VariableType{"vec2[4]", 32}},
+			{"Position",	  VariableType{"vec4", 16}},
+			{"LifeTime",	  VariableType{"float", 4}},
+			{"LifeRemaining", VariableType{"float", 4}}
+			});
+
+		ParticleEmitterGPU emitter(inputLayout.GetStride());
+		emitter.EmissionRate = 10.0f;
+
+		emitter.EmitterModules.push_back(Ref<BoxParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("StartPosition") }));
+		emitter.EmitterModules.push_back(Ref<SpawnParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("LifeTime") }));
+		emitter.EmitterModules.push_back(Ref<TestParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("StartColor") }));
+		s_ParticleEmitters.push_back(emitter);
 	}
+
 
 	Scene::~Scene()
 	{
@@ -317,13 +376,13 @@ namespace XYZ {
 		for (auto entity : spriteView)
 		{
 			auto& [transform, spriteRenderer] = spriteView.get<TransformComponent, SpriteRenderer>(entity);
-			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform->WorldTransform);
+			sceneRenderer->SubmitSprite(spriteRenderer.Material.Value(), spriteRenderer.SubTexture.Value(), spriteRenderer.Color, transform->WorldTransform);
 		}
 		auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
 		for (auto entity : meshView)
 		{
 			auto& [transform, meshComponent] = meshView.get<TransformComponent, MeshComponent>(entity);
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform->WorldTransform, meshComponent.OverrideMaterial);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh.Value(), meshComponent.MaterialAsset.Value(), transform->WorldTransform, meshComponent.OverrideMaterial);
 		}
 
 		auto animMeshView = m_Registry.view<TransformComponent, AnimatedMeshComponent>();
@@ -337,7 +396,7 @@ namespace XYZ {
 				meshComponent.BoneTransforms[i] = Utils::Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity)->WorldTransform);
 			}
 			Ref<MeshSource> meshSource = meshComponent.Mesh->GetMeshSource();
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh.Value(), meshComponent.MaterialAsset.Value(), meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
 		}
 
 		auto particleView = m_Registry.view<TransformComponent, ParticleRenderer, ParticleComponent>();
@@ -348,7 +407,7 @@ namespace XYZ {
 			auto& renderData = particleComponent.GetSystem()->GetRenderData();
 		
 			sceneRenderer->SubmitMesh(
-				renderer.Mesh, renderer.MaterialAsset,
+				renderer.Mesh.Value(), renderer.MaterialAsset.Value(),
 				renderData.ParticleData.data(),
 				renderData.ParticleCount,
 				sizeof(ParticleRenderData),
@@ -380,17 +439,6 @@ namespace XYZ {
 		m_GPUScene.OnUpdate(ts);
 	}
 	
-	template <typename T>
-	static bool CheckAsset(Ref<T>& asset)
-	{
-		if (!asset.Raw())
-			return false;
-		if (asset->IsFlagSet(AssetFlag::Missing))
-			return false;
-		if (asset->IsFlagSet(AssetFlag::Reloaded))
-			asset = AssetManager::GetAsset<T>(asset->GetHandle());
-		return true;
-	}
 
 	void Scene::OnRenderEditor(Ref<SceneRenderer> sceneRenderer, const glm::mat4& viewProjection, const glm::mat4& view, const glm::mat4& projection)
 	{
@@ -405,18 +453,19 @@ namespace XYZ {
 		{
 			auto& [transform, spriteRenderer] = spriteView.get<TransformComponent, SpriteRenderer>(entity);
 			
-			if (!CheckAsset(spriteRenderer.Material) || !CheckAsset(spriteRenderer.SubTexture))
+			if (!spriteRenderer.Material.Valid() || !spriteRenderer.SubTexture.Valid())
 				continue;
-			sceneRenderer->SubmitSprite(spriteRenderer.Material, spriteRenderer.SubTexture, spriteRenderer.Color, transform->WorldTransform);
+			sceneRenderer->SubmitSprite(spriteRenderer.Material.Value(), spriteRenderer.SubTexture.Value(), spriteRenderer.Color, transform->WorldTransform);
 		}
 		
 		auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
 		for (auto entity : meshView)
 		{
 			auto& [transform, meshComponent] = meshView.get<TransformComponent, MeshComponent>(entity);
-			if (!CheckAsset(meshComponent.MaterialAsset) || !CheckAsset(meshComponent.Mesh))
+			if (!meshComponent.MaterialAsset.Valid() || !meshComponent.Mesh.Valid())
 				continue;
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, transform->WorldTransform, meshComponent.OverrideMaterial);
+		
+			sceneRenderer->SubmitMesh(meshComponent.Mesh.Value(), meshComponent.MaterialAsset.Value(), transform->WorldTransform, meshComponent.OverrideMaterial);
 		}
 		
 		
@@ -424,9 +473,8 @@ namespace XYZ {
 		for (auto entity : animMeshView)
 		{
 			auto& [transform, meshComponent] = animMeshView.get<TransformComponent,  AnimatedMeshComponent>(entity);
-			if (!CheckAsset(meshComponent.Mesh) || !CheckAsset(meshComponent.MaterialAsset))
+			if (!meshComponent.Mesh.Valid() || !meshComponent.MaterialAsset.Valid())
 				continue;
-
 			
 			meshComponent.BoneTransforms.resize(meshComponent.BoneEntities.size());
 			for (size_t i = 0; i < meshComponent.BoneEntities.size(); ++i)
@@ -435,7 +483,7 @@ namespace XYZ {
 				meshComponent.BoneTransforms[i] = Utils::Float4x4FromMat4(m_Registry.get<TransformComponent>(boneEntity)->WorldTransform);
 			}
 			Ref<MeshSource> meshSource = meshComponent.Mesh->GetMeshSource();
-			sceneRenderer->SubmitMesh(meshComponent.Mesh, meshComponent.MaterialAsset, meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
+			sceneRenderer->SubmitMesh(meshComponent.Mesh.Value(), meshComponent.MaterialAsset.Value(), meshSource->GetSubmeshTransform(), meshComponent.BoneTransforms, meshComponent.OverrideMaterial);
 		}
 
 		{
@@ -444,12 +492,13 @@ namespace XYZ {
 			for (auto entity : particleView)
 			{
 				auto& [transform, renderer, particleComponent] = particleView.get<TransformComponent, ParticleRenderer, ParticleComponent>(entity);
-				if (!CheckAsset(renderer.Mesh) || !CheckAsset(renderer.MaterialAsset))
-					continue;
 				
+				if (!renderer.Mesh.Valid() || !renderer.MaterialAsset.Valid())
+					continue;
+
 				const auto& renderData = particleComponent.GetSystem()->GetRenderData();
 				sceneRenderer->SubmitMesh(
-					renderer.Mesh, renderer.MaterialAsset,
+					renderer.Mesh.Value(), renderer.MaterialAsset.Value(),
 					renderData.ParticleData.data(),
 					renderData.ParticleCount,
 					sizeof(ParticleRenderData),
@@ -652,7 +701,7 @@ namespace XYZ {
 		{
 			auto [anim, animMesh] = animView.get(entity);
 			anim.Playing = true; // TODO: temporary
-			if (anim.Playing && anim.Controller.Raw())
+			if (anim.Playing && anim.Controller.Valid())
 			{
 				anim.Controller->Update(anim.AnimationTime, anim.Context);
 				anim.AnimationTime += ts;
@@ -681,7 +730,7 @@ namespace XYZ {
 		{
 			auto [anim, animMesh] = animView.get(entity);
 			anim.Playing = true; // TODO: temporary
-			if (anim.Playing && anim.Controller.Raw())
+			if (anim.Playing && anim.Controller.Valid())
 			{
 				futures.emplace_back(threadPool.SubmitJob([instance, ts, &animation = anim, &animatedMesh = animMesh]() mutable {
 
@@ -719,10 +768,19 @@ namespace XYZ {
 		auto& particleStorage = m_Registry.storage<ParticleComponentGPU>();
 		for (auto particleComponent : particleStorage)
 		{
-			if (particleComponent.System->GetEmittedParticles() == particleComponent.System->GetMaxParticles())
-				particleComponent.System->Reset();
-			
-			particleComponent.System->Update(ts);		
+			//if (particleComponent.System->GetEmittedParticles() == particleComponent.System->GetMaxParticles())
+			//	particleComponent.System->Reset();
+
+			uint32_t emitted = 0;
+			for (auto& emitter : s_ParticleEmitters)
+			{
+				emitted = emitter.Emit(ts);
+			}
+			for (auto& emitter : s_ParticleEmitters)
+			{
+				ParticleView view = particleComponent.System->Emit(emitted);
+				emitter.Generate(emitted, view.GetData(), view.GetSize());
+			}	
 		}
 	}
 
@@ -851,6 +909,11 @@ namespace XYZ {
 	{
 		auto pointLights3D = m_Registry.view<PointLightComponent3D, TransformComponent>();
 		m_LightEnvironment.PointLights3D.clear();
+		m_LightEnvironment.PointLights2D.clear();
+		m_LightEnvironment.SpotLights2D.clear();
+		m_LightEnvironment.DirectionalLights.clear();
+
+		// PointLights3D
 		for (auto entity : pointLights3D)
 		{
 			auto [transformComponent, lightComponent] = pointLights3D.get<TransformComponent, PointLightComponent3D>(entity);
@@ -890,56 +953,65 @@ namespace XYZ {
 				});
 			}
 		}
+		// PointLights2D
+		auto pointLight2DView = m_Registry.view<TransformComponent, PointLightComponent2D>();
+		for (auto entity : pointLight2DView)
+		{
+			auto& [transform, light] = pointLight2DView.get<TransformComponent, PointLightComponent2D>(entity);
+			auto [trans, rot, scale] = transform.GetWorldComponents();
+
+			m_LightEnvironment.PointLights2D.push_back({
+				glm::vec4(light.Color, 1.0f),
+				glm::vec2(trans),
+				light.Radius,
+				light.Intensity
+			});
+		}
+
+		// SpotLights2D
+		auto spotLight2DView = m_Registry.view<TransformComponent, SpotLightComponent2D>();
+		for (auto entity : spotLight2DView)
+		{
+			// Render previous frame data
+			auto& [transform, light] = spotLight2DView.get<TransformComponent, SpotLightComponent2D>(entity);
+			auto [trans, rot, scale] = transform.GetWorldComponents();
+
+			m_LightEnvironment.SpotLights2D.push_back({
+				glm::vec4(light.Color, 1.0f),
+				glm::vec2(trans),
+				light.Radius,
+				light.Intensity,
+				light.InnerAngle,
+				light.OuterAngle
+			});
+		}
+
+
+		// DirectionalLights
+		auto& dirLightStorage = m_Registry.storage<DirectionalLightComponent>();
+		for (auto& light : dirLightStorage)
+		{
+			if (m_LightEnvironment.DirectionalLights.size() == UBSceneData::MaxDirectionalLights)
+				break;
+
+			auto& dirLight = m_LightEnvironment.DirectionalLights.emplace_back();
+			dirLight.Direction = light.Direction;
+			dirLight.Multiplier = light.Intensity;
+			dirLight.Radiance = light.Radiance;
+		}
+		
 	}
 
 	
 
 	void Scene::CreateParticleTest()
 	{
-		// NOTE: this can be generated from shader
-		ParticleSystemLayout inputLayout("Input",{
-			{"StartPosition", VariableType{"vec4", 16}},
-			{"StartColor",	  VariableType{"vec4", 16}},
-			{"StartRotation", VariableType{"vec4", 16}},
-			{"StartScale",	  VariableType{"vec4", 16}},
-			{"StartVelocity", VariableType{"vec4", 16}},
-			{"EndColor",	  VariableType{"vec4", 16}},
-			{"EndRotation",   VariableType{"vec4", 16}},
-			{"EndScale",	  VariableType{"vec4", 16}},
-			{"EndVelocity",   VariableType{"vec4", 16}},
-			{"Position",	  VariableType{"vec4", 16}},
-			{"LifeTime",	  VariableType{"float", 4}},
-			{"LifeRemaining", VariableType{"float", 4}}
-		});
+		auto m_ParticleSystemGPU = AssetManager::GetAsset<ParticleSystemGPU>("Resources/ParticleSystems/ParticleSystem.particle");
+		auto m_ParticleCubeMesh = AssetManager::GetAsset<StaticMesh>("Resources/Meshes/Cube.mesh");
 
-		ParticleSystemLayout outputLayout("Output",{
-			{"TransformRow0", VariableType{"vec4", 16}},
-			{"TransformRow1", VariableType{"vec4", 16}},
-			{"TransformRow2", VariableType{"vec4", 16}},
-			{"Color",		  VariableType{"vec4", 16}}
-		});
-
-		m_ParticleSystemGPU = Ref<ParticleSystemGPU>::Create(inputLayout, outputLayout, 1000);
-
-		ParticleSystemGPUShaderGenerator generator(m_ParticleSystemGPU);
-		FileSystem::WriteFile("ParticleTest.glsl", generator.GetSource());
-
-		ParticleEmitterGPU emitter(inputLayout.GetStride());
-		emitter.EmissionRate = 10.0f;
-
-		emitter.EmitterModules.push_back(Ref<BoxParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("StartPosition") }));
-		emitter.EmitterModules.push_back(Ref<SpawnParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("LifeTime") }));
-		emitter.EmitterModules.push_back(Ref<TestParticleEmitterModuleGPU>::Create(inputLayout.GetStride(), std::vector<uint32_t>{ inputLayout.GetVariableOffset("StartColor") }));
-		m_ParticleSystemGPU->ParticleEmitters.push_back(emitter);
-
-
-		m_ParticleCubeMesh = MeshFactory::CreateBox(glm::vec3(1.0f));
+		auto m_UpdateCommandMaterial = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/ParticleComputeMaterial.mat");
+		auto m_ParticleMaterialGPU = AssetManager::GetAsset<MaterialAsset>("Resources/Materials/ParticleMaterialGPU.mat");
 		
-
-		m_UpdateCommandMaterial = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleComputeShader.glsl")));
-		m_ParticleMaterialGPU = Ref<MaterialAsset>::Create(Ref<ShaderAsset>::Create(Shader::Create("Resources/Shaders/Particle/GPU/ParticleShaderGPU.glsl")));
-		m_ParticleMaterialInstanceGPU = m_ParticleMaterialGPU->GetMaterialInstance();
-
 		Ref<Texture2D> whiteTexture = Renderer::GetDefaultResources().RendererAssets.at("WhiteTexture").As<Texture2D>();
 		m_ParticleMaterialGPU->SetTexture("u_Texture", whiteTexture);
 
@@ -949,14 +1021,12 @@ namespace XYZ {
 		m_UpdateCommandMaterial->Specialize("VELOCITY_OVER_LIFE", enabled);
 		m_UpdateCommandMaterial->Specialize("ROTATION_OVER_LIFE", enabled);
 		m_UpdateCommandMaterial->Specialize("SPAWN_LIGHTS", enabled);
-
-		m_ParticleSystemGPU->ParticleUpdateMaterial = m_UpdateCommandMaterial;
 	
 		{
 			SceneEntity entity = CreateEntity("Particle GPU Test0");
 			auto& particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();
 
-
+			particleComponent.UpdateMaterial = m_UpdateCommandMaterial;
 			particleComponent.RenderMaterial = m_ParticleMaterialGPU;
 			particleComponent.Mesh = m_ParticleCubeMesh;
 			particleComponent.System = m_ParticleSystemGPU;
@@ -965,7 +1035,7 @@ namespace XYZ {
 			SceneEntity entity = CreateEntity("Particle GPU Test1");
 			auto& particleComponent = entity.EmplaceComponent<ParticleComponentGPU>();
 
-
+			particleComponent.UpdateMaterial = m_UpdateCommandMaterial;
 			particleComponent.RenderMaterial = m_ParticleMaterialGPU;
 			particleComponent.Mesh = m_ParticleCubeMesh;
 			particleComponent.System = m_ParticleSystemGPU;

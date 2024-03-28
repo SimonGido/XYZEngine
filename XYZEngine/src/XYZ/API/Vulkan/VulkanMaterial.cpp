@@ -199,6 +199,7 @@ namespace XYZ {
 			}
 			return true;
 		}
+		return false;
 	}
 	void VulkanMaterial::allocateDescriptorSetsAll()
 	{

@@ -8,6 +8,7 @@
 #include "XYZ/Renderer/Renderer.h"
 
 namespace XYZ {
+
 	VulkanImage2D::VulkanImage2D(const ImageSpecification& specification)
 		: m_Specification(specification)
 	{
@@ -70,7 +71,7 @@ namespace XYZ {
 		});
 
 		VkDevice device = VulkanContext::GetCurrentDevice()->GetVulkanDevice();
-		VulkanAllocator allocator("Image2D");
+		VulkanAllocator allocator("VulkanImage2D" + m_Specification.DebugName);
 	
 		m_Info.MemoryAlloc = allocator.AllocateImage(createImageCreateInfo(), VMA_MEMORY_USAGE_GPU_ONLY, m_Info.Image);
 		if (m_ImageData)
@@ -197,7 +198,7 @@ namespace XYZ {
 	void VulkanImage2D::copyImageData()
 	{
 		// Create staging buffer
-		VulkanAllocator allocator("Image2D");
+		VulkanAllocator allocator("VulkanImage2D");
 		VkBuffer stagingBuffer;
 		VmaAllocation stagingBufferAllocation = allocateStagingBuffer(allocator, stagingBuffer);
 

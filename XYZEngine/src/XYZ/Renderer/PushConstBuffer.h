@@ -48,6 +48,17 @@ namespace XYZ {
 			return result;
 		}
 
+		void Write(std::byte* data, uint32_t size, uint32_t offset)
+		{
+			memcpy(&Bytes[offset], data, size);
+		}
+
+		template <typename T>
+		T& Read(uint32_t offset)
+		{
+			return *(T*)(&Bytes[offset]);
+		}
+
 		static constexpr size_t sc_MaxSize = 128;
 
 		std::byte Bytes[sc_MaxSize];

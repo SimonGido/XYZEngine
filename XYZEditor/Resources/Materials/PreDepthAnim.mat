@@ -4,6 +4,8 @@ Textures:
   []
 TextureArrays:
   []
+Specialization:
+  []
 MaterialData:
   - Name: u_Renderer.Transform
     Type: 14

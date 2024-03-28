@@ -4,6 +4,9 @@
 #include "VulkanContext.h"
 
 namespace XYZ {
+
+	static constexpr uint32_t sc_SizeLimit = 224395264u;
+
 	VulkanStorageBuffer::VulkanStorageBuffer(uint32_t size, uint32_t binding, bool indirect)
 		: 
 		m_Size(size), 
@@ -44,23 +47,71 @@ namespace XYZ {
 			return;
 		ByteBuffer buffer = GetBuffer();
 
-		buffer.Write(data, size, offset);
+		buffer.Write(data, size);
 		Ref<VulkanStorageBuffer> instance = this;
 		Renderer::Submit([instance, size, offset, buffer]() mutable {
+
 			instance->RT_Update(buffer.Data, size, offset);
 			instance->m_Buffers.PushBack(buffer);
 		});
 	}
-	void VulkanStorageBuffer::RT_Update(const void* data, uint32_t size, uint32_t offset)
+	void VulkanStorageBuffer::Update(void** data, uint32_t size, uint32_t offset)
 	{
 		XYZ_ASSERT(size + offset <= m_Size, "");
 		if (size == 0)
 			return;
-		VulkanAllocator allocator("VulkanStorageBuffer");
-		uint8_t* pData = allocator.MapMemory<uint8_t>(m_MemoryAllocation);
-		memcpy(pData + offset, (uint8_t*)data, size);
-		allocator.UnmapMemory(m_MemoryAllocation);
+
+		void* dataPtr = *data;
+		data = nullptr;
+
+		Ref<VulkanStorageBuffer> instance = this;
+		Renderer::Submit([instance, size, offset, dataPtr]() mutable {
+			instance->RT_Update(dataPtr, size, offset);
+			delete[]dataPtr;
+		});
 	}
+	void VulkanStorageBuffer::RT_Update(const void* data, uint32_t size, uint32_t offset)
+	{
+		XYZ_PROFILE_FUNC("VulkanStorageBufferSet::RT_Update");
+		//RT_ApplySize();
+		XYZ_ASSERT(size + offset <= m_Size, "");
+		if (size == 0)
+			return;
+
+		VulkanAllocator allocator("VulkanBuffer");
+		if (m_Size >= sc_SizeLimit)
+		{
+			auto device = VulkanContext::GetCurrentDevice();
+			VkBuffer stagingBuffer;
+			VkBufferCreateInfo stagingBufferCreateInfo{};
+			stagingBufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			stagingBufferCreateInfo.size = size;
+			stagingBufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+			stagingBufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			const VmaAllocation stagingBufferAllocation = allocator.AllocateBuffer(stagingBufferCreateInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
+
+			uint8_t* destData = allocator.MapMemory<uint8_t>(stagingBufferAllocation);
+			memcpy(destData, data, size);
+			allocator.UnmapMemory(stagingBufferAllocation);
+
+			const VkCommandBuffer copyCmd = device->GetCommandBuffer(true);
+
+			VkBufferCopy copyRegion = {};
+			copyRegion.dstOffset = offset;
+			copyRegion.size = size;
+			vkCmdCopyBuffer(copyCmd, stagingBuffer, m_Buffer, 1, &copyRegion);
+
+			device->FlushCommandBuffer(copyCmd);
+			allocator.DestroyBuffer(stagingBuffer, stagingBufferAllocation);
+		}
+		else
+		{
+			uint8_t* pData = allocator.MapMemory<uint8_t>(m_MemoryAllocation);
+			memcpy(pData + offset, (uint8_t*)data, size);
+			allocator.UnmapMemory(m_MemoryAllocation);
+		}
+	}
+
 	void VulkanStorageBuffer::Update(ByteBuffer data, uint32_t size, uint32_t offset)
 	{
 		XYZ_ASSERT(data.Size + offset <= m_Size, "");
@@ -74,10 +125,10 @@ namespace XYZ {
 	}
 	void VulkanStorageBuffer::Resize(uint32_t size)
 	{
-		m_Size = size;
 		Ref<VulkanStorageBuffer> instance = this;
-		Renderer::Submit([instance]() mutable{
-				instance->RT_invalidate();
+		Renderer::Submit([instance, size]() mutable {
+			instance->m_Size = size;
+			instance->RT_invalidate();
 		});
 	}
 
@@ -95,6 +146,7 @@ namespace XYZ {
 		m_DescriptorInfo.offset = offset;
 		m_DescriptorInfo.range = size;
 	}
+
 	void VulkanStorageBuffer::release()
 	{
 		if (!m_MemoryAllocation)
@@ -119,7 +171,7 @@ namespace XYZ {
 		release();
 
 		VkBufferUsageFlags flags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-		if (m_IsIndirect)
+		if (m_IsIndirect || m_Size >= sc_SizeLimit)
 		{
 			flags |= VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
 		}
@@ -130,7 +182,8 @@ namespace XYZ {
 		bufferInfo.size = m_Size;
 
 		VulkanAllocator allocator("StorageBuffer");
-		m_MemoryAllocation = allocator.AllocateBuffer(bufferInfo, VMA_MEMORY_USAGE_CPU_TO_GPU, m_Buffer);
+		VmaMemoryUsage memoryUsage = m_Size >= sc_SizeLimit ? VMA_MEMORY_USAGE_GPU_ONLY : VMA_MEMORY_USAGE_CPU_TO_GPU;
+		m_MemoryAllocation = allocator.AllocateBuffer(bufferInfo, memoryUsage, m_Buffer);
 
 		m_DescriptorInfo.buffer = m_Buffer;
 		m_DescriptorInfo.offset = 0;
@@ -142,7 +195,10 @@ namespace XYZ {
 		if (m_Buffers.Empty())
 			buffer.Allocate(m_Size);
 		else
+		{
 			buffer = m_Buffers.PopBack();
+			buffer.TryReallocate(m_Size);
+		}
 		return buffer;
 	}
 

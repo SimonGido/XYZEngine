@@ -11,7 +11,6 @@
 #include "XYZ/Utils/FileSystem.h"
 #include "XYZ/Renderer/Shader.h"
 #include "XYZ/Renderer/Texture.h"
-#include "XYZ/Scene/Prefab.h"
 
 #include "XYZ/FileWatcher/FileWatcher.h"
 
@@ -58,13 +57,26 @@ namespace XYZ {
 		class AssetBrowser;
 	}
 
+	using AssetLoadedFn = std::function<void(Ref<Asset>)>;
+	
+	struct AssetPending
+	{		
+		Ref<AssetData>	AssetData;
+		AssetLoadedFn	OnLoaded;
+	};
+
+	struct AssetLoaded
+	{
+		Ref<Asset> Asset;
+		AssetLoadedFn OnLoaded;
+	};
+
 	class XYZ_API AssetManager
 	{
 	public:
 		static void Init();
 		static void Shutdown();
 		static void KeepAlive(float seconds);
-
 
 		static void SerializeAll();
 		static void Serialize(const AssetHandle& assetHandle);
@@ -80,14 +92,19 @@ namespace XYZ {
 		template<typename T, typename... Args>
 		static Ref<T> CreateAsset(const std::string& filename, const std::string& directoryPath, Args&&... args);
 			
+		static void LoadAssetAsync(const AssetHandle& assetHandle, const AssetLoadedFn& onLoaded);
+		
 		template<typename T>
 		static Ref<T> GetAsset(const AssetHandle& assetHandle);
+
+		template<typename T>
+		static Ref<T> GetAssetWait(const AssetHandle& assetHandle);
 
 		template <typename T>
 		static Ref<T> GetAsset(const std::filesystem::path& filepath);
 
 		template <typename T>
-		static std::future<Ref<T>> GetAssetAsync(const std::filesystem::path& filepath);
+		static Ref<T> GetAssetWait(const std::filesystem::path& filepath);
 
 		template<typename T>
 		static Ref<T> TryGetAsset(const AssetHandle& assetHandle);
@@ -101,13 +118,15 @@ namespace XYZ {
 		template <typename T>
 		static std::vector<Ref<T>> FindAllLoadedAssets(AssetType type);
 
+		static std::vector<AssetHandle> FindAllLoadedAssets();
+
 		static std::vector<AssetMetadata> FindAllMetadata(AssetType type);
 
 		static void ReloadAsset(const std::filesystem::path& filepath);
 
-		static const AssetMetadata& GetMetadata(const AssetHandle& handle);
-		static const AssetMetadata& GetMetadata(const std::filesystem::path& filepath);
-		static const AssetMetadata& GetMetadata(const Ref<Asset>& asset) { return GetMetadata(asset->m_Handle); }
+		static const AssetMetadata GetMetadata(const AssetHandle& handle);
+		static const AssetMetadata GetMetadata(const std::filesystem::path& filepath);
+		static const AssetMetadata GetMetadata(const Ref<Asset>& asset) { return GetMetadata(asset->m_Handle); }
 		
 		static const std::filesystem::path&	GetAssetDirectory();
 		static const MemoryPool&			GetMemoryPool() { return Get().m_Pool; }
@@ -122,22 +141,31 @@ namespace XYZ {
 	private:
 		static void loadAssetMetadata(const std::filesystem::path& filepath);
 		static void writeAssetMetadata(const AssetMetadata& metadata);
-
 		static void processDirectory(const std::filesystem::path& path);
-		
+		static void keepAliveAsset(Ref<Asset> asset);
+
+		template <typename T>
+		static Ref<T> loadAsset(const AssetMetadata& metadata);
+
 
 		static void onFileChange(FileWatcher::ChangeType type, const std::filesystem::path& path);
 
+		static void assetLoadingWorker();
 	private:
-
 		MemoryPool										  m_Pool = MemoryPool(1024 * 1024 * 10);
 		AssetRegistry									  m_Registry;
-		ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>	  m_LoadedAssets;
-		ThreadUnorderedMap<AssetHandle, WeakRef<Asset>>   m_MemoryAssets;
+
+		std::unordered_map<AssetHandle, WeakRef<Asset>>   m_MemoryAssets;
+
+		ThreadQueue<AssetPending>						  m_PendingAssetsQueue;
+		ThreadQueue<AssetLoaded>						  m_LoadedAssetsQueue;
+
+		std::unique_ptr<std::thread>					  m_PendingAssetsLoadThread;
 
 		std::shared_ptr<FileWatcher>					  m_FileWatcher;
 		std::shared_ptr<AssetLifeManager>				  m_AssetLifeManager;
 
+		bool m_LoadingAssetsAsync;
 	private:
 		friend Editor::AssetBrowser;
 		friend Editor::AssetManagerViewPanel;
@@ -153,7 +181,7 @@ namespace XYZ {
 		Ref<T> asset = Utils::CreateRef<T>(std::forward<Args>(args)...);
 		asset->m_Handle = AssetHandle();
 
-		Get().m_MemoryAssets.Set(asset->m_Handle, asset.Raw());
+		Get().m_MemoryAssets.[asset->m_Handle] = asset.Raw();
 		return asset;
 	}
 
@@ -161,9 +189,10 @@ namespace XYZ {
 	inline Ref<T> AssetManager::GetMemoryAsset(const AssetHandle& assetHandle)
 	{
 		WeakRef<Asset> asset;
-		bool found = Get().m_MemoryAssets.Find(assetHandle, asset);
-		XYZ_ASSERT(!found, "Memory asset does not exist");
-		return asset.As<T>();
+
+		auto it = Get().m_MemoryAssets.find(assetHandle);
+		XYZ_ASSERT(it != Get().m_MemoryAssets.end(), "Memory asset does not exist");
+		return it->second.As<T>();
 	}
 
 	template<typename T, typename ...Args>
@@ -175,15 +204,14 @@ namespace XYZ {
 		metadata.Type		  = T::GetStaticType();
 
 		XYZ_ASSERT(!FileSystem::Exists(metadata.FilePath.string()), "File already exists");
-		
-		Get().m_Registry.StoreMetadata(metadata);
-
 		Ref<T> asset = Utils::CreateRef<T>(std::forward<Args>(args)...);
 		asset->m_Handle = metadata.Handle;
 
-		Get().m_LoadedAssets.Set(asset->m_Handle, asset.Raw());
+		Get().m_Registry.StoreMetadata(metadata, asset.Raw());
+
 		writeAssetMetadata(metadata);
 		AssetImporter::Serialize(asset);
+		keepAliveAsset(asset);
 		return asset;
 	}
 
@@ -191,20 +219,43 @@ namespace XYZ {
 	template<typename T>
 	inline Ref<T> AssetManager::GetAsset(const AssetHandle& assetHandle)
 	{
-		Ref<Asset> result = nullptr;
-		WeakRef<Asset> getAsset = nullptr;
-		if (!Get().m_LoadedAssets.TryGet(assetHandle, getAsset) || !getAsset.IsValid())
-		{
-			auto metadata = Get().m_Registry.GetMetadata(assetHandle);
-			bool loaded = AssetImporter::TryLoadData(*metadata, result);
-			if (!loaded)
-				return nullptr;
-
-			Get().m_LoadedAssets.Set(assetHandle, result.Raw());
-			return result;
+		Ref<Asset> result;
+		Ref<AssetData> assetData = Get().m_Registry.GetAsset(assetHandle);
+		if (assetData->TryLock()) // If asset is locked it means it is not loaded yet
+		{	
+			if (!assetData->Asset.IsValid())
+			{		
+				// If we did not request async load of asset, load it synchronously
+				result = loadAsset<T>(assetData->Metadata);
+				assetData->Asset = result.Raw();
+			}
+			else
+			{
+				result = assetData->Asset.Raw();
+			}
+			assetData->Unlock();
 		}
+		return result.As<T>();
+	}
 
-		result = getAsset.Raw();
+	template<typename T>
+	inline Ref<T> AssetManager::GetAssetWait(const AssetHandle& assetHandle)
+	{
+		Ref<AssetData> assetData = Get().m_Registry.GetAsset(assetHandle);
+		assetData->SpinLock();
+
+		Ref<Asset> result;
+		if (!assetData->Asset.IsValid())
+		{
+			// If we did not request async load of asset, load it synchronously
+			result = loadAsset<T>(assetData->Metadata);
+			assetData->Asset = result.Raw();
+		}
+		else
+		{
+			result = assetData->Asset.Raw();
+		}
+		assetData->Unlock();
 		return result.As<T>();
 	}
 
@@ -212,17 +263,15 @@ namespace XYZ {
 	template<typename T>
 	inline Ref<T> AssetManager::GetAsset(const std::filesystem::path& filepath)
 	{
-		auto& metadata = GetMetadata(filepath);
-		return GetAsset<T>(metadata.Handle);
+		auto metadata = Get().m_Registry.GetMetadata(filepath);
+		return GetAsset<T>(metadata->Handle);
 	}
 
 	template<typename T>
-	inline std::future<Ref<T>> AssetManager::GetAssetAsync(const std::filesystem::path& filepath)
+	inline Ref<T> AssetManager::GetAssetWait(const std::filesystem::path& filepath)
 	{
-		auto& threadPool = Application::Get().GetThreadPool();
-		return threadPool.SubmitJob([path = filepath]() {
-			return GetAsset<T>(path);
-		});
+		auto metadata = Get().m_Registry.GetMetadata(filepath);
+		return GetAssetWait<T>(metadata->Handle);
 	}
 
 
@@ -252,14 +301,14 @@ namespace XYZ {
 	inline std::vector<Ref<T>> AssetManager::FindAllAssets(AssetType type)
 	{
 		std::vector<Ref<T>> result;
-
-		Get().m_LoadedAssets.ForEach([&result, type](const AssetHandle& handle, WeakRef<Asset> asset) {
-			auto metadata = Get().m_Registry.GetMetadata(handle);
-			if (metadata->Type == type)
+		for (auto it : Get().m_Registry)
+		{
+			const auto& metadata = it.second->Metadata;
+			if (metadata.Type == type)
 			{
-				result.push_back(GetAsset<T>(handle));
+				result.push_back(GetAsset<T>(metadata.Handle));
 			}
-		});
+		}
 		return result;
 	}
 
@@ -267,19 +316,30 @@ namespace XYZ {
 	inline std::vector<Ref<T>> AssetManager::FindAllLoadedAssets(AssetType type)
 	{
 		std::vector<Ref<T>> result;
-
-		Get().m_LoadedAssets.ForEach([&result, type](const AssetHandle& handle, WeakRef<Asset> asset) {
-			auto metadata = Get().m_Registry.GetMetadata(handle);
-			if (metadata->Type == type)
+		
+		for (auto it : Get().m_Registry)
+		{
+			if (it.second->Asset.IsValid())
 			{
-				WeakRef<Asset> getAsset = nullptr;
-				if (Get().m_LoadedAssets.TryGet(metadata->Handle, getAsset) && getAsset.IsValid())
+				if (it.second->Metadata.Type == type)
 				{
-					Ref<T> asset = getAsset.As<T>().Raw();
-					result.push_back(asset);
+					Ref<Asset> asset = it.second->Asset.Raw();
+					result.push_back(asset.As<T>());
 				}
 			}
-			});
+		}
 		return result;
+	}
+
+	template<typename T>
+	inline Ref<T> AssetManager::loadAsset(const AssetMetadata& metadata)
+	{
+		Ref<Asset> result = nullptr;
+		bool loaded = AssetImporter::TryLoadData(metadata, result);
+		if (!loaded)
+			return nullptr;
+
+		keepAliveAsset(result);
+		return result.As<T>();
 	}
 }

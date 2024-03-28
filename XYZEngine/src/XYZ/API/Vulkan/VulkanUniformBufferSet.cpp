@@ -10,6 +10,34 @@ namespace XYZ {
 		m_Frames(frames)
 	{
 	}
+	VulkanUniformBufferSet::~VulkanUniformBufferSet()
+	{
+		for (auto& [key, set] : m_DataTransferBuffers)
+		{
+			for (auto& [binding, queue] : set)
+			{
+				while (!queue.Empty())
+				{
+					ByteBuffer buffer = queue.PopBack();
+					buffer.Destroy();
+				}
+			}
+		}
+	}
+	void VulkanUniformBufferSet::UpdateEachFrame(const void* data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set)
+	{
+		Ref<VulkanUniformBufferSet> instance = this;
+		ByteBuffer buffer = getBuffer(set, binding, size);
+		buffer.Write(data, size);
+
+		Renderer::Submit([buffer, instance, size, offset, binding, set]() mutable {
+			for (uint32_t frame = 0; frame < Renderer::GetConfiguration().FramesInFlight; ++frame)
+			{
+				instance->Get(binding, set, frame)->RT_Update(buffer, size, offset);
+			}
+			instance->m_DataTransferBuffers[set][binding].PushBack(buffer);
+		});
+	}
 	void VulkanUniformBufferSet::CreateDescriptors(const Ref<Shader>& shader)
 	{
 		Ref<const VulkanShader> vulkanShader = shader;
@@ -100,5 +128,19 @@ namespace XYZ {
 				}
 			}
 		}
+	}
+	ByteBuffer VulkanUniformBufferSet::getBuffer(uint32_t set, uint32_t binding, uint32_t size)
+	{
+		auto& queue = m_DataTransferBuffers[set][binding];
+
+		ByteBuffer buffer;
+		if (queue.Empty())
+			buffer.Allocate(size);
+		else
+		{
+			buffer = queue.PopBack();
+			buffer.TryReallocate(size);
+		}
+		return buffer;
 	}
 }

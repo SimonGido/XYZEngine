@@ -25,6 +25,8 @@ namespace XYZ {
 			XYZ_API ImVec4 ConvertToLinear(const ImVec4& colour);
 
 			XYZ_API bool IsItemDoubleClicked(ImGuiMouseButton button);
+
+			XYZ_API std::pair<float, float> GetMouseViewportSpace();			
 		}
 
 		XYZ_API ImGuiContext* GetImGuiContext();

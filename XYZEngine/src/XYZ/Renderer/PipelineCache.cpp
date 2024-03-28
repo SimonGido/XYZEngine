@@ -22,6 +22,7 @@ namespace XYZ {
 		pipeline = Pipeline::Create(spec);
 		return pipeline;
 	}
+
 	Ref<PipelineCompute> PipelineCache::PrepareComputePipeline(const Ref<MaterialAsset>& materialAsset)
 	{
 		auto it = m_ComputePipelines.find(materialAsset->GetHandle());

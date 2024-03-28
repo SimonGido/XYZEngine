@@ -13,6 +13,7 @@ namespace XYZ {
 	static bool s_Validation = false; // Let's leave this on for now...
 	#endif
 
+
 	static VKAPI_ATTR VkBool32 VKAPI_CALL VulkanDebugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char* pLayerPrefix, const char* pMessage, void* pUserData)
 	{
 		(void)flags; (void)object; (void)location; (void)messageCode; (void)pUserData; (void)pLayerPrefix; // Unused arguments
@@ -55,11 +56,12 @@ namespace XYZ {
 		std::vector<const char*> instanceExtensions;
 		VulkanValidation::AddExtension(VK_KHR_SURFACE_EXTENSION_NAME, instanceExtensions);
 		VulkanValidation::AddExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, instanceExtensions);
+		VulkanValidation::AddExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, instanceExtensions);
+	
 		if (s_Validation)
 		{
 			VulkanValidation::AddExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME, instanceExtensions);
 			VulkanValidation::AddExtension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, instanceExtensions);
-			VulkanValidation::AddExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, instanceExtensions);
 		}
 
 		const VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT };
@@ -70,7 +72,7 @@ namespace XYZ {
 
 		VkInstanceCreateInfo instanceCreateInfo = {};
 		instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-		instanceCreateInfo.pNext = nullptr;// &features;
+		instanceCreateInfo.pNext = nullptr;//&features;
 		instanceCreateInfo.pApplicationInfo = &appInfo;
 		instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size());
 		instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
@@ -154,14 +156,17 @@ namespace XYZ {
 	}
 	void VulkanContext::setupDevice()
 	{
-		VkPhysicalDeviceFeatures enabledFeatures;
-		memset(&enabledFeatures, 0, sizeof(VkPhysicalDeviceFeatures));
-		enabledFeatures.samplerAnisotropy = true;
-		enabledFeatures.wideLines = true;
-		enabledFeatures.fillModeNonSolid = true;
-		enabledFeatures.pipelineStatisticsQuery = true;
-		enabledFeatures.inheritedQueries = true;
-		enabledFeatures.shaderStorageImageMultisample = true; // Required for VR
+		VkPhysicalDeviceFeatures2 enabledFeatures;
+		memset(&enabledFeatures, 0, sizeof(VkPhysicalDeviceFeatures2));
+		enabledFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+		enabledFeatures.features.samplerAnisotropy = true;
+		enabledFeatures.features.wideLines = true;
+		enabledFeatures.features.fillModeNonSolid = true;
+		enabledFeatures.features.pipelineStatisticsQuery = true;
+		enabledFeatures.features.inheritedQueries = true;
+		enabledFeatures.features.shaderStorageImageMultisample = true; // Required for VR
+		
+
 
 		m_Device = Ref<VulkanDevice>::Create(enabledFeatures);
 	}

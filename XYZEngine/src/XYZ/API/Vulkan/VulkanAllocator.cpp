@@ -13,11 +13,24 @@ namespace XYZ {
 		uint64_t TotalAllocatedBytes = 0;
 	};
 
+	struct AllocationCounter
+	{
+		std::unordered_map<std::string, int64_t> CountMap;
+		std::mutex Mutex;
+	};
+
 	static VulkanAllocatorData* s_Data = nullptr;
+
+	static AllocationCounter s_AllocationCounter;
 
 	VulkanAllocator::VulkanAllocator(const std::string& tag)
 		: m_Tag(tag)
 	{
+		std::scoped_lock lock(s_AllocationCounter.Mutex);
+		if (s_AllocationCounter.CountMap.find(m_Tag) == s_AllocationCounter.CountMap.end())
+		{
+			s_AllocationCounter.CountMap[m_Tag] = 0;
+		}
 	}
 
 	VulkanAllocator::~VulkanAllocator()
@@ -38,7 +51,9 @@ namespace XYZ {
 		vmaGetAllocationInfo(s_Data->Allocator, allocation, &allocInfo);
 
 		s_Data->TotalAllocatedBytes += allocInfo.size;
-			
+
+		increaseAllocationCounter();
+
 		return allocation;
 	}
 
@@ -56,6 +71,8 @@ namespace XYZ {
 	
 		s_Data->TotalAllocatedBytes += allocInfo.size;
 		
+		increaseAllocationCounter();
+		
 		return allocation;
 	}
 
@@ -69,6 +86,7 @@ namespace XYZ {
 		XYZ_ASSERT(image, "");
 		XYZ_ASSERT(allocation, "");
 		vmaDestroyImage(s_Data->Allocator, image, allocation);
+		decreaseAllocationCounter();
 	}
 
 	void VulkanAllocator::DestroyBuffer(VkBuffer buffer, VmaAllocation allocation)
@@ -76,6 +94,7 @@ namespace XYZ {
 		XYZ_ASSERT(buffer, "");
 		XYZ_ASSERT(allocation, "");
 		vmaDestroyBuffer(s_Data->Allocator, buffer, allocation);
+		decreaseAllocationCounter();
 	}
 
 	void VulkanAllocator::UnmapMemory(VmaAllocation allocation)
@@ -128,12 +147,20 @@ namespace XYZ {
 		allocatorInfo.physicalDevice = device->GetPhysicalDevice()->GetVulkanPhysicalDevice();
 		allocatorInfo.device = device->GetVulkanDevice();
 		allocatorInfo.instance = VulkanContext::GetInstance();
+		allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
 
 		vmaCreateAllocator(&allocatorInfo, &s_Data->Allocator);
 	}
 
 	void VulkanAllocator::Shutdown()
 	{
+#ifdef XYZ_DEBUG
+		for (const auto& [tag, count] : s_AllocationCounter.CountMap)
+		{
+			XYZ_ASSERT(count == 0, "Allocation with tag not released " + tag);
+		}
+#endif
+
 		vmaDestroyAllocator(s_Data->Allocator);
 
 		delete s_Data;
@@ -143,6 +170,23 @@ namespace XYZ {
 	VmaAllocator& VulkanAllocator::GetVMAAllocator()
 	{
 		return s_Data->Allocator;
+	}
+
+
+	void VulkanAllocator::increaseAllocationCounter()
+	{
+#ifdef XYZ_DEBUG
+		std::scoped_lock lock(s_AllocationCounter.Mutex);
+		s_AllocationCounter.CountMap[m_Tag]++;
+#endif
+	}
+
+	void VulkanAllocator::decreaseAllocationCounter()
+	{
+#ifdef XYZ_DEBUG
+		std::scoped_lock lock(s_AllocationCounter.Mutex);
+		s_AllocationCounter.CountMap[m_Tag]--;
+#endif
 	}
 
 }

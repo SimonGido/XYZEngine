@@ -34,13 +34,13 @@ namespace XYZ {
 		MaterialInstance(const Ref<Material>& material);
 
 	private:
-		void allocateStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers) const;
-		std::pair<const ShaderUniform*, ByteBuffer*> findUniformDeclaration(const std::string_view name);
-		std::pair<const ShaderUniform*, ByteBuffer*> findUniformDeclaration(const std::string_view name) const;
+		void initializeStorage(const std::unordered_map<std::string, ShaderBuffer>& buffers);
+		const ShaderUniform* findUniformDeclaration(const std::string_view name);
+		const ShaderUniform* findUniformDeclaration(const std::string_view name) const;
 	
 	private:
 		Ref<Material>			m_Material;
-		mutable ByteBuffer		m_UniformsBuffer;
+		mutable PushConstBuffer m_UniformsBuffer;
 
 		friend class Material;
 	};
@@ -48,25 +48,25 @@ namespace XYZ {
 	template<typename T>
 	inline void MaterialInstance::Set(const std::string_view name, const T& value)
 	{
-		auto [decl, buffer] = findUniformDeclaration(name);
+		auto decl = findUniformDeclaration(name);
 		XYZ_ASSERT(decl != nullptr, "Could not find uniform with name");
 		if (!decl)
 			return;
-		buffer->Write((uint8_t*)&value, decl->GetSize(), decl->GetOffset());
+		m_UniformsBuffer.Write((std::byte*)&value, decl->GetSize(), decl->GetOffset());
 	}
 	template<typename T>
 	inline T& MaterialInstance::Get(const std::string_view name)
 	{
-		auto [decl, buffer] = findUniformDeclaration(name);
+		auto decl = findUniformDeclaration(name);
 		XYZ_ASSERT(decl != nullptr, "Could not find uniform with name");
-		return buffer->Read<T>(decl->GetOffset());
+		return m_UniformsBuffer.Read<T>(decl->GetOffset());
 	}
 	template<typename T>
 	inline const T& MaterialInstance::Get(const std::string_view name) const
 	{
-		auto [decl, buffer] = findUniformDeclaration(name);
+		auto decl = findUniformDeclaration(name);
 		XYZ_ASSERT(decl != nullptr, "Could not find uniform with name");
-		return buffer->Read<T>(decl->GetOffset());
+		return m_UniformsBuffer.Read<T>(decl->GetOffset());
 	}
 }
 

@@ -57,9 +57,9 @@ namespace XYZ {
 
 	struct ComputeData
 	{
-		StorageBufferAllocation Allocation;
-		std::byte* Data = nullptr;
-		uint32_t   DataSize = 0;
+		StorageBufferAllocation Allocation; // Where is data stored 
+		std::byte* Data = nullptr;	// Data required for computation
+		uint32_t   DataSize = 0;	// Size of data required for computation
 	};
 
 	class XYZ_API SceneRenderer : public RefCount
@@ -68,7 +68,7 @@ namespace XYZ {
 		SceneRenderer(Ref<Scene> scene, SceneRendererSpecification specification = {});
 		~SceneRenderer();
 
-		void Init();
+
 		void SetScene(Ref<Scene> scene);
 		void SetViewportSize(uint32_t width, uint32_t height);
 		void SetGridProperties(const GridProperties& props);
@@ -135,7 +135,8 @@ namespace XYZ {
 
 		UBCameraData	 m_CameraDataUB;
 		UBRendererData   m_RendererDataUB;
-		
+		UBSceneData		 m_SceneDataUB;
+
 		SSBOPointLights3D		   m_PointsLights3DSSBO;
 		SSBOBoneTransformData	   m_BoneTransformSSBO;
 		std::vector<TransformData> m_TransformData;

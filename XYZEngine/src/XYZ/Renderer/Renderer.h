@@ -124,6 +124,9 @@ namespace XYZ {
 		static const RenderAPICapabilities& GetCapabilities();
 		static const RendererConfiguration& GetConfiguration();
 
+		template <typename FuncT>
+		static void Submit(RenderCommandQueue& queue, FuncT&& func);
+
 		template<typename FuncT>
 		static void Submit(FuncT&& func);
 
@@ -140,7 +143,7 @@ namespace XYZ {
 
 		static void Render();
 		static void ExecuteResources();
-
+		static void ExecuteResources(uint32_t index);
 
 		static ThreadPool&			GetPool();
 		static RendererAPI::Type	GetAPI() { return RendererAPI::GetType(); }
@@ -150,14 +153,13 @@ namespace XYZ {
 	private:
 		static ScopedLock<RenderCommandQueue> getResourceQueue();
 		static ScopedLock<RenderCommandQueue> getRenderCommandQueue();
-		static RendererStats&	   getStats();
+		static RendererStats&				  getStats();
 	};
 
-	template <typename FuncT>
-	void Renderer::Submit(FuncT&& func)
+	template<typename FuncT>
+	inline void Renderer::Submit(RenderCommandQueue& queue, FuncT&& func)
 	{
 		XYZ_PROFILE_FUNC("Renderer::Submit");
-		//XYZ_CHECK_THREAD(Application::Get().GetApplicationThreadID());
 
 		auto renderCmd = [](void* ptr) {
 
@@ -165,6 +167,24 @@ namespace XYZ {
 			(*pFunc)();
 			pFunc->~FuncT(); // Call destructor
 		};
+
+		auto storageBuffer = queue.Allocate(renderCmd, sizeof(func));
+		new (storageBuffer) FuncT(std::forward<FuncT>(func));
+		getStats().CommandsCount++;
+	}
+
+	template <typename FuncT>
+	void Renderer::Submit(FuncT&& func)
+	{
+		XYZ_PROFILE_FUNC("Renderer::Submit");
+
+		auto renderCmd = [](void* ptr) {
+
+			auto pFunc = static_cast<FuncT*>(ptr);
+			(*pFunc)();
+			pFunc->~FuncT(); // Call destructor
+		};
+
 		ScopedLock<RenderCommandQueue> queue = getRenderCommandQueue();
 		auto storageBuffer = queue->Allocate(renderCmd, sizeof(func));
 		new (storageBuffer) FuncT(std::forward<FuncT>(func));

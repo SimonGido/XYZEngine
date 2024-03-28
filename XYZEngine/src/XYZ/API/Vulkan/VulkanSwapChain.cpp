@@ -97,13 +97,17 @@ namespace XYZ {
 			Create(&width, &height, m_VSync);
 			m_CurrentBufferIndex = 0;
 			m_CurrentImageIndex = 0;
+			for (uint32_t i = 0; i < Renderer::GetConfiguration().FramesInFlight; ++i)
+			{
+				Renderer::ExecuteResources(i);
+			}
 		}
 	}
 	void VulkanSwapChain::BeginFrame()
 	{
 		Renderer::Submit([this]() {
-
 			const auto device = m_Device->GetVulkanDevice();
+			
 			VK_CHECK_RESULT(vkAcquireNextImageKHR(device, m_SwapChain, UINT64_MAX, m_Semaphores[m_CurrentBufferIndex].PresentComplete, VK_NULL_HANDLE, &m_CurrentImageIndex));
 		});
 	}
@@ -140,7 +144,9 @@ namespace XYZ {
 			{
 				XYZ_PROFILE_FUNC("VulkanSwapChain::Present - WaitForFences");
 				m_CurrentBufferIndex = (m_CurrentBufferIndex + 1) % Renderer::GetConfiguration().FramesInFlight;
-				VK_CHECK_RESULT(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
+				VK_CHECK_RESULT(vkWaitForFences(m_Device->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));			
+				const auto device = m_Device->GetVulkanDevice();
+				vkDeviceWaitIdle(device);
 				Renderer::ExecuteResources();
 			}
 		});

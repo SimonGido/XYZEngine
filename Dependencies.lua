@@ -22,6 +22,8 @@ IncludeDir["OpenXR"] = "%{wks.location}/XYZEngine/vendor/OpenXR-SDK/include"
 IncludeDir["OpenXR-Oculus"] = "%{wks.location}/XYZEngine/vendor/Oculus-OpenXR-Mobile-SDK/OpenXR/Include"
 IncludeDir["spdlog"] = "%{wks.location}/XYZEngine/vendor/spdlog/include"
 IncludeDir["VulkanSDK"] = "%{VULKAN_SDK}/Include"
+IncludeDir["vox"] = "%{wks.location}/XYZEngine/vendor/vox"
+IncludeDir["PerlinNoise"] = "%{wks.location}/XYZEngine/vendor/PerlinNoise"
 
 LibraryDir = {}
 LibraryDir["mono"] = "vendor/mono/lib/Debug/mono-2.0-sgen.lib"

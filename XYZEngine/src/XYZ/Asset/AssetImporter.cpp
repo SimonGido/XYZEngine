@@ -39,6 +39,7 @@ namespace XYZ {
 		s_Serializers[ToUnderlying(AssetType::Animation)] = CreateScope<AnimationAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::Skeleton)] = CreateScope<SkeletonAssetSerializer>();
 		s_Serializers[ToUnderlying(AssetType::AnimationController)] = CreateScope<AnimationControllerAssetSerializer>();
+		s_Serializers[ToUnderlying(AssetType::ParticleSystemGPU)] = CreateScope<ParticleSystemSerializerGPU>();
 	}
 
 	void AssetImporter::Serialize(const AssetMetadata& metadata, WeakRef<Asset> asset)

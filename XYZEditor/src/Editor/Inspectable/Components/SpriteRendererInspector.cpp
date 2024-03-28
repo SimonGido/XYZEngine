@@ -37,9 +37,9 @@ namespace XYZ {
 					);
 
 					std::string materialName = "None";
-					if (component.Material.Raw() && AssetManager::Exist(component.Material->GetHandle()))
+					if (component.Material.Valid() && AssetManager::Exist(component.Material->GetHandle()))
 					{
-						materialName = Utils::GetFilename(AssetManager::GetMetadata(component.Material).FilePath.string());
+						materialName = Utils::GetFilename(AssetManager::GetMetadata(component.Material.Value()).FilePath.string());
 					}
 					UI::TableRow("Material",
 						[]() { ImGui::Text("Material"); },
@@ -47,22 +47,22 @@ namespace XYZ {
 							UI::ScopedWidth w(150.0f);					    
 							ImGui::InputText("##Material", (char*)materialName.c_str(), materialName.size(), ImGuiInputTextFlags_ReadOnly); 
 							
-							EditorHelper::AssetDragAcceptor(component.Material);
+							EditorHelper::AssetDragAcceptor(component.Material.Value());
 						}
 					);
 			
 
 					std::string subTextureName = "None";
-					if (component.SubTexture.Raw() && AssetManager::Exist(component.SubTexture->GetHandle()))
+					if (component.SubTexture.Valid() && AssetManager::Exist(component.SubTexture->GetHandle()))
 					{
-						subTextureName = Utils::GetFilename(AssetManager::GetMetadata(component.SubTexture).FilePath.string());
+						subTextureName = Utils::GetFilename(AssetManager::GetMetadata(component.SubTexture.Value()).FilePath.string());
 					}
 					UI::TableRow("SubTexture",
 						[]() { ImGui::Text("SubTexture"); },
 						[&]() { 
 							UI::ScopedWidth w(150.0f);
 							ImGui::InputText("##SubTexture", (char*)subTextureName.c_str(), subTextureName.size(), ImGuiInputTextFlags_ReadOnly); 
-							EditorHelper::AssetDragAcceptor(component.SubTexture);
+							EditorHelper::AssetDragAcceptor(component.SubTexture.Value());
 						}
 					);
 

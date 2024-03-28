@@ -13,6 +13,8 @@ namespace XYZ {
 		uint64_t Free = 0;
 	};
 
+
+
 	class VulkanAllocator
 	{
 	public:
@@ -43,6 +45,11 @@ namespace XYZ {
 		static void Shutdown();
 
 		static VmaAllocator& GetVMAAllocator();
+
+	private:
+		void increaseAllocationCounter();
+		void decreaseAllocationCounter();
+
 	private:
 		std::string m_Tag;
 	};

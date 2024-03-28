@@ -14,7 +14,10 @@ namespace XYZ {
 		virtual ~VulkanStorageBuffer() override;
 
 		virtual void Update(const void* data, uint32_t size, uint32_t offset = 0) override;
+		virtual void Update(void** data, uint32_t size, uint32_t offset = 0) override;
+
 		virtual void RT_Update(const void* data, uint32_t size, uint32_t offset = 0) override;
+
 		virtual void Update(ByteBuffer data, uint32_t size, uint32_t offset = 0) override;
 		virtual void Resize(uint32_t size) override;
 		virtual void SetBufferInfo(uint32_t size, uint32_t offset) override;
@@ -22,6 +25,7 @@ namespace XYZ {
 		virtual bool		IsIndirect() const override { return m_IsIndirect; }
 		virtual uint32_t	GetBinding() const override { return m_Binding; }
 		virtual ByteBuffer	GetBuffer() override;
+		virtual uint32_t	GetSize() const override { return m_Size; }
 
 		void RT_SetBufferInfo(uint32_t size, uint32_t offset);
 
@@ -38,6 +42,7 @@ namespace XYZ {
 
 		uint32_t		  m_Size;
 		uint32_t		  m_Binding;
+
 		ThreadQueue<ByteBuffer> m_Buffers;
 
 		bool m_IsIndirect;

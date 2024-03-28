@@ -175,7 +175,8 @@ namespace XYZ {
 
 	void Prefab::copyEntity(SceneEntity dst, SceneEntity src, std::unordered_map<entt::entity, entt::entity>& clones) const
 	{
-		CopyComponentsIfExist(*src.GetRegistry(), *dst.GetRegistry(), src.ID(), dst.ID());
+		entt::registry& dstRegistry = dst.GetScene()->m_Registry;
+		CopyComponentsIfExist(*src.GetRegistry(), dstRegistry, src.ID(), dst.ID());
 
 		clones[src.ID()] = dst.ID();
 
@@ -217,7 +218,7 @@ namespace XYZ {
 		SceneEntity newEntity = m_Scene->CreateEntity("", GUID());
 		m_Entities.push_back(newEntity);
 
-		CopyComponentsIfExist(*entity.GetRegistry(), m_Scene->GetRegistry(), entity.ID(), newEntity.ID());
+		CopyComponentsIfExist(*entity.GetRegistry(), m_Scene->m_Registry, entity.ID(), newEntity.ID());
 
 		std::stack<entt::entity> children;
 		
@@ -233,7 +234,7 @@ namespace XYZ {
 
 			auto& childRel = child.GetComponent<Relationship>();
 			SceneEntity newChild = createPrefabFromEntity(child);
-			Relationship::SetupRelation(newEntity.ID(), newChild.ID(), m_Scene->GetRegistry());
+			Relationship::SetupRelation(newEntity.ID(), newChild.ID(), m_Scene->m_Registry);
 			if (childRel.GetNextSibling() != entt::null)
 				children.push(childRel.GetNextSibling());
 		}

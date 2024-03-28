@@ -133,7 +133,7 @@ namespace XYZ {
 
 			
 		vertexInputInfo.pVertexAttributeDescriptions = vertexInputAttributes.data();
-		vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.size();
+		vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(bindingDescriptions.size());
 		vertexInputInfo.pVertexBindingDescriptions = bindingDescriptions.data();
 		
 		return vertexInputInfo;
@@ -284,10 +284,13 @@ namespace XYZ {
 		pipelineCreateInfo.pDynamicState = &dynamicStateInfo;
 
 		Ref<VulkanShader> vulkanShader = Ref<VulkanShader>(m_Specification.Shader);
-		const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos();
 
+		const auto& shaderStages = vulkanShader->GetPipelineShaderStageCreateInfos();
 		pipelineCreateInfo.stageCount = static_cast<uint32_t>(shaderStages.size());
 		pipelineCreateInfo.pStages = shaderStages.data();
+		
+
+		
 		// It is possible to derive from existing pipeline ( better performance )
 		// pipelineCreateInfo.flags = VK_PIPELINE_CREATE_DERIVATIVE_BIT;
 		pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional

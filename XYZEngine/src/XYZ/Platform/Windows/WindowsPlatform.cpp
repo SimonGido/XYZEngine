@@ -5,7 +5,6 @@
 #ifdef XYZ_PLATFORM_WINDOWS
 
 #include <windows.h>
-#include <atlstr.h>
 
 #include <array>
 

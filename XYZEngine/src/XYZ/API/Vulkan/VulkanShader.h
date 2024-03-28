@@ -105,6 +105,7 @@ namespace XYZ {
 		const std::vector<DescriptorSet>&				    GetDescriptorSets()		 const { return m_DescriptorSets; }
 		const std::vector<PushConstantRange>&			    GetPushConstantRanges()	 const { return m_PushConstantRanges; }
 		const std::vector<VkPipelineShaderStageCreateInfo>& GetPipelineShaderStageCreateInfos() const { return m_PipelineShaderStageCreateInfos; }
+		const VkPipelineShaderStageCreateInfo*				GetPipelineVertexShaderStageCreateInfo() const;
 		const VkWriteDescriptorSet*						    GetDescriptorSet(const std::string& name, uint32_t set) const;
 		std::pair<const VkWriteDescriptorSet*, uint32_t>    GetDescriptorSet(const std::string& name) const;
 
@@ -121,9 +122,9 @@ namespace XYZ {
 			StageMap<std::unordered_map<std::string, ShaderParser::ShaderLayoutInfo>> LayoutInfo;
 		};
 
-		StageMap<std::vector<uint32_t>> compileOrGetVulkanBinaries(const StageMap<std::string>& sources, bool forceCompile);
-		PreprocessData				    preProcess(const std::string& source) const;
-		void						    createProgram(const StageMap<std::vector<uint32_t>>& shaderData);
+		bool			compileOrGetVulkanBinaries(const StageMap<std::string>& sources, StageMap<std::vector<uint32_t>>& output, bool forceCompile);
+		PreprocessData	preProcess(const std::string& source) const;
+		void			createProgram(const StageMap<std::vector<uint32_t>>& shaderData);
 		
 		void reflectAllStages(const StageMap<std::vector<uint32_t>>& shaderData, const PreprocessData& preprocessData);
 		void reflectStage(VkShaderStageFlagBits stage, const std::vector<uint32_t>& shaderData, const PreprocessData& preprocessData);

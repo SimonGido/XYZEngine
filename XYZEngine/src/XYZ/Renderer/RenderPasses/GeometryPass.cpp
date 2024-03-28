@@ -11,6 +11,9 @@
 
 #include "XYZ/Debug/Profiler.h"
 
+
+#include "XYZ/API/Vulkan/VulkanRaytracingBLAS.h"
+
 namespace XYZ {
 	GeometryPass::GeometryPass()
 	{
@@ -69,6 +72,8 @@ namespace XYZ {
 	)
 	{
 		XYZ_PROFILE_FUNC("GeometryPass::Submit");
+
+		raytracingTest(queue, commandBuffer);
 
 		// Geometry
 		uint32_t geometryPassQuery = commandBuffer->BeginTimestampQuery();
@@ -130,7 +135,7 @@ namespace XYZ {
 			// Regular compute commands
 			for (auto& command : com.ComputeCommands)
 			{
-				for (auto& data : command.Data)
+				for (auto& data : command.AllocationData)
 				{
 					m_SceneRenderer->m_StorageBufferSet->SetBufferInfo(
 						data.Allocation.GetSize(),
@@ -518,14 +523,14 @@ namespace XYZ {
 			dc.Pipeline = m_PipelineCache.PrepareComputePipeline(dc.MaterialCompute);
 			for (auto& cmd : dc.ComputeCommands)
 			{
-				for (auto& data : cmd.Data)
+				for (auto& data : cmd.AllocationData)
 				{
-					if (data.ComputeData.empty())
+					if (data.ComputeDataSize == 0) // Size of data required for computation is zero, no update required
 						continue;
 
 					m_SceneRenderer->m_StorageBufferSet->Update(
-						data.ComputeData.data(),
-						data.Allocation.GetSize(),
+						cmd.ComputeData.data() + data.ComputeDataOffset, // Data required for computation
+						data.ComputeDataSize,	// Sizeof data required for computation
 						data.Allocation.GetOffset(),
 						data.Allocation.GetBinding(),
 						data.Allocation.GetSet()
@@ -695,5 +700,22 @@ namespace XYZ {
 			spec.DepthWrite = true;
 			m_DepthPipelineInstanced.Pipeline = Pipeline::Create(spec);
 		}
+	}
+	void GeometryPass::raytracingTest(GeometryRenderQueue& queue, const Ref<RenderCommandBuffer>& commandBuffer)
+	{
+		std::vector<RaytracingGeometrySpecification> specifications;
+
+		for (auto& [key, command] : queue.MeshDrawCommands)
+		{
+			auto& spec = specifications.emplace_back();
+
+			spec.VertexBuffer = command.Mesh->GetVertexBuffer();
+			spec.IndexBuffer = command.Mesh->GetIndexBuffer();
+			spec.Transform = glm::mat4(1.0f);
+
+			spec.Format = VertexFormat::Float32;
+			spec.VertexStride = command.Pipeline->GetSpecification().Shader->GetLayouts()[0].GetStride();
+		}
+		Ref<VulkanRaytracingBLAS> blas = Ref<VulkanRaytracingBLAS>::Create(specifications);
 	}
 }

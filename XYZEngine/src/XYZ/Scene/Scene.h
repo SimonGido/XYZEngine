@@ -10,11 +10,6 @@
 #include "XYZ/Physics/PhysicsWorld2D.h"
 
 #include "XYZ/Utils/DataStructures/ThreadPass.h"
-#include "XYZ/Asset/Asset.h"
-#include "XYZ/Asset/Animation/AnimationController.h"
-#include "XYZ/Asset/Renderer/MeshSource.h"
-#include "XYZ/Renderer/Mesh.h"
-#include "XYZ/Particle/GPU/ParticleSystemGPU.h"
 
 #include "SceneCamera.h"
 #include "GPUScene.h"
@@ -55,9 +50,41 @@ namespace XYZ {
         char	  Padding[3]{ 0, 0, 0 };
     };
     
+    struct DirectionalLight
+    {
+        glm::vec3 Direction;
+        float Padding{ 0.0f };
+        glm::vec3 Radiance;
+        float     Multiplier;
+    };
+
+
+    struct PointLight2D
+    {
+        glm::vec4 Color;
+        glm::vec2 Position;
+        float	  Radius;
+        float	  Intensity;
+    };
+
+    struct SpotLight2D
+    {
+        glm::vec4 Color;
+        glm::vec2 Position;
+        float	  Radius;
+        float	  Intensity;
+        float	  InnerAngle;
+        float	  OuterAngle;
+
+        float Alignment[2];
+    };
+
     struct LightEnvironment
     {
-        std::vector<PointLight3D> PointLights3D;
+        std::vector<DirectionalLight> DirectionalLights;
+        std::vector<PointLight3D>     PointLights3D;
+        std::vector<PointLight2D>     PointLights2D;
+        std::vector<SpotLight2D>      SpotLights2D;
     };
 
     class XYZ_API Scene : public Asset
@@ -90,13 +117,12 @@ namespace XYZ {
         SceneEntity GetSceneEntity();
         SceneEntity GetSelectedEntity();
 
-        entt::registry&       GetRegistry()       { return m_Registry; }
         const entt::registry& GetRegistry() const { return m_Registry; }
 
-        inline SceneState  GetState() const { return m_State; }
-        inline const GUID& GetUUID() const { return m_UUID; }
-        inline const std::string& GetName() const { return m_Name; }
-
+        inline SceneState               GetState() const { return m_State; }
+        inline const GUID&              GetUUID() const { return m_UUID; }
+        inline const std::string&       GetName() const { return m_Name; }
+        inline const LightEnvironment&  GetLightEnvironment() const { return m_LightEnvironment; }
 
         virtual AssetType GetAssetType() const override { return AssetType::Scene; }
         static AssetType GetStaticType() { return AssetType::Scene; }
@@ -151,24 +177,13 @@ namespace XYZ {
         bool  m_UpdateAnimationAsync = false;
         bool  m_UpdateHierarchyAsync = false;
 
-
         friend SceneRenderer;
         friend class SceneIntersection;
         friend class SceneEntity;
         friend class SceneSerializer;
         friend class ScriptEngine;
-        friend class LuaEntity;
+        friend class Prefab;
         friend class Editor::SceneHierarchyPanel;
 
-
-        
-
-        // Indirect draw test //
-        Ref<MaterialAsset>     m_UpdateCommandMaterial;
-
-        Ref<MaterialAsset>	   m_ParticleMaterialGPU;
-        Ref<MaterialInstance>  m_ParticleMaterialInstanceGPU;
-        Ref<Mesh>			   m_ParticleCubeMesh;
-        Ref<ParticleSystemGPU> m_ParticleSystemGPU;
     };
 }

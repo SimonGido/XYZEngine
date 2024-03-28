@@ -109,7 +109,7 @@ namespace XYZ {
 							}
 							else if (!handled)
 							{
-								auto [mx, my] = getMouseViewportSpace();
+								auto [mx, my] = UI::Utils::GetMouseViewportSpace();
 								handleSelection({ mx,my });
 							}
 						}
@@ -203,35 +203,7 @@ namespace XYZ {
 			return false;
 		}
 
-		std::pair<glm::vec3, glm::vec3> ScenePanel::castRay(float mx, float my) const
-		{
-			const glm::vec4 mouseClipPos = { mx, my, -1.0f, 1.0f };
-
-			const auto inverseProj = glm::inverse(m_EditorCamera.GetProjectionMatrix());
-			const auto inverseView = glm::inverse(glm::mat3(m_EditorCamera.GetViewMatrix()));
-
-			const glm::vec4 ray = inverseProj * mouseClipPos;
-			glm::vec3 rayPos = m_EditorCamera.GetPosition();
-			glm::vec3 rayDir = inverseView * glm::vec3(ray);
-
-			return { rayPos, rayDir };
-		}
-
-		std::pair<float, float> ScenePanel::getMouseViewportSpace() const
-		{
-			auto [mx, my] = Input::GetMousePosition();
-			auto [winPosX, winPosY] = Input::GetWindowPosition();
-			mx -= ImGui::GetWindowPos().x;
-			my -= ImGui::GetWindowPos().y;
-			mx += winPosX;
-			my += winPosY;
-
-			const auto viewportWidth = ImGui::GetWindowSize().x;
-			const auto viewportHeight = ImGui::GetWindowSize().y;
-
-			return { (mx / viewportWidth) * 2.0f - 1.0f, ((my / viewportHeight) * 2.0f - 1.0f) * -1.0f };
-		}
-
+		
 		bool ScenePanel::playBar()
 		{
 			bool handled = false;
@@ -313,7 +285,7 @@ namespace XYZ {
 			if (ImGui::GetIO().MouseClicked[ImGuiMouseButton_Left]
 				&& !ImGui::GetIO().KeyCtrl)
 			{
-				auto [origin, direction] = castRay(mousePosition.x, mousePosition.y);
+				auto [origin, direction] = Ray::CastRay(mousePosition, m_EditorCamera.GetProjectionMatrix(), m_EditorCamera.GetViewMatrix(), m_EditorCamera.GetPosition());
 				const Ray ray = { origin,direction };
 				m_Context->SetSelectedEntity(entt::null);
 
@@ -394,9 +366,8 @@ namespace XYZ {
 					{
 						Ref<Prefab> prefab = AssetManager::GetAsset<Prefab>(metadata.Handle);
 
-						auto [mx, my] = getMouseViewportSpace();
-						auto [origin, direction] = castRay(mx, my);
-						const Ray ray = { origin,direction };
+						auto [mx, my] = UI::Utils::GetMouseViewportSpace();
+						const Ray ray = Ray::CastRay({ mx, my }, m_EditorCamera.GetProjectionMatrix(), m_EditorCamera.GetViewMatrix(), m_EditorCamera.GetPosition());
 						const float boundary = 9999.9f;
 
 						const AABB aabb{ glm::vec3(-boundary, -boundary, 0.0f), glm::vec3(boundary, boundary, 0.0f) };

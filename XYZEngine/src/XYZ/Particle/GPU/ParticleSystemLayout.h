@@ -18,6 +18,7 @@ namespace XYZ {
 		using ParticleVariableInit = std::pair<std::string, VariableType>;
 
 		ParticleSystemLayout(std::string name, const std::vector<ParticleVariableInit>& particleLayout, bool round = true);
+		ParticleSystemLayout(std::string name, std::vector<ParticleVariable> variables, uint32_t stride);
 
 		uint32_t GetVariableOffset(const std::string_view name) const;
 

@@ -1,0 +1,30 @@
+Shader: e00b6acc-9713-4824-a02f-e1dbf690bcd2
+Opaque: true
+Textures:
+  []
+TextureArrays:
+  []
+Specialization:
+  - Name: COLOR_OVER_LIFE
+    Data: 1
+  - Name: SCALE_OVER_LIFE
+    Data: 1
+  - Name: VELOCITY_OVER_LIFE
+    Data: 1
+  - Name: ROTATION_OVER_LIFE
+    Data: 1
+  - Name: SPAWN_LIGHTS
+    Data: 1
+MaterialData:
+  - Name: u_Uniforms.Timestep
+    Type: 4
+    Value: 0
+  - Name: u_Uniforms.EmittedParticles
+    Type: 9
+    Value: 0
+  - Name: u_Uniforms.Speed
+    Type: 4
+    Value: 0
+  - Name: u_Uniforms.Loop
+    Type: 9
+    Value: 0

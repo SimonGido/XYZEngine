@@ -20,17 +20,17 @@ namespace XYZ {
 			return EditorHelper::DrawComponent<MeshComponent>("Mesh Component", m_Context, [&](auto& component) {
 				{
 					std::string name = "";
-					if (component.Mesh.Raw())
+					if (component.Mesh.Valid())
 						name = AssetManager::GetMetadata(component.Mesh->GetHandle()).FilePath.string();
 					ImGui::InputText("##MaterialAssetName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
-					EditorHelper::AssetDragAcceptor(component.Mesh);
+					EditorHelper::AssetDragAcceptor(component.Mesh.Value());
 				}
 				{
 					std::string name = "";
-					if (component.MaterialAsset.Raw())
+					if (component.MaterialAsset.Valid())
 						name = AssetManager::GetMetadata(component.MaterialAsset->GetHandle()).FilePath.string();
 					ImGui::InputText("##MaterialAssetName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
-					EditorHelper::AssetDragAcceptor(component.MaterialAsset);
+					EditorHelper::AssetDragAcceptor(component.MaterialAsset.Value());
 				}
 			});
 		}
@@ -55,12 +55,12 @@ namespace XYZ {
 				const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 
 				std::string name = "";
-				if (component.MaterialAsset.Raw())
+				if (component.MaterialAsset.Valid())
 					name = AssetManager::GetMetadata(component.MaterialAsset->GetHandle()).FilePath.string();
 				ImGui::InputText("##MaterialAssetName", (char*)name.c_str(), name.size(), ImGuiInputTextFlags_ReadOnly);
 
 
-				EditorHelper::AssetDragAcceptor(component.MaterialAsset);
+				EditorHelper::AssetDragAcceptor(component.MaterialAsset.Value());
 
 				if (ImGui::BeginTable("##AnimatedMeshTable", 2, ImGuiTableFlags_SizingStretchProp))
 				{

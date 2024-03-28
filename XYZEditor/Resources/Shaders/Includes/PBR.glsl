@@ -15,6 +15,12 @@ struct PointLight
 	bool  CastsShadows;
 };
 
+struct DirectionalLight
+{
+	vec3 Direction;
+	vec3 Radiance;
+	float Multiplier;
+};
 
 struct PBRParameters
 {
@@ -66,7 +72,7 @@ vec3 IBL(in vec3 F0, in vec3 Lr, in PBRParameters params)
 }
 
 
-vec3 CalculatePointLight(in vec3 F0, in PointLight light, in PBRParameters params, in vec3 position)
+vec3 CalculatePointLight(in vec3 F0, in PointLight light, in PBRParameters params, vec3 position)
 {
 	vec3 Li = normalize(light.Position - position);
 	float lightDistance = length(light.Position - position);
@@ -94,4 +100,36 @@ vec3 CalculatePointLight(in vec3 F0, in PointLight light, in PBRParameters param
 	vec3 result = (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
 	
 	return result;
+}
+
+
+vec3 CalculateDirLight(vec3 F0, in DirectionalLight light, in PBRParameters params)
+{
+	vec3 Li = light.Direction;
+	vec3 Lradiance = light.Radiance * light.Multiplier;
+	vec3 Lh = normalize(Li + params.View);
+
+	// Calculate angles between surface normal and various light vectors.
+	float cosLi = max(0.0, dot(params.Normal, Li));
+	float cosLh = max(0.0, dot(params.Normal, Lh));
+
+	vec3 F = FresnelSchlickRoughness(F0, max(0.0, dot(Lh, params.View)), params.Roughness);
+	float D = NdfGGX(cosLh, params.Roughness);
+	float G = GaSchlickGGX(cosLi, params.NdotV, params.Roughness);
+
+	vec3 kd = (1.0 - F) * (1.0 - params.Metalness);
+	vec3 diffuseBRDF = kd * params.Albedo;
+
+	// Cook-Torrance
+	vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * params.NdotV);
+	specularBRDF = clamp(specularBRDF, vec3(0.0f), vec3(10.0f));
+	return (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
+}
+
+float CalculateLuminance(vec3 color)
+{
+    return 
+		0.2126 * color.r 
+	+	0.7152 * color.g 
+	+	0.0722 * color.b;
 }

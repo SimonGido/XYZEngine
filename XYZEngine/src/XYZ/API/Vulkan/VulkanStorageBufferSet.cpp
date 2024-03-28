@@ -10,29 +10,60 @@ namespace XYZ {
 	{
 		m_IndirectBuffers.resize(frames);
 	}
+	VulkanStorageBufferSet::~VulkanStorageBufferSet()
+	{
+		for (auto &[key, set] :m_DataTransferBuffers)
+		{
+			for (auto& [binding, queue] : set)
+			{
+				while (!queue.Empty())
+				{
+					ByteBuffer buffer = queue.PopBack();
+					buffer.Destroy();
+				}
+			}
+		}
+	}
 	void VulkanStorageBufferSet::Update(const void* data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set)
 	{
+		XYZ_PROFILE_FUNC("VulkanStorageBufferSet::Update");
 		// TODO: queue for buffers
 		Ref<VulkanStorageBufferSet> instance = this;
-		ByteBuffer buffer = ByteBuffer::Copy(data, size);
+		ByteBuffer buffer = getBuffer(set, binding, size);
+		buffer.Write(data, size);
 
 		Renderer::Submit([buffer, instance, size, offset, binding, set]() mutable {
 			const uint32_t frame = Renderer::GetCurrentFrame();
-			instance->Get(binding, set, frame)->RT_Update(buffer, size, offset);
-			buffer.Destroy();
+			instance->Get(binding, set, frame)->RT_Update(buffer.Data, size, offset);
+			instance->m_DataTransferBuffers[set][binding].PushBack(buffer);
+		});
+	}
+	void VulkanStorageBufferSet::Update(void** data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set)
+	{
+		XYZ_PROFILE_FUNC("VulkanStorageBufferSet::Update");
+		Ref<VulkanStorageBufferSet> instance = this;
+		void* dataPtr = *data;
+		*data = nullptr;
+
+		Renderer::Submit([dataPtr, instance, size, offset, binding, set]() mutable {
+			const uint32_t frame = Renderer::GetCurrentFrame();
+			instance->Get(binding, set, frame)->RT_Update(dataPtr, size, offset);
+			delete[] dataPtr;
 		});
 	}
 	void VulkanStorageBufferSet::UpdateEachFrame(const void* data, uint32_t size, uint32_t offset, uint32_t binding, uint32_t set)
 	{
 		Ref<VulkanStorageBufferSet> instance = this;
-		ByteBuffer buffer = ByteBuffer::Copy(data, size);
+		
+		ByteBuffer buffer = getBuffer(set, binding, size);
+		buffer.Write(data, size);
 
 		Renderer::Submit([buffer, instance, size, offset, binding, set]() mutable {
 			for (uint32_t frame = 0; frame < Renderer::GetConfiguration().FramesInFlight; ++frame)
 			{
 				instance->Get(binding, set, frame)->RT_Update(buffer, size, offset);
 			}
-			buffer.Destroy();
+			instance->m_DataTransferBuffers[set][binding].PushBack(buffer);
 		});
 	}
 
@@ -45,12 +76,21 @@ namespace XYZ {
 			instance->RT_createDescriptors(vulkanShader);
 		});
 	}
-	void VulkanStorageBufferSet::Create(uint32_t size, uint32_t set, uint32_t binding, bool indirect)
+	void VulkanStorageBufferSet::Create(uint32_t size, uint32_t set, uint32_t binding, bool indirect, bool shared)
 	{
-		for (uint32_t frame = 0; frame < m_Frames; frame++)
+		if (shared)
 		{
 			Ref<StorageBuffer> storageBuffer = StorageBuffer::Create(size, binding, indirect);
-			Set(storageBuffer, set, frame);
+			for (uint32_t frame = 0; frame < m_Frames; frame++)
+				Set(storageBuffer, set, frame);
+		}
+		else
+		{
+			for (uint32_t frame = 0; frame < m_Frames; frame++)
+			{
+				Ref<StorageBuffer> storageBuffer = StorageBuffer::Create(size, binding, indirect);
+				Set(storageBuffer, set, frame);
+			}
 		}
 	}
 	void VulkanStorageBufferSet::Set(Ref<StorageBuffer> storageBuffer, uint32_t set, uint32_t frame)
@@ -76,7 +116,7 @@ namespace XYZ {
 			instance->Get(binding, set, frame).As<VulkanStorageBuffer>()->RT_SetBufferInfo(size, offset);
 		});
 	}
-	Ref<StorageBuffer> VulkanStorageBufferSet::Get(uint32_t binding, uint32_t set, uint32_t frame)
+	Ref<StorageBuffer> VulkanStorageBufferSet::Get(uint32_t binding, uint32_t set, uint32_t frame) const
 	{
 		XYZ_ASSERT(m_StorageBuffers.find(frame) != m_StorageBuffers.end(), "");
 		XYZ_ASSERT(m_StorageBuffers.at(frame).find(set) != m_StorageBuffers.at(frame).end(), "");
@@ -111,7 +151,7 @@ namespace XYZ {
 		for (uint32_t frame = 0; frame < m_Frames; ++frame)
 		{
 			writeDescriptor[frame].resize(descriptorSets.size());
-			for (size_t set = 0; set < descriptorSets.size(); ++set)
+			for (uint32_t set = 0; set < static_cast<uint32_t>(descriptorSets.size()); ++set)
 			{
 				for (auto&& [binding, shaderUB] : descriptorSets[set].ShaderDescriptorSet.StorageBuffers)
 				{
@@ -133,5 +173,19 @@ namespace XYZ {
 				}
 			}
 		}
+	}
+	ByteBuffer VulkanStorageBufferSet::getBuffer(uint32_t set, uint32_t binding, uint32_t size)
+	{
+		auto& queue = m_DataTransferBuffers[set][binding];
+
+		ByteBuffer buffer;
+		if (queue.Empty())
+			buffer.Allocate(size);
+		else
+		{
+			buffer = queue.PopBack();
+			buffer.TryReallocate(size);
+		}
+		return buffer;
 	}
 }

@@ -22,7 +22,7 @@ namespace XYZ {
 		}
 		void ParticleEditorGPU::OnImGuiRender(bool& open)
 		{
-			if (m_ParticleSystem.Raw())
+			if (m_ParticleSystem.Valid())
 			{
 				if (ImGui::Begin(m_Name.c_str()))
 				{
@@ -118,7 +118,7 @@ namespace XYZ {
 		}
 		void ParticleEditorGPU::onParticleSystemSelected()
 		{
-			if (m_ParticleSystem.Raw())
+			if (m_ParticleSystem.Valid())
 			{
 
 			}

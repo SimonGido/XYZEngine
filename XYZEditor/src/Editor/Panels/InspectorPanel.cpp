@@ -13,6 +13,7 @@
 #include "XYZ/Script/ScriptEngine.h"
 #include "XYZ/Asset/AssetManager.h"
 #include "XYZ/Scene/Components.h"
+#include "XYZ/Scene/Prefab.h"
 
 #include "Editor/Event/EditorEvents.h"
 
@@ -226,6 +227,15 @@ namespace XYZ {
 					{
 						m_SelectedEntity.EmplaceComponent<PointLightComponent3D>();
 						activateInspector<PointLightComponent3D>();
+						ImGui::CloseCurrentPopup();
+					}
+				}
+				if (!m_SelectedEntity.HasComponent<DirectionalLightComponent>())
+				{
+					if (ImGui::MenuItem("Directional Light"))
+					{
+						m_SelectedEntity.EmplaceComponent<DirectionalLightComponent>();
+						activateInspector<DirectionalLightComponent>();
 						ImGui::CloseCurrentPopup();
 					}
 				}

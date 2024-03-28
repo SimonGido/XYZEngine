@@ -52,13 +52,12 @@ struct ParticleProperty
 	vec4 EndRotation;
 	vec4 EndScale;
 	vec4 EndVelocity;
-
+    vec2 VelocityCurve[4];
   
     vec4  Position;
 	float LifeTime;
     float LifeRemaining;
-
-	uint  Padding[2];
+	uint  Padding[1];
 };
 
 
@@ -105,8 +104,7 @@ layout (constant_id = 2) const bool VELOCITY_OVER_LIFE = false;
 layout (constant_id = 3) const bool ROTATION_OVER_LIFE = false;
 layout (constant_id = 4) const bool SPAWN_LIGHTS = false;
 
-
-shared uint pointLightsCount;
+shared uint originalNumberPointLights;
 
 float LifeProgress(uint id)
 {
@@ -132,8 +130,10 @@ void RespawnParticle(uint id)
 }
 
 
-void SpawnLight(uint id, uint lightIndex, uint commandIndex, in ParticleState state)
+void SpawnLight(uint id, uint commandIndex, in ParticleState state)
 {
+    uint offset = u_Uniforms.EmittedParticles * commandIndex;
+    uint lightIndex = originalNumberPointLights + id + offset;
     if (lightIndex < MAX_POINT_LIGHTS)
     {
         mat4 particleTransform = TranslationMatrix(ParticleProperties[id].Position.xyz, state.Scale)
@@ -148,6 +148,7 @@ void SpawnLight(uint id, uint lightIndex, uint commandIndex, in ParticleState st
 
 
         PointLights[lightIndex] = PointLights[0];
+        PointLights[lightIndex].Radiance = state.Color.xyz;
         PointLights[lightIndex].Position = transform[3].xyz;
         atomicAdd(NumberPointLights, 1);
     }
@@ -160,11 +161,11 @@ void CommandsUpdate(uint id, out uint instanceIndex, in ParticleState state)
         instanceIndex = atomicAdd(Command[i].InstanceCount, 1);
         if (SPAWN_LIGHTS)
         {
-            uint lightIndex = atomicAdd(pointLightsCount, 1);
-            SpawnLight(id, lightIndex, i, state);
+            SpawnLight(id, i, state);
         }
     }
 }
+
 
 void UpdateParticle(uint id)
 {
@@ -222,12 +223,12 @@ bool ValidParticle(uint id)
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 void main(void)
 {
-    if (gl_LocalInvocationIndex == 0)   
-        pointLightsCount = NumberPointLights;
+    if (gl_LocalInvocationIndex == 0)
+	    originalNumberPointLights = NumberPointLights;
     barrier();
 
+
     uint id = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
-    
     if (!ValidParticle(id))
         return;
 

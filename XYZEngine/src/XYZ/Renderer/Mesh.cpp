@@ -12,9 +12,20 @@ namespace XYZ {
     {
     }
 
+    StaticMesh::StaticMesh(const AssetHandle& meshSourceHandle)
+        :
+        m_MeshSource(meshSourceHandle)
+    {
+    }
+
     AnimatedMesh::AnimatedMesh(const Ref<MeshSource>& meshSource)
         :
         m_MeshSource(meshSource)
+    {
+    }
+    AnimatedMesh::AnimatedMesh(const AssetHandle& meshSourceHandle)
+        :
+        m_MeshSource(meshSourceHandle)
     {
     }
     ProceduralMesh::ProceduralMesh()

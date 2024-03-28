@@ -30,7 +30,7 @@ namespace XYZ {
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
-			return new Ref<AnimationController>(ent.GetComponent<AnimationComponent>().Controller);
+			return new Ref<AnimationController>(ent.GetComponent<AnimationComponent>().Controller.Value());
 		}
 		MonoArray* AnimationComponentNative::GetBoneEntities(uint32_t entity)
 		{

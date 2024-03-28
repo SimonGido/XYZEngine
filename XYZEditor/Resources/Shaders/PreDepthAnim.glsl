@@ -15,12 +15,21 @@ XYZ_INSTANCED layout(location = 7) in vec4  a_TransformRow0;
 XYZ_INSTANCED layout(location = 8) in vec4  a_TransformRow1;
 XYZ_INSTANCED layout(location = 9) in vec4  a_TransformRow2;
 
+const int MAX_BONES = 60;
+const int MAX_ANIMATED_MESHES = 1024;
+
 layout(std140, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjection;
 	mat4 u_Projection;
 	mat4 u_View;
+	vec3 u_CameraPosition;
 };
+
+layout (std140, binding = 3) readonly buffer BoneTransforms
+{
+	mat4 BoneTransforms[MAX_BONES * MAX_ANIMATED_MESHES];
+} r_BoneTransforms;
 
 layout(push_constant) uniform Transform
 {
@@ -40,7 +49,13 @@ void main()
 		vec4(a_TransformRow0.w, a_TransformRow1.w, a_TransformRow2.w, 1.0)
 	);
 
-	vec4 worldPosition = transform * u_Renderer.Transform * vec4(a_Position, 1.0);
+	mat4 boneTransform = r_BoneTransforms.BoneTransforms[(u_Renderer.BoneIndex + gl_InstanceIndex) * MAX_BONES + a_BoneIDs[0]] * a_Weights[0];
+	boneTransform     += r_BoneTransforms.BoneTransforms[(u_Renderer.BoneIndex + gl_InstanceIndex) * MAX_BONES + a_BoneIDs[1]] * a_Weights[1];
+	boneTransform     += r_BoneTransforms.BoneTransforms[(u_Renderer.BoneIndex + gl_InstanceIndex) * MAX_BONES + a_BoneIDs[2]] * a_Weights[2];
+	boneTransform     += r_BoneTransforms.BoneTransforms[(u_Renderer.BoneIndex + gl_InstanceIndex) * MAX_BONES + a_BoneIDs[3]] * a_Weights[3];
+
+
+	vec4 worldPosition = transform * boneTransform * u_Renderer.Transform * vec4(a_Position, 1.0);
 
 	v_LinearDepth = -(u_View * worldPosition).z;
 

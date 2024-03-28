@@ -46,6 +46,16 @@ namespace XYZ {
 			glm::decompose(transform, scale, rotq, translation, skew, perspective);
 			return translation;
 		}
+		XYZ_API bool PointInBox(const glm::vec3& point, const glm::vec3& boxMin, const glm::vec3& boxMax)
+		{
+			return
+				point.x >= boxMin.x
+				&& point.x <= boxMax.x
+				&& point.y >= boxMin.y
+				&& point.y <= boxMax.y
+				&& point.z >= boxMin.z
+				&& point.z <= boxMax.z;
+		}
 		std::tuple<glm::vec3, glm::vec3, glm::vec3> DecomposeTransform(const glm::mat4& transform)
 		{
 			glm::vec3 translation;

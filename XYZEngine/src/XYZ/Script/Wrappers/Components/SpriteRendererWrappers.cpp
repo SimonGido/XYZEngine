@@ -56,7 +56,7 @@ namespace XYZ {
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
-			return new Ref<SubTexture>(ent.GetComponent<SpriteRenderer>().SubTexture);
+			return new Ref<SubTexture>(ent.GetComponent<SpriteRenderer>().SubTexture.Value());
 		}
 		Ref<Material>* SpriteRendererNative::GetMaterial(uint32_t entity)
 		{
@@ -72,7 +72,7 @@ namespace XYZ {
 			XYZ_ASSERT(scene.Raw(), "No active scene!");
 
 			SceneEntity ent(static_cast<entt::entity>(entity), scene.Raw());
-			return new Ref<MaterialAsset>(ent.GetComponent<SpriteRenderer>().Material);
+			return new Ref<MaterialAsset>(ent.GetComponent<SpriteRenderer>().Material.Value());
 		}
 		void SpriteRendererNative::GetColor(uint32_t entity, glm::vec4* outColor)
 		{

@@ -94,7 +94,7 @@ namespace XYZ {
 			VkViewport viewport = { 0.0f, static_cast<float>(height) };
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
-			viewport.width = width;
+			viewport.width = static_cast<float>(width);
 			viewport.height = -static_cast<float>(height);
 
 			VkRenderPassBeginInfo renderPassBeginInfo = {};
@@ -106,7 +106,7 @@ namespace XYZ {
 			renderPassBeginInfo.renderArea.extent.height = height;
 			renderPassBeginInfo.framebuffer = framebuffer->GetFramebuffer();
 			
-			renderPassBeginInfo.clearValueCount = framebuffer->GetVulkanClearValues().size();
+			renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(framebuffer->GetVulkanClearValues().size());
 			renderPassBeginInfo.pClearValues = framebuffer->GetVulkanClearValues().data();
 		
 			VkRect2D scissor = {};
@@ -451,6 +451,7 @@ namespace XYZ {
 		});
 	}
 
+
 	void VulkanRendererAPI::BindPipeline(
 		Ref<RenderCommandBuffer> renderCommandBuffer, 
 		Ref<Pipeline> pipeline, 
@@ -475,6 +476,7 @@ namespace XYZ {
 			const VkCommandBuffer		   commandBuffer = (const VkCommandBuffer)renderCommandBuffer->CommandBufferHandle(frameIndex);
 			const VkPipelineLayout		   layout = vulkanPipeline->GetVulkanPipelineLayout();
 
+	
 			vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.As<VulkanPipeline>()->GetVulkanPipeline());
 
 			vulkanMaterial->RT_UpdateForRendering(vulkanUniformBufferSet, vulkanStorageBufferSet);

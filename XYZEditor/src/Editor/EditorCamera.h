@@ -4,11 +4,16 @@
 #include "XYZ/Core/Timestep.h"
 #include "XYZ/Event/Event.h"
 #include "XYZ/Event/InputEvent.h"
+#include "XYZ/Utils/Math/Math.h"
 
 #include <glm/glm.hpp>
 
 namespace XYZ {
 	namespace Editor {
+
+
+		
+
 		class EditorCamera : public Camera
 		{
 		public:
@@ -35,6 +40,8 @@ namespace XYZ {
 
 			float GetPitch() const { return m_Pitch; }
 			float GetYaw() const { return m_Yaw; }
+
+			 Math::Frustum CreateFrustum() const;
 
 		private:
 			void updateProjection();

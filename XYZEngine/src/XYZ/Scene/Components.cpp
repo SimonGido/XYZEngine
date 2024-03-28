@@ -241,6 +241,12 @@ namespace XYZ {
 		m_Dirty = true;
 	}
 	
+	VoxelMeshComponent::VoxelMeshComponent(const Ref<VoxelSourceMesh>& mesh)
+		:
+		Mesh(mesh)
+	{
+	}
+
 	MeshComponent::MeshComponent(const MeshComponent& other)
 		:
 		Mesh(other.Mesh),
@@ -248,6 +254,7 @@ namespace XYZ {
 		OverrideMaterial(other.OverrideMaterial)
 	{
 	}
+
 
 	MeshComponent::MeshComponent(const Ref<XYZ::StaticMesh>& mesh, const Ref<XYZ::MaterialAsset>& materialAsset)
 		:
@@ -385,4 +392,5 @@ namespace XYZ {
 		RuntimeFixture(other.RuntimeFixture)
 	{
 	}
+
 }

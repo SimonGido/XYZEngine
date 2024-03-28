@@ -11,6 +11,8 @@ Textures:
     Handle: 87d1f2d7-5c21-49d6-858e-33eff18291e2
 TextureArrays:
   []
+Specialization:
+  []
 MaterialData:
   - Name: u_Renderer.Transform
     Type: 14

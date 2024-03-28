@@ -33,13 +33,7 @@ namespace XYZ {
 			return &m_Scene->m_Registry;
 		return nullptr;
 	}
-	entt::registry* SceneEntity::GetRegistry()
-	{
-		if (m_Scene)
-			return &m_Scene->m_Registry;
-		return nullptr;
-	}
-
+	
 	SceneEntity& SceneEntity::operator=(const SceneEntity& other)
 	{
 		m_Scene = other.m_Scene;
