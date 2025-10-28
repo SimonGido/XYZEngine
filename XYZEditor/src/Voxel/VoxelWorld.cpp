@@ -71,7 +71,7 @@ namespace XYZ {
 		forestBiom.ColorPallete[0] = { 0, 0, 0, 0 };
 		forestBiom.ColorPallete[1] = { 1, 60, 32, 255 }; // Grass
 		forestBiom.ColorPallete[2] = { 1, 40, 200, 30}; // Water
-		forestBiom.Octaves = 3;
+		forestBiom.Octaves = 5;
 		forestBiom.Frequency = 1.0f;
 		m_ActiveChunks = std::make_unique<ActiveChunkStorage>();
 
@@ -237,11 +237,11 @@ namespace XYZ {
 		if (!DataPool.Empty())
 			submesh.ColorIndices = DataPool.PopBack();
 
-		if (!DataPool.Empty())
-			waterSubmesh.ColorIndices = DataPool.PopBack();
+		//if (!DataPool.Empty())
+		//	waterSubmesh.ColorIndices = DataPool.PopBack();
 		
 		submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth, 0);
-		waterSubmesh.ColorIndices.resize(waterSubmesh.Width * waterSubmesh.Height * waterSubmesh.Depth, 0);
+		//waterSubmesh.ColorIndices.resize(waterSubmesh.Width * waterSubmesh.Height * waterSubmesh.Depth, 0);
 
 		for (uint32_t x = 0; x < submesh.Width; ++x)
 		{
@@ -267,15 +267,15 @@ namespace XYZ {
 						return chunk;
 
 					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
-					waterSubmesh.ColorIndices[index] = 2; // Water
+					submesh.ColorIndices[index] = 2; // Water
 				}
 			}
 		}
 		submesh.Compress(16, cancel);
-		waterSubmesh.Compress(16, cancel);
+		//waterSubmesh.Compress(16, cancel);
 
-		chunk.Mesh->SetSubmeshes({ submesh, waterSubmesh });
-		chunk.Mesh->SetInstances({ instance, waterInstance});
+		chunk.Mesh->SetSubmeshes({ submesh });
+		chunk.Mesh->SetInstances({ instance});
 
 		return chunk;
 	}	

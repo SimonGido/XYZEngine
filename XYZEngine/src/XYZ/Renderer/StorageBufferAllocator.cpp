@@ -230,10 +230,34 @@ namespace XYZ {
 			}			
 		}
 
-		// Try to find suitable free allocation
-		for (int64_t i = m_FreeAllocations.size() - 1; i >= 0; --i)
+		// Find best fit allocation
+		bool found = false;
+		size_t allocIndex = 0;
+		uint32_t minSizeDif = std::numeric_limits<uint32_t>::max();
+		for (size_t i = 0; i < m_FreeAllocations.size(); ++i)
 		{
-			auto& last = m_FreeAllocations[i];
+			auto& alloc = m_FreeAllocations[i];
+			if (alloc.Size >= size)
+			{
+				uint32_t sizeDif = alloc.Size - size;
+				if (sizeDif == 0)
+				{
+					// Perfect fit
+					allocIndex = i;
+					found = true;
+					break;
+				}
+				if (sizeDif < minSizeDif)
+				{
+					minSizeDif = sizeDif;
+					allocIndex = i;
+					found = true;
+				}
+			}
+		}
+		if (found) 
+		{
+			auto& last = m_FreeAllocations[allocIndex];
 			if (last.Size > size)
 			{
 				// Cut required size from free allocation
@@ -241,11 +265,11 @@ namespace XYZ {
 				offset = last.Offset + last.Size;
 				return true;
 			}
-			else if (last.Size == size)
+			if (last.Size == size)
 			{
 				// Take whole free allocation
 				offset = last.Offset;
-				m_FreeAllocations.erase(m_FreeAllocations.begin() + i);
+				m_FreeAllocations.erase(m_FreeAllocations.begin() + allocIndex);
 				return true;
 			}
 		}

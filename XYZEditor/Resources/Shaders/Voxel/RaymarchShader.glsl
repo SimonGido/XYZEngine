@@ -760,7 +760,6 @@ void RaycastOctree(in Ray ray)
 		imageStore(o_Image, textureIndex, vec4(gradient.rgb, origColor.a));		
 	}
 }
-
 bool ValidPixel(ivec2 index)
 {
 	return index.x <= int(u_ViewportSize.x) && index.y <= int(u_ViewportSize.y);
