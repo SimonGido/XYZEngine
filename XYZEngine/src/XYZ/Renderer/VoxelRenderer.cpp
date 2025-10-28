@@ -780,10 +780,10 @@ namespace XYZ {
 
 				bool isAOpaque = submeshA.IsOpaque;
 				bool isBOpaque = submeshB.IsOpaque;
-				return a->DistanceFromCamera < b->DistanceFromCamera;
+
 				if (isAOpaque && isBOpaque) 
 				{
-					// Both are opaque, sort by DistanceFromCamera
+					// Both are opaque, sort by DistanceFromCamera front to back
 					return a->DistanceFromCamera < b->DistanceFromCamera;
 				}
 				else if (isAOpaque) 
@@ -798,8 +798,8 @@ namespace XYZ {
 				}
 				else 
 				{
-					// Both are transparent, sort by DistanceFromCamera
-					return a->DistanceFromCamera < b->DistanceFromCamera;
+					// Both are transparent, sort by DistanceFromCamera back to front
+					return a->DistanceFromCamera > b->DistanceFromCamera;
 				}
 			});
 		}

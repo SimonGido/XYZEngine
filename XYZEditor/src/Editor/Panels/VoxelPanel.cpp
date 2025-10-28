@@ -273,9 +273,7 @@ namespace XYZ {
 				}
 				//m_World.Update(m_EditorCamera.GetPosition());
 				m_World.Update(glm::vec3(0));
-				int counter = 0;
-				std::vector<Ref<VoxelMesh>> newMeshes;
-				std::vector<Ref<VoxelMesh>> oldMeshes;
+
 				for (const auto& chunkRow : *m_World.GetActiveChunks())
 				{
 					for (const auto& chunk : chunkRow)
@@ -283,36 +281,13 @@ namespace XYZ {
 						if (chunk.Mesh.Raw())
 						{
 							bool compressed = true;
-							//for (auto& submesh : chunk.Mesh->GetSubmeshes())
-							//	compressed &= submesh.Compressed;
-							//if (compressed)
-							{
+							for (auto& submesh : chunk.Mesh->GetSubmeshes())
+								compressed &= submesh.Compressed;
+							if (compressed)
 								m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
-								//if (!m_VoxelRenderer->IsMeshAllocated(chunk.Mesh))
-								//	newMeshes.push_back(chunk.Mesh);
-								//else
-								//	oldMeshes.push_back(chunk.Mesh);
-							
-							}
-
 						}
-						counter++;
-						//if (counter == 2)
-						//	break;
+
 					}
-					//if (counter == 2)
-					//	break;
-
-				}
-
-
-				for (const auto& mesh : oldMeshes)
-					m_VoxelRenderer->SubmitMesh(mesh, glm::mat4(1.0f));
-				
-				for (const auto& mesh : newMeshes)
-				{
-					if (m_VoxelRenderer->SubmitMesh(mesh, glm::mat4(1.0f)))
-						break;
 				}
 				for (auto& transform : m_TreeTransforms)
 				{
@@ -325,9 +300,8 @@ namespace XYZ {
 					const glm::mat4 deerTransform = m_Transforms[i + 2].GetLocalTransform();
 				
 					m_VoxelRenderer->SubmitMesh(m_CastleMesh, castleTransform);
-					break;
-					//m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
-					//m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
+					m_VoxelRenderer->SubmitMesh(m_KnightMesh, knightTransform);
+					m_VoxelRenderer->SubmitMesh(m_DeerMesh, deerTransform, &m_DeerKeyFrame);
 				}
 				
 				submitWater();

@@ -246,23 +246,14 @@ vec4 VoxelToColor(uint voxel)
 	color.y = bitfieldExtract(voxel, 8, 8) / 255.0;
 	color.z = bitfieldExtract(voxel, 16, 8) / 255.0;
 	color.w = bitfieldExtract(voxel, 24, 8) / 255.0;
-
+	color.rgb *= color.a;
 	return color;
 }
 
 
-vec4 BlendColors(vec4 colorA, vec4 colorB)
+vec4 BlendColors(vec4 src, vec4 dst)
 {
-	return colorA + colorB * colorB.a * (1.0 - colorA.a);
-}
-
-vec4 BlendColorsNTimes(vec4 colorA, vec4 colorB, int N)
-{
-    // Calculate the new alpha value for colorB
-    float newAlpha = 1.0 - pow(1.0 - colorB.a, float(N));
-
-    // Blend colorA with colorB using the new alpha value
-    return colorA + colorB * newAlpha * (1.0 - colorA.a);
+     return src + dst * (1.0 - src.a);
 }
 
 struct RaymarchResult
@@ -272,7 +263,6 @@ struct RaymarchResult
 	vec3  WorldHit;
 	vec3  WorldNormal;
 	float Distance;
-	float EndDistance;
 	bool  Hit;
 };
 
@@ -388,47 +378,12 @@ RaymarchState CreateRaymarchState(in Ray ray, float tMin, ivec3 step, ivec3 maxS
 	return CreateRaymarchState(ray, tMin, step, maxSteps, vec3(voxelSize, voxelSize, voxelSize), decompressedVoxelOffset);
 }
 
-
-void RayMarchSingleHit(in Ray ray, inout RaymarchState state, vec3 delta, ivec3 step, in VoxelModel model, float currentDistance)
-{
-	state.Hit = false;
-	state.Color = vec4(0,0,0,0);
-
-	uint width = model.Width;
-	uint height = model.Height;
-	uint depth = model.Depth;
-	uint voxelOffset = model.VoxelOffset;
-	uint colorPalleteIndex = model.ColorIndex;
-	float voxelSize = model.VoxelSize;
-
-	while (state.MaxSteps.x >= 0 && state.MaxSteps.y >= 0 && state.MaxSteps.z >= 0)
-	{		
-		if (IsValidVoxel(state.CurrentVoxel, width, height, depth))
-		{
-			if (state.Distance > currentDistance)
-				break;
-
-			uint voxelIndex = Index3D(state.CurrentVoxel, width, height) + voxelOffset;
-			uint colorIndex = uint(Voxels[voxelIndex]);
-			uint voxel = ColorPallete[colorPalleteIndex][colorIndex];
-			if (voxel != 0)
-			{
-				state.Color = VoxelToColor(voxel);
-				state.Hit = true;				
-				break;
-			}
-		}
-		PerformStep(state, step, delta);
-	}
-}
-
-RaymarchResult RayMarchModel(in Ray ray, float tMin, in VoxelModel model, vec4 currentColor, float currentDistance, ivec3 decompressedVoxelOffset)
+RaymarchResult RayMarchModel(in Ray ray, float tMin, in VoxelModel model, vec4 currentColor, float currentDistance, ivec3 decompressedVoxelOffset, vec4 startColor)
 {
 	RaymarchResult result;
-	result.Color	= vec4(0,0,0,0);
+	result.Color	= startColor;
 	result.Hit		= false;
 	result.Distance	= 0.0;
-	result.EndDistance = 0.0;
 
 	ivec3 step = ivec3(
 		(ray.Direction.x > 0.0) ? 1 : -1,
@@ -455,81 +410,16 @@ RaymarchResult RayMarchModel(in Ray ray, float tMin, in VoxelModel model, vec4 c
 			uint voxel		= ColorPallete[colorPalleteIndex][colorIndex];
 			if (voxel != 0)
 			{
-				if (result.Hit == false)
+				if (result.Hit == false) // First hit
 				{
 					result.Distance = state.Distance;
-					result.Normal = state.Normal;
-					result.Hit	 = true;
+					result.Normal	= state.Normal;
+					result.Hit		= true;
 				}
-
-				result.EndDistance = result.Distance;
-
-				vec4 voxelColor = VoxelToColor(voxel);
-				vec4 newColor = BlendColors(result.Color, voxelColor);
-				//if (state.Distance > currentDistance)
-				//{
-				//	vec4 blendedColor = BlendColors(currentColor, newColor);
-				//	if (blendedColor.a > 1.0)
-				//		break;
-				//}
-	
-				result.Color = newColor;
-				if (result.Color.a >= 1.0)
-					break;
-			}
-		}
-		PerformStep(state, step, delta); // Hit was not opaque we continue raymarching, perform step to get out of transparent voxel	
-	}	
-	return result;
-}
-
-
-RaymarchResult RayMarchModelCell(in Ray ray, float tMin, in VoxelModel model, vec4 currentColor, float currentDistance, ivec3 decompressedVoxelOffset, vec4 startColor)
-{
-	RaymarchResult result;
-	result.Color	= startColor;
-	result.Hit		= false;
-	result.Distance	= 0.0;
-
-	ivec3 step = ivec3(
-		(ray.Direction.x > 0.0) ? 1 : -1,
-		(ray.Direction.y > 0.0) ? 1 : -1,
-		(ray.Direction.z > 0.0) ? 1 : -1
-	);
-	uint width				= model.Width;
-	uint height				= model.Height;
-	uint depth				= model.Depth;
-	uint voxelOffset		= model.VoxelOffset;
-	uint colorPalleteIndex	= model.ColorIndex;
-	float voxelSize			= model.VoxelSize;
-
-	vec3 delta				= voxelSize / ray.Direction * vec3(step);	
-	ivec3 maxSteps			= ivec3(width, height, depth);
-	RaymarchState state		= CreateRaymarchState(ray, tMin, step, maxSteps, voxelSize, decompressedVoxelOffset);
-	bool exceededDistance	= false;
-	while (state.MaxSteps.x >= 0 && state.MaxSteps.y >= 0 && state.MaxSteps.z >= 0) 
-	{				
-		if (IsValidVoxel(state.CurrentVoxel, width, height, depth))
-		{
-			// if new depth is bigger than currentDepth it means there is something in front of us	
-			if (state.Distance > currentDistance && exceededDistance == false) 
-			{
-				exceededDistance = true;
-				if (currentColor.a >= 1.0)
-					break;
-
-				//TODO: We can not blend here for now with drawColor, because cells that are not compressed are exceedingDistance over and over again because it is reseted after each cell
-			}
-			uint voxelIndex = Index3D(state.CurrentVoxel, width, height) + voxelOffset;
-			uint colorIndex = uint(Voxels[voxelIndex]);
-			uint voxel		= ColorPallete[colorPalleteIndex][colorIndex];
-			if (voxel != 0)
-			{
-				if (result.Hit == false)
-				{
-					result.Distance = state.Distance;
-					result.Normal = state.Normal;
-					result.Hit	 = true;
+				if (state.Distance > currentDistance)
+				{	
+					if (currentColor.a >= 1.0) // Something opaque in front of us
+						break;
 				}
 				result.Color = BlendColors(result.Color, VoxelToColor(voxel));
 				if (result.Color.a >= 1.0)
@@ -556,7 +446,7 @@ RaymarchResult RaymarchCompressed(in Ray ray, float tMin, in VoxelModel model, v
 	ivec3 maxSteps		= ivec3(model.Width, model.Height, model.Depth);
 	vec3 t_delta		= model.VoxelSize / ray.Direction * vec3(step);
 	RaymarchState state = CreateRaymarchState(ray, tMin, step, maxSteps, model.VoxelSize, ivec3(0,0,0));
-	bool exceededDistance = false;
+
 	while (state.MaxSteps.x >= 0 && state.MaxSteps.y >= 0 && state.MaxSteps.z >= 0)
 	{		
 		if (IsValidVoxel(state.CurrentVoxel, model.Width, model.Height, model.Depth))
@@ -565,17 +455,11 @@ RaymarchResult RaymarchCompressed(in Ray ray, float tMin, in VoxelModel model, v
 			VoxelCompressedCell cell		= CompressedCells[cellIndex];
 			ivec3 decompressedVoxelOffset	= state.CurrentVoxel * int(model.CompressScale); // Required for proper distance calculation
 			
-			if (state.Distance > currentDistance && exceededDistance == false)
+			if (state.Distance > currentDistance)
 			{
-				exceededDistance = true;
 				if (currentColor.a >= 1.0)
 					break;
-				
-				result.Color = BlendColors(currentColor, result.Color);
-				if (result.Color.a >= 1.0)
-					break;
 			}
-
 			if (cell.VoxelCount == 1) // Compressed cell
 			{
 				uint voxelIndex = model.VoxelOffset + cell.VoxelOffset;
@@ -583,17 +467,18 @@ RaymarchResult RaymarchCompressed(in Ray ray, float tMin, in VoxelModel model, v
 				uint colorUINT	= ColorPallete[model.ColorIndex][colorIndex];
 				if (colorUINT != 0)
 				{
-					if (result.Hit == false)
+					if (result.Hit == false) // First hit
 					{
 						result.Normal = state.Normal;
 						result.Distance = state.Distance;
 						result.Hit = true;
 					}	
+					float tMin = state.Distance;
+					float tMax = GetNextDistance(state, step, t_delta);
+					tMax = min(tMax, currentDistance);
 
-					float tMin		= state.Distance;
-					float tMax		= GetNextDistance(state, step, t_delta);
-					int numSteps	= CalculateNumberOfSteps(ray, tMin, tMax, model.VoxelSize / model.CompressScale);
-					vec4 cellColor	= VoxelToColor(colorUINT);
+					int   numSteps	= CalculateNumberOfSteps(ray, tMin, tMax, model.VoxelSize / model.CompressScale);
+					vec4  cellColor	= VoxelToColor(colorUINT);
 					for (int i = 0; i < numSteps; i++)
 					{
 						result.Color = BlendColors(result.Color, cellColor);
@@ -613,7 +498,7 @@ RaymarchResult RaymarchCompressed(in Ray ray, float tMin, in VoxelModel model, v
 				cellModel.Depth			= model.CompressScale;
 				cellModel.VoxelSize		= model.VoxelSize / model.CompressScale;
 
-				RaymarchResult newResult = RayMarchModelCell(ray, state.Distance - EPSILON, cellModel, currentColor, currentDistance, decompressedVoxelOffset, result.Color);				
+				RaymarchResult newResult = RayMarchModel(ray, state.Distance - EPSILON, cellModel, currentColor, currentDistance, decompressedVoxelOffset, result.Color);				
 				if (newResult.Hit)
 				{
 					if (result.Hit == false)
@@ -652,15 +537,13 @@ bool ResolveRayModelIntersection(in vec3 origin, vec3 direction, in VoxelModel m
 void StoreHitResult(in RaymarchResult result, float currentDistance)
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);	
-	
+	// Store smaller depth
 	if (currentDistance >= result.Distance)
 	{
 		imageStore(o_Normal, textureIndex, vec4(result.WorldNormal, 1.0));
 		imageStore(o_Position, textureIndex, vec4(result.WorldHit, 1.0));
 		imageStore(o_DepthImage, textureIndex, vec4(result.Distance, 0,0,0)); // Store new depth
 	}
-	//imageStore(o_Image, textureIndex, result.Color); // Store color		
-	
 	if (u_Uniforms.ShowDepth)
 	{
 		float depth = DistToDepth(imageLoad(o_DepthImage, textureIndex).r);
@@ -673,14 +556,14 @@ void StoreHitResult(in RaymarchResult result, float currentDistance)
 	}
 }
 
-bool DrawModel(in Ray cameraRay, in VoxelModel model, inout vec4 drawColor, inout float drawDistance, vec4 resultColor, float minDistance)
+bool DrawModel(in Ray cameraRay, in VoxelModel model, vec4 currentColor, float currentDistance, inout vec4 drawColor, inout float drawDistance)
 {
 	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
 	
 	Ray modelRay = CreateRay(u_CameraPosition.xyz, model.InverseTransform, textureIndex);
 
-	float tMin				= 0.0;
-	float tMax				= 0.0;
+	float tMin = 0.0;
+	float tMax = 0.0;
 	// Check if ray intersects with model and move origin of ray
 	if (!ResolveRayModelIntersection(modelRay.Origin, modelRay.Direction, model, tMin, tMax))
 		return false;
@@ -688,20 +571,19 @@ bool DrawModel(in Ray cameraRay, in VoxelModel model, inout vec4 drawColor, inou
 	RaymarchResult result;
 	if (model.Compressed)
 	{
-		result = RaymarchCompressed(modelRay, tMin, model, drawColor, drawDistance);
+		result = RaymarchCompressed(modelRay, tMin, model, drawColor, currentDistance);
 	}
 	else
 	{
-		result = RayMarchModel(modelRay, tMin, model, resultColor, minDistance, ivec3(0,0,0));	
+		result = RayMarchModel(modelRay, tMin, model, currentColor, currentDistance, ivec3(0,0,0), vec4(0,0,0,0));	
 	}
 	if (result.Hit)		
 	{ 
 		result.WorldHit = cameraRay.Origin + (cameraRay.Direction * result.Distance);
 		result.WorldNormal = mat3(model.InverseTransform) * result.Normal;
 
-
-		StoreHitResult(result, drawDistance);	
-		drawDistance = result.EndDistance;
+		StoreHitResult(result, currentDistance);	
+		drawDistance = result.Distance;
 		drawColor = result.Color; // Our color becomes new last drawColor
 		return true;
 	}
@@ -836,88 +718,6 @@ void RaycastOctree(in Ray ray)
 	}
 }
 
-
-void RaycastModelGrid(in Ray cameraRay, bool opaque)
-{
-	ivec2 textureIndex = ivec2(gl_GlobalInvocationID.xy);
-	Ray gridRay = CreateRay(u_CameraPosition.xyz, GridInverseTransform, textureIndex);
-
-	AABB modelGridAABB;
-	modelGridAABB.Min.x = 0;
-	modelGridAABB.Min.y = 0;
-	modelGridAABB.Min.z = 0;
-
-	modelGridAABB.Max.x = GridDimensions.x * GridCellSize.x;
-	modelGridAABB.Max.y = GridDimensions.y * GridCellSize.y;
-	modelGridAABB.Max.z = GridDimensions.z * GridCellSize.z;
-	
-	float tMin = 0.0;
-	float tMax = 0.0;
-
-	if (!RayBoxIntersectionInside(gridRay.Origin, gridRay.Direction, modelGridAABB.Min.xyz, modelGridAABB.Max.xyz, tMin, tMax))
-		return;
-
-	if (!opaque)
-	{
-		gridRay.Origin = gridRay.Origin + (gridRay.Direction * tMax);
-		gridRay.Direction = -gridRay.Direction;
-		tMin = 0.0;
-	}
-
-	ivec3 step = ivec3(
-		(gridRay.Direction.x > 0.0) ? 1 : -1,
-		(gridRay.Direction.y > 0.0) ? 1 : -1,
-		(gridRay.Direction.z > 0.0) ? 1 : -1
-	);
-
-	vec3 delta = GridCellSize / gridRay.Direction * vec3(step);	
-
-	RaymarchState state = CreateRaymarchState(gridRay, tMin, step, GridDimensions, GridCellSize, ivec3(0,0,0));
-	if (!opaque)
-		state.Distance = tMax;
-		
-
-	bool modelDrawn[MAX_MODELS];
-	for (int i = 0; i < NumModels; i++)
-		modelDrawn[i] = false;
-	
-	int drawModelCount = 0;
-	float lastDrawDistance = FLT_MAX;
-	while (state.MaxSteps.x >= 0 && state.MaxSteps.y >= 0 && state.MaxSteps.z >= 0)
-	{
-		if (IsValidVoxel(state.CurrentVoxel, GridDimensions.x, GridDimensions.y, GridDimensions.z))
-		{			
-			//if (state.Distance > lastDrawDistance)
-			//	break;
-
-			uint cellIndex = Index3D(state.CurrentVoxel, GridDimensions.x, GridDimensions.y);
-			ModelGridCell cell = GridCells[cellIndex];
-	
-			for (uint i = cell.ModelOffset; i < cell.ModelOffset + cell.ModelCount; i++)
-			{
-				uint modelIndex = GridModelIndices[i];
-				if (modelDrawn[modelIndex])
-					continue;
-				VoxelModel model = Models[modelIndex];
-				//if (model.Opaque != opaque)
-				//	continue;
-
-				//DrawModel(cameraRay, model, lastDrawDistance);
-				modelDrawn[modelIndex] = true;
-				drawModelCount++;
-			}	
-		}
-		PerformStep(state, step, delta);
-	}
-
-	//vec3 gradient = GetGradient(drawModelCount) * 0.3;
-	//vec4 origColor = imageLoad(o_Image, textureIndex);
-	//origColor.rgb += gradient;
-	//imageStore(o_Image, textureIndex, vec4(gradient.rgb, origColor.a));		
-}
-
-
-
 bool ValidPixel(ivec2 index)
 {
 	return index.x <= int(u_ViewportSize.x) && index.y <= int(u_ViewportSize.y);
@@ -936,38 +736,35 @@ void main()
 	{
 		RaycastBVH(cameraRay);
 	}
-	else if (u_Uniforms.UseModelGrid)
-	{
-		RaycastModelGrid(cameraRay, true);
-		//RaycastModelGrid(cameraRay, false);
-	}
 	else if (u_Uniforms.UseOctree)
 	{
 		RaycastOctree(cameraRay);
 	}
 	else
 	{		
-		float minDistance	= FLT_MAX;
-		float newDistance	= 0.0;
-		vec4 newColor		= vec4(0,0,0,0);
-		vec4 resultColor	= vec4(0,0,0,0);
+		float currentDistance = FLT_MAX;
+		vec4  currentColor	  = vec4(0,0,0,0);
 
+		float newDistance	  = 0.0;
+		vec4  newColor		  = vec4(0,0,0,0);
+		
 		for (uint i = 0; i < NumModels; i++)
 		{
 			VoxelModel model = Models[i];
-			if (DrawModel(cameraRay, model, newColor, newDistance, resultColor, minDistance))
+			if (DrawModel(cameraRay, model, currentColor, currentDistance, newColor, newDistance))
 			{
-				if (newDistance < minDistance)
+				if (newDistance < currentDistance)
 				{
-					resultColor = BlendColors(newColor, resultColor);
-					minDistance = newDistance;
+					currentColor = BlendColors(newColor, currentColor);
+					currentDistance = newDistance;
 				}
 				else
 				{
-					resultColor = BlendColors(resultColor, newColor);
+					currentColor = BlendColors(currentColor, newColor);
 				}
 			}	
 		}
-		imageStore(o_Image, textureIndex, resultColor);
+		if (!u_Uniforms.ShowDepth && !u_Uniforms.ShowNormals)
+			imageStore(o_Image, textureIndex, currentColor);
 	}
 }

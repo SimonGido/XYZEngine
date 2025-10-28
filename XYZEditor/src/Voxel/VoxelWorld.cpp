@@ -70,7 +70,7 @@ namespace XYZ {
 		VoxelBiom& forestBiom = m_Bioms["Forest"];
 		forestBiom.ColorPallete[0] = { 0, 0, 0, 0 };
 		forestBiom.ColorPallete[1] = { 1, 60, 32, 255 }; // Grass
-		forestBiom.ColorPallete[2] = { 1, 30, 230, 50}; // Water
+		forestBiom.ColorPallete[2] = { 1, 40, 200, 10}; // Water
 		forestBiom.Octaves = 3;
 		forestBiom.Frequency = 1.0f;
 		m_ActiveChunks = std::make_unique<ActiveChunkStorage>();
@@ -260,7 +260,7 @@ namespace XYZ {
 				}
 			}
 		}
-		//submesh.Compress(16, cancel, 2); // Do not compress water indices
+		submesh.Compress(16, cancel);
 
 		chunk.Mesh->SetSubmeshes({ submesh});
 		chunk.Mesh->SetInstances({ instance});

@@ -118,10 +118,10 @@ project "XYZEngine"
 			"ozz_base",
 			"ozz_animation",
 			"ozz_animation_offline",   
-			"OpenXR-SDK",
+			--"OpenXR-SDK",
 			"%{LibraryDir.mono}",
 			"%{Library.Vulkan}",
-			"%{Library.VulkanUtils}"
+			--"%{Library.VulkanUtils}"
 
 		}
 		

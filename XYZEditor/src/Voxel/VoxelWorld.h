@@ -31,7 +31,7 @@ namespace XYZ{
 	{
 	public:
 		static constexpr glm::ivec3 sc_ChunkDimensions = glm::ivec3(128, 128, 128);
-		static constexpr uint32_t	sc_ChunkViewDistance = 1; // View distance from center
+		static constexpr uint32_t	sc_ChunkViewDistance = 10; // View distance from center
 		static constexpr int64_t    sc_MaxVisibleChunksPerAxis = sc_ChunkViewDistance * 2 + 1;
 		static constexpr float      sc_ChunkVoxelSize = 1.0f;
 		static ThreadQueue<std::vector<uint8_t>> DataPool;
