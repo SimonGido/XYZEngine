@@ -70,7 +70,7 @@ namespace XYZ {
 		VoxelBiom& forestBiom = m_Bioms["Forest"];
 		forestBiom.ColorPallete[0] = { 0, 0, 0, 0 };
 		forestBiom.ColorPallete[1] = { 1, 60, 32, 255 }; // Grass
-		forestBiom.ColorPallete[2] = { 1, 40, 200, 10}; // Water
+		forestBiom.ColorPallete[2] = { 1, 40, 200, 30}; // Water
 		forestBiom.Octaves = 3;
 		forestBiom.Frequency = 1.0f;
 		m_ActiveChunks = std::make_unique<ActiveChunkStorage>();
@@ -198,7 +198,14 @@ namespace XYZ {
 		submesh.Height = sc_ChunkDimensions.y;
 		submesh.Depth = sc_ChunkDimensions.z;
 		submesh.VoxelSize = sc_ChunkVoxelSize;
-		submesh.IsOpaque = false;
+		submesh.IsOpaque = true;
+
+		VoxelSubmesh waterSubmesh;
+		waterSubmesh.Width = sc_ChunkDimensions.x;
+		waterSubmesh.Height = sc_ChunkDimensions.y;
+		waterSubmesh.Depth = sc_ChunkDimensions.z;
+		waterSubmesh.VoxelSize = sc_ChunkVoxelSize;
+		waterSubmesh.IsOpaque = false;
 
 	
 		const glm::vec3 centerTranslation = -glm::vec3(
@@ -229,9 +236,13 @@ namespace XYZ {
 		
 		if (!DataPool.Empty())
 			submesh.ColorIndices = DataPool.PopBack();
+
+		if (!DataPool.Empty())
+			waterSubmesh.ColorIndices = DataPool.PopBack();
 		
 		submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth, 0);
-		
+		waterSubmesh.ColorIndices.resize(waterSubmesh.Width * waterSubmesh.Height * waterSubmesh.Depth, 0);
+
 		for (uint32_t x = 0; x < submesh.Width; ++x)
 		{
 			for (uint32_t z = 0; z < submesh.Depth; ++z)
@@ -250,20 +261,21 @@ namespace XYZ {
 					submesh.ColorIndices[index] = 1; // Grass
 				}
 
-				for (uint32_t y = genHeight; y < 70; y++)
+				for (uint32_t y = genHeight; y < 256; y++)
 				{
 					if (cancel)
 						return chunk;
 
 					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
-					submesh.ColorIndices[index] = 2; // Water
+					waterSubmesh.ColorIndices[index] = 2; // Water
 				}
 			}
 		}
 		submesh.Compress(16, cancel);
+		waterSubmesh.Compress(16, cancel);
 
-		chunk.Mesh->SetSubmeshes({ submesh});
-		chunk.Mesh->SetInstances({ instance});
+		chunk.Mesh->SetSubmeshes({ submesh, waterSubmesh });
+		chunk.Mesh->SetInstances({ instance, waterInstance});
 
 		return chunk;
 	}	
