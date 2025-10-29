@@ -71,7 +71,7 @@ namespace XYZ {
 		forestBiom.ColorPallete[0] = { 0, 0, 0, 0 };
 		forestBiom.ColorPallete[1] = { 1, 60, 32, 255 }; // Grass
 		forestBiom.ColorPallete[2] = { 1, 40, 200, 30}; // Water
-		forestBiom.Octaves = 5;
+		forestBiom.Octaves = 2;
 		forestBiom.Frequency = 1.0f;
 		m_ActiveChunks = std::make_unique<ActiveChunkStorage>();
 
@@ -198,7 +198,7 @@ namespace XYZ {
 		submesh.Height = sc_ChunkDimensions.y;
 		submesh.Depth = sc_ChunkDimensions.z;
 		submesh.VoxelSize = sc_ChunkVoxelSize;
-		submesh.IsOpaque = true;
+		submesh.IsOpaque = false;
 
 		VoxelSubmesh waterSubmesh;
 		waterSubmesh.Width = sc_ChunkDimensions.x;
@@ -261,7 +261,7 @@ namespace XYZ {
 					submesh.ColorIndices[index] = 1; // Grass
 				}
 
-				for (uint32_t y = genHeight; y < 256; y++)
+				for (uint32_t y = genHeight; y < 100; y++)
 				{
 					if (cancel)
 						return chunk;
