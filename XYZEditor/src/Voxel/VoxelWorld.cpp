@@ -271,7 +271,7 @@ namespace XYZ {
 				}
 			}
 		}
-		submesh.Compress(16, cancel);
+		submesh.Compress(32, cancel);
 		//waterSubmesh.Compress(16, cancel);
 
 		chunk.Mesh->SetSubmeshes({ submesh });

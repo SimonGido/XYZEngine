@@ -485,14 +485,13 @@ RaymarchResult RaymarchCompressed(in Ray ray, float tMin, in VoxelModel model, v
 		{		
 			uint cellIndex					= Index3D(state.CurrentVoxel, model.Width, model.Height) + model.CellOffset;
 			VoxelCompressedCell cell		= CompressedCells[cellIndex];
-					
-
+				
 			// Calculates real coordinates of CurrentVoxel in decompressed model
 			VoxelModel cellModel;
 			int dimSize = int(pow(cell.VoxelCount, 1.0 / 3.0));
+			float baseVoxelSize = model.VoxelSize / max(model.CompressScale, 1);
 			ivec3 decompressedVoxelOffset = state.CurrentVoxel * dimSize;
-			float decompressedVoxelSize = model.VoxelSize / max(model.CompressScale, 1);
-
+			
 			cellModel.ColorIndex	= model.ColorIndex;
 			cellModel.VoxelOffset	= model.VoxelOffset + cell.VoxelOffset;		
 			cellModel.Width			= dimSize;
@@ -508,7 +507,7 @@ RaymarchResult RaymarchCompressed(in Ray ray, float tMin, in VoxelModel model, v
 				currentDistance, 
 				decompressedVoxelOffset, 
 				result.Color,
-				decompressedVoxelSize
+				baseVoxelSize
 			);				
 			if (newResult.Hit)
 			{		

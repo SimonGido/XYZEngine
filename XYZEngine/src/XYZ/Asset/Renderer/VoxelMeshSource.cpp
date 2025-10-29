@@ -32,15 +32,45 @@ namespace XYZ {
 	{
 		const uint32_t oldIndex = Index3D(start.x, start.y, start.z, width, height);
 		const uint8_t oldColorIndex = arr[oldIndex];
-		for (uint32_t x = start.x; x < end.x; ++x)
+		for (uint32_t x = start.x; x < end.x; x++)
 		{
-			for (uint32_t y = start.y; y < end.y; ++y)
+			for (uint32_t y = start.y; y < end.y; y++)
 			{
-				for (uint32_t z = start.z; z < end.z; ++z)
+				for (uint32_t z = start.z; z < end.z; z++)
 				{
-					const uint32_t newIndex = Index3D(x, y, z, width, height);
+					const uint32_t minX = std::min(x, end.x);
+					const uint32_t minY = std::min(y, end.y);
+					const uint32_t minZ = std::min(z, end.z);
+
+					const uint32_t newIndex = Index3D(minX, minY, minZ, width, height);
 					const uint8_t newColorIndex = arr[newIndex];
 					if (newColorIndex != oldColorIndex)
+						return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	static bool AreBlocksUniform(const std::vector<uint8_t>& arr, const glm::uvec3& start, const glm::uvec3& end, uint32_t width, uint32_t height, uint32_t step)
+	{
+		for (uint32_t x = start.x; x < end.x; x += step)
+		{
+			for (uint32_t y = start.y; y < end.y; y += step)
+			{
+				for (uint32_t z = start.z; z < end.z; z += step)
+				{
+					const uint32_t subXEnd = std::min(x + step, end.x);
+					const uint32_t subYEnd = std::min(y + step, end.y);
+					const uint32_t subZEnd = std::min(z + step, end.z);
+
+					bool isSubUniform = IsBlockUniform(
+						arr,
+						{ x, y, z },
+						{ subXEnd, subYEnd, subZEnd },
+						width, height
+					);
+					if (!isSubUniform)
 						return false;
 				}
 			}
@@ -182,25 +212,46 @@ namespace XYZ {
 					}
 					else
 					{
-						const uint32_t offset = static_cast<uint32_t>(compressedColorIndices.size());
-						cell.VoxelCount = scale * scale * scale;
-						compressedColorIndices.resize(offset + cell.VoxelCount);
-						uint8_t* cellColorIndices = &compressedColorIndices[offset];
-						for (uint32_t x = xStart; x < xEnd; ++x)
+						uint32_t subScale = scale / 2;
+						while (subScale >= 1)
 						{
-							for (uint32_t y = yStart; y < yEnd; ++y)
+							bool allSubUniform = AreBlocksUniform(
+								copy.ColorIndices,
+								{ xStart, yStart, zStart },
+								{ xEnd, yEnd, zEnd },
+								copy.Width, copy.Height,
+								subScale
+							);
+							if (allSubUniform)
 							{
-								for (uint32_t z = zStart; z < zEnd; ++z)
-								{
-									if (cancel)
-										return 0;
+								const uint32_t offset = static_cast<uint32_t>(compressedColorIndices.size());
+								cell.VoxelCount = (scale / subScale) * (scale / subScale) * (scale / subScale);
+								compressedColorIndices.resize(offset + cell.VoxelCount);
 
-									const uint32_t index = Index3D(x, y, z, copy.Width, copy.Height);
-									const uint32_t insertIndex = Index3D(x - xStart, y - yStart, z - zStart, scale, scale);
-									const uint8_t colorIndex = copy.ColorIndices[index];
-									cellColorIndices[insertIndex] = colorIndex;
+								for (uint32_t sx = xStart; sx < xEnd; sx += subScale)
+								{
+									for (uint32_t sy = yStart; sy < yEnd; sy += subScale)
+									{
+										for (uint32_t sz = zStart; sz < zEnd; sz += subScale)
+										{
+											// Get the index of a representative voxel (e.g., the first voxel in the sub-block)
+											uint8_t colorIndex = copy.ColorIndices[Index3D(sx, sy, sz, copy.Width, copy.Height)];
+
+											const uint32_t insertIndex = Index3D(
+												(sx - xStart) / subScale, 
+												(sy - yStart) / subScale, 
+												(sz - zStart) / subScale, 
+												scale / subScale, 
+												scale / subScale
+											);
+											// Append it to the compressed array
+											compressedColorIndices[offset + insertIndex] = colorIndex;
+										}
+									}
 								}
+								break;
 							}
+							subScale /= 2;
 						}
 					}
 					cell.VoxelOffset = voxelOffset;
