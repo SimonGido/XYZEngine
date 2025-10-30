@@ -264,12 +264,18 @@ namespace XYZ {
 				
 				if (Input::IsKeyPressed(KeyCode::KEY_SPACE))
 				{
-					m_ProceduralMesh->DecompressCell(0, 0, 0, 0);
-					//auto& submesh = m_ProceduralMesh->GetSubmeshes()[0];
-					//for (uint32_t y = 0; y < 400; ++y)
-					//{
-					//	m_ProceduralMesh->SetVoxelColor(0, 256, y, 256, RandomNumber(5u, 255u));
-					//}
+					//m_ProceduralMesh->DecompressCell(0, 0, 0, 0);
+					for (auto& chunkRow : *m_World.GetActiveChunks())
+					{
+						for (auto& chunk : chunkRow)
+						{
+							if (chunk.Mesh.Raw())
+							{
+								chunk.Mesh->Decompress(0);
+								
+							}
+						}
+					}
 				}
 				//m_World.Update(m_EditorCamera.GetPosition());
 				m_World.Update(glm::vec3(0));
@@ -279,14 +285,7 @@ namespace XYZ {
 					for (const auto& chunk : chunkRow)
 					{
 						if (chunk.Mesh.Raw())
-						{
-							bool compressed = true;
-							for (auto& submesh : chunk.Mesh->GetSubmeshes())
-								compressed &= submesh.Compressed;
-							if (compressed)
-								m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
-						}
-
+							m_VoxelRenderer->SubmitMesh(chunk.Mesh, glm::mat4(1.0f));
 					}
 				}
 				for (auto& transform : m_TreeTransforms)
@@ -538,7 +537,7 @@ namespace XYZ {
 					//result.WaterMap[waterIndex] = 125; // Half max density
 				}
 			}
-			result.Terrain.Compress(16);
+			//result.Terrain.Compress(16);
 			return result;
 		}
 	}

@@ -79,6 +79,7 @@ namespace XYZ {
 		void SetVoxelColor(uint32_t submeshIndex, uint32_t x, uint32_t y, uint32_t z, uint8_t value);
 
 		void DecompressCell(uint32_t submeshIndex, uint32_t cx, uint32_t cy, uint32_t cz);
+		void Decompress(uint32_t submeshIndex);
 
 		virtual const std::array<VoxelColor, 256>& GetColorPallete() const override;
 		virtual const std::vector<VoxelSubmesh>& GetSubmeshes() const override;

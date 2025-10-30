@@ -128,6 +128,15 @@ namespace XYZ {
 		}	
 	}
 
+	void VoxelProceduralMesh::Decompress(uint32_t submeshIndex)
+	{
+		auto& submesh = m_Submeshes[submeshIndex];
+		if (submesh.Decompress())
+		{
+			m_DirtySubmeshes.emplace(submeshIndex, VoxelMesh::DirtyRange{ 0, static_cast<uint32_t>(submesh.ColorIndices.size()) });
+		}
+	}
+
 	const std::array<VoxelColor, 256>& VoxelProceduralMesh::GetColorPallete() const
 	{
 		return m_ColorPallete;

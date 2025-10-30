@@ -245,7 +245,8 @@ vec4 VoxelToColor(uint voxel)
 	color.x = bitfieldExtract(voxel, 0, 8) / 255.0;
 	color.y = bitfieldExtract(voxel, 8, 8) / 255.0;
 	color.z = bitfieldExtract(voxel, 16, 8) / 255.0;
-	color.w = bitfieldExtract(voxel, 24, 8) / 255.0;
+	color.a = bitfieldExtract(voxel, 24, 8) / 255.0;
+	color.a = max(color.a, 0.0);
 	color.rgb *= color.a;
 	return color;
 }
@@ -447,8 +448,7 @@ RaymarchResult RayMarchModel(
 				
 				int   numSteps	 = CalculateNumberOfSteps(ray, tMin, tMax, decompressedVoxelSize);
 				vec4  voxelColor = VoxelToColor(voxel);
-
-				result.Color = BlendColorsN(result.Color, voxelColor, numSteps);
+				result.Color = BlendColorsN(result.Color, voxelColor, numSteps);	
 				if (result.Color.a >= 1.0)
 					return result;	
 			}

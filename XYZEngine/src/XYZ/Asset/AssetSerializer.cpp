@@ -793,6 +793,7 @@ namespace XYZ {
 	}
 	void VoxelMeshSourceSerializer::Serialize(const AssetMetadata& metadata, const WeakRef<Asset>& asset) const
 	{
+		WeakRef<VoxelMeshSource> meshSrc = asset.As<VoxelMeshSource>();
 	}
 	bool VoxelMeshSourceSerializer::TryLoadData(const AssetMetadata& metadata, Ref<Asset>& asset) const
 	{

@@ -78,6 +78,7 @@ namespace XYZ {
 		if (size == 0)
 			return;
 
+
 		VulkanAllocator allocator("VulkanBuffer");
 		if (m_Size >= sc_SizeLimit)
 		{

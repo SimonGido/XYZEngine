@@ -11,9 +11,6 @@
 namespace XYZ {
 	namespace Editor {
 
-
-		
-
 		class EditorCamera : public Camera
 		{
 		public:

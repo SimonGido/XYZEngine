@@ -198,7 +198,7 @@ namespace XYZ {
 		submesh.Height = sc_ChunkDimensions.y;
 		submesh.Depth = sc_ChunkDimensions.z;
 		submesh.VoxelSize = sc_ChunkVoxelSize;
-		submesh.IsOpaque = false;
+		submesh.IsOpaque = true;
 
 		VoxelSubmesh waterSubmesh;
 		waterSubmesh.Width = sc_ChunkDimensions.x;
@@ -237,11 +237,11 @@ namespace XYZ {
 		if (!DataPool.Empty())
 			submesh.ColorIndices = DataPool.PopBack();
 
-		//if (!DataPool.Empty())
-		//	waterSubmesh.ColorIndices = DataPool.PopBack();
+		if (!DataPool.Empty())
+			waterSubmesh.ColorIndices = DataPool.PopBack();
 		
 		submesh.ColorIndices.resize(submesh.Width * submesh.Height * submesh.Depth, 0);
-		//waterSubmesh.ColorIndices.resize(waterSubmesh.Width * waterSubmesh.Height * waterSubmesh.Depth, 0);
+		waterSubmesh.ColorIndices.resize(waterSubmesh.Width * waterSubmesh.Height * waterSubmesh.Depth, 0);
 
 		for (uint32_t x = 0; x < submesh.Width; ++x)
 		{
@@ -267,15 +267,27 @@ namespace XYZ {
 						return chunk;
 
 					const uint32_t index = Index3D(x, y, z, submesh.Width, submesh.Height);
-					submesh.ColorIndices[index] = 2; // Water
+					waterSubmesh.ColorIndices[index] = 2; // Water
 				}
 			}
 		}
-		submesh.Compress(32, cancel);
-		//waterSubmesh.Compress(16, cancel);
+		//int64_t saved64 = submesh.Compress(64, cancel);
+		//submesh.Decompress();
+		
+		//int64_t saved32 = submesh.Compress(32, cancel);
+		//submesh.Decompress();
+		//
+		int64_t saved16 = submesh.Compress(16, cancel);
+		//submesh.Decompress();
 
-		chunk.Mesh->SetSubmeshes({ submesh });
-		chunk.Mesh->SetInstances({ instance});
+		//int64_t saved8 = submesh.Compress(8, cancel);
+		//submesh.Decompress();
+
+
+		waterSubmesh.Compress(16, cancel);
+
+		chunk.Mesh->SetSubmeshes({ submesh, waterSubmesh });
+		chunk.Mesh->SetInstances({ instance, waterInstance});
 
 		return chunk;
 	}	

@@ -12,8 +12,6 @@
 
 namespace XYZ {
 
-
-
 	struct XYZ_API VoxelSubmesh
 	{		
 		struct CompressedCell
@@ -36,10 +34,10 @@ namespace XYZ {
 
 
 		bool DecompressCell(uint32_t cx, uint32_t cy, uint32_t cz);
+		bool Decompress();
 
 		int64_t	Compress(uint32_t scale);
 		int64_t	Compress(uint32_t scale, bool& cancel);
-		int64_t	Compress(uint32_t scale, bool& cancel, uint8_t skipColorIndex);
 
 
 		static VoxelSubmesh Compress(uint32_t scale, uint32_t width, uint32_t height, uint32_t depth, float voxelSize, const std::vector<uint8_t>& colorIndices);
@@ -73,7 +71,7 @@ namespace XYZ {
 
 	struct VoxelColor
 	{
-		uint8_t R, G, B, A;
+		uint8_t R = 0, G = 0, B = 0, A = 0;
 	};
 
 	class XYZ_API VoxelMeshSource : public Asset
@@ -82,7 +80,7 @@ namespace XYZ {
 		VoxelMeshSource(const std::string& filepath);
 
 		virtual AssetType GetAssetType() const override { return AssetType::VoxelMeshSource; }
-		static AssetType	GetStaticType() { return AssetType::VoxelMeshSource; }
+		static AssetType  GetStaticType() { return AssetType::VoxelMeshSource; }
 
 		const AABB&							GetAABB()		  const { return m_AABB; }
 		const std::array<VoxelColor, 256>&	GetColorPallete() const { return m_ColorPallete; }

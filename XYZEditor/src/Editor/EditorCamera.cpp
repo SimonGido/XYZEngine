@@ -90,19 +90,6 @@ namespace XYZ {
 
 		void EditorCamera::OnUpdate(Timestep ts)
 		{
-			//m_Position = {
-			//	8.06515980,
-			//	9.07982635,
-			//	13.0964537
-			//};
-			//m_FocalPoint = {
-			//	-3.00932217,
-			//	6.95265293,
-			//	1.51905799
-			//};
-			//m_Yaw = -0.763199985;
-			//m_Pitch = 0.132000014;
-			//m_Distance = 16.1618404;
 			if (Input::IsKeyPressed(KeyCode::KEY_LEFT_CONTROL))
 			{
 				const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
@@ -116,7 +103,23 @@ namespace XYZ {
 				else if (Input::IsMouseButtonPressed(MouseCode::MOUSE_BUTTON_RIGHT))
 					mouseZoom(delta.y);
 			}
-
+			if (Input::IsKeyPressed(KeyCode::KEY_W))
+			{
+				m_Position += GetForwardDirection();
+			}
+			if (Input::IsKeyPressed(KeyCode::KEY_A))
+			{
+				m_Position -= GetRightDirection();
+			}
+			if (Input::IsKeyPressed(KeyCode::KEY_S))
+			{
+				m_Position -= GetForwardDirection();
+			}
+			if (Input::IsKeyPressed(KeyCode::KEY_D))
+			{
+				m_Position += GetRightDirection();
+			}
+			m_FocalPoint = m_Position + GetForwardDirection() * m_Distance;
 			updateView();
 		}
 
